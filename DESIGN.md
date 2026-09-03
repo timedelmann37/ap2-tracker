@@ -36,6 +36,12 @@ typography:
     fontWeight: 600
     lineHeight: 1
     letterSpacing: "-0.02em"
+  subhead:
+    fontFamily: "Manrope, Inter, system-ui, sans-serif"
+    fontSize: "20px"
+    fontWeight: 600
+    lineHeight: 1.1
+    letterSpacing: "-0.014em"
   title:
     fontFamily: "Manrope, Inter, system-ui, sans-serif"
     fontSize: "15.5px"
@@ -128,6 +134,17 @@ components:
     textColor: "{colors.warm-charcoal}"
     rounded: "{rounded.md}"
     padding: "0px"
+  week-card-lead:
+    backgroundColor: "{colors.brand-tint}"
+    textColor: "{colors.warm-charcoal}"
+    typography: "{typography.subhead}"
+    rounded: "{rounded.lg}"
+    padding: "22px 22px 20px"
+  week-card-rest:
+    backgroundColor: "{colors.surface-raised}"
+    textColor: "{colors.warm-charcoal}"
+    rounded: "{rounded.lg}"
+    padding: "14px 15px"
   bottomnav-link:
     backgroundColor: "transparent"
     textColor: "{colors.charcoal-faint}"
@@ -242,6 +259,10 @@ Messwert als solchen erkennbar.
   Nur die eine Seitenüberschrift im Hero (`.hub-head h1`). `text-wrap: balance`.
 - **Headline** (Manrope 600, 34 px, lh 1, ls -0.02em): die große
   Prozentzahl im Dashboard (`.dash-overall .pct`) und `.dash-overall`-Peers.
+- **Subhead** (Manrope 600, 20 px, lh 1.1, ls -0.014em): die Überschrift eines
+  Abschnitts, der zum Fixpunkt der Seite werden soll — `.tw-head h2`
+  („Diese Woche"). Ein echter Schritt unter Display, ein echter über Title;
+  die Lead-Karte darunter trägt ihren Titel bei 17 px.
 - **Title** (Manrope 600, 15.5 px, lh 1.35, ls -0.006em): Kachel- und
   Panel-Titel (`.hub-card h2`, `.card-title` nutzt hier Inter 14.5 px).
 - **Body** (Inter 400, 14 px, lh 1.6): Fließtext. Beschreibungen laufen auf
@@ -257,7 +278,8 @@ etwas abhakt — Prozent, „7 / 12", Countdown-Tage —, steht in IBM Plex Mono
 `tabular-nums`. Fließtext und Labels tun das nie.
 
 **Die Eine-Überschrift-Regel.** Display-Größe erscheint genau einmal pro Seite,
-im Hero. Panels und Karten beginnen bei Title.
+im Hero. Höchstens ein Abschnitt darunter darf auf Subhead heben — der, der
+die Seite führen soll. Alle übrigen Panels und Karten beginnen bei Title.
 
 ## Layout
 
@@ -274,6 +296,16 @@ Spacing-Rhythmus in Stufen von **6 / 12 / 18 / 22 / 34 px**. Panels und Karten
 haben durchgängig 22 px Innenabstand. Sektions-Eyebrows sitzen mit ~30 px
 Vorlauf und 12 px Nachlauf über ihrem Block.
 
+**Hintergrund-Textur.** Alle fünf Bereichsseiten legen hinter den Inhalt ein
+sehr feines Punkt-Raster: `body::before`, `position: fixed`, `z-index: -1`,
+`pointer-events: none`. `background-image: radial-gradient(var(--border-strong)
+1.1px, transparent 1.7px)` auf `background-size: 22px 22px`, radial von oben
+ausgeblendet (`mask-image: radial-gradient(135% 100% at 50% 0%, #000 22%,
+transparent 76%)`). `--page` wandert dafür auf `html`, `body` wird transparent.
+Die Textur nutzt denselben `--border-strong`, der jede Haarlinie trägt — kein
+eigenes Token, keine eigene Farbe. Sie liegt viewport-fixiert im Kopfbereich
+und verschwindet zu Rändern und unten vollständig.
+
 **Breakpoints:** 620 px (Listen einspaltig, Kachel-Umbruch), 640 px
 (Seiten-Padding), 760 px (Bento greift), 820 px (Bottom-Nav erscheint).
 
@@ -284,9 +316,10 @@ Haarlinie oben, kein Schatten. `.page` bekommt dann `padding-bottom: 92px`.
 
 ## Elevation & Depth
 
-Das System ist **vollständig flach**. `--shadow` und `--shadow-sm` sind global
-auf `none` gesetzt, ebenso alle Glass-Aliasse (`--glass-blur: 0px`,
-`--glass-saturate: 1`). Tiefe entsteht ausschließlich durch:
+Das System bleibt **flach**: `--shadow` und `--shadow-sm` sind global auf
+`none` gesetzt, ebenso alle Glass-Aliasse (`--glass-blur: 0px`,
+`--glass-saturate: 1`). Kein Element wird durch einen Schatten angehoben.
+Tiefe entsteht ausschließlich durch:
 
 1. **Haarlinien** — 1 px Rahmen in `--border` / `--border-strong`.
 2. **Tonale Schichtung** — `--page` < `--surface-1` < `--surface-2` <
@@ -296,6 +329,10 @@ auf `none` gesetzt, ebenso alle Glass-Aliasse (`--glass-blur: 0px`,
    mit `outline-offset: 2px`; `:focus-within` bei Suchfeldern zusätzlich ein
    3-px-`box-shadow` in `--brand-tint` (der einzige toleriert­e box-shadow, als
    Fokusring, nicht als Elevation).
+4. **Atmosphärische Textur** — das viewport-fixierte Punkt-Raster hinter dem
+   Inhalt (siehe Layout) gibt dem Kopfbereich Tiefe, ohne dass ein Element
+   dafür einen Schatten oder eine Kante bekommt. Es liegt auf `z-index: -1`
+   und wird nie zum Träger von Information.
 
 Die einzigen Ausnahmen von „kein Blur": `backdrop-filter: blur(4px)` auf den
 Vollbild-Overlays (Changelog, Konto, Suche), um den Seiteninhalt dahinter
@@ -368,6 +405,22 @@ durchgezogenen — die einzige Stelle, an der die Linienart wechselt.
 - **Panel-Label:** 11-px-Uppercase-Eyebrow in `--text-muted`, 16 px Abstand
   nach unten.
 
+### „Diese Woche"-Karten (`.tw-card`, Hub) — Signature
+Der führende Abschnitt des Hubs. Er verzichtet auf das gleichförmige 3-Kachel-
+Raster und setzt stattdessen einen eigenen Rhythmus:
+- **Lead-Karte** (`.tw-card.lead`): der Bereich, bei dem heute anzusetzen ist
+  (heute laut Wochenrhythmus dran, sonst der mit dem geringsten Fortschritt).
+  Padding `22px 22px 20px`, Titel 17 px, 6-px-Track, `is-today` färbt die
+  Fläche `--brand-tint`. Die „weitermachen"-Aktion ist hier als gefüllter
+  `--brand-fill`-Button ausgeführt — die **einzige** Primär-Aktion des Hubs
+  (der Hub hatte vorher keine).
+- **Ruhiges Paar** (`.tw-rest`, 2-Spalten ≥620 px): die beiden übrigen
+  Bereiche, kompakter — Padding `14px 15px`, Titel 13.5 px, 4-px-Track,
+  „weitermachen" als schlichter Textlink.
+- Überschrift „Diese Woche" auf **Subhead**, daneben die Plan-Woche des
+  Lead-Bereichs in Mono (`Woche 2 · KW 36`). Die Sektion trägt 26 px Vorlauf /
+  30 px Nachlauf, damit der Scroll hier sichtbar langsamer wird.
+
 ### Themen-Karte (`details.card`) — Signature
 Aufklappbarer Lernblock (Themengruppe). Grund `--surface-1`, Rahmen
 `--border`, Radius 7 px, `overflow: hidden`. `summary` ohne Default-Marker.
@@ -434,6 +487,12 @@ Legende rechtsbündig, 10.5 px.
   nur für taktiles Mikro-Feedback (Häkchen-Pop, Pfeil-Nudge um 3 px).
 - **Do** Bewegung an die bestehenden `@media (prefers-reduced-motion)`-Blöcke
   hängen und zu einem statischen Endzustand degradieren.
+- **Do** pro Seite höchstens einen Abschnitt auf Subhead heben und dort die
+  eine Primär-Aktion als gefüllten `--brand-fill`-Button zeigen; alle anderen
+  „weiter"-Aktionen bleiben Textlinks in `--brand`.
+- **Do** die Hintergrund-Textur aus `--border-strong` ableiten und auf
+  `z-index: -1` / `pointer-events: none` halten — sie ist Atmosphäre, nie
+  Information.
 
 ### Don't:
 - **Don't** `box-shadow` für Elevation verwenden. Erlaubt sind nur der
@@ -441,6 +500,9 @@ Legende rechtsbündig, 10.5 px.
 - **Don't** einen Gamification-Look bauen: keine bunten XP-Badges, kein
   Konfetti, keine Maskottchen, keine Pokal-Ikonografie. Die 100-%-Feier ist
   ein einmaliger Balken-Lauf, mehr nicht.
+- **Don't** die Hintergrund-Textur verstärken, einfärben, unmaskiert
+  ganzflächig legen oder in den Vordergrund ziehen — sie bleibt eine kaum
+  sichtbare Papierstruktur im Kopfbereich.
 - **Don't** die Bereichsakzente aufsättigen, in der Helligkeit spreizen oder
   als Vollfläche einsetzen — kein Regenbogen.
 - **Don't** Signal-Grün als Textfarbe auf hellem Grund verwenden (Kontrast).
