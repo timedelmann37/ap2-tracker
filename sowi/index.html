@@ -785,6 +785,14 @@
     .bottomnav-link:active{ background: var(--surface-2); }
     .page{ padding-bottom: 92px; }
   }
+
+  /* ---------- T5: entschlackter Seitenkopf ---------- */
+  .overview-line{ margin: 16px 0 0; font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; }
+  .week-hint{
+    font-size: 12.5px; color: var(--text-secondary); line-height: 1.55;
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--r-lg);
+    padding: 12px 16px; margin: 0 0 22px;
+  }
 </style>
 </head>
 <body>
@@ -835,33 +843,10 @@
       <span class="pct" id="overallPct">0%</span>
     </div>
     <div class="track"><div class="fill" id="overallFill"></div></div>
-    <div class="stat-grid">
-      <div class="stat-tile"><div class="v" id="statChecked">0 / 0</div><div class="k">Punkte abgehakt</div></div>
-      <div class="stat-tile"><div class="v" id="statTopics">0 / 0</div><div class="k">Themenblöcke abgeschlossen</div></div>
-      <div class="stat-tile"><div class="v" id="statCurrent">–</div><div class="k">Aktuell dran</div></div>
-      <div class="stat-tile"><div class="v" id="statDays">–</div><div class="k">Tage bis zur Prüfung (24.11.2026)</div></div>
-    </div>
+    <p class="overview-line" id="overviewLine">–</p>
   </div>
 
-  <div class="focus">
-      <div class="focus-head">
-        <h2>Was ist dran?</h2>
-        <span id="focusDate"></span>
-      </div>
-      <div class="focus-hero" id="focusHero"></div>
-      <div class="focus-alert" id="focusAlert"></div>
-      <div class="focus-table-wrap" id="focusTableWrap">
-        <table class="ftable">
-          <thead>
-            <tr><th>Status</th><th></th><th>Thema</th><th>Zeitraum</th><th>Fortschritt</th><th></th></tr>
-          </thead>
-          <tbody id="focusTableBody"></tbody>
-        </table>
-      </div>
-      <div class="focus-foot">
-        <button class="btn-ghost" id="toggleDone" type="button">Erledigte einblenden</button>
-      </div>
-    </div>
+  <p class="week-hint">Was diese Woche laut Plan dran ist, zeigt der <a href="/">Startbildschirm</a>. Die aktuell geplante Themengruppe ist hier unten automatisch aufgeklappt.</p>
 
   <div class="search-row">
     <div class="search-box">
@@ -1390,6 +1375,21 @@ function statusOf(topic){
   return 'upcoming';
 }
 
+// T5: „Rückstand" = KW vorbei, nicht bei 100 %.
+function isBacklog(topic){
+  const { total, done } = countTopic(topic);
+  return isPast(topic.end) && !(total > 0 && done === total);
+}
+// T5: „aktuell geplant" = KW läuft jetzt, sonst die nächste anstehende Themengruppe.
+function plannedTopic(){
+  const cat = DATA[0];
+  if (!cat) return null;
+  const now = new Date(); now.setHours(0, 0, 0, 0);
+  return cat.topics.find(t => todayInRange(t.start, t.end))
+      || cat.topics.find(t => t.start && new Date(t.start + 'T00:00:00') > now)
+      || null;
+}
+
 function buildFocusGroups(){
   const groups = { overdue:[], today:[], upcoming:[], done:[] };
   DATA.forEach(cat => {
@@ -1496,6 +1496,7 @@ function jumpToTopic(id){
 function render(){
   const root = document.getElementById('categories');
   root.innerHTML = '';
+  const plannedCard = plannedTopic();
 
   DATA.forEach(cat => {
     const section = document.createElement('div');
@@ -1520,6 +1521,7 @@ function render(){
       det.className = 'card';
       det.id = topic.id;
       det.dataset.topic = topic.id;
+      det.open = !!(plannedCard && plannedCard.id === topic.id);
       det.style.setProperty('--cat-color', cat.color);
 
       const summary = document.createElement('summary');
@@ -1675,17 +1677,12 @@ function updateAll(){
   const overallPct = grandTotal ? Math.round(grandDone/grandTotal*100) : 0;
   document.getElementById('overallPct').textContent = overallPct + '%';
   document.getElementById('overallFill').style.width = overallPct + '%';
-  document.getElementById('statChecked').textContent = grandDone + ' / ' + grandTotal;
-  document.getElementById('statTopics').textContent = topicsDone + ' / ' + topicsCount;
-  document.getElementById('statCurrent').textContent = current || '—';
-
-  const examDate = new Date('2026-11-24T08:00:00');
-  const now = new Date();
-  const days = Math.ceil((examDate - now) / 86400000);
-  document.getElementById('statDays').textContent = days > 0 ? days : 'läuft';
-
-  renderFocusTable();
-  renderFocusHero();
+  let backlogCount = 0;
+  DATA.forEach(cat => cat.topics.forEach(topic => { if (isBacklog(topic)) backlogCount++; }));
+  const lineEl = document.getElementById('overviewLine');
+  if (lineEl) lineEl.textContent = grandDone + ' / ' + grandTotal + ' Kernthemen abgehakt · '
+    + markedCount() + ' zur Wiederholung markiert · '
+    + backlogCount + ' Themengruppe' + (backlogCount === 1 ? '' : 'n') + ' in Rückstand';
 
   document.querySelectorAll('details.card').forEach(det => {
     const topic = findTopic(det.dataset.topic);
@@ -1730,28 +1727,6 @@ if (!storageAvailable) {
 // ---------------------------------------------------------------
 // Controls
 // ---------------------------------------------------------------
-document.getElementById('focusTableBody').addEventListener('click', (e) => {
-  const row = e.target.closest('tr.frow');
-  if (!row) return;
-  jumpToTopic(row.dataset.jump);
-});
-document.getElementById('focusTableBody').addEventListener('keydown', (e) => {
-  if (e.key !== 'Enter' && e.key !== ' ') return;
-  const row = e.target.closest('tr.frow');
-  if (!row) return;
-  e.preventDefault();
-  jumpToTopic(row.dataset.jump);
-});
-document.getElementById('focusHero').addEventListener('click', (e) => {
-  const btn = e.target.closest('.fj');
-  if (!btn) return;
-  jumpToTopic(btn.dataset.jump);
-});
-document.getElementById('toggleDone').addEventListener('click', () => {
-  const wrap = document.getElementById('focusTableWrap');
-  const showing = wrap.classList.toggle('show-done');
-  document.getElementById('toggleDone').textContent = showing ? 'Erledigte ausblenden' : 'Erledigte einblenden';
-});
 
 document.getElementById('tabs').addEventListener('click', (e) => {
   const btn = e.target.closest('.tab');
