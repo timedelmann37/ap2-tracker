@@ -7,6 +7,20 @@ direkt auf der Seite sichtbar — ein Klick auf die Versionsnummer im Hub (in
 der Fußzeile) zeigt dieselbe Liste als Änderungsprotokoll. Gepflegt wird das
 Changelog ausschließlich im Hub, nicht mehr in den einzelnen Bereichen.
 
+## [3.3.0] – 2026-09-03
+
+### Hinzugefügt
+- Cloud-Sync (optional): Fortschritt kann jetzt zusätzlich zur lokalen
+  Speicherung mit einem Konto verknüpft und geräteübergreifend
+  synchronisiert werden. Anmeldung passwortlos per Magic Link (E-Mail).
+  „Anmelden"-Button in der Navigationsleiste auf allen Bereichsseiten. Beim
+  ersten Login mit vorhandenem Fortschritt auf mehreren Geräten fragt ein
+  Dialog, ob der Cloud-Stand übernommen oder mit dem lokalen Stand
+  zusammengeführt werden soll. Läuft technisch über
+  [Supabase](https://supabase.com); ohne eingerichtetes Projekt bleibt die
+  Seite unverändert nutzbar (lokale Speicherung wie bisher). Einrichtung
+  siehe `CLOUD_SYNC.md`.
+
 ## [3.2.0] – 2026-09-03
 
 ### Geändert

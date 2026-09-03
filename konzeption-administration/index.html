@@ -189,6 +189,53 @@
   }
   .theme-toggle:hover{ color: var(--text-primary); border-color: var(--border-strong); background: color-mix(in srgb, var(--panel-glass) 100%, var(--text-primary) 4%); }
 
+  /* ---------- Konto / Cloud-Sync ---------- */
+  .account-overlay{
+    position:fixed; inset:0; z-index:70; background: rgba(0,0,0,.5);
+    display:flex; align-items:center; justify-content:center; padding:20px;
+    backdrop-filter: blur(8px) saturate(1.2); -webkit-backdrop-filter: blur(8px) saturate(1.2);
+  }
+  .account-overlay[hidden]{ display:none; }
+  .account-modal{
+    background: var(--panel-glass); border:1px solid var(--border-strong); border-radius:var(--r-lg);
+    padding:22px; width:100%; max-width:360px;
+    box-shadow:0 24px 64px rgba(0,0,0,.5), inset 0 1px 0 var(--glass-edge);
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  }
+  .account-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  .account-head h3{ margin:0; font-size:15.5px; font-weight:600; }
+  .account-close{
+    border:none; background:transparent; color: var(--text-muted); font-size:14px;
+    cursor:pointer; padding:5px 8px; border-radius:var(--r-xs);
+  }
+  .account-close:hover{ color: var(--text-primary); background: var(--surface-2); }
+  .account-body p{ font-size:12.5px; color:var(--text-secondary); line-height:1.55; margin:0 0 12px; }
+  .account-input{
+    width:100%; box-sizing:border-box; background: var(--surface-1); color: var(--text-primary);
+    border:1px solid var(--border-strong); border-radius:var(--r-sm); padding:9px 11px;
+    font-family:inherit; font-size:13px; margin-bottom:10px;
+  }
+  .account-input:focus{ border-color: var(--accent); outline:none; }
+  .account-actions{ display:flex; gap:8px; }
+  .account-btn{
+    border:1px solid var(--border); background:transparent; color: var(--text-secondary);
+    padding: 9px 11px; border-radius: var(--r-sm); font-size: 12.5px; cursor:pointer; font-family: inherit; font-weight:500;
+    flex:1;
+  }
+  .account-btn:hover{ color: var(--text-primary); border-color: var(--border-strong); background: var(--surface-2); }
+  .account-btn.primary{ background: var(--accent); color:#fff; border-color: var(--accent); }
+  .account-btn.primary:hover{ background: color-mix(in srgb, var(--accent) 82%, black); }
+  .account-btn:disabled{ opacity:.55; cursor:default; }
+  .account-status{ font-size:11.5px; color:var(--text-muted); margin-top:10px; min-height:1.4em; line-height:1.5; }
+  .account-status.error{ color: var(--status-critical); }
+  .account-status.ok{ color: var(--status-good); }
+  .account-user-row{
+    padding:9px 11px; background:var(--surface-2);
+    border:1px solid var(--border); border-radius:var(--r-sm); font-size:12.5px; margin-bottom:12px;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+
   /* ---------- Panels (Tool-Window-Optik) ---------- */
   .overview, .focus, .rhythm, .footer-note{
     background: var(--panel-glass);
@@ -727,6 +774,7 @@
     <span class="topnav-disabled" title="Geplant: einzelne Themen gezielt nachschlagen, unabhängig vom Wochenplan">Nachschlagewerk <span class="soon">bald</span></span>
   </div>
   <div class="topnav-right">
+    <button class="theme-toggle" id="accountBtn" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2.4px;margin-right:6px" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c1.4-3.6 4.4-5.5 7.5-5.5s6.1 1.9 7.5 5.5"/></svg><span id="accountBtnLabel">Anmelden</span></button>
     <button class="theme-toggle" id="themeToggle" type="button"><svg id="themeIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2.4px;margin-right:6px" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
   </div>
 </nav>
@@ -898,6 +946,33 @@
   </div>
 </div>
 
+<div class="account-overlay" id="accountOverlay" hidden>
+  <div class="account-modal" role="dialog" aria-modal="true" aria-label="Konto">
+    <div class="account-head">
+      <h3 id="accountTitle">Anmelden</h3>
+      <button type="button" id="accountClose" class="account-close" aria-label="Schließen">✕</button>
+    </div>
+    <div class="account-body">
+      <div id="accountLoggedOut">
+        <p>Mit E-Mail-Adresse anmelden, um deinen Fortschritt geräteübergreifend zu speichern. Kein Passwort nötig — du bekommst einen Anmelde-Link per Mail.</p>
+        <input type="email" id="accountEmail" class="account-input" placeholder="deine@email.de" autocomplete="email">
+        <div class="account-actions">
+          <button type="button" id="accountSendLink" class="account-btn primary">Link senden</button>
+        </div>
+      </div>
+      <div id="accountLoggedIn" hidden>
+        <div class="account-user-row" id="accountUserRow"></div>
+        <p>Dein Fortschritt wird automatisch mit deinem Konto synchronisiert.</p>
+        <div class="account-actions">
+          <button type="button" id="accountSignOut" class="account-btn">Abmelden</button>
+        </div>
+      </div>
+      <div class="account-status" id="accountStatus"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
 <script>
 // ---------------------------------------------------------------
 // Datenbasis: EIN Themenbereich (ga1), identisch zu den Notion-Einträgen.
@@ -2374,6 +2449,183 @@ if (location.hash) {
   document.addEventListener('click', (e) => { if (!wrap.contains(e.target)) closeMenu(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
 })();
+
+
+// ---------------------------------------------------------------
+// Cloud-Sync (Supabase): Konto + Fortschritt geräteübergreifend
+// Setup: siehe CLOUD_SYNC.md im Repo-Root. Ohne echte URL/Key bleibt
+// die Seite unverändert nutzbar, nur der Konto-Button macht nichts.
+// ---------------------------------------------------------------
+const SUPABASE_URL = 'https://snwkmwevqmqulmexgxxr.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable__EFtmQSsRJMyiWVYVNTGQA_rKx39rML';
+const CLOUD_CONFIGURED = SUPABASE_URL.indexOf('https://') === 0 && SUPABASE_ANON_KEY.length > 20;
+const sb = (CLOUD_CONFIGURED && window.supabase) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+let cloudUser = null;
+let cloudSyncTimer = null;
+let cloudSyncing = false;
+
+function accountEls(){
+  return {
+    overlay: document.getElementById('accountOverlay'),
+    btn: document.getElementById('accountBtn'),
+    btnLabel: document.getElementById('accountBtnLabel'),
+    close: document.getElementById('accountClose'),
+    loggedOut: document.getElementById('accountLoggedOut'),
+    loggedIn: document.getElementById('accountLoggedIn'),
+    userRow: document.getElementById('accountUserRow'),
+    email: document.getElementById('accountEmail'),
+    sendLink: document.getElementById('accountSendLink'),
+    signOut: document.getElementById('accountSignOut'),
+    status: document.getElementById('accountStatus'),
+    title: document.getElementById('accountTitle'),
+  };
+}
+
+function setAccountStatus(msg, kind){
+  const els = accountEls();
+  if (!els.status) return;
+  els.status.textContent = msg || '';
+  els.status.className = 'account-status' + (kind ? ' ' + kind : '');
+}
+
+function openAccountModal(){
+  const els = accountEls();
+  if (!els.overlay) return;
+  els.overlay.hidden = false;
+  setAccountStatus('');
+  if (!CLOUD_CONFIGURED) setAccountStatus('Cloud-Sync ist auf dieser Seite noch nicht eingerichtet.', 'error');
+}
+function closeAccountModal(){
+  const els = accountEls();
+  if (els.overlay) els.overlay.hidden = true;
+}
+
+function refreshAccountUI(){
+  const els = accountEls();
+  if (!els.btn) return;
+  if (cloudUser) {
+    if (els.btnLabel) els.btnLabel.textContent = 'Konto';
+    if (els.title) els.title.textContent = 'Konto';
+    if (els.loggedOut) els.loggedOut.hidden = true;
+    if (els.loggedIn) els.loggedIn.hidden = false;
+    if (els.userRow) els.userRow.textContent = cloudUser.email || 'Angemeldet';
+  } else {
+    if (els.btnLabel) els.btnLabel.textContent = 'Anmelden';
+    if (els.title) els.title.textContent = 'Anmelden';
+    if (els.loggedOut) els.loggedOut.hidden = false;
+    if (els.loggedIn) els.loggedIn.hidden = true;
+  }
+}
+
+function refreshUIAfterCloudSync(){
+  if (typeof updateAll === 'function') updateAll();
+  else if (typeof renderDashboard === 'function') renderDashboard();
+  else if (typeof render === 'function') render();
+}
+
+function scheduleCloudPush(){
+  if (!sb || !cloudUser) return;
+  clearTimeout(cloudSyncTimer);
+  cloudSyncTimer = setTimeout(pushStateToCloud, 900);
+}
+
+async function pushStateToCloud(){
+  if (!sb || !cloudUser || cloudSyncing) return;
+  cloudSyncing = true;
+  const { error } = await sb.from('progress').upsert(
+    { user_id: cloudUser.id, state: state, updated_at: new Date().toISOString() },
+    { onConflict: 'user_id' }
+  );
+  cloudSyncing = false;
+  if (error) console.error('Cloud-Sync fehlgeschlagen:', error.message);
+}
+
+async function pullStateFromCloud(){
+  if (!sb || !cloudUser) return;
+  const { data, error } = await sb.from('progress').select('state').eq('user_id', cloudUser.id).maybeSingle();
+  if (error) { console.error('Cloud-Fortschritt konnte nicht geladen werden:', error.message); return; }
+  const localKeys = Object.keys(state).length;
+  const cloudState = (data && data.state) || {};
+  const cloudKeys = Object.keys(cloudState).length;
+  if (cloudKeys > 0 && localKeys > 0) {
+    const replace = confirm(
+      'Cloud-Fortschritt gefunden.\n\n' +
+      'OK = Cloud-Stand übernimmt (aktueller lokaler Stand auf diesem Gerät wird ersetzt)\n' +
+      'Abbrechen = lokaler und Cloud-Stand werden zusammengeführt'
+    );
+    if (replace) Object.keys(state).forEach(k => delete state[k]);
+    Object.assign(state, cloudState);
+  } else if (cloudKeys > 0) {
+    Object.assign(state, cloudState);
+  }
+  if (typeof saveState === 'function') saveState();
+  else { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){} }
+  refreshUIAfterCloudSync();
+  pushStateToCloud();
+}
+
+async function sendMagicLink(){
+  const els = accountEls();
+  const email = els.email ? els.email.value.trim() : '';
+  if (!sb) { setAccountStatus('Cloud-Sync ist auf dieser Seite noch nicht eingerichtet.', 'error'); return; }
+  if (!email || email.indexOf('@') === -1) { setAccountStatus('Bitte eine gültige E-Mail-Adresse eingeben.', 'error'); return; }
+  if (els.sendLink) els.sendLink.disabled = true;
+  setAccountStatus('Link wird gesendet …');
+  const { error } = await sb.auth.signInWithOtp({ email: email, options: { emailRedirectTo: window.location.href } });
+  if (els.sendLink) els.sendLink.disabled = false;
+  if (error) setAccountStatus('Fehler: ' + error.message, 'error');
+  else setAccountStatus('Link verschickt — bitte E-Mail-Postfach prüfen (auch Spam-Ordner).', 'ok');
+}
+
+async function signOutCloud(){
+  if (!sb) return;
+  await sb.auth.signOut();
+  closeAccountModal();
+}
+
+function wireAccountUI(){
+  const els = accountEls();
+  if (!els.btn) return;
+  els.btn.addEventListener('click', openAccountModal);
+  if (els.close) els.close.addEventListener('click', closeAccountModal);
+  if (els.overlay) els.overlay.addEventListener('click', (e) => { if (e.target === els.overlay) closeAccountModal(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && els.overlay && !els.overlay.hidden) closeAccountModal(); });
+  if (els.sendLink) els.sendLink.addEventListener('click', sendMagicLink);
+  if (els.email) els.email.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMagicLink(); });
+  if (els.signOut) els.signOut.addEventListener('click', signOutCloud);
+}
+
+async function initCloudSync(){
+  wireAccountUI();
+  refreshAccountUI();
+  if (!sb) return;
+
+  if (typeof saveState === 'function') {
+    const _origSaveState = saveState;
+    saveState = function(){ _origSaveState(); scheduleCloudPush(); };
+  }
+
+  const { data: sessionData } = await sb.auth.getSession();
+  if (sessionData && sessionData.session) {
+    cloudUser = sessionData.session.user;
+    refreshAccountUI();
+    await pullStateFromCloud();
+  }
+
+  sb.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      cloudUser = session.user;
+      refreshAccountUI();
+      pullStateFromCloud();
+    } else if (event === 'SIGNED_OUT') {
+      cloudUser = null;
+      refreshAccountUI();
+    }
+  });
+}
+
+initCloudSync();
 
 </script>
 </body>
