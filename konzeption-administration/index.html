@@ -640,19 +640,81 @@
   .changelog-items{ margin:0; padding-left:18px; font-size:12.5px; color: var(--text-secondary); line-height:1.55; }
   .changelog-items li{ margin-bottom:3px; }
   .changelog-items li:last-child{ margin-bottom:0; }
+
+  /* ---------- Top-Navigation ---------- */
+  .topnav{
+    position: sticky; top: 12px; z-index: 40;
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+    padding: 9px 14px; margin-bottom: 22px;
+    background: var(--panel-glass); backdrop-filter: blur(16px) saturate(1.1);
+    border:1px solid var(--border); border-radius: var(--r-lg); box-shadow: var(--shadow-sm);
+  }
+  .topnav-brand{
+    font-size:13px; font-weight:650; color:var(--text-primary); text-decoration:none;
+    white-space:nowrap; padding:7px 4px 7px 6px;
+  }
+  .topnav-brand.active{ color: var(--accent); }
+  .topnav-links{ display:flex; align-items:center; gap:2px; flex-wrap:wrap; flex:1; }
+  .topnav-link{
+    font-size:13px; font-weight:500; color:var(--text-secondary); text-decoration:none;
+    padding:7px 10px; border-radius:var(--r-sm); border:none; background:transparent;
+    font-family:inherit; cursor:pointer; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;
+  }
+  .topnav-link:hover{ color:var(--text-primary); background:var(--surface-2); }
+  .topnav-link.active{ color:var(--text-primary); background: color-mix(in srgb, var(--accent) 16%, transparent); }
+  .topnav-disabled{
+    font-size:12.5px; color:var(--text-muted); padding:7px 10px; display:inline-flex; align-items:center; gap:6px;
+    cursor:default; white-space:nowrap;
+  }
+  .topnav-disabled .soon{
+    font-size:9.5px; font-weight:600; padding:1px 6px; border-radius:999px;
+    background: var(--surface-2); border:1px solid var(--border); color: var(--text-muted);
+  }
+  .topnav-dropdown{ position:relative; }
+  .topnav-dropbtn .care{ font-size:10px; opacity:.7; transition:transform .15s ease; }
+  .topnav-dropdown.open .topnav-dropbtn .care{ transform:rotate(180deg); }
+  .topnav-dropmenu{
+    position:absolute; top:calc(100% + 6px); left:0; min-width:230px;
+    background:var(--surface-1); border:1px solid var(--border-strong); border-radius:var(--r-md);
+    box-shadow: var(--shadow); padding:6px; display:flex; flex-direction:column; gap:2px; z-index:41;
+  }
+  .topnav-dropmenu[hidden]{ display:none; }
+  .topnav-dropmenu a{
+    font-size:13px; color:var(--text-secondary); text-decoration:none; padding:8px 10px; border-radius:var(--r-xs);
+  }
+  .topnav-dropmenu a:hover{ color:var(--text-primary); background:var(--surface-2); }
+  .topnav-dropmenu a.active{ color:var(--text-primary); background: color-mix(in srgb, var(--accent) 16%, transparent); }
+  .topnav-right{ margin-left:auto; display:flex; align-items:center; gap:8px; }
 </style>
 </head>
 <body>
 <div class="page">
+
+<nav class="topnav">
+  <a class="topnav-brand" href="/">AP2 Vorbereitung</a>
+  <div class="topnav-links">
+    <a class="topnav-link" href="/uebersicht/">Übersicht</a>
+    <div class="topnav-dropdown" id="navThemenWrap">
+      <button type="button" class="topnav-link topnav-dropbtn active" id="navThemenBtn" aria-haspopup="true" aria-expanded="false">Themenblöcke <span class="care">▾</span></button>
+      <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+        <a class="active" href="/konzeption-administration/">Konzeption &amp; Administration</a>
+        <a class="" href="/netzwerke/">Netzwerke</a>
+        <a class="" href="/sowi/">SoWi</a>
+      </div>
+    </div>
+    <a class="topnav-link" href="/simulation/">Simulation</a>
+    <span class="topnav-disabled" title="Geplant: einzelne Themen gezielt nachschlagen, unabhängig vom Wochenplan">Nachschlagewerk <span class="soon">bald</span></span>
+  </div>
+  <div class="topnav-right">
+    <button class="theme-toggle" id="themeToggle" type="button">🌓 Darstellung</button>
+  </div>
+</nav>
 
   <div class="header">
     <div>
       <div class="crumb">~/abschlusspruefung<span class="sep">/</span><b>winter-2026-27</b><span class="sep">/</span>konzeption-administration</div>
       <h1>Konzeption &amp; Administration · Winterprüfung 2026/27</h1>
       <p>Konzeption und Administration von IT-Systemen — Start Mo 24.08.2026 · KW 35–44 · max. 1–2 Std./Tag</p>
-    </div>
-    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:7px;">
-      <button class="theme-toggle" id="themeToggle" type="button">🌓 Darstellung</button>
     </div>
   </div>
 
@@ -2273,6 +2335,22 @@ if (location.hash) {
   const hid = decodeURIComponent(location.hash.slice(1));
   if (findTopic(hid)) setTimeout(() => jumpToTopic(hid), 60);
 }
+
+// ---------------------------------------------------------------
+// Top-Navigation: Themenblöcke-Dropdown
+// ---------------------------------------------------------------
+(function(){
+  const wrap = document.getElementById('navThemenWrap');
+  const btn = document.getElementById('navThemenBtn');
+  const menu = document.getElementById('navThemenMenu');
+  if (!wrap || !btn || !menu) return;
+  function openMenu(){ menu.hidden = false; wrap.classList.add('open'); btn.setAttribute('aria-expanded', 'true'); }
+  function closeMenu(){ menu.hidden = true; wrap.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); }
+  btn.addEventListener('click', (e) => { e.stopPropagation(); menu.hidden ? openMenu() : closeMenu(); });
+  document.addEventListener('click', (e) => { if (!wrap.contains(e.target)) closeMenu(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
+})();
+
 </script>
 </body>
 </html>

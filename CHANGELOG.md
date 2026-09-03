@@ -7,6 +7,23 @@ direkt auf der Seite sichtbar — ein Klick auf die Versionsnummer im Hub (in
 der Fußzeile) zeigt dieselbe Liste als Änderungsprotokoll. Gepflegt wird das
 Changelog ausschließlich im Hub, nicht mehr in den einzelnen Bereichen.
 
+## [3.1.0] – 2026-09-03
+
+### Hinzugefügt
+- Persistente Navigationsleiste oben auf allen Seiten (Hub, Übersicht, den
+  drei Themenblöcken und der Prüfungssimulation): Übersicht, ein
+  „Themenblöcke"-Dropdown mit den drei Bereichen, Simulation, sowie ein
+  deaktivierter Platzhalter „Nachschlagewerk" für ein geplantes
+  Nachschlagewerk zu einzelnen Themen. Der aktuelle Bereich ist markiert.
+- Darstellung umschalten (🌓) sitzt jetzt in der Navigationsleiste statt als
+  schwebender Button.
+
+### Geändert
+- Hauptmenü im Hub neu nach vier didaktischen Kategorien geordnet: Planung
+  (Übersicht), Themenblöcke (die drei Bereiche), Prüfung (Simulation),
+  Nachschlagewerk (geplant) — statt einer flachen Liste gleichrangiger
+  Kacheln.
+
 ## [3.0.0] – 2026-09-03
 
 ### Geändert
