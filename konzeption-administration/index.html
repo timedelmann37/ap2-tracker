@@ -142,6 +142,8 @@
   /* [data-theme="light"] = Standard-:root-Tokens, nur erzwungen */
   :root[data-theme="light"]{ color-scheme: light; }
 
+  /* T6: weiche Seitenübergänge (nur wo unterstützt; von prefers-reduced-motion abgeschaltet) */
+  @view-transition { navigation: auto; }
   * { box-sizing: border-box; }
   [hidden]{ display: none !important; }
   html, body{ margin:0; padding:0; }
@@ -638,6 +640,27 @@
   input:focus-visible, tr.frow:focus-visible{
     outline: 2px solid var(--accent); outline-offset: 2px; border-radius: var(--r-xs);
   }
+  /* ---------- T6: Interaktions-Feedback ---------- */
+  ul.items input[type=checkbox].just-checked:checked{ animation: cbPop .3s cubic-bezier(.34,1.56,.64,1); }
+  ul.items input[type=checkbox].just-checked:checked::after{ animation: cbDraw .2s ease .05s both; }
+  @keyframes cbPop{ 0%{ transform: scale(.72); } 55%{ transform: scale(1.16); } 100%{ transform: scale(1); } }
+  @keyframes cbDraw{ from{ height: 0; opacity: .2; } to{ height: 8px; opacity: 1; } }
+  .card-progress .track > .fill{ transition: width .55s cubic-bezier(.4,0,.2,1); }
+  .card-progress .track.celebrate{ animation: barCelebrate 1.1s ease; }
+  @keyframes barCelebrate{
+    0%, 100%{ box-shadow: 0 0 0 0 transparent; }
+    35%{ box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-bright) 40%, transparent); }
+  }
+  .done-check{
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 13px; height: 13px; margin-left: 6px; border-radius: 999px;
+    background: var(--brand-bright); color: var(--page); font-size: 9px; line-height: 1;
+    vertical-align: middle; opacity: 0; transform: scale(.4);
+  }
+  .card-progress.is-done .done-check{ opacity: 1; transform: scale(1); transition: opacity .28s ease, transform .28s cubic-bezier(.34,1.56,.64,1); }
+  details.card[open] > .card-body{ animation: cardOpen .2s ease; }
+  @keyframes cardOpen{ from{ opacity: 0; transform: translateY(-4px); } to{ opacity: 1; transform: none; } }
+
   @media (prefers-reduced-motion: reduce){
     *{ animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
     details.card.flash{ animation: none; box-shadow: 0 0 0 2px var(--cat-color, var(--accent)), var(--shadow); }
@@ -1639,9 +1662,9 @@ function render(){
           <span class="badge status-badge" data-status="${topic.id}"></span>
           <span class="badge mark-count-badge" data-markcount="${topic.id}" style="display:none"></span>
         </div>
-        <div class="card-progress">
+        <div class="card-progress" data-cardprogress="${topic.id}">
           <div class="track"><div class="fill" style="background:${cat.color}" data-bar="${topic.id}"></div></div>
-          <div class="foot"><span data-count="${topic.id}">0 / 0</span><span data-pct="${topic.id}">0%</span></div>
+          <div class="foot"><span data-count="${topic.id}">0 / 0</span><span><span data-pct="${topic.id}">0%</span><span class="done-check" aria-hidden="true">✓</span></span></div>
         </div>
       `;
       const titleEl = summary.querySelector('.card-title');
@@ -1682,7 +1705,11 @@ function render(){
           const wasChecked = !!state[id];
           state[id] = cb.checked;
           state['ts__' + id] = Date.now();
-          if (cb.checked && !wasChecked) logActivity();
+          if (cb.checked && !wasChecked) {
+            logActivity();
+            cb.classList.add('just-checked');
+            setTimeout(() => cb.classList.remove('just-checked'), 450);
+          }
           li.classList.toggle('checked', cb.checked);
           saveState();
           updateAll();
@@ -1731,6 +1758,10 @@ function render(){
   updateAll();
 }
 
+// T6: welche Themengruppen bei der letzten Aktualisierung bei 100 % standen
+const t6DoneTopics = new Set();
+let t6FirstUpdate = true;
+
 function updateAll(){
   let grandTotal = 0, grandDone = 0, topicsDone = 0, topicsCount = 0;
   let current = null;
@@ -1751,6 +1782,17 @@ function updateAll(){
       if (countEl) countEl.textContent = done + ' / ' + total;
       const pctEl = document.querySelector(`[data-pct="${topic.id}"]`);
       if (pctEl) pctEl.textContent = pct + '%';
+
+      const cp = document.querySelector(`[data-cardprogress="${topic.id}"]`);
+      const t6Done = total > 0 && done === total;
+      if (cp) {
+        cp.classList.toggle('is-done', t6Done);
+        if (t6Done && !t6DoneTopics.has(topic.id) && !t6FirstUpdate) {
+          const trk = cp.querySelector('.track');
+          if (trk) { trk.classList.remove('celebrate'); void trk.offsetWidth; trk.classList.add('celebrate'); }
+        }
+      }
+      if (t6Done) t6DoneTopics.add(topic.id); else t6DoneTopics.delete(topic.id);
 
       const statusEl = document.querySelector(`[data-status="${topic.id}"]`);
       if (statusEl) {
@@ -1813,6 +1855,8 @@ function updateAll(){
   const tabCountEl = document.getElementById('markedTabCount');
   if (tabCountEl) tabCountEl.textContent = '(' + markedCount() + ')';
   applyFilter(activeFilter);
+
+  t6FirstUpdate = false;
 }
 
 render();

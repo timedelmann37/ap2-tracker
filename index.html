@@ -142,6 +142,8 @@
   /* [data-theme="light"] = Standard-:root-Tokens, nur erzwungen */
   :root[data-theme="light"]{ color-scheme: light; }
 
+  /* T6: weiche Seitenübergänge (nur wo unterstützt; von prefers-reduced-motion abgeschaltet) */
+  @view-transition { navigation: auto; }
   * { box-sizing: border-box; }
   html, body{ margin:0; padding:0; }
   body{
@@ -1577,7 +1579,7 @@ function renderThisWeek(){
     html += `<div class="tw-card${isToday ? ' is-today' : ''}" style="--tw-c:${cat.color}">
       <div class="tw-card-area"><span class="dot"></span>${catId.toUpperCase()}${isToday ? '<span class="today-tag">heute dran</span>' : ''}</div>
       <div class="tw-card-title">${topic.title}</div>
-      <div class="track"><div class="fill" style="background:${cat.color};width:${pct}%"></div></div>
+      <div class="track"><div class="fill" style="background:${cat.color};width:0%" data-fill="${pct}"></div></div>
       <div class="tw-card-foot">
         <span class="tw-count">${done} / ${total}</span>
         <a class="tw-continue" href="${PAGE_FOR[catId]}#${encodeURIComponent(topic.id)}&first">weitermachen ›</a>
@@ -1585,6 +1587,9 @@ function renderThisWeek(){
     </div>`;
   });
   grid.innerHTML = html || '<p class="tw-empty">Diese Woche ist laut Plan nichts terminiert.</p>';
+  requestAnimationFrame(function(){
+    grid.querySelectorAll('.fill[data-fill]').forEach(function(f){ f.style.width = f.dataset.fill + '%'; });
+  });
 }
 
 function renderBacklog(){
