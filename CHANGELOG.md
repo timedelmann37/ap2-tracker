@@ -7,6 +7,21 @@ direkt auf der Seite sichtbar — ein Klick auf die Versionsnummer im Hub (in
 der Fußzeile) zeigt dieselbe Liste als Änderungsprotokoll. Gepflegt wird das
 Changelog ausschließlich im Hub, nicht mehr in den einzelnen Bereichen.
 
+## [3.4.0] – 2026-09-03
+
+### Hinzugefügt
+- Animierter Countdown bis zur Prüfung (24.–25.11.2026) im Hub: Anzeige und
+  Farbe ändern sich automatisch je nach Dringlichkeit — ruhig (Akzentfarbe)
+  über 30 Tage vorher, aufmerksam (Gelb) ab 30 Tagen, Endspurt (Rot,
+  auffälligere Pulsanimation) ab 7 Tagen, ein Sonderzustand am Prüfungstag
+  selbst und ein „Geschafft"-Zustand danach.
+- Aktivitäts-Heatmap im Hub im Stil von GitHubs Beitragsverlauf: zeigt, an
+  welchen Tagen wie viele Punkte abgehakt wurden (Zeitraum vom ersten
+  abgehakten Punkt bis heute). Dazu aktuelle und längste Lernstreak (Tage in
+  Folge mit mindestens einem Häkchen). Der Verlauf läuft automatisch mit
+  Cloud-Sync mit und bleibt von „Fortschritt zurücksetzen" in einem Bereich
+  unberührt — er ist ein reines Aktivitätsprotokoll, keine Checkbox-Daten.
+
 ## [3.3.0] – 2026-09-03
 
 ### Hinzugefügt

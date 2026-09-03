@@ -1194,6 +1194,18 @@ function markedCount(){
 // ---------------------------------------------------------------
 const state = loadState(); // itemId -> boolean
 
+// ---------------------------------------------------------------
+// Aktivitäts-Log fürs Hub (Lernstreak/Heatmap): zählt pro Kalendertag,
+// wie viele Punkte neu abgehakt wurden. Bleibt von "Fortschritt
+// zurücksetzen" unberührt (kein Präfix, das dort gematcht wird).
+// ---------------------------------------------------------------
+function logActivity(){
+  const d = new Date();
+  const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  if (!state.__activity) state.__activity = {};
+  state.__activity[key] = (state.__activity[key] || 0) + 1;
+}
+
 function countTopic(topic){
   let total = 0, done = 0;
   topic.items.forEach((it, i) => {
@@ -1520,8 +1532,10 @@ function render(){
         cb.id = id;
         if (state[id]) { cb.checked = true; li.classList.add('checked'); }
         cb.addEventListener('change', () => {
+          const wasChecked = !!state[id];
           state[id] = cb.checked;
           state['ts__' + id] = Date.now();
+          if (cb.checked && !wasChecked) logActivity();
           li.classList.toggle('checked', cb.checked);
           saveState();
           updateAll();
