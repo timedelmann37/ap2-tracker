@@ -268,14 +268,68 @@
       color: var(--text-secondary); font-style: italic; background: var(--surface-2); padding: 12px 16px; border-radius: 0 var(--r-md) var(--r-md) 0;
   }
 
-  /* Result Grid */
+  /* Result Grid & Elements */
   .result-compare-grid {
       display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 16px;
       background: var(--surface-1); padding: 16px; border-radius: var(--r-sm); border: 1px solid var(--border);
   }
+  @media (max-width: 860px) {
+      .result-compare-grid { grid-template-columns: 1fr; }
+  }
+  .result-column { display: flex; flex-direction: column; min-width: 0; }
+  .result-header { margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  .badge-user {
+      display: inline-block; padding: 3px 8px; border-radius: var(--r-xs);
+      background: rgba(255,255,255,0.08); color: var(--text-secondary); font-size: 11.5px;
+      font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .badge-sol {
+      display: inline-block; padding: 3px 8px; border-radius: var(--r-xs);
+      background: rgba(106, 171, 115, 0.16); color: var(--status-good); font-size: 11.5px;
+      font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+      border: 1px solid rgba(106, 171, 115, 0.35);
+  }
+  .badge-correct {
+      display: inline-block; padding: 2px 7px; border-radius: var(--r-xs);
+      background: rgba(106, 171, 115, 0.2); color: var(--status-good); font-size: 11px;
+      font-weight: 600; margin-left: 6px;
+  }
+  .badge-incorrect {
+      display: inline-block; padding: 2px 7px; border-radius: var(--r-xs);
+      background: rgba(224, 85, 97, 0.2); color: var(--status-critical); font-size: 11px;
+      font-weight: 600; margin-left: 6px;
+  }
+  .sol-highlight {
+      background: rgba(106, 171, 115, 0.18) !important;
+      color: var(--status-good) !important;
+      font-weight: 700;
+      border-radius: var(--r-xs);
+      padding: 2px 6px;
+      display: inline-block;
+  }
+  .user-highlight-ok {
+      color: var(--status-good) !important;
+      font-weight: 600;
+  }
+  .user-highlight-empty {
+      color: var(--text-muted) !important;
+      font-style: italic;
+  }
+  .solution-diagram-box {
+      margin: 10px 0 14px; border: 1px solid rgba(106, 171, 115, 0.35);
+      border-radius: var(--r-sm); background: var(--surface-1); padding: 12px;
+      text-align: center;
+  }
+  .diagram-header-tag {
+      font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+      color: var(--cat-ga1); margin-bottom: 8px; text-align: left;
+  }
   .result-user { color: var(--text-secondary); }
   .result-sol { color: var(--status-good); }
-  .result-content { margin-top: 8px; white-space: pre-wrap; color: var(--text-primary); font-size: 14px; }
+  .result-content { line-height: 1.6; color: var(--text-primary); font-size: 13.5px; white-space: pre-wrap; }
+  .result-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
+  .result-table th, .result-table td { border: 1px solid var(--border-strong); padding: 6px 10px; text-align: left; }
+  .result-table th { background: var(--surface-2); font-weight: 600; }
 </style>
 </head>
 <body>
@@ -296,16 +350,6 @@
         <h2>Verfügbare Prüfungen</h2>
       </div>
       <div class="cards-grid">
-         <div class="sim-card" onclick="startExam('Winter 2026/27 - GA1', null)">
-            <h3>Winter 2026/27 - GA1</h3>
-            <p>Dauer: 90 Minuten</p>
-            <span class="btn">Starten</span>
-         </div>
-         <div class="sim-card" onclick="startExam('Sommer 2026 - GA2', null)">
-            <h3>Sommer 2026 - GA2</h3>
-            <p>Dauer: 90 Minuten</p>
-            <span class="btn">Starten</span>
-         </div>
          <div class="sim-card" onclick="startExam('Sommer 2023 - GA2', 'exam_2023_1_GA2')">
             <h3>Sommer 2023 - GA2</h3>
             <p>Dauer: 90 Minuten</p>
@@ -340,13 +384,21 @@
    <!-- VERGLEICHS ANSICHT -->
    <div id="result-view" style="display:none;">
       <div class="panel">
-         <div class="panel-head">
-            <h2>Auswertung: <span id="result-exam-title"></span></h2>
+         <div class="panel-head" style="flex-wrap:wrap; gap:16px;">
+            <div>
+               <h2>Auswertung: <span id="result-exam-title"></span></h2>
+               <div style="font-size:12.5px; color:var(--text-muted); margin-top:4px;">Vergleiche deine Antworten mit den offiziellen IHK-Lösungshinweisen.</div>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+               <button class="btn primary" onclick="openAnlageModal()">🗺️ Anlage 1: Netzwerkplan öffnen</button>
+               <button class="btn" onclick="closeResults()">Zurück zur Übersicht</button>
+            </div>
          </div>
          <div id="result-container" style="display:flex; flex-direction:column; gap:24px;">
             <!-- Hier kommen die Vergleiche hin -->
          </div>
-         <div style="margin-top:20px; padding-top: 20px; border-top: 1px solid var(--border);">
+         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; padding-top: 20px; border-top: 1px solid var(--border); flex-wrap:wrap; gap:12px;">
+            <button class="btn" onclick="openAnlageModal()">🗺️ Anlage 1: Netzwerkplan öffnen</button>
             <button class="btn primary" onclick="closeResults()">Zurück zur Übersicht</button>
          </div>
       </div>
@@ -397,6 +449,12 @@
   }
   function closeModal() {
       document.getElementById('anlage-modal').style.display = 'none';
+  }
+  function openAnlageModal() {
+      if (currentExamData && currentExamData.ausgangssituation) {
+          const as = currentExamData.ausgangssituation;
+          openModal(as.anlageTitle, `<div style="font-size:13.5px; line-height:1.5; color:var(--text-secondary); margin-bottom:16px;">${as.anlageDescription}</div>${as.anlageSvg}`);
+      }
   }
 
   function startExam(title, dataObjName) {
@@ -450,7 +508,7 @@
              btn.className = 'btn primary';
              btn.style.marginTop = '12px';
              btn.innerText = '🗺️ ' + as.anlageTitle + ' öffnen';
-             btn.onclick = () => openModal(as.anlageTitle, `<p>${as.anlageDescription}</p>${as.anlageSvg}`);
+             btn.onclick = () => openAnlageModal();
              box.appendChild(btn);
          }
          container.appendChild(box);
@@ -635,85 +693,306 @@
   }
 
   function showResults() {
-     if (examTimerInterval) clearInterval(examTimerInterval);
-     document.getElementById('exam-view').style.display = 'none';
-     document.getElementById('result-view').style.display = 'block';
-     
-     document.getElementById('page-title').innerText = 'Auswertung';
-     document.getElementById('page-desc').innerText = 'Vergleiche deine Antworten mit den Musterlösungen.';
-     document.getElementById('result-exam-title').innerText = currentExamData.title;
+      if (examTimerInterval) clearInterval(examTimerInterval);
+      document.getElementById('exam-view').style.display = 'none';
+      document.getElementById('result-view').style.display = 'block';
+      
+      document.getElementById('page-title').innerText = 'Auswertung';
+      document.getElementById('page-desc').innerText = 'Vergleiche deine Antworten mit den offiziellen IHK-Musterlösungen.';
+      document.getElementById('result-exam-title').innerText = currentExamData.title;
 
-     const resultContainer = document.getElementById('result-container');
-     resultContainer.innerHTML = '';
+      // Scroll nach oben
+      window.scrollTo({ top: 0, behavior: 'smooth' });
 
-     currentExamData.tasks.forEach(task => {
-         const taskHeader = document.createElement('h3');
-         taskHeader.innerText = `${task.title}`;
-         taskHeader.style.marginTop = '24px';
-         taskHeader.style.borderBottom = '1px solid var(--border-strong)';
-         resultContainer.appendChild(taskHeader);
+      const resultContainer = document.getElementById('result-container');
+      resultContainer.innerHTML = '';
 
-         task.subtasks.forEach(sub => {
-             const subContainer = document.createElement('div');
-             subContainer.className = 'subtask-container';
-             subContainer.style.background = 'var(--surface-2)';
+      currentExamData.tasks.forEach(task => {
+          const taskWrap = document.createElement('div');
+          
+          const taskHeader = document.createElement('h3');
+          taskHeader.innerText = `${task.title} (${task.points} Punkte)`;
+          taskHeader.style.marginTop = '28px';
+          taskHeader.style.borderBottom = '2px solid var(--border-strong)';
+          taskHeader.style.paddingBottom = '8px';
+          taskWrap.appendChild(taskHeader);
 
-             const qText = document.createElement('p');
-             qText.innerText = `${sub.text}`;
-             qText.style.fontWeight = '600';
-             qText.style.marginTop = '0';
-             subContainer.appendChild(qText);
+          if (task.context) {
+              const tContext = document.createElement('div');
+              tContext.className = 'task-context';
+              tContext.innerText = task.context;
+              taskWrap.appendChild(tContext);
+          }
 
-             // Collect user answers
-             let userAnswer = "";
-             
-             if (sub.type === 'textarea') {
-                 userAnswer = document.getElementById(`input-${sub.id}`)?.value || "Keine Antwort";
-             } else if (sub.type === 'split_textarea') {
-                 let parts = [];
-                 sub.fields.forEach(f => {
-                     const val = document.getElementById(`input-${f.id}`)?.value || "Keine Antwort";
-                     parts.push(`[${f.label}]\n${val}`);
-                 });
-                 userAnswer = parts.join('\n\n');
-             } else if (sub.type === 'radio_visual') {
-                 const checked = document.querySelector(`input[name="input-${sub.id}"]:checked`);
-                 if(checked) {
-                     const opt = sub.options.find(o => o.id === checked.value);
-                     userAnswer = opt ? opt.label : checked.value;
-                 } else {
-                     userAnswer = "Keine Antwort";
-                 }
-             } else if (sub.type === 'table_input' || sub.type === 'routing_table') {
-                 let parts = [];
-                 sub.tableConfig.rows.forEach(r => {
-                     const fields = r.fields || r.columns || [];
-                     fields.forEach(f => {
-                         if(!f.readonly && f.id) {
-                             const val = document.getElementById(`input-${f.id}`)?.value;
-                             if(val) parts.push(`[${f.id}]: ${val}`);
-                         }
-                     });
-                 });
-                 userAnswer = parts.length > 0 ? parts.join('\n') : "Keine Felder ausgefüllt";
-             }
+          task.subtasks.forEach(sub => {
+              const subContainer = document.createElement('div');
+              subContainer.className = 'subtask-container';
+              subContainer.style.background = 'var(--surface-2)';
 
-             const compareGrid = document.createElement('div');
-             compareGrid.className = 'result-compare-grid';
+              if (sub.sectionTitle) {
+                  const sTitle = document.createElement('h4');
+                  sTitle.className = 'subtask-section-title';
+                  sTitle.innerText = sub.sectionTitle;
+                  subContainer.appendChild(sTitle);
+              }
+              if (sub.intro) {
+                  const sIntro = document.createElement('div');
+                  sIntro.className = 'subtask-intro';
+                  sIntro.innerText = sub.intro;
+                  subContainer.appendChild(sIntro);
+              }
+              if (sub.intro2) {
+                  const sIntro2 = document.createElement('div');
+                  sIntro2.className = 'subtask-intro';
+                  sIntro2.innerText = sub.intro2;
+                  subContainer.appendChild(sIntro2);
+              }
+              if (sub.terminalOutput) {
+                  const term = document.createElement('pre');
+                  term.className = 'terminal-block';
+                  term.innerText = sub.terminalOutput;
+                  subContainer.appendChild(term);
+              }
+              if (sub.quoteText) {
+                  const quote = document.createElement('div');
+                  quote.className = 'quote-block';
+                  quote.innerText = sub.quoteText;
+                  subContainer.appendChild(quote);
+              }
+              if (sub.diagramSvg) {
+                  const diag = document.createElement('div');
+                  diag.className = 'diagram-box';
+                  diag.innerHTML = `<div class="diagram-header-tag">📐 Aufgaben-Grafik:</div>` + sub.diagramSvg;
+                  subContainer.appendChild(diag);
+              }
+              if (sub.tableData) {
+                  const tblBox = document.createElement('div');
+                  tblBox.style.overflowX = 'auto';
+                  tblBox.style.marginBottom = '16px';
+                  let tblHtml = `<table class="exam-table" style="min-width:600px;">
+                     <thead><tr>${sub.tableData.headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>
+                     <tbody>`;
+                  sub.tableData.rows.forEach(r => {
+                      tblHtml += `<tr>${r.map(cell => `<td>${cell}</td>`).join('')}</tr>`;
+                  });
+                  tblHtml += `</tbody></table>`;
+                  tblBox.innerHTML = `<div style="font-weight:600; font-size:13px; margin-bottom:6px;">${sub.tableData.title}</div>` + tblHtml;
+                  subContainer.appendChild(tblBox);
+              }
 
-             const userCol = document.createElement('div');
-             userCol.innerHTML = `<b class="result-user">Deine Antwort:</b><div class="result-content">${userAnswer}</div>`;
-             
-             const solCol = document.createElement('div');
-             solCol.innerHTML = `<b class="result-sol">Musterlösung:</b><div class="result-content">${sub.solution}</div>`;
+              const qText = document.createElement('div');
+              qText.className = 'subtask-question';
+              qText.innerText = `${sub.text} (${sub.points} Punkte)`;
+              subContainer.appendChild(qText);
 
-             compareGrid.appendChild(userCol);
-             compareGrid.appendChild(solCol);
-             subContainer.appendChild(compareGrid);
+              // Vergleichsgitter
+              const compareGrid = document.createElement('div');
+              compareGrid.className = 'result-compare-grid';
 
-             resultContainer.appendChild(subContainer);
-         });
-     });
+              const userCol = document.createElement('div');
+              userCol.className = 'result-column';
+              userCol.innerHTML = `<div class="result-header"><span class="badge-user">Deine Antwort</span></div>`;
+
+              const solCol = document.createElement('div');
+              solCol.className = 'result-column';
+              solCol.innerHTML = `<div class="result-header"><span class="badge-sol">Musterlösung (IHK)</span></div>`;
+
+              // Rendering je nach Aufgabentyp
+              if (sub.type === 'radio_visual') {
+                  const checked = document.querySelector(`input[name="input-${sub.id}"]:checked`);
+                  const selectedId = checked ? checked.value : null;
+                  const selectedOpt = sub.options.find(o => o.id === selectedId);
+                  const correctOpt = sub.options.find(o => o.isCorrect);
+
+                  const userBox = document.createElement('div');
+                  if (selectedOpt) {
+                      userBox.innerHTML = `
+                         <div style="font-weight:600; margin-bottom:8px; display:flex; align-items:center; gap:8px;">
+                            <span>${selectedOpt.label}</span>
+                            <span class="${selectedOpt.isCorrect ? 'badge-correct' : 'badge-incorrect'}">${selectedOpt.isCorrect ? '✓ Korrekt (+1 Pkt)' : '✗ Falsch'}</span>
+                         </div>
+                         <div class="diagram-box" style="margin:0; padding:10px; max-width:280px; border-color:${selectedOpt.isCorrect ? 'var(--status-good)' : 'var(--status-critical)'};">${selectedOpt.svg}</div>
+                      `;
+                  } else {
+                      userBox.innerHTML = `<div style="color:var(--text-muted); font-style:italic;">Keine Auswahl getroffen</div>`;
+                  }
+                  userCol.appendChild(userBox);
+
+                  const solBox = document.createElement('div');
+                  if (sub.solutionDiagramSvg) {
+                      solBox.innerHTML = `
+                         <div class="solution-diagram-box">
+                            <div class="diagram-header-tag" style="color:var(--status-good);">✓ Lösungsgrafik (IHK):</div>
+                            ${sub.solutionDiagramSvg}
+                         </div>
+                         <div class="result-content" style="margin-top:10px;">${sub.solution}</div>
+                      `;
+                  } else {
+                      solBox.innerHTML = `
+                         <div style="font-weight:600; margin-bottom:8px; color:var(--status-good);">
+                            ${correctOpt ? correctOpt.label : sub.solution} <span class="badge-correct">✓ Richtige Lösung</span>
+                         </div>
+                         ${correctOpt ? `<div class="diagram-box" style="margin:0; padding:10px; max-width:280px; border-color:var(--status-good);">${correctOpt.svg}</div>` : ''}
+                         <div class="result-content" style="margin-top:10px;">${sub.solution}</div>
+                      `;
+                  }
+                  solCol.appendChild(solBox);
+
+              } else if (sub.id === '2aa' && sub.solutionTable) {
+                  // Spezifische Tabellenauswertung für 2aa (IPv4-Routentabelle)
+                  const st = sub.solutionTable;
+                  
+                  const uVals = {
+                      r2_gw: document.getElementById('input-2aa_r2_gw')?.value.trim() || '',
+                      r3_gw: document.getElementById('input-2aa_r3_gw')?.value.trim() || '',
+                      r4_gw: document.getElementById('input-2aa_r4_gw')?.value.trim() || '',
+                      r5_net: document.getElementById('input-2aa_r5_net')?.value.trim() || '',
+                      r5_mask: document.getElementById('input-2aa_r5_mask')?.value.trim() || '',
+                      r6_net: document.getElementById('input-2aa_r6_net')?.value.trim() || '',
+                      r6_mask: document.getElementById('input-2aa_r6_mask')?.value.trim() || '',
+                      r7_net: document.getElementById('input-2aa_r7_net')?.value.trim() || '',
+                      r7_mask: document.getElementById('input-2aa_r7_mask')?.value.trim() || ''
+                  };
+
+                  // Nutzertabelle
+                  const userTblWrap = document.createElement('div');
+                  userTblWrap.style.overflowX = 'auto';
+                  let userTblHtml = `<table class="result-table">
+                     <thead><tr>${st.headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>
+                     <tbody>
+                     <tr><td>10.1.0.0</td><td>255.255.0.0</td><td>direct</td><td>IF1</td></tr>
+                     <tr><td>10.2.0.0</td><td>255.255.0.0</td><td class="${uVals.r2_gw === '192.168.0.2' ? 'user-highlight-ok' : (uVals.r2_gw ? '' : 'user-highlight-empty')}">${uVals.r2_gw || '(leer)'}</td><td>-</td></tr>
+                     <tr><td>10.3.0.0</td><td>255.255.0.0</td><td class="${uVals.r3_gw === '192.168.0.6' ? 'user-highlight-ok' : (uVals.r3_gw ? '' : 'user-highlight-empty')}">${uVals.r3_gw || '(leer)'}</td><td>-</td></tr>
+                     <tr><td>10.4.0.0</td><td>255.255.0.0</td><td class="${uVals.r4_gw === '192.168.0.10' ? 'user-highlight-ok' : (uVals.r4_gw ? '' : 'user-highlight-empty')}">${uVals.r4_gw || '(leer)'}</td><td>-</td></tr>
+                     <tr><td class="${uVals.r5_net === '192.168.0.0' ? 'user-highlight-ok' : (uVals.r5_net ? '' : 'user-highlight-empty')}">${uVals.r5_net || '(leer)'}</td><td class="${uVals.r5_mask === '255.255.255.252' ? 'user-highlight-ok' : (uVals.r5_mask ? '' : 'user-highlight-empty')}">${uVals.r5_mask || '(leer)'}</td><td>direct</td><td>IF2</td></tr>
+                     <tr><td class="${uVals.r6_net === '192.168.0.4' ? 'user-highlight-ok' : (uVals.r6_net ? '' : 'user-highlight-empty')}">${uVals.r6_net || '(leer)'}</td><td class="${uVals.r6_mask === '255.255.255.252' ? 'user-highlight-ok' : (uVals.r6_mask ? '' : 'user-highlight-empty')}">${uVals.r6_mask || '(leer)'}</td><td>direct</td><td>IF3</td></tr>
+                     <tr><td class="${uVals.r7_net === '192.168.0.8' ? 'user-highlight-ok' : (uVals.r7_net ? '' : 'user-highlight-empty')}">${uVals.r7_net || '(leer)'}</td><td class="${uVals.r7_mask === '255.255.255.252' ? 'user-highlight-ok' : (uVals.r7_mask ? '' : 'user-highlight-empty')}">${uVals.r7_mask || '(leer)'}</td><td>direct</td><td>IF4</td></tr>
+                     <tr><td>0.0.0.0</td><td>0.0.0.0</td><td>210.10.10.1</td><td>-</td></tr>
+                     <tr><td>210.10.10.1</td><td>255.255.255.255</td><td>direct</td><td>dsl</td></tr>
+                     </tbody></table>`;
+                  userTblWrap.innerHTML = userTblHtml;
+                  userCol.appendChild(userTblWrap);
+
+                  // Lösungstabelle
+                  const solTblWrap = document.createElement('div');
+                  solTblWrap.style.overflowX = 'auto';
+                  let solTblHtml = `<table class="result-table">
+                     <thead><tr>${st.headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>
+                     <tbody>`;
+                  st.rows.forEach(r => {
+                      solTblHtml += `<tr>
+                         <td>${r.filled.includes('target') ? `<span class="sol-highlight">${r.target}</span>` : r.target}</td>
+                         <td>${r.filled.includes('mask') ? `<span class="sol-highlight">${r.mask}</span>` : r.mask}</td>
+                         <td>${r.filled.includes('gw') ? `<span class="sol-highlight">${r.gw}</span>` : r.gw}</td>
+                         <td>${r.iface}</td>
+                      </tr>`;
+                  });
+                  solTblHtml += `</tbody></table>`;
+                  solTblWrap.innerHTML = solTblHtml;
+                  solCol.appendChild(solTblWrap);
+
+              } else if (sub.id === '1cc' && sub.solutionTable) {
+                  // Spezifische Tabellenauswertung für 1cc (STP vs Link-Aggregation)
+                  const st = sub.solutionTable;
+                  
+                  const uStpFkt = document.getElementById('input-1cc_stp_fkt')?.value.trim() || '';
+                  const uStpReakt = document.getElementById('input-1cc_stp_reakt')?.value.trim() || '';
+                  const uLacpFkt = document.getElementById('input-1cc_lacp_fkt')?.value.trim() || '';
+                  const uLacpReakt = document.getElementById('input-1cc_lacp_reakt')?.value.trim() || '';
+
+                  // Nutzertabelle
+                  const userTblWrap = document.createElement('div');
+                  userTblWrap.style.overflowX = 'auto';
+                  userTblWrap.innerHTML = `
+                     <table class="result-table">
+                        <thead><tr><th>Protokoll</th><th>Funktionsweise (Normal)</th><th>Reaktion bei Ausfall</th></tr></thead>
+                        <tbody>
+                           <tr>
+                              <td><b>Spanning-Tree</b></td>
+                              <td>${uStpFkt ? uStpFkt.replace(/\n/g, '<br>') : '<span class="user-highlight-empty">(Keine Eingabe)</span>'}</td>
+                              <td>${uStpReakt ? uStpReakt.replace(/\n/g, '<br>') : '<span class="user-highlight-empty">(Keine Eingabe)</span>'}</td>
+                           </tr>
+                           <tr>
+                              <td><b>Link-Aggregation</b></td>
+                              <td>${uLacpFkt ? uLacpFkt.replace(/\n/g, '<br>') : '<span class="user-highlight-empty">(Keine Eingabe)</span>'}</td>
+                              <td>${uLacpReakt ? uLacpReakt.replace(/\n/g, '<br>') : '<span class="user-highlight-empty">(Keine Eingabe)</span>'}</td>
+                           </tr>
+                        </tbody>
+                     </table>
+                  `;
+                  userCol.appendChild(userTblWrap);
+
+                  // Lösungstabelle
+                  const solTblWrap = document.createElement('div');
+                  solTblWrap.style.overflowX = 'auto';
+                  solTblWrap.innerHTML = `
+                     <table class="result-table">
+                        <thead><tr><th>Protokoll</th><th>Funktionsweise, solange beide Leitungen störungsfrei sind</th><th>Reaktion der Verbindung, wenn eine Leitung ausfällt</th></tr></thead>
+                        <tbody>
+                           <tr>
+                              <td><b>Spanning-Tree-Protocol</b></td>
+                              <td><span class="sol-highlight" style="display:block; padding:4px 8px; font-weight:normal;">${st.rows[0].normal}</span></td>
+                              <td><span class="sol-highlight" style="display:block; padding:4px 8px; font-weight:normal;">${st.rows[0].failover}</span></td>
+                           </tr>
+                           <tr>
+                              <td><b>Link-Aggregation</b></td>
+                              <td><span class="sol-highlight" style="display:block; padding:4px 8px; font-weight:normal;">${st.rows[1].normal}</span></td>
+                              <td><span class="sol-highlight" style="display:block; padding:4px 8px; font-weight:normal;">${st.rows[1].failover}</span></td>
+                           </tr>
+                        </tbody>
+                     </table>
+                  `;
+                  solCol.appendChild(solTblWrap);
+
+              } else if (sub.type === 'split_textarea') {
+                  const userBox = document.createElement('div');
+                  sub.fields.forEach(f => {
+                      const val = document.getElementById(`input-${f.id}`)?.value.trim() || '';
+                      const item = document.createElement('div');
+                      item.style.marginBottom = '12px';
+                      item.innerHTML = `
+                         <div style="font-weight:600; font-size:12.5px; color:var(--text-secondary); margin-bottom:4px;">${f.label}</div>
+                         <div class="result-content">${val ? val : '<span class="user-highlight-empty">(Keine Eingabe)</span>'}</div>
+                      `;
+                      userBox.appendChild(item);
+                  });
+                  userCol.appendChild(userBox);
+
+                  const solBox = document.createElement('div');
+                  solBox.innerHTML = `<div class="result-content">${sub.solution}</div>`;
+                  solCol.appendChild(solBox);
+
+              } else {
+                  // Standard textarea
+                  const userVal = document.getElementById(`input-${sub.id}`)?.value.trim() || '';
+                  const userBox = document.createElement('div');
+                  userBox.innerHTML = `<div class="result-content">${userVal ? userVal : '<span class="user-highlight-empty">(Keine Antwort eingegeben)</span>'}</div>`;
+                  userCol.appendChild(userBox);
+
+                  const solBox = document.createElement('div');
+                  if (sub.solutionDiagramSvg) {
+                      solBox.innerHTML = `
+                         <div class="solution-diagram-box">
+                            <div class="diagram-header-tag" style="color:var(--status-good);">✓ Lösungsgrafik (IHK):</div>
+                            ${sub.solutionDiagramSvg}
+                         </div>
+                         <div class="result-content" style="margin-top:10px;">${sub.solution}</div>
+                      `;
+                  } else {
+                      solBox.innerHTML = `<div class="result-content">${sub.solution}</div>`;
+                  }
+                  solCol.appendChild(solBox);
+              }
+
+              compareGrid.appendChild(userCol);
+              compareGrid.appendChild(solCol);
+              subContainer.appendChild(compareGrid);
+
+              taskWrap.appendChild(subContainer);
+          });
+
+          resultContainer.appendChild(taskWrap);
+      });
   }
 
   function closeResults() {
