@@ -1488,13 +1488,14 @@ function renderFocusHero(){
   heroEl.className = 'focus-hero' + (cls ? ' ' + cls : '');
   heroEl.innerHTML = html;
 }
-function jumpToTopic(id){
+function jumpToTopic(id, scrollTarget){
   if (!findTopic(id)) return;
   setActiveTab('all');
   const det = document.getElementById(id);
   if (det) {
     det.open = true;
-    det.scrollIntoView({ behavior:'smooth', block:'center' });
+    const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches && document.visibilityState === 'visible';
+    (scrollTarget || det).scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block:'center' });
     det.classList.remove('flash');
     void det.offsetWidth;
     det.classList.add('flash');
@@ -2388,8 +2389,17 @@ themeBtn.addEventListener('click', () => {
 // Deep-Link: von der Übersicht/dem Hub aus direkt zu einem Thema springen
 // ---------------------------------------------------------------
 if (location.hash) {
-  const hid = decodeURIComponent(location.hash.slice(1));
-  if (findTopic(hid)) setTimeout(() => jumpToTopic(hid), 60);
+  const raw = decodeURIComponent(location.hash.slice(1));
+  const hid = raw.split('&')[0];
+  const wantFirst = raw.split('&').includes('first');
+  if (findTopic(hid)) setTimeout(() => {
+    const det = document.getElementById(hid);
+    if (wantFirst && det) det.open = true;
+    requestAnimationFrame(() => {
+      const target = (wantFirst && det) ? det.querySelector('ul.items li[data-itemid]:not(.checked)') : null;
+      jumpToTopic(hid, target);
+    });
+  }, 80);
 }
 
 // ---------------------------------------------------------------
