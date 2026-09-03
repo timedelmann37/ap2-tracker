@@ -7,6 +7,16 @@ direkt auf der Seite sichtbar — ein Klick auf die Versionsnummer im Hub (in
 der Fußzeile) zeigt dieselbe Liste als Änderungsprotokoll. Gepflegt wird das
 Changelog ausschließlich im Hub, nicht mehr in den einzelnen Bereichen.
 
+## [3.1.3] – 2026-09-03
+
+### Geändert
+- Alle farbigen Emoji-Icons (Hub-Kacheln, Darstellung-umschalten, Lern-Minispiele)
+  durch ein einheitliches, selbst gezeichnetes Outline-Icon-Set ersetzt (Kalender,
+  Server, Netzwerk-Knoten, Aktenkoffer, Stoppuhr, Buch, Sonne/Mond/Kontrast,
+  Gamepad, Paket, Stecker, Rechner, Glühbirne) — als Inline-SVG, ohne externe
+  Abhängigkeit, in `currentColor` eingefärbt. Reine Symbole wie Pfeile (→ ↔),
+  Haken (✓) und Warnzeichen (⚠) bleiben unverändert.
+
 ## [3.1.2] – 2026-09-03
 
 ### Behoben
