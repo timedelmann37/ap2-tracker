@@ -216,12 +216,6 @@
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
   }
 
-  .hub-crumb{
-    font-family: var(--font-mono); font-size:11px; color: var(--text-muted);
-    letter-spacing:.02em; margin-bottom:14px; text-align:center;
-  }
-  .hub-crumb .sep{ opacity:.5; padding:0 2px; }
-
   .hub-head{ text-align:center; margin-bottom: 34px; }
   .hub-head h1{
     font-size: 30px; font-weight: 700; margin: 0 0 9px; letter-spacing: -0.015em; text-wrap: balance;
@@ -275,35 +269,46 @@
   .chip .chip-meta{ font-size:10.5px; color:var(--text-muted); flex-shrink:0; }
   .chip-empty{ font-size:12px; color:var(--text-muted); }
 
-  /* ---------- Countdown bis zur Prüfung: kompakt neben der Überschrift ---------- */
+  /* ---------- Countdown bis zur Prüfung: kompakter Kasten neben der Überschrift ---------- */
   .hub-head-row{
-    display:flex; align-items:center; justify-content:center; gap:20px; flex-wrap:wrap;
+    display:flex; align-items:center; justify-content:center; gap:16px; flex-wrap:wrap;
   }
   .hub-head-row h1{ margin:0; }
-  .countdown-inline{
-    display:flex; align-items:baseline; gap:7px; flex-shrink:0;
-    --urgency-color: var(--accent);
+  .countdown{
+    display:inline-flex; align-items:center; gap:8px; flex-shrink:0;
+    padding:5px 10px 5px 11px;
+    border:1px solid color-mix(in srgb, var(--cd-color) 38%, var(--border));
+    border-radius: var(--r-sm);
+    background: color-mix(in srgb, var(--cd-color) 8%, transparent);
+    cursor: default; --cd-color: var(--accent);
+    transition: border-color .45s ease, background-color .45s ease;
   }
-  .countdown-inline[data-urgency="soon"]{ --urgency-color: var(--status-warning); }
-  .countdown-inline[data-urgency="critical"],
-  .countdown-inline[data-urgency="today"]{ --urgency-color: var(--status-critical); }
-  .countdown-inline[data-urgency="done"]{ --urgency-color: var(--status-good); }
+  .countdown[data-urgency="soon"]{ --cd-color: var(--status-warning); }
+  .countdown[data-urgency="critical"],
+  .countdown[data-urgency="today"]{ --cd-color: var(--status-critical); }
+  .countdown[data-urgency="done"]{ --cd-color: var(--status-good); }
+  .countdown-value{ display:inline-flex; align-items:center; font-family: var(--font-mono); }
   .countdown-number{
-    font-family: var(--font-mono); font-size:32px; font-weight:700; line-height:1;
-    color: var(--urgency-color); letter-spacing:-0.02em; transition: color .4s ease;
-    display:inline-flex; align-items:center;
-    animation: countdownPulse 5.5s ease-in-out infinite;
-  }
-  .countdown-inline[data-urgency="soon"] .countdown-number{ animation-duration: 3s; }
-  .countdown-inline[data-urgency="critical"] .countdown-number,
-  .countdown-inline[data-urgency="today"] .countdown-number{ animation-duration: 1.3s; }
-  .countdown-inline[data-urgency="done"] .countdown-number{ animation: none; }
-  @keyframes countdownPulse{
-    0%, 100%{ filter: drop-shadow(0 0 0 transparent); }
-    50%{ filter: drop-shadow(0 0 9px var(--urgency-color)); }
+    font-size:22px; font-weight:600; line-height:1; letter-spacing:-0.01em;
+    color: var(--cd-color); font-variant-numeric: tabular-nums;
+    transition: color .45s ease;
   }
   .countdown-number svg{ display:block; }
-  .countdown-unit{ font-size:13px; color:var(--text-secondary); font-weight:500; }
+  .countdown-caret{
+    width:7px; height:19px; margin-left:4px; border-radius:1px;
+    background: var(--cd-color);
+    animation: cdBlink 1.15s steps(1, end) infinite;
+  }
+  .countdown[data-urgency="soon"] .countdown-caret{ animation-duration:.8s; }
+  .countdown[data-urgency="critical"] .countdown-caret,
+  .countdown[data-urgency="today"] .countdown-caret{ animation-duration:.5s; }
+  .countdown[data-urgency="done"] .countdown-caret{ animation:none; opacity:1; }
+  .countdown.has-icon .countdown-caret{ display:none; }
+  @keyframes cdBlink{ 0%,49%{ opacity:1; } 50%,100%{ opacity:0; } }
+  @media (prefers-reduced-motion: reduce){
+    .countdown-caret{ animation:none; opacity:1; }
+  }
+  .countdown-unit{ font-size:12px; color:var(--text-secondary); font-weight:500; }
   .sr-only{
     position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;
     clip:rect(0,0,0,0); white-space:nowrap; border:0;
@@ -555,16 +560,16 @@
   </div>
 </nav>
 
-  <div class="hub-crumb">~/abschlusspruefung<span class="sep">/</span><b style="color:var(--cat-ga1); font-weight:500;">winter-2026-27</b></div>
-
   <div class="hub-head">
     <div class="hub-head-row">
       <h1>AP2 Vorbereitung · Winterprüfung 2026/27</h1>
-      <div class="countdown-inline" id="countdownCard" data-urgency="calm" title="Prüfung am 24.–25.11.2026">
-        <span class="countdown-number" id="countdownNumber">0</span>
+      <span class="countdown" id="countdownCard" data-urgency="calm" title="Prüfung am 24.–25.11.2026">
+        <span class="countdown-value">
+          <span class="countdown-number" id="countdownNumber">0</span><span class="countdown-caret" id="countdownCaret" aria-hidden="true"></span>
+        </span>
         <span class="countdown-unit" id="countdownUnit">Tage</span>
         <span class="sr-only" id="countdownLabel">Lädt …</span>
-      </div>
+      </span>
     </div>
     <p>Fachinformatiker Systemintegration — Hauptmenü für Übersicht, die drei Themenbereiche und die Prüfungssimulation.</p>
   </div>
@@ -1357,10 +1362,10 @@ const EXAM_START = new Date(2026, 10, 24, 0, 0, 0);   // 24.11.2026
 const EXAM_END   = new Date(2026, 10, 25, 23, 59, 59); // 25.11.2026
 
 function iconCheck(){
-  return '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+  return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
 }
 function iconFlag(){
-  return '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4a1 1 0 0 1 1-1h11.2c.8 0 1.2.9.7 1.5L15 9l2.9 4.5c.5.6.1 1.5-.7 1.5H6"/></svg>';
+  return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4a1 1 0 0 1 1-1h11.2c.8 0 1.2.9.7 1.5L15 9l2.9 4.5c.5.6.1 1.5-.7 1.5H6"/></svg>';
 }
 
 function renderCountdown(){
@@ -1392,10 +1397,12 @@ function renderCountdown(){
   card.setAttribute('aria-label', (days > 0 ? days + (days === 1 ? ' Tag' : ' Tage') + ' bis zur Prüfung. ' : '') + label);
 
   if (showIcon) {
+    card.classList.add('has-icon');
     numberEl.innerHTML = showIcon;
-    unitEl.textContent = '';
+    unitEl.textContent = urgency === 'done' ? 'erledigt' : 'heute';
     return;
   }
+  card.classList.remove('has-icon');
   unitEl.textContent = days === 1 ? 'Tag' : 'Tage';
   const target = days;
   const startTs = performance.now();
@@ -1613,8 +1620,13 @@ setInterval(renderCountdown, 60000);
   });
 
 
-const APP_VERSION = '3.4.1';
+const APP_VERSION = '3.4.2';
 const CHANGELOG = [
+  { version:'3.4.2', date:'2026-09-03', groups:[
+    { label:'Geändert', items:[
+      'Countdown-Feinschliff: Der Pseudo-Pfad „~/abschlusspruefung/…" über der Hub-Überschrift ist raus. Die Tage-Zahl sitzt jetzt in einem dezenten Kasten mit feiner Rahmen-Tönung in der Dringlichkeitsfarbe; die auffällige Puls-Glow-Animation weicht einem ruhigen Terminal-Cursor, der neben der Zahl blinkt und mit steigender Dringlichkeit schneller wird (am Prüfungstag/„geschafft" steht er still). Reduzierte Bewegung wird respektiert.'
+    ]}
+  ]},
   { version:'3.4.1', date:'2026-09-03', groups:[
     { label:'Geändert', items:[
       'Prüfungs-Countdown vom eigenen großen Panel zu einer kompakten Zahl direkt neben der Hub-Überschrift verschoben — Farbe/Dringlichkeit und ein sanfter Puls-Glow bleiben erhalten, Datum und Status jetzt als Tooltip beim Hover.'

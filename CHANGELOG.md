@@ -7,6 +7,17 @@ direkt auf der Seite sichtbar — ein Klick auf die Versionsnummer im Hub (in
 der Fußzeile) zeigt dieselbe Liste als Änderungsprotokoll. Gepflegt wird das
 Changelog ausschließlich im Hub, nicht mehr in den einzelnen Bereichen.
 
+## [3.4.2] – 2026-09-03
+
+### Geändert
+- Countdown-Feinschliff: Der Pseudo-Pfad `~/abschlusspruefung/…` über der
+  Hub-Überschrift wurde entfernt. Die Tage-Zahl sitzt jetzt in einem dezenten
+  Kasten mit feiner Rahmen- und Flächentönung in der jeweiligen
+  Dringlichkeitsfarbe. Die auffällige Puls-Glow-Animation wurde durch einen
+  ruhigen, blinkenden Terminal-Cursor neben der Zahl ersetzt, der mit
+  steigender Dringlichkeit schneller blinkt und am Prüfungstag bzw. im
+  „Geschafft"-Zustand stillsteht. `prefers-reduced-motion` wird respektiert.
+
 ## [3.4.1] – 2026-09-03
 
 ### Geändert
