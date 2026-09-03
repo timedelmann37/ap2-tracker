@@ -873,6 +873,21 @@
   details.rhythm-card > summary.rhythm-head::-webkit-details-marker{ display: none; }
   details.rhythm-card > summary.rhythm-head::after{ content: "aufklappen"; font-size: 11px; font-weight: 400; color: var(--text-muted); }
   details.rhythm-card[open] > summary.rhythm-head::after{ content: "zuklappen"; }
+
+  /* ---------- T2: Bereichsübergreifende Suche ---------- */
+  .topnav-search{
+    display: flex; align-items: center; gap: 6px; margin-left: 6px;
+    padding: 5px 9px; border: 1px solid var(--border); border-radius: var(--r-sm);
+    background: var(--surface-2); min-width: 168px;
+  }
+  .topnav-search svg{ width: 13px; height: 13px; color: var(--text-muted); flex-shrink: 0; }
+  .topnav-search input{ border: none; background: transparent; font-family: inherit; font-size: 12.5px; color: var(--text-primary); width: 100%; outline: none; }
+  .search-hit{ display: flex; flex-direction: column; gap: 2px; padding: 9px 10px; border-radius: var(--r-sm); text-decoration: none; color: inherit; border: 1px solid transparent; }
+  .search-hit:hover{ background: var(--surface-2); border-color: var(--border); }
+  .search-hit-cat{ font-size: 10px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; color: var(--text-muted); }
+  .search-hit-title{ font-size: 13px; font-weight: 500; }
+  .search-hit-sub{ font-size: 11.5px; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .search-results mark{ background: var(--highlight, var(--brand-tint)); color: inherit; border-radius: 2px; padding: 0 1px; }
 </style>
 </head>
 <body>
@@ -892,6 +907,10 @@
     </div>
     <a class="topnav-link" href="/simulation/">Simulation</a>
     <span class="topnav-disabled" title="Geplant: einzelne Themen gezielt nachschlagen, unabhängig vom Wochenplan">Nachschlagewerk <span class="soon">bald</span></span>
+    <div class="topnav-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input type="search" id="navSearchInput" placeholder="Alle Bereiche durchsuchen …" autocomplete="off" aria-label="Bereichsübergreifende Suche">
+    </div>
   </div>
   <div class="topnav-right">
     <button class="theme-toggle" id="accountBtn" type="button"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c1.4-3.6 4.4-5.5 7.5-5.5s6.1 1.9 7.5 5.5"/></svg><span id="accountBtnLabel">Anmelden</span></button>
@@ -2610,16 +2629,89 @@ initCloudSync();
 </div>
 
 <script>
+const SEARCH_DATA = DATA.flatMap(function(c){
+  return c.topics.map(function(t){
+    return { a: c.id, id: t.id, ti: t.title, k: t.items.filter(function(s){ return typeof s === 'string'; }) };
+  });
+});
 (function(){
   var overlay = document.getElementById('searchOverlay');
   if (!overlay) return;
   var input = document.getElementById('searchInput');
+  var results = document.getElementById('searchResults');
   var closeBtn = document.getElementById('searchClose');
   var openBtn = document.getElementById('bottomnavSearch');
-  function openSearch(){ overlay.hidden = false; if (input) setTimeout(function(){ input.focus(); }, 20); }
-  function closeSearch(){ overlay.hidden = true; if (input) input.value = ''; }
+  var deskInput = document.getElementById('navSearchInput');
+  var LABEL = { ga1: 'Konzeption & Administration', ga2: 'Netzwerke', wiso: 'SoWi' };
+  var PAGE = { ga1: '/konzeption-administration/', ga2: '/netzwerke/', wiso: '/sowi/' };
+  var pageCat = (typeof window.__pageCat === 'string') ? window.__pageCat : null;
+
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function escRe(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+  function hl(text, q){
+    var t = esc(text);
+    if (!q) return t;
+    try { return t.replace(new RegExp('(' + escRe(esc(q)) + ')', 'ig'), '<mark>$1</mark>'); }
+    catch (e) { return t; }
+  }
+  function run(raw){
+    var q = (raw || '').trim().toLowerCase();
+    if (!q){ results.innerHTML = ''; return; }
+    var hits = [];
+    SEARCH_DATA.forEach(function(e){
+      var titleHit = e.ti.toLowerCase().indexOf(q) !== -1;
+      var itemHits = e.k.filter(function(it){ return it.toLowerCase().indexOf(q) !== -1; });
+      if (titleHit || itemHits.length) hits.push({ e: e, itemHits: itemHits });
+    });
+    if (!hits.length){
+      results.innerHTML = '<div class="search-empty">Keine Treffer für „' + esc(raw.trim()) + '“.</div>';
+      return;
+    }
+    results.innerHTML = hits.slice(0, 50).map(function(h){
+      var e = h.e;
+      var sub = h.itemHits.length
+        ? h.itemHits.slice(0, 2).map(function(it){ return hl(it, q); }).join('  ·  ')
+        : 'Themengruppe';
+      return '<a class="search-hit" data-area="' + e.a + '" data-id="' + e.id + '" href="' + PAGE[e.a] + '#' + encodeURIComponent(e.id) + '">'
+        + '<span class="search-hit-cat">' + LABEL[e.a] + '</span>'
+        + '<span class="search-hit-title">' + hl(e.ti, q) + '</span>'
+        + '<span class="search-hit-sub">' + sub + '</span>'
+        + '</a>';
+    }).join('');
+  }
+  function openSearch(){
+    overlay.hidden = false;
+    setTimeout(function(){
+      if (deskInput && deskInput.value && input){ input.value = deskInput.value; run(input.value); }
+      if (input) input.focus();
+    }, 20);
+  }
+  function closeSearch(){
+    overlay.hidden = true;
+    if (input) input.value = '';
+    if (deskInput) deskInput.value = '';
+    if (results) results.innerHTML = '';
+  }
   if (openBtn) openBtn.addEventListener('click', openSearch);
   if (closeBtn) closeBtn.addEventListener('click', closeSearch);
+  if (input) input.addEventListener('input', function(){ run(input.value); });
+  if (deskInput){
+    deskInput.addEventListener('focus', openSearch);
+    deskInput.addEventListener('input', function(){
+      if (overlay.hidden) openSearch();
+      if (input){ input.value = deskInput.value; run(input.value); }
+    });
+  }
+  if (results) results.addEventListener('click', function(ev){
+    var a = ev.target && ev.target.closest ? ev.target.closest('.search-hit') : null;
+    if (!a) return;
+    var area = a.getAttribute('data-area'), id = a.getAttribute('data-id');
+    if (pageCat && area === pageCat && typeof window.__jumpLocal === 'function'){
+      ev.preventDefault(); closeSearch(); window.__jumpLocal(id);
+    } else {
+      closeSearch();
+    }
+  });
   overlay.addEventListener('click', function(e){ if (e.target === overlay) closeSearch(); });
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !overlay.hidden) closeSearch(); });
   window.__openSearch = openSearch;
