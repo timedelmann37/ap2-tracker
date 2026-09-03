@@ -370,6 +370,16 @@
 <script src="exam_2023_1_GA2.js"></script>
 <script>
   let currentExamData = null;
+  let examTimerInterval = null;
+  let timeRemaining = 0;
+
+  function updateTimerDisplay() {
+      if(timeRemaining < 0) timeRemaining = 0;
+      const minutes = Math.floor(timeRemaining / 60);
+      const seconds = timeRemaining % 60;
+      document.getElementById('exam-timer').innerText = 
+          `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  }
 
   function toggleTheme(){
     const root = document.documentElement;
@@ -409,6 +419,19 @@
      document.getElementById('current-exam-title').innerText = currentExamData.title;
      document.getElementById('current-exam-subtitle').innerText = currentExamData.subtitle || '';
      
+     if (examTimerInterval) clearInterval(examTimerInterval);
+     timeRemaining = (currentExamData.duration || 90) * 60;
+     updateTimerDisplay();
+     examTimerInterval = setInterval(() => {
+         timeRemaining--;
+         updateTimerDisplay();
+         if(timeRemaining <= 0) {
+             clearInterval(examTimerInterval);
+             alert("Die Zeit ist abgelaufen! Die Prüfung wird nun automatisch abgegeben.");
+             showResults();
+         }
+     }, 1000);
+
      const container = document.getElementById('exam-container');
      container.innerHTML = ''; 
 
@@ -596,6 +619,7 @@
 
   function cancelExam() {
      if(confirm('Möchtest du die Simulation wirklich abbrechen?')) {
+         if (examTimerInterval) clearInterval(examTimerInterval);
          document.getElementById('selection-view').style.display = 'block';
          document.getElementById('exam-view').style.display = 'none';
          document.getElementById('page-title').innerText = 'Prüfungssimulation';
@@ -611,6 +635,7 @@
   }
 
   function showResults() {
+     if (examTimerInterval) clearInterval(examTimerInterval);
      document.getElementById('exam-view').style.display = 'none';
      document.getElementById('result-view').style.display = 'block';
      
