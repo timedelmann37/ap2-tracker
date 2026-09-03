@@ -1,0 +1,2304 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AP2 Tracker – Winterprüfung 2026/27</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme: light;
+    --font-body: 'IBM Plex Sans', system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    --surface-1:      #fcfcfb;
+    --page:           #f9f9f7;
+    --text-primary:   #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted:     #898781;
+    --grid:           #e1e0d9;
+    --baseline:       #c3c2b7;
+    --border:         rgba(11,11,11,0.10);
+    --success:        #006300;
+    --status-good:    #0ca30c;
+    --status-warning: #fab219;
+    --status-critical:#d03b3b;
+    --cat-ga1:        #2a78d6;
+    --cat-ga2:        #eb6834;
+    --cat-wiso:       #1baf7a;
+    --marker:         #4a3aa7;
+    --shadow: 0 1px 2px rgba(11,11,11,0.04), 0 6px 20px rgba(11,11,11,0.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --surface-1:      #1a1a19;
+      --page:           #0d0d0d;
+      --text-primary:   #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted:     #8f8d86;
+      --grid:           #2c2c2a;
+      --baseline:       #383835;
+      --border:         rgba(255,255,255,0.10);
+      --success:        #0ca30c;
+      --cat-ga1:        #3987e5;
+      --cat-ga2:        #d95926;
+      --cat-wiso:       #199e70;
+      --marker:         #9085e9;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --surface-1:      #1a1a19;
+    --page:           #0d0d0d;
+    --text-primary:   #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted:     #8f8d86;
+    --grid:           #2c2c2a;
+    --baseline:       #383835;
+    --border:         rgba(255,255,255,0.10);
+    --success:        #0ca30c;
+    --cat-ga1:        #3987e5;
+    --cat-ga2:        #d95926;
+    --cat-wiso:       #199e70;
+    --marker:         #9085e9;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+
+  * { box-sizing: border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background: var(--page);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    padding: 32px 20px 80px;
+  }
+  .page{ max-width: 1100px; margin: 0 auto; }
+
+  /* ---------- Header ---------- */
+  .header{
+    display:flex; justify-content:space-between; align-items:flex-start;
+    gap:16px; margin-bottom: 24px; flex-wrap: wrap;
+  }
+  .header h1{ font-size: 26px; font-weight: 700; margin: 0 0 4px; letter-spacing: -0.01em; text-wrap: balance; }
+  .header p{ margin:0; color: var(--text-secondary); font-size: 14px; }
+  .theme-toggle{
+    border: 1px solid var(--border); background: var(--surface-1); color: var(--text-secondary);
+    border-radius: 10px; padding: 8px 14px; font-size: 13px; cursor:pointer;
+    box-shadow: var(--shadow);
+  }
+  .theme-toggle:hover{ color: var(--text-primary); }
+
+  /* ---------- Overview card ---------- */
+  .overview{
+    background: var(--surface-1); border:1px solid var(--border); border-radius: 18px;
+    padding: 24px; box-shadow: var(--shadow); margin-bottom: 24px;
+  }
+  .overview-top{ display:flex; justify-content:space-between; align-items:baseline; gap: 12px; flex-wrap:wrap; margin-bottom: 14px;}
+  .overview-top .label{ font-size: 13px; color: var(--text-secondary); font-weight:600; text-transform: uppercase; letter-spacing:.04em; }
+  .overview-top .pct{ font-family: var(--font-mono); font-size: 32px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .track{ height: 12px; border-radius: 6px; background: var(--grid); overflow: hidden; position: relative; }
+  .track > .fill{
+    height:100%; border-radius: 6px; background: linear-gradient(90deg, var(--cat-ga1), var(--cat-wiso));
+    width:0%; transition: width .5s ease;
+  }
+  .stat-grid{
+    display:grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap:14px; margin-top:20px;
+  }
+  .stat-tile{ padding: 4px 0; }
+  .stat-tile .v{ font-family: var(--font-mono); font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .stat-tile .v#statCurrent{ font-family: var(--font-body); font-size:16px; font-weight:700; font-variant-numeric: normal; }
+  .stat-tile .k{ font-size: 12.5px; color: var(--text-muted); margin-top:2px; }
+
+  /* ---------- Oberer Bereich: Fokus (breit) + Rhythmus (schmale Seitenspalte) ---------- */
+  .top-grid{ display:grid; grid-template-columns: 2fr 1fr; gap:20px; align-items:start; margin-bottom:24px; }
+  .top-grid .focus, .top-grid .rhythm{ margin-bottom:0; min-width:0; }
+  @media (max-width: 900px){
+    .top-grid{ grid-template-columns: 1fr; }
+  }
+
+  /* ---------- Rhythm card ---------- */
+  .rhythm{
+    background: var(--surface-1); border:1px solid var(--border); border-radius: 18px;
+    padding: 20px 24px; box-shadow: var(--shadow); margin-bottom: 24px;
+  }
+  .rhythm-head{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
+  .rhythm-head h2{ font-size:15px; margin:0; }
+  .rhythm-head span{ font-size:12px; color:var(--text-muted); }
+  .rhythm-table{ display:grid; grid-template-columns: auto 1fr auto; gap:2px 12px; }
+  .rhythm-table .rday{ font-size:12.5px; font-weight:700; padding:7px 0; }
+  .rhythm-table .rtask{ font-size:12.5px; color:var(--text-secondary); padding:7px 0; border-top:1px dashed var(--grid); }
+  .rhythm-table .rdur{ font-family: var(--font-mono); font-size:11.5px; color:var(--text-muted); padding:7px 0; border-top:1px dashed var(--grid); white-space:nowrap; text-align:right; font-variant-numeric: tabular-nums; }
+  .rhythm-table .rday{ border-top:1px dashed var(--grid); }
+  .rhythm-table .rhead{ border-top:none !important; font-weight:700; color:var(--text-muted); font-size:11px; text-transform:uppercase; letter-spacing:.03em; padding-bottom:4px; }
+  .rhythm-table .roff .rtask, .rhythm-table .roff .rday{ color: var(--text-muted); font-style:italic; }
+  .day-badge{
+    font-size: 10.5px; font-weight:700; padding:3px 8px; border-radius:999px;
+    border:1px solid var(--border); color: var(--text-secondary); background: var(--page);
+  }
+
+  /* ---------- Focus: überfällig / heute / demnächst ---------- */
+  .focus{
+    background: var(--surface-1); border:1px solid var(--border); border-radius: 18px;
+    padding: 22px 24px 20px; box-shadow: var(--shadow); margin-bottom: 24px;
+  }
+  .focus-head{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+  .focus-head h2{ font-size:16px; margin:0; }
+  .focus-head span{ font-family: var(--font-mono); font-size:12px; color:var(--text-muted); font-weight:500; }
+  .focus-hero{
+    padding:14px 16px; border-radius:12px; line-height:1.6; font-size:13.5px; color: var(--text-primary);
+    background: color-mix(in srgb, var(--status-good) 10%, var(--page));
+    border:1px solid color-mix(in srgb, var(--status-good) 30%, var(--border));
+  }
+  .focus-hero.off{ background: var(--page); border-color: var(--border); color: var(--text-secondary); }
+  .focus-hero.edge{
+    background: color-mix(in srgb, var(--cat-ga1) 8%, var(--page));
+    border-color: color-mix(in srgb, var(--cat-ga1) 25%, var(--border));
+  }
+  .drill{
+    display:inline-block; margin-left:2px; font-size:11px; font-weight:700; padding:2px 8px;
+    border-radius:999px; background:var(--grid); color:var(--text-secondary); vertical-align:middle;
+  }
+  .fj{
+    margin-left:4px; font-size:11.5px; font-weight:700; padding:3px 10px; border-radius:999px; cursor:pointer;
+    border:1px solid currentColor; background:transparent; color:inherit; vertical-align:middle;
+  }
+  .fj:hover{ opacity:.75; }
+  .focus-alert{ display:flex; align-items:center; gap:8px; margin-top:10px; font-size:12.5px; font-weight:700; }
+  .focus-alert.warn{ color: var(--status-critical); }
+  .focus-alert.ok{ color: var(--status-good); }
+
+  .focus-table-wrap{ margin-top:16px; overflow-x:auto; }
+  table.ftable{ width:100%; border-collapse:collapse; font-size:13px; min-width:520px; }
+  table.ftable thead th{
+    text-align:left; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.03em;
+    color:var(--text-muted); padding:0 10px 8px; border-bottom:1px solid var(--border);
+  }
+  table.ftable tbody tr.frow{ cursor:pointer; transition: background .12s ease; }
+  table.ftable tbody tr.frow:hover{ background: var(--page); }
+  table.ftable tbody td{ padding:9px 8px; border-bottom:1px dashed var(--grid); vertical-align:middle; }
+  table.ftable tbody tr.frow.status-overdue td:first-child{ box-shadow: inset 3px 0 0 var(--status-critical); }
+  table.ftable tbody tr.frow.status-today td:first-child{ box-shadow: inset 3px 0 0 var(--status-good); }
+  table.ftable tbody tr.frow.status-upcoming td:first-child{ box-shadow: inset 3px 0 0 var(--baseline); }
+  table.ftable tbody tr.frow.status-done td:first-child{ box-shadow: inset 3px 0 0 var(--grid); }
+  tr.frow-group td{
+    padding:14px 10px 6px; border-bottom:none; font-size:11px; font-weight:700;
+    text-transform:uppercase; letter-spacing:.03em; color:var(--text-muted);
+  }
+  tr.frow-group:first-child td{ padding-top:2px; }
+  .group-count{
+    display:inline-block; margin-left:6px; font-size:10.5px; font-weight:700; padding:1px 7px; border-radius:999px;
+    background:var(--grid); color:var(--text-secondary); text-transform:none; letter-spacing:0;
+  }
+  .pill{ font-size:11px; font-weight:700; padding:3px 9px; border-radius:999px; white-space:nowrap; }
+  .pill-overdue{ background: color-mix(in srgb, var(--status-critical) 16%, transparent); color: var(--status-critical); }
+  .pill-today{ background: color-mix(in srgb, var(--status-good) 18%, transparent); color: var(--status-good); }
+  .pill-upcoming{ background: var(--grid); color: var(--text-secondary); }
+  .pill-done{ background: color-mix(in srgb, var(--status-good) 10%, transparent); color: var(--text-muted); }
+  .fc-cat{ white-space:nowrap; }
+  .fc-cat .dot{ display:inline-block; width:9px; height:9px; border-radius:50%; }
+  .fc-title{ font-weight:600; min-width:160px; }
+  .mark-dot{
+    display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--marker);
+    margin-right:7px; vertical-align:middle; flex-shrink:0;
+  }
+  .fc-range{ white-space:nowrap; font-family: var(--font-mono); font-size:11px; color:var(--text-muted); font-variant-numeric:tabular-nums; }
+  .fc-progress{ min-width:76px; }
+  .fc-progress .mini-track{ height:5px; border-radius:3px; background:var(--grid); overflow:hidden; }
+  .fc-progress .mini-track > div{ height:100%; border-radius:3px; }
+  .fc-progress .fc-pct{ display:block; margin-top:3px; font-family: var(--font-mono); font-size:11px; color:var(--text-muted); white-space:nowrap; font-variant-numeric: tabular-nums; }
+  .fc-action{ font-size:15px; font-weight:700; color:var(--text-muted); white-space:nowrap; text-align:right; }
+  tr.frow:hover .fc-action{ color: var(--text-primary); }
+  tr.is-done{ display:none; }
+  .focus-table-wrap.show-done tr.is-done{ display:table-row; }
+  tr.frow.status-done .fc-title{ color:var(--text-muted); text-decoration: line-through; text-decoration-color: var(--grid); font-weight:500; }
+  .focus-foot{ display:flex; justify-content:flex-end; margin-top:12px; }
+
+  @keyframes flashCard{
+    0%{ box-shadow: 0 0 0 3px color-mix(in srgb, var(--cat-color, var(--cat-ga1)) 55%, transparent), var(--shadow); }
+    100%{ box-shadow: var(--shadow); }
+  }
+  details.card.flash{ animation: flashCard 1.5s ease; }
+
+  /* ---------- Easter Egg ---------- */
+  .egg-btn{
+    position:fixed; right:18px; bottom:18px; z-index:40;
+    width:46px; height:46px; border-radius:50%;
+    border:1px solid var(--border); background:var(--surface-1); box-shadow:var(--shadow);
+    font-size:21px; cursor:pointer; opacity:.5; transition: opacity .2s ease, transform .2s ease;
+    display:flex; align-items:center; justify-content:center; padding:0;
+  }
+  .egg-btn:hover{ opacity:1; transform: scale(1.08) rotate(-6deg); }
+  .egg-overlay{
+    position:fixed; inset:0; z-index:50; background: rgba(0,0,0,.55);
+    display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  .egg-overlay[hidden]{ display:none; }
+  .egg-modal{
+    background: var(--surface-1); border:1px solid var(--border); border-radius:16px;
+    padding:20px; width:100%; max-width:520px; box-shadow:0 24px 64px rgba(0,0,0,.4);
+  }
+  .egg-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:4px; }
+  .egg-head h3{ margin:0; font-size:16px; }
+  .egg-sub{ font-weight:400; color: var(--text-muted); font-size:12.5px; }
+  .egg-close{
+    border:none; background:transparent; color: var(--text-muted); font-size:15px;
+    cursor:pointer; padding:5px 8px; border-radius:8px; flex-shrink:0;
+  }
+  .egg-close:hover{ color: var(--text-primary); background: var(--grid); }
+  .egg-intro{ font-size:12.5px; color: var(--text-secondary); margin:0 0 12px; }
+  #eggCanvas{
+    width:100%; max-width:480px; aspect-ratio: 4 / 3; display:block; margin:0 auto;
+    border-radius:12px; background: var(--page); border:1px solid var(--border); touch-action:none; cursor:crosshair;
+  }
+  .egg-stats{ display:flex; align-items:center; gap:16px; margin-top:12px; font-size:13px; color: var(--text-secondary); flex-wrap:wrap; }
+  .egg-stats b{ color: var(--text-primary); }
+  .egg-over{ margin-top:12px; text-align:center; }
+  .egg-over p{ margin:0 0 10px; font-size:14px; }
+
+  .egg-tabs{ display:flex; gap:6px; flex-wrap:wrap; margin:12px 0 14px; }
+  .egg-tab{
+    border:1px solid var(--border); background:transparent; color: var(--text-secondary);
+    padding:6px 11px; border-radius:999px; font-size:12px; font-weight:600; cursor:pointer;
+  }
+  .egg-tab.active{ color: var(--text-primary); background: var(--page); border-color: currentColor; }
+  .egg-tab:hover{ color: var(--text-primary); }
+  .egg-panel[hidden]{ display:none; }
+
+  .quiz-timer{ height:5px; border-radius:3px; background: var(--grid); overflow:hidden; margin-bottom:14px; }
+  .quiz-timer-bar{ height:100%; width:100%; background: var(--marker); transform-origin:left; }
+  .quiz-timer-bar.running{ transition: width linear; }
+  .quiz-prompt{
+    text-align:center; font-size:22px; font-weight:700; color: var(--text-primary);
+    padding:18px 10px; min-height:64px; display:flex; align-items:center; justify-content:center;
+    font-family: var(--font-mono);
+  }
+  .quiz-input-row{ display:flex; gap:8px; max-width:320px; margin:0 auto; }
+  .quiz-input-row input{
+    flex:1; min-width:0; border:1px solid var(--border); background: var(--page); color: var(--text-primary);
+    border-radius:10px; padding:9px 12px; font-size:15px; font-family: var(--font-mono); text-align:center; outline:none;
+  }
+  .quiz-input-row input:focus{ border-color: var(--marker); }
+  .quiz-input-row input:disabled{ opacity:.6; }
+  .quiz-feedback{ text-align:center; font-size:12.5px; min-height:18px; margin-top:8px; font-weight:600; }
+  .quiz-feedback.ok{ color:#2e9950; }
+  .quiz-feedback.bad{ color:#d1453b; }
+  .choice-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; max-width:420px; margin:0 auto; }
+  .choice-btn{
+    border:1px solid var(--border); background: var(--page); color: var(--text-primary);
+    padding:10px 12px; border-radius:10px; font-size:12.5px; cursor:pointer; text-align:left; line-height:1.3;
+  }
+  .choice-btn:hover{ border-color: var(--marker); }
+  .choice-btn.correct{ border-color:#2e9950; background: color-mix(in srgb, #2e9950 18%, var(--page)); }
+  .choice-btn.wrong{ border-color:#d1453b; background: color-mix(in srgb, #d1453b 18%, var(--page)); }
+  .choice-btn:disabled{ cursor:default; opacity:.85; }
+
+  /* ---------- Suche ---------- */
+  .search-row{ margin-bottom: 14px; }
+  .search-box{
+    display:flex; align-items:center; gap:9px;
+    border:1px solid var(--border); background: var(--surface-1); border-radius: 12px;
+    padding: 10px 14px; max-width: 480px; box-shadow: var(--shadow);
+  }
+  .search-box:focus-within{ border-color: var(--marker); }
+  .search-box svg{ flex-shrink:0; width:16px; height:16px; color: var(--text-muted); }
+  .search-box input{
+    flex:1; min-width:0; border:none; outline:none; background:transparent;
+    color: var(--text-primary); font-size:14px; font-family:inherit;
+  }
+  .search-box input::placeholder{ color: var(--text-muted); }
+  .search-box button{
+    flex-shrink:0; border:none; background:transparent; color: var(--text-muted); cursor:pointer;
+    font-size:13px; line-height:1; padding:4px 6px; border-radius:7px;
+  }
+  .search-box button:hover{ color: var(--text-primary); background: var(--grid); }
+  mark{ background: color-mix(in srgb, var(--marker) 38%, transparent); color: inherit; border-radius:3px; padding:0 1px; }
+  .no-results{
+    display:none; text-align:center; color: var(--text-muted); font-size:14px;
+    border:1px dashed var(--border); border-radius:12px; padding:26px 18px; margin-bottom:20px;
+  }
+  .no-results.show{ display:block; }
+  .no-results button{
+    margin-left:8px; border:1px solid var(--border); background: var(--surface-1); color: var(--text-secondary);
+    padding:5px 11px; border-radius:8px; cursor:pointer; font-size:12.5px;
+  }
+  .no-results button:hover{ color: var(--text-primary); }
+
+  /* ---------- Filters ---------- */
+  .controls{
+    display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;
+    margin-bottom: 20px;
+  }
+  .tabs{ display:flex; gap:6px; flex-wrap:wrap; }
+  .tab{
+    border:1px solid var(--border); background: var(--surface-1); color: var(--text-secondary);
+    padding: 8px 14px; border-radius: 999px; font-size: 13px; cursor:pointer; font-weight:600;
+    display:flex; align-items:center; gap:7px;
+  }
+  .tab .dot{ width:8px; height:8px; border-radius:50%; background: var(--text-muted); }
+  .tab.active{ color: var(--text-primary); border-color: currentColor; background: var(--surface-1); box-shadow: var(--shadow); }
+  .tab .tab-count{ font-size:11px; font-weight:700; opacity:.75; }
+  .tab.tab-marked.active{ color: var(--marker); }
+  .btn-row{ display:flex; gap:8px; }
+  .btn-ghost{
+    border:1px solid var(--border); background:transparent; color: var(--text-secondary);
+    padding: 8px 12px; border-radius: 10px; font-size: 12.5px; cursor:pointer;
+  }
+  .btn-ghost:hover{ color: var(--text-primary); }
+
+  /* ---------- Category sections (Spalten-Layout) ---------- */
+  #categories{
+    display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap:22px; align-items:start;
+  }
+  .category{ min-width:0; }
+  .category-head{ display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+  .category-head .swatch{ width:11px; height:11px; border-radius:3px; flex-shrink:0; }
+  .category-head h2{ font-size:15px; margin:0; min-width:0; }
+  .category-head .mini-track{ flex:1; height:6px; border-radius:3px; background:var(--grid); overflow:hidden; min-width:30px; }
+  .category-head .mini-track > div{ height:100%; border-radius:3px; transition:width .5s ease; }
+  .category-head .cat-pct{ font-size:12.5px; color:var(--text-muted); font-weight:600; width:36px; text-align:right; flex-shrink:0; }
+
+  .cards{ display:flex; flex-direction:column; gap:14px; }
+
+  details.card{
+    background: var(--surface-1); border:1px solid var(--border); border-radius:14px;
+    box-shadow: var(--shadow); overflow:hidden;
+  }
+  details.card > summary{
+    list-style:none; cursor:pointer; padding:16px 16px 14px; position:relative;
+  }
+  details.card > summary::-webkit-details-marker{ display:none; }
+  details.card.marked{ box-shadow: var(--shadow), inset 3px 0 0 var(--marker); }
+  .card-top{ display:flex; justify-content:space-between; gap:8px; align-items:flex-start; }
+  .card-title{ font-size:14.5px; font-weight:700; line-height:1.3; text-wrap: balance; }
+  .mark-btn{
+    flex-shrink:0; border:none; background:transparent; cursor:pointer; padding:2px;
+    color: var(--text-muted); border-radius:6px; line-height:0;
+  }
+  .mark-btn:hover{ color: var(--marker); }
+  .mark-btn .bm{ width:17px; height:17px; }
+  .mark-btn.active{ color: var(--marker); }
+  .mark-btn.active .bm{ fill: var(--marker); }
+  .mark-btn.item{ opacity:.4; margin-left:auto; margin-top:2px; }
+  .mark-btn.item .bm{ width:14px; height:14px; }
+  .mark-btn.item:hover, .mark-btn.item:focus-visible, .mark-btn.item.active{ opacity:1; }
+  .chev{ flex-shrink:0; width:18px; height:18px; color:var(--text-muted); transition:transform .2s ease; margin-top:1px;}
+  details[open] .chev{ transform: rotate(90deg); }
+  .card-meta{ display:flex; align-items:center; gap:8px; margin-top:8px; flex-wrap:wrap; }
+  .badge.marked, .badge.mark-count-badge{ background: color-mix(in srgb, var(--marker) 16%, transparent); color: var(--marker); }
+  .badge{
+    font-size: 11px; font-weight:700; padding:3px 8px; border-radius:999px; color: var(--text-secondary);
+    background: var(--grid);
+  }
+  .badge.now{ background: color-mix(in srgb, var(--status-good) 18%, transparent); color: var(--status-good); }
+  .badge.overdue{ background: color-mix(in srgb, var(--status-critical) 16%, transparent); color: var(--status-critical); }
+  .card-progress{ margin-top:10px; }
+  .card-progress .track{ height:6px; }
+  .card-progress .foot{ display:flex; justify-content:space-between; margin-top:5px; font-family: var(--font-mono); font-size:11.5px; color:var(--text-muted); font-variant-numeric: tabular-nums; }
+
+  .card-body{ padding: 0 16px 16px; border-top:1px solid var(--border); }
+  .intro{ font-size:12.5px; color:var(--text-secondary); margin:12px 0 4px; line-height:1.5; }
+  .group-h{ font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:var(--text-muted); margin:14px 0 6px; }
+  ul.items{ list-style:none; margin:8px 0 0; padding:0; }
+  ul.items li{ display:flex; align-items:flex-start; gap:9px; padding:6px 8px; margin:0 -8px; border-radius:8px; border-bottom: 1px dashed var(--grid); font-size:13px; line-height:1.45; }
+  ul.items li:last-child{ border-bottom:none; }
+  ul.items li.marked{
+    background: color-mix(in srgb, var(--marker) 8%, transparent);
+    box-shadow: inset 3px 0 0 var(--marker);
+  }
+  ul.items input[type=checkbox]{
+    appearance:none; -webkit-appearance:none; width:17px; height:17px; border-radius:5px;
+    border:1.5px solid var(--baseline); margin-top:2px; flex-shrink:0; cursor:pointer; position:relative;
+    background: var(--surface-1);
+  }
+  ul.items input[type=checkbox]:checked{ background: var(--cat-color, var(--cat-ga1)); border-color: var(--cat-color, var(--cat-ga1)); }
+  ul.items input[type=checkbox]:checked::after{
+    content:""; position:absolute; left:5px; top:1.5px; width:4px; height:9px;
+    border:solid white; border-width:0 2px 2px 0; transform:rotate(40deg);
+  }
+  ul.items label{ cursor:pointer; }
+  ul.items li.checked label{ color: var(--text-muted); text-decoration: line-through; text-decoration-color: var(--grid); }
+  .practice{
+    margin-top:12px; padding:10px 12px; border-radius:10px; font-size:12.5px; line-height:1.5;
+    background: var(--page); color: var(--text-secondary); border:1px solid var(--border);
+  }
+  .practice b{ color: var(--text-primary); }
+  .note{ margin-top:10px; font-size:12px; color:var(--text-muted); line-height:1.5; }
+
+  .footer-note{
+    margin-top: 30px; padding: 16px 18px; border-radius:14px; background: var(--surface-1);
+    border:1px solid var(--border); font-size:12.5px; color: var(--text-secondary); line-height:1.6;
+  }
+  .footer-note b{ color:var(--text-primary); }
+
+  @media (max-width: 640px){
+    .header{ flex-direction:column; }
+    .overview-top .pct{ font-size:28px; }
+  }
+
+  /* ---------- Fokus-Ring & Bewegung ---------- */
+  a:focus-visible, button:focus-visible, summary:focus-visible,
+  input[type=checkbox]:focus-visible, tr.frow:focus-visible{
+    outline: 2px solid var(--marker); outline-offset: 2px; border-radius: 4px;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+    details.card.flash{ animation: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--cat-color, var(--cat-ga1)) 55%, transparent), var(--shadow); }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div>
+      <h1>AP2 Tracker · Winterprüfung 2026/27</h1>
+      <p>Konzeption &amp; Administration · Netzwerke · Wirtschaft &amp; Sozialkunde — Start Mo 24.08.2026 · KW 35–47 · max. 1–2 Std./Tag</p>
+    </div>
+    <button class="theme-toggle" id="themeToggle" type="button">🌓 Darstellung</button>
+  </div>
+
+  <div class="overview">
+    <div class="overview-top">
+      <span class="label">Gesamtfortschritt</span>
+      <span class="pct" id="overallPct">0%</span>
+    </div>
+    <div class="track"><div class="fill" id="overallFill"></div></div>
+    <div class="stat-grid">
+      <div class="stat-tile"><div class="v" id="statChecked">0 / 0</div><div class="k">Punkte abgehakt</div></div>
+      <div class="stat-tile"><div class="v" id="statTopics">0 / 31</div><div class="k">Themenblöcke abgeschlossen</div></div>
+      <div class="stat-tile"><div class="v" id="statCurrent">–</div><div class="k">Aktuell dran</div></div>
+      <div class="stat-tile"><div class="v" id="statDays">–</div><div class="k">Tage bis zur Prüfung (24.11.2026)</div></div>
+    </div>
+  </div>
+
+  <div class="top-grid">
+    <div class="focus">
+      <div class="focus-head">
+        <h2>Was ist dran?</h2>
+        <span id="focusDate"></span>
+      </div>
+      <div class="focus-hero" id="focusHero"></div>
+      <div class="focus-alert" id="focusAlert"></div>
+      <div class="focus-table-wrap" id="focusTableWrap">
+        <table class="ftable">
+          <thead>
+            <tr><th>Status</th><th></th><th>Thema</th><th>Zeitraum</th><th>Fortschritt</th><th></th></tr>
+          </thead>
+          <tbody id="focusTableBody"></tbody>
+        </table>
+      </div>
+      <div class="focus-foot">
+        <button class="btn-ghost" id="toggleDone" type="button">Erledigte einblenden</button>
+      </div>
+    </div>
+
+    <div class="rhythm">
+      <div class="rhythm-head">
+        <h2>Wochenrhythmus</h2>
+        <span>Subnetting-Drill (10 Min) ab Woche 2 jeden Tag mit</span>
+      </div>
+      <div class="rhythm-table">
+        <div class="rday rhead">Tag</div><div class="rtask rhead">Aufgabe</div><div class="rdur rhead">Dauer</div>
+        <div class="rday">Montag</div><div class="rtask">GA1-Thema der Woche, Teil 1</div><div class="rdur">60–75 Min</div>
+        <div class="rday">Dienstag</div><div class="rtask">GA1-Thema, Teil 2 + Rechenaufgabe</div><div class="rdur">45–60 Min</div>
+        <div class="rday">Mittwoch</div><div class="rtask">GA2-Thema der Woche (+ Subnetting-Drill)</div><div class="rdur">60–75 Min</div>
+        <div class="rday">Donnerstag</div><div class="rtask">WiSo-Karteikarten (neuer Block) + Drill</div><div class="rdur">30–45 Min</div>
+        <div class="rday">Freitag</div><div class="rtask">Wiederholung GA1/GA2, Fehlerquellen + Drill</div><div class="rdur">30–45 Min</div>
+        <div class="rday roff">Samstag</div><div class="rtask roff">frei</div><div class="rdur roff">–</div>
+        <div class="rday">Sonntag</div><div class="rtask">Selbsttest ohne Unterlagen + WiSo-Karten wiederholen</div><div class="rdur">45–60 Min</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="search-row">
+    <div class="search-box">
+      <svg viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="6.5" stroke="currentColor" stroke-width="1.6"/><path d="M14 14l4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <input type="text" id="searchInput" placeholder="Suche nach Thema oder Stichwort … (z. B. „RAID“, „Kündigung“, „VLAN“)" autocomplete="off">
+      <button type="button" id="clearSearch" title="Suche löschen" hidden>✕</button>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-filter="all"><span class="dot"></span>Alle</button>
+      <button class="tab" data-filter="ga1" style="color:var(--cat-ga1)"><span class="dot" style="background:var(--cat-ga1)"></span>Konzeption &amp; Admin.</button>
+      <button class="tab" data-filter="ga2" style="color:var(--cat-ga2)"><span class="dot" style="background:var(--cat-ga2)"></span>Netzwerke</button>
+      <button class="tab" data-filter="wiso" style="color:var(--cat-wiso)"><span class="dot" style="background:var(--cat-wiso)"></span>WiSo</button>
+      <button class="tab tab-marked" data-filter="marked" style="color:var(--marker)"><span class="dot" style="background:var(--marker)"></span>Markiert <span class="tab-count" id="markedTabCount">(0)</span></button>
+    </div>
+    <div class="btn-row">
+      <button class="btn-ghost" id="expandAll" type="button">Alle aufklappen</button>
+      <button class="btn-ghost" id="collapseAll" type="button">Alle zuklappen</button>
+      <button class="btn-ghost" id="resetAll" type="button">Fortschritt zurücksetzen</button>
+    </div>
+  </div>
+
+  <div id="categories"></div>
+
+  <div class="no-results" id="noResults">
+    Keine Treffer für „<span id="noResultsQuery"></span>“.
+    <button type="button" id="noResultsClear">Suche zurücksetzen</button>
+  </div>
+
+  <div class="footer-note" id="footerNote">
+    <b>Speicherung:</b> Dein Fortschritt wird automatisch im lokalen Speicher deines Browsers gesichert (<span id="saveState">–</span>) und bleibt beim Schließen und erneuten Öffnen dieser Datei erhalten. Das funktioniert zuverlässig, wenn du die Datei <b>speicherst und direkt im Browser öffnest</b> (z. B. per Doppelklick) — in einer eingebetteten Chat-Vorschau kann der Browser-Speicher blockiert sein. Öffne die Datei danach immer vom selben Ort aus, sonst zählt der Browser sie als neue Seite ohne gespeicherten Stand. Die zusätzliche, unabhängige Fortschrittsquelle bleibt dein <b>Notion-Status-Feld</b> je Thema.
+  </div>
+
+</div>
+
+<button type="button" id="eggBtn" class="egg-btn" title="Kurze Pause? Lern-Minispiele 🕹️" aria-label="Lern-Minispiele öffnen">🕹️</button>
+
+<div class="egg-overlay" id="eggOverlay" hidden>
+  <div class="egg-modal" role="dialog" aria-modal="true" aria-label="Lern-Minispiele">
+    <div class="egg-head">
+      <h3 id="eggTitle">📦 Paket-Fang <span class="egg-sub" id="eggSub">— kurz den Kopf freimachen</span></h3>
+      <button type="button" id="eggClose" class="egg-close" aria-label="Schließen">✕</button>
+    </div>
+
+    <div class="egg-tabs" id="eggTabs">
+      <button type="button" class="egg-tab active" data-game="packet">📦 Paket-Fang</button>
+      <button type="button" class="egg-tab" data-game="ports">🔌 Port-Sprint</button>
+      <button type="button" class="egg-tab" data-game="subnet">🧮 Subnetting-Blitz</button>
+      <button type="button" class="egg-tab" data-game="terms">🧠 Fachbegriff-Rush</button>
+    </div>
+
+    <div class="egg-panel" id="panel-packet">
+      <p class="egg-intro">Klick die Pakete, bevor sie unten ankommen. Verpasste Pakete zählen als Timeout — kommt dir bekannt vor? 😉</p>
+      <canvas id="eggCanvas" width="480" height="360"></canvas>
+      <div class="egg-stats">
+        <span>Punkte: <b id="eggScore">0</b></span>
+        <span>Leben: <b id="eggLives">3</b></span>
+        <button type="button" id="eggRestart" class="btn-ghost">Neu starten</button>
+      </div>
+      <div class="egg-over" id="eggOver" hidden>
+        <p>Verbindung getrennt. Endstand: <b id="eggFinalScore">0</b> Pakete gefangen.</p>
+        <button type="button" id="eggPlayAgain" class="btn-ghost">Noch mal</button>
+      </div>
+    </div>
+
+    <div class="egg-panel" id="panel-ports" hidden>
+      <p class="egg-intro">Tippe zu jedem Dienst die richtige Portnummer — 45 Sekunden, so viele wie du schaffst. Genau der Stoff aus GA2 Block N1.</p>
+      <div class="quiz-timer"><div class="quiz-timer-bar" id="portsTimerBar"></div></div>
+      <div class="quiz-prompt" id="portsPrompt">SSH</div>
+      <form class="quiz-input-row" id="portsForm">
+        <input type="text" inputmode="numeric" id="portsInput" placeholder="Portnummer" autocomplete="off">
+        <button type="submit" class="btn-ghost">Prüfen</button>
+      </form>
+      <div class="quiz-feedback" id="portsFeedback"></div>
+      <div class="egg-stats">
+        <span>Richtig: <b id="portsScore">0</b></span>
+        <span>Streak: <b id="portsStreak">0</b></span>
+        <button type="button" id="portsRestart" class="btn-ghost">Neu starten</button>
+      </div>
+      <div class="egg-over" id="portsOver" hidden>
+        <p>Zeit um! <b id="portsFinal">0</b> Ports richtig getippt.</p>
+        <button type="button" id="portsPlayAgain" class="btn-ghost">Noch mal</button>
+      </div>
+    </div>
+
+    <div class="egg-panel" id="panel-subnet" hidden>
+      <p class="egg-intro">Netzadresse, Broadcastadresse, Hostanzahl oder Subnetzmaske berechnen — 90 Sekunden Zeit. Der tägliche Subnetting-Drill aus GA2 Block N2, nur als Spiel.</p>
+      <div class="quiz-timer"><div class="quiz-timer-bar" id="subnetTimerBar"></div></div>
+      <div class="quiz-prompt" id="subnetPrompt">Netzadresse von 10.0.0.1/24?</div>
+      <form class="quiz-input-row" id="subnetForm">
+        <input type="text" id="subnetInput" placeholder="z. B. 10.0.0.0" autocomplete="off">
+        <button type="submit" class="btn-ghost">Prüfen</button>
+      </form>
+      <div class="quiz-feedback" id="subnetFeedback"></div>
+      <div class="egg-stats">
+        <span>Richtig: <b id="subnetScore">0</b></span>
+        <span>Streak: <b id="subnetStreak">0</b></span>
+        <button type="button" id="subnetRestart" class="btn-ghost">Neu starten</button>
+      </div>
+      <div class="egg-over" id="subnetOver" hidden>
+        <p>Zeit um! <b id="subnetFinal">0</b> Aufgaben richtig gelöst.</p>
+        <button type="button" id="subnetPlayAgain" class="btn-ghost">Noch mal</button>
+      </div>
+    </div>
+
+    <div class="egg-panel" id="panel-terms" hidden>
+      <p class="egg-intro">Was steckt hinter der Abkürzung? 45 Sekunden, vier Antworten zur Auswahl — Begriffe aus allen drei Prüfungsteilen gemischt.</p>
+      <div class="quiz-timer"><div class="quiz-timer-bar" id="termsTimerBar"></div></div>
+      <div class="quiz-prompt" id="termsPrompt">RAID</div>
+      <div class="choice-grid" id="termsChoices"></div>
+      <div class="quiz-feedback" id="termsFeedback"></div>
+      <div class="egg-stats">
+        <span>Richtig: <b id="termsScore">0</b></span>
+        <span>Streak: <b id="termsStreak">0</b></span>
+        <button type="button" id="termsRestart" class="btn-ghost">Neu starten</button>
+      </div>
+      <div class="egg-over" id="termsOver" hidden>
+        <p>Zeit um! <b id="termsFinal">0</b> Begriffe richtig erkannt.</p>
+        <button type="button" id="termsPlayAgain" class="btn-ghost">Noch mal</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---------------------------------------------------------------
+// Datenbasis: 3 Bereiche × Themenblöcke, identisch zu den Notion-Einträgen
+// ---------------------------------------------------------------
+const DATA = [
+{ id:'ga1', name:'Konzeption und Administration von IT-Systemen', color:'var(--cat-ga1)', topics: [
+  { id:'ga1-1', title:'Block 1 – Server-, Client- und Hardwarekonzeption', week:'Woche 1 · KW 35 · 24.08.2026–30.08.2026', start:'2026-08-24', end:'2026-08-30',
+    items:[
+      'Leistungsindikatoren Server: CPU (Sockel, Kerne, Threads, Takt), RAM (ECC, registered), IOPS, Durchsatz, Latenz',
+      'Serverdimensionierung aus Anforderungen ableiten und begründen (nicht nur nennen)',
+      'Bauformen: Tower, Rack (Höheneinheiten, Einbautiefe, Traglast), Blade – Vor-/Nachteile',
+      'Hardware-Redundanz: redundante Netzteile, Hot-Swap, Hot-Spare, NIC-Teaming/Bonding, ECC',
+      'Clients: Fat Client vs. Thin Client vs. Zero Client, VDI und DaaS – wann welche Lösung',
+      'Peripherie & Appliances: Hardware-Firewall, Load Balancer, NAS-Appliance, Multifunktionsgeräte',
+      'Rechenzentrumsbetrieb: Leistungsaufnahme, Wärmelast, Klimatisierung, Kalt-/Warmgang',
+      'USV: VA vs. Watt, Leistungsfaktor, Überbrückungszeit, Online/Line-interactive/Offline, Notabschaltung',
+      'USV-Klassifizierung nach IEC 62040-3: VFD (Offline), VI (Line-Interactive), VFI (Online) – Schaltbilder und Abkürzungen zuordnen können (Prüfung 2023/1)',
+      'Redundanzstufen N+1, 2N, Georedundanz',
+      'Green IT: PUE, Energieeffizienz, Lebenszyklus, Refurbishing, Nachhaltigkeitsargumente in Beschaffungsentscheidungen',
+      'Lizenzierung: Windows Server Core-Lizenzierung, Standard vs. Datacenter, User-CAL vs. Device-CAL, Open-Source-Lizenzmodelle'
+    ], practice:'Rechnen: Leistungsbedarf & USV-Dimensionierung, Lizenzkosten für ein Szenario' },
+
+  { id:'ga1-2', title:'Block 2 – Virtualisierung, Cluster und Verfügbarkeit', week:'Woche 2 · KW 36 · 31.08.2026–06.09.2026', start:'2026-08-31', end:'2026-09-06',
+    items:[
+      'Hypervisor Typ 1 vs. Typ 2, Beispiele, Einsatzentscheidung',
+      'Container vs. VM: Isolation, Ressourcenbedarf, Startzeit, Einsatzfälle – klare Abgrenzung formulieren können',
+      'Vor- und Nachteile der Virtualisierung: Konsolidierung, Snapshots, Isolation vs. Overhead, Single Point of Failure, Lizenzfragen',
+      'Overcommitment (CPU/RAM), Ballooning, Thin vs. Thick Provisioning',
+      'Live-Migration: Voraussetzungen (Shared Storage, kompatible CPU-Generation, Netzwerk), Nutzen für Wartungsfenster',
+      'Cluster-Arten: Failover/HA, Load Balancing, Aktiv-Aktiv vs. Aktiv-Passiv',
+      'Quorum, Split-Brain, Fencing, Witness/Tiebreaker',
+      'Snapshot ist kein Backup – Begründung sauber formulieren (Prüfungsklassiker)',
+      'Verfügbarkeitsklassen: 99,9 % / 99,95 % / 99,99 % → Ausfallzeit pro Jahr und Monat',
+      'MTBF, MTTR, Verfügbarkeitsformel A = MTBF / (MTBF + MTTR)',
+      'Reihen- vs. Parallelschaltung von Komponenten und deren Gesamtverfügbarkeit',
+      'SLA: Kennzahlen, Reaktionszeit vs. Wiederherstellzeit, Servicezeiten, Pönale',
+      'Kubernetes-Grundbegriffe (Pod, Deployment, Service, Replikate) als möglicher Trend-Punkt'
+    ], practice:'Rechnen: Verfügbarkeit in Ausfallminuten umrechnen, Gesamtverfügbarkeit einer Kette, Konsolidierungsrechnung physisch → virtuell' },
+
+  { id:'ga1-3', title:'Block 3 – Speicherlösungen', week:'Woche 3 · KW 37 · 07.09.2026–13.09.2026', start:'2026-09-07', end:'2026-09-13',
+    items:[
+      'DAS vs. NAS vs. SAN: Block- vs. Dateiebene, Protokolle (SMB/CIFS, NFS, iSCSI, FC, FCoE, NVMe-oF)',
+      'Auswahlentscheidung NAS vs. SAN an einem Szenario begründen (Kosten, Performance, Skalierung, Verwaltung)',
+      'Objektspeicher (S3-kompatibel): Buckets, Keys, Versionierung, Object Lock/WORM – Archiv, Backup-Ziel, Data Lake',
+      'RAID 0, 1, 5, 6, 10, 50, 60: Funktionsweise, Nutzkapazität, Ausfalltoleranz, Rebuild-Risiko',
+      'Write Penalty je RAID-Level und Auswirkung auf IOPS',
+      'Hardware- vs. Software-RAID, Controller-Cache, BBU, Hot Spare, Hot Swap',
+      'SSD vs. HDD vs. NVMe: IOPS, Latenz, Endurance (TBW/DWPD), Tiering, Caching',
+      'Dateisysteme: NTFS, ReFS, ext4, XFS, ZFS/Btrfs (Snapshots, Prüfsummen), Quotas',
+      'LVM/Volumes: Partitionierung, Online-Erweiterung, Volume Groups',
+      'Deduplizierung, Komprimierung, Thin Provisioning – Nutzen und Risiken',
+      'Software-defined Storage und verteilte Systeme: Replikation vs. Erasure Coding, Failure Domains',
+      'Kapazitätsplanung: Wachstum, Reservekapazität, Bruttokapazität vs. Nutzkapazität, TB vs. TiB',
+      'Archivierung: revisionssichere Ablage, Aufbewahrungsfristen, HSM'
+    ], practice:'Rechnen: RAID-Nutzkapazität und benötigte Plattenanzahl, IOPS mit Write Penalty, Speicherwachstum über 3–5 Jahre' },
+
+  { id:'ga1-4', title:'Block 4 – Backup, Recovery und Notfallvorsorge', week:'Woche 4 · KW 38 · 14.09.2026–20.09.2026', start:'2026-09-14', end:'2026-09-20',
+    items:[
+      'Vollsicherung / differenziell / inkrementell / inkrementell-forever / synthetisches Voll: Dauer, Restore, Speicherbedarf im Vergleich',
+      'Für ein Szenario die passende Kombination wählen und begründen',
+      'Generationenprinzip (Großvater-Vater-Sohn), Medienrotation, benötigte Medienanzahl berechnen',
+      '3-2-1-Regel (bzw. 3-2-1-1-0), Offsite, Air Gap, Immutable Backup gegen Ransomware',
+      'RTO und RPO: Definition, Abgrenzung, Zuordnung zu Anforderungen – kommt sehr häufig',
+      'Backup-Fenster berechnen: Datenmenge ÷ Durchsatz, Bandbreite Mbit/s ↔ MB/s',
+      'Medien und Ziele: LTO (native vs. komprimierte Kapazität), D2D2T, Cloud-Backup, Backup-Server-Architektur',
+      'Restore-Test, Wiederanlaufplan, Notfallhandbuch, BSI-Notfallmanagement',
+      'Abgrenzung Backup ↔ Replikation ↔ Spiegelung ↔ Archivierung',
+      'Ein vollständiges Backup-Konzept schriftlich entwerfen: Was, wie oft, wohin, wie lange, wer prüft, wie wird getestet'
+    ], practice:'Rechnen: Speicherbedarf Voll+Inkrementell über 4 Wochen, Backup-Fenster bei gegebener Leitung, Bandanzahl bei GFS' },
+
+  { id:'ga1-5', title:'Block 5 – Cloud und Wirtschaftlichkeit', week:'Woche 5 · KW 39 · 21.09.2026–27.09.2026', start:'2026-09-21', end:'2026-09-27',
+    items:[
+      'IaaS / PaaS / SaaS: Verantwortungsabgrenzung als Tabelle auswendig können (wer verwaltet Hardware, OS, Runtime, Anwendung, Daten)',
+      'Public / Private / Hybrid / Community / Multi-Cloud, On-Premises als Vergleichsbasis',
+      'Vor- und Nachteile: CAPEX vs. OPEX, Skalierbarkeit, Vendor Lock-in, Datenschutz, Latenz, Betriebsaufwand',
+      'Skalierung: horizontal vs. vertikal, Elastizität, Auto-Scaling, Load Balancer',
+      'Load-Balancer-Algorithmen: Round Robin, Least Connections, IP-Hashing – Funktionsweise und Auswahl je Szenario begründen (Prüfung Sommer 2026)',
+      'Cloud und DSGVO: Auftragsverarbeitungsvertrag, Serverstandort, Drittlandtransfer, TOM',
+      'Migrationsstrategien: Lift-and-Shift, Replatforming, Refactoring – grob einordnen',
+      'Blue-Green Deployment: zwei identische Umgebungen (Staging/Live), Umschalten am Loadbalancer für unterbrechungsfreie Updates – Ablauf am Schaubild erklären können (Prüfung 2023/1)',
+      'TCO über 3–5 Jahre aufstellen (Anschaffung, Betrieb, Personal, Strom, Wartung, Lizenzen)',
+      'Break-even Cloud vs. On-Premises rechnen',
+      'Amortisationsrechnung, ROI, Kostenvergleichsrechnung',
+      'Nutzwertanalyse: Kriterien, Gewichtung, Punktvergabe, Ergebnis begründen',
+      'Angebotsvergleich: Bezugspreis, Rabatt, Skonto, Bezugskosten',
+      'Make-or-Buy, Kauf vs. Leasing vs. Miete'
+    ], practice:'Rechnen: Nutzwertanalyse-Matrix, TCO-Vergleich zweier Lösungen, Amortisationsdauer' },
+
+  { id:'ga1-6', title:'Block 6 – Betriebssysteme und Administration', week:'Woche 6 · KW 40 · 28.09.2026–04.10.2026', start:'2026-09-28', end:'2026-10-04',
+    items:[
+      'Windows Server: Rollen und Features, Active Directory (Forest, Domain, OU, Site), Abhängigkeit von DNS, DC-Redundanz',
+      'Gruppenrichtlinien: Verknüpfung, Vererbung, Reihenfolge (LSDOU), Loopback, Anwendungsfälle',
+      'Patch- und Updatemanagement: WSUS, Testring/Pilotring, Wartungsfenster, Rollback',
+      'Softwareverteilung und Clientbereitstellung: Images, Deployment-Werkzeuge, MDM für mobile Geräte',
+      'Linux: Verzeichnisstruktur, systemd/systemctl, Paketverwaltung, Logs (journalctl, /var/log)',
+      'Zeitgesteuerte Ausführung: crontab-Syntax (5 Felder) lesen und schreiben, systemd-Timer, unter Windows SCHTASKS/Task-Scheduler (/Create, /tn, /sc, /tr, /st) als Gegenstück (Prüfung 2023/1)',
+      'SSH: Key-Authentifizierung vs. Passwort, sudo, Root-Login sperren',
+      'Befehle sicher erklären: ls cp mv rm chmod chown ps top df du grep tail find ss ip systemctl rsync tar kill',
+      'Prozesse/Tasks im laufenden Betrieb kontrolliert beenden: kill/kill -9 (Linux, SIGTERM vs. SIGKILL), Taskmanager/taskkill (Windows) bei hängenden Programmen (Prüfung Sommer 2026)',
+      'Linux-Rechte: rwx, Oktalschreibweise (644, 755, 750), umask, SUID/SGID/Sticky Bit',
+      'Benutzer- und Gruppenverwaltung, Passwortrichtlinien, Kontosperrung',
+      'Systemhärtung: nicht benötigte Dienste deaktivieren, lokale Firewall, minimale Installation',
+      'UEFI/BIOS-Härtung: Secure Boot, BIOS-/UEFI-Passwort, Boot-Reihenfolge sperren, TPM aktivieren, nicht benötigte Schnittstellen deaktivieren (Prüfung Sommer 2026)',
+      'GRUB-Bootloader: Aufgabe im Bootvorgang, Boot-Menü/Kernel-Auswahl, Fehlersuche bei „grub rescue" (Bootloader reparieren/neu installieren) (Prüfung Sommer 2026)',
+      'Verzeichnisdienste und Authentifizierung: LDAP, Kerberos, RADIUS/AAA, SSO, SAML/OAuth im Grundprinzip, MFA'
+    ], practice:'Rechnen/Üben: chmod-Aufgaben in beide Richtungen, Cron-Ausdrücke interpretieren, GPO-Vererbungsszenario auflösen' },
+
+  { id:'ga1-7', title:'Block 7 – Berechtigungskonzepte', week:'Woche 7 · KW 41 · 05.10.2026–11.10.2026', start:'2026-10-05', end:'2026-10-11',
+    items:[
+      'Grundprinzipien: Least Privilege, Need-to-know, Funktionstrennung, Vier-Augen-Prinzip',
+      'Zugriffsmodelle: DAC, MAC, RBAC, ABAC – Unterschiede und Einsatzfälle',
+      'NTFS- vs. Freigabeberechtigungen, effektive Berechtigungen (die restriktivere gewinnt), Vererbung, Besitzübernahme',
+      'AGDLP/AGUDLP-Prinzip anwenden können – sehr beliebter Aufgabentyp',
+      'Berechtigungsmatrix für ein Szenario aufstellen (Rolle × Ressource × Recht) – mindestens dreimal üben',
+      'Rollenkonzept statt Einzelrechten, Rezertifizierung von Berechtigungen',
+      'Prozesse: Onboarding, Rollenwechsel, Offboarding, Vertretungsregelungen',
+      'Privilegierte Zugänge: getrennte Adminkonten, Tier-Modell, Just-in-Time-Rechte, PAM',
+      'Protokollierung von Zugriffen: Nutzen, Aufbewahrung, Datenschutz, Mitbestimmung des Betriebsrats'
+    ], practice:'Üben: Ein Fileserver-Szenario komplett durchspielen – Gruppen, Ordnerstruktur, Matrix, Begründung' },
+
+  { id:'ga1-8', title:'Block 8 – IT-Sicherheit und Datenschutz', week:'Woche 8 · KW 42 · 12.10.2026–18.10.2026', start:'2026-10-12', end:'2026-10-18',
+    items:[
+      'Schutzziele: Vertraulichkeit, Integrität, Verfügbarkeit, ergänzend Authentizität und Verbindlichkeit',
+      'Schutzbedarfsfeststellung (normal / hoch / sehr hoch), BSI IT-Grundschutz, ISO 27001, Risikoanalyse aus Eintrittswahrscheinlichkeit × Schadenshöhe',
+      'Bedrohungen: Ransomware, Phishing, Social Engineering, Man-in-the-Middle, DDoS, SQL-Injection, Insider-Täter, Zero-Day',
+      'Technische vs. organisatorische Maßnahmen (TOM) – je Bedrohung mindestens zwei nennen können',
+      'Netzwerkseitige Absicherung im Systemkontext: Segmentierung, VLAN, DMZ, Firewall-Typen, IDS/IPS, NAC',
+      'Zero Trust und Mikrosegmentierung',
+      'Verschlüsselung: symmetrisch vs. asymmetrisch, Hybridverfahren, Hashfunktionen, digitale Signatur',
+      'PKI und Zertifikate: Aufbau, CA, Gültigkeit, Ablauf-/Erneuerungsmanagement, TLS im Grundablauf',
+      'TLS-Handshake im Detail: ClientHello/ServerHello, Zertifikatsprüfung durch die CA, Schlüsselaustausch, Ableitung der Session Keys – Ablauf Schritt für Schritt erklären können (Prüfung Sommer 2026)',
+      'Verschlüsselung ruhender Daten (Datenträger) und übertragener Daten',
+      'Authentifizierung: Passwortrichtlinien, MFA, Passkeys, Passwortmanager',
+      'DSGVO: personenbezogene Daten, Grundsätze, Betroffenenrechte, Löschkonzept, Verarbeitungsverzeichnis, Meldepflicht binnen 72 Stunden',
+      'Incident Response: Erkennen → Eindämmen → Beseitigen → Wiederherstellen → Nachbereiten',
+      'Symptome einer Systemkompromittierung erkennen: unbekannte Prozesse/Programme, ungewöhnliche CPU-/Netzwerklast, veränderte oder neue Dateien, unerwartete Benutzerkonten, deaktivierte Sicherheitssoftware (Prüfung 2023/1)',
+      'Business Continuity Management, Notfallhandbuch, Wiederanlaufreihenfolge',
+      'KI-Nutzung im Unternehmen: Risiken wie Datenabfluss, Schatten-IT, fehlende Nachvollziehbarkeit'
+    ], practice:'Üben: Zu einem Szenario drei Schwachstellen benennen und je eine Maßnahme mit Begründung und Restrisiko formulieren' },
+
+  { id:'ga1-9', title:'Block 9 – Programme zur automatisierten Systemverwaltung', week:'Woche 9 · KW 43 · 19.10.2026–25.10.2026', start:'2026-10-19', end:'2026-10-25',
+    intro:'Eigene, ausdrücklich genannte Prüfungskompetenz – oft unterschätzt, hier fallen die meisten Punkte durch fehlende Übung.',
+    items:[
+      'Struktogramm (Nassi-Shneiderman) und Programmablaufplan lesen und zeichnen',
+      'Pseudocode schreiben, der ohne Sprachkenntnis verständlich ist',
+      'Schreibtischtest (Trace-Table): Variablenbelegung eines Algorithmus Schritt für Schritt tabellarisch von Hand durchspielen, um Ergebnis/Fehler zu finden – explizit geforderte Technik (Prüfung Sommer 2026)',
+      'Kontrollstrukturen: Sequenz, Verzweigung (if/else, case), Schleifen (for, while, do-while), Abbruchbedingungen',
+      'Variablen, Datentypen, Arrays/Listen, Funktionen mit Parametern und Rückgabewert, Zähler und Akkumulator',
+      'Klassendiagramm-Beziehungstypen: Aggregation (lose „hat ein", Teile leben unabhängig) vs. Komposition (starke „besteht aus", Teile ohne Ganzes nicht lebensfähig) – je ein Beispiel nennen können (Prüfung 2023/1)',
+      'Bash: Shebang, Variablen, Parameter $1 $@, Bedingungen, Schleifen, Exit-Codes, Pipes, Umleitungen',
+      'PowerShell: Verb-Noun-Cmdlets, Pipeline, Import-Csv, foreach, AD-Cmdlets für Massenanlage von Benutzern',
+      'Typische Aufgabenstellungen selbst schreiben: Logdateien löschen, Backup-Skript mit Datumsstempel, Benutzer aus CSV anlegen, Dienststatus prüfen',
+      'Gegebenes Skript analysieren: Was tut es, welche Ausgabe entsteht, welcher Fehler steckt drin, wie ergänzen',
+      'Idempotenz und deklarativ vs. imperativ erklären können',
+      'Konfigurationsmanagement und IaC: Ansible (Inventory, Playbook, Modul, Rolle), Abgrenzung zu Puppet/Chef/Terraform',
+      'YAML und JSON lesen, Syntaxfehler finden',
+      'Versionsverwaltung mit Git: Repository, Commit, Branch, Merge – und warum auch Skripte versioniert gehören',
+      'CI/CD-Grundbegriffe: Pipeline, Stage, Runner, automatisiertes Deployment',
+      'Qualität von Skripten: Kommentare, Fehlerbehandlung, Logging, Test vor Produktiveinsatz, Dokumentation'
+    ], practice:'Üben: Jede Woche ein kleines Skript auf Papier schreiben – die Prüfung ist handschriftlich, ohne Autovervollständigung' },
+
+  { id:'ga1-10', title:'Block 10 – Betrieb, Monitoring und Prozesse', week:'Woche 10 · KW 44 · 26.10.2026–01.11.2026', start:'2026-10-26', end:'2026-11-01',
+    items:[
+      'Monitoring: agentenbasiert vs. agentenlos, SNMP, Schwellwerte, Alarmierung, Eskalationskette',
+      'Sinnvolle Kennzahlen je System (CPU, RAM, Speicherplatz, IO, Netzlast, Dienstverfügbarkeit) und Kapazitätsplanung aus Trends',
+      'Zentrales Logging: Syslog, Aufbewahrungsdauer, Auswertung, Datenschutz bei personenbezogenen Logeinträgen',
+      'ITIL-Grundbegriffe: Incident vs. Problem vs. Change vs. Service Request, Known Error, CMDB',
+      'Change-Prozess: Antrag, Bewertung, Genehmigung, Umsetzung, Rollback-Plan, Change-Freeze',
+      'Ticketsystem: Priorisierung aus Auswirkung × Dringlichkeit, First/Second/Third Level, Eskalation',
+      'Dokumentation: Betriebshandbuch, Netzplan, Inventarisierung/Asset-Management, Wissensdatenbank',
+      'Rollout- und Wartungsplanung: Testumgebung, Pilotgruppe, Wartungsfenster, Kommunikation an Anwender',
+      'Übergabe an den Betrieb, Einweisung und Schulung von Anwendern',
+      'Arbeitsplatzergonomie und Barrierefreiheit als mögliche Nebenanforderung'
+    ] },
+
+  { id:'ga1-11', title:'Block 11 – Rechnen und Prüfungstechnik (läuft parallel)', week:'Woche 1–10 · KW 35–44 · 24.08.2026–01.11.2026 (laufend)', start:'2026-08-24', end:'2026-11-01',
+    items:[
+      {h:'Rechenarten, die wiederkehren'},
+      'Speichereinheiten: Bit/Byte, kB vs. KiB, MB vs. MiB, saubere Umrechnung',
+      'Übertragungszeiten: Datenmenge ÷ Bandbreite, Mbit/s ÷ 8 = MB/s',
+      'RAID-Nutzkapazität, benötigte Plattenanzahl, IOPS mit Write Penalty',
+      'Backup-Speicherbedarf und Backup-Fenster',
+      'Verfügbarkeit in Prozent ↔ Ausfallzeit pro Jahr/Monat, Reihen- und Parallelschaltung',
+      'MTBF/MTTR',
+      'USV-Dimensionierung und Überbrückungszeit',
+      'Wärmelast und Stromverbrauch',
+      'TCO, Amortisation, ROI, Kostenvergleich, Nutzwertanalyse',
+      'Lizenzkosten (Cores, CALs)',
+      'Subnetting und IP-Adressberechnung (kann auch hier auftauchen)',
+      'Zahlensysteme binär/hexadezimal/dezimal',
+      'Dreisatz und Prozentrechnung ohne Nachdenken',
+      {h:'Prüfungstechnik'},
+      'Operatoren unterscheiden: nennen (Stichworte reichen) vs. erklären vs. begründen vs. bewerten/vergleichen (Abwägung erwartet)',
+      'Punktzahl als Mengenangabe lesen: 4 Punkte = vier Aspekte',
+      'Antwortmuster einüben: Anforderung → Lösung → Begründung (bzw. → Alternative → Abwägung)',
+      'Nie nur Technik nennen, immer den Bezug zur Anforderung im Szenario herstellen',
+      'Rechenweg vollständig aufschreiben, Einheiten mitführen – Teilpunkte auch bei falschem Endergebnis',
+      'Zeitplan: 4 Handlungsschritte in 90 Min → ca. 20 Min pro Aufgabe, 10 Min Puffer zum Prüfen',
+      'Erst alle Aufgaben überfliegen, mit der sichersten beginnen',
+      'Nichts leer lassen – Stichpunkte mit Begründung bringen Punkte, leere Felder nicht',
+      'Lesbar schreiben, klar nummerieren, Zwischenüberschriften nutzen'
+    ] },
+
+  { id:'ga1-12', title:'Block 12 – Simulation (Prüfungssimulation GA1)', week:'Woche 11–13 · KW 45–47 · 02.11.2026–22.11.2026 (Simulationsphase)', start:'2026-11-02', end:'2026-11-22',
+    items:[
+      'Mindestens 3 vollständige Altprüfungen unter echten Bedingungen: 90 Min, kein Nachschlagen, handschriftlich',
+      'Nach jeder Simulation Fehleranalyse: War es Wissenslücke, Verständnislücke, Formulierungsfehler oder Zeitmangel?',
+      'Fehlerquellen in Notion je Thema markieren und gezielt nacharbeiten – nicht alles gleichmäßig wiederholen',
+      'Karteikarten für Definitionen und Abgrenzungen (RTO/RPO, NAS/SAN, IaaS/PaaS/SaaS, RAID-Level, Cluster-Arten), verteilte Wiederholung',
+      'Sich von Kollegen aus dem Infrastruktur-Team mündlich abfragen lassen – zwingt zum Ausformulieren',
+      'Letzte Woche: nur noch Wiederholung und Rechenarten, keine neuen Themen'
+    ], note:'Buch-Simulationen: 3.1 Konzeption/Administration 1 (S. 151–160, Lösung S. 320, KW 45 · 02.11.2026–08.11.2026) · 3.2 Konzeption/Administration 2 (S. 161–169, Lösung S. 330, KW 46 · 09.11.2026–15.11.2026)' },
+
+  { id:'ga1-13', title:'Block 13 – Querschnittsthemen (Projekt- & Qualitätsmanagement)', week:'Woche 11 · KW 45 · 02.11.2026–08.11.2026', start:'2026-11-02', end:'2026-11-08',
+    intro:'Im überarbeiteten Prüfungskatalog aufgewertet und zahlt doppelt ein – dieselben Begriffe fallen im Fachgespräch zur Projektarbeit.',
+    items:[
+      'Projektbegriff, Projektphasen, Magisches Dreieck, SMART-Ziele',
+      'Lastenheft vs. Pflichtenheft, Stakeholder, Risikoanalyse',
+      'Netzplan: Vorgänge, früheste/späteste Zeiten, kritischer Pfad, Gesamt- und freier Puffer',
+      'Gantt-Diagramm lesen und erstellen',
+      'Klassisch vs. agil: Wasserfall, V-Modell, Scrum (Rollen, Artefakte, Events), Kanban',
+      'Qualitätsmanagement: PDCA, Qualitätsmerkmale, Abnahmekriterien',
+      'Testen: Testarten, Testfall vs. Testdaten, Abnahmetest, Dokumentation von Testergebnissen',
+      'Trendthemen: Industrie 4.0, cyber-physische Systeme, KI und neuronale Netze im Grundprinzip, Chancen und Risiken im Unternehmenseinsatz'
+    ] }
+]},
+
+{ id:'ga2', name:'Analyse und Entwicklung von Netzwerken', color:'var(--cat-ga2)', topics: [
+  { id:'ga2-1', title:'Block N1 – Grundlagen, Medien und Verkabelung', week:'Woche 1 · KW 35 · 24.08.2026–30.08.2026', start:'2026-08-24', end:'2026-08-30',
+    items:[
+      'OSI-Modell: sieben Schichten, Aufgabe je Schicht, typische Geräte und Protokolle je Schicht',
+      'TCP/IP-Modell und Zuordnung zum OSI-Modell',
+      'Kapselung und Dekapselung, Frame vs. Paket vs. Segment, MTU, Fragmentierung',
+      'TCP vs. UDP: Verbindungsaufbau (Three-Way-Handshake), Flusskontrolle, wann welches Protokoll',
+      'Wichtige Ports auswendig: 20/21, 22, 23, 25, 53, 67/68, 80, 110, 143, 389, 443, 445, 465/587, 636, 993, 3389',
+      'Anwendungsprotokolle einordnen: HTTP/HTTPS, FTP/SFTP, SMTP/IMAP/POP3, SSH, RDP, SMB, LDAP/LDAPS, SNMP, NTP, Syslog',
+      'Übertragungsmedien: Twisted Pair (Cat 5e/6/6A/7), Schirmung, maximale Längen, Kategorien und erreichbare Datenraten',
+      'Lichtwellenleiter: Singlemode vs. Multimode, Reichweiten, Steckertypen, Dämpfung, wann LWL statt Kupfer',
+      'Ethernet-Standards: 100BASE-TX bis 10GBASE-T, Auswahl nach Anforderung begründen',
+      'SFP/SFP+ Transceiver-Module: Steckplatz für Glasfaser-/Kupfer-Uplinks an Switches, SFP (bis 1 Gbit/s) vs. SFP+ (bis 10 Gbit/s) unterscheiden, passender Steckertyp zum Datenblatt (Prüfung 2023/1)',
+      'Power over Ethernet: 802.3af/at/bt, Leistungsklassen, PoE-Budget eines Switches berechnen',
+      'Strukturierte Verkabelung: Primär-, Sekundär-, Tertiärbereich, Patchfeld, Rangierung, Schrankplanung',
+      'Topologien: Stern, Baum, Ring, vermascht – und was davon in der Praxis wirklich vorkommt',
+      'Kollisionsdomäne vs. Broadcastdomäne: zählen können, Hub vs. Switch vs. Router'
+    ], practice:'Rechnen: Kabellängen und Reichweiten prüfen, PoE-Budget, Broadcast-/Kollisionsdomänen in einem gegebenen Plan zählen' },
+
+  { id:'ga2-2', title:'Block N2 – IPv4 und Subnetting', week:'Woche 2 · KW 36 · 31.08.2026–06.09.2026', start:'2026-08-31', end:'2026-09-06',
+    intro:'Subnetting ist der einzige Themenbereich, der sich fast beliebig hoch trainieren lässt – täglich 10 Minuten ab dieser Woche, nicht in einer Woche abarbeiten und liegen lassen. Der Drill läuft ab jetzt jeden Tag bis zur Prüfung mit.',
+    items:[
+      'Aufbau IPv4-Adresse, Netzanteil und Hostanteil, Subnetzmaske, CIDR-Schreibweise',
+      'Private Adressbereiche (10.x, 172.16–31.x, 192.168.x), APIPA, Loopback, Broadcast',
+      'Netzadresse, Broadcastadresse, erste und letzte Hostadresse aus beliebiger Adresse + Maske bestimmen',
+      'Anzahl nutzbarer Hosts berechnen, Subnetze aus einem Netz bilden',
+      'VLSM: ein Netz bedarfsgerecht in unterschiedlich große Subnetze aufteilen – der häufigste Aufgabentyp',
+      'Supernetting und Routenzusammenfassung',
+      'Ein vollständiges IP-Adresskonzept für ein Firmenszenario entwerfen und begründen (Standorte, VLANs, Reserve für Wachstum)',
+      'Binäre Umrechnung schnell im Kopf: die 8 Zweierpotenzen und die Maskenwerte 128/192/224/240/248/252/254/255'
+    ], practice:'Drill: Täglich 5 Aufgaben. Ziel bis KW 40 (Woche 6): eine VLSM-Aufteilung mit vier Subnetzen in unter 10 Minuten fehlerfrei.' },
+
+  { id:'ga2-3', title:'Block N3 – IPv6, DHCP und DNS', week:'Woche 3 · KW 37 · 07.09.2026–13.09.2026', start:'2026-09-07', end:'2026-09-13',
+    items:[
+      'IPv6-Adressaufbau, Hexadezimalschreibweise, Kürzungsregeln (führende Nullen, "::")',
+      'Adresstypen: Global Unicast, Link-Local (fe80::), Unique Local, Multicast – kein Broadcast mehr',
+      'Präfixlänge, /64 als Standard, Interface Identifier, EUI-64',
+      'SLAAC vs. DHCPv6, Router Advertisements, Neighbor Discovery statt ARP',
+      'Dual Stack und Übergangsmechanismen, warum die Umstellung überhaupt nötig ist',
+      'DHCP-Ablauf DORA (Discover, Offer, Request, Acknowledge)',
+      'DHCP-Scope, Ausschlussbereiche, Reservierung, Lease Time sinnvoll wählen',
+      'DHCP-Relay über Subnetzgrenzen, DHCP-Redundanz (Failover, Split Scope)',
+      'DNS: Namensraum, Root, TLD, autoritativer Server, Zonen, Delegation',
+      'Recordtypen: A, AAAA, CNAME, MX, PTR, NS, SOA, SRV, TXT – Zweck und typischer Einsatz',
+      'SPF-Record als TXT-Eintrag: legt fest, welche Server im Namen einer Domain E-Mails versenden dürfen – schützt vor Absenderfälschung, unvollständiger Eintrag führt zu abgelehnten/nicht zugestellten Mails (Prüfung 2023/1)',
+      'Rekursive vs. iterative Auflösung, Forwarder, Caching, TTL, Reverse Lookup',
+      'DNSSEC im Grundprinzip, interner vs. externer DNS, Split-Horizon',
+      'ARP: Funktion, ARP-Cache, ARP-Spoofing als Angriff'
+    ], practice:'Üben: Eine gegebene Zonendatei lesen und Fehler finden; DHCP-Scope für ein Szenario mit drei VLANs auslegen' },
+
+  { id:'ga2-4', title:'Block N4 – Routing und NAT', week:'Woche 4 · KW 38 · 14.09.2026–20.09.2026', start:'2026-09-14', end:'2026-09-20',
+    items:[
+      'Aufbau und Lesen einer Routingtabelle: Ziel, Maske, Gateway, Interface, Metrik – kommt regelmäßig',
+      'Longest Prefix Match, Default Route, direkt verbundene Netze',
+      'Statisches Routing: wann sinnvoll, Vor- und Nachteile, Konfiguration beschreiben',
+      'Dynamisches Routing: Distanzvektor vs. Link-State, Konvergenz',
+      'RIP (Hop Count, Grenzen) und OSPF (Areas, Kosten, DR/BDR) im Grundprinzip',
+      'Administrative Distanz und Metrik unterscheiden',
+      'BGP als Begriff: Interior vs. Exterior Gateway Protocol, autonome Systeme',
+      'NAT und PAT: Funktionsweise, Adressknappheit, Portmapping, Grenzen',
+      'Port-Forwarding und Destination NAT für Dienste in der DMZ',
+      'Inter-VLAN-Routing: Router-on-a-Stick vs. Layer-3-Switch, Entscheidung begründen',
+      'Routing-Probleme systematisch analysieren: fehlende Rückroute, falsche Maske, asymmetrisches Routing'
+    ], practice:'Rechnen/Üben: Zu einem gegebenen Netzplan die Routingtabellen aller Router aufstellen' },
+
+  { id:'ga2-5', title:'Block N5 – Switching und VLANs', week:'Woche 5 · KW 39 · 21.09.2026–27.09.2026', start:'2026-09-21', end:'2026-09-27',
+    items:[
+      'Switch-Funktionsweise: MAC-Adresstabelle, Lernen, Fluten, Filtern',
+      'Store-and-Forward vs. Cut-Through, Latenz, Managed vs. Unmanaged',
+      'VLAN-Grundlagen: Access-Port vs. Trunk-Port, 802.1Q-Tagging, Native VLAN, Voice VLAN',
+      'VLAN-Konzept für ein Szenario entwerfen und begründen (Trennung nach Abteilung, Funktion, Schutzbedarf)',
+      'Vorteile der Segmentierung: Broadcast-Reduktion, Sicherheit, Priorisierung, Verwaltbarkeit',
+      'Spanning Tree: Schleifenproblem, STP/RSTP/MSTP, Root Bridge, Portrollen und -zustände, Konvergenzzeit',
+      'PortFast/BPDU Guard, warum Loops ein Netz komplett lahmlegen',
+      'Link Aggregation und LACP: Bandbreitenbündelung und Redundanz',
+      'Port Security, MAC-Filterung und ihre Grenzen',
+      'Port Security im Detail: Configured (statisch konfigurierte) MAC-Adressen vs. Sticky MAC (dynamisch gelernt & gespeichert), maximale Anzahl MACs je Port, Violation-Modes (Shutdown, Restrict, Protect) und deren Wirkung unterscheiden (Prüfung Sommer 2026)',
+      'QoS: Priorisierung, DSCP, warum VoIP und Video Vorrang brauchen',
+      'Jumbo Frames, Uplink-Dimensionierung, Oversubscription'
+    ], practice:'Üben: Zu einem Firmenszenario VLAN-Nummern, IP-Netze, Trunk-Ports und Inter-VLAN-Routing in einer Tabelle festlegen' },
+
+  { id:'ga2-6', title:'Block N6 – WLAN, WAN und VPN', week:'Woche 6 · KW 40 · 28.09.2026–04.10.2026', start:'2026-09-28', end:'2026-10-04',
+    items:[
+      'WLAN-Standards 802.11a/b/g/n/ac/ax, Datenraten, Frequenzbänder 2,4 / 5 / 6 GHz',
+      'Kanäle und Überlappung, warum im 2,4-GHz-Band nur 1/6/11 sinnvoll sind',
+      'Ausleuchtungsplanung, Site Survey, Sendeleistung, Roaming, Mesh',
+      'Standalone Access Points vs. Controller-basierte Lösungen',
+      'WLAN-Sicherheit: WPA2 vs. WPA3, Personal vs. Enterprise, 802.1X mit RADIUS, Gastnetz-Trennung, Captive Portal',
+      'WAN-Anbindungen: DSL, Kabel, FTTH, Standleitung, Richtfunk, LTE/5G als Backup',
+      'MPLS und SD-WAN im Grundprinzip, Standortvernetzung mehrerer Filialen',
+      'Providerredundanz, Failover zwischen zwei Anschlüssen, SLA des Providers bewerten',
+      'VPN-Arten: Site-to-Site, End-to-Site (Remote Access), End-to-End',
+      'IPsec: AH vs. ESP, Tunnel- vs. Transportmodus, IKE, Pre-Shared Key vs. Zertifikate',
+      'X.509-Zertifikat: Bestandteile (Aussteller/Issuer, Inhaber/Subject, öffentlicher Schlüssel, Gültigkeitszeitraum, Signatur der CA) benennen können (Prüfung 2023/1)',
+      'SSL/TLS-VPN, OpenVPN, WireGuard – Einordnung und Auswahl',
+      'Split Tunneling: Funktionsweise, Sicherheitsabwägung',
+      'Homeoffice-Anbindung sicher konzipieren und begründen',
+      'VoIP-Bandbreitenberechnung: Codec-Bitrate (z. B. G.711, G.722) × Anzahl gleichzeitiger Gespräche + Protokolloverhead in % – benötigte Bandbreite in kBit/s ermitteln (Prüfung 2022/2)'
+    ], practice:'Rechnen: Benötigte Bandbreite für n gleichzeitige VPN-Nutzer, Datenraten Mbit/s ↔ MB/s' },
+
+  { id:'ga2-7', title:'Block N7 – Netzwerksicherheit', week:'Woche 8 · KW 42 · 12.10.2026–18.10.2026', start:'2026-10-12', end:'2026-10-18',
+    intro:'Gemeinsame Woche mit GA1 Block 8 – größte inhaltliche Überschneidung. Woche 7 ist als Puffer-/Subnetting-Vertiefungswoche bewusst frei von neuem GA2-Stoff.',
+    items:[
+      'Firewall-Typen: Paketfilter, Stateful Inspection, Application Layer / Proxy, Next Generation',
+      'Firewall-Regelwerk aufstellen: Quelle, Ziel, Protokoll, Port, Aktion – für ein Szenario in Tabellenform',
+      'Default Deny, Regelreihenfolge, implizite Regeln, Regelwerk dokumentieren und pflegen',
+      'DMZ: Aufbau mit einer und mit zwei Firewalls, welche Dienste dort stehen und warum',
+      'Netzsegmentierung nach Schutzbedarf, Mikrosegmentierung, Zero Trust im Netz',
+      'IDS vs. IPS, netzbasiert vs. hostbasiert, False Positives',
+      'NAC und 802.1X: Portbasierte Authentifizierung, RADIUS, Quarantäne-VLAN',
+      'ACLs auf Switch und Router, Unterschied zu einer Firewall',
+      'Reverse Proxy, WAF, Load Balancer als Sicherheitskomponente',
+      'Angriffe im Netz: ARP-Spoofing, MAC-Flooding, VLAN-Hopping, DHCP-Rogue, DNS-Spoofing, DDoS, Man-in-the-Middle',
+      'Gegenmaßnahmen je Angriff nennen können – nicht nur die Bedrohung',
+      'Verschlüsselung im Netz: TLS, Zertifikate, HSTS, sichere vs. unsichere Protokolle ersetzen (Telnet→SSH, FTP→SFTP, HTTP→HTTPS)',
+      'Netzwerkseitiger Datenschutz: Protokollierung, Aufbewahrung, Mitbestimmung'
+    ], practice:'Üben: Zu einem Netzplan drei Schwachstellen benennen, je eine Maßnahme mit Begründung und Restrisiko formulieren' },
+
+  { id:'ga2-8', title:'Block N8 – Verfügbarkeit, Monitoring und Fehlersuche', week:'Woche 10 · KW 44 · 26.10.2026–01.11.2026', start:'2026-10-26', end:'2026-11-01',
+    items:[
+      'Redundanzkonzepte im Netz: doppelte Uplinks, Ringstrukturen, redundante Switches, N+1',
+      'Gateway-Redundanz: VRRP/HSRP – virtuelle IP/MAC, Master- und Backup-Router, Priorität, Failover-Ablauf im Detail erklären können',
+      'Verfügbarkeit berechnen: Prozent ↔ Ausfallzeit, Reihen- und Parallelschaltung von Komponenten',
+      'Single Points of Failure in einem gegebenen Netzplan identifizieren',
+      'USV für aktive Netzkomponenten, Klimatisierung im Technikraum',
+      'SLA für Netzdienste: Verfügbarkeit, Reaktions- vs. Wiederherstellzeit, Pönale',
+      'Monitoring: SNMP (Manager, Agent, MIB, OID, Traps), NetFlow, Syslog, Schwellwerte und Alarmierung',
+      'Sinnvolle Messwerte: Auslastung, Fehlerzähler, Latenz, Paketverlust, Jitter',
+      'Kapazitätsplanung aus Trenddaten ableiten',
+      'Systematische Fehlersuche: Schichtenmodell von unten nach oben, Eingrenzen, Hypothese, Test, Dokumentation',
+      'Werkzeuge sicher erklären: ping, traceroute/tracert, nslookup/dig, ipconfig/ip a, arp, ss/netstat, nc',
+      'Wireshark-Grundlagen: Filter, Handshake erkennen, was man aus einem Mitschnitt ablesen kann',
+      'Monitoring-/Mirror-Port (SPAN): Datenverkehr eines oder mehrerer Ports/VLANs zu Analysezwecken auf einen Überwachungsport spiegeln – Konfigurationsprinzip und Einsatzzweck (z. B. Wireshark-Mitschnitt, SIEM) erklären können (Prüfung Sommer 2026)',
+      'Netzdokumentation: Netzplan, IP-Adresskonzept, IPAM, Portdokumentation, Änderungshistorie'
+    ], practice:'Rechnen: Verfügbarkeit einer Kette aus vier Komponenten, Ausfallminuten pro Jahr bei 99,9 % und 99,99 %',
+    note:'Simulationsplan siehe „Prüfungstechnik GA2“: 3.3 (KW 46 · 09.11.2026–15.11.2026) und 3.4 (KW 47 · 16.11.2026–22.11.2026).' },
+
+  { id:'ga2-9', title:'Prüfungstechnik GA2', week:'Woche 11–13 · KW 45–47 · 02.11.2026–22.11.2026', start:'2026-11-02', end:'2026-11-22',
+    items:[
+      'Netzpläne zuerst vollständig lesen und Annahmen markieren, bevor du rechnest',
+      'Bei Subnetting immer den Rechenweg zeigen – Teilpunkte auch bei falschem Endergebnis',
+      'Bei „Konfigurieren Sie …“ genügt eine nachvollziehbare Beschreibung oder Tabelle, keine herstellerspezifische Syntax',
+      'Bei Bewertungsaufgaben immer zwei Alternativen gegeneinander abwägen und die Entscheidung begründen',
+      'Zeitplan: ca. 20 Min pro Handlungsschritt, 10 Min Puffer',
+      'Subnetting-Aufgaben zuerst bearbeiten, solange der Kopf frisch ist'
+    ], note:'Simulationen: 3.3 Netzwerke 1 (S. 170–180, Lösung S. 339, KW 46 · 09.11.2026–15.11.2026) · 3.4 Netzwerke 2 (S. 181–187, Lösung S. 348, KW 47 · 16.11.2026–22.11.2026)' }
+]},
+
+{ id:'wiso', name:'Wirtschafts- und Sozialkunde', color:'var(--cat-wiso)', topics: [
+  { id:'wiso-1', title:'W1 – Berufsbildung und Arbeitswelt', week:'Woche 1 · KW 35 · 24.08.2026–30.08.2026', start:'2026-08-24', end:'2026-08-30',
+    items:[
+      'Berufsbildungsgesetz: Ausbildungsvertrag, Pflichtinhalte, Probezeit, Beendigung',
+      'Unzulässige Vertragsklauseln: nur die betroffene Vereinbarung ist unwirksam, der übrige Ausbildungsvertrag bleibt gültig (Grundsatz der Teilnichtigkeit) (Prüfung Sommer 2026)',
+      'Rechte und Pflichten von Auszubildenden und Ausbildenden',
+      'Ausbildereignung: Ausbilder müssen persönlich und fachlich geeignet sein (AEVO), Mitgliedschaft im Prüfungsausschuss oder der Geschäftsleitung ist keine Voraussetzung (Prüfung 2022/2)',
+      'Zulässige und unzulässige Fragen im Vorstellungsgespräch: Gehaltsvorstellung zulässig; Fragen zu Heiratsabsicht, Parteizugehörigkeit, Vermögen, Krankheiten grundsätzlich unzulässig (Prüfung 2023/1)',
+      'Duales System: Rollen von Betrieb, Berufsschule, IHK, zuständige Stelle',
+      'Jugendarbeitsschutzgesetz: Arbeitszeiten, Pausen, Urlaub, Beschäftigungsverbote',
+      'Sonderfall volljährige Auszubildende: Jugendarbeitsschutzgesetz gilt nicht mehr (z. B. längere Probezeit möglich), Berichtsheftpflicht und übliche Ausbildungsregeln bleiben trotzdem bestehen (Prüfung Sommer 2026)',
+      'Ausbildungsordnung, Ausbildungsrahmenplan, betrieblicher Ausbildungsplan',
+      'Prüfungen, Verkürzung, vorzeitige Zulassung, Wiederholung',
+      'Ende des Ausbildungsverhältnisses: bei bestandener Abschlussprüfung mit Bekanntgabe des Ergebnisses, sonst erst mit Ablauf der vereinbarten Ausbildungszeit (Prüfung Sommer 2026)',
+      'Berufliche Weiterbildung: Anpassungs- vs. Aufstiegsfortbildung, Umschulung',
+      'Lebenslanges Lernen, Europass, Mobilität in Europa',
+      'Arbeitszeugnis: einfach vs. qualifiziert, Zeugnissprache'
+    ] },
+  { id:'wiso-2', title:'W2 – Arbeitsrecht I', week:'Woche 2 · KW 36 · 31.08.2026–06.09.2026', start:'2026-08-31', end:'2026-09-06',
+    items:[
+      'Arbeitsvertrag: Zustandekommen, Form, Inhalte, Nebenabreden',
+      'Individualarbeitsrecht (Einzelarbeitsvertrag, Urlaubsgesetz) vs. Kollektivarbeitsrecht (Betriebsvereinbarung, Tarifvertrag) unterscheiden können (Prüfung 2022/2)',
+      'Arten: unbefristet, befristet, Teilzeit, Leiharbeit, Minijob, Werkvertrag vs. Arbeitsvertrag',
+      'Arbeitnehmerüberlassung (Zeitarbeit) nach AÜG: Entlohnung und Urlaubsanspruch richten sich nach dem Einsatzbetrieb, nicht nach dem Verleiher (Prüfung 2022/2)',
+      'Arbeitszeitgesetz: Höchstarbeitszeit, Ruhepausen, Ruhezeit, Sonn- und Feiertagsarbeit',
+      'Bundesurlaubsgesetz: Mindesturlaub, Übertragung, Abgeltung',
+      'Entgeltfortzahlung im Krankheitsfall, Anzeige- und Nachweispflicht',
+      'Mutterschutz und Elternzeit, Pflegezeit',
+      'Mutterschutzfristen konkret: 6 Wochen vor der Entbindung (mit Widerrufsrecht der Mutter), 8 bzw. 12 Wochen nach der Entbindung (Früh-/Mehrlingsgeburt) als Beschäftigungsverbot (Prüfung Sommer 2026)',
+      'Allgemeines Gleichbehandlungsgesetz: Merkmale, Benachteiligungsverbot',
+      'Arbeitsschutz und Unfallverhütung: Arbeitgeberpflichten, Gefährdungsbeurteilung, Berufsgenossenschaft, Sicherheitsbeauftragte',
+      'Arbeitsschutzbeauftragter: unterstützt den Arbeitgeber beim Arbeitsschutz, ist aber nicht allein dafür verantwortlich und kein eigenständiges Organ nach dem Betriebsverfassungsgesetz (Prüfung Sommer 2026)',
+      'Bildschirmarbeitsplatz: Ergonomie, Arbeitsstättenverordnung',
+      'Betriebliches Gesundheitsmanagement: geeignete Maßnahmen zur Stressreduzierung (Workshops, Betriebssport, flexibles Homeoffice, offene Kommunikation) von ungeeigneten Maßnahmen (z. B. Kontakt nur noch telefonisch, Misserfolge am Schwarzen Brett) abgrenzen können (Prüfung Sommer 2026)'
+    ] },
+  { id:'wiso-3', title:'W3 – Arbeitsrecht II: Beendigung', week:'Woche 3 · KW 37 · 07.09.2026–13.09.2026', start:'2026-09-07', end:'2026-09-13',
+    items:[
+      'Kündigungsarten: ordentlich, außerordentlich, Änderungskündigung',
+      'Kündigungsgründe: personen-, verhaltens-, betriebsbedingt',
+      'Kündigungsfristen nach BGB, Form, Zugang',
+      'Kündigungsschutzgesetz: Geltungsbereich, Klagefrist, Sozialauswahl',
+      'Besonderer Kündigungsschutz: Schwangere, Schwerbehinderte, Betriebsratsmitglieder, Azubis nach Probezeit',
+      'Aufhebungsvertrag, Abfindung, Sperrzeit beim Arbeitslosengeld',
+      'Abmahnung: Zweck, Voraussetzungen, Folgen',
+      'Betriebsübergang nach § 613a BGB'
+    ] },
+  { id:'wiso-4', title:'W4 – Mitbestimmung und Tarifrecht', week:'Woche 4 · KW 38 · 14.09.2026–20.09.2026', start:'2026-09-14', end:'2026-09-20',
+    items:[
+      'Betriebsverfassungsgesetz: Wahl, Größe, Amtszeit, Freistellung des Betriebsrats',
+      'Beteiligungsrechte: Informations-, Anhörungs-, Mitwirkungs-, echte Mitbestimmungsrechte',
+      'Typische mitbestimmungspflichtige Themen: Arbeitszeit, Überwachungseinrichtungen, Urlaubsgrundsätze – relevant für Monitoring und Logging in der IT',
+      'Betriebsvereinbarung: Abschluss, Wirkung, Verhältnis zum Tarifvertrag',
+      'Jugend- und Auszubildendenvertretung',
+      'Tarifvertrag: Arten (Flächen-, Haus-, Firmentarif), Tarifautonomie, Friedenspflicht',
+      'Tarifvertragsarten nach Inhalt: Gehaltstarifvertrag (Löhne/Gehälter) vs. Manteltarifvertrag/Rahmentarifvertrag (Arbeitsbedingungen, Vergütungsgruppen, Sonderurlaub – nicht die Lohnhöhe) (Prüfung 2022/1)',
+      'Tarifverhandlung, Schlichtung, Arbeitskampf: Streik, Aussperrung, Verhältnismäßigkeit',
+      'Günstigkeitsprinzip, Rangfolge der Rechtsquellen im Arbeitsrecht'
+    ] },
+  { id:'wiso-5', title:'W5 – Sozialversicherung und Entgelt', week:'Woche 5 · KW 39 · 21.09.2026–27.09.2026', start:'2026-09-21', end:'2026-09-27',
+    items:[
+      'Die fünf Zweige: Kranken-, Pflege-, Renten-, Arbeitslosen-, Unfallversicherung',
+      'Träger, Leistungen, Beitragsverteilung – Unfallversicherung allein vom Arbeitgeber',
+      'Ablauf nach einem Arbeitsunfall: Erste Hilfe, Durchgangsarzt, Unfallmeldung des Arbeitgebers an die Berufsgenossenschaft, ggf. anschließende Reha-Maßnahme, danach Wiederaufnahme der Arbeit – richtige Reihenfolge kennen (Prüfung Sommer 2026)',
+      'Rechtsweg bei Streitigkeiten: Sozialgericht (gesetzliche Sozialversicherung), Arbeitsgericht (Arbeitsrecht), Verwaltungsgericht, Amtsgericht, Familiengericht – zuständiges Gericht je Streitfall erkennen (Prüfung Sommer 2026)',
+      'Versicherungspflicht, Beitragsbemessungsgrenze, Versicherungsfreiheit',
+      'Prinzipien: Solidarität, Äquivalenz, Umlageverfahren',
+      'Gesetzliche vs. private Krankenversicherung',
+      'Beitragsberechnung gesetzliche Krankenversicherung: allgemeiner Beitragssatz + individueller Zusatzbeitrag der Kasse, hälftige Teilung zwischen Arbeitgeber und Arbeitnehmer – aus Bruttogehalt berechnen können (Prüfung Sommer 2026)',
+      'Rentenarten, Altersvorsorge in drei Säulen',
+      'Entgeltabrechnung: brutto zu netto, Lohnsteuer, Solidaritätszuschlag, Kirchensteuer',
+      'Einkommensarten unterscheiden: Brutto-, Netto-, zu versteuerndes, Nominal- und Realeinkommen (Kaufkraft nach Inflation) – bei Preissteigerung kann das Realeinkommen trotz Lohnerhöhung sinken (Prüfung 2023/1)',
+      'Steuerklassen, Freibeträge, Einkommensteuererklärung im Grundprinzip',
+      'Entgeltformen: Zeitlohn, Akkord, Prämie, Gehalt, vermögenswirksame Leistungen',
+      'Vermögensbildung und betriebliche Altersvorsorge'
+    ] },
+  { id:'wiso-6', title:'W6 – Betrieb, Organisation und Rechtsformen', week:'Woche 6 · KW 40 · 28.09.2026–04.10.2026', start:'2026-09-28', end:'2026-10-04',
+    items:[
+      'Betriebliche Grundfunktionen und Wirtschaftssektoren',
+      'Betriebliche Arbeitsteilung (Arbeitszerlegung): Aufteilung eines Arbeits-/Beschaffungsprozesses in mehrere Teilprozesse, die von mehreren Arbeitskräften ausgeführt werden – Abgrenzung zur Auslagerung an ein anderes Unternehmen (Prüfung Sommer 2026)',
+      'Unternehmensziele: ökonomisch, ökologisch, sozial; Zielkonflikte',
+      'Ökonomisches Prinzip (Maximum, Minimum), Produktivität, Wirtschaftlichkeit, Rentabilität',
+      'Rentabilitätskennzahlen: Eigenkapitalrentabilität = Reingewinn ÷ Eigenkapital × 100 – berechnen und einordnen können (Prüfung Sommer 2026)',
+      'Rechtsformen: Einzelunternehmen, GbR, OHG, KG, GmbH, UG, AG, eG (Genossenschaft) – Haftung, Kapital, Leitung, Gewinnverteilung',
+      'KG im Detail: Komplementär haftet unbeschränkt und führt die Geschäfte, Kommanditist haftet nur mit seiner Einlage und ist von der Geschäftsführung ausgeschlossen (Prüfung 2023/1)',
+      'Unternehmensverbindungen: Fusion, Kartell, Konzern, Arbeitsgemeinschaft, Interessengemeinschaft – Merkmale unterscheiden und Sachverhalten zuordnen können (Prüfung Sommer 2026 / 2022/1)',
+      'Handelsregister, Firma, Kaufmannseigenschaft',
+      'Aufbauorganisation: Einlinien-, Stablinien-, Matrixorganisation, Organigramm',
+      'Ablauforganisation, Prozessdenken, EPK lesen und erstellen',
+      'Führungsstile, Motivation, Konfliktarten und -lösung',
+      'Betriebliche Kennzahlen im Grundverständnis'
+    ], note:'Diese Woche zusätzlich: Halbzeit-Check des gesamten Lernplans.' },
+  { id:'wiso-7', title:'W7 – Markt und Vertragsrecht', week:'Woche 7 · KW 41 · 05.10.2026–11.10.2026', start:'2026-10-05', end:'2026-10-11',
+    items:[
+      'Bedürfnisse, Güterarten, Knappheit, Wirtschaftskreislauf',
+      'Angebot, Nachfrage, Preisbildung, Marktformen (Monopol, Oligopol, Polypol)',
+      'Konjunkturphasen, Inflation, Wirtschaftspolitik im Grundzug',
+      'Wirtschaftsordnung Soziale Marktwirtschaft: Merkmale (freier Wettbewerb kombiniert mit sozialem Ausgleich/Schutz der wirtschaftlich Schwächeren durch den Staat), Abgrenzung zu Plan- und freier Marktwirtschaft (Prüfung Sommer 2026)',
+      'Globalisierung: Merkmale sowie fördernde und hemmende Maßnahmen (Freihandelsabkommen vs. Zölle/Handelshemmnisse) unterscheiden können (Prüfung Sommer 2026)',
+      'Rechtsgeschäfte: Willenserklärung, Geschäftsfähigkeit, Nichtigkeit, Anfechtung',
+      'Vertragsarten: Kauf-, Werk-, Dienst-, Miet-, Leasing-, Darlehensvertrag – Abgrenzung Werk- vs. Dienstvertrag ist IT-relevant',
+      'Kaufvertrag: Zustandekommen, Angebot, Annahme, AGB, Eigentumsvorbehalt',
+      'Störungen: Sachmangel, Lieferverzug, Zahlungsverzug, Annahmeverzug',
+      'Gewährleistungsrechte, Fristen, Garantie vs. Gewährleistung',
+      'Mahnverfahren, Verzugszinsen, gerichtliches Mahnverfahren, Verjährung',
+      'Zahlungsarten, Kreditarten, Kreditsicherung, Leasing vs. Kauf',
+      'Verbraucherschutz, Widerrufsrecht, Fernabsatz'
+    ] },
+  { id:'wiso-8', title:'W8 – Recht, Datenschutz und Nachhaltigkeit', week:'Woche 8 · KW 42 · 12.10.2026–18.10.2026', start:'2026-10-12', end:'2026-10-18',
+    items:[
+      'Datenschutz-Grundverordnung: personenbezogene Daten, Grundsätze, Rechtsgrundlagen',
+      'Betroffenenrechte: Auskunft, Berichtigung, Löschung, Widerspruch, Datenübertragbarkeit',
+      'Auftragsverarbeitung, Verarbeitungsverzeichnis, Datenschutzbeauftragter, Meldepflicht bei Datenpannen',
+      'Beschäftigtendatenschutz, Umgang mit Mitarbeiterdaten in IT-Systemen',
+      'Urheberrecht und Lizenzrecht: Software, Open Source, Nutzungsrechte',
+      'Staatsprinzipien des Grundgesetzes: Sozialstaat, Rechtsstaat, Demokratie, Bundesstaat, Republik – Beispiele sozialstaatlichen Handelns (z. B. erhöhtes Wohngeld, höhere Freibeträge) einem Prinzip zuordnen können (Prüfung Sommer 2026)',
+      'Charta der Vielfalt / Diversity Management: Selbstverpflichtung zu einem vorurteilsfreien Arbeitsumfeld (Alter, Religion, sexuelle Orientierung, Herkunft, Behinderung …) – Ziel ist, Potenziale der Vielfalt zu nutzen, nicht Gewinnmaximierung durch Personaleinsparung (Prüfung 2022/1)',
+      'Umweltschutz im Betrieb: Abfalltrennung, Elektroaltgeräte, Gefahrstoffe',
+      'Verursacherprinzip: Kosten der Beseitigung von Umweltschäden trägt, wer sie verursacht hat – Abgrenzung zum Gemeinlastprinzip (Prüfung 2022/1)',
+      'Emissionsschutz: Bundes-Immissionsschutzgesetz, Emissionsarten (Abgase, Lärm/Schallemissionen, Elektrosmog/Strahlung), Vermeidung geht vor Verringerung (Prüfung Sommer 2026)',
+      'Umweltzeichen: „Blauer Engel" als Nachweis für schadstoffarme, umweltschonend produzierte Produkte – nicht gleichzusetzen mit Haltbarkeit, Sicherheit oder Umweltpreisen (Prüfung Sommer 2026)',
+      'Nachhaltigkeit und Green IT: Energieeffizienz, Ressourcenschonung, Lebenszyklus von Hardware',
+      'Qualitätsmanagement: PDCA, Normen im Grundverständnis',
+      'Berufsgenossenschaft, Erste Hilfe, Brandschutz im Betrieb',
+      'Sofortmaßnahmen im Brandfall: Notruf absetzen, gefährdete Personen evakuieren – Prioritäten kennen (nicht: Fenster öffnen, nicht: erst Vorgesetzten informieren) (Prüfung Sommer 2026)',
+      'Sicherheits- und Rettungskennzeichen nach Farbe und Form zuordnen: Verbotszeichen (rund, weiß/rot), Gebotszeichen (rund, blau/weiß), Warnzeichen (dreieckig, gelb/schwarz), Rettungszeichen (grün/weiß), Brandschutzzeichen (rot/weiß), Gefahrensymbole (weiß/rot/schwarz Raute) – kommt in mehreren Prüfungen vor (Prüfung 2022/1 / 2022/2)',
+      'Feuerlöscher richtig bedienen: zum Gerät laufen, Sicherungsstift ziehen, Schlauch auf den Brandherd richten, Betätigungshebel drücken – richtige Reihenfolge einüben (Prüfung 2022/1)'
+    ] },
+  { id:'wiso-9', title:'Prüfungstechnik programmierte Prüfung', week:'Woche 9–11 · KW 43–45 · 19.10.2026–08.11.2026', start:'2026-10-19', end:'2026-11-08',
+    items:[
+      'Alle Fragen einmal durchgehen, sichere zuerst beantworten, Zweifelsfälle markieren',
+      'Bei gebundenen Aufgaben eindeutig falsche Optionen zuerst ausschließen',
+      'Auf Signalwörter achten: immer, nie, ausschließlich sind häufig falsch, in der Regel, kann häufig richtig',
+      'Nichts unbeantwortet lassen – es gibt keinen Punktabzug für falsche Antworten',
+      'Antwortbogen sauber führen und am Ende gegen die Aufgabennummern prüfen',
+      '60 Minuten für den ganzen Bogen: ca. eine Minute pro Frage, nicht an einer Frage festbeißen',
+      'Zwei vollständige Übungsbögen unter Zeit: Simulation 3.5 WiSo 1 (Buch S. 188–199, Lösung S. 355, KW 43 · 19.10.2026–25.10.2026) und Simulation 3.6 WiSo 2 (Buch S. 200–212, Lösung S. 367, KW 45 · 02.11.2026–08.11.2026)'
+    ] }
+]}
+];
+
+// ---------------------------------------------------------------
+// Empfohlener Wochentag je Bereich (siehe Wochenrhythmus-Karte oben)
+// ---------------------------------------------------------------
+const DAY_LABEL = { ga1: 'Mo + Di', ga2: 'Mi', wiso: 'Do + So' };
+
+// ---------------------------------------------------------------
+// Persistenter Speicher (localStorage, mit Fallback auf reinen Session-Speicher)
+// ---------------------------------------------------------------
+const STORAGE_KEY = 'ap2-tracker-state-v1';
+let storageAvailable = true;
+
+function loadState(){
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    storageAvailable = false;
+    return {};
+  }
+}
+
+function saveState(){
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    setSaveIndicator(true);
+  } catch (e) {
+    storageAvailable = false;
+    setSaveIndicator(false);
+  }
+}
+
+function setSaveIndicator(ok){
+  const el = document.getElementById('saveState');
+  if (!el) return;
+  if (!storageAvailable) {
+    el.textContent = 'nicht verfügbar in dieser Ansicht — Datei lokal öffnen, um zu speichern';
+  } else if (ok) {
+    const t = new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
+    el.textContent = 'zuletzt gespeichert um ' + t + ' Uhr';
+  } else {
+    el.textContent = 'aktiv';
+  }
+}
+
+// ---------------------------------------------------------------
+// Markierungen „zur Wiederholung“ — pro EINZELTHEMA (Listenpunkt), nicht pro Block.
+// itemId hat dieselbe Form wie die Checkbox-ID: topic.id + '__' + Index
+// ---------------------------------------------------------------
+function isMarked(itemId){ return !!state['mark__' + itemId]; }
+function toggleMark(itemId){
+  const key = 'mark__' + itemId;
+  state[key] = !state[key];
+  saveState();
+  updateAll();
+}
+function topicMarkCount(topic){
+  let n = 0;
+  topic.items.forEach((it, i) => {
+    if (typeof it === 'string' && isMarked(topic.id + '__' + i)) n++;
+  });
+  return n;
+}
+function topicHasMarks(topic){ return topicMarkCount(topic) > 0; }
+function markedCount(){
+  let n = 0;
+  DATA.forEach(cat => cat.topics.forEach(t => { n += topicMarkCount(t); }));
+  return n;
+}
+
+// ---------------------------------------------------------------
+// Render
+// ---------------------------------------------------------------
+const state = loadState(); // itemId -> boolean
+
+function countTopic(topic){
+  let total = 0, done = 0;
+  topic.items.forEach((it, i) => {
+    if (typeof it === 'string') {
+      total++;
+      if (state[topic.id + '__' + i]) done++;
+    }
+  });
+  return {total, done};
+}
+
+function todayInRange(start, end){
+  if (!start || !end) return false;
+  const now = new Date(); now.setHours(0,0,0,0);
+  return now >= new Date(start) && now <= new Date(end + 'T23:59:59');
+}
+function isPast(end){
+  if (!end) return false;
+  const now = new Date(); now.setHours(0,0,0,0);
+  return now > new Date(end + 'T23:59:59');
+}
+
+function fmtDate(d){
+  const dt = new Date(d);
+  return dt.toLocaleDateString('de-DE', {day:'2-digit', month:'2-digit', year:'numeric'});
+}
+
+// ---------------------------------------------------------------
+// Fokus: überfällig / heute dran / demnächst — didaktische Tagesansicht
+// ---------------------------------------------------------------
+const CAT_SHORT = { ga1:'Konzeption & Admin', ga2:'Netzwerke', wiso:'WiSo' };
+const WEEKDAY_NAMES = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+const PLAN_START = new Date('2026-08-24T00:00:00');
+const PLAN_END   = new Date('2026-11-22T23:59:59');
+const DRILL_FROM = new Date('2026-08-31T00:00:00');
+const GROUP_META = {
+  overdue:  { label: 'Überfällig — zuerst nacharbeiten', pill: 'Überfällig' },
+  today:    { label: 'Heute / diese Woche dran',         pill: 'Heute dran' },
+  upcoming: { label: 'Demnächst — in dieser Reihenfolge', pill: 'Demnächst' },
+  done:     { label: 'Erledigt',                          pill: 'Erledigt' }
+};
+
+// ---------------------------------------------------------------
+// Filter (Kategorie-Tabs + „Markiert“) — steuert Sichtbarkeit je Karte
+// ---------------------------------------------------------------
+let activeFilter = 'all';
+
+function findTopic(id){
+  let found = null;
+  DATA.forEach(cat => cat.topics.forEach(t => { if (t.id === id) found = t; }));
+  return found;
+}
+
+let searchQuery = '';
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escapeRegExp(s){
+  return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+function highlightHtml(text, query){
+  if (!query) return escapeHtml(text);
+  const re = new RegExp('(' + escapeRegExp(query) + ')', 'ig');
+  return String(text).split(re).map((part, i) => i % 2 === 1 ? '<mark>' + escapeHtml(part) + '</mark>' : escapeHtml(part)).join('');
+}
+function topicMatchesSearch(topic, query){
+  if (!query) return { any:true, titleOnly:false };
+  const titleMatch = topic.title.toLowerCase().includes(query);
+  const itemMatch = topic.items.some(it => typeof it === 'string' && it.toLowerCase().includes(query));
+  return { any: titleMatch || itemMatch, titleOnly: titleMatch };
+}
+function applySearch(raw){
+  searchQuery = (raw || '').trim().toLowerCase();
+  document.querySelectorAll('.card-title[data-title]').forEach(el => {
+    el.innerHTML = highlightHtml(el.dataset.title, searchQuery);
+  });
+  document.querySelectorAll('.items li label[data-text]').forEach(label => {
+    label.innerHTML = highlightHtml(label.dataset.text, searchQuery);
+  });
+  const clearBtn = document.getElementById('clearSearch');
+  if (clearBtn) clearBtn.hidden = !searchQuery;
+  applyFilter(activeFilter);
+}
+
+function applyFilter(filter){
+  activeFilter = filter;
+  let totalVisible = 0;
+  document.querySelectorAll('.category').forEach(sec => {
+    let anyVisible = false;
+    sec.querySelectorAll('details.card').forEach(card => {
+      const topicId = card.dataset.topic;
+      const topic = findTopic(topicId);
+      let show;
+      if (filter === 'all') show = true;
+      else if (filter === 'marked') show = topicHasMarks(topic);
+      else show = sec.dataset.cat === filter;
+      const m = topicMatchesSearch(topic, searchQuery);
+      if (searchQuery) show = show && m.any;
+      card.style.display = show ? '' : 'none';
+      if (show) { anyVisible = true; totalVisible++; }
+      if (show && filter === 'marked') card.open = true;
+      if (show && searchQuery && !m.titleOnly) card.open = true;
+    });
+    sec.style.display = anyVisible ? '' : 'none';
+  });
+  const noRes = document.getElementById('noResults');
+  if (noRes) {
+    const show = !!searchQuery && totalVisible === 0;
+    noRes.classList.toggle('show', show);
+    if (show) {
+      const inp = document.getElementById('searchInput');
+      document.getElementById('noResultsQuery').textContent = inp ? inp.value.trim() : searchQuery;
+    }
+  }
+}
+
+function setActiveTab(filter){
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.filter === filter));
+  applyFilter(filter);
+}
+
+function activeTopic(catId){
+  const cat = DATA.find(c => c.id === catId);
+  if (!cat) return null;
+  return cat.topics.find(t => todayInRange(t.start, t.end)) || null;
+}
+
+function daysUntil(dateStr){
+  const now = new Date(); now.setHours(0,0,0,0);
+  const d = new Date(dateStr + 'T00:00:00');
+  return Math.max(1, Math.round((d - now) / 86400000));
+}
+
+function statusOf(topic){
+  const {total, done} = countTopic(topic);
+  if (total > 0 && done === total) return 'done';
+  if (todayInRange(topic.start, topic.end)) return 'today';
+  if (isPast(topic.end) && done < total) return 'overdue';
+  return 'upcoming';
+}
+
+function buildFocusGroups(){
+  const groups = { overdue:[], today:[], upcoming:[], done:[] };
+  DATA.forEach(cat => {
+    cat.topics.forEach(topic => {
+      groups[statusOf(topic)].push({ topic, cat });
+    });
+  });
+  groups.overdue.sort((a,b) => new Date(a.topic.end) - new Date(b.topic.end));
+  groups.today.sort((a,b) => new Date(a.topic.end) - new Date(b.topic.end));
+  groups.upcoming.sort((a,b) => new Date(a.topic.start) - new Date(b.topic.start));
+  groups.done.sort((a,b) => new Date(a.topic.start) - new Date(b.topic.start));
+  return groups;
+}
+
+function focusRowHTML(entry, statusKey){
+  const { topic, cat } = entry;
+  const { total, done } = countTopic(topic);
+  const pct = total ? Math.round(done/total*100) : 0;
+  const markGlyph = topicHasMarks(topic) ? '<span class="mark-dot" title="Enthält zur Wiederholung markierte Themen"></span>' : '';
+  return `
+    <tr class="frow status-${statusKey}${statusKey==='done' ? ' is-done':''}" data-jump="${topic.id}" tabindex="0" role="button" aria-label="${topic.title} öffnen">
+      <td><span class="pill pill-${statusKey}">${GROUP_META[statusKey].pill}</span></td>
+      <td class="fc-cat" title="${cat.name}"><span class="dot" style="background:${cat.color}"></span></td>
+      <td class="fc-title">${markGlyph}${topic.title}</td>
+      <td class="fc-range">${fmtDate(topic.start)}–${fmtDate(topic.end)}</td>
+      <td class="fc-progress">
+        <div class="mini-track"><div style="background:${cat.color}; width:${pct}%"></div></div>
+        <span class="fc-pct">${done} / ${total}</span>
+      </td>
+      <td class="fc-action">›</td>
+    </tr>`;
+}
+
+function renderFocusTable(){
+  const groups = buildFocusGroups();
+  const order = ['overdue','today','upcoming','done'];
+  let html = '';
+  order.forEach(key => {
+    const list = groups[key];
+    if (!list.length) return;
+    html += `<tr class="frow-group group-${key}"><td colspan="6">${GROUP_META[key].label}<span class="group-count">${list.length}</span></td></tr>`;
+    html += list.map(e => focusRowHTML(e, key)).join('');
+  });
+  const body = document.getElementById('focusTableBody');
+  if (body) body.innerHTML = html;
+
+  const alertEl = document.getElementById('focusAlert');
+  if (alertEl) {
+    if (groups.overdue.length) {
+      alertEl.className = 'focus-alert warn';
+      alertEl.textContent = `⚠ ${groups.overdue.length} Thema${groups.overdue.length===1?'':'en'} überfällig — vor neuem Stoff zuerst nacharbeiten.`;
+    } else {
+      alertEl.className = 'focus-alert ok';
+      alertEl.textContent = '✓ Keine überfälligen Themen — du bist im Plan.';
+    }
+  }
+}
+
+function renderFocusHero(){
+  const now = new Date();
+  const dateEl = document.getElementById('focusDate');
+  if (dateEl) dateEl.textContent = WEEKDAY_NAMES[now.getDay()] + ', ' + fmtDate(now.toISOString().slice(0,10));
+
+  const heroEl = document.getElementById('focusHero');
+  if (!heroEl) return;
+
+  const weekday = now.getDay();
+  const drillNote = (now >= DRILL_FROM && weekday !== 6) ? '<span class="drill">+ 10 Min Subnetting-Drill</span>' : '';
+  const ga1 = activeTopic('ga1'), ga2 = activeTopic('ga2'), wiso = activeTopic('wiso');
+
+  let cls = '', html = '';
+  if (now < PLAN_START) {
+    cls = 'edge';
+    html = `<strong>Start in ${daysUntil('2026-08-24')} Tag(en), am Montag 24.08.2026.</strong> Bis dahin ist nichts geplant — höchstens die Materialien schon einmal sichten.`;
+  } else if (now > PLAN_END) {
+    cls = 'edge';
+    html = `<strong>Simulationsphase abgeschlossen.</strong> Prüfung am 24.–25.11.2026 — jetzt nur noch leicht wiederholen und ausgeschlafen antreten.`;
+  } else if (weekday === 6) {
+    cls = 'off';
+    html = `<strong>Heute ist frei.</strong> Laut Plan kein Lernpensum — morgen (Sonntag) folgt der Selbsttest der Woche.`;
+  } else if (weekday === 0) {
+    html = `<strong>Selbsttest ohne Unterlagen:</strong> Woche mündlich oder schriftlich abfragen (lassen) + WiSo-Karteikarten wiederholen. ${drillNote}`;
+  } else if (weekday === 1) {
+    html = ga1
+      ? `<strong>GA1, Teil 1:</strong> ${ga1.title} <button class="fj" data-jump="${ga1.id}">Zum Thema ›</button> ${drillNote}`
+      : `<strong>Pufferzeit GA1:</strong> kein neuer Block diese Woche — gezielt Fehlerquellen nacharbeiten. ${drillNote}`;
+  } else if (weekday === 2) {
+    html = ga1
+      ? `<strong>GA1, Teil 2 + Rechenaufgabe:</strong> ${ga1.title} <button class="fj" data-jump="${ga1.id}">Zum Thema ›</button> ${drillNote}`
+      : `<strong>Pufferzeit GA1:</strong> Rechenaufgaben der letzten Wochen wiederholen. ${drillNote}`;
+  } else if (weekday === 3) {
+    html = ga2
+      ? `<strong>GA2-Thema der Woche:</strong> ${ga2.title} <button class="fj" data-jump="${ga2.id}">Zum Thema ›</button> ${drillNote}`
+      : `<strong>Pufferwoche Netzwerke:</strong> heute nur Subnetting-Drill + Altfehler nacharbeiten. ${drillNote}`;
+  } else if (weekday === 4) {
+    html = wiso
+      ? `<strong>WiSo-Karteikarten (neuer Block):</strong> ${wiso.title} <button class="fj" data-jump="${wiso.id}">Zum Thema ›</button> ${drillNote}`
+      : `<strong>Pufferzeit WiSo:</strong> bestehende Karteikarten wiederholen. ${drillNote}`;
+  } else if (weekday === 5) {
+    const parts = [];
+    if (ga1) parts.push(`<button class="fj" data-jump="${ga1.id}">${CAT_SHORT.ga1} ›</button>`);
+    if (ga2) parts.push(`<button class="fj" data-jump="${ga2.id}">${CAT_SHORT.ga2} ›</button>`);
+    html = `<strong>Wiederholung GA1/GA2, Fehlerquellen:</strong> Beide Wochenthemen noch einmal durchgehen. ${parts.join(' ')} ${drillNote}`;
+  }
+
+  heroEl.className = 'focus-hero' + (cls ? ' ' + cls : '');
+  heroEl.innerHTML = html;
+}
+
+function jumpToTopic(id){
+  if (!findTopic(id)) return;
+  setActiveTab('all');
+  const det = document.getElementById(id);
+  if (det) {
+    det.open = true;
+    det.scrollIntoView({ behavior:'smooth', block:'center' });
+    det.classList.remove('flash');
+    void det.offsetWidth;
+    det.classList.add('flash');
+    setTimeout(() => det.classList.remove('flash'), 1600);
+  }
+}
+
+function render(){
+  const root = document.getElementById('categories');
+  root.innerHTML = '';
+
+  DATA.forEach(cat => {
+    const section = document.createElement('div');
+    section.className = 'category';
+    section.dataset.cat = cat.id;
+
+    const head = document.createElement('div');
+    head.className = 'category-head';
+    head.innerHTML = `
+      <span class="swatch" style="background:${cat.color}"></span>
+      <h2>${cat.name}</h2>
+      <div class="mini-track"><div style="background:${cat.color}" data-catbar="${cat.id}"></div></div>
+      <span class="cat-pct" data-catpct="${cat.id}">0%</span>
+    `;
+    section.appendChild(head);
+
+    const cardsWrap = document.createElement('div');
+    cardsWrap.className = 'cards';
+
+    cat.topics.forEach(topic => {
+      const det = document.createElement('details');
+      det.className = 'card';
+      det.id = topic.id;
+      det.dataset.topic = topic.id;
+      det.style.setProperty('--cat-color', cat.color);
+
+      const summary = document.createElement('summary');
+      summary.innerHTML = `
+        <div class="card-top">
+          <div class="card-title"></div>
+          <svg class="chev" viewBox="0 0 20 20" fill="none"><path d="M7 4l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="card-meta">
+          <span class="badge">${topic.week}</span>
+          <span class="day-badge">${DAY_LABEL[cat.id] || 'flexibel'}</span>
+          <span class="badge status-badge" data-status="${topic.id}"></span>
+          <span class="badge mark-count-badge" data-markcount="${topic.id}" style="display:none"></span>
+        </div>
+        <div class="card-progress">
+          <div class="track"><div class="fill" style="background:${cat.color}" data-bar="${topic.id}"></div></div>
+          <div class="foot"><span data-count="${topic.id}">0 / 0</span><span data-pct="${topic.id}">0%</span></div>
+        </div>
+      `;
+      const titleEl = summary.querySelector('.card-title');
+      titleEl.dataset.title = topic.title;
+      titleEl.textContent = topic.title;
+      det.appendChild(summary);
+
+      const body = document.createElement('div');
+      body.className = 'card-body';
+      body.style.setProperty('--cat-color', cat.color);
+
+      if (topic.intro) {
+        const p = document.createElement('p');
+        p.className = 'intro';
+        p.textContent = topic.intro;
+        body.appendChild(p);
+      }
+
+      const ul = document.createElement('ul');
+      ul.className = 'items';
+      ul.style.setProperty('--cat-color', cat.color);
+      topic.items.forEach((it, i) => {
+        if (typeof it === 'object' && it.h) {
+          const h = document.createElement('div');
+          h.className = 'group-h';
+          h.textContent = it.h;
+          ul.appendChild(h);
+          return;
+        }
+        const id = topic.id + '__' + i;
+        const li = document.createElement('li');
+        li.dataset.itemid = id;
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.id = id;
+        if (state[id]) { cb.checked = true; li.classList.add('checked'); }
+        cb.addEventListener('change', () => {
+          state[id] = cb.checked;
+          li.classList.toggle('checked', cb.checked);
+          saveState();
+          updateAll();
+        });
+        const label = document.createElement('label');
+        label.setAttribute('for', id);
+        label.textContent = it;
+        label.dataset.text = it;
+        const markBtn = document.createElement('button');
+        markBtn.type = 'button';
+        markBtn.className = 'mark-btn item';
+        markBtn.title = 'Dieses Thema zur Wiederholung markieren';
+        markBtn.setAttribute('aria-pressed', 'false');
+        markBtn.innerHTML = '<svg class="bm" viewBox="0 0 20 20" fill="none"><path d="M5 3.5C5 2.67 5.67 2 6.5 2h7c.83 0 1.5.67 1.5 1.5V17l-5-3-5 3V3.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>';
+        if (isMarked(id)) { li.classList.add('marked'); markBtn.classList.add('active'); markBtn.setAttribute('aria-pressed', 'true'); }
+        markBtn.addEventListener('click', () => toggleMark(id));
+        li.appendChild(cb);
+        li.appendChild(label);
+        li.appendChild(markBtn);
+        ul.appendChild(li);
+      });
+      body.appendChild(ul);
+
+      if (topic.practice) {
+        const pr = document.createElement('div');
+        pr.className = 'practice';
+        const parts = topic.practice.split(/:(.+)/s);
+        pr.innerHTML = parts.length > 1 ? `<b>${parts[0]}:</b>${parts[1]}` : topic.practice;
+        body.appendChild(pr);
+      }
+      if (topic.note) {
+        const n = document.createElement('div');
+        n.className = 'note';
+        n.textContent = topic.note;
+        body.appendChild(n);
+      }
+
+      det.appendChild(body);
+      cardsWrap.appendChild(det);
+    });
+
+    section.appendChild(cardsWrap);
+    root.appendChild(section);
+  });
+
+  updateAll();
+}
+
+function updateAll(){
+  let grandTotal = 0, grandDone = 0, topicsDone = 0, topicsCount = 0;
+  let current = null;
+
+  DATA.forEach(cat => {
+    let catTotal = 0, catDone = 0;
+    cat.topics.forEach(topic => {
+      const {total, done} = countTopic(topic);
+      catTotal += total; catDone += done;
+      grandTotal += total; grandDone += done;
+      topicsCount++;
+      if (total > 0 && done === total) topicsDone++;
+
+      const pct = total ? Math.round(done/total*100) : 0;
+      const bar = document.querySelector(`[data-bar="${topic.id}"]`);
+      if (bar) bar.style.width = pct + '%';
+      const countEl = document.querySelector(`[data-count="${topic.id}"]`);
+      if (countEl) countEl.textContent = done + ' / ' + total;
+      const pctEl = document.querySelector(`[data-pct="${topic.id}"]`);
+      if (pctEl) pctEl.textContent = pct + '%';
+
+      const statusEl = document.querySelector(`[data-status="${topic.id}"]`);
+      if (statusEl) {
+        statusEl.classList.remove('now','overdue');
+        if (todayInRange(topic.start, topic.end)) {
+          statusEl.textContent = 'Diese Woche';
+          statusEl.classList.add('now');
+          if (!current) current = topic.title;
+        } else if (isPast(topic.end) && done < total) {
+          statusEl.textContent = 'Überfällig';
+          statusEl.classList.add('overdue');
+        } else if (topic.start && new Date() < new Date(topic.start)) {
+          statusEl.textContent = 'Geplant';
+        } else {
+          statusEl.textContent = done === total && total > 0 ? 'Erledigt' : 'Läuft';
+        }
+      }
+    });
+
+    const catBar = document.querySelector(`[data-catbar="${cat.id}"]`);
+    const catPctEl = document.querySelector(`[data-catpct="${cat.id}"]`);
+    const catPct = catTotal ? Math.round(catDone/catTotal*100) : 0;
+    if (catBar) catBar.style.width = catPct + '%';
+    if (catPctEl) catPctEl.textContent = catPct + '%';
+  });
+
+  const overallPct = grandTotal ? Math.round(grandDone/grandTotal*100) : 0;
+  document.getElementById('overallPct').textContent = overallPct + '%';
+  document.getElementById('overallFill').style.width = overallPct + '%';
+  document.getElementById('statChecked').textContent = grandDone + ' / ' + grandTotal;
+  document.getElementById('statTopics').textContent = topicsDone + ' / ' + topicsCount;
+  document.getElementById('statCurrent').textContent = current || '—';
+
+  const examDate = new Date('2026-11-24T08:00:00');
+  const now = new Date();
+  const days = Math.ceil((examDate - now) / 86400000);
+  document.getElementById('statDays').textContent = days > 0 ? days : 'läuft';
+
+  renderFocusTable();
+  renderFocusHero();
+
+  document.querySelectorAll('details.card').forEach(det => {
+    const topic = findTopic(det.dataset.topic);
+    const mCount = topic ? topicMarkCount(topic) : 0;
+    det.classList.toggle('marked', mCount > 0);
+    const countBadge = det.querySelector('.mark-count-badge');
+    if (countBadge) {
+      if (mCount > 0) {
+        countBadge.textContent = mCount === 1 ? '1 markiert' : mCount + ' markiert';
+        countBadge.style.display = '';
+      } else {
+        countBadge.style.display = 'none';
+      }
+    }
+  });
+  document.querySelectorAll('ul.items li[data-itemid]').forEach(li => {
+    const marked = isMarked(li.dataset.itemid);
+    li.classList.toggle('marked', marked);
+    const btn = li.querySelector('.mark-btn');
+    if (btn) {
+      btn.classList.toggle('active', marked);
+      btn.setAttribute('aria-pressed', marked ? 'true' : 'false');
+    }
+  });
+  const tabCountEl = document.getElementById('markedTabCount');
+  if (tabCountEl) tabCountEl.textContent = '(' + markedCount() + ')';
+  applyFilter(activeFilter);
+}
+
+render();
+
+if (!storageAvailable) {
+  setSaveIndicator(false);
+} else {
+  const el = document.getElementById('saveState');
+  if (el) el.textContent = Object.keys(state).length ? 'gespeicherter Stand geladen' : 'aktiv, noch nichts gespeichert';
+}
+
+// ---------------------------------------------------------------
+// Controls
+// ---------------------------------------------------------------
+document.getElementById('focusTableBody').addEventListener('click', (e) => {
+  const row = e.target.closest('tr.frow');
+  if (!row) return;
+  jumpToTopic(row.dataset.jump);
+});
+document.getElementById('focusTableBody').addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  const row = e.target.closest('tr.frow');
+  if (!row) return;
+  e.preventDefault();
+  jumpToTopic(row.dataset.jump);
+});
+document.getElementById('focusHero').addEventListener('click', (e) => {
+  const btn = e.target.closest('.fj');
+  if (!btn) return;
+  jumpToTopic(btn.dataset.jump);
+});
+document.getElementById('toggleDone').addEventListener('click', () => {
+  const wrap = document.getElementById('focusTableWrap');
+  const showing = wrap.classList.toggle('show-done');
+  document.getElementById('toggleDone').textContent = showing ? 'Erledigte ausblenden' : 'Erledigte einblenden';
+});
+
+document.getElementById('tabs').addEventListener('click', (e) => {
+  const btn = e.target.closest('.tab');
+  if (!btn) return;
+  setActiveTab(btn.dataset.filter);
+});
+
+const searchInput = document.getElementById('searchInput');
+searchInput.addEventListener('input', () => applySearch(searchInput.value));
+searchInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && searchInput.value) { searchInput.value = ''; applySearch(''); }
+});
+document.getElementById('clearSearch').addEventListener('click', () => {
+  searchInput.value = '';
+  applySearch('');
+  searchInput.focus();
+});
+document.getElementById('noResultsClear').addEventListener('click', () => {
+  searchInput.value = '';
+  applySearch('');
+});
+
+document.getElementById('expandAll').addEventListener('click', () => {
+  document.querySelectorAll('details.card').forEach(d => d.open = true);
+});
+document.getElementById('collapseAll').addEventListener('click', () => {
+  document.querySelectorAll('details.card').forEach(d => d.open = false);
+});
+document.getElementById('resetAll').addEventListener('click', () => {
+  if (!confirm('Wirklich den gesamten Fortschritt in diesem Tracker zurücksetzen? Das löscht auch den gespeicherten Stand.')) return;
+  Object.keys(state).forEach(k => delete state[k]);
+  document.querySelectorAll('ul.items input[type=checkbox]').forEach(cb => cb.checked = false);
+  document.querySelectorAll('ul.items li').forEach(li => li.classList.remove('checked'));
+  saveState();
+  updateAll();
+});
+
+const themeBtn = document.getElementById('themeToggle');
+let themeState = 'system';
+themeBtn.addEventListener('click', () => {
+  themeState = themeState === 'system' ? 'dark' : (themeState === 'dark' ? 'light' : 'system');
+  if (themeState === 'system') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', themeState);
+  themeBtn.textContent = themeState === 'system' ? '🌓 Darstellung' : (themeState === 'dark' ? '🌙 Dunkel' : '☀️ Hell');
+});
+
+// ---------------------------------------------------------------
+// Easter Egg: kleines "Paket-Fang"-Minispiel für die Pause
+// ---------------------------------------------------------------
+(function(){
+  const eggBtn = document.getElementById('eggBtn');
+  const overlay = document.getElementById('eggOverlay');
+  const closeBtn = document.getElementById('eggClose');
+  const tabsEl = document.getElementById('eggTabs');
+  const titleEl = document.getElementById('eggTitle');
+
+  const GAME_META = {
+    packet: { icon:'📦', title:'Paket-Fang',        sub:'— kurz den Kopf freimachen' },
+    ports:  { icon:'🔌', title:'Port-Sprint',        sub:'— Ports aus GA2 im Kopf' },
+    subnet: { icon:'🧮', title:'Subnetting-Blitz',   sub:'— Netz-/Broadcastadresse & Co.' },
+    terms:  { icon:'🧠', title:'Fachbegriff-Rush',   sub:'— Abkürzungen querbeet' },
+  };
+
+  let activeGame = 'packet';
+  const games = {};
+
+  function switchGame(name){
+    if (!games[name] || name === activeGame) return;
+    if (games[activeGame]) games[activeGame].stop();
+    document.querySelectorAll('.egg-panel').forEach(p => { p.hidden = true; });
+    document.getElementById('panel-' + name).hidden = false;
+    document.querySelectorAll('.egg-tab').forEach(t => t.classList.toggle('active', t.dataset.game === name));
+    const meta = GAME_META[name];
+    titleEl.innerHTML = meta.icon + ' ' + meta.title + ' <span class="egg-sub">' + meta.sub + '</span>';
+    activeGame = name;
+    games[name].start();
+  }
+
+  tabsEl.addEventListener('click', (e) => {
+    const btn = e.target.closest('.egg-tab');
+    if (!btn) return;
+    switchGame(btn.dataset.game);
+  });
+
+  function openEgg(){ overlay.hidden = false; games[activeGame].start(); }
+  function closeEgg(){ overlay.hidden = true; if (games[activeGame]) games[activeGame].stop(); }
+
+  eggBtn.addEventListener('click', openEgg);
+  closeBtn.addEventListener('click', closeEgg);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeEgg(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !overlay.hidden) closeEgg(); });
+
+  function shuffle(arr){
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  // ---------------- 📦 Paket-Fang (reines Spaß-Spiel) ----------------
+  games.packet = (function(){
+    const canvas = document.getElementById('eggCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreEl = document.getElementById('eggScore');
+    const livesEl = document.getElementById('eggLives');
+    const restartBtn = document.getElementById('eggRestart');
+    const overPanel = document.getElementById('eggOver');
+    const finalScoreEl = document.getElementById('eggFinalScore');
+    const playAgainBtn = document.getElementById('eggPlayAgain');
+
+    const LABELS = ['TCP','UDP','ARP','DNS','ACK','SYN','ICMP','TLS'];
+    let packets = [], score = 0, lives = 3, running = false, rafId = null, spawnTimer = 0, lastTs = 0;
+    const baseSpeed = 55;
+
+    function packetColor(){
+      const v = getComputedStyle(document.documentElement).getPropertyValue('--cat-ga2').trim();
+      return v || '#3b6fd6';
+    }
+
+    function reset(){
+      packets = []; score = 0; lives = 3;
+      scoreEl.textContent = '0'; livesEl.textContent = '3';
+      overPanel.hidden = true;
+      running = true; lastTs = 0; spawnTimer = 0;
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(loop);
+    }
+
+    function spawnPacket(){
+      packets.push({
+        x: 26 + Math.random() * (canvas.width - 52),
+        y: -22, r: 22,
+        label: LABELS[Math.floor(Math.random() * LABELS.length)]
+      });
+    }
+
+    function loop(ts){
+      if (!running) return;
+      if (!lastTs) lastTs = ts;
+      const dt = Math.min(0.05, (ts - lastTs) / 1000);
+      lastTs = ts;
+
+      spawnTimer -= dt;
+      if (spawnTimer <= 0) {
+        spawnPacket();
+        spawnTimer = Math.max(0.45, 1.25 - score * 0.02);
+      }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const color = packetColor();
+
+      for (let i = packets.length - 1; i >= 0; i--) {
+        const p = packets[i];
+        p.y += (baseSpeed + score * 1.6) * dt;
+
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(p.x - p.r, p.y - p.r * 0.6, p.r * 2, p.r * 1.2, 6);
+        else ctx.rect(p.x - p.r, p.y - p.r * 0.6, p.r * 2, p.r * 1.2);
+        ctx.fill();
+        ctx.fillStyle = '#fff';
+        ctx.font = '600 11px var(--font-mono), monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(p.label, p.x, p.y + 1);
+
+        if (p.y - p.r > canvas.height) {
+          packets.splice(i, 1);
+          lives--;
+          livesEl.textContent = String(lives);
+          if (lives <= 0) { endGame(); return; }
+        }
+      }
+
+      rafId = requestAnimationFrame(loop);
+    }
+
+    function endGame(){
+      running = false;
+      cancelAnimationFrame(rafId);
+      finalScoreEl.textContent = String(score);
+      overPanel.hidden = false;
+    }
+
+    canvas.addEventListener('pointerdown', (e) => {
+      if (!running) return;
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width, scaleY = canvas.height / rect.height;
+      const x = (e.clientX - rect.left) * scaleX;
+      const y = (e.clientY - rect.top) * scaleY;
+      for (let i = packets.length - 1; i >= 0; i--) {
+        const p = packets[i];
+        const dx = x - p.x, dy = y - p.y;
+        if (Math.sqrt(dx * dx + dy * dy) < p.r * 1.4) {
+          packets.splice(i, 1);
+          score++;
+          scoreEl.textContent = String(score);
+          break;
+        }
+      }
+    });
+
+    restartBtn.addEventListener('click', reset);
+    playAgainBtn.addEventListener('click', reset);
+
+    return {
+      start: reset,
+      stop(){ running = false; cancelAnimationFrame(rafId); }
+    };
+  })();
+
+  // ---------------- 🔌 Port-Sprint ----------------
+  games.ports = (function(){
+    const promptEl = document.getElementById('portsPrompt');
+    const form = document.getElementById('portsForm');
+    const input = document.getElementById('portsInput');
+    const feedbackEl = document.getElementById('portsFeedback');
+    const scoreEl = document.getElementById('portsScore');
+    const streakEl = document.getElementById('portsStreak');
+    const timerBar = document.getElementById('portsTimerBar');
+    const overPanel = document.getElementById('portsOver');
+    const finalEl = document.getElementById('portsFinal');
+    const restartBtn = document.getElementById('portsRestart');
+    const playAgainBtn = document.getElementById('portsPlayAgain');
+
+    const POOL = [
+      {label:'FTP (Steuerkanal)', answers:['21']},
+      {label:'FTP (Datenkanal)', answers:['20']},
+      {label:'SSH', answers:['22']},
+      {label:'Telnet', answers:['23']},
+      {label:'SMTP', answers:['25']},
+      {label:'DNS', answers:['53']},
+      {label:'DHCP (Server)', answers:['67']},
+      {label:'DHCP (Client)', answers:['68']},
+      {label:'HTTP', answers:['80']},
+      {label:'POP3', answers:['110']},
+      {label:'IMAP', answers:['143']},
+      {label:'LDAP', answers:['389']},
+      {label:'HTTPS', answers:['443']},
+      {label:'SMB', answers:['445']},
+      {label:'SMTP (Submission/TLS)', answers:['465','587']},
+      {label:'LDAPS', answers:['636']},
+      {label:'IMAPS', answers:['993']},
+      {label:'RDP', answers:['3389']},
+    ];
+
+    const DURATION = 45;
+    let score = 0, streak = 0, current = null, endsAt = 0, rafIdLocal = null, running = false, locked = false;
+
+    function nextQuestion(){
+      locked = false;
+      input.disabled = false;
+      let q;
+      do { q = POOL[Math.floor(Math.random() * POOL.length)]; } while (POOL.length > 1 && q === current);
+      current = q;
+      promptEl.textContent = q.label;
+      feedbackEl.textContent = '';
+      feedbackEl.className = 'quiz-feedback';
+      input.value = '';
+      input.focus();
+    }
+
+    function tickTimer(){
+      const remaining = Math.max(0, endsAt - Date.now());
+      timerBar.style.width = (remaining / (DURATION * 1000) * 100) + '%';
+      if (remaining <= 0) { endGame(); return; }
+      rafIdLocal = requestAnimationFrame(tickTimer);
+    }
+
+    function start(){
+      score = 0; streak = 0; running = true; locked = false;
+      scoreEl.textContent = '0'; streakEl.textContent = '0';
+      overPanel.hidden = true;
+      input.disabled = false;
+      endsAt = Date.now() + DURATION * 1000;
+      timerBar.style.width = '100%';
+      nextQuestion();
+      cancelAnimationFrame(rafIdLocal);
+      rafIdLocal = requestAnimationFrame(tickTimer);
+    }
+    function stop(){ running = false; cancelAnimationFrame(rafIdLocal); }
+    function endGame(){
+      stop();
+      finalEl.textContent = String(score);
+      overPanel.hidden = false;
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!running || locked) return;
+      locked = true;
+      input.disabled = true;
+      const val = input.value.trim().replace(/^0+(?=\d)/, '');
+      if (current.answers.includes(val)) {
+        score++; streak++;
+        scoreEl.textContent = String(score);
+        streakEl.textContent = String(streak);
+        feedbackEl.textContent = 'Richtig!';
+        feedbackEl.className = 'quiz-feedback ok';
+      } else {
+        streak = 0;
+        streakEl.textContent = '0';
+        feedbackEl.textContent = 'Leider nein — richtig wäre ' + current.answers.join(' oder ') + '.';
+        feedbackEl.className = 'quiz-feedback bad';
+      }
+      setTimeout(() => { if (running) nextQuestion(); }, 700);
+    });
+    restartBtn.addEventListener('click', start);
+    playAgainBtn.addEventListener('click', start);
+
+    return { start, stop };
+  })();
+
+  // ---------------- 🧮 Subnetting-Blitz ----------------
+  games.subnet = (function(){
+    const promptEl = document.getElementById('subnetPrompt');
+    const form = document.getElementById('subnetForm');
+    const input = document.getElementById('subnetInput');
+    const feedbackEl = document.getElementById('subnetFeedback');
+    const scoreEl = document.getElementById('subnetScore');
+    const streakEl = document.getElementById('subnetStreak');
+    const timerBar = document.getElementById('subnetTimerBar');
+    const overPanel = document.getElementById('subnetOver');
+    const finalEl = document.getElementById('subnetFinal');
+    const restartBtn = document.getElementById('subnetRestart');
+    const playAgainBtn = document.getElementById('subnetPlayAgain');
+
+    const DURATION = 90;
+    let score = 0, streak = 0, current = null, endsAt = 0, rafIdLocal = null, running = false, locked = false;
+
+    function randInt(min, max){ return Math.floor(Math.random() * (max - min + 1)) + min; }
+    function toDotted(v){ return [(v >>> 24) & 255, (v >>> 16) & 255, (v >>> 8) & 255, v & 255].join('.'); }
+
+    function genQuestion(){
+      const prefix = randInt(20, 30);
+      let o1; do { o1 = randInt(1, 223); } while (o1 === 127);
+      const o2 = randInt(0, 255), o3 = randInt(0, 255), o4 = randInt(0, 255);
+      const ipInt = ((o1 << 24) | (o2 << 16) | (o3 << 8) | o4) >>> 0;
+      const mask = (0xFFFFFFFF << (32 - prefix)) >>> 0;
+      const networkInt = (ipInt & mask) >>> 0;
+      const broadcastInt = (networkInt | (~mask >>> 0)) >>> 0;
+      const usableHosts = Math.pow(2, 32 - prefix) - 2;
+      const ipStr = toDotted(ipInt) + '/' + prefix;
+      const types = ['network', 'broadcast', 'hosts', 'mask'];
+      const type = types[randInt(0, types.length - 1)];
+      let prompt, answer, placeholder;
+      if (type === 'network') { prompt = 'Netzadresse von ' + ipStr + ' ?'; answer = toDotted(networkInt); placeholder = 'z. B. 10.0.0.0'; }
+      else if (type === 'broadcast') { prompt = 'Broadcastadresse von ' + ipStr + ' ?'; answer = toDotted(broadcastInt); placeholder = 'z. B. 10.0.0.255'; }
+      else if (type === 'hosts') { prompt = 'Nutzbare Hosts in einem /' + prefix + '-Netz?'; answer = String(usableHosts); placeholder = 'nur die Zahl'; }
+      else { prompt = 'Subnetzmaske für /' + prefix + ' ?'; answer = toDotted(mask); placeholder = 'z. B. 255.255.255.0'; }
+      return { prompt, answer, placeholder };
+    }
+
+    function nextQuestion(){
+      locked = false;
+      input.disabled = false;
+      current = genQuestion();
+      promptEl.textContent = current.prompt;
+      input.placeholder = current.placeholder;
+      feedbackEl.textContent = '';
+      feedbackEl.className = 'quiz-feedback';
+      input.value = '';
+      input.focus();
+    }
+
+    function tickTimer(){
+      const remaining = Math.max(0, endsAt - Date.now());
+      timerBar.style.width = (remaining / (DURATION * 1000) * 100) + '%';
+      if (remaining <= 0) { endGame(); return; }
+      rafIdLocal = requestAnimationFrame(tickTimer);
+    }
+
+    function start(){
+      score = 0; streak = 0; running = true; locked = false;
+      scoreEl.textContent = '0'; streakEl.textContent = '0';
+      overPanel.hidden = true;
+      input.disabled = false;
+      endsAt = Date.now() + DURATION * 1000;
+      timerBar.style.width = '100%';
+      nextQuestion();
+      cancelAnimationFrame(rafIdLocal);
+      rafIdLocal = requestAnimationFrame(tickTimer);
+    }
+    function stop(){ running = false; cancelAnimationFrame(rafIdLocal); }
+    function endGame(){
+      stop();
+      finalEl.textContent = String(score);
+      overPanel.hidden = false;
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!running || locked) return;
+      locked = true;
+      input.disabled = true;
+      const val = input.value.trim();
+      if (val === current.answer) {
+        score++; streak++;
+        scoreEl.textContent = String(score);
+        streakEl.textContent = String(streak);
+        feedbackEl.textContent = 'Richtig!';
+        feedbackEl.className = 'quiz-feedback ok';
+      } else {
+        streak = 0;
+        streakEl.textContent = '0';
+        feedbackEl.textContent = 'Leider nein — richtig wäre ' + current.answer + '.';
+        feedbackEl.className = 'quiz-feedback bad';
+      }
+      setTimeout(() => { if (running) nextQuestion(); }, 900);
+    });
+    restartBtn.addEventListener('click', start);
+    playAgainBtn.addEventListener('click', start);
+
+    return { start, stop };
+  })();
+
+  // ---------------- 🧠 Fachbegriff-Rush ----------------
+  games.terms = (function(){
+    const promptEl = document.getElementById('termsPrompt');
+    const choicesEl = document.getElementById('termsChoices');
+    const feedbackEl = document.getElementById('termsFeedback');
+    const scoreEl = document.getElementById('termsScore');
+    const streakEl = document.getElementById('termsStreak');
+    const timerBar = document.getElementById('termsTimerBar');
+    const overPanel = document.getElementById('termsOver');
+    const finalEl = document.getElementById('termsFinal');
+    const restartBtn = document.getElementById('termsRestart');
+    const playAgainBtn = document.getElementById('termsPlayAgain');
+
+    const POOL = [
+      {q:'RAID', a:'Redundant Array of Independent Disks'},
+      {q:'RTO', a:'Recovery Time Objective'},
+      {q:'RPO', a:'Recovery Point Objective'},
+      {q:'MTBF', a:'Mean Time Between Failures'},
+      {q:'MTTR', a:'Mean Time To Repair'},
+      {q:'SLA', a:'Service Level Agreement'},
+      {q:'TCO', a:'Total Cost of Ownership'},
+      {q:'IOPS', a:'Input/Output Operations Per Second'},
+      {q:'VLAN', a:'Virtual Local Area Network'},
+      {q:'ARP', a:'Address Resolution Protocol'},
+      {q:'DORA', a:'Discover, Offer, Request, Acknowledge (DHCP-Ablauf)'},
+      {q:'AGDLP', a:'Account, Global, Domain Local, Permission'},
+      {q:'PDCA', a:'Plan, Do, Check, Act'},
+      {q:'DSGVO', a:'Datenschutz-Grundverordnung'},
+      {q:'AGG', a:'Allgemeines Gleichbehandlungsgesetz'},
+      {q:'JArbSchG', a:'Jugendarbeitsschutzgesetz'},
+      {q:'AEVO', a:'Ausbilder-Eignungsverordnung'},
+      {q:'AÜG', a:'Arbeitnehmerüberlassungsgesetz'},
+      {q:'NAT', a:'Network Address Translation'},
+      {q:'DHCP', a:'Dynamic Host Configuration Protocol'},
+      {q:'LACP', a:'Link Aggregation Control Protocol'},
+      {q:'STP', a:'Spanning Tree Protocol'},
+      {q:'VRRP', a:'Virtual Router Redundancy Protocol'},
+      {q:'PKI', a:'Public Key Infrastructure'},
+      {q:'IPsec', a:'Internet Protocol Security'},
+      {q:'WORM', a:'Write Once Read Many'},
+      {q:'SPOF', a:'Single Point of Failure'},
+      {q:'IaaS', a:'Infrastructure as a Service'},
+      {q:'PaaS', a:'Platform as a Service'},
+      {q:'SaaS', a:'Software as a Service'},
+      {q:'DAS', a:'Direct Attached Storage'},
+      {q:'NAS', a:'Network Attached Storage'},
+      {q:'SAN', a:'Storage Area Network'},
+      {q:'AAA', a:'Authentication, Authorization, Accounting'},
+      {q:'SSO', a:'Single Sign-On'},
+      {q:'BYOD', a:'Bring Your Own Device'},
+      {q:'WAF', a:'Web Application Firewall'},
+      {q:'IDS', a:'Intrusion Detection System'},
+      {q:'IPS', a:'Intrusion Prevention System'},
+    ];
+
+    const DURATION = 45;
+    let score = 0, streak = 0, current = null, endsAt = 0, rafIdLocal = null, running = false, locked = false;
+
+    function nextQuestion(){
+      locked = false;
+      let q;
+      do { q = POOL[Math.floor(Math.random() * POOL.length)]; } while (POOL.length > 1 && q === current);
+      current = q;
+      promptEl.textContent = q.q;
+      feedbackEl.textContent = '';
+      feedbackEl.className = 'quiz-feedback';
+
+      const distractors = shuffle(POOL.filter(p => p !== q)).slice(0, 3).map(p => p.a);
+      const options = shuffle([q.a, ...distractors]);
+      choicesEl.innerHTML = '';
+      options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'choice-btn';
+        btn.textContent = opt;
+        btn.addEventListener('click', () => choose(opt, btn));
+        choicesEl.appendChild(btn);
+      });
+    }
+
+    function choose(opt, btn){
+      if (locked || !running) return;
+      locked = true;
+      const correct = opt === current.a;
+      choicesEl.querySelectorAll('.choice-btn').forEach(b => {
+        b.disabled = true;
+        if (b.textContent === current.a) b.classList.add('correct');
+        else if (b === btn) b.classList.add('wrong');
+      });
+      if (correct) {
+        score++; streak++;
+        scoreEl.textContent = String(score);
+        streakEl.textContent = String(streak);
+        feedbackEl.textContent = 'Richtig!';
+        feedbackEl.className = 'quiz-feedback ok';
+      } else {
+        streak = 0;
+        streakEl.textContent = '0';
+        feedbackEl.textContent = 'Richtig wäre: ' + current.a;
+        feedbackEl.className = 'quiz-feedback bad';
+      }
+      setTimeout(() => { if (running) nextQuestion(); }, 900);
+    }
+
+    function tickTimer(){
+      const remaining = Math.max(0, endsAt - Date.now());
+      timerBar.style.width = (remaining / (DURATION * 1000) * 100) + '%';
+      if (remaining <= 0) { endGame(); return; }
+      rafIdLocal = requestAnimationFrame(tickTimer);
+    }
+
+    function start(){
+      score = 0; streak = 0; running = true; locked = false;
+      scoreEl.textContent = '0'; streakEl.textContent = '0';
+      overPanel.hidden = true;
+      endsAt = Date.now() + DURATION * 1000;
+      timerBar.style.width = '100%';
+      nextQuestion();
+      cancelAnimationFrame(rafIdLocal);
+      rafIdLocal = requestAnimationFrame(tickTimer);
+    }
+    function stop(){ running = false; cancelAnimationFrame(rafIdLocal); }
+    function endGame(){
+      stop();
+      finalEl.textContent = String(score);
+      overPanel.hidden = false;
+    }
+
+    restartBtn.addEventListener('click', start);
+    playAgainBtn.addEventListener('click', start);
+
+    return { start, stop };
+  })();
+})();
+</script>
+</body>
+</html>
