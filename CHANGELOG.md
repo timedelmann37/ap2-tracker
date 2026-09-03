@@ -7,6 +7,31 @@ direkt auf der Seite sichtbar — ein Klick auf die Versionsnummer im Hub (in
 der Fußzeile) zeigt dieselbe Liste als Änderungsprotokoll. Gepflegt wird das
 Changelog ausschließlich im Hub, nicht mehr in den einzelnen Bereichen.
 
+## [3.5.0] – 2026-09-03
+
+### Geändert
+- Komplettes UI-Redesign, stark an [supabase.com](https://supabase.com)
+  angelehnt und auf alle Seiten angewendet (Hub, Übersicht, die drei
+  Themenbereiche; `/simulation/` unberührt):
+  - **Farbschema:** warmes Charcoal mit leichtem Grünstich statt reinem
+    Schwarz/Blau; ein einziger Grün-Akzent (`#3ecf8e` / auf Hell `#16794c`)
+    statt bunter Syntaxfarben; Bereichsfarben auf gleiche Helligkeit gezogen.
+  - **Tiefe:** alle `box-shadow`, Glas-Blur und Hover-Glows raus — nur noch
+    1px-Haarlinien; Hover wechselt Rahmen-/Flächenfarbe, ohne Verschieben.
+  - **Typografie:** Manrope (Überschriften) + Inter (Text) statt IBM Plex
+    Sans; Mono bleibt IBM Plex Mono. Zweizeilige Seitenüberschriften.
+  - **Navigation:** randlos mit Haarlinie unten statt schwebendem Kasten,
+    kleines Grün-Logo, aktive Punkte grün getönt; auf schmalen Bildschirmen
+    eingeklappt (Navigation dort über den Hub).
+  - **Hub-Layout:** eine durchgehende Bento-Grid (Fortschritt 7 / Aktivität
+    5, Bereichskacheln 8+4 und 4+4+4) statt gestapelter gleichförmiger
+    Kartenreihen. Karten-Icons einfarbig, nehmen die Bereichsfarbe erst
+    beim Überfahren an.
+  - Der Pseudo-Pfad `~/abschlusspruefung/…` ist auf allen Seiten weg.
+  - Fortschrittsbalken einfarbig grün statt Farbverlauf.
+- Theme-Logik umgedreht: Standard folgt dem Betriebssystem (hell/dunkel),
+  die drei Modi (System/Hell/Dunkel) über den Umschalter bleiben.
+
 ## [3.4.2] – 2026-09-03
 
 ### Geändert
