@@ -1,9 +1,15 @@
 # AP2-Tracker
 
-Statische Lern-Tools zur Vorbereitung auf die IHK-Abschlussprüfung AP2
-(Fachinformatiker Systemintegration). Kein Build-Schritt, jede Seite ist
-in sich geschlossenes HTML/CSS/JS, Deployment über Netlify. Details in
+Lern-Tools zur Vorbereitung auf die IHK-Abschlussprüfung AP2
+(Fachinformatiker Systemintegration). Deployment über Netlify. Details in
 [`README.md`](./README.md).
+
+Der Bestand ist heute statisches, in sich geschlossenes HTML/CSS/JS pro Seite
+ohne Build-Schritt. **Das ist keine Vorgabe mehr für neue Arbeit:** ein
+Build-Schritt, ein Framework (React o. Ä.), TypeScript, Tailwind oder eine
+Komponentenbibliothek (shadcn/ui usw.) sind erlaubt, wo sie sich lohnen. Wer
+so etwas einführt, richtet den passenden Netlify-Build mit ein und hält die
+bestehenden statischen Seiten lauffähig, bis sie migriert sind.
 
 ## Agent skills
 

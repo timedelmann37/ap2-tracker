@@ -1,9 +1,13 @@
 # AP2 Vorbereitung
 
-Statische Tools zur Vorbereitung auf den schriftlichen Teil der
-Abschlussprüfung (Fachinformatiker Systemintegration, AP2 – GA1, GA2, WiSo),
-verlinkt über ein gemeinsames Hauptmenü. Kein Server, kein Build-Schritt,
-jede Seite ist in sich geschlossenes HTML/CSS/JS.
+Tools zur Vorbereitung auf den schriftlichen Teil der Abschlussprüfung
+(Fachinformatiker Systemintegration, AP2 – GA1, GA2, WiSo), verlinkt über
+ein gemeinsames Hauptmenü.
+
+Der aktuelle Bestand ist buildlos: kein Server, jede Seite ein in sich
+geschlossenes HTML/CSS/JS. Das ist der Ist-Zustand, keine Vorgabe — ein
+Build-Schritt, ein Framework (React o. Ä.), TypeScript oder Tailwind sind
+für neue Arbeit erlaubt (siehe [`CLAUDE.md`](./CLAUDE.md)).
 
 ## Struktur
 

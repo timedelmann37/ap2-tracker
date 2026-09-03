@@ -45,12 +45,17 @@ Themengruppen („der Plan") plus der feste Wochenrhythmus sind fest eingebaut;
 ein neutrales To-do- oder Flashcard-Produkt hat weder den kuratierten
 AP2-Stoffbaum noch die Plan-Logik (aktuell geplant / Rückstand).
 
-Bewusst backendlos: eine Sammlung in sich geschlossener HTML-Seiten, kein
-Build, kein eigener Server. Fortschritt liegt zuerst lokal im Browser; der
-optionale Cloud-Sync spricht direkt (ohne eigenes Backend) mit Supabase,
-abgesichert allein über Row Level Security. Anmeldung ist optional und
-passwortlos. Das ist eine Haltung (Einfachheit, sofort lokal lauffähig,
-minimale Infrastruktur), kein Übergangszustand.
+Bewusst backendlos: kein eigener Server. Fortschritt liegt zuerst lokal im
+Browser; der optionale Cloud-Sync spricht direkt (ohne eigenes Backend) mit
+Supabase, abgesichert allein über Row Level Security. Anmeldung ist optional
+und passwortlos. Das ist eine Haltung (minimale Infrastruktur, sofort lokal
+lauffähig) und bleibt sie.
+
+Der aktuelle Bestand ist zusätzlich buildlos — jede Seite ein in sich
+geschlossenes HTML/CSS/JS. Das ist der Ist-Zustand, **keine dauerhafte
+Vorgabe**: ein Build-Schritt, ein Framework (React o. Ä.), TypeScript,
+Tailwind oder eine Komponentenbibliothek dürfen eingeführt werden, wo sie
+sich lohnen; der Netlify-Build wird dann entsprechend eingerichtet.
 
 ## Operating Context
 
@@ -81,10 +86,12 @@ minimale Infrastruktur), kein Übergangszustand.
 
 ## Capabilities and Constraints
 
-- Kein Build-Schritt, keine Abhängigkeiten: jede Seite ist in sich
-  geschlossenes HTML/CSS/JS und lässt sich direkt im Browser öffnen. Deployment
-  über Netlify (`publish = "."`, kein Build-Command), jeder Push auf `main`
-  ergibt eine erreichbare Seite.
+- Ist-Zustand: buildlos, jede Seite ein in sich geschlossenes HTML/CSS/JS, im
+  Browser direkt öffenbar. Deployment über Netlify (`publish = "."`, aktuell
+  kein Build-Command), jeder Push auf `main` ergibt eine erreichbare Seite.
+  Ein Build-Schritt / Framework / TypeScript / Tailwind ist für neue Arbeit
+  erlaubt (siehe `CLAUDE.md`); dann Netlify-Build entsprechend konfigurieren
+  und bestehende statische Seiten lauffähig halten, bis migriert.
 - Stoffdaten stecken in der `DATA`-Konstante am Anfang des jeweiligen
   `<script>`-Blocks der Themenseite.
 - Fortschritt: `localStorage`, Schlüssel `ap2-tracker-state-v1` — **derselbe
@@ -153,7 +160,8 @@ minimale Infrastruktur), kein Übergangszustand.
 3. **Lokal zuerst, Konto optional.** Die Seite muss ohne Anmeldung voll
    funktionieren; Fortschritt landet sofort in `localStorage`. Cloud-Sync und
    Konto sind ein zusätzliches Angebot (passwortlos, offen), kein Zwang und
-   kein eigenes Backend. Kein Build.
+   kein eigenes Backend. (Ein Build-Schritt / Framework ist erlaubt — die
+   Buildlosigkeit ist Ist-Zustand, keine Vorgabe.)
 4. **Kuratierter Stoff schlägt Vollständigkeitsgefühl.** Kernthemen bilden ab,
    was real geprüft wurde; neue Punkte kommen mit Quellenbeleg, nicht auf
    Verdacht.
