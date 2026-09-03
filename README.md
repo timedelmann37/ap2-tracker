@@ -14,6 +14,11 @@ AP2 – GA1, GA2, WiSo). Fortschritt wird lokal im Browser gespeichert
   ergänzte Punkte sind mit der jeweiligen Quellprüfung markiert.
 - Live-Suche über Themen und Einzelinhalte inklusive Hervorhebung der
   Treffer.
+- **Fortschritt exportieren/importieren** (Buttons über den Kategorien):
+  Sicherung als JSON-Datei herunterladen bzw. wieder einspielen – falls der
+  Browser-Cache mal verloren geht (neues Gerät, anderer Browser, Cache
+  geleert). Import kann den aktuellen Stand ersetzen oder mit ihm
+  zusammenführen.
 - Vier kleine Lern-Minispiele hinter dem 🕹️-Button in der Ecke:
   - **Paket-Fang** – reines Auflockerungs-Minigame.
   - **Port-Sprint** – bekannte Portnummern gegen die Uhr eintippen.

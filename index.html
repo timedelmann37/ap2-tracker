@@ -534,6 +534,9 @@
     <div class="btn-row">
       <button class="btn-ghost" id="expandAll" type="button">Alle aufklappen</button>
       <button class="btn-ghost" id="collapseAll" type="button">Alle zuklappen</button>
+      <button class="btn-ghost" id="exportProgress" type="button" title="Fortschritt als Datei sichern">Fortschritt exportieren</button>
+      <button class="btn-ghost" id="importProgressBtn" type="button" title="Fortschritt aus einer Sicherungsdatei laden">Fortschritt importieren</button>
+      <input type="file" id="importProgressFile" accept="application/json,.json" hidden>
       <button class="btn-ghost" id="resetAll" type="button">Fortschritt zurücksetzen</button>
     </div>
   </div>
@@ -546,7 +549,7 @@
   </div>
 
   <div class="footer-note" id="footerNote">
-    <b>Speicherung:</b> Dein Fortschritt wird automatisch im lokalen Speicher deines Browsers gesichert (<span id="saveState">–</span>) und bleibt beim Schließen und erneuten Öffnen dieser Datei erhalten. Das funktioniert zuverlässig, wenn du die Datei <b>speicherst und direkt im Browser öffnest</b> (z. B. per Doppelklick) — in einer eingebetteten Chat-Vorschau kann der Browser-Speicher blockiert sein. Öffne die Datei danach immer vom selben Ort aus, sonst zählt der Browser sie als neue Seite ohne gespeicherten Stand. Die zusätzliche, unabhängige Fortschrittsquelle bleibt dein <b>Notion-Status-Feld</b> je Thema.
+    <b>Speicherung:</b> Dein Fortschritt wird automatisch im lokalen Speicher deines Browsers gesichert (<span id="saveState">–</span>) und bleibt beim Schließen und erneuten Öffnen dieser Datei erhalten. Das funktioniert zuverlässig, wenn du die Datei <b>speicherst und direkt im Browser öffnest</b> (z. B. per Doppelklick) — in einer eingebetteten Chat-Vorschau kann der Browser-Speicher blockiert sein. Öffne die Datei danach immer vom selben Ort aus, sonst zählt der Browser sie als neue Seite ohne gespeicherten Stand. <b>Browser-Speicher kann verloren gehen</b> (Cache geleert, neues Gerät, anderer Browser) — nutze deshalb ab und zu <b>„Fortschritt exportieren“</b>, um eine Sicherungsdatei herunterzuladen, und lade sie über <b>„Fortschritt importieren“</b> wieder ein, falls der gespeicherte Stand mal weg ist. Die zusätzliche, unabhängige Fortschrittsquelle bleibt dein <b>Notion-Status-Feld</b> je Thema.
   </div>
 
 </div>
@@ -1782,6 +1785,90 @@ document.getElementById('resetAll').addEventListener('click', () => {
   document.querySelectorAll('ul.items li').forEach(li => li.classList.remove('checked'));
   saveState();
   updateAll();
+});
+
+// ---------------------------------------------------------------
+// Fortschritt exportieren / importieren (Backup, falls Browser-Speicher
+// verloren geht — Datei enthält denselben Zustand wie localStorage)
+// ---------------------------------------------------------------
+function refreshAfterStateChange(){
+  render();
+  const q = document.getElementById('searchInput');
+  applySearch(q ? q.value : '');
+}
+
+document.getElementById('exportProgress').addEventListener('click', () => {
+  const payload = {
+    app: 'ap2-tracker',
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    state: state
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const stamp = new Date().toISOString().slice(0, 10);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `ap2-tracker-fortschritt-${stamp}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+});
+
+document.getElementById('importProgressBtn').addEventListener('click', () => {
+  document.getElementById('importProgressFile').click();
+});
+
+document.getElementById('importProgressFile').addEventListener('change', (e) => {
+  const input = e.target;
+  const file = input.files && input.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    let parsed;
+    try {
+      parsed = JSON.parse(String(reader.result));
+    } catch (err) {
+      alert('Diese Datei ist keine gültige Fortschritts-Sicherungsdatei (kein lesbares JSON).');
+      input.value = '';
+      return;
+    }
+
+    let incoming = null;
+    if (parsed && typeof parsed === 'object' && parsed.state && typeof parsed.state === 'object') {
+      incoming = parsed.state;
+    } else if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      incoming = parsed; // Fallback: rohes state-Objekt ohne Hülle
+    }
+
+    if (!incoming || typeof incoming !== 'object') {
+      alert('Diese Datei enthält keinen erkennbaren Fortschritt.');
+      input.value = '';
+      return;
+    }
+
+    const replace = confirm(
+      'Fortschritt importieren.\n\n' +
+      'OK = importierte Datei übernimmt den aktuellen Stand vollständig (aktueller Stand wird ersetzt)\n' +
+      'Abbrechen = importierte Haken werden mit dem aktuellen Stand zusammengeführt'
+    );
+    if (replace) {
+      Object.keys(state).forEach(k => delete state[k]);
+    }
+    Object.keys(incoming).forEach(k => { state[k] = incoming[k]; });
+
+    saveState();
+    refreshAfterStateChange();
+    alert('Fortschritt wurde importiert.');
+    input.value = '';
+  };
+  reader.onerror = () => {
+    alert('Datei konnte nicht gelesen werden.');
+    input.value = '';
+  };
+  reader.readAsText(file);
 });
 
 const themeBtn = document.getElementById('themeToggle');
