@@ -155,6 +155,7 @@
   }
   a{ color: var(--brand); }
   ::selection{ background: var(--highlight); }
+  [hidden]{ display: none !important; }
   .page{ max-width: 1060px; width:100%; margin: 0 auto; padding: 34px 24px 96px; }
   @media (max-width: 640px){ .page{ padding: 22px 16px 72px; } }
 
@@ -233,6 +234,8 @@
   /* ---------- Bento-Grid ---------- */
   .bento{ display:grid; grid-template-columns: repeat(12, 1fr); gap: 12px; }
   .bento > *{ grid-column: span 12; }
+  /* Dashboard-Reihe: Panels auf natürliche Höhe, nicht aneinander strecken */
+  .bento:has(.activity-card){ align-items: start; }
   @media (min-width: 760px){
     .b-4{ grid-column: span 4; }
     .b-5{ grid-column: span 5; }
@@ -1543,7 +1546,11 @@ function renderActivity(){
   const { current, longest } = computeStreaks(activity);
   const curEl = document.getElementById('streakCurrent');
   const longEl = document.getElementById('streakLongest');
-  if (curEl) curEl.textContent = String(current);
+  if (curEl) {
+    curEl.textContent = String(current);
+    const lbl = curEl.parentElement.querySelector('.streak-label');
+    if (lbl) lbl.textContent = current === 1 ? 'Tag in Folge' : 'Tage in Folge';
+  }
   if (longEl) longEl.textContent = String(longest);
   buildHeatmap(activity);
 }
