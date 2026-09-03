@@ -7,6 +7,23 @@ direkt auf der Seite sichtbar — ein Klick auf die Versionsnummer im Hub (in
 der Fußzeile) zeigt dieselbe Liste als Änderungsprotokoll. Gepflegt wird das
 Changelog ausschließlich im Hub, nicht mehr in den einzelnen Bereichen.
 
+## [3.5.1] – 2026-09-03
+
+### Geändert
+- Hub neu gruppiert und Kachel-Höhen angeglichen:
+  - `Gesamtfortschritt` (nur noch Balken + Bereichsbalken) und `Aktivität`
+    stehen jetzt gleich hoch nebeneinander; die vorher darin eingebetteten
+    Listen `Überfällig` und `Zuletzt bearbeitet` bilden eine eigene Zeile
+    darunter.
+  - Die Modul-Kacheln sind in drei benannte Gruppen sortiert: **Planung**
+    (Übersicht als breite Zeile), **Themenbereiche** (die drei
+    Prüfungsbereiche nebeneinander) und **Prüfung & Werkzeuge**
+    (Simulation, Nachschlagewerk).
+- Aktivitäts-Heatmap zeigt immer mindestens die letzten elf Wochen, damit
+  sie von Anfang an Kontext hat und nicht als Ein-Wochen-Fragment erscheint.
+  Die Aktivitäts-Kachel wird nicht mehr auf die Höhe der Fortschritts-Spalte
+  gestreckt.
+
 ## [3.5.0] – 2026-09-03
 
 ### Geändert
