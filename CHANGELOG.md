@@ -7,6 +7,14 @@ direkt auf der Seite sichtbar — ein Klick auf die Versionsnummer im Hub (in
 der Fußzeile) zeigt dieselbe Liste als Änderungsprotokoll. Gepflegt wird das
 Changelog ausschließlich im Hub, nicht mehr in den einzelnen Bereichen.
 
+## [3.4.1] – 2026-09-03
+
+### Geändert
+- Prüfungs-Countdown vom eigenen großen Panel zu einer kompakten Zahl
+  direkt neben der Hub-Überschrift verschoben. Farbe/Dringlichkeit und ein
+  sanfter Puls-Glow um die Zahl bleiben erhalten, Prüfungsdatum und
+  Status-Text jetzt als Tooltip beim Hover statt als eigener Textblock.
+
 ## [3.4.0] – 2026-09-03
 
 ### Hinzugefügt

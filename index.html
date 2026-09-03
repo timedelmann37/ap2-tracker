@@ -275,50 +275,40 @@
   .chip .chip-meta{ font-size:10.5px; color:var(--text-muted); flex-shrink:0; }
   .chip-empty{ font-size:12px; color:var(--text-muted); }
 
-  /* ---------- Countdown bis zur Prüfung ---------- */
-  .countdown-card{
-    position:relative; overflow:hidden;
-    background: var(--panel-glass); border:1px solid var(--border); border-radius: var(--r-lg);
-    padding: 22px 26px; margin-bottom:22px;
-    box-shadow: var(--shadow-sm), inset 0 1px 0 var(--glass-edge);
-    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  /* ---------- Countdown bis zur Prüfung: kompakt neben der Überschrift ---------- */
+  .hub-head-row{
+    display:flex; align-items:center; justify-content:center; gap:20px; flex-wrap:wrap;
+  }
+  .hub-head-row h1{ margin:0; }
+  .countdown-inline{
+    display:flex; align-items:baseline; gap:7px; flex-shrink:0;
     --urgency-color: var(--accent);
   }
-  .countdown-card[data-urgency="soon"]{ --urgency-color: var(--status-warning); }
-  .countdown-card[data-urgency="critical"],
-  .countdown-card[data-urgency="today"]{ --urgency-color: var(--status-critical); }
-  .countdown-card[data-urgency="done"]{ --urgency-color: var(--status-good); }
-  .countdown-glow{
-    position:absolute; top:50%; left:64px; width:220px; height:220px; margin:-110px 0 0 -110px;
-    border-radius:50%; pointer-events:none;
-    background: radial-gradient(circle, color-mix(in srgb, var(--urgency-color) 55%, transparent) 0%, transparent 70%);
-    filter: blur(20px);
-    animation: countdownBreathe 6s ease-in-out infinite;
-  }
-  .countdown-card[data-urgency="soon"] .countdown-glow{ animation-duration: 3.2s; }
-  .countdown-card[data-urgency="critical"] .countdown-glow,
-  .countdown-card[data-urgency="today"] .countdown-glow{ animation-duration: 1.5s; }
-  .countdown-card[data-urgency="done"] .countdown-glow{ animation: none; opacity:.5; }
-  @keyframes countdownBreathe{
-    0%, 100%{ transform:scale(0.82); opacity:.5; }
-    50%{ transform:scale(1.18); opacity:.95; }
-  }
-  .countdown-main{ position:relative; display:flex; align-items:center; gap:22px; flex-wrap:wrap; }
-  .countdown-figure{
-    display:flex; align-items:baseline; gap:7px; flex-shrink:0; min-width:104px;
-  }
+  .countdown-inline[data-urgency="soon"]{ --urgency-color: var(--status-warning); }
+  .countdown-inline[data-urgency="critical"],
+  .countdown-inline[data-urgency="today"]{ --urgency-color: var(--status-critical); }
+  .countdown-inline[data-urgency="done"]{ --urgency-color: var(--status-good); }
   .countdown-number{
-    font-family: var(--font-mono); font-size:44px; font-weight:700; line-height:1;
+    font-family: var(--font-mono); font-size:32px; font-weight:700; line-height:1;
     color: var(--urgency-color); letter-spacing:-0.02em; transition: color .4s ease;
     display:inline-flex; align-items:center;
+    animation: countdownPulse 5.5s ease-in-out infinite;
+  }
+  .countdown-inline[data-urgency="soon"] .countdown-number{ animation-duration: 3s; }
+  .countdown-inline[data-urgency="critical"] .countdown-number,
+  .countdown-inline[data-urgency="today"] .countdown-number{ animation-duration: 1.3s; }
+  .countdown-inline[data-urgency="done"] .countdown-number{ animation: none; }
+  @keyframes countdownPulse{
+    0%, 100%{ filter: drop-shadow(0 0 0 transparent); }
+    50%{ filter: drop-shadow(0 0 9px var(--urgency-color)); }
   }
   .countdown-number svg{ display:block; }
-  .countdown-unit{ font-size:14px; color:var(--text-secondary); font-weight:500; }
-  .countdown-text{ display:flex; flex-direction:column; gap:3px; }
-  .countdown-label{ font-size:15px; font-weight:600; color:var(--text-primary); }
-  .countdown-date{ font-size:12px; color:var(--text-muted); }
-  @media (max-width: 520px){ .countdown-number{ font-size:34px; } }
+  .countdown-unit{ font-size:13px; color:var(--text-secondary); font-weight:500; }
+  .sr-only{
+    position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;
+    clip:rect(0,0,0,0); white-space:nowrap; border:0;
+  }
+  @media (max-width: 640px){ .hub-head-row{ flex-direction:column; gap:8px; } }
 
   /* ---------- Aktivität: Streak + Heatmap ---------- */
   .activity-card{
@@ -568,22 +558,15 @@
   <div class="hub-crumb">~/abschlusspruefung<span class="sep">/</span><b style="color:var(--cat-ga1); font-weight:500;">winter-2026-27</b></div>
 
   <div class="hub-head">
-    <h1>AP2 Vorbereitung · Winterprüfung 2026/27</h1>
-    <p>Fachinformatiker Systemintegration — Hauptmenü für Übersicht, die drei Themenbereiche und die Prüfungssimulation.</p>
-  </div>
-
-  <div class="countdown-card" id="countdownCard" data-urgency="calm">
-    <div class="countdown-glow" aria-hidden="true"></div>
-    <div class="countdown-main">
-      <div class="countdown-figure">
+    <div class="hub-head-row">
+      <h1>AP2 Vorbereitung · Winterprüfung 2026/27</h1>
+      <div class="countdown-inline" id="countdownCard" data-urgency="calm" title="Prüfung am 24.–25.11.2026">
         <span class="countdown-number" id="countdownNumber">0</span>
         <span class="countdown-unit" id="countdownUnit">Tage</span>
-      </div>
-      <div class="countdown-text">
-        <div class="countdown-label" id="countdownLabel">Lädt …</div>
-        <div class="countdown-date">Prüfung am 24.–25.11.2026</div>
+        <span class="sr-only" id="countdownLabel">Lädt …</span>
       </div>
     </div>
+    <p>Fachinformatiker Systemintegration — Hauptmenü für Übersicht, die drei Themenbereiche und die Prüfungssimulation.</p>
   </div>
 
   <div class="hub-dash">
@@ -1374,10 +1357,10 @@ const EXAM_START = new Date(2026, 10, 24, 0, 0, 0);   // 24.11.2026
 const EXAM_END   = new Date(2026, 10, 25, 23, 59, 59); // 25.11.2026
 
 function iconCheck(){
-  return '<svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+  return '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
 }
 function iconFlag(){
-  return '<svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4a1 1 0 0 1 1-1h11.2c.8 0 1.2.9.7 1.5L15 9l2.9 4.5c.5.6.1 1.5-.7 1.5H6"/></svg>';
+  return '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4a1 1 0 0 1 1-1h11.2c.8 0 1.2.9.7 1.5L15 9l2.9 4.5c.5.6.1 1.5-.7 1.5H6"/></svg>';
 }
 
 function renderCountdown(){
@@ -1405,6 +1388,8 @@ function renderCountdown(){
 
   card.dataset.urgency = urgency;
   labelEl.textContent = label;
+  card.title = label + ' — Prüfung am 24.–25.11.2026';
+  card.setAttribute('aria-label', (days > 0 ? days + (days === 1 ? ' Tag' : ' Tage') + ' bis zur Prüfung. ' : '') + label);
 
   if (showIcon) {
     numberEl.innerHTML = showIcon;
@@ -1628,8 +1613,13 @@ setInterval(renderCountdown, 60000);
   });
 
 
-const APP_VERSION = '3.4.0';
+const APP_VERSION = '3.4.1';
 const CHANGELOG = [
+  { version:'3.4.1', date:'2026-09-03', groups:[
+    { label:'Geändert', items:[
+      'Prüfungs-Countdown vom eigenen großen Panel zu einer kompakten Zahl direkt neben der Hub-Überschrift verschoben — Farbe/Dringlichkeit und ein sanfter Puls-Glow bleiben erhalten, Datum und Status jetzt als Tooltip beim Hover.'
+    ]}
+  ]},
   { version:'3.4.0', date:'2026-09-03', groups:[
     { label:'Hinzugefügt', items:[
       'Animierter Countdown bis zur Prüfung (24.–25.11.2026) im Hub: Anzeige und Farbe ändern sich automatisch je nach Dringlichkeit (ruhig → aufmerksam ab 30 Tagen → Endspurt ab 7 Tagen → Prüfungstag → geschafft).',
