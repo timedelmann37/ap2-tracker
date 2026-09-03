@@ -7,6 +7,27 @@ direkt auf der Seite sichtbar — ein Klick auf die Versionsnummer im Hub (in
 der Fußzeile) zeigt dieselbe Liste als Änderungsprotokoll. Gepflegt wird das
 Changelog ausschließlich im Hub, nicht mehr in den einzelnen Bereichen.
 
+## [3.1.2] – 2026-09-03
+
+### Behoben
+- `/simulation/`: Ein Syntaxfehler im Haupt-Script (escapte Template-Literals,
+  `\`` statt `` ` `` und `\${` statt `${`) verhinderte, dass die
+  Prüfungssimulation überhaupt lief — kein Klick auf eine Prüfungskarte hatte
+  eine Wirkung. Gilt ebenso für `exam_2023_1_GA2.js`. Einmalige Ausnahme von
+  der Regel, dass `/simulation/` nicht angefasst wird — Design und Inhalte
+  blieben unverändert, nur die kaputte Escape-Syntax wurde repariert.
+
+## [3.1.1] – 2026-09-03
+
+### Behoben
+- Root (`/`) zeigte durch einen fehlerhaften manuellen Datei-Upload
+  versehentlich die Prüfungssimulation statt des Hubs an. `/` liefert wieder
+  den Hub aus, die Prüfungssimulation liegt korrekt unter `/simulation/`
+  (inklusive ihrer `exam_2023_1_GA2.js` und `status.md`, die dabei ebenfalls
+  fälschlich im Root gelandet waren).
+- Veraltete `/tracker/`-Reste aus der Zeit vor der Aufteilung in Übersicht,
+  Konzeption & Administration, Netzwerke und SoWi entfernt.
+
 ## [3.1.0] – 2026-09-03
 
 ### Hinzugefügt
