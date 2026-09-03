@@ -3,9 +3,36 @@
 Alle nennenswerten Änderungen an diesem Projekt werden hier festgehalten.
 Format angelehnt an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/),
 Versionierung nach [SemVer](https://semver.org/lang/de/). Die Version ist auch
-direkt auf der Seite sichtbar — ein Klick auf die Versionsnummer (Tracker:
-oben rechts neben "Darstellung"; Hub: in der Fußzeile) zeigt dieselbe Liste
-als Änderungsprotokoll.
+direkt auf der Seite sichtbar — ein Klick auf die Versionsnummer im Hub (in
+der Fußzeile) zeigt dieselbe Liste als Änderungsprotokoll. Gepflegt wird das
+Changelog ausschließlich im Hub, nicht mehr in den einzelnen Bereichen.
+
+## [3.0.0] – 2026-09-03
+
+### Geändert
+- Großer Umbau für mehr Übersichtlichkeit: `/tracker/` (ein einzelner,
+  langer Themenplan für alle drei Bereiche) wurde aufgeteilt in vier
+  eigenständige Seiten — `/uebersicht/`, `/konzeption-administration/`,
+  `/netzwerke/`, `/sowi/`. Alte `/tracker/`-Links leiten per Redirect auf
+  den Hub weiter. **Breaking Change** für Lesezeichen auf `/tracker/`,
+  deshalb Major-Version.
+- Der Hub (`/`) ist jetzt ein echtes Dashboard: Gesamtfortschritt, ein
+  Fortschrittsbalken je Themenbereich, überfällige Themen und zuletzt
+  bearbeitete Themen — alles live aus demselben gespeicherten Fortschritt
+  wie die Themenbereichs-Seiten, mit Link direkt zum passenden Block.
+- „Fortschritt zurücksetzen" auf einer Bereichs-Seite löscht nur noch die
+  Haken/Markierungen dieses einen Bereichs, nicht mehr den gesamten
+  gespeicherten Stand.
+
+### Hinzugefügt
+- `/uebersicht/`: bereichsübergreifender Wochenplan (unverändert übernommen)
+  plus neuer chronologischer Gesamtplan aller 31 Themenblöcke bis zur
+  Prüfung, mit Sprung zum jeweiligen Bereich und Block.
+- Deep-Links zwischen den Seiten: ein Klick auf ein Thema in Übersicht, Hub
+  oder Gesamtplan öffnet die passende Bereichs-Seite direkt beim richtigen
+  Themenblock.
+- Der gespeicherte Fortschritt merkt sich jetzt auch, wann ein Punkt zuletzt
+  abgehakt wurde — Grundlage für „Zuletzt bearbeitet" im Hub-Dashboard.
 
 ## [2.0.1] – 2026-09-03
 

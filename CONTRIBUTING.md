@@ -9,8 +9,10 @@ Merge-Konflikte zu bescheren.
 
 - Du arbeitest ausschließlich in `/simulation/`. Alles darin gehört dir —
   Struktur, Styling, Technik, alles frei.
-- `/tracker/`, die root `index.html`, `netlify.toml`, `README.md` und dieses
-  Dokument fasst du nicht an, außer wir sprechen es ab.
+- Die anderen Ordner (`/uebersicht/`, `/konzeption-administration/`,
+  `/netzwerke/`, `/sowi/`), die root `index.html`, `netlify.toml`,
+  `README.md` und dieses Dokument fasst du nicht an, außer wir sprechen es
+  ab.
 - Einstiegspunkt ist `/simulation/index.html` — dort landet, wer auf der
   Startseite auf "Prüfungssimulation" klickt.
 - Reiner statischer Code, kein Build-Step. Was du in `/simulation/`
@@ -18,19 +20,27 @@ Merge-Konflikte zu bescheren.
 
 ## Warum diese Struktur
 
-Das Repo ist in drei unabhängige Bereiche aufgeteilt:
+Das Repo ist in mehrere unabhängige Bereiche aufgeteilt:
 
 ```
-/                    Hub — verlinkt auf beide Tools
-/tracker/            AP2 Tracker (bestehend, nicht dein Bereich)
-/simulation/         Prüfungssimulation — dein Bereich
+/                              Hub — Hauptmenü + Gesamtfortschritt (nicht dein Bereich)
+/uebersicht/                   Wochenplan + Gesamtplan (nicht dein Bereich)
+/konzeption-administration/    GA1 (nicht dein Bereich)
+/netzwerke/                    GA2 (nicht dein Bereich)
+/sowi/                         WiSo (nicht dein Bereich)
+/simulation/                   Prüfungssimulation — dein Bereich
 ```
+
+Die ersten vier Ordner waren früher ein einzelner `/tracker/`-Ordner und
+wurden zwischenzeitlich in eigene Themenbereiche aufgeteilt — für dich
+ändert das nichts, du bleibst weiterhin nur in `/simulation/`.
 
 Netlify liefert jeden Ordner mit eigener `index.html` automatisch unter dem
 passenden Pfad aus (`meineseite.netlify.app/simulation/`), ganz ohne
 Server-Konfiguration. Solange du innerhalb von `/simulation/` bleibst,
-kannst du committen und pushen, ohne dass es mit meiner Arbeit am Tracker
-kollidiert — wir fassen im Normalfall nie dieselbe Datei an.
+kannst du committen und pushen, ohne dass es mit meiner Arbeit an den
+anderen Bereichen kollidiert — wir fassen im Normalfall nie dieselbe Datei
+an.
 
 ## Technische Leitplanken
 
@@ -50,34 +60,37 @@ natürlich trotzdem mit normalen relativen Pfaden zu eigenen Unterordnern
 arbeiten (`./assets/…`) — nur nach draußen (zurück zum Hub, o. Ä.) bitte
 root-relativ.
 
-**`localStorage`-Namensraum: eigenes Präfix verwenden.** Tracker und
-Simulation laufen auf derselben Origin, `localStorage` ist nicht
-pfadgebunden, sondern wird von beiden geteilt. Der Tracker benutzt aktuell
-den Schlüssel `ap2-tracker-state-v1`. Bitte nimm für die Simulation ein
-eigenes, eindeutiges Präfix, z. B. `ap2-sim-…`, damit sich nichts
-überschreibt.
+**`localStorage`-Namensraum: eigenes Präfix verwenden.** Die Themenbereiche
+und die Simulation laufen auf derselben Origin, `localStorage` ist nicht
+pfadgebunden, sondern wird von allen geteilt. Die drei Themenbereiche und
+das Hub-Dashboard benutzen gemeinsam den Schlüssel `ap2-tracker-state-v1` —
+genau darüber zählen sich Haken bereichsübergreifend zusammen. Bitte nimm
+für die Simulation ein eigenes, eindeutiges Präfix, z. B. `ap2-sim-…`,
+damit sich nichts überschreibt.
 
 **Link zurück zum Hub.** Von irgendwo in der Simulation sollte ein Link auf
 `/` führen, damit Nutzer:innen zurückfinden. Wie das aussieht, ist dir
 überlassen — im Platzhalter (`/simulation/index.html`, den du komplett
 ersetzt) siehst du ein Minimalbeispiel.
 
-**Design ist frei.** Es gibt keine Pflicht, den Look des Trackers zu
-übernehmen. Falls dir am visuellen Zusammenhang zum Hub liegt: Der Hub und
-der Tracker nutzen ein dunkles Farbschema (echtes Schwarz `#000` als Grund,
+**Design ist frei.** Es gibt keine Pflicht, den Look der anderen Bereiche zu
+übernehmen. Falls dir am visuellen Zusammenhang zum Hub liegt: Die anderen
+Bereiche nutzen ein dunkles Farbschema (echtes Schwarz `#000` als Grund,
 Blau/Orange/Grün als Akzentfarben aus der JetBrains-Rider-Palette, IBM Plex
 Sans/Mono als Schrift) — du findest die kompletten Farb- und
 Typografie-Tokens als CSS-Variablen ganz oben im `<style>`-Block von
-`/index.html` und `/tracker/index.html`, falls du sie als Ausgangspunkt
-kopieren willst. Eine völlig eigene Optik ist genauso in Ordnung.
+`/index.html` oder z. B. `/netzwerke/index.html`, falls du sie als
+Ausgangspunkt kopieren willst. Eine völlig eigene Optik ist genauso in
+Ordnung.
 
-**Versionsnummer/Changelog sind optional für dich.** Hub und Tracker zeigen
-oben rechts bzw. in der Fußzeile eine anklickbare Versionsnummer mit
-Änderungsprotokoll (siehe `CHANGELOG.md` im Repo-Root). Das ist aktuell nur
-für `/` und `/tracker/` eingerichtet — du musst für `/simulation/` nichts
-Vergleichbares bauen, es sei denn du willst es. Falls du später doch
-mitziehen willst, sag Bescheid, dann sprechen wir uns über eine gemeinsame
-Versionsnummer fürs ganze Projekt ab, statt getrennter Zählungen.
+**Versionsnummer/Changelog sind nicht dein Bereich.** Nur der Hub (`/`)
+zeigt in der Fußzeile eine anklickbare Versionsnummer mit
+Änderungsprotokoll (siehe `CHANGELOG.md` im Repo-Root) — die Themenbereiche
+und die Übersicht haben bewusst keinen eigenen. Du musst für
+`/simulation/` nichts Vergleichbares bauen, es sei denn du willst es. Falls
+du später doch mitziehen willst, sag Bescheid, dann sprechen wir uns über
+eine gemeinsame Versionsnummer fürs ganze Projekt ab, statt getrennter
+Zählungen.
 
 ## Git-Workflow
 
