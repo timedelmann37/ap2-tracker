@@ -144,6 +144,9 @@
 
   /* T6: weiche Seitenübergänge (nur wo unterstützt; von prefers-reduced-motion abgeschaltet) */
   @view-transition { navigation: auto; }
+  @media (prefers-reduced-motion: reduce){
+    ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*){ animation: none !important; }
+  }
   * { box-sizing: border-box; }
   [hidden]{ display: none !important; }
   html, body{ margin:0; padding:0; }
@@ -1676,8 +1679,8 @@ function render(){
 }
 
 // T6: welche Themengruppen bei der letzten Aktualisierung bei 100 % standen
-const t6DoneTopics = new Set();
-let t6FirstUpdate = true;
+const completedTopicIds = new Set();
+let firstProgressPaint = true;
 
 function updateAll(){
   let grandTotal = 0, grandDone = 0, topicsDone = 0, topicsCount = 0;
@@ -1701,15 +1704,15 @@ function updateAll(){
       if (pctEl) pctEl.textContent = pct + '%';
 
       const cp = document.querySelector(`[data-cardprogress="${topic.id}"]`);
-      const t6Done = total > 0 && done === total;
+      const topicComplete = total > 0 && done === total;
       if (cp) {
-        cp.classList.toggle('is-done', t6Done);
-        if (t6Done && !t6DoneTopics.has(topic.id) && !t6FirstUpdate) {
+        cp.classList.toggle('is-done', topicComplete);
+        if (topicComplete && !completedTopicIds.has(topic.id) && !firstProgressPaint) {
           const trk = cp.querySelector('.track');
           if (trk) { trk.classList.remove('celebrate'); void trk.offsetWidth; trk.classList.add('celebrate'); }
         }
       }
-      if (t6Done) t6DoneTopics.add(topic.id); else t6DoneTopics.delete(topic.id);
+      if (topicComplete) completedTopicIds.add(topic.id); else completedTopicIds.delete(topic.id);
 
       const statusEl = document.querySelector(`[data-status="${topic.id}"]`);
       if (statusEl) {
@@ -1773,7 +1776,7 @@ function updateAll(){
   if (tabCountEl) tabCountEl.textContent = '(' + markedCount() + ')';
   applyFilter(activeFilter);
 
-  t6FirstUpdate = false;
+  firstProgressPaint = false;
 }
 
 render();

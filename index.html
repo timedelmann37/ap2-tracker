@@ -144,6 +144,9 @@
 
   /* T6: weiche Seitenübergänge (nur wo unterstützt; von prefers-reduced-motion abgeschaltet) */
   @view-transition { navigation: auto; }
+  @media (prefers-reduced-motion: reduce){
+    ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*){ animation: none !important; }
+  }
   * { box-sizing: border-box; }
   html, body{ margin:0; padding:0; }
   body{
@@ -1545,6 +1548,11 @@ function plannedTopicFor(cat){
       || cat.topics.find(t => t.start && new Date(t.start + 'T00:00:00') > now)
       || null;
 }
+// Rückstand: Kalenderwoche vorbei und noch nicht bei 100 %
+function isBacklog(topic){
+  const { total, done } = countTopic(topic);
+  return isPast(topic.end) && !(total > 0 && done === total);
+}
 // Bereiche, die laut Wochenrhythmus heute dran sind
 function todaysAreas(){
   switch (new Date().getDay()){
@@ -1560,12 +1568,19 @@ function renderThisWeek(){
   const grid = document.getElementById('twGrid');
   if (!grid) return;
   const today = todaysAreas();
+  const areas = ['ga1', 'ga2', 'wiso'].map(id => ({ cat: DATA.find(c => c.id === id), topic: plannedTopicFor(DATA.find(c => c.id === id) || { topics: [] }) }));
+
+  // Ganzer Plan durch: kein „aktuell geplant" mehr in irgendeinem Bereich
+  if (areas.every(a => !a.topic)) {
+    grid.innerHTML = '<p class="tw-empty">Alle geplanten Themengruppen sind abgehakt. Reste stehen ggf. unten im Rückstand; sonst bleibt nur wiederholen.</p>';
+    return;
+  }
+
   let html = '';
-  ['ga1', 'ga2', 'wiso'].forEach(catId => {
-    const cat = DATA.find(c => c.id === catId);
+  areas.forEach(({ cat, topic }) => {
     if (!cat) return;
+    const catId = cat.id;
     const isToday = today.includes(catId);
-    const topic = plannedTopicFor(cat);
     if (!topic) {
       html += `<div class="tw-card" style="--tw-c:${cat.color}">
         <div class="tw-card-area"><span class="dot"></span>${catId.toUpperCase()}</div>
@@ -1598,8 +1613,10 @@ function renderBacklog(){
   if (!line || !detail) return;
   const backlog = [];
   DATA.forEach(cat => cat.topics.forEach(topic => {
-    const { total, done } = countTopic(topic);
-    if (isPast(topic.end) && !(total > 0 && done === total)) backlog.push({ topic, cat, total, done });
+    if (isBacklog(topic)) {
+      const { total, done } = countTopic(topic);
+      backlog.push({ topic, cat, total, done });
+    }
   }));
   backlog.sort((a, b) => new Date(a.topic.end) - new Date(b.topic.end));
   if (!backlog.length) { line.hidden = true; detail.hidden = true; return; }
@@ -1658,7 +1675,7 @@ const APP_VERSION = '3.6.0';
 const CHANGELOG = [
   { version:'3.6.0', date:'2026-09-03', groups:[
     { label:'Geändert', items:[
-      'UI-Hierarchie-Kur: eine Seite, eine Aufgabe. Der Hub führt jetzt sichtbar mit „Diese Woche" — bis zu drei aktuell geplante Themengruppen (eine je Bereich) mit Fortschrittsbalken und „weitermachen"-Link, der im richtigen Block beim ersten offenen Kernthema landet. Der laut Wochenrhythmus heute fällige Bereich ist hervorgehoben; darunter eine kompakte Rückstand-Zeile, der Countdown und „Gesamt X %".',
+      'UI-Hierarchie-Kur: eine Seite, eine Aufgabe. Der Hub führt jetzt sichtbar mit „Diese Woche" — bis zu drei aktuell geplante Themengruppen (eine je Bereich) mit Fortschrittsbalken und „weitermachen"-Link, der im richtigen Block beim ersten offenen Kernthema landet. Der Bereich, der heute laut Wochenrhythmus dran ist, ist hervorgehoben; darunter eine kompakte Rückstand-Zeile, der Countdown und „Gesamt X %".',
       'Das Dashboard (Fortschrittsbild, Aktivitäts-Heatmap, Lern-Streaks, „zuletzt bearbeitet") ist vom Hub auf die Übersicht gewandert. Die Übersicht ist damit die „Zoom-out"-Seite: kompletter Stand oben, darunter der gesamte Zeitverlauf als Timeline nach Kalenderwoche — vergangene Wochen eingeklappt, die aktuelle Woche angesprungen, Themengruppen im Rückstand markiert. Der Wochenrhythmus ist eine ein-/ausklappbare Referenzkarte am Seitenende.',
       'Die Kachel-Wand auf dem Hub ist raus — jeder Bereich bleibt über die Navigation erreichbar.',
       'Themenseiten oben entschlackt: vier Stat-Tiles zu einer Fortschrittszeile zusammengezogen, „Was ist dran?"-Tabelle auf einen schmalen Hinweis reduziert. Beim Laden ist die aktuell geplante Themengruppe aufgeklappt, der Rest zu.'

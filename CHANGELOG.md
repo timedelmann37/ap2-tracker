@@ -17,8 +17,8 @@ flache Bildsprache bleibt. Leitgedanke: **eine Seite, eine Aufgabe.**
 - **Der Hub führt mit „Diese Woche".** Bis zu drei aktuell geplante
   Themengruppen (eine je Bereich), jede mit Fortschrittsbalken und einem
   `weitermachen`-Link, der den Block öffnet, aufklappt und zum ersten noch
-  offenen Kernthema scrollt. Der laut Wochenrhythmus heute fällige Bereich
-  ist hervorgehoben. Darunter eine kompakte, aufklappbare Rückstand-Zeile,
+  offenen Kernthema scrollt. Der Bereich, der heute laut Wochenrhythmus
+  dran ist, ist hervorgehoben. Darunter eine kompakte, aufklappbare Rückstand-Zeile,
   der Prüfungs-Countdown als ruhige Zeile und `Gesamt: X %` mit Link zur
   Übersicht. Siehe [ADR 0001](docs/adr/0001-hub-fuehrt-mit-diese-woche.md).
 - **Die Kachel-Wand auf dem Hub ist raus** (Planung / Themenbereiche /

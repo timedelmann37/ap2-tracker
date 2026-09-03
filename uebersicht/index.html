@@ -144,6 +144,9 @@
 
   /* T6: weiche Seitenübergänge (nur wo unterstützt; von prefers-reduced-motion abgeschaltet) */
   @view-transition { navigation: auto; }
+  @media (prefers-reduced-motion: reduce){
+    ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*){ animation: none !important; }
+  }
   * { box-sizing: border-box; }
   [hidden]{ display: none !important; }
   html, body{ margin:0; padding:0; }
@@ -863,7 +866,7 @@
   .tl-row .tl-title{ flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; }
   .tl-row.is-planned .tl-title{ font-weight: 600; }
   .tl-row .tl-mini{ width: 60px; height: 4px; border-radius: 2px; background: var(--grid); overflow: hidden; flex-shrink: 0; }
-  .tl-row .tl-mini > div{ height: 100%; border-radius: 2px; }
+  .tl-row .tl-mini > div{ height: 100%; border-radius: 2px; transition: width .5s ease; }
   .tl-row .tl-count{ font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); width: 40px; text-align: right; flex-shrink: 0; font-variant-numeric: tabular-nums; }
   .tl-badge{ font-size: 9.5px; font-weight: 600; padding: 1px 6px; border-radius: var(--r-xs); flex-shrink: 0; }
   .tl-badge.backlog{ background: color-mix(in srgb, var(--status-critical) 18%, transparent); color: var(--status-critical); }
@@ -1003,29 +1006,6 @@
     <div class="dash-list-head">Zuletzt bearbeitet</div>
     <div class="chip-list" id="recentChips"><span class="chip-empty">Lädt …</span></div>
   </section>
-
-  <div class="top-grid">
-    <div class="focus">
-      <div class="focus-head">
-        <h2>Was ist dran?</h2>
-        <span id="focusDate"></span>
-      </div>
-      <div class="focus-hero" id="focusHero"></div>
-      <div class="focus-alert" id="focusAlert"></div>
-      <div class="focus-table-wrap" id="focusTableWrap">
-        <table class="ftable">
-          <thead>
-            <tr><th>Status</th><th></th><th>Thema</th><th>Zeitraum</th><th>Fortschritt</th><th></th></tr>
-          </thead>
-          <tbody id="focusTableBody"></tbody>
-        </table>
-      </div>
-      <div class="focus-foot">
-        <button class="btn-ghost" id="toggleDone" type="button">Erledigte einblenden</button>
-      </div>
-    </div>
-
-  </div>
 
   <section class="panel timeline-panel">
     <div class="focus-head">
@@ -1703,21 +1683,6 @@ function fmtDate(d){
 }
 
 // ---------------------------------------------------------------
-// Fokus: überfällig / heute dran / demnächst — didaktische Tagesansicht
-// ---------------------------------------------------------------
-const CAT_SHORT = { ga1:'Konzeption & Admin', ga2:'Netzwerke', wiso:'WiSo' };
-const WEEKDAY_NAMES = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
-const PLAN_START = new Date('2026-08-24T00:00:00');
-const PLAN_END   = new Date('2026-11-22T23:59:59');
-const DRILL_FROM = new Date('2026-08-31T00:00:00');
-const GROUP_META = {
-  overdue:  { label: 'Überfällig — zuerst nacharbeiten', pill: 'Überfällig' },
-  today:    { label: 'Heute / diese Woche dran',         pill: 'Heute dran' },
-  upcoming: { label: 'Demnächst — in dieser Reihenfolge', pill: 'Demnächst' },
-  done:     { label: 'Erledigt',                          pill: 'Erledigt' }
-};
-
-// ---------------------------------------------------------------
 // Filter (Kategorie-Tabs + „Markiert“) — steuert Sichtbarkeit je Karte
 // ---------------------------------------------------------------
 let activeFilter = 'all';
@@ -1807,123 +1772,6 @@ function daysUntil(dateStr){
   const now = new Date(); now.setHours(0,0,0,0);
   const d = new Date(dateStr + 'T00:00:00');
   return Math.max(1, Math.round((d - now) / 86400000));
-}
-
-function statusOf(topic){
-  const {total, done} = countTopic(topic);
-  if (total > 0 && done === total) return 'done';
-  if (todayInRange(topic.start, topic.end)) return 'today';
-  if (isPast(topic.end) && done < total) return 'overdue';
-  return 'upcoming';
-}
-
-function buildFocusGroups(){
-  const groups = { overdue:[], today:[], upcoming:[], done:[] };
-  DATA.forEach(cat => {
-    cat.topics.forEach(topic => {
-      groups[statusOf(topic)].push({ topic, cat });
-    });
-  });
-  groups.overdue.sort((a,b) => new Date(a.topic.end) - new Date(b.topic.end));
-  groups.today.sort((a,b) => new Date(a.topic.end) - new Date(b.topic.end));
-  groups.upcoming.sort((a,b) => new Date(a.topic.start) - new Date(b.topic.start));
-  groups.done.sort((a,b) => new Date(a.topic.start) - new Date(b.topic.start));
-  return groups;
-}
-
-function focusRowHTML(entry, statusKey){
-  const { topic, cat } = entry;
-  const { total, done } = countTopic(topic);
-  const pct = total ? Math.round(done/total*100) : 0;
-  const markGlyph = topicHasMarks(topic) ? '<span class="mark-dot" title="Enthält zur Wiederholung markierte Themen"></span>' : '';
-  return `
-    <tr class="frow status-${statusKey}${statusKey==='done' ? ' is-done':''}" data-jump="${topic.id}" tabindex="0" role="button" aria-label="${topic.title} öffnen">
-      <td><span class="pill pill-${statusKey}">${GROUP_META[statusKey].pill}</span></td>
-      <td class="fc-cat" title="${cat.name}"><span class="dot" style="background:${cat.color}"></span></td>
-      <td class="fc-title">${markGlyph}${topic.title}</td>
-      <td class="fc-range">${fmtDate(topic.start)}–${fmtDate(topic.end)}</td>
-      <td class="fc-progress">
-        <div class="mini-track"><div style="background:${cat.color}; width:${pct}%"></div></div>
-        <span class="fc-pct">${done} / ${total}</span>
-      </td>
-      <td class="fc-action">›</td>
-    </tr>`;
-}
-
-function renderFocusTable(){
-  const groups = buildFocusGroups();
-  const order = ['overdue','today','upcoming','done'];
-  let html = '';
-  order.forEach(key => {
-    const list = groups[key];
-    if (!list.length) return;
-    html += `<tr class="frow-group group-${key}"><td colspan="6">${GROUP_META[key].label}<span class="group-count">${list.length}</span></td></tr>`;
-    html += list.map(e => focusRowHTML(e, key)).join('');
-  });
-  const body = document.getElementById('focusTableBody');
-  if (body) body.innerHTML = html;
-
-  const alertEl = document.getElementById('focusAlert');
-  if (alertEl) {
-    if (groups.overdue.length) {
-      alertEl.className = 'focus-alert warn';
-      alertEl.textContent = `⚠ ${groups.overdue.length} ${groups.overdue.length===1?'Thema':'Themen'} überfällig — vor neuem Stoff zuerst nacharbeiten.`;
-    } else {
-      alertEl.className = 'focus-alert ok';
-      alertEl.textContent = '✓ Keine überfälligen Themen — du bist im Plan.';
-    }
-  }
-}
-
-function renderFocusHero(){
-  const now = new Date();
-  const dateEl = document.getElementById('focusDate');
-  if (dateEl) dateEl.textContent = WEEKDAY_NAMES[now.getDay()] + ', ' + fmtDate(now.toISOString().slice(0,10));
-
-  const heroEl = document.getElementById('focusHero');
-  if (!heroEl) return;
-
-  const weekday = now.getDay();
-  const drillNote = (now >= DRILL_FROM && weekday !== 6) ? '<span class="drill">+ 10 Min Subnetting-Drill</span>' : '';
-  const ga1 = activeTopic('ga1'), ga2 = activeTopic('ga2'), wiso = activeTopic('wiso');
-
-  let cls = '', html = '';
-  if (now < PLAN_START) {
-    cls = 'edge';
-    html = `<strong>Start in ${daysUntil('2026-08-24')} Tag(en), am Montag 24.08.2026.</strong> Bis dahin ist nichts geplant — höchstens die Materialien schon einmal sichten.`;
-  } else if (now > PLAN_END) {
-    cls = 'edge';
-    html = `<strong>Simulationsphase abgeschlossen.</strong> Prüfung am 24.–25.11.2026 — jetzt nur noch leicht wiederholen und ausgeschlafen antreten.`;
-  } else if (weekday === 6) {
-    cls = 'off';
-    html = `<strong>Heute ist frei.</strong> Laut Plan kein Lernpensum — morgen (Sonntag) folgt der Selbsttest der Woche.`;
-  } else if (weekday === 0) {
-    html = `<strong>Selbsttest ohne Unterlagen:</strong> Woche mündlich oder schriftlich abfragen (lassen) + WiSo-Karteikarten wiederholen. ${drillNote}`;
-  } else if (weekday === 1) {
-    html = ga1
-      ? `<strong>GA1, Teil 1:</strong> ${ga1.title} <button class="fj" data-jump="${ga1.id}">Zum Thema ›</button> ${drillNote}`
-      : `<strong>Pufferzeit GA1:</strong> kein neuer Block diese Woche — gezielt Fehlerquellen nacharbeiten. ${drillNote}`;
-  } else if (weekday === 2) {
-    html = ga1
-      ? `<strong>GA1, Teil 2 + Rechenaufgabe:</strong> ${ga1.title} <button class="fj" data-jump="${ga1.id}">Zum Thema ›</button> ${drillNote}`
-      : `<strong>Pufferzeit GA1:</strong> Rechenaufgaben der letzten Wochen wiederholen. ${drillNote}`;
-  } else if (weekday === 3) {
-    html = ga2
-      ? `<strong>GA2-Thema der Woche:</strong> ${ga2.title} <button class="fj" data-jump="${ga2.id}">Zum Thema ›</button> ${drillNote}`
-      : `<strong>Pufferwoche Netzwerke:</strong> heute nur Subnetting-Drill + Altfehler nacharbeiten. ${drillNote}`;
-  } else if (weekday === 4) {
-    html = wiso
-      ? `<strong>WiSo-Karteikarten (neuer Block):</strong> ${wiso.title} <button class="fj" data-jump="${wiso.id}">Zum Thema ›</button> ${drillNote}`
-      : `<strong>Pufferzeit WiSo:</strong> bestehende Karteikarten wiederholen. ${drillNote}`;
-  } else if (weekday === 5) {
-    const parts = [];
-    if (ga1) parts.push(`<button class="fj" data-jump="${ga1.id}">${CAT_SHORT.ga1} ›</button>`);
-    if (ga2) parts.push(`<button class="fj" data-jump="${ga2.id}">${CAT_SHORT.ga2} ›</button>`);
-    html = `<strong>Wiederholung GA1/GA2, Fehlerquellen:</strong> Beide Wochenthemen noch einmal durchgehen. ${parts.join(' ')} ${drillNote}`;
-  }
-
-  heroEl.className = 'focus-hero' + (cls ? ' ' + cls : '');
-  heroEl.innerHTML = html;
 }
 
 function jumpToTopic(id){
@@ -2122,9 +1970,6 @@ function updateAll(){
   const now = new Date();
   const days = Math.ceil((examDate - now) / 86400000);
   document.getElementById('statDays').textContent = days > 0 ? days : 'läuft';
-
-  renderFocusTable();
-  renderFocusHero();
 
   document.querySelectorAll('details.card').forEach(det => {
     const topic = findTopic(det.dataset.topic);
@@ -2391,29 +2236,6 @@ if (!storageAvailable) {
 // ---------------------------------------------------------------
 // Controls
 // ---------------------------------------------------------------
-document.getElementById('focusTableBody').addEventListener('click', (e) => {
-  const row = e.target.closest('tr.frow');
-  if (!row) return;
-  jumpToTopic(row.dataset.jump);
-});
-document.getElementById('focusTableBody').addEventListener('keydown', (e) => {
-  if (e.key !== 'Enter' && e.key !== ' ') return;
-  const row = e.target.closest('tr.frow');
-  if (!row) return;
-  e.preventDefault();
-  jumpToTopic(row.dataset.jump);
-});
-document.getElementById('focusHero').addEventListener('click', (e) => {
-  const btn = e.target.closest('.fj');
-  if (!btn) return;
-  jumpToTopic(btn.dataset.jump);
-});
-document.getElementById('toggleDone').addEventListener('click', () => {
-  const wrap = document.getElementById('focusTableWrap');
-  const showing = wrap.classList.toggle('show-done');
-  document.getElementById('toggleDone').textContent = showing ? 'Erledigte ausblenden' : 'Erledigte einblenden';
-});
-
 const THEME_ICON_PATHS = { system: '<circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/>', dark: '<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.8 6.8 0 0 0 10.5 10.5Z"/>', light: '<circle cx="12" cy="12" r="4.5"/><line x1="12" y1="2" x2="12" y2="4.5"/><line x1="12" y1="19.5" x2="12" y2="22"/><line x1="2" y1="12" x2="4.5" y2="12"/><line x1="19.5" y1="12" x2="22" y2="12"/><line x1="4.9" y1="4.9" x2="6.6" y2="6.6"/><line x1="17.4" y1="17.4" x2="19.1" y2="19.1"/><line x1="4.9" y1="19.1" x2="6.6" y2="17.4"/><line x1="17.4" y1="6.6" x2="19.1" y2="4.9"/>' };
 const THEME_LABELS = { system: 'Darstellung', dark: 'Dunkel', light: 'Hell' };
 const themeBtn = document.getElementById('themeToggle');
