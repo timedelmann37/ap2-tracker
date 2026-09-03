@@ -149,8 +149,17 @@
   }
   * { box-sizing: border-box; }
   html, body{ margin:0; padding:0; }
+  html{ background: var(--page); }
+  /* Dezentes Punkt-Raster hinter dem Inhalt — radial ausgeblendet, Light + Dark aus den Tokens */
+  body::before{
+    content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background-image: radial-gradient(var(--border-strong) 1.1px, transparent 1.7px);
+    background-size: 22px 22px;
+    -webkit-mask-image: radial-gradient(135% 100% at 50% 0%, #000 22%, transparent 76%);
+            mask-image: radial-gradient(135% 100% at 50% 0%, #000 22%, transparent 76%);
+  }
   body{
-    background: var(--page);
+    background: transparent;
     color: var(--text-primary);
     font-family: var(--font-body);
     font-size: 14px;
@@ -626,31 +635,58 @@
   }
 
   /* ---------- T4: „Diese Woche"-Hero ---------- */
-  .tw{ margin-bottom: 14px; }
-  .tw .panel-label{ margin-bottom: 12px; }
-  .tw-grid{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-  @media (max-width: 760px){ .tw-grid{ grid-template-columns: 1fr; } }
+  .tw{ margin: 26px 0 30px; }
+  .tw-head{ display: flex; align-items: baseline; gap: 6px 12px; flex-wrap: wrap; margin-bottom: 14px; }
+  .tw-head h2{
+    font-family: var(--font-display); font-size: 20px; font-weight: 600;
+    letter-spacing: -0.014em; line-height: 1.1; margin: 0; color: var(--text-primary);
+  }
+  .tw-head .tw-sub{
+    font-family: var(--font-mono); font-size: 11.5px; color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .tw-head .tw-sub:empty{ display: none; }
+
+  /* Eigener Rhythmus: eine Lead-Karte, darunter das ruhigere Paar */
+  .tw-grid{ display: grid; gap: 12px; }
+  .tw-rest{ display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  @media (max-width: 620px){ .tw-rest{ grid-template-columns: 1fr; } }
+
   .tw-card{
     background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--r-lg);
-    padding: 18px; display: flex; flex-direction: column; gap: 10px;
+    padding: 14px 15px; display: flex; flex-direction: column; gap: 8px;
   }
-  .tw-card.is-today{
-    border-color: color-mix(in srgb, var(--brand-bright) 45%, var(--border-strong));
-    background: var(--brand-tint);
-  }
+  .tw-card.lead{ padding: 22px 22px 20px; gap: 11px; }
+  .tw-card.is-today{ border-color: color-mix(in srgb, var(--brand-bright) 45%, var(--border-strong)); }
+  .tw-card.lead.is-today{ background: var(--brand-tint); }
+
   .tw-card-area{
     display: flex; align-items: center; gap: 6px;
     font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--tw-c, var(--text-muted));
   }
   .tw-card-area .dot{ width: 7px; height: 7px; border-radius: 2px; background: var(--tw-c, var(--text-muted)); }
-  .tw-card-area .today-tag{ margin-left: auto; color: var(--brand); text-transform: none; letter-spacing: 0; font-size: 10.5px; }
-  .tw-card-title{ font-family: var(--font-display); font-size: 14.5px; font-weight: 600; line-height: 1.35; color: var(--text-primary); }
-  .tw-card .track{ margin: 2px 0; }
-  .tw-card-foot{ display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-top: auto; }
-  .tw-card-foot .tw-count{ font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
+  .tw-card-area .today-tag{ margin-left: auto; color: var(--brand); text-transform: none; letter-spacing: 0; font-size: 10.5px; font-weight: 500; }
+
+  .tw-card-title{ font-family: var(--font-display); font-size: 13.5px; font-weight: 600; line-height: 1.35; color: var(--text-primary); }
+  .tw-card.lead .tw-card-title{ font-size: 17px; line-height: 1.3; }
+
+  .tw-card .track{ margin: 1px 0; background: var(--surface-3); }
+  .tw-card:not(.lead) .track{ height: 4px; }
+  .tw-card.lead .track{ height: 6px; }
+
+  .tw-card-foot{ display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: auto; }
+  .tw-card-foot .tw-count{ font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
   .tw-continue{ font-size: 12.5px; font-weight: 500; color: var(--brand); text-decoration: none; white-space: nowrap; }
   .tw-continue:hover{ text-decoration: underline; }
-  .tw-empty{ grid-column: 1 / -1; font-size: 12.5px; color: var(--text-muted); padding: 6px 2px; line-height: 1.5; }
+  .tw-card.lead .tw-continue{
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--brand-fill); color: #fff;
+    border: 1px solid color-mix(in srgb, var(--brand-bright) 45%, transparent);
+    border-radius: var(--r-sm); padding: 7px 13px;
+  }
+  .tw-card.lead .tw-continue:hover{ background: var(--brand-fill-hi); text-decoration: none; }
+  .tw-card.lead .tw-card-foot{ justify-content: flex-end; gap: 14px; }
+  .tw-empty{ font-size: 12.5px; color: var(--text-muted); padding: 6px 2px; line-height: 1.5; }
 
   .backlog-line{
     display: inline-flex; align-items: center; gap: 8px; font-family: inherit; font-size: 12.5px; font-weight: 500;
@@ -744,9 +780,15 @@
     <p>Fachinformatiker Systemintegration. Dein Startpunkt: Wochenplan, die drei schriftlichen Prüfungsbereiche und die Prüfungssimulation — mit Fortschritt, der geräteübergreifend mitläuft.</p>
   </header>
 
-  <section class="tw" id="thisWeek">
-    <p class="panel-label">Diese Woche</p>
-    <div class="tw-grid" id="twGrid"></div>
+  <section class="tw" id="thisWeek" aria-labelledby="twHeading">
+    <div class="tw-head">
+      <h2 id="twHeading">Diese Woche</h2>
+      <span class="tw-sub" id="twSub"></span>
+    </div>
+    <div class="tw-grid">
+      <div class="tw-lead" id="twLead"></div>
+      <div class="tw-rest" id="twRest"></div>
+    </div>
   </section>
 
   <button type="button" class="backlog-line" id="backlogLine" hidden aria-expanded="false"></button>
@@ -1564,46 +1606,72 @@ function todaysAreas(){
   }
 }
 
+function twCardHtml(a, isLead){
+  const cls = 'tw-card' + (isLead ? ' lead' : '') + (a.isToday ? ' is-today' : '');
+  const areaRow = `<div class="tw-card-area"><span class="dot"></span>${a.id.toUpperCase()}` +
+    `${a.isToday ? '<span class="today-tag">heute dran</span>' : ''}</div>`;
+  if (!a.topic) {
+    return `<div class="${cls}" style="--tw-c:${a.cat.color}">
+      ${areaRow}
+      <div class="tw-card-title">Alles aus dem Plan abgehakt.</div>
+      <div class="tw-card-foot"><span class="tw-count"></span><a class="tw-continue" href="${PAGE_FOR[a.id]}">Bereich öffnen ›</a></div>
+    </div>`;
+  }
+  return `<div class="${cls}" style="--tw-c:${a.cat.color}">
+    ${areaRow}
+    <div class="tw-card-title">${a.topic.title}</div>
+    <div class="track"><div class="fill" style="background:${a.cat.color};width:0%" data-fill="${a.pct}"></div></div>
+    <div class="tw-card-foot">
+      <span class="tw-count">${a.done} / ${a.total}</span>
+      <a class="tw-continue" href="${PAGE_FOR[a.id]}#${encodeURIComponent(a.topic.id)}&first">weitermachen ›</a>
+    </div>
+  </div>`;
+}
+
 function renderThisWeek(){
-  const grid = document.getElementById('twGrid');
-  if (!grid) return;
+  const lead = document.getElementById('twLead');
+  const rest = document.getElementById('twRest');
+  const sub = document.getElementById('twSub');
+  if (!lead || !rest) return;
   const today = todaysAreas();
-  const areas = ['ga1', 'ga2', 'wiso'].map(id => ({ cat: DATA.find(c => c.id === id), topic: plannedTopicFor(DATA.find(c => c.id === id) || { topics: [] }) }));
+  const areas = ['ga1', 'ga2', 'wiso'].map(id => {
+    const cat = DATA.find(c => c.id === id);
+    const topic = plannedTopicFor(cat || { topics: [] });
+    const a = { id, cat, topic, isToday: today.includes(id), pct: 0, done: 0, total: 0 };
+    if (topic) {
+      const c = countTopic(topic);
+      a.total = c.total; a.done = c.done;
+      a.pct = c.total ? Math.round(c.done / c.total * 100) : 0;
+    }
+    return a;
+  });
+
+  const setEmpty = msg => { lead.innerHTML = `<p class="tw-empty">${msg}</p>`; rest.innerHTML = ''; if (sub) sub.textContent = ''; };
 
   // Ganzer Plan durch: kein „aktuell geplant" mehr in irgendeinem Bereich
   if (areas.every(a => !a.topic)) {
-    grid.innerHTML = '<p class="tw-empty">Alle geplanten Themengruppen sind abgehakt. Reste stehen ggf. unten im Rückstand; sonst bleibt nur wiederholen.</p>';
+    setEmpty('Alle geplanten Themengruppen sind abgehakt. Reste stehen ggf. unten im Rückstand; sonst bleibt nur wiederholen.');
     return;
   }
 
-  let html = '';
-  areas.forEach(({ cat, topic }) => {
-    if (!cat) return;
-    const catId = cat.id;
-    const isToday = today.includes(catId);
-    if (!topic) {
-      html += `<div class="tw-card" style="--tw-c:${cat.color}">
-        <div class="tw-card-area"><span class="dot"></span>${catId.toUpperCase()}</div>
-        <div class="tw-card-title">Alles aus dem Plan abgehakt.</div>
-        <div class="tw-card-foot"><span class="tw-count"></span><a class="tw-continue" href="${PAGE_FOR[catId]}">Bereich öffnen ›</a></div>
-      </div>`;
-      return;
-    }
-    const { total, done } = countTopic(topic);
-    const pct = total ? Math.round(done / total * 100) : 0;
-    html += `<div class="tw-card${isToday ? ' is-today' : ''}" style="--tw-c:${cat.color}">
-      <div class="tw-card-area"><span class="dot"></span>${catId.toUpperCase()}${isToday ? '<span class="today-tag">heute dran</span>' : ''}</div>
-      <div class="tw-card-title">${topic.title}</div>
-      <div class="track"><div class="fill" style="background:${cat.color};width:0%" data-fill="${pct}"></div></div>
-      <div class="tw-card-foot">
-        <span class="tw-count">${done} / ${total}</span>
-        <a class="tw-continue" href="${PAGE_FOR[catId]}#${encodeURIComponent(topic.id)}&first">weitermachen ›</a>
-      </div>
-    </div>`;
-  });
-  grid.innerHTML = html || '<p class="tw-empty">Diese Woche ist laut Plan nichts terminiert.</p>';
+  // Lead = der Bereich, bei dem heute anzusetzen ist: heute laut Rhythmus dran,
+  // sonst der mit dem geringsten Fortschritt. Der Rest bleibt das ruhige Paar.
+  const withTopic = areas.filter(a => a.topic);
+  const todayWithTopic = withTopic.filter(a => a.isToday);
+  const pool = todayWithTopic.length ? todayWithTopic : withTopic;
+  const leadArea = pool.slice().sort((x, y) => x.pct - y.pct)[0];
+  if (!leadArea) { setEmpty('Diese Woche ist laut Plan nichts terminiert.'); return; }
+
+  lead.innerHTML = twCardHtml(leadArea, true);
+  rest.innerHTML = areas.filter(a => a !== leadArea).map(a => twCardHtml(a, false)).join('');
+
+  if (sub) {
+    const wk = leadArea.topic && leadArea.topic.week ? leadArea.topic.week.split(' · ').slice(0, 2).join(' · ') : '';
+    sub.textContent = wk;
+  }
+
   requestAnimationFrame(function(){
-    grid.querySelectorAll('.fill[data-fill]').forEach(function(f){ f.style.width = f.dataset.fill + '%'; });
+    document.querySelectorAll('#thisWeek .fill[data-fill]').forEach(function(f){ f.style.width = f.dataset.fill + '%'; });
   });
 }
 
