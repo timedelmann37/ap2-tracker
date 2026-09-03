@@ -590,6 +590,56 @@
     *{ animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
     details.card.flash{ animation: none; box-shadow: 0 0 0 2px var(--cat-color, var(--accent)), var(--shadow); }
   }
+
+  /* ---------- Versionsnummer + Änderungsprotokoll ---------- */
+  .version-btn{
+    border:none; background:transparent; color: var(--text-muted); cursor:pointer;
+    font-size:11px; font-family: var(--font-mono); padding:2px; align-self:flex-end;
+    text-decoration: underline; text-underline-offset:2px; text-decoration-color: var(--border-strong);
+  }
+  .version-btn:hover{ color: var(--text-secondary); }
+  .version-btn-inline{
+    border:none; background:transparent; color: var(--text-secondary); cursor:pointer;
+    font: inherit; font-size:inherit; padding:0;
+    text-decoration: underline; text-underline-offset:2px;
+  }
+  .version-btn-inline:hover{ color: var(--text-primary); }
+
+  .changelog-overlay{
+    position:fixed; inset:0; z-index:60; background: rgba(0,0,0,.62);
+    display:flex; align-items:center; justify-content:center; padding:20px;
+    backdrop-filter: blur(3px);
+  }
+  .changelog-overlay[hidden]{ display:none; }
+  .changelog-modal{
+    background: var(--surface-1); border:1px solid var(--border-strong); border-radius:var(--r-lg);
+    padding:20px; width:100%; max-width:480px; max-height: 82vh; display:flex; flex-direction:column;
+    box-shadow:0 24px 64px rgba(0,0,0,.5);
+  }
+  .changelog-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; flex-shrink:0; }
+  .changelog-head h3{ margin:0; font-size:15.5px; font-weight:600; }
+  .changelog-close{
+    border:none; background:transparent; color: var(--text-muted); font-size:14px;
+    cursor:pointer; padding:5px 8px; border-radius:var(--r-xs); flex-shrink:0;
+  }
+  .changelog-close:hover{ color: var(--text-primary); background: var(--surface-2); }
+
+  .changelog-list{ overflow-y:auto; display:flex; flex-direction:column; gap:16px; padding-right:4px; }
+  .changelog-entry{ padding-bottom:14px; border-bottom:1px solid var(--grid); }
+  .changelog-entry:last-child{ border-bottom:none; padding-bottom:0; }
+  .changelog-version-row{ display:flex; align-items:baseline; gap:9px; margin-bottom:8px; flex-wrap:wrap; }
+  .changelog-version{ font-family: var(--font-mono); font-size:13.5px; font-weight:600; color: var(--text-primary); }
+  .changelog-date{ font-size:11.5px; color: var(--text-muted); }
+  .changelog-current{
+    font-size:10px; font-weight:600; padding:2px 7px; border-radius:999px;
+    background: color-mix(in srgb, var(--status-good) 20%, transparent); color: var(--status-good);
+  }
+  .changelog-group{ margin: 8px 0 0; }
+  .changelog-group:first-of-type{ margin-top:0; }
+  .changelog-group-label{ font-size:11px; font-weight:600; color: var(--text-secondary); margin-bottom:4px; }
+  .changelog-items{ margin:0; padding-left:18px; font-size:12.5px; color: var(--text-secondary); line-height:1.55; }
+  .changelog-items li{ margin-bottom:3px; }
+  .changelog-items li:last-child{ margin-bottom:0; }
 </style>
 </head>
 <body>
@@ -602,7 +652,10 @@
       <h1>AP2 Tracker · Winterprüfung 2026/27</h1>
       <p>Konzeption &amp; Administration · Netzwerke · Wirtschaft &amp; Sozialkunde — Start Mo 24.08.2026 · KW 35–47 · max. 1–2 Std./Tag</p>
     </div>
-    <button class="theme-toggle" id="themeToggle" type="button">🌓 Darstellung</button>
+    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:7px;">
+      <button class="theme-toggle" id="themeToggle" type="button">🌓 Darstellung</button>
+      <button class="version-btn" id="versionBtn" type="button" title="Änderungsprotokoll anzeigen">v0.0.0</button>
+    </div>
   </div>
 
   <div class="overview">
@@ -695,6 +748,16 @@
     <b>Speicherung:</b> Dein Fortschritt wird automatisch im lokalen Speicher deines Browsers gesichert (<span id="saveState">–</span>) und bleibt beim Schließen und erneuten Öffnen dieser Datei erhalten. Das funktioniert zuverlässig, wenn du die Datei <b>speicherst und direkt im Browser öffnest</b> (z. B. per Doppelklick) — in einer eingebetteten Chat-Vorschau kann der Browser-Speicher blockiert sein. Öffne die Datei danach immer vom selben Ort aus, sonst zählt der Browser sie als neue Seite ohne gespeicherten Stand. <b>Browser-Speicher kann verloren gehen</b> (Cache geleert, neues Gerät, anderer Browser) — nutze deshalb ab und zu <b>„Fortschritt exportieren“</b>, um eine Sicherungsdatei herunterzuladen, und lade sie über <b>„Fortschritt importieren“</b> wieder ein, falls der gespeicherte Stand mal weg ist. Die zusätzliche, unabhängige Fortschrittsquelle bleibt dein <b>Notion-Status-Feld</b> je Thema.
   </div>
 
+</div>
+
+<div class="changelog-overlay" id="changelogOverlay" hidden>
+  <div class="changelog-modal" role="dialog" aria-modal="true" aria-label="Änderungsprotokoll">
+    <div class="changelog-head">
+      <h3>Änderungsprotokoll</h3>
+      <button type="button" id="changelogClose" class="changelog-close" aria-label="Schließen">✕</button>
+    </div>
+    <div class="changelog-list" id="changelogList"></div>
+  </div>
 </div>
 
 <button type="button" id="eggBtn" class="egg-btn" title="Kurze Pause? Lern-Minispiele 🕹️" aria-label="Lern-Minispiele öffnen">🕹️</button>
@@ -2528,6 +2591,75 @@ themeBtn.addEventListener('click', () => {
 
     return { start, stop };
   })();
+})();
+
+
+const APP_VERSION = '2.0.1';
+const CHANGELOG = [
+  { version:'2.0.1', date:'2026-09-03', groups:[
+    { label:'Entfernt', items:[
+      'Animierter Farbverlauf im Hintergrund (WebGL) wieder entfernt — Hub und Tracker sind vorerst einheitlich tiefschwarz.'
+    ]}
+  ]},
+  { version:'2.0.0', date:'2026-09-03', groups:[
+    { label:'Geändert', items:[
+      'Projekt in Hub und Module aufgeteilt: „/" zeigt jetzt eine Startseite mit Verweisen auf „/tracker/" und „/simulation/", statt direkt den Tracker auszuliefern.'
+    ]},
+    { label:'Hinzugefügt', items:[
+      '„/simulation/"-Modul (Platzhalter) für die geplante Prüfungssimulation.',
+      'CONTRIBUTING.md mit Regeln für die Zusammenarbeit zu zweit.'
+    ]}
+  ]},
+  { version:'1.2.0', date:'2026-09-03', groups:[
+    { label:'Geändert', items:[
+      'Komplettes visuelles Redesign: dunkles, an JetBrains Rider angelehntes Farbschema, IBM Plex Sans/Mono, tiefschwarzer Grund.'
+    ]}
+  ]},
+  { version:'1.1.0', date:'2026-09-03', groups:[
+    { label:'Hinzugefügt', items:[
+      'Fortschritt als JSON-Datei exportieren und wieder importieren.'
+    ]}
+  ]},
+  { version:'1.0.0', date:'2026-09-03', groups:[
+    { label:'Hinzugefügt', items:[
+      'Erste Version: Themenplan GA1/GA2/WiSo, Live-Suche, vier Lern-Minispiele.',
+      'Git-Repository und Netlify-Deployment eingerichtet.'
+    ]}
+  ]}
+];
+
+function renderChangelog(){
+  const root = document.getElementById('changelogList');
+  if (!root) return;
+  root.innerHTML = CHANGELOG.map((entry, i) => `
+    <div class="changelog-entry">
+      <div class="changelog-version-row">
+        <span class="changelog-version">v${entry.version}</span>
+        <span class="changelog-date">${entry.date.split('-').reverse().join('.')}</span>
+        ${i === 0 ? '<span class="changelog-current">Aktuell</span>' : ''}
+      </div>
+      ${entry.groups.map(g => `
+        <div class="changelog-group">
+          <div class="changelog-group-label">${g.label}</div>
+          <ul class="changelog-items">${g.items.map(it => '<li>' + it + '</li>').join('')}</ul>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+(function(){
+  const btn = document.getElementById('versionBtn');
+  const overlay = document.getElementById('changelogOverlay');
+  const closeBtn = document.getElementById('changelogClose');
+  if (!btn || !overlay || !closeBtn) return;
+  btn.textContent = 'v' + APP_VERSION;
+  function openChangelog(){ renderChangelog(); overlay.hidden = false; }
+  function closeChangelog(){ overlay.hidden = true; }
+  btn.addEventListener('click', openChangelog);
+  closeBtn.addEventListener('click', closeChangelog);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeChangelog(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !overlay.hidden) closeChangelog(); });
 })();
 
 </script>

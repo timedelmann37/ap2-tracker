@@ -76,3 +76,15 @@ vor dem Merge live testen.
 Siehe [`CONTRIBUTING.md`](./CONTRIBUTING.md) für die Spielregeln: wer in
 welchem Ordner arbeitet, Pfad- und `localStorage`-Konventionen, Git-Workflow
 über Feature-Branches und Pull Requests.
+
+## Version & Changelog
+
+Aktuelle Version: **2.0.1**. Alle Änderungen stehen chronologisch in
+[`CHANGELOG.md`](./CHANGELOG.md) (Format: [Keep a
+Changelog](https://keepachangelog.com/de/1.1.0/), Versionierung nach
+[SemVer](https://semver.org/lang/de/)). Dieselbe Liste ist auch direkt auf
+der Seite sichtbar: ein Klick auf die Versionsnummer (Hub: in der
+Fußzeile, Tracker: oben rechts neben "🌓 Darstellung") öffnet das
+Änderungsprotokoll. Bei einer neuen Version müssen `APP_VERSION` und das
+`CHANGELOG`-Array in beiden `<script>`-Blöcken (`index.html` und
+`tracker/index.html`) sowie `CHANGELOG.md` aktualisiert werden.

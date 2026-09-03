@@ -65,11 +65,19 @@ ersetzt) siehst du ein Minimalbeispiel.
 **Design ist frei.** Es gibt keine Pflicht, den Look des Trackers zu
 übernehmen. Falls dir am visuellen Zusammenhang zum Hub liegt: Der Hub und
 der Tracker nutzen ein dunkles Farbschema (echtes Schwarz `#000` als Grund,
-Rot/Magenta/Violett als Akzentfarben, IBM Plex Sans/Mono als Schrift) — du
-findest die kompletten Farb- und Typografie-Tokens als CSS-Variablen ganz
-oben im `<style>`-Block von `/index.html` und `/tracker/index.html`, falls
-du sie als Ausgangspunkt kopieren willst. Eine völlig eigene Optik ist genauso
-in Ordnung.
+Blau/Orange/Grün als Akzentfarben aus der JetBrains-Rider-Palette, IBM Plex
+Sans/Mono als Schrift) — du findest die kompletten Farb- und
+Typografie-Tokens als CSS-Variablen ganz oben im `<style>`-Block von
+`/index.html` und `/tracker/index.html`, falls du sie als Ausgangspunkt
+kopieren willst. Eine völlig eigene Optik ist genauso in Ordnung.
+
+**Versionsnummer/Changelog sind optional für dich.** Hub und Tracker zeigen
+oben rechts bzw. in der Fußzeile eine anklickbare Versionsnummer mit
+Änderungsprotokoll (siehe `CHANGELOG.md` im Repo-Root). Das ist aktuell nur
+für `/` und `/tracker/` eingerichtet — du musst für `/simulation/` nichts
+Vergleichbares bauen, es sei denn du willst es. Falls du später doch
+mitziehen willst, sag Bescheid, dann sprechen wir uns über eine gemeinsame
+Versionsnummer fürs ganze Projekt ab, statt getrennter Zählungen.
 
 ## Git-Workflow
 
