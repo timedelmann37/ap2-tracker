@@ -7,6 +7,65 @@ direkt auf der Seite sichtbar — ein Klick auf die Versionsnummer im Hub (in
 der Fußzeile) zeigt dieselbe Liste als Änderungsprotokoll. Gepflegt wird das
 Changelog ausschließlich im Hub, nicht mehr in den einzelnen Bereichen.
 
+## [3.6.0] – 2026-09-03
+
+UI-Hierarchie-Kur auf Basis von v3.5.0/3.5.1 — kein zweites Redesign, die
+flache Bildsprache bleibt. Leitgedanke: **eine Seite, eine Aufgabe.**
+`/simulation/` unberührt.
+
+### Geändert
+- **Der Hub führt mit „Diese Woche".** Bis zu drei aktuell geplante
+  Themengruppen (eine je Bereich), jede mit Fortschrittsbalken und einem
+  `weitermachen`-Link, der den Block öffnet, aufklappt und zum ersten noch
+  offenen Kernthema scrollt. Der Bereich, der heute laut Wochenrhythmus
+  dran ist, ist hervorgehoben. Darunter eine kompakte, aufklappbare Rückstand-Zeile,
+  der Prüfungs-Countdown als ruhige Zeile und `Gesamt: X %` mit Link zur
+  Übersicht. Siehe [ADR 0001](docs/adr/0001-hub-fuehrt-mit-diese-woche.md).
+- **Die Kachel-Wand auf dem Hub ist raus** (Planung / Themenbereiche /
+  Prüfung & Werkzeuge). Jeder Bereich bleibt über die Navigation erreichbar.
+- **Das Dashboard wandert auf die Übersicht.** Fortschrittsbild
+  (Gesamtfortschritt + ein Balken je Bereich), Aktivitäts-Heatmap,
+  Lern-Streaks und „zuletzt bearbeitet" liegen jetzt dort.
+- **Die Übersicht wird die „Zoom-out"-Seite.** Der 31-Zeilen-Gesamtplan ist
+  durch eine vertikale Timeline nach Kalenderwoche ersetzt — je Themengruppe
+  ein Mini-Fortschritt, vergangene Wochen eingeklappt, die aktuelle Woche
+  wird beim Laden angesprungen, Themengruppen im Rückstand sind markiert,
+  ein Klick öffnet den passenden Bereich am richtigen Block.
+- **Der Wochenrhythmus** ist von der fest verdrahteten Tabelle zu einer
+  ein-/ausklappbaren Referenzkarte am Seitenende geworden.
+- **Themenseiten oben entschlackt:** die vier Stat-Tiles sind zu einer
+  Fortschrittszeile zusammengezogen (`X / Y Kernthemen · N markiert · M in
+  Rückstand`), die „Was ist dran?"-Tabelle ist auf einen schmalen Hinweis
+  reduziert. Beim Laden ist die aktuell geplante Themengruppe aufgeklappt,
+  alle anderen zu. Live-Suche, „Markiert"-Filter, „alle auf/zu", die
+  Minispiele und Export/Import bleiben unverändert.
+
+### Hinzugefügt
+- **Bereichsübergreifende Suche** über die Titel aller Themengruppen und
+  alle Kernthemen der drei Bereiche. Am Desktop ein immer sichtbares
+  Suchfeld in der Navigation (der `Nachschlagewerk – bald`-Platzhalter
+  bleibt daneben), auf dem Handy über den `Suche`-Eintrag der Bottom-Tab-Bar.
+  Treffer nennen Bereich und Themengruppe, heben die Fundstelle hervor und
+  springen per Deep-Link in den Block; das vollständige Nachschlagewerk
+  bleibt ein späterer, separater Build.
+- **Mobile Bottom-Tab-Bar** (ab ≤ 820 px) auf allen Seiten inklusive Hub:
+  Übersicht · GA1 · GA2 · WiSo · Suche. Flach (Haarlinie oben, kein
+  Schatten), aktive Seite markiert, verdeckt keine Inhalte; der Hub ist
+  über das Logo erreichbar.
+- **Interaktions-Feinschliff:** animiertes Abhaken (kurzer Haken-Draw plus
+  leichter Scale-Bounce), füllende statt springende Fortschrittsbalken auf
+  Hub, Übersicht und Themenseiten, eine dezente Feier bei 100 % einer
+  Themengruppe (grüner Balken-Puls + Haken, kein Konfetti) und weiche
+  Seitenübergänge (View Transitions, wo unterstützt). Alles wird bei
+  `prefers-reduced-motion: reduce` vollständig abgeschaltet. Keine
+  Tastatur-Navigation durch die Kernthemen.
+
+### Unverändert
+- Datenmodell und Speicher: `localStorage`-Schlüssel `ap2-tracker-state-v1`,
+  `state.__activity`, die `mark__`-Präfixe und die Abhak-Zeitstempel bleiben
+  gleich; Cloud-Sync (Supabase) läuft unverändert weiter. Export/Import als
+  JSON funktioniert wie bisher. Keine URL-Änderungen (Minor-Bump).
+
 ## [3.5.1] – 2026-09-03
 
 ### Geändert
