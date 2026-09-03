@@ -1,4 +1,4 @@
-window.exam_2023_1_GA2 = {
+﻿window.exam_2023_1_GA2 = {
   id: "2023_1_GA2",
   title: "Sommer 2023 - GA2",
   subtitle: "Abschlussprüfung Sommer 2023 – Fachinformatiker/Fachinformatikerin Systemintegration (AO 2020) – Teil 2: Analyse und Entwicklung von Netzwerken",
@@ -200,21 +200,21 @@ window.exam_2023_1_GA2 = {
           text: "aa) Beschreiben Sie zwei Gründe, die die Fahrguth GmbH dazu bewogen haben könnten, VLANs zu verwenden.",
           points: 4,
           type: "textarea",
-          solution: "- Mehr Sicherheit, da logische Trennung der Netzwerksegmente\n- Mehr Flexibilität, da neue Netzwerksegmente leicht erzeugt werden können\n- Weniger Hardware, da mehrere Netzwerksegmente auf einem Switch/Kabel laufen\n- Weniger Kosten, da weniger Hardware angeschafft werden muss\n- Weniger Verkabelung, da mehrere Netzwerksegmente auf einem Switch/Kabel laufen\n(Andere Lösungen sind möglich.)"
+          solution: "- Mehr Sicherheit, da logische Trennung der Netzwerksegmente\\n- Mehr Flexibilität, da neue Netzwerksegmente leicht erzeugt werden können\\n- Weniger Hardware, da mehrere Netzwerksegmente auf einem Switch/Kabel laufen\\n- Weniger Kosten, da weniger Hardware angeschafft werden muss\\n- Weniger Verkabelung, da mehrere Netzwerksegmente auf einem Switch/Kabel laufen\\n(Andere Lösungen sind möglich.)"
         },
         {
           id: "1ab",
-          text: "ab) Zwischen den Switches werden Verbindungen nach Standard IEEE 802.1q eingesetzt. Auf diesen Verbindungen wird in jeden Frame ein 32 Bit großes Zusatzfeld (Q-Tag) eingefügt.\nErläutern Sie, weshalb dies geschieht, und nennen Sie eine der Informationen, die in diesem Zusatzfeld enthalten ist.",
+          text: "ab) Zwischen den Switches werden Verbindungen nach Standard IEEE 802.1q eingesetzt. Auf diesen Verbindungen wird in jeden Frame ein 32 Bit großes Zusatzfeld (Q-Tag) eingefügt.\\nErläutern Sie, weshalb dies geschieht, und nennen Sie eine der Informationen, die in diesem Zusatzfeld enthalten ist.",
           points: 3,
           type: "textarea",
-          solution: "Zwischen den Switches muss die Information, zu welchem VLAN ein Frame gehört, mitgeschickt werden. Ein Standard-Frame hat dafür keine Felder in seinem Header vorgesehen.\nEine Information, die in diesen Tag geschrieben wird, ist die VLAN-ID (VLAN Identifier, 12 Bit) oder Priority Code Point (PCP, 3 Bit) oder Drop Eligible Indicator (DEI, 1 Bit).\n(Andere Lösungen sind möglich.)"
+          solution: "Zwischen den Switches muss die Information, zu welchem VLAN ein Frame gehört, mitgeschickt werden. Ein Standard-Frame hat dafür keine Felder in seinem Header vorgesehen.\\nEine Information, die in diesen Tag geschrieben wird, ist die VLAN-ID (VLAN Identifier, 12 Bit) oder Priority Code Point (PCP, 3 Bit) oder Drop Eligible Indicator (DEI, 1 Bit).\\n(Andere Lösungen sind möglich.)"
         },
         {
           id: "1ac",
-          text: "ac) Eine Zuordnung zu einem VLAN kann z. B. statisch oder per IEEE 802.1X erfolgen.\nErläutern Sie jeweils anhand eines Beispiels, was man darunter versteht.",
+          text: "ac) Eine Zuordnung zu einem VLAN kann z. B. statisch oder per IEEE 802.1X erfolgen.\\nErläutern Sie jeweils anhand eines Beispiels, was man darunter versteht.",
           points: 4,
           type: "textarea",
-          solution: "Statisch: Der Administrator ordnet die Ports manuell fest einem bestimmten VLAN zu.\nBeispiel: Ports in der Werkstatt werden dem VLAN \\\"Werkstatt\\\" zugeordnet.\n\nIEEE 802.1X: Ein Gerät wird anhand der Anmeldedaten (dynamisch über Authentifizierungsserver wie RADIUS) einem bestimmten VLAN zugeordnet.\nBeispiel: Der Useraccount \\\"Chef\\\" wird immer dem VLAN-Verwaltung zugeordnet, egal an welchem PC des Unternehmens er sich anmeldet."
+          solution: "Statisch: Der Administrator ordnet die Ports manuell fest einem bestimmten VLAN zu.\\nBeispiel: Ports in der Werkstatt werden dem VLAN \\\"Werkstatt\\\" zugeordnet.\\n\\nIEEE 802.1X: Ein Gerät wird anhand der Anmeldedaten (dynamisch über Authentifizierungsserver wie RADIUS) einem bestimmten VLAN zugeordnet.\\nBeispiel: Der Useraccount \\\"Chef\\\" wird immer dem VLAN-Verwaltung zugeordnet, egal an welchem PC des Unternehmens er sich anmeldet."
         },
         {
           id: "1ba",
@@ -257,17 +257,17 @@ window.exam_2023_1_GA2 = {
               </g>
             </svg>
           `,
-          text: "ba) Nach der Anmeldung eines Clients soll dieser vom DHCP-Server per DHCP eine IP-Adresse aus dem Bereich des jeweiligen VLANs erhalten. Auf dem DHCP-Server wurde daher für jedes VLAN ein Adresspool eingerichtet.\nBenennen Sie die vier Kommunikationsschritte bei der erfolgreichen Zuteilung einer IP-Adresse via DHCP.",
+          text: "ba) Nach der Anmeldung eines Clients soll dieser vom DHCP-Server per DHCP eine IP-Adresse aus dem Bereich des jeweiligen VLANs erhalten. Auf dem DHCP-Server wurde daher für jedes VLAN ein Adresspool eingerichtet.\\nBenennen Sie die vier Kommunikationsschritte bei der erfolgreichen Zuteilung einer IP-Adresse via DHCP.",
           points: 4,
           type: "textarea",
-          solution: "1. DHCP Discover\n2. DHCP Offer\n3. DHCP Request\n4. DHCP Ack\n(Reihenfolge ist maßgebend: DORA-Prinzip)"
+          solution: "1. DHCP Discover\\n2. DHCP Offer\\n3. DHCP Request\\n4. DHCP Ack\\n(Reihenfolge ist maßgebend: DORA-Prinzip)"
         },
         {
           id: "1bb",
-          text: "bb) Der DHCP-Server befindet sich im Server-VLAN, der Client in einem der Benutzer-VLANs. An den Switches wurden bisher nur die VLAN-Konfigurationen fehlerfrei eingerichtet.\nErläutern Sie, warum der DHCP-Prozess zunächst fehlschlägt, und welche Einstellungen vom Admin am Layer-3-Switch zusätzlich vorzunehmen sind, sodass der DHCP-Server alle VLANs mit IP-Adressen versorgen kann.",
+          text: "bb) Der DHCP-Server befindet sich im Server-VLAN, der Client in einem der Benutzer-VLANs. An den Switches wurden bisher nur die VLAN-Konfigurationen fehlerfrei eingerichtet.\\nErläutern Sie, warum der DHCP-Prozess zunächst fehlschlägt, und welche Einstellungen vom Admin am Layer-3-Switch zusätzlich vorzunehmen sind, sodass der DHCP-Server alle VLANs mit IP-Adressen versorgen kann.",
           points: 3,
           type: "textarea",
-          solution: "Ursache: DHCP-Anfragen (DHCP Discover) arbeiten mit Broadcasts. Ein Router bzw. Layer-3-Switch leitet Broadcasts standardmäßig nicht über Subnetz-/VLAN-Grenzen hinweg weiter, der Broadcast endet am Switch.\nMaßnahme: DHCP-Relay (bzw. DHCP-Relay-Agent) für jedes VLAN-Interface auf dem Layer-3-Switch konfigurieren, sodass die DHCP-Broadcasts als Unicast gezielt an die IP des DHCP-Servers weitergeleitet werden.\n(Hinweis: 'ip helper-address <IP-DHCP>' ist ebenfalls eine gültige Lösung)"
+          solution: "Ursache: DHCP-Anfragen (DHCP Discover) arbeiten mit Broadcasts. Ein Router bzw. Layer-3-Switch leitet Broadcasts standardmäßig nicht über Subnetz-/VLAN-Grenzen hinweg weiter, der Broadcast endet am Switch.\\nMaßnahme: DHCP-Relay (bzw. DHCP-Relay-Agent) für jedes VLAN-Interface auf dem Layer-3-Switch konfigurieren, sodass die DHCP-Broadcasts als Unicast gezielt an die IP des DHCP-Servers weitergeleitet werden.\\n(Hinweis: 'ip helper-address <IP-DHCP>' ist ebenfalls eine gültige Lösung)"
         },
         {
           id: "1ca",
@@ -316,7 +316,7 @@ window.exam_2023_1_GA2 = {
           text: "ca) Erläutern Sie, was man unter einem SFP+ Modul versteht und worin sich SFP und SFP+ unterscheiden.",
           points: 3,
           type: "textarea",
-          solution: "SFP-Module (Small Form-factor Pluggable) sind modulare Transceiver, die einen Switch flexibel um physikalische Schnittstellen (z. B. Glasfaser / LWL oder Kupfer) erweitern.\nUnterschied SFP vs. SFP+: SFP unterstützt Datenübertragungsraten bis zu 1 Gbit/s (1.000 Mbit/s), während SFP+ für bis zu 10 Gbit/s spezifiziert ist."
+          solution: "SFP-Module (Small Form-factor Pluggable) sind modulare Transceiver, die einen Switch flexibel um physikalische Schnittstellen (z. B. Glasfaser / LWL oder Kupfer) erweitern.\\nUnterschied SFP vs. SFP+: SFP unterstützt Datenübertragungsraten bis zu 1 Gbit/s (1.000 Mbit/s), während SFP+ für bis zu 10 Gbit/s spezifiziert ist."
         },
         {
           id: "1cb",
@@ -387,7 +387,7 @@ Betriebswellenlänge: 1.310 nm`,
         },
         {
           id: "1cc",
-          text: "cc) Sie schlagen vor, bei dieser Verkabelung zwischen den Switches entweder das Spanning-Tree-Protocol (STP) oder Link-Aggregation (IEEE 802.3ad) zu verwenden.\nErgänzen Sie dazu die folgende Tabelle.",
+          text: "cc) Sie schlagen vor, bei dieser Verkabelung zwischen den Switches entweder das Spanning-Tree-Protocol (STP) oder Link-Aggregation (IEEE 802.3ad) zu verwenden.\\nErgänzen Sie dazu die folgende Tabelle.",
           points: 4,
           type: "table_input",
           tableConfig: {
@@ -415,7 +415,7 @@ Betriebswellenlänge: 1.310 nm`,
               }
             ]
           },
-          solution: "Spanning-Tree-Protocol (STP):\n- Funktionsweise: STP lässt eine der beiden Leitungen ungenutzt liegen (Port wird in Blocking/Discarding-Zustand gesetzt), weiß aber, dass diese Verbindung vorhanden ist, um Loops (Netzwerkschleifen) zu verhindern.\n- Reaktion bei Ausfall: Fällt die verwendete Leitung aus, so aktiviert der STP-Algorithmus die ungenutzte Leitung (Port wechselt auf Forwarding) und überträgt die Daten über diese Leitung.\n\nLink-Aggregation (LACP / IEEE 802.3ad):\n- Funktionsweise: Die beiden Leitungen werden logisch zu einem Verbund (\\\"Trunk\\\" / LAG) gebündelt, sodass sich die Bandbreite / Übertragungsrate zwischen den Switches verdoppelt und Lastverteilung erfolgt.\n- Reaktion bei Ausfall: Fällt eine der beiden Leitungen aus, bleibt die Verbindung bestehen, Daten werden mit reduzierter Übertragungsrate (halbe Bandbreite) über die verbleibende Leitung gesendet."
+          solution: "Spanning-Tree-Protocol (STP):\\n- Funktionsweise: STP lässt eine der beiden Leitungen ungenutzt liegen (Port wird in Blocking/Discarding-Zustand gesetzt), weiß aber, dass diese Verbindung vorhanden ist, um Loops (Netzwerkschleifen) zu verhindern.\\n- Reaktion bei Ausfall: Fällt die verwendete Leitung aus, so aktiviert der STP-Algorithmus die ungenutzte Leitung (Port wechselt auf Forwarding) und überträgt die Daten über diese Leitung.\\n\\nLink-Aggregation (LACP / IEEE 802.3ad):\\n- Funktionsweise: Die beiden Leitungen werden logisch zu einem Verbund (\\\"Trunk\\\" / LAG) gebündelt, sodass sich die Bandbreite / Übertragungsrate zwischen den Switches verdoppelt und Lastverteilung erfolgt.\\n- Reaktion bei Ausfall: Fällt eine der beiden Leitungen aus, bleibt die Verbindung bestehen, Daten werden mit reduzierter Übertragungsrate (halbe Bandbreite) über die verbleibende Leitung gesendet."
         }
       ]
     },
@@ -432,7 +432,7 @@ Betriebswellenlänge: 1.310 nm`,
         {
           id: "2aa",
           sectionTitle: "a) Routingtabelle und Dynamisches Routing",
-          intro: `In den drei Routing-Netzen hat der Router „Essen“ jeweils die niedrigste mögliche IPv4-Adresse.\nZurzeit wird zwischen den vier Routern mit statischem Routing gearbeitet.`,
+          intro: `In den drei Routing-Netzen hat der Router „Essen“ jeweils die niedrigste mögliche IPv4-Adresse.\\nZurzeit wird zwischen den vier Routern mit statischem Routing gearbeitet.`,
           text: "aa) Vervollständigen Sie hierzu folgende Tabelle des Routers in Essen.",
           points: 9,
           type: "table_input",
@@ -469,7 +469,7 @@ Betriebswellenlänge: 1.310 nm`,
         },
         {
           id: "2ab",
-          intro: `Die aktuellen Standleitungen Bochum-Essen und Dortmund-Essen haben eine Bandbreite von 10 Gbit/s, die Standleitung Duisburg-Essen hat eine Bandbreite von nur 500 MBit/s. Da es hier immer wieder zu Problemen kommt, wird in Erwägung gezogen, das Netz durch eine weitere Leitung zwischen Bochum und Duisburg zu erweitern. Diese Leitung soll ebenfalls eine Bandbreite von 10 Gbit/s bereitstellen (siehe gestrichelte Linie im Netzwerkplan).\n\nDiese Maßnahme soll sowohl die Performanz als auch die Redundanz des Netzes erhöhen.`,
+          intro: `Die aktuellen Standleitungen Bochum-Essen und Dortmund-Essen haben eine Bandbreite von 10 Gbit/s, die Standleitung Duisburg-Essen hat eine Bandbreite von nur 500 MBit/s. Da es hier immer wieder zu Problemen kommt, wird in Erwägung gezogen, das Netz durch eine weitere Leitung zwischen Bochum und Duisburg zu erweitern. Diese Leitung soll ebenfalls eine Bandbreite von 10 Gbit/s bereitstellen (siehe gestrichelte Linie im Netzwerkplan).\\n\\nDiese Maßnahme soll sowohl die Performanz als auch die Redundanz des Netzes erhöhen.`,
           text: "ab) Begründen Sie, warum in diesem Fall dynamisches Routing empfehlenswert ist.",
           points: 4,
           type: "textarea",
@@ -477,10 +477,10 @@ Betriebswellenlänge: 1.310 nm`,
         },
         {
           id: "2ac",
-          text: "ac) Für dynamisches Routing stehen sowohl Distance-Vector-Protokolle als auch Link-State-Protokolle zur Verfügung.\nGeben Sie an und begründen Sie, welche dieser beiden Protokoll-Familien hier zum Einsatz kommen muss, um die gewünschten Anforderungen zu erreichen.",
+          text: "ac) Für dynamisches Routing stehen sowohl Distance-Vector-Protokolle als auch Link-State-Protokolle zur Verfügung.\\nGeben Sie an und begründen Sie, welche dieser beiden Protokoll-Familien hier zum Einsatz kommen muss, um die gewünschten Anforderungen zu erreichen.",
           points: 4,
           type: "textarea",
-          solution: "Protokoll-Familie: Link-State-Protokolle (z. B. OSPF).\nBegründung: Link-State-Protokolle berücksichtigen bei der Metrik die Verbindungsqualität bzw. Bandbreite (Kosten/Cost). Distance-Vector-Protokolle (wie RIP) orientieren sich primär am Hop-Count; bei Distance-Vector würde daher die direkte, langsame Leitung zwischen Essen und Duisburg (1 Hop, 500 Mbit/s) gegenüber dem schnelleren Pfad über Bochum (2 Hops, jeweils 10 Gbit/s) bevorzugt werden. Nur Link-State wählt bandbreitenoptimierte Routen."
+          solution: "Protokoll-Familie: Link-State-Protokolle (z. B. OSPF).\\nBegründung: Link-State-Protokolle berücksichtigen bei der Metrik die Verbindungsqualität bzw. Bandbreite (Kosten/Cost). Distance-Vector-Protokolle (wie RIP) orientieren sich primär am Hop-Count; bei Distance-Vector würde daher die direkte, langsame Leitung zwischen Essen und Duisburg (1 Hop, 500 Mbit/s) gegenüber dem schnelleren Pfad über Bochum (2 Hops, jeweils 10 Gbit/s) bevorzugt werden. Nur Link-State wählt bandbreitenoptimierte Routen."
         },
         {
           id: "2ba",
@@ -510,14 +510,14 @@ Betriebswellenlänge: 1.310 nm`,
           text: "ba) Erläutern Sie anhand der Analyse, warum der Server trotz statisch konfigurierter IP-Adresse nicht unter der gewünschten IPv4-Adresse erreichbar ist.",
           points: 5,
           type: "textarea",
-          solution: "Die IP-Adresse 10.1.0.10 wird bereits von einem anderen Gerät im Netzwerk verwendet (IP-Adresskonflikt / Duplicate Address Detection).\nDer Server sendet eine ARP-Probe für 10.1.0.10 (Paket 1), woraufhin ein anderes Gerät (PCEngine_57:11:05) mit einer ARP-Reply antwortet, dass es diese IP besitzt (Paket 2). Um den Adresskonflikt zu verhindern, deaktiviert das Betriebssystem die statische IP und weist sich selbst per APIPA eine Adresse aus dem Link-Local-Bereich (169.254.102.223) zu."
+          solution: "Die IP-Adresse 10.1.0.10 wird bereits von einem anderen Gerät im Netzwerk verwendet (IP-Adresskonflikt / Duplicate Address Detection).\\nDer Server sendet eine ARP-Probe für 10.1.0.10 (Paket 1), woraufhin ein anderes Gerät (PCEngine_57:11:05) mit einer ARP-Reply antwortet, dass es diese IP besitzt (Paket 2). Um den Adresskonflikt zu verhindern, deaktiviert das Betriebssystem die statische IP und weist sich selbst per APIPA eine Adresse aus dem Link-Local-Bereich (169.254.102.223) zu."
         },
         {
           id: "2bb",
           text: "bb) Wie müssen Sie vorgehen, um den File-Server unter der IPv4 Adresse 10.1.0.10 erreichbar zu machen?",
           points: 3,
           type: "textarea",
-          solution: "1. Das Gerät mit der MAC-Adresse 00:0d:b9:57:11:05 identifizieren (z. B. über Switch-MAC-Table/CAM-Table oder DHCP-Leases) und diesem Gerät eine andere freie IP-Adresse zuweisen bzw. es vom Netz trennen.\n2. Anschließend die IP-Konfiguration auf dem File-Server aktualisieren bzw. das Netzwerk-Interface neu starten/aktivieren."
+          solution: "1. Das Gerät mit der MAC-Adresse 00:0d:b9:57:11:05 identifizieren (z. B. über Switch-MAC-Table/CAM-Table oder DHCP-Leases) und diesem Gerät eine andere freie IP-Adresse zuweisen bzw. es vom Netz trennen.\\n2. Anschließend die IP-Konfiguration auf dem File-Server aktualisieren bzw. das Netzwerk-Interface neu starten/aktivieren."
         }
       ]
     },
@@ -534,25 +534,25 @@ Betriebswellenlänge: 1.310 nm`,
         {
           id: "3aa",
           sectionTitle: "a) VPN-Arten und Zertifikate",
-          text: "aa) Erläutern Sie jeweils anhand eines selbst gewählten Beispiels aus dem Arbeitsalltag der Fahrguth GmbH, wie diese die folgenden VPN-Arten sinnvoll einsetzen könnte:\n- End-to-Site\n- Site-to-Site",
+          text: "aa) Erläutern Sie jeweils anhand eines selbst gewählten Beispiels aus dem Arbeitsalltag der Fahrguth GmbH, wie diese die folgenden VPN-Arten sinnvoll einsetzen könnte:\\n- End-to-Site\\n- Site-to-Site",
           points: 4,
           type: "textarea",
-          solution: "End-to-Site (Roadwarrior / Client-to-Site):\nDie Fahrguth GmbH nutzt diese Variante, um Mitarbeitern im Home-Office oder Außendienstmitarbeitern unterwegs über einen Software-Client gesicherten Zugriff auf das Firmennetzwerk und interne Dienste der Zentrale zu ermöglichen.\n\nSite-to-Site (Gateway-to-Gateway / Lan-to-Lan):\nDie Fahrguth GmbH nutzt diese Variante, um die Netzwerke der Filialen (Bochum, Duisburg, Dortmund) über Router/VPN-Gateways dauerhaft und transparent verschlüsselt an die Zentrale in Essen anzubinden.\n(Andere praxisgerechte Beispiele sind ebenfalls denkbar.)"
+          solution: "End-to-Site (Roadwarrior / Client-to-Site):\\nDie Fahrguth GmbH nutzt diese Variante, um Mitarbeitern im Home-Office oder Außendienstmitarbeitern unterwegs über einen Software-Client gesicherten Zugriff auf das Firmennetzwerk und interne Dienste der Zentrale zu ermöglichen.\\n\\nSite-to-Site (Gateway-to-Gateway / Lan-to-Lan):\\nDie Fahrguth GmbH nutzt diese Variante, um die Netzwerke der Filialen (Bochum, Duisburg, Dortmund) über Router/VPN-Gateways dauerhaft und transparent verschlüsselt an die Zentrale in Essen anzubinden.\\n(Andere praxisgerechte Beispiele sind ebenfalls denkbar.)"
         },
         {
           id: "3ab",
-          text: "ab) Zur Absicherung der VPN-Verbindungen setzt die Fahrguth GmbH Zertifikate nach Standard X.509 ein.\nNennen Sie drei der Bestandteile, die ein solches Zertifikat enthalten muss.",
+          text: "ab) Zur Absicherung der VPN-Verbindungen setzt die Fahrguth GmbH Zertifikate nach Standard X.509 ein.\\nNennen Sie drei der Bestandteile, die ein solches Zertifikat enthalten muss.",
           points: 3,
           type: "textarea",
-          solution: "Mögliche Bestandteile (drei sind gefordert):\n- Version des X.509-Standards\n- Seriennummer des Zertifikats\n- Inhaber / Subjekt (Common Name, Organisation, Land etc.)\n- Öffentlicher Schlüssel (Public Key) des Inhabers\n- Signaturalgorithmus / Algorithmen-ID (z. B. SHA256withRSA)\n- Aussteller / Zertifizierungsstelle (Issuer / CA)\n- Gültigkeitsdauer (Gültig von ... bis ...)\n- Digitale Signatur der Zertifizierungsstelle (verschlüsselter Hash-Wert)"
+          solution: "Mögliche Bestandteile (drei sind gefordert):\\n- Version des X.509-Standards\\n- Seriennummer des Zertifikats\\n- Inhaber / Subjekt (Common Name, Organisation, Land etc.)\\n- Öffentlicher Schlüssel (Public Key) des Inhabers\\n- Signaturalgorithmus / Algorithmen-ID (z. B. SHA256withRSA)\\n- Aussteller / Zertifizierungsstelle (Issuer / CA)\\n- Gültigkeitsdauer (Gültig von ... bis ...)\\n- Digitale Signatur der Zertifizierungsstelle (verschlüsselter Hash-Wert)"
         },
         {
           id: "3b",
           sectionTitle: "b) Fehlerdiagnose Hotspot-VPN",
-          text: "b) Bei einer WLAN-Verbindung an einem Hotspot funktioniert der Abruf von Internetseiten ohne Probleme. Beim Verbindungsaufbau eines VPNs vom selben Hotspot aus scheitert die VPN-Verbindung, obwohl die Einrichtung des VPNs am Client korrekt erfolgt ist.\nBeschreiben Sie eine mögliche Fehlerursache und machen Sie einen Vorschlag zur Fehlerbeseitigung.",
+          text: "b) Bei einer WLAN-Verbindung an einem Hotspot funktioniert der Abruf von Internetseiten ohne Probleme. Beim Verbindungsaufbau eines VPNs vom selben Hotspot aus scheitert die VPN-Verbindung, obwohl die Einrichtung des VPNs am Client korrekt erfolgt ist.\\nBeschreiben Sie eine mögliche Fehlerursache und machen Sie einen Vorschlag zur Fehlerbeseitigung.",
           points: 5,
           type: "textarea",
-          solution: "Möglichkeit 1 (Häufigste Ursache):\n- Fehlerursache: Der Hotspot-Router verwendet NAT bzw. PAT. Da IPsec ESP die IP-Pakete verschlüsselt und keine Ports vorsieht, verändern NAT-Router die IP-Header, wodurch Integritätsprüfungen fehlschlagen oder ESP-Pakete blockiert werden.\n- Fehlerbeseitigung: Einsatz von NAT-Traversal (NAT-T) bei IPsec (Kapselung der IPsec-Pakete in UDP-Port 4500) oder Wechsel auf SSL/TLS-basiertes VPN (z. B. OpenVPN über TCP 443).\n\nMöglichkeit 2:\n- Fehlerursache: Die maximale Paketgröße (MTU) ist zu groß gewählt. Durch den zusätzlichen VPN-Tunnel-Header werden Pakete zu groß und müssen fragmentiert werden; fragmentierte Pakete werden von Hotspot-Firewalls häufig verworfen.\n- Fehlerbeseitigung: MTU-Wert bzw. MSS-Clamping in der VPN-Client-Konfiguration verringern.\n(3 Punkte für Fehlerursache, 2 Punkte für Fehlerbeseitigung laut Korrekturhinweis.)"
+          solution: "Möglichkeit 1 (Häufigste Ursache):\\n- Fehlerursache: Der Hotspot-Router verwendet NAT bzw. PAT. Da IPsec ESP die IP-Pakete verschlüsselt und keine Ports vorsieht, verändern NAT-Router die IP-Header, wodurch Integritätsprüfungen fehlschlagen oder ESP-Pakete blockiert werden.\\n- Fehlerbeseitigung: Einsatz von NAT-Traversal (NAT-T) bei IPsec (Kapselung der IPsec-Pakete in UDP-Port 4500) oder Wechsel auf SSL/TLS-basiertes VPN (z. B. OpenVPN über TCP 443).\\n\\nMöglichkeit 2:\\n- Fehlerursache: Die maximale Paketgröße (MTU) ist zu groß gewählt. Durch den zusätzlichen VPN-Tunnel-Header werden Pakete zu groß und müssen fragmentiert werden; fragmentierte Pakete werden von Hotspot-Firewalls häufig verworfen.\\n- Fehlerbeseitigung: MTU-Wert bzw. MSS-Clamping in der VPN-Client-Konfiguration verringern.\\n(3 Punkte für Fehlerursache, 2 Punkte für Fehlerbeseitigung laut Korrekturhinweis.)"
         },
         {
           id: "3ca",
@@ -582,7 +582,7 @@ C:\\Users\\Vertreter1>`,
           text: "cb) Machen Sie einen Vorschlag, wie der ungefilterte Netzwerkverkehr unterbunden werden kann.",
           points: 3,
           type: "textarea",
-          solution: "Mögliche Maßnahmen (eine ausführlich oder mehrere genannt):\n- Auf den Laptops das IPv6-Protokoll in der Netzwerkadapter-Konfiguration deaktivieren (disable).\n- Dual-Stack im gesamten Firmenkontext oder Client-Netz deaktivieren.\n- Die VPN-Client-Konfiguration erweitern, sodass IPv6-Traffic ebenfalls durch den Tunnel geroutet wird (Full-Tunneling inkl. IPv6).\n- Lokale Firewall auf dem Client so konfigurieren, dass ausgehende IPv6-Verbindungen außerhalb des VPN-Tunnels blockiert werden."
+          solution: "Mögliche Maßnahmen (eine ausführlich oder mehrere genannt):\\n- Auf den Laptops das IPv6-Protokoll in der Netzwerkadapter-Konfiguration deaktivieren (disable).\\n- Dual-Stack im gesamten Firmenkontext oder Client-Netz deaktivieren.\\n- Die VPN-Client-Konfiguration erweitern, sodass IPv6-Traffic ebenfalls durch den Tunnel geroutet wird (Full-Tunneling inkl. IPv6).\\n- Lokale Firewall auf dem Client so konfigurieren, dass ausgehende IPv6-Verbindungen außerhalb des VPN-Tunnels blockiert werden."
         }
       ]
     },
@@ -606,7 +606,7 @@ C:\\Users\\Vertreter1>`,
         },
         {
           id: "4ab",
-          text: "ab) Im lokalen DNS-Dienst ist eine Weiterleitung auf einen DNS-Server des Providers eingetragen.\nErläutern Sie, warum diese Weiterleitung sinnvoll ist.",
+          text: "ab) Im lokalen DNS-Dienst ist eine Weiterleitung auf einen DNS-Server des Providers eingetragen.\\nErläutern Sie, warum diese Weiterleitung sinnvoll ist.",
           points: 3,
           type: "textarea",
           solution: "Durch die Weiterleitung (Forwarding) muss der lokale DNS-Server externe Anfragen nicht selbst zeitaufwendig iterativ auflösen. Er sendet die Anfrage rekursiv an den DNS-Server des Providers weiter. Dieser verfügt über einen großen DNS-Cache mit bereits aufgelösten Adressen und kann Antworten oft extrem schnell direkt ausliefern. Zudem reduziert dies den externen Datenverkehr des Firmennetzes."
@@ -616,7 +616,7 @@ C:\\Users\\Vertreter1>`,
           text: "ac) Erläutern Sie anhand der beispielhaften Anfrage nach www.ihk.de, wie der Nameserver des Providers die Anfrage auflöst, wenn dort keine Weiterleitung eingetragen ist und der Eintrag dort auch nicht im Cache vorhanden ist.",
           points: 6,
           type: "textarea",
-          solution: "Der Nameserver führt eine iterative Auflösung durch:\n1. Der Nameserver befragt zunächst einen der weltweiten DNS-Root-Server (Root-Zone '.'), wer für die Top-Level-Domain (TLD) '.de' zuständig ist. Der Root-Server liefert als Antwort die Nameserver der DE-Zone (z. B. DENIC).\n2. Der Nameserver fragt anschließend den zuständigen TLD-Nameserver für '.de', wer für die Second-Level-Domain 'ihk.de' autoritativ zuständig ist. Der TLD-Server verweist auf die autoritativen Nameserver von 'ihk.de'.\n3. Zuletzt fragt der Nameserver den autoritativen Nameserver von 'ihk.de' nach der IP-Adresse für den Hostnamen 'www.ihk.de'. Dieser liefert die endgültige IP-Adresse (A-Record) zurück, die dann im Cache gespeichert und an den anfragenden Client übermittelt wird."
+          solution: "Der Nameserver führt eine iterative Auflösung durch:\\n1. Der Nameserver befragt zunächst einen der weltweiten DNS-Root-Server (Root-Zone '.'), wer für die Top-Level-Domain (TLD) '.de' zuständig ist. Der Root-Server liefert als Antwort die Nameserver der DE-Zone (z. B. DENIC).\\n2. Der Nameserver fragt anschließend den zuständigen TLD-Nameserver für '.de', wer für die Second-Level-Domain 'ihk.de' autoritativ zuständig ist. Der TLD-Server verweist auf die autoritativen Nameserver von 'ihk.de'.\\n3. Zuletzt fragt der Nameserver den autoritativen Nameserver von 'ihk.de' nach der IP-Adresse für den Hostnamen 'www.ihk.de'. Dieser liefert die endgültige IP-Adresse (A-Record) zurück, die dann im Cache gespeichert und an den anfragenden Client übermittelt wird."
         },
         {
           id: "4ba",
@@ -641,26 +641,26 @@ C:\\Users\\Vertreter1>`,
           text: "ba) Erläutern Sie mithilfe der Tabelle, warum der E-Mail-Server des Unternehmens aktuell keine externen E-Mails empfangen kann.",
           points: 3,
           type: "textarea",
-          solution: "In der DNS-Zone fehlen die A-Records (bzw. Glue-Records) für die beiden konfigurierten Mailserver mail1.fahrguth.gmbh und mail2.fahrguth.gmbh.\nExterne sendende Mailserver erhalten zwar über den MX-Record die Hostnamen der Mailserver, können diese Hostnamen jedoch mangels A-Record nicht in eine IP-Adresse auflösen und die Verbindung schlägt fehl."
+          solution: "In der DNS-Zone fehlen die A-Records (bzw. Glue-Records) für die beiden konfigurierten Mailserver mail1.fahrguth.gmbh und mail2.fahrguth.gmbh.\\nExterne sendende Mailserver erhalten zwar über den MX-Record die Hostnamen der Mailserver, können diese Hostnamen jedoch mangels A-Record nicht in eine IP-Adresse auflösen und die Verbindung schlägt fehl."
         },
         {
           id: "4bb",
-          intro: `Die Fahrguth GmbH versendet wöchentliche Newsletter über einen externen Anbieter (Mailserver: mail.newsletterversand.de) mit der Absenderadresse newsletter@fahrguth.gmbh. Seit der Änderung erhalten einige Kunden den Newsletter nicht mehr.\nEin Mitarbeiter des Newsletter-Versenders teilt Ihnen mit, dass Ihr SPF-Eintrag im DNS-System vermutlich unvollständig ist.\n\nAuf Wikipedia finden Sie dazu folgenden Auszug:`,
+          intro: `Die Fahrguth GmbH versendet wöchentliche Newsletter über einen externen Anbieter (Mailserver: mail.newsletterversand.de) mit der Absenderadresse newsletter@fahrguth.gmbh. Seit der Änderung erhalten einige Kunden den Newsletter nicht mehr.\\nEin Mitarbeiter des Newsletter-Versenders teilt Ihnen mit, dass Ihr SPF-Eintrag im DNS-System vermutlich unvollständig ist.\\n\\nAuf Wikipedia finden Sie dazu folgenden Auszug:`,
           quoteText: `The Simple Mail Transfer Protocol permits any computer to send email claiming to be from any source address. This is exploited by spammers and scammers who often use forged email addresses, making it more difficult to trace a message back to its source, and easy for spammers to hide their identity in order to avoid responsibility. It is also used in phishing techniques, where users can be duped into disclosing private information in response to an email purportedly sent by an organization such as a bank.
 
 SPF allows the owner of an Internet domain to specify which computers are authorized to send mail with envelope-from addresses in that domain, using Domain Name System (DNS) records. Receivers verifying the SPF information in TXT records may reject messages from unauthorized sources before receiving the body of the message.`,
           text: "bb) Erläutern Sie anhand des Textes, welche Funktion SPF wahrnimmt und warum bei einigen Kunden der Newsletter nicht zugestellt wird.",
           points: 5,
           type: "textarea",
-          solution: "Funktion von SPF:\nSPF (Sender Policy Framework) ermöglicht es dem Inhaber einer Domain, im DNS per TXT-Record festzulegen, welche Mailserver autorisiert sind, E-Mails mit der Absenderadresse dieser Domain zu versenden. Empfangende Mailserver können anhand dieses Eintrags prüfen, ob eine Mail von einem berechtigten Server stammt, um Spam, Phishing und Absender-Spoofing abzuwehren.\n\nGrund für Nicht-Zustellung:\nDer aktuelle SPF-Eintrag lautet \\\"v=spf1 a mx -all\\\". Er erlaubt nur dem Webserver (a) und den eigenen Mailservern (mx) den Versand und schließt alle anderen explizit aus (-all). Der externe Newsletter-Server (mail.newsletterversand.de) ist nicht im SPF-Eintrag autorisiert. Empfangende Mailserver von Kunden verwerfen die Newsletter-Mails daher wegen fehlgeschlagener SPF-Prüfung (SPF Hardfail).\n(Der SPF-Eintrag müsste z. B. um 'include:newsletterversand.de' oder 'a:mail.newsletterversand.de' erweitert werden.)"
+          solution: "Funktion von SPF:\\nSPF (Sender Policy Framework) ermöglicht es dem Inhaber einer Domain, im DNS per TXT-Record festzulegen, welche Mailserver autorisiert sind, E-Mails mit der Absenderadresse dieser Domain zu versenden. Empfangende Mailserver können anhand dieses Eintrags prüfen, ob eine Mail von einem berechtigten Server stammt, um Spam, Phishing und Absender-Spoofing abzuwehren.\\n\\nGrund für Nicht-Zustellung:\\nDer aktuelle SPF-Eintrag lautet \\\"v=spf1 a mx -all\\\". Er erlaubt nur dem Webserver (a) und den eigenen Mailservern (mx) den Versand und schließt alle anderen explizit aus (-all). Der externe Newsletter-Server (mail.newsletterversand.de) ist nicht im SPF-Eintrag autorisiert. Empfangende Mailserver von Kunden verwerfen die Newsletter-Mails daher wegen fehlgeschlagener SPF-Prüfung (SPF Hardfail).\\n(Der SPF-Eintrag müsste z. B. um 'include:newsletterversand.de' oder 'a:mail.newsletterversand.de' erweitert werden.)"
         },
         {
           id: "4c",
           sectionTitle: "c) DNS-Sicherheit & DNSSEC",
-          text: "c) Bei Kunden der Fahrguth GmbH wurde der Aufruf der Seite http://www.fahrguth.gmbh mittels DNS ungewollt auf einen Server mit einer gefälschten Webseite umgeleitet.\nBeschreiben Sie eine Angriffsmethode, um den Datenverkehr auf die gefälschte Webseite umzuleiten.",
+          text: "c) Bei Kunden der Fahrguth GmbH wurde der Aufruf der Seite http://www.fahrguth.gmbh mittels DNS ungewollt auf einen Server mit einer gefälschten Webseite umgeleitet.\\nBeschreiben Sie eine Angriffsmethode, um den Datenverkehr auf die gefälschte Webseite umzuleiten.",
           points: 4,
           type: "textarea",
-          solution: "Möglichkeit 1: DNS-Spoofing / DNS-Cache-Poisoning\nDem beim Kunden oder Provider eingetragenen DNS-Server werden gefälschte DNS-Antworten mit einer manipulierten IP-Adresse untergeschoben (z. B. durch Erraten von Transaction-IDs und Source-Ports). Sobald der DNS-Server den gefälschten Eintrag in seinen Cache übernimmt, beantwortet er künftige Anfragen aller Clients mit der IP des Angreifers.\n\nMöglichkeit 2: DNS-Injection / DNS-Hijacking\nIm DNS-Server selbst oder auf dem Router des Nutzers wurden direkt falsche Einträge konfiguriert (z. B. durch kompromittierte Zugangsdaten, Schadsoftware auf dem Client oder manipulierte Hosts-Datei)."
+          solution: "Möglichkeit 1: DNS-Spoofing / DNS-Cache-Poisoning\\nDem beim Kunden oder Provider eingetragenen DNS-Server werden gefälschte DNS-Antworten mit einer manipulierten IP-Adresse untergeschoben (z. B. durch Erraten von Transaction-IDs und Source-Ports). Sobald der DNS-Server den gefälschten Eintrag in seinen Cache übernimmt, beantwortet er künftige Anfragen aller Clients mit der IP des Angreifers.\\n\\nMöglichkeit 2: DNS-Injection / DNS-Hijacking\\nIm DNS-Server selbst oder auf dem Router des Nutzers wurden direkt falsche Einträge konfiguriert (z. B. durch kompromittierte Zugangsdaten, Schadsoftware auf dem Client oder manipulierte Hosts-Datei)."
         },
         {
           id: "4d",
@@ -672,7 +672,7 @@ SPF allows the owner of an Internet domain to specify which computers are author
             { id: "4d_auth", label: "Authentizität (3 Punkte):", placeholder: "Erklärung zur Authentizität bei DNSSEC...", rows: 4 },
             { id: "4d_integ", label: "Integrität (3 Punkte):", placeholder: "Erklärung zur Integrität bei DNSSEC...", rows: 4 }
           ],
-          solution: "Authentizität:\nDer Absender/Urheber der DNS-Auskunft ist tatsächlich derjenige, für den er sich ausgibt (sicherer Herkunftsnachweis). Hierzu werden digitale Signaturen (RRSIG) und Zertifikate bzw. kryptografische Schlüssel (DNSKEY) über eine geschlossene Vertrauenskette (Trust Chain bis zur Root-Zone) verifiziert.\n\nIntegrität:\nDie empfangene DNS-Auskunft wurde auf dem Übertragungsweg zwischen dem autoritativen Server und dem Resolver nicht unbemerkt manipuliert oder verändert (Unverfälschtheit). Dies wird durch kryptografische Hash-Werte und Signaturen der Record-Sets sichergestellt."
+          solution: "Authentizität:\\nDer Absender/Urheber der DNS-Auskunft ist tatsächlich derjenige, für den er sich ausgibt (sicherer Herkunftsnachweis). Hierzu werden digitale Signaturen (RRSIG) und Zertifikate bzw. kryptografische Schlüssel (DNSKEY) über eine geschlossene Vertrauenskette (Trust Chain bis zur Root-Zone) verifiziert.\\n\\nIntegrität:\\nDie empfangene DNS-Auskunft wurde auf dem Übertragungsweg zwischen dem autoritativen Server und dem Resolver nicht unbemerkt manipuliert oder verändert (Unverfälschtheit). Dies wird durch kryptografische Hash-Werte und Signaturen der Record-Sets sichergestellt."
         }
       ]
     }

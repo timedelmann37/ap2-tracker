@@ -7,6 +7,16 @@ direkt auf der Seite sichtbar — ein Klick auf die Versionsnummer im Hub (in
 der Fußzeile) zeigt dieselbe Liste als Änderungsprotokoll. Gepflegt wird das
 Changelog ausschließlich im Hub, nicht mehr in den einzelnen Bereichen.
 
+## [3.2.0] – 2026-09-03
+
+### Geändert
+- Leichter „Liquid Glass"-Feinschliff auf Nav-Leiste, Hub-Dashboard, Hub-Kacheln,
+  Changelog- und Minispiele-Modal: stärkerer Blur/Sättigung, eine feine
+  Lichtkante oben am Panel und beim Hover einer Hub-Kachel ein sanfter Glow in
+  der jeweiligen Akzentfarbe. Bewusst NICHT auf die einzelnen Themen-Karten
+  angewendet (Performance bei vielen Elementen, Lesbarkeit von Prüfungsinhalten
+  hat Vorrang).
+
 ## [3.1.3] – 2026-09-03
 
 ### Geändert
