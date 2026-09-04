@@ -15,8 +15,8 @@ colors:
   hairline-strong: "rgba(0, 0, 0, 0.17)"
   warm-charcoal: "#1c1c1b"
   charcoal-muted: "#56554f"
-  charcoal-faint: "#8a897f"
-  ga1-green: "#16794c"
+  charcoal-faint: "#6d6c64"
+  ga1-teal: "#127a86"
   ga2-cobalt: "#2f6ecc"
   wiso-ochre: "#a06a12"
   plan-violet: "#6f49cf"
@@ -181,7 +181,8 @@ beibehalten — die Runde war eine IA-Kur, kein neues Redesign.
 
 **Key Characteristics:**
 - Flach: Haarlinien statt Schatten, `--shadow: none` ist global gesetzt.
-- Eine Akzentstimme (Grün), auf ≤10 % der Fläche.
+- Eine Akzentstimme pro Screen: Grün im Aggregat (Hub, Übersicht), sonst die
+  eine Bereichsfarbe der jeweiligen Seite. Sparsam, nie als Vollfläche.
 - Mono-Ziffern mit `tabular-nums` für jeden gemessenen Wert.
 - Warme Neutraltöne, nie reines Schwarz oder reines Weiß auf `--page`.
 - Kleine Radien (3–10 px); nichts ist stark abgerundet.
@@ -205,8 +206,11 @@ gesättigten Grün als Signalfarbe und vier gedämpften Bereichsakzenten.
 
 ### Secondary — Bereichsakzente
 Ein Set gleicher Helligkeit; jede Farbe kennzeichnet genau einen Bereich in
-Punkten, Swatches, Mini-Tracks und aktiven Filter-Tabs.
-- **GA1 / Anzeige-Grün** (`#16794c`): Konzeption und Administration.
+Punkten, Swatches, Mini-Tracks, aktiven Filter-Tabs — und, seit der
+Farbstimme-Runde, dem Fortschrittsbalken **auf der jeweiligen Bereichsseite**.
+Kein Bereichston teilt sich eine Farbe mit dem Signal-Grün.
+- **GA1 / Teal** (`#127a86`, dark `#45c4d1`): Konzeption und Administration.
+  Eigener Ton, damit „das ist GA1" nicht mit „das ist Fortschritt" zusammenfällt.
 - **GA2 / Kobalt** (`#2f6ecc`): Analyse und Entwicklung von Netzwerken.
 - **WiSo / Ocker** (`#a06a12`): Wirtschafts- und Sozialkunde.
 - **Plan-Violett** (`#6f49cf`): „der Plan" und die Wiederholungsmarkierung
@@ -217,8 +221,9 @@ Punkten, Swatches, Mini-Tracks und aktiven Filter-Tabs.
 - **Warmes Charcoal** (`#1c1c1b`): primärer Text, Überschriften.
 - **Charcoal gedämpft** (`#56554f`): Sekundärtext, Button-Beschriftung im
   Ruhezustand.
-- **Charcoal blass** (`#8a897f`): Eyebrows, Meta, Platzhalter,
-  deaktivierte/erledigte Labels.
+- **Charcoal blass** (`--text-muted`, light `#6d6c64`, dark `#8b8a80`): Eyebrows,
+  Meta, Platzhalter, deaktivierte/erledigte Labels. Beide Werte ≥ 4.5:1 auf
+  `--page` — Meta-Text erfüllt WCAG AA.
 - **Papierweiß** (`#fcfcfc`): Seitengrund.
 - **Fläche erhaben** (`#ffffff`): Panels, Karten, Modals.
 - **Fläche gesenkt** (`#f4f4f2`) / **tief** (`#ececea`): Tracks, Chips,
@@ -290,7 +295,13 @@ Der Hub nutzt ein 12-Spalten-Bento (`.bento`, `gap: 12px`): auf Mobile
 spannt jede Kachel volle Breite, ab ≥760 px greifen `.b-4/.b-5/.b-6/.b-7/.b-8`.
 Themenseiten legen Kategorien in ein `auto-fit`-Raster
 (`minmax(300px, 1fr)`, `gap: 22px`); Karten innerhalb einer Kategorie stapeln
-mit 12 px Abstand.
+mit 12 px Abstand. Eine Bereichsseite hat genau **eine** Kategorie: der
+`.category-head` fällt dann auf eine schlanke `.solo`-Abschnittsmarke zusammen
+(11-px-Uppercase „Themengruppen", 28 px Vorlauf) — Swatch, Mini-Track und
+Kategorie-Prozent entfallen, weil der Bereichs-Kopf sie schon zeigt. Die
+Lesefolge ist: Kopf-Anzeige → Wochen-Hinweis → Kontroll-Zone → „Themengruppen"
+→ Kartenliste. Auf ≤ 640 px stapelt die Kontroll-Zone in zwei Gruppen
+(Filter-Tabs 50/50, Werkzeug-Buttons 2-spaltig, „Zurücksetzen" volle Breite).
 
 Spacing-Rhythmus in Stufen von **6 / 12 / 18 / 22 / 34 px**. Panels und Karten
 haben durchgängig 22 px Innenabstand. Sektions-Eyebrows sitzen mit ~30 px
@@ -421,6 +432,23 @@ Raster und setzt stattdessen einen eigenen Rhythmus:
   Lead-Bereichs in Mono (`Woche 2 · KW 36`). Die Sektion trägt 26 px Vorlauf /
   30 px Nachlauf, damit der Scroll hier sichtbar langsamer wird.
 
+### Bereichs-Kopf (`.overview`, Themenseiten) — Signature
+Das Kontrollpult der einzelnen Bereichsseite — kein Panel, sondern Typo auf der
+Seite mit einer Haarlinie unten (`border-bottom: 1px var(--border-strong)`,
+`padding: 2px 0 18px`, `margin-bottom: 22px`).
+- **Die Prozentzahl ist die Anzeige:** `.overview-top .pct` in Manrope 600,
+  `clamp(40px, 8vw, 56px)`, `line-height: 1`, in der **Bereichsfarbe**
+  (`--cat-color`) — nicht Signal-Grün.
+- **Plan-Position** rechts (`.planpos`): die aktuell laufende Plan-Woche des
+  Bereichs in Mono (`Woche 3 · KW 37`), aus `activeTopic()`; fehlt sie (Lücke /
+  Wochenende), ist das Element `hidden`. Baseline-bündig mit der großen Zahl.
+- **Zähl-Zeile** darunter (`.overview-line`): `7 / 164 Kernthemen · … · …`, IBM
+  Plex Mono `tabular-nums`, 11 px, `--text-secondary`.
+- **Track** (6 px, Bereichsfarbe) als Boden der Anzeige.
+- Der `<h1>` darüber steht auf Display-Größe wie der Hub-Hero
+  (`clamp(30px, 5vw, 44px)`); der Meta-Satz und der `.week-hint` darunter sind
+  ohne Kasten, in `--text-muted` / `--text-secondary` zurückgenommen.
+
 ### Themen-Karte (`details.card`) — Signature
 Aufklappbarer Lernblock (Themengruppe). Grund `--surface-1`, Rahmen
 `--border`, Radius 7 px, `overflow: hidden`. `summary` ohne Default-Marker.
@@ -475,8 +503,10 @@ Legende rechtsbündig, 10.5 px.
   `--border-strong` lösen — nie mit einem Schatten.
 - **Do** wechselnde Messwerte in IBM Plex Mono mit `font-variant-numeric:
   tabular-nums` setzen.
-- **Do** Signal-Grün (`#3ecf8e`) für Fläche/Progress reservieren und
-  Anzeige-Grün (`#16794c`) für Text/Links — nicht tauschen.
+- **Do** Signal-Grün (`#3ecf8e`) für Fortschritt **im Aggregat** (Hub, Übersicht)
+  und den Primär-Button reservieren; auf einer Bereichsseite füllt die
+  Bereichsfarbe (`--cat-color`) den Fortschrittsbalken. Anzeige-Grün (`#16794c`)
+  bleibt Text/Links — nicht tauschen.
 - **Do** jede neue Farbe dreifach definieren: `:root`,
   `@media (prefers-color-scheme: dark)` und `:root[data-theme="dark"]`.
 - **Do** Bereichszugehörigkeit über kleine quadratische Punkte (2 px Radius)
