@@ -7,6 +7,60 @@ direkt auf der Seite sichtbar — ein Klick auf die Versionsnummer im Hub (in
 der Fußzeile) zeigt dieselbe Liste als Änderungsprotokoll. Gepflegt wird das
 Changelog ausschließlich im Hub, nicht mehr in den einzelnen Bereichen.
 
+## [3.7.0] – 2026-09-04
+
+Design-Qualitätsrunde auf Basis von v3.6.0 — keine IA-Änderung, die flache
+Bildsprache bleibt. Leitgedanke: **jede Bereichsseite ein Kontrollpult, jeder
+Bereich eine eigene Farbe, Barrierefreiheit auf WCAG AA.** `/simulation/`
+unberührt.
+
+### Geändert
+
+- **GA1 bekommt einen eigenen Bereichsakzent (Teal).** Vorher war er farbgleich
+  mit dem Fortschrittsgrün — auf der GA1-Seite waren Bereichspunkt, aktiver Tab,
+  Mini-Track und Fortschrittsfüllung dieselbe Farbe, „das ist GA1" nicht von
+  „das ist Fortschritt" zu unterscheiden. Die vier Bereichsakzente sind jetzt
+  klar getrennt: Teal (GA1) · Kobalt (GA2) · Ocker (WiSo) · Plan-Violett.
+- **Jede Bereichsseite trägt ihre Farbe.** Der Fortschrittsbalken füllt sich in
+  der Bereichsfarbe (`--cat-color`) statt immer grün. Signal-Grün bleibt dem
+  Gesamt-Aggregat (Hub, Übersicht) und dem Primär-Button vorbehalten.
+- **Der Bereichsseiten-Kopf führt jetzt wie der Hub-Hero.** Große Prozent-Anzeige
+  in der Bereichsfarbe (`clamp(40px, 8vw, 56px)`), die laufende Plan-Woche
+  daneben in Monospace (`Woche 3 · KW 37`, aus `activeTopic()`), der Zähler
+  darunter. Kartenlos, nur eine Haarlinie unten; Titel auf Hero-Größe. Der
+  redundante Kategorie-Kopf (Swatch + Mini-Track + Prozent) entfällt auf
+  Einzel-Bereichsseiten — die Anzeige zeigt das schon.
+- **Der Rückstand-Zustand: roter Alarm → ruhiges Ocker.** Die Hub-Zeile heißt
+  „N Themengruppen im Rückstand"; der Countdown sagt „Rückstand aufholen" statt
+  „Noch reichlich Zeit", solange der Plan hinterherhängt. Das dauerhafte rote
+  Status-Badge pro Themengruppe ist auf Ocker heruntergestuft.
+- **Einheitliche Benennung.** „Rückstand" überall (vorher teils „Überfällig" /
+  „offen" — beides steht auf der Avoid-Liste in `CONTEXT.md`), „WiSo" statt
+  „SoWi", das Navigations-Dropdown heißt „Bereiche" (vorher „Themenblöcke").
+  Der Speicherungs-Hinweis am Fuß der Bereichsseiten ist von ~120 auf ~40 Wörter
+  gekürzt — die Datei-Handling-Anweisungen und der Notion-Verweis waren für eine
+  gehostete Seite sinnlos.
+- **Handy: Kontroll-Zone der Bereichsseiten in zwei Gruppen** (Filter-Tabs
+  50/50, Werkzeug-Buttons 2-spaltig) statt einer umbrechenden Button-Wand;
+  „Fortschritt zurücksetzen" isoliert auf eigener Zeile.
+
+### Behoben
+
+- **Text-Kontrast (WCAG 1.4.3).** Gedämpfte Meta- und Platzhalter-Texte
+  (`--text-muted`) erfüllen jetzt in Light **und** Dark WCAG AA — vorher ~3,5:1.
+- **Funktionale Kleinschrift** (Badges, Zähler, Filter-Tab-Count, „bald"-Marker,
+  Backlog-Meta) auf mindestens 11 px angehoben; DESIGN.md spezifiziert 11–13 px.
+- **`<main>`-Landmark** auf Übersicht und den drei Bereichsseiten (Hub hatte es
+  schon), **`aria-label` an der Hauptnavigation** auf allen fünf Seiten,
+  echte `<h2>` statt `<div>` für die Panel-Köpfe der Übersicht.
+- **Touch-Flächen ≤ 820 px** (Filter-Tabs, Werkzeug-Buttons, Kopf-Icons) auf
+  ≥ 40–44 px (WCAG 2.5.8).
+- **Vollbild-Overlays** (Konto, Änderungsprotokoll, Minispiele) auf allen Seiten
+  flach wie im Hub — kein `box-shadow`, einheitlicher `blur(4px)`-Backdrop
+  (vorher drift zwischen Hub und Unterseiten).
+- **Countdown** zählt nur noch beim ersten Laden hoch, nicht mehr im
+  Minutentakt; die Zählanimation respektiert `prefers-reduced-motion`.
+
 ## [3.6.0] – 2026-09-03
 
 UI-Hierarchie-Kur auf Basis von v3.5.0/3.5.1 — kein zweites Redesign, die
