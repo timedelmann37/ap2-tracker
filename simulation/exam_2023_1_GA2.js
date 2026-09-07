@@ -152,8 +152,7 @@ window.exam_2023_1_GA2 = {
       subtasks: [
         {
           id: "1aa",
-          sectionTitle: "a) Switch-Verkabelung und VLAN-Einsatz",
-          intro: "Das interne Netzwerk ist aus mehreren Switches aufgebaut, die wie abgebildet verbunden sind (dicke schwarze Linie). Der eingesetzte Gebäude-Verteiler im Serverraum ist ein Layer-3-Switch, der für jedes VLAN das Standardgateway darstellt. Die Geräte der Mitarbeiter sind an die beiden Layer-2-Switche über Patchfelder und -dosen angeschlossen.",
+          intro: "a) Das interne Netzwerk ist aus mehreren Switches aufgebaut, die wie abgebildet verbunden sind (dicke schwarze Linie). Der eingesetzte Gebäude-Verteiler im Serverraum ist ein Layer-3-Switch, der für jedes VLAN das Standardgateway darstellt. Die Geräte der Mitarbeiter sind an die beiden Layer-2-Switche über Patchfelder und -dosen angeschlossen.",
           diagramSvg: `
             <svg viewBox="0 0 760 320" class="exam-diagram-svg" xmlns="http://www.w3.org/2000/svg">
               <!-- Gebäudeplan -->
@@ -218,8 +217,7 @@ window.exam_2023_1_GA2 = {
         },
         {
           id: "1ba",
-          sectionTitle: "b) DHCP-Konfiguration und Relay",
-          intro: "Sie sind für die PCs der Mitarbeiter zuständig. Diese sollen an das Netzwerk angeschlossen werden.",
+          intro: "b) Sie sind für die PCs der Mitarbeiter zuständig. Diese sollen an das Netzwerk angeschlossen werden.",
           diagramSvg: `
             <svg viewBox="0 0 650 140" class="exam-diagram-svg" xmlns="http://www.w3.org/2000/svg">
               <rect width="650" height="140" rx="8" fill="var(--surface-1)" stroke="var(--border)" stroke-width="1"/>
@@ -319,8 +317,7 @@ window.exam_2023_1_GA2 = {
         },
         {
           id: "1ca",
-          sectionTitle: "c) Redundanz & LWL-Module",
-          intro: "Die Verbindung zwischen den Switches soll zukünftig wie abgebildet redundant ausgelegt werden (neue Verbindung: gestrichelte Linie). Dazu werden neue SFP+ Module für die Switche beschafft.",
+          intro: "c) Die Verbindung zwischen den Switches soll zukünftig wie abgebildet redundant ausgelegt werden (neue Verbindung: gestrichelte Linie). Dazu werden neue SFP+ Module für die Switche beschafft.",
           diagramSvg: `
             <svg viewBox="0 0 760 320" class="exam-diagram-svg" xmlns="http://www.w3.org/2000/svg">
               <rect x="20" y="20" width="720" height="280" fill="var(--surface-1)" stroke="var(--border-strong)" stroke-width="2"/>
@@ -550,8 +547,7 @@ Protokoll: Link-Aggregation
       subtasks: [
         {
           id: "2aa",
-          sectionTitle: "a) Routingtabelle und Dynamisches Routing",
-          intro: "In den drei Routing-Netzen hat der Router „Essen“ jeweils die niedrigste mögliche IPv4-Adresse.\nZurzeit wird zwischen den vier Routern mit statischem Routing gearbeitet.",
+          intro: "a) In den drei Routing-Netzen hat der Router „Essen“ jeweils die niedrigste mögliche IPv4-Adresse.\nZurzeit wird zwischen den vier Routern mit statischem Routing gearbeitet.",
           text: "aa) Vervollständigen Sie hierzu folgende Tabelle des Routers in Essen.",
           points: 9,
           type: "table_input",
@@ -568,10 +564,10 @@ Protokoll: Link-Aggregation
               { fields: [{value:"10.2.0.0", readonly:true}, {value:"255.255.0.0", readonly:true}, {id:"2aa_r2_gw", placeholder:"?"}, {value:"-", readonly:true}] },
               { fields: [{value:"10.3.0.0", readonly:true}, {value:"255.255.0.0", readonly:true}, {id:"2aa_r3_gw", placeholder:"?"}, {value:"-", readonly:true}] },
               { fields: [{value:"10.4.0.0", readonly:true}, {value:"255.255.0.0", readonly:true}, {id:"2aa_r4_gw", placeholder:"?"}, {value:"-", readonly:true}] },
-              { fields: [{id:"2aa_r5_net", placeholder:"?"}, {id:"2aa_r5_mask", placeholder:"?"}, {value:"direct", readonly:true}, {value:"IF2", readonly:true}] },
-              { fields: [{id:"2aa_r6_net", placeholder:"?"}, {id:"2aa_r6_mask", placeholder:"?"}, {value:"direct", readonly:true}, {value:"IF3", readonly:true}] },
-              { fields: [{id:"2aa_r7_net", placeholder:"?"}, {id:"2aa_r7_mask", placeholder:"?"}, {value:"direct", readonly:true}, {value:"IF4", readonly:true}] },
-              { fields: [{value:"0.0.0.0", readonly:true}, {value:"0.0.0.0", readonly:true}, {value:"210.10.10.1", readonly:true}, {value:"-", readonly:true}] },
+              { fields: [{value:"192.168.0.0", readonly:true}, {value:"255.255.255.252", readonly:true}, {value:"direct", readonly:true}, {value:"IF2", readonly:true}] },
+              { fields: [{value:"192.168.0.4", readonly:true}, {value:"255.255.255.252", readonly:true}, {value:"direct", readonly:true}, {value:"IF3", readonly:true}] },
+              { fields: [{value:"192.168.0.8", readonly:true}, {value:"255.255.255.252", readonly:true}, {value:"direct", readonly:true}, {value:"IF4", readonly:true}] },
+              { fields: [{value:"0.0.0.0", readonly:true}, {value:"0.0.0.0", readonly:true}, {value:"10.10.10.1", readonly:true}, {value:"-", readonly:true}] },
               { fields: [{value:"210.10.10.1", readonly:true}, {value:"255.255.255.255", readonly:true}, {value:"direct", readonly:true}, {value:"dsl", readonly:true}] }
             ]
           },
@@ -586,7 +582,7 @@ Protokoll: Link-Aggregation
               { target: "192.168.0.0", mask: "255.255.255.252", gw: "direct", iface: "IF2", filled: ["target", "mask"] },
               { target: "192.168.0.4", mask: "255.255.255.252", gw: "direct", iface: "IF3", filled: ["target", "mask"] },
               { target: "192.168.0.8", mask: "255.255.255.252", gw: "direct", iface: "IF4", filled: ["target", "mask"] },
-              { target: "0.0.0.0", mask: "0.0.0.0", gw: "210.10.10.1", iface: "-", filled: [] },
+              { target: "0.0.0.0", mask: "0.0.0.0", gw: "10.10.10.1", iface: "-", filled: [] },
               { target: "210.10.10.1", mask: "255.255.255.255", gw: "direct", iface: "dsl", filled: [] }
             ]
           },
@@ -598,7 +594,7 @@ Protokoll: Link-Aggregation
 192.168.0.0    | 255.255.255.252 | direct           | IF2
 192.168.0.4    | 255.255.255.252 | direct           | IF3
 192.168.0.8    | 255.255.255.252 | direct           | IF4
-0.0.0.0        | 0.0.0.0         | 210.10.10.1      | -
+0.0.0.0        | 0.0.0.0         | 10.10.10.1       | -
 210.10.10.1    | 255.255.255.255 | direct           | dsl`
         },
         {
@@ -618,18 +614,17 @@ Protokoll: Link-Aggregation
         },
         {
           id: "2ba",
-          sectionTitle: "b) Fehleranalyse File-Server & ARP",
-          intro: "Bei einem der File-Server in Essen kommt es wiederholt zu Problemen, da er nicht erreichbar ist. Die Netzwerkschnittstelle ist statisch auf die IPv4 Adresse 10.1.0.10/16 konfiguriert. Dies haben Sie überprüft. Sie analysieren das Problem zunächst mit dem Befehl ipconfig /all und erhalten folgende Ausgabe:",
+          intro: "b) Bei einem der File-Server in Essen kommt es wiederholt zu Problemen, da er nicht erreichbar ist. Die Netzwerkschnittstelle ist statisch auf die IPv4 Adresse 10.1.0.10/16 konfiguriert. Dies haben Sie überprüft. Sie analysieren das Problem zunächst mit dem Befehl ipconfig /all und erhalten folgende Ausgabe:",
           terminalOutput: `Ethernet-Adapter Ethernet:
 
   Verbindungsspezifisches DNS-Suffix:
-  Beschreibung. . . . . . . . . . . : Universal Ethernet Controller
-  Physische Adresse . . . . . . . . : 3C-E1-A1-BD-DF-E4
-  DHCP aktiviert. . . . . . . . . . : Nein
-  Autokonfiguration aktiviert . . . : Nein
-  IPv4-Adresse  . . . . . . . . . . : 169.254.102.223(Bevorzugt)
-  Subnetzmaske  . . . . . . . . . . : 255.255.0.0
-  Standardgateway . . . . . . . . . :`,
+  Beschreibung. . . . . . . . . . .: Universal Ethernet Controller
+  Physische Adresse . . . . . . . .: 3C-E1-A1-BD-DF-E4
+  DHCP aktiviert. . . . . . . . . .: Nein
+  Autokonfiguration aktiviert . . .: Nein
+  IPv4-Adresse  . . . . . . . . . .: 169.254.102.223(Bevorzugt)
+  Subnetzmaske  . . . . . . . . . .: 255.255.0.0
+  Standardgateway . . . . . . . . .:`,
           intro2: "Sie erneuern die Interface-Konfiguration mit dem Befehl ipconfig /renew und überwachen währenddessen die Schnittstelle mit einem Netzwerkanalyse-Tool. Dabei protokollieren Sie folgende Daten:",
           tableData: {
             title: "Protokollierte Pakete des Netzwerkanalyse-Tools (Wireshark-Mitschnitt)",
@@ -667,7 +662,6 @@ Protokoll: Link-Aggregation
       subtasks: [
         {
           id: "3aa",
-          sectionTitle: "a) VPN-Arten und Zertifikate",
           text: "aa) Erläutern Sie jeweils anhand eines selbst gewählten Beispiels aus dem Arbeitsalltag der Fahrguth GmbH, wie diese die folgenden VPN-Arten sinnvoll einsetzen könnte:\n- End-to-Site\n- Site-to-Site",
           points: 4,
           type: "textarea",
@@ -697,11 +691,10 @@ Die Fahrguth GmbH nutzt diese Variante, um die verschiedenen Filialen gesichert 
         },
         {
           id: "3b",
-          sectionTitle: "b) Fehlerdiagnose Hotspot-VPN",
           text: "b) Bei einer WLAN-Verbindung an einem Hotspot funktioniert der Abruf von Internetseiten ohne Probleme. Beim Verbindungsaufbau eines VPNs vom selben Hotspot aus scheitert die VPN-Verbindung, obwohl die Einrichtung des VPNs am Client korrekt erfolgt ist.\nBeschreiben Sie eine mögliche Fehlerursache und machen Sie einen Vorschlag zur Fehlerbeseitigung.",
           points: 5,
           type: "textarea",
-          solution: `Fehlerursache (3 Punkte):
+          solution: `Fehlerursache:
 - Der Hotspot verwendet NAT und evtl. PAT. Es werden IP und Ports verändert, dadurch kann die Integrität der Pakete verletzt werden und die Pakete werden verworfen.
 - Bei IPsec mit ESP kann der Hotspot-Router die TCP bzw. UDP-Checksummen nicht überprüfen. Die Pakete werden als ungültig verworfen.
 
@@ -710,7 +703,7 @@ Einsatz von NAT-Traversal bei IPsec
 
 oder:
 
-Fehlerursache (3 Punkte):
+Fehlerursache:
 Paketgröße (MTU) zu groß eingestellt. Die Pakete werden fragmentiert, dadurch wird die Integrität verletzt und die Pakete werden verworfen.
 
 Fehlerbeseitigung (2 Punkte):
@@ -720,8 +713,7 @@ Paketgröße (MTU) im VPN-Client verringern
         },
         {
           id: "3ca",
-          sectionTitle: "c) Analyse des Internetverkehrs (Proxy & IPv6)",
-          intro: "Nach Aufbau des VPNs soll der Internetverkehr ausschließlich über einen IPv4-Proxy in der Zentrale stattfinden. Einige Außendienstmitarbeiter berichten von Internetzugriffen, die nicht über den Proxy laufen.\nSie prüfen die Verbindungen mittels des Befehls tracert www.microsoft.com:",
+          intro: "c) Nach Aufbau des VPNs soll der Internetverkehr ausschließlich über einen IPv4-Proxy in der Zentrale stattfinden. Einige Außendienstmitarbeiter berichten von Internetzugriffen, die nicht über den Proxy laufen.\nSie prüfen die Verbindungen mittels des Befehls tracert www.microsoft.com:",
           terminalOutput: `C:\\Users\\Vertreter1>tracert www.microsoft.com
 
 Routenverfolgung zu e13678.dscb.akamaiedge.net [2a02:26f0:1300:19a::356e]
@@ -766,7 +758,6 @@ C:\\Users\\Vertreter1>`,
       subtasks: [
         {
           id: "4aa",
-          sectionTitle: "a) DNS-Grundlagen & Auflösung",
           text: "aa) Erläutern Sie, welche wesentlichen Aufgaben der DNS-Dienst im Internet übernimmt.",
           points: 2,
           type: "textarea",
@@ -791,8 +782,7 @@ C:\\Users\\Vertreter1>`,
         },
         {
           id: "4ba",
-          sectionTitle: "b) Störungsanalyse DNS-Zone & SPF",
-          intro: "Seit den Änderungen am DNS-Server kommt es zu Störungen in der Funktion. Um die Probleme mit dem DNS-System zu lokalisieren, lassen Sie sich die folgende Tabelle mit den DNS-Einträgen des Servers ausgeben:",
+          intro: "b) Seit den Änderungen am DNS-Server kommt es zu Störungen in der Funktion. Um die Probleme mit dem DNS-System zu lokalisieren, lassen Sie sich die folgende Tabelle mit den DNS-Einträgen des Servers ausgeben:",
           tableData: {
             title: "DNS-Zonendatei der Domäne fahrguth.gmbh",
             headers: ["Recordname", "Record-Typ", "Ziel"],
@@ -827,7 +817,7 @@ SPF allows the owner of an Internet domain to specify which computers are author
         },
         {
           id: "4c",
-          sectionTitle: "c) DNS-Sicherheit & DNSSEC",
+
           text: "c) Bei Kunden der Fahrguth GmbH wurde der Aufruf der Seite http://www.fahrguth.gmbh mittels DNS ungewollt auf einen Server mit einer gefälschten Webseite umgeleitet.\nBeschreiben Sie eine Angriffsmethode, um den Datenverkehr auf die gefälschte Webseite umzuleiten.",
           points: 4,
           type: "textarea",
@@ -842,16 +832,17 @@ SPF allows the owner of an Internet domain to specify which computers are author
           points: 6,
           type: "split_textarea",
           fields: [
-            { id: "4d_auth", label: "Authentizität (3 Punkte):", placeholder: "Erklärung zur Authentizität bei DNSSEC...", rows: 4 },
-            { id: "4d_integ", label: "Integrität (3 Punkte):", placeholder: "Erklärung zur Integrität bei DNSSEC...", rows: 4 }
+            { id: "4d_auth", label: "Authentizität:", placeholder: "Erklärung zur Authentizität bei DNSSEC...", rows: 4 },
+            { id: "4d_integ", label: "Integrität:", placeholder: "Erklärung zur Integrität bei DNSSEC...", rows: 4 }
           ],
-          solution: `Authentizität (3 Punkte):
+          solution: `Authentizität:
 Der Absender der DNS-Auskunft ist der, für den er sich ausgibt. Hierzu wird eine digitale Signatur bzw. ein digitales Zertifikat benutzt.
 
-Integrität (3 Punkte):
+Integrität:
 Die ausgelieferte DNS-Auskunft wurde auf ihrem Weg zum Empfänger nicht verändert. Dazu werden Hash-Werte des Inhalts gebildet, die vom Empfänger überprüft werden können.`
         }
       ]
     }
   ]
 };
+
