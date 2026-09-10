@@ -7,6 +7,86 @@ direkt auf der Seite sichtbar - ein Klick auf die Versionsnummer im Hub (in
 der Fußzeile) zeigt dieselbe Liste als Änderungsprotokoll. Gepflegt wird das
 Changelog ausschließlich im Hub, nicht mehr in den einzelnen Bereichen.
 
+## [3.9.3] - 2026-09-10
+
+### Behoben
+
+- Das Bereichsmenü öffnet auf dem Desktop jetzt auch beim Darüberfahren. Eine
+  kurze Schließverzögerung hält es offen, während der Zeiger ins Menü wechselt.
+  Klick-, Tastatur- und Mobilbedienung bleiben erhalten.
+
+## [3.9.2] - 2026-09-10
+
+### Geändert
+
+- Inter Display und Inter nach der heutigen Attio-Website, lokal eingebunden.
+  Keine Monospace-Schrift mehr in Statuszeilen und Planangaben.
+- Größere Schrift, mehr Zeilenabstand und einzeln umbrechende Statusangaben.
+  Bedien- und Hinweistexte auf allen fünf Hauptseiten direkter formuliert.
+- Themenmenü mit kurzer Ein-/Ausblendung, schnellen Hover-Reaktionen und
+  Tastaturbedienung. Reduzierte Bewegung wird berücksichtigt.
+- Sofortiger Hell-/Dunkelwechsel bleibt auch mit den neuen Menüübergängen erhalten.
+
+## [3.9.1] - 2026-09-10
+
+### Geändert
+
+- Programa-Referenz auf den fünf Hauptseiten: weißer Grund, warme neutrale
+  Arbeitsflächen, feine Kanten, kleine rechteckige Buttons und weiche Schatten.
+- Lokal eingebundene Rhymes Display, Inter und Roboto Mono ersetzen die
+  bisherige Typografie. Punktraster und Fensterattrappe entfallen.
+- Wochenfokus weiter oben; blasses Gelb markiert die nächste Lernaktion,
+  Grün bleibt Fortschritt/Erfolg. Lerninhalte und Speicherformat bleiben gleich.
+
+### Behoben
+
+- Jeder Theme-Klick invertiert sofort den sichtbaren Modus. Der bisherige
+  System-Zwischenschritt konnte bei dunkler Systemeinstellung einen Klick ohne
+  sichtbare Änderung verursachen. Navigation, Reload und Tabs behalten die Wahl.
+- Verzögerte Seiten-/Ladeeinblendungen entfallen. Tastatur und Reduced Motion
+  bleiben unterstützt. Der Browser-Regressionstest deckt beide Systemmodi ab.
+
+## [3.9.0] - 2026-09-07
+
+Referenzgebundene Neugestaltung der fünf Hauptseiten. Die vom Nutzer gelieferte
+AssetWise-Ansicht gab die visuelle Richtung vor; Refero-Recherche ergänzte
+Produktmuster für Wochenfokus, kompakte Controls und responsive Priorisierung.
+`/simulation/` bleibt unverändert.
+
+### Geändert
+
+- Helle technische Rasterfläche, großzügige neutrale Typografie, schwarze
+  Primäraktionen, feine Rahmen und zusammenhängende Produktfenster ersetzen die
+  bisherige Supabase-inspirierte Bildsprache.
+- Camera Plain Variable aus dem autorisierten Referenz-Crawl ersetzt die
+  bisherigen UI-/Mono-Familien. Gewichte, Laufweite und Ligaturen folgen der
+  verifizierten Lovable-Stildefinition.
+- Navigation, Bereichskennzeichnung, Filter und Werkzeugleiste besitzen jetzt
+  ein einheitliches monochromes Outline-System mit kleinen cremefarbenen
+  Symbolflächen und zurückhaltenden aktiven Zuständen.
+- Der Hub führt jetzt mit „Was ist jetzt dran?" und einer direkten Aktion zum
+  Wochenfokus. Der reale AP2-Wochenplan bildet das große gerahmte
+  Produktfenster; Bereichsfarben bleiben kleine Navigationssignale.
+- Übersicht und Bereichsseiten wurden als präzise Arbeitsoberflächen neu
+  gewichtet: zusammenhängendes Dashboard, klare Fortschrittsanzeige, kompakte
+  Suche/Filter und ruhigere Themengruppen/Kernthemen.
+- Die gemeinsame visuelle Ebene liegt in
+  `assets/ap2-reference-ui.css`; Verhalten, URLs, Deep-Links und
+  `ap2-tracker-state-v1` bleiben unverändert.
+- Dark Mode und die mobile Bottom-Navigation wurden an die neue Gestaltung
+  angeglichen. Konto- und Theme-Schalter besitzen auch bei ausgeblendeten
+  Textlabels zugängliche Namen.
+- Die explizite Hell-/Dunkel-Wahl bleibt jetzt mit `ap2-theme-v1` über
+  Seitenwechsel erhalten. Ein gemeinsames, früh geladenes Theme-Modul verhindert
+  außerdem einen falschen Modus während des Seitenaufbaus.
+
+### Dokumentiert
+
+- `DESIGN.md` beschreibt die aktuelle Gestaltung statt des abgelösten
+  Kontrollpult-Systems.
+- `docs/UI_REDESIGN_REFERENCE_LOCK.md` hält Quellenrollen, erlaubte
+  Übernahmen und Anti-Ziele fest.
+
 ## [3.8.0] - 2026-09-04
 
 Modernisierungsrunde nach dem tasteskill-Framework (Redesign-Preserve, keine

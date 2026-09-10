@@ -18,8 +18,15 @@ für neue Arbeit erlaubt (siehe [`CLAUDE.md`](./CLAUDE.md)).
 /netzwerke/                    GA2: Analyse und Entwicklung von Netzwerken
 /sowi/                         Wirtschafts- und Sozialkunde
 /simulation/                   Prüfungssimulation (im Aufbau)
+assets/ap2-reference-ui.css    Gemeinsame visuelle Ebene der fünf Hauptseiten
+assets/ap2-theme.js            Gemeinsame persistente Hell-/Dunkel-Steuerung
+assets/ap2-navigation.js       Gemeinsames Themenmenü mit Tastaturbedienung und kurzer Animation
+assets/fonts/                  Lokale Referenz-Schriften; Herkunft/Lizenzen in SOURCES.md
+docs/UI_REDESIGN_REFERENCE_LOCK.md  Referenzen, Quellenrollen und Designgrenzen
 netlify.toml                   Deployment-Konfiguration
 CONTRIBUTING.md                Anforderungen für alle, die an /simulation/ arbeiten
+scripts/verify-theme-persistence.mjs  Browser-Test für sofortigen Theme-Wechsel und Persistenz
+scripts/verify-navigation.mjs  Browser-Test für Menü, Tastatur und Reduced Motion
 ```
 
 Jeder Ordner hat seine eigene `index.html` und wird von Netlify automatisch
@@ -28,11 +35,11 @@ unter dem passenden Pfad ausgeliefert (`meineseite.netlify.app/netzwerke/`,
 
 ## Hub (`/`)
 
-Hauptmenü mit fünf Kacheln (Übersicht, die drei Themenbereiche,
-Simulation) sowie einem Dashboard, das denselben gespeicherten Fortschritt
-wie die Themenbereiche zusammenfasst: Gesamtfortschritt, ein Balken je
-Bereich, überfällige Themen und zuletzt bearbeitete Themen — jeweils mit
-Link direkt zum passenden Block.
+Einstieg mit „Was ist jetzt dran?" und dem Wochenfokus. Die aktuell relevante
+Themengruppe führt als direkte „weitermachen"-Aktion; die beiden übrigen
+Bereiche sowie Rückstand und Gesamtfortschritt bleiben im selben gerahmten
+Arbeitsfenster sichtbar. Die Navigation führt zu Übersicht, Bereichen und
+Simulation.
 
 ## Übersicht (`/uebersicht/`)
 

@@ -111,17 +111,23 @@ sich lohnen; der Netlify-Build wird dann entsprechend eingerichtet.
   generiert); Hub/Übersicht leiten `SEARCH_DATA` live aus ihrem `DATA` ab.
 - Deep-Link-Schema `/<bereich>/#<id>&first` öffnet Block und scrollt zum ersten
   offenen Kernthema.
-- Gemeinsame Shell wird zwischen Seiten **kopiert**, nicht als geteiltes Asset
-  eingebunden (bewusste Entscheidung, siehe `ui-hierarchie-kur`).
+- HTML und Verhalten der gemeinsamen Shell bleiben derzeit zwischen den Seiten
+  kopiert. Die aktuelle Gestaltung wird jedoch bewusst über
+  `assets/ap2-reference-ui.css` geteilt, damit die fünf Hauptseiten visuell
+  konsistent bleiben, ohne die bestehende statische Architektur zu brechen.
 - Changelog wird ausschließlich im Hub gepflegt (`APP_VERSION` + `CHANGELOG`
   in `index.html`, plus `CHANGELOG.md`); die anderen Seiten haben keinen
   Versions-Button.
 - UI-Sprache: Deutsch. Versionierung nach SemVer, Changelog nach „Keep a
   Changelog".
 - Light- und Dark-Theme werden unterstützt (`prefers-color-scheme` +
-  expliziter `data-theme`-Toggle).
-- Externe Laufzeit-Abhängigkeiten: Google Fonts (Inter, Manrope, IBM Plex
-  Mono) und — nur wenn Cloud-Sync konfiguriert ist — der Supabase-JS-Client.
+  expliziter `data-theme`-Toggle). Eine explizite Wahl wird unter
+  `ap2-theme-v1` gespeichert und gilt auf allen fünf Hauptseiten. Jeder Klick
+  invertiert direkt den sichtbaren Modus; ohne Wahl gilt die Systemeinstellung.
+- Die Hauptseiten laden Inter Display und Inter lokal, einschließlich aller
+  Status- und Planangaben. Herkunft und OFL-Lizenz stehen in
+  `assets/fonts/SOURCES.md`. Externe Laufzeit-Abhängigkeit bleibt — nur wenn
+  Cloud-Sync konfiguriert ist — der Supabase-JS-Client.
 
 ## Brand Commitments
 
@@ -130,10 +136,11 @@ sich lohnen; der Netlify-Build wird dann entsprechend eingerichtet.
   _Avoid_-Listen: „Bereich", „Themengruppe", „Kernthema", „der Plan",
   „aktuell geplant", „Rückstand", „Wiederholungsmarkierung". Nicht: Kategorie,
   Block, Item, überfällig, Flag usw.
-- Aktuelle Bildsprache (seit v3.5.0, in der UI-Hierarchie-Kur bewusst
-  beibehalten): flach, Haarlinien statt Schatten, warmes Charcoal mit
-  Grünstich, ein Grün-Akzent, an supabase.com angelehnt. Das ist der
-  Ist-Zustand und Ausgangspunkt, nicht per se für alle Zukunft festgeschrieben.
+- Aktuelle Bildsprache (2026-09-10): weiße und warme neutrale Flächen nach
+  Programa, Inter/Inter Display und kurze Menübewegungen nach der heutigen
+  Attio-Website. Dunkle Primäraktionen, feine Rahmen und flache Schatten;
+  blasses Gelb für die nächste Aktion, Grün für Fortschritt/Erfolg. Details stehen in
+  `DESIGN.md` und `docs/UI_REDESIGN_REFERENCE_LOCK.md`.
 - Ton: sachlich, knapp, deutschsprachig; kein Gamification-Overkill, aber die
   Minispiele und eine 100-%-Feier sind erwünschte kleine Auflockerungen.
 
