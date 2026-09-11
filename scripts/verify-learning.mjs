@@ -29,11 +29,26 @@ const manifest = JSON.parse(await readFile(path.join(repoRoot, 'content', 'learn
 const areaHtml = await readFile(path.join(repoRoot, 'konzeption-administration', 'index.html'), 'utf8');
 const learningIndex = await readFile(path.join(repoRoot, 'lernpfad', 'index.html'), 'utf8');
 const learningTemplate = await readFile(path.join(repoRoot, 'scripts', 'templates', 'learning-page.html'), 'utf8');
+const learningCoverage = JSON.parse(await readFile(path.join(repoRoot, 'docs', 'LEARNING_COVERAGE.json'), 'utf8'));
 
 check(sourceCatalog.sources.length === 5, 'fünf bereitgestellte Buchquellen werden im Quellenkatalog geführt');
 check(sourceIds.size === sourceCatalog.sources.length, 'Quellen-IDs sind eindeutig');
 check(new Set(sourceCatalog.sources.map(source => source.role)).size >= 3, 'Quellen besitzen unterschiedliche Rollen statt gleicher Gewichtung');
 check(manifest.topics.length >= 3, 'Lernmanifest enthält mindestens drei kuratierte Kernthemen');
+check(learningCoverage.summary.total === 380, 'Abdeckungsliste enthält alle 380 kanonischen Kernthemen');
+check(learningCoverage.summary.implemented === manifest.topics.length, 'Abdeckungsliste und Lernmanifest stimmen überein');
+check(learningCoverage.domains.every(domain => domain.total > 0), 'Abdeckungsliste umfasst GA1, GA2 und WiSo');
+
+for (const [domain, fileName] of [['GA1', 'ga1-source-map.json'], ['GA2', 'ga2-source-map.json'], ['WiSo', 'wiso-source-map.json']]) {
+  const sourceMap = JSON.parse(await readFile(path.join(repoRoot, 'content', 'curation', 'maps', fileName), 'utf8'));
+  const mappedIds = (sourceMap.items || []).map(item => item.itemId || item.item_id);
+  const canonicalIds = learningCoverage.groups
+    .filter(group => group.domain === domain)
+    .flatMap(group => group.items.map(item => item.itemId));
+  check(mappedIds.length === canonicalIds.length, `${domain}: Quellenmapping deckt jedes Kernthema genau einmal ab`);
+  check(new Set(mappedIds).size === mappedIds.length, `${domain}: Quellenmapping enthält keine doppelten Kernthemen`);
+  check(canonicalIds.every(itemId => mappedIds.includes(itemId)), `${domain}: Quellenmapping stimmt mit dem kanonischen Stoffbaum überein`);
+}
 check(!learningIndex.includes('id="tab-plan"') && !learningIndex.includes('id="pane-plan"'), 'Lernbereich dupliziert den Wochenplan nicht als leeren Tab');
 check(learningIndex.includes('button class="group-head"') && learningIndex.includes('aria-expanded='), 'Lerngruppen sind semantische, tastaturbedienbare Schalter');
 check(learningTemplate.includes('{{DOMAIN_PATH}}') && learningTemplate.includes('{{DOMAIN_CLASS}}'), 'Lernseiten-Template ist für GA1, GA2 und WiSo bereichsneutral');
@@ -71,6 +86,11 @@ check(raidPage.includes('data-raid-lab=') && raidPage.includes('data-failure-sim
 check(raidPage.includes('data-recall=') && raidPage.includes('data-numeric-practice="raid-transfer-capacity"'), 'RAID-Pilot kombiniert freien Abruf und echte Zahleneingabe');
 check((raidPage.match(/<math/g) || []).length >= 8, 'RAID-Formeln werden visuell und semantisch gesetzt');
 check(manifest.topics.some(topic => topic.slug === 'raid-operations' && topic.itemId === 'ga1-3__5'), 'RAID-Betrieb ist als eigenes kanonisches Kernthema verdrahtet');
+
+const backupPage = await readFile(path.join(repoRoot, 'lernen', 'backup-methods', 'index.html'), 'utf8');
+check(backupPage.includes('data-sequence="incremental-restore"') && backupPage.includes('data-expected="verify,full,increments,validate"'), 'Backup-Einheit trainiert die Restore-Reihenfolge interaktiv');
+check((backupPage.match(/<math/g) || []).length >= 4, 'Backup-Rechnungen werden visuell und semantisch gesetzt');
+check(backupPage.includes('/assets/learning/backup-chains.svg'), 'Backup-Einheit besitzt eine eigene erklärende Sicherungsgrafik');
 
 const localCatalogPath = path.join(repoRoot, 'knowledge-base', 'local', 'catalog.json');
 if (await exists(localCatalogPath)) {

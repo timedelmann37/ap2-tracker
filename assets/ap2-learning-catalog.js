@@ -74,5 +74,30 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
       "itlf6-9-2022"
     ],
     "contentHash": "6964d7172518d6cac08e4c25744586b951e678116d65c08fa54c1628eb898849"
+  },
+  {
+    "id": "backup-methods",
+    "slug": "backup-methods",
+    "title": "Sicherungsarten auswählen und Restore-Ketten beherrschen",
+    "description": "Voll-, differenzielle und inkrementelle Sicherungen vergleichen, Speicherbedarf berechnen und die passende Restore-Kette bestimmen.",
+    "domain": "GA1",
+    "groupId": "ga1-4",
+    "groupLabel": "Block 4 · Backup, Recovery und Notfallvorsorge",
+    "itemId": "ga1-4__0",
+    "week": "KW 38",
+    "estimatedMinutes": 24,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "backup-selection",
+      "restore-chain"
+    ],
+    "sources": [
+      "europa-integratoren-2026",
+      "ihk-bonn",
+      "itlf10-12-2023"
+    ],
+    "contentHash": "aec3078290f11d33d85ae68721f35d60f62483472389f47a3a214c862fd416b5"
   }
 ]);

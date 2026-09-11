@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Voll-, differenzielle und inkrementelle Sicherungen vergleichen, Speicherbedarf berechnen und die passende Restore-Kette bestimmen.">
+<title>Sicherungsarten auswählen und Restore-Ketten beherrschen – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="backup-methods" data-progress-id="ga1-4__0" data-content-revision="2026-09-11.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-4">Block 4 · Backup, Recovery und Notfallvorsorge</a><span class="sep">›</span>
+    <span class="here">Sicherungsarten auswählen und Restore-Ketten beherrschen</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Sicherungsarten auswählen und Restore-Ketten beherrschen</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 24 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Bei einer Sicherungsstrategie zählt nicht nur, wie schnell ein Backup geschrieben wird. In der AP2 musst du den <strong>Speicherbedarf</strong>, die <strong>Dauer der täglichen Sicherung</strong> und vor allem den <strong>Aufwand einer Wiederherstellung</strong> gegeneinander abwägen.</p>
+<section class="learning-goals" aria-labelledby="backup-goals-title">
+  <h2 id="backup-goals-title">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Voll-, differenzielle und inkrementelle Sicherungen anhand ihrer Bezugsbasis unterscheiden und passend auswählen,</li>
+    <li>für einen Wiederherstellungspunkt die benötigte Sicherungskette bestimmen und den Speicherbedarf berechnen.</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Welche Kette würdest du laden?</h2>
+<section class="quiz" data-quiz="backup-diagnostic" data-correct="2">
+  <h3>Montag entsteht eine Vollsicherung, Dienstag bis Donnerstag je eine inkrementelle Sicherung. Was brauchst du für den Stand von Donnerstagabend?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Nur die letzte inkrementelle Sicherung enthält ausschließlich die Änderungen seit Mittwoch, nicht den vollständigen Stand."><span class="m">A</span> nur die Sicherung von Donnerstag</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Voll plus Donnerstag lässt die Änderungen von Dienstag und Mittwoch aus."><span class="m">B</span> Montag und Donnerstag</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Richtig: Bei der inkrementellen Methode baut jeder Änderungssatz auf seinem direkten Vorgänger auf."><span class="m">C</span> Montag, Dienstag, Mittwoch und Donnerstag</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Die Sicherungen allein genügen nur, wenn sie lesbar und vollständig sind; ein RAID ist für die Restore-Kette nicht erforderlich."><span class="m">D</span> alle Sicherungen und zusätzlich das RAID</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><p>Die Diagnose zählt noch nicht für den Abschluss. Sie zeigt, ob du beim Lernen besonders auf die Bezugsbasis einer Sicherung achten solltest.</p>
+<aside class="callout merk"><span class="lbl">Merksatz</span><p><strong>Voll sichert alles. Differenziell schaut zur letzten Vollsicherung zurück. Inkrementell schaut zur unmittelbar vorherigen Sicherung zurück.</strong></p></aside><h2 class="sec" id="s2"><span class="num">2</span>Drei Sicherungsarten, drei Abwägungen</h2>
+<div class="twrap"><table class="knowledge-table">
+<thead>
+<tr>
+<th>Sicherungsart</th>
+<th>Inhalt eines Laufs</th>
+<th>Sicherungsdauer und Speicher</th>
+<th>Wiederherstellung</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Vollsicherung</strong></td>
+<td>gesamter definierter Datenbestand</td>
+<td>pro Lauf am höchsten</td>
+<td>nur die gewünschte Vollsicherung</td>
+</tr>
+<tr>
+<td><strong>Differenziell</strong></td>
+<td>Änderungen seit der letzten Vollsicherung</td>
+<td>wächst bis zur nächsten Vollsicherung</td>
+<td>letzte Vollsicherung plus letztes Differenzial</td>
+</tr>
+<tr>
+<td><strong>Inkrementell</strong></td>
+<td>Änderungen seit der letzten Sicherung, unabhängig von deren Art</td>
+<td>meist kleine, gleichmäßigere Änderungssätze</td>
+<td>letzte Vollsicherung plus alle folgenden Inkremente bis zum Zielzeitpunkt</td>
+</tr>
+</tbody></table></div>
+<figure class="learning-figure">
+  <img src="/assets/learning/backup-chains.svg" alt="Zeitstrahl von Montag bis Freitag: Die Vollsicherung enthält alle Daten. Differenzielle Sicherungen enthalten zunehmend alle Änderungen seit Montag. Inkrementelle Sicherungen enthalten jeweils nur die Änderung seit dem Vortag. Für den Freitag-Restore braucht differenziell zwei und inkrementell fünf Sicherungssätze.">
+  <figcaption>Eigene Lernskizze: Der Pfeil zeigt die Bezugsbasis; die Klammer darunter zeigt die Sicherungssätze, die für den Freitag-Restore gebraucht werden.</figcaption>
+</figure><p>Die Methode allein garantiert noch kein gutes Backup. Aufbewahrung, getrennte Fehlerdomänen, Zugriffsschutz, Überwachung und regelmäßig getestete Restores gehören zum vollständigen Konzept.</p>
+<aside class="callout"><span class="lbl">Prüfungsfalle</span><p>„Inkrementell ist besser, weil es weniger Speicher braucht“ ist unvollständig. Kleinere Sicherungsläufe werden mit einer längeren, störanfälligeren Restore-Kette erkauft. Die richtige Wahl hängt vom geforderten Wiederanlauf und vom verfügbaren Sicherungsfenster ab.</p></aside><h2 class="sec" id="s3"><span class="num">3</span>Speicherbedarf grafisch rechnen</h2>
+<p>Eine Vollsicherung umfasst 500 GB. Von Dienstag bis Freitag ändern sich täglich 25 GB. Vereinfachend wird jedes geänderte Datenvolumen nur einmal gezählt und es gibt keine Kompression oder Deduplizierung.</p>
+<h3>Differenzielle Woche</h3>
+<p>Jedes Differenzial enthält alle Änderungen seit Montag: Dienstag 25 GB, Mittwoch 50 GB, Donnerstag 75 GB und Freitag 100 GB.</p>
+<div class="math-display" role="group" aria-label="Speicherbedarf einer differenziellen Sicherungswoche"><math display="block" aria-label="fünfhundert Gigabyte plus zweihundertfünfzig Gigabyte ergibt siebenhundertfünfzig Gigabyte"><mrow><mn>500</mn><mtext> GB</mtext><mo>+</mo><mn>250</mn><mtext> GB</mtext><mo>=</mo><mn>750</mn><mtext> GB</mtext></mrow></math><div class="math-legend"><span><b>500 GB</b> Vollsicherung</span><span><b>250 GB</b> 25 + 50 + 75 + 100</span><span><b>750 GB</b> Wochenbedarf</span></div></div><h3>Inkrementelle Woche</h3>
+<p>Jedes Inkrement enthält nur die täglichen 25 GB.</p>
+<div class="math-display" role="group" aria-label="Speicherbedarf einer inkrementellen Sicherungswoche"><math display="block" aria-label="fünfhundert Gigabyte plus vier mal fünfundzwanzig Gigabyte ergibt sechshundert Gigabyte"><mrow><mn>500</mn><mtext> GB</mtext><mo>+</mo><mn>4</mn><mo>×</mo><mn>25</mn><mtext> GB</mtext><mo>=</mo><mn>600</mn><mtext> GB</mtext></mrow></math><div class="math-legend"><span><b>500 GB</b> Vollsicherung</span><span><b>4 × 25 GB</b> Tagesinkremente</span><span><b>600 GB</b> Wochenbedarf</span></div></div><section class="aufgabe">
+  <div class="h"><span class="b">Geführt</span> Differenziellen Speicherbedarf bestimmen</div>
+  <div class="body">
+    <p>Montag werden 800 GB vollständig gesichert. Dienstag ändern sich 20 GB, Mittwoch weitere 30 GB und Donnerstag weitere 10 GB. Wie viel Speicher belegen Vollsicherung und drei differenzielle Sicherungen zusammen?</p>
+    <details><summary>Hinweis: Änderungssätze aufbauen</summary><div class="loesung"><p>Die Differenziale enthalten 20 GB, dann 20 + 30 = 50 GB und zuletzt 20 + 30 + 10 = 60 GB.</p></div></details>
+    <div class="numeric-practice" data-numeric-practice="backup-guided-storage" data-expected="930" data-correct-feedback="Richtig: 930 GB für Vollsicherung und drei Differenziale." data-wrong-feedback="Noch nicht. Addiere 800 GB sowie die wachsenden Differenziale 20 GB, 50 GB und 60 GB.">
+      <label for="backup-guided-answer">Gesamtbedarf in GB</label>
+      <div class="answer-row"><input id="backup-guided-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Ergebnis"><button type="button" class="lbtn" data-numeric-check>Antwort prüfen</button></div>
+      <template data-numeric-correct><span>Richtig.</span><div class="math-display compact"><math display="block" aria-label="achthundert plus zwanzig plus fünfzig plus sechzig Gigabyte ergibt neunhundertdreißig Gigabyte"><mrow><mn>800</mn><mo>+</mo><mn>20</mn><mo>+</mo><mn>50</mn><mo>+</mo><mn>60</mn><mo>=</mo><mn>930</mn><mtext> GB</mtext></mrow></math><div class="math-legend"><span>Voll</span><span>Dienstag</span><span>Mittwoch</span><span>Donnerstag</span></div></div></template>
+      <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p>
+    </div>
+  </div>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Wiederherstellung als Ablauf</h2>
+<p>Vor dem Restore bestimmst du zuerst den gewünschten Zeitpunkt. Dann suchst du rückwärts die zugehörige Kette, prüfst ihre Lesbarkeit in einer getrennten Umgebung und stellst in der richtigen Reihenfolge wieder her.</p>
+<section class="sequence-practice" data-sequence="incremental-restore" data-expected="verify,full,increments,validate" data-correct-feedback="Richtig. Erst prüfst du Material und Ziel, dann spielst du die Vollsicherung und sämtliche Inkremente chronologisch ein; zum Schluss validierst du den wiederhergestellten Dienst." data-wrong-feedback="Prüfung und Vollsicherung stehen vor den chronologischen Inkrementen; die fachliche Validierung schließt den Restore ab." aria-labelledby="restore-sequence-title">
+  <div class="lab-heading"><div><h3 id="restore-sequence-title">Bringe den inkrementellen Restore in Reihenfolge</h3><p>Montag Vollsicherung, Dienstag bis Donnerstag Inkremente. Stelle Donnerstagabend wieder her.</p></div><span class="lab-tag">Ablauf</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="increments" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Inkremente Dienstag, Mittwoch, Donnerstag chronologisch einspielen.</span></li>
+    <li data-step="verify" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Sicherungssätze und Zielsystem prüfen.</span></li>
+    <li data-step="validate" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Daten und Anwendung fachlich validieren, Ergebnis dokumentieren.</span></li>
+    <li data-step="full" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Vollsicherung von Montag einspielen.</span></li>
+  </ol>
+  <button class="lbtn" type="button" data-sequence-check>Reihenfolge prüfen</button>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Moderne Varianten einordnen</h2>
+<ul>
+<li><strong>Inkrementell-forever:</strong> Nach einer initialen Vollsicherung werden fortlaufend Inkremente erfasst. Die Backupsoftware erzeugt für Restores logisch vollständige Stände oder führt die Kette intern zusammen. Ohne getestete Metadaten und Kataloge ist der Restore trotzdem riskant.</li>
+<li><strong>Synthetische Vollsicherung:</strong> Der Backupserver kombiniert eine ältere Vollsicherung mit nachfolgenden Inkrementen zu einer neuen Vollsicherung. Das Quellsystem muss dafür nicht erneut alle Daten senden; auf dem Backupziel entsteht jedoch Lese- und Schreiblast.</li>
+<li><strong>Reverse Incremental:</strong> Der jüngste Stand wird als direkt wiederherstellbares Vollbackup fortgeschrieben; ältere Zustände werden über Rückwärtsdifferenzen abgebildet. Die genaue Funktionsweise ist produktabhängig.</li>
+</ul>
+<aside class="callout"><span class="lbl">Saubere Formulierung</span><p>Eine synthetische Vollsicherung ist nicht „aus dem Nichts vollständig“. Sie wird auf dem Backupziel aus bereits vorhandener Vollsicherung und Änderungssätzen zusammengesetzt.</p></aside><h2 class="sec" id="s6"><span class="num">6</span>Karteikarten und Wiederholung</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="backup-differential" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche zwei Sätze braucht ein differenzieller Restore?</strong><small>Zum Umdrehen antippen</small></span><span class="face back"><span class="k">Antwort</span><span>Die letzte Vollsicherung und das letzte Differenzial vor dem gewünschten Wiederherstellungspunkt.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="backup-synthetic" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was entlastet eine synthetische Vollsicherung?</strong><small>Zum Umdrehen antippen</small></span><span class="face back"><span class="k">Antwort</span><span>Das Quellsystem und dessen Netzwerkpfad, weil die neue Vollsicherung auf dem Backupziel aus vorhandenen Sätzen erzeugt wird.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Differenzieller Restore“:</span><button type="button" data-card-id="backup-differential" data-card-rate="known">gewusst</button><button type="button" data-card-id="backup-differential" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="backup-differential"></span></div>
+<div class="card-rating"><span>Karte „Synthetisch voll“:</span><button type="button" data-card-id="backup-synthetic" data-card-rate="known">gewusst</button><button type="button" data-card-id="backup-synthetic" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="backup-synthetic"></span></div><h2 class="sec" id="s7"><span class="num">7</span>Lernziel-Check: Transfer</h2>
+<section class="recall-practice" data-recall="backup-core" data-min-length="45" aria-labelledby="backup-recall-title">
+  <div class="recall-prompt"><h3 id="backup-recall-title">Abruf aus dem Kopf</h3><p>Erkläre ohne Zurückzuscrollen die Bezugsbasis von differenzieller und inkrementeller Sicherung sowie die jeweilige Restore-Kette.</p></div>
+  <label class="sr-only" for="backup-recall-answer">Deine freie Antwort</label>
+  <textarea id="backup-recall-answer" data-recall-input rows="4" placeholder="Bezugsbasis und Restore-Ketten …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Differenziell sichert alle Änderungen seit der letzten Vollsicherung; für den Restore genügen Vollsicherung plus jüngstes Differenzial. Inkrementell sichert Änderungen seit der jeweils letzten Sicherung; der Restore braucht die Vollsicherung und alle folgenden Inkremente bis zum Zielpunkt.</div>
+</section><section class="quiz" data-quiz="backup-transfer-selection" data-correct="1" data-required-objective="backup-selection">
+  <h3>Ein System darf werktags nur kurz belastet werden. Am Wochenende ist ein längeres Sicherungsfenster verfügbar. Der Restore darf mehrere Sätze benötigen. Welche Grundstrategie passt am besten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Tägliche Vollsicherungen vereinfachen den Restore, belasten das Quellsystem aber jeden Werktag am stärksten."><span class="m">A</span> täglich vollständig sichern</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig: Eine wöchentliche Vollsicherung nutzt das lange Wochenendfenster; kleine werktägliche Inkremente halten die tägliche Belastung gering."><span class="m">B</span> am Wochenende voll, werktags inkrementell</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Differenziale wachsen im Wochenverlauf und belasten das kurze Werktagsfenster zunehmend."><span class="m">C</span> am Wochenende voll, werktags differenziell</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Eine Spiegelung ist keine unabhängige, versionierte Sicherungsstrategie und schützt nicht vor allen logischen Fehlern."><span class="m">D</span> nur eine synchrone Spiegelung</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="numeric-practice transfer-number" data-numeric-practice="backup-transfer-storage" data-required-objective="restore-chain" data-expected="640" data-correct-feedback="Richtig: 640 GB. Für den Donnerstag-Restore werden Vollsicherung sowie alle drei Inkremente benötigt." data-wrong-feedback="Noch nicht. Addiere zur Vollsicherung jedes Tagesinkrement von Dienstag bis Donnerstag.">
+  <h3>Berechne Bedarf und erkenne die Restore-Kette</h3>
+  <p>Montag: 400 GB vollständig. Dienstag: 60 GB inkrementell. Mittwoch: 80 GB inkrementell. Donnerstag: 100 GB inkrementell. Wie viel Speicher belegen diese vier Sätze zusammen?</p>
+  <label for="backup-transfer-answer">Gesamtbedarf in GB</label>
+  <div class="answer-row"><input id="backup-transfer-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Ergebnis"><button type="button" class="lbtn primary" data-numeric-check>Ergebnis prüfen</button></div>
+  <template data-numeric-correct><span>Richtig.</span><div class="math-display compact"><math display="block" aria-label="vierhundert plus sechzig plus achtzig plus einhundert Gigabyte ergibt sechshundertvierzig Gigabyte"><mrow><mn>400</mn><mo>+</mo><mn>60</mn><mo>+</mo><mn>80</mn><mo>+</mo><mn>100</mn><mo>=</mo><mn>640</mn><mtext> GB</mtext></mrow></math><div class="math-legend"><span>Voll</span><span>Inkrement 1</span><span>Inkrement 2</span><span>Inkrement 3</span></div></div><span>Für Donnerstag wird dieselbe vollständige Kette benötigt.</span></template>
+  <template data-numeric-feedback-for="500">500 GB wären Vollsicherung plus Donnerstag-Inkrement. Die Änderungen von Dienstag und Mittwoch fehlen.</template>
+  <template data-numeric-feedback-for="580">580 GB lässt einen der drei inkrementellen Sätze aus.</template>
+  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s8"><span class="num">8</span>Quellen und Einordnung</h2>
+<div class="src-block">
+  <p><strong>EUROPA Prüfungsvorbereitung Teil 2 – Integratoren (2026):</strong> Hauptquelle für Sicherungsstrategien, Wiederherstellungsbezug und die Einordnung eines vollständigen Datensicherungskonzepts.</p>
+  <p><strong>Prüfungsvorbereitung IHK Bonn:</strong> prüfungsnahe Rechenmuster für Voll-, differenzielle und inkrementelle Wochenpläne sowie das Generationenprinzip. Zahlen und Aufgaben dieser Einheit wurden neu erstellt.</p>
+  <p><strong>IT-Berufe Fachstufe II – Lernfelder 10–12 (2023):</strong> Kontrollquelle zur Abgrenzung von Backup, Wiederherstellung und Archiv sowie zu Anforderungen an ein datenschutzgerechtes Konzept.</p>
+  <p class="source-note">Text, Zahlen, Aufgaben und Grafik sind eigenständig erstellt. Buchseiten und Originalabbildungen bleiben in der privaten lokalen Wissensbasis.</p>
+</div>
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-4"><span class="d">zurück zu</span><span class="t">Block 4 · Backup, Recovery und Notfallvorsorge</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block 4 · Backup, Recovery und Notfallvorsorge</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Welche Kette würdest du laden?</a></li>
+<li><a href="#s2" data-t="s2">Drei Sicherungsarten, drei Abwägungen</a></li>
+<li><a href="#s3" data-t="s3">Speicherbedarf grafisch rechnen</a></li>
+<li><a href="#s4" data-t="s4">Wiederherstellung als Ablauf</a></li>
+<li><a href="#s5" data-t="s5">Moderne Varianten einordnen</a></li>
+<li><a href="#s6" data-t="s6">Karteikarten und Wiederholung</a></li>
+<li><a href="#s7" data-t="s7">Lernziel-Check: Transfer</a></li>
+<li><a href="#s8" data-t="s8">Quellen und Einordnung</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-4">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>
