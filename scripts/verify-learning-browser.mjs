@@ -75,13 +75,40 @@ try {
   const card = page.locator('[data-flashcard="raid-backup"]');
   await card.click();
   assert(await card.getAttribute('aria-pressed') === 'true', 'Flashcard flips');
+  assert(!await page.locator('.card-rating:has([data-card-id="raid-backup"])').isHidden(), 'Card rating appears only after recall');
+  await page.locator('[data-card-id="raid-backup"][data-card-rate="unsure"]').click();
+  assert((await page.locator('[data-card-review-status="raid-backup"]').textContent()).includes('Wiederholung am'), 'Card self-rating schedules a review');
   await page.reload();
-  assert(await page.locator('[data-flashcard="raid-backup"]').getAttribute('aria-pressed') === 'true', 'Flashcard state survives reload');
+  assert(await page.locator('[data-flashcard="raid-backup"]').getAttribute('aria-pressed') === 'false', 'Flashcard answer starts hidden again after reload');
+  assert(await page.locator('.card-rating:has([data-card-id="raid-backup"])').isHidden(), 'Card cannot be rated before revealing it again');
+
+  const lab = page.locator('[data-raid-lab="capacity-lab"]');
+  await lab.locator('[data-raid-prediction]').fill('16');
+  await lab.locator('[data-raid-calculate]').click();
+  assert((await lab.locator('[data-raid-result]').textContent()).includes('Vorhersage war richtig'), 'RAID lab compares prediction with the calculated result');
+  await lab.locator('[data-raid-level]').selectOption('1');
+  await lab.locator('[data-raid-drives]').fill('3');
+  await lab.locator('[data-raid-calculate]').click();
+  assert((await lab.locator('[data-raid-result]').textContent()).includes('exakt zwei'), 'RAID lab explains invalid RAID 1 input');
+
+  const failureSimulator = page.locator('[data-failure-simulator="raid10-pairs"]');
+  await failureSimulator.locator('[data-drive-index="0"]').click();
+  await failureSimulator.locator('[data-drive-index="2"]').click();
+  assert((await failureSimulator.locator('[data-failure-status]').textContent()).includes('degradiert'), 'RAID 10 survives failures in different mirror pairs');
+  await failureSimulator.locator('[data-drive-index="1"]').click();
+  assert((await failureSimulator.locator('[data-failure-status]').textContent()).includes('desselben Spiegelpaars'), 'RAID 10 fails when one complete mirror pair fails');
+
+  const recall = page.locator('[data-recall="raid-core"]');
+  await recall.locator('[data-recall-input]').fill('zu kurz');
+  assert(await recall.locator('[data-recall-reveal]').isDisabled(), 'Recall model stays locked until an honest attempt');
+  await recall.locator('[data-recall-input]').fill('(n - 2) mal kleinste Platte; kein Schutz vor Löschen und Schadsoftware');
+  await recall.locator('[data-recall-reveal]').click();
+  assert(await recall.locator('[data-recall-model]').isVisible(), 'Recall model appears after an own answer');
 
   const quiz = page.locator('[data-quiz="raid-diagnostic"]');
   await quiz.locator('[data-answer="0"]').click();
   assert(await quiz.locator('[data-answer="0"]').evaluate(node => node.classList.contains('wrong')), 'Wrong quiz answer is marked');
-  assert(await quiz.locator('[data-answer="1"]').evaluate(node => node.classList.contains('right')), 'Correct quiz answer is revealed');
+  assert(!await quiz.locator('[data-answer="1"]').evaluate(node => node.classList.contains('right')), 'First wrong attempt does not reveal the correct answer');
   assert(await quiz.locator('[data-feedback]').isVisible(), 'Quiz explanation is shown');
   assert((await quiz.locator('[data-selected-feedback]').textContent()).includes('zwei Laufwerken'), 'Wrong answer receives distractor-specific feedback');
   await page.reload();
@@ -89,12 +116,14 @@ try {
   await page.locator('[data-quiz="raid-diagnostic"] [data-quiz-reset]').click();
   assert(!await page.locator('[data-quiz="raid-diagnostic"] [data-feedback]').isVisible(), 'Quiz can be retried');
 
-  await page.locator('[data-card-id="raid-backup"][data-card-rate="unsure"]').click();
-  assert((await page.locator('[data-card-review-status="raid-backup"]').textContent()).includes('Wiederholung am'), 'Card self-rating schedules a review');
-
   await page.locator('[data-quiz="raid-transfer-selection"] [data-answer="2"]').click();
   assert(await page.locator('#mark-done').isDisabled(), 'One passed objective is not enough for completion');
-  await page.locator('[data-quiz="raid-transfer-capacity"] [data-answer="1"]').click();
+  await page.locator('[data-numeric-practice="raid-transfer-capacity"] [data-numeric-input]').fill('88');
+  await page.locator('[data-numeric-practice="raid-transfer-capacity"] [data-numeric-check]').click();
+  assert((await page.locator('[data-numeric-practice="raid-transfer-capacity"] [data-numeric-feedback]').textContent()).includes('RAID-5-Formel'), 'Numeric transfer gives misconception-specific feedback');
+  assert(await page.locator('[data-numeric-practice="raid-transfer-capacity"] [data-numeric-feedback] math').isVisible(), 'Formula feedback is rendered as a visual math structure');
+  await page.locator('[data-numeric-practice="raid-transfer-capacity"] [data-numeric-input]').fill('80,0');
+  await page.locator('[data-numeric-practice="raid-transfer-capacity"] [data-numeric-check]').click();
   assert(!await page.locator('#mark-done').isDisabled(), 'Completion unlocks after all required objectives pass');
 
   await page.locator('#mark-done').click();
@@ -127,6 +156,13 @@ try {
   await page.goto(`${base}/lernen/raid-operations/`);
   assert(await page.locator('[data-required-objective]').count() === 2, 'RAID operations exposes two required objective checks');
   assert(await page.locator('#mark-done').isDisabled(), 'RAID operations completion is gated');
+  const sequence = page.locator('[data-sequence="controller-recovery"]');
+  await sequence.locator('[data-step="import"] [data-move="down"]').click();
+  assert(await sequence.locator('[data-step]').first().getAttribute('data-step') === 'stabilize', 'Sequence controls reorder recovery steps without drag and drop');
+  await sequence.locator('[data-sequence-check]').click();
+  assert((await sequence.locator('[data-sequence-feedback]').textContent()).includes('Position'), 'Sequence gives first-error feedback');
+  await page.reload();
+  assert(await page.locator('[data-sequence="controller-recovery"] [data-step]').first().getAttribute('data-step') === 'stabilize', 'Sequence order survives reload');
   assert(errors.length === 0, `No browser errors: ${errors.join('; ')}`);
   await context.close();
 
@@ -179,7 +215,7 @@ try {
   await revisionPage.addInitScript(() => {
     localStorage.setItem('ap2-tracker-state-v1', JSON.stringify({ 'ga1-3__3': true, 'mark__ga1-3__3': false }));
     localStorage.setItem('ap2-learning-state-v1', JSON.stringify({
-      'raid-level:content-revision': '2026-09-10.1',
+      'raid-level:content-revision': '2026-09-11.1',
       'raid-level:quiz:raid-transfer-capacity': 1,
       'raid-level:card:raid-backup': true
     }));
@@ -201,7 +237,7 @@ try {
   await revisionPage.goto(`${base}/lernen/raid/`);
   const revisedLearning = await revisionPage.evaluate(() => JSON.parse(localStorage.getItem('ap2-learning-state-v1')));
   const revisedTracker = await revisionPage.evaluate(() => JSON.parse(localStorage.getItem('ap2-tracker-state-v1')));
-  assert(revisedLearning['raid-level:content-revision'] === '2026-09-11.1', 'Content revision is updated');
+  assert(revisedLearning['raid-level:content-revision'] === '2026-09-11.2', 'Content revision is updated');
   assert(!('raid-level:quiz:raid-transfer-capacity' in revisedLearning), 'Old topic attempts are cleared after a content revision');
   assert(revisedTracker['ga1-3__3'] === true && revisedTracker['mark__ga1-3__3'] === true, 'Existing completion is preserved and scheduled for review after a revision');
   await revisionContext.close();

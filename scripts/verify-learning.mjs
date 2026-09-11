@@ -50,7 +50,12 @@ for (const topic of manifest.topics) {
   check(page.includes('/assets/ap2-learning.js'), `${topic.slug}: gemeinsame Interaktionslogik ist eingebunden`);
   check(page.includes('data-quiz='), `${topic.slug}: Selbsttest ist vorhanden`);
   check(page.includes('data-flashcard='), `${topic.slug}: Karteikarten sind vorhanden`);
+  check(page.includes('class="learning-figure"') || page.includes('<math') || page.includes('data-failure-simulator='), `${topic.slug}: fachliche Visualisierung lockert die Einheit auf`);
   check(page.includes('data-required-objective='), `${topic.slug}: Abschluss ist an Lernziel-Checks gebunden`);
+  for (const objectiveId of topic.learningObjectives) {
+    const occurrences = page.match(new RegExp(`data-required-objective="${objectiveId}"`, 'g')) || [];
+    check(occurrences.length === 1, `${topic.slug}: Lernziel ${objectiveId} besitzt genau einen Pflichtnachweis`);
+  }
   check(page.includes('class="bottomnav"'), `${topic.slug}: mobile Navigation ist vorhanden`);
   check(!page.includes('class="ph"'), `${topic.slug}: keine Bild-Platzhalter`);
   check(!page.includes('id="accountBtn"'), `${topic.slug}: kein funktionsloser Konto-Button`);
@@ -62,6 +67,9 @@ const raidPage = await readFile(path.join(repoRoot, 'lernen', 'raid', 'index.htm
 check(raidPage.includes('data-selected-feedback') && raidPage.includes('data-rationale='), 'RAID-Pilot erklärt auch falsche Antwortoptionen');
 check(raidPage.includes('data-card-rate="known"') && raidPage.includes('data-card-rate="unsure"'), 'RAID-Pilot besitzt eine Karten-Selbsteinschätzung');
 check(raidPage.includes('data-mastery-box'), 'RAID-Pilot zeigt den Lernziel-Fortschritt');
+check(raidPage.includes('data-raid-lab=') && raidPage.includes('data-failure-simulator='), 'RAID-Pilot besitzt Rechner und Ausfallsimulator');
+check(raidPage.includes('data-recall=') && raidPage.includes('data-numeric-practice="raid-transfer-capacity"'), 'RAID-Pilot kombiniert freien Abruf und echte Zahleneingabe');
+check((raidPage.match(/<math/g) || []).length >= 8, 'RAID-Formeln werden visuell und semantisch gesetzt');
 check(manifest.topics.some(topic => topic.slug === 'raid-operations' && topic.itemId === 'ga1-3__5'), 'RAID-Betrieb ist als eigenes kanonisches Kernthema verdrahtet');
 
 const localCatalogPath = path.join(repoRoot, 'knowledge-base', 'local', 'catalog.json');

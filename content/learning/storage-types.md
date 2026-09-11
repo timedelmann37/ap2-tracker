@@ -12,7 +12,7 @@ week: KW 37
 estimated_minutes: 18
 relevance: hoch
 sources: ["europa-integratoren-2026", "ihk-bonn", "itlf6-9-2022"]
-content_revision: 2026-09-11.1
+content_revision: 2026-09-11.2
 content_status: CURATED_DRAFT
 learning_objectives: ["access-level", "architecture-selection"]
 curation: content/curation/storage-types.json
@@ -95,7 +95,7 @@ Ein vollständiger Prüfungssatz verbindet Anforderung und Entscheidung: „Für
   <div class="h"><span class="b">Rechenaufgabe</span> Übertragungszeit abschätzen</div>
   <div class="body">
     <p>Ein Server überträgt 300 GB auf ein IP-basiertes Speichersystem. Der 10-Gbit/s-Link erreicht einschließlich aller Verluste effektiv 70&nbsp;% seiner Nennrate. Wie lange dauert die Übertragung mindestens? Rechne mit dezimalen Einheiten.</p>
-    <details><summary>Lösung anzeigen</summary><div class="loesung"><p><strong>Effektive Rate:</strong> 10 Gbit/s × 0,70 = 7 Gbit/s.<br><strong>Datenmenge:</strong> 300 GB × 8 = 2.400 Gbit.<br><strong>Zeit:</strong> 2.400 Gbit ÷ 7 Gbit/s ≈ 343 s ≈ <strong>5 min 43 s</strong>. Das ist eine Idealabschätzung ohne zusätzliche Verzögerungen durch Speicher, Protokoll und konkurrierenden Verkehr.</p></div></details>
+    <details><summary>Lösung anzeigen</summary><div class="loesung"><div class="math-worked" role="group" aria-label="Dreistufige Übertragungszeitberechnung"><div><span>Effektive Rate</span><math aria-label="zehn Gigabit pro Sekunde mal null Komma sieben ergibt sieben Gigabit pro Sekunde"><mn>10</mn><mtext> Gbit/s</mtext><mo>×</mo><mn>0,70</mn><mo>=</mo><mn>7</mn><mtext> Gbit/s</mtext></math></div><div><span>Datenmenge</span><math aria-label="dreihundert Gigabyte mal acht ergibt zweitausendvierhundert Gigabit"><mn>300</mn><mtext> GB</mtext><mo>×</mo><mn>8</mn><mo>=</mo><mn>2.400</mn><mtext> Gbit</mtext></math></div><div><span>Zeit</span><math aria-label="zweitausendvierhundert Gigabit geteilt durch sieben Gigabit pro Sekunde ist ungefähr dreihundertdreiundvierzig Sekunden beziehungsweise fünf Minuten dreiundvierzig Sekunden"><mfrac><mrow><mn>2.400</mn><mtext> Gbit</mtext></mrow><mrow><mn>7</mn><mtext> Gbit/s</mtext></mrow></mfrac><mo>≈</mo><mn>343</mn><mtext> s</mtext><mo>≈</mo><mn>5</mn><mtext> min </mtext><mn>43</mn><mtext> s</mtext></math></div></div><p>Das ist eine Idealabschätzung ohne zusätzliche Verzögerungen durch Speicher, Protokoll und konkurrierenden Verkehr.</p></div></details>
   </div>
 </section>
 

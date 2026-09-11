@@ -12,7 +12,7 @@ week: KW 37
 estimated_minutes: 20
 relevance: hoch
 sources: ["europa-integratoren-2026", "ihk-bonn", "itlf6-9-2022"]
-content_revision: 2026-09-11.1
+content_revision: 2026-09-11.2
 content_status: CURATED_DRAFT
 learning_objectives: ["architecture", "recovery"]
 curation: content/curation/raid-operations.json
@@ -67,7 +67,9 @@ Ein RAID-Level beschreibt die Datenverteilung. Für einen belastbaren Betrieb mu
 
 Ein Dateiserver nutzt acht HDDs à 4 TB in RAID 6 und besitzt eine zusätzliche 4-TB-HDD als globales Hot Spare.
 
-1. **Nutzkapazität:** Nur die acht aktiven RAID-Laufwerke zählen: `(8 − 2) × 4 TB = 24 TB`.
+1. **Nutzkapazität:** Nur die acht aktiven RAID-Laufwerke zählen:
+
+<div class="math-display" role="group" aria-label="RAID-6-Kapazitätsrechnung ohne Hot Spare"><math display="block" aria-label="acht minus zwei, mal vier Terabyte, ergibt vierundzwanzig Terabyte"><mrow><mo>(</mo><mn>8</mn><mo>−</mo><mn>2</mn><mo>)</mo><mo>×</mo><mn>4</mn><mtext> TB</mtext><mo>=</mo><mn>24</mn><mtext> TB</mtext></mrow></math><div class="math-legend"><span><b>8</b> aktive Laufwerke</span><span><b>− 2</b> Parität</span><span><b>× 4 TB</b> Größe</span><span><b>24 TB</b> nutzbar</span><span><b>+ 1 Spare</b> ohne Kapazitätsbeitrag</span></div></div>
 2. **Erster Ausfall:** Das Array läuft degradiert weiter. Monitoring muss alarmieren.
 3. **Automatischer Ersatz:** Das Hot Spare wird in das Array aufgenommen und der Rebuild startet. Die Nutzkapazität steigt dadurch nicht.
 4. **Während des Rebuilds:** I/O-Last, Laufwerkszustand und Fortschritt beobachten; eine weitere Störung ist weiterhin kritisch.
@@ -87,6 +89,23 @@ Ein Dateiserver nutzt acht HDDs à 4 TB in RAID 6 und besitzt eine zusätzliche 
   </div>
 </section>
 
+<section class="sequence-practice" data-sequence="controller-recovery" data-expected="stabilize,verify,document,replace-controller,import,replace-drive,rebuild,close" data-correct-feedback="Richtig. Du sicherst zuerst Zustand und Wiederherstellbarkeit, importierst den bestehenden Verbund vor dem Laufwerkstausch und prüfst das Ergebnis nach dem Rebuild." data-wrong-feedback="Dokumentation und Backup-Prüfung gehören vor den Umbau; die vorhandene Konfiguration muss vor Laufwerkstausch und Rebuild erkannt sein." aria-labelledby="sequence-title">
+  <div class="lab-heading"><div><h3 id="sequence-title">Reihenfolge-Werkstatt: Controller und Laufwerk</h3><p>Die Schritte sind absichtlich gemischt. Ordne sie mit den Schaltflächen „Hoch“ und „Runter“ an den Karten.</p></div><span class="lab-tag">Transfer</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="import" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Vorhandene beziehungsweise „foreign“ RAID-Konfiguration kontrolliert importieren.</span></li>
+    <li data-step="stabilize" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Schreiblast reduzieren und aktuellen Fehlerzustand festhalten.</span></li>
+    <li data-step="replace-drive" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Das nachweislich ausgefallene Laufwerk durch ein geeignetes ersetzen.</span></li>
+    <li data-step="document" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Slots, Kabel, Controllerdaten, Firmware und Laufwerksreihenfolge dokumentieren.</span></li>
+    <li data-step="close" tabindex="-1"><span class="step-position" data-step-position>5</span><span>Konsistenz und Anwendungen prüfen, Backup aktualisieren und Eingriff dokumentieren.</span></li>
+    <li data-step="verify" tabindex="-1"><span class="step-position" data-step-position>6</span><span>Wiederherstellbares Backup, Controllerstatus und betroffene Laufwerke prüfen.</span></li>
+    <li data-step="rebuild" tabindex="-1"><span class="step-position" data-step-position>7</span><span>Rebuild überwachen, bis der Verbund wieder optimal und redundant ist.</span></li>
+    <li data-step="replace-controller" tabindex="-1"><span class="step-position" data-step-position>8</span><span>Kompatiblen Ersatzcontroller mit passender Firmware einsetzen.</span></li>
+  </ol>
+  <button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+  <aside class="sequence-warning"><strong>Niemals blind initialisieren:</strong> Ein neuer Verbund kann vorhandene RAID-Metadaten überschreiben. Herstellerverfahren unterscheiden sich; die bestehende Konfiguration wird nach Dokumentation kontrolliert importiert.</aside>
+</section>
+
 ## Karteikarten und Wiederholung
 
 <div class="flashcard-grid">
@@ -97,6 +116,14 @@ Ein Dateiserver nutzt acht HDDs à 4 TB in RAID 6 und besitzt eine zusätzliche 
 <div class="card-rating"><span>Karte „Controller-Cache“:</span><button type="button" data-card-id="ops-controller-cache" data-card-rate="known">gewusst</button><button type="button" data-card-id="ops-controller-cache" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ops-controller-cache"></span></div>
 
 ## Lernziel-Check: Transfer
+
+<section class="recall-practice" data-recall="controller-import" data-min-length="45" aria-labelledby="ops-recall-title">
+  <div class="recall-prompt"><h3 id="ops-recall-title">Abruf aus dem Kopf</h3><p>Warum darf ein Ersatzcontroller die vorhandenen Laufwerke nicht einfach initialisieren? Nenne auch die sichere Alternative.</p></div>
+  <label class="sr-only" for="ops-recall-answer">Deine freie Antwort</label>
+  <textarea id="ops-recall-answer" data-recall-input rows="4" placeholder="Gefahr und sichere Alternative …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Eine Initialisierung kann vorhandene RAID-Metadaten und damit die Information über den bestehenden Verbund überschreiben. Stattdessen wird ein kompatibler Controller eingesetzt und die vorhandene Konfiguration nach Herstelleranleitung importiert und geprüft.</div>
+</section>
 
 Ein Virtualisierungshost soll auf Standardservern automatisiert ausgerollt werden. Das Team beherrscht die Software-RAID-Werkzeuge, überwacht Laufwerke zentral und hält Boot- sowie Metadaten-Dokumentation vor.
 

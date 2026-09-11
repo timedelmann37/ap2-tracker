@@ -11,7 +11,7 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "week": "KW 37",
     "estimatedMinutes": 18,
     "relevance": "hoch",
-    "contentRevision": "2026-09-11.1",
+    "contentRevision": "2026-09-11.2",
     "contentStatus": "CURATED_DRAFT",
     "learningObjectives": [
       "access-level",
@@ -22,7 +22,7 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
       "ihk-bonn",
       "itlf6-9-2022"
     ],
-    "contentHash": "995bd3962b4b71407f1e7cd564dfe9d483ad82da867ca88a64ad8b95bfa7b0b4"
+    "contentHash": "5dfdf32eb1fed8b53580627a3b729dbffe93c09c823f8f6579da91aa86337dfa"
   },
   {
     "id": "raid-level",
@@ -36,7 +36,7 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "week": "KW 37",
     "estimatedMinutes": 24,
     "relevance": "hoch",
-    "contentRevision": "2026-09-11.1",
+    "contentRevision": "2026-09-11.2",
     "contentStatus": "CURATED_DRAFT",
     "learningObjectives": [
       "capacity",
@@ -48,7 +48,7 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
       "itlf6-9-2022",
       "it-basiswissen-2012"
     ],
-    "contentHash": "6aef46761ba4f62cb338bb72bd16180d35475151fe7db293d76b8ca026cb65a0"
+    "contentHash": "cb8348c9c5a9cc0223dba0c9a071870165745da6c850bf2c5156d9df32789a4e"
   },
   {
     "id": "raid-operations",
@@ -62,7 +62,7 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "week": "KW 37",
     "estimatedMinutes": 20,
     "relevance": "hoch",
-    "contentRevision": "2026-09-11.1",
+    "contentRevision": "2026-09-11.2",
     "contentStatus": "CURATED_DRAFT",
     "learningObjectives": [
       "architecture",
@@ -73,6 +73,6 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
       "ihk-bonn",
       "itlf6-9-2022"
     ],
-    "contentHash": "a74bbab221bb6753e499dacb30361c9ec4fe945db782d340773e33eefde12583"
+    "contentHash": "6964d7172518d6cac08e4c25744586b951e678116d65c08fa54c1628eb898849"
   }
 ]);

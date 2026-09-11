@@ -56,7 +56,7 @@ function renderMarkdown(markdown) {
   return { html, headings };
 }
 
-function validate(metadata, knownSourceIds, fileName) {
+function validate(metadata, markdown, knownSourceIds, fileName) {
   const required = ['id', 'slug', 'title', 'description', 'domain', 'domain_label', 'group_id', 'group_label', 'item_id', 'week', 'estimated_minutes', 'relevance', 'sources', 'content_revision', 'content_status', 'learning_objectives', 'curation'];
   for (const key of required) {
     if (metadata[key] === undefined || metadata[key] === '') throw new Error(`${fileName}: Pflichtfeld ${key} fehlt.`);
@@ -72,6 +72,18 @@ function validate(metadata, knownSourceIds, fileName) {
   }
   if (!['CURATED_DRAFT', 'DIDACTICALLY_REVIEWED', 'PUBLICATION_READY'].includes(metadata.content_status)) {
     throw new Error(`${fileName}: ungültiger content_status.`);
+  }
+  const requiredObjectives = [...markdown.matchAll(/data-required-objective="([^"]+)"/g)].map(match => match[1]);
+  for (const objectiveId of metadata.learning_objectives) {
+    if (requiredObjectives.filter(id => id === objectiveId).length !== 1) {
+      throw new Error(`${fileName}: Lernziel ${objectiveId} benötigt genau einen Pflichtnachweis.`);
+    }
+  }
+  if (requiredObjectives.some(id => !metadata.learning_objectives.includes(id))) {
+    throw new Error(`${fileName}: Pflichtnachweis verweist auf ein unbekanntes Lernziel.`);
+  }
+  if (/data-quiz="[^"]*diagnostic[^"]*"[^>]*data-required-objective=/.test(markdown)) {
+    throw new Error(`${fileName}: Eine Diagnose darf kein Pflichtziel erfüllen.`);
   }
 }
 
@@ -130,7 +142,7 @@ const seen = { id: new Set(), slug: new Set(), item_id: new Set() };
 for (const file of files) {
   const raw = await readFile(path.join(contentDir, file), 'utf8');
   const { metadata, markdown } = parseDocument(raw, file);
-  validate(metadata, knownSourceIds, file);
+  validate(metadata, markdown, knownSourceIds, file);
   const curationPath = path.resolve(repoRoot, metadata.curation);
   const curationRoot = path.resolve(repoRoot, 'content', 'curation');
   if (path.dirname(curationPath) !== curationRoot || path.extname(curationPath) !== '.json') {
@@ -139,6 +151,10 @@ for (const file of files) {
   const curation = JSON.parse(await readFile(curationPath, 'utf8'));
   if (curation.topicId !== metadata.id || curation.contentRevision !== metadata.content_revision) {
     throw new Error(`${file}: Curation-Sidecar passt nicht zu Topic oder Inhaltsrevision.`);
+  }
+  const curationObjectiveIds = new Set((curation.objectives || []).map(objective => objective.id));
+  if (metadata.learning_objectives.some(id => !curationObjectiveIds.has(id))) {
+    throw new Error(`${file}: Lernziele fehlen im Curation-Sidecar.`);
   }
   if (curation.status !== metadata.content_status || !Array.isArray(curation.evidence) || !curation.evidence.length) {
     throw new Error(`${file}: Curation-Status oder Evidence fehlt.`);

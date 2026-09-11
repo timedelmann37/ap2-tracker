@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.0">
 <link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
 </head>
-<body class="area-page area-ga1 learning-page" data-topic-id="raid-operations" data-progress-id="ga1-3__5" data-content-revision="2026-09-11.1" data-content-status="CURATED_DRAFT">
+<body class="area-page area-ga1 learning-page" data-topic-id="raid-operations" data-progress-id="ga1-3__5" data-content-revision="2026-09-11.2" data-content-status="CURATED_DRAFT">
 <div id="rp"></div>
 
 <nav class="topnav" aria-label="Hauptnavigation">
@@ -132,13 +132,13 @@
 <aside class="callout merk"><span class="lbl">Merksatz</span><p><strong>Spare startet, Swap tauscht, Backup stellt wieder her.</strong> Keiner der drei Begriffe ist ein RAID-Level.</p></aside><h2 class="sec" id="s4"><span class="num">4</span>Durchgerechneter Betriebsfall</h2>
 <p>Ein Dateiserver nutzt acht HDDs à 4 TB in RAID 6 und besitzt eine zusätzliche 4-TB-HDD als globales Hot Spare.</p>
 <ol>
-<li><strong>Nutzkapazität:</strong> Nur die acht aktiven RAID-Laufwerke zählen: <code>(8 − 2) × 4 TB = 24 TB</code>.</li>
-<li><strong>Erster Ausfall:</strong> Das Array läuft degradiert weiter. Monitoring muss alarmieren.</li>
-<li><strong>Automatischer Ersatz:</strong> Das Hot Spare wird in das Array aufgenommen und der Rebuild startet. Die Nutzkapazität steigt dadurch nicht.</li>
-<li><strong>Während des Rebuilds:</strong> I/O-Last, Laufwerkszustand und Fortschritt beobachten; eine weitere Störung ist weiterhin kritisch.</li>
-<li><strong>Nach dem Rebuild:</strong> Redundanzstatus prüfen, defektes Laufwerk ersetzen, wieder ein Spare bereitstellen und Ursache sowie Verlauf dokumentieren.</li>
+<li><strong>Nutzkapazität:</strong> Nur die acht aktiven RAID-Laufwerke zählen:</li>
 </ol>
-<div class="formula"><span class="cap">Kapazität</span><strong>24 TB nutzbar · das Hot Spare zählt nicht dazu</strong></div><h2 class="sec" id="s5"><span class="num">5</span>Geführte Übung</h2>
+<div class="math-display" role="group" aria-label="RAID-6-Kapazitätsrechnung ohne Hot Spare"><math display="block" aria-label="acht minus zwei, mal vier Terabyte, ergibt vierundzwanzig Terabyte"><mrow><mo>(</mo><mn>8</mn><mo>−</mo><mn>2</mn><mo>)</mo><mo>×</mo><mn>4</mn><mtext> TB</mtext><mo>=</mo><mn>24</mn><mtext> TB</mtext></mrow></math><div class="math-legend"><span><b>8</b> aktive Laufwerke</span><span><b>− 2</b> Parität</span><span><b>× 4 TB</b> Größe</span><span><b>24 TB</b> nutzbar</span><span><b>+ 1 Spare</b> ohne Kapazitätsbeitrag</span></div></div>
+2. **Erster Ausfall:** Das Array läuft degradiert weiter. Monitoring muss alarmieren.
+3. **Automatischer Ersatz:** Das Hot Spare wird in das Array aufgenommen und der Rebuild startet. Die Nutzkapazität steigt dadurch nicht.
+4. **Während des Rebuilds:** I/O-Last, Laufwerkszustand und Fortschritt beobachten; eine weitere Störung ist weiterhin kritisch.
+5. **Nach dem Rebuild:** Redundanzstatus prüfen, defektes Laufwerk ersetzen, wieder ein Spare bereitstellen und Ursache sowie Verlauf dokumentieren.<div class="formula"><span class="cap">Kapazität</span><strong>24 TB nutzbar · das Hot Spare zählt nicht dazu</strong></div><h2 class="sec" id="s5"><span class="num">5</span>Geführte Übung</h2>
 <section class="aufgabe">
   <div class="h"><span class="b">Schrittweise</span> Controller-Ausfall einplanen</div>
   <div class="body">
@@ -147,6 +147,21 @@
     <details data-hint="raid-ops-guided-2"><summary>Hinweis 2: Bevor du experimentierst</summary><div class="loesung"><p>Konfiguration und Laufwerksreihenfolge dokumentieren. Keine Initialisierung oder Neuerstellung des Arrays auslösen.</p></div></details>
     <details><summary>Musterlösung</summary><div class="loesung"><p>Passenden Ersatzcontroller und gesicherte Konfiguration bereithalten, Kompatibilität prüfen, vorhandene Metadaten kontrolliert importieren, Array zunächst lesend beziehungsweise ohne Initialisierung erkennen lassen, Status prüfen und danach einen Restore-Test aus der unabhängigen Sicherung durchführen.</p></div></details>
   </div>
+</section><section class="sequence-practice" data-sequence="controller-recovery" data-expected="stabilize,verify,document,replace-controller,import,replace-drive,rebuild,close" data-correct-feedback="Richtig. Du sicherst zuerst Zustand und Wiederherstellbarkeit, importierst den bestehenden Verbund vor dem Laufwerkstausch und prüfst das Ergebnis nach dem Rebuild." data-wrong-feedback="Dokumentation und Backup-Prüfung gehören vor den Umbau; die vorhandene Konfiguration muss vor Laufwerkstausch und Rebuild erkannt sein." aria-labelledby="sequence-title">
+  <div class="lab-heading"><div><h3 id="sequence-title">Reihenfolge-Werkstatt: Controller und Laufwerk</h3><p>Die Schritte sind absichtlich gemischt. Ordne sie mit den Schaltflächen „Hoch“ und „Runter“ an den Karten.</p></div><span class="lab-tag">Transfer</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="import" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Vorhandene beziehungsweise „foreign“ RAID-Konfiguration kontrolliert importieren.</span></li>
+    <li data-step="stabilize" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Schreiblast reduzieren und aktuellen Fehlerzustand festhalten.</span></li>
+    <li data-step="replace-drive" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Das nachweislich ausgefallene Laufwerk durch ein geeignetes ersetzen.</span></li>
+    <li data-step="document" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Slots, Kabel, Controllerdaten, Firmware und Laufwerksreihenfolge dokumentieren.</span></li>
+    <li data-step="close" tabindex="-1"><span class="step-position" data-step-position>5</span><span>Konsistenz und Anwendungen prüfen, Backup aktualisieren und Eingriff dokumentieren.</span></li>
+    <li data-step="verify" tabindex="-1"><span class="step-position" data-step-position>6</span><span>Wiederherstellbares Backup, Controllerstatus und betroffene Laufwerke prüfen.</span></li>
+    <li data-step="rebuild" tabindex="-1"><span class="step-position" data-step-position>7</span><span>Rebuild überwachen, bis der Verbund wieder optimal und redundant ist.</span></li>
+    <li data-step="replace-controller" tabindex="-1"><span class="step-position" data-step-position>8</span><span>Kompatiblen Ersatzcontroller mit passender Firmware einsetzen.</span></li>
+  </ol>
+  <button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+  <aside class="sequence-warning"><strong>Niemals blind initialisieren:</strong> Ein neuer Verbund kann vorhandene RAID-Metadaten überschreiben. Herstellerverfahren unterscheiden sich; die bestehende Konfiguration wird nach Dokumentation kontrolliert importiert.</aside>
 </section><h2 class="sec" id="s6"><span class="num">6</span>Karteikarten und Wiederholung</h2>
 <div class="flashcard-grid">
   <button class="flashcard" type="button" data-flashcard="ops-spare-swap" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Hot Spare oder Hot Swap?</strong><small>Zum Umdrehen antippen</small></span><span class="face back"><span class="k">Antwort</span><span>Hot Spare ist das Reservelaufwerk; Hot Swap ist der Austausch im laufenden Betrieb.</span></span></button>
@@ -154,7 +169,13 @@
 </div>
 <div class="card-rating"><span>Karte „Spare/Swap“:</span><button type="button" data-card-id="ops-spare-swap" data-card-rate="known">gewusst</button><button type="button" data-card-id="ops-spare-swap" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ops-spare-swap"></span></div>
 <div class="card-rating"><span>Karte „Controller-Cache“:</span><button type="button" data-card-id="ops-controller-cache" data-card-rate="known">gewusst</button><button type="button" data-card-id="ops-controller-cache" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ops-controller-cache"></span></div><h2 class="sec" id="s7"><span class="num">7</span>Lernziel-Check: Transfer</h2>
-<p>Ein Virtualisierungshost soll auf Standardservern automatisiert ausgerollt werden. Das Team beherrscht die Software-RAID-Werkzeuge, überwacht Laufwerke zentral und hält Boot- sowie Metadaten-Dokumentation vor.</p>
+<section class="recall-practice" data-recall="controller-import" data-min-length="45" aria-labelledby="ops-recall-title">
+  <div class="recall-prompt"><h3 id="ops-recall-title">Abruf aus dem Kopf</h3><p>Warum darf ein Ersatzcontroller die vorhandenen Laufwerke nicht einfach initialisieren? Nenne auch die sichere Alternative.</p></div>
+  <label class="sr-only" for="ops-recall-answer">Deine freie Antwort</label>
+  <textarea id="ops-recall-answer" data-recall-input rows="4" placeholder="Gefahr und sichere Alternative …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Eine Initialisierung kann vorhandene RAID-Metadaten und damit die Information über den bestehenden Verbund überschreiben. Stattdessen wird ein kompatibler Controller eingesetzt und die vorhandene Konfiguration nach Herstelleranleitung importiert und geprüft.</div>
+</section><p>Ein Virtualisierungshost soll auf Standardservern automatisiert ausgerollt werden. Das Team beherrscht die Software-RAID-Werkzeuge, überwacht Laufwerke zentral und hält Boot- sowie Metadaten-Dokumentation vor.</p>
 <section class="quiz" data-quiz="raid-ops-architecture" data-correct="1" data-required-objective="architecture">
   <h3>Welche Entscheidung ist auf Basis dieser Angaben am besten begründet?</h3>
   <button class="opt" type="button" data-answer="0" data-rationale="Ein Hardware-Controller kann funktionieren, ist aus den genannten Anforderungen aber nicht automatisch überlegen."><span class="m">A</span> Hardware-RAID, weil es grundsätzlich schneller und sicherer ist</button>
