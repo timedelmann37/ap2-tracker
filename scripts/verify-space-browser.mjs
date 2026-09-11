@@ -13,10 +13,10 @@ try {
     playState: getComputedStyle(el).animationPlayState
   })));
   const ambientBefore = await ambientState();
-  assert(ambientBefore.length === 2, 'The hybrid must contain both ambient layers');
+  assert(ambientBefore.length === 2, 'The atmosphere must contain both ambient layers');
   await page.waitForTimeout(450);
   const ambientAfter = await ambientState();
-  assert(ambientAfter.every((layer, index) => layer.transform !== ambientBefore[index].transform), 'Aurora and eclipse must both move');
+  assert(ambientAfter.every((layer, index) => layer.transform !== ambientBefore[index].transform), 'Aurora and light trails must both move');
   const card = page.locator('details.card').first();
   if ((await card.getAttribute('open')) === null) await card.locator('summary').click();
   const fill = card.locator('.track > .fill');
@@ -51,9 +51,9 @@ try {
   for (const route of ['/', '/uebersicht/', '/konzeption-administration/', '/sowi/', '/lernpfad/', '/lernen/osi-model/', '/simulation/', '/tracker/']) {
     await page.goto(base + route);
     const layers = await ambientState();
-    assert(layers.map(layer => layer.name).join(',') === 'space-aurora,space-eclipse', `Shared hybrid missing on ${route}`);
+    assert(layers.map(layer => layer.name).join(',') === 'space-aurora,space-trails', `Shared atmosphere missing on ${route}`);
     assert(layers.every(layer => layer.playState === 'running'), `Atmosphere not running on ${route}`);
   }
-  console.log('PASS hybrid: global coverage, both layers moving, real progress, beam, pause, undo, persistence, reduced motion');
+  console.log('PASS atmosphere: global coverage, both layers moving, real progress, beam, pause, undo, persistence, reduced motion');
   await context.close();
 } finally { await browser.close(); }

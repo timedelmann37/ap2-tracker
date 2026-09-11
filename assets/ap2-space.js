@@ -6,7 +6,24 @@
     const atmosphere = document.createElement('div');
     atmosphere.className = 'space-atmosphere';
     atmosphere.setAttribute('aria-hidden', 'true');
-    atmosphere.innerHTML = '<div class="space-aurora"></div><div class="space-eclipse"></div>';
+    atmosphere.innerHTML = `<div class="space-aurora"></div><div class="space-trails">
+      <svg viewBox="0 0 1440 1000" preserveAspectRatio="none" focusable="false">
+        <defs>
+          <linearGradient id="ap2-trail-violet" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
+            <stop offset="0" stop-color="#b997ff" stop-opacity="0"/>
+            <stop offset=".42" stop-color="#cbb4ff" stop-opacity=".8"/>
+            <stop offset="1" stop-color="#9d64d9" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="ap2-trail-cyan" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
+            <stop offset="0" stop-color="#67cfcf" stop-opacity="0"/>
+            <stop offset=".65" stop-color="#83d4de" stop-opacity=".45"/>
+            <stop offset="1" stop-color="#83d4de" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <path d="M1320 -100C1700 130 1510 380 1370 590S1250 890 1530 1100" stroke="url(#ap2-trail-violet)"/>
+        <path d="M-160 120C200 340 50 510-80 710S-30 990 190 1100" stroke="url(#ap2-trail-cyan)"/>
+      </svg>
+    </div>`;
     document.body.prepend(atmosphere);
 
     const control = document.createElement('button');

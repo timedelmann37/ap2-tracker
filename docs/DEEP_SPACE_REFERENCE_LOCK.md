@@ -1,6 +1,6 @@
 # Deep Space — Referenz und Umsetzung
 
-Stand: 2026-09-11. Branch: `codex/deep-space-ui`.
+Stand: 2026-09-12. Branch: `codex/deep-space-ui`.
 
 ## Ziel
 
@@ -38,7 +38,23 @@ ihre zuvor festgelegten Rollen.
 
 ## Referenz-Lock und Entscheidungen
 
-### Aktueller Hintergrund: Polarlicht + Sonnenfinsternis
+### Aktueller Hintergrund: Polarlicht + offene Lichtbögen
+
+Der Nutzer bewertet die Animation in Chrome als flüssig, den geschlossenen
+Kreis jedoch als unplatziert. Er wird durch zwei feine, auslaufende SVG-Bögen
+an den äußeren Seiten und einen weichen violetten Schimmer ersetzt. Das
+Polarlicht aus dem gewählten Hybrid bleibt. Diese Korrektur gilt global.
+
+- Astro behält die Rolle der diffusen Atmosphäre, n8n liefert die Idee feiner
+  Lichtverbindungen; die randständige Platzierung folgt der Nutzerkorrektur.
+- Die neue Ebene `.space-trails` bewegt sich über 24s nur um 8px seitlich und
+  18px nach oben. Animiert wird allein die Transformation der Ebene.
+- Die Bögen sind offen, laufen transparent aus und liegen außerhalb der
+  zentralen Lesefläche. Keine geschlossene Scheibe und kein heller Laserkern
+  im Hintergrund; die stärkeren Signale bleiben an Fortschritt und Bedienung.
+- Die Ebene übernimmt Pause, Reduced Motion und die schwächere Hellmodus-Tönung.
+
+### Vorherige Auswahl: Polarlicht + Sonnenfinsternis (abgelöst)
 
 Nach drei Hintergrundvarianten und einem kombinierten Desktop-Entwurf hat der
 Nutzer den Hybrid aus Variante 1 und 2 zur globalen Umsetzung gewählt.
@@ -56,7 +72,7 @@ Umlaufbahnen aus Revision 2. Glas, Seitenaufbau und Laser-Fortschritt bleiben.
   auf beide Ebenen. Der Countdown behält seine eigene umlaufende Kontur.
 
 Die folgende Tabelle dokumentiert die ursprünglichen Quellenrollen; bei der
-Hintergrundkomposition gilt die oben ausgewählte Variante.
+Hintergrundkomposition gilt die aktuelle Korrektur mit offenen Lichtbögen.
 
 | Entscheidung | Quelle / ursprüngliche Rolle | Umsetzung |
 |---|---|---|

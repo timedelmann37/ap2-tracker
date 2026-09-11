@@ -1,6 +1,6 @@
 # AP2-Tracker — Deep Space
 
-Stand: 2026-09-11. Umsetzung auf `codex/deep-space-ui`.
+Stand: 2026-09-12. Umsetzung auf `codex/deep-space-ui`.
 
 Dieses Dokument ist die verbindliche Designvorgabe für neue Inhalte, Seiten und
 Komponenten. Das bestehende Deep-Space-Design wird fortgeführt. Frühere Vorgaben
@@ -62,13 +62,17 @@ nutzen die gemeinsame CSS-Schicht. Simulation und älterer Einzeltracker
 
 ## Bewegung und Theme
 
-Globaler Hintergrund ist der gewählte Hybrid aus Polarlicht und Sonnenfinsternis:
-türkise und violette Lichtbänder bewegen sich über 16 Sekunden hinter einem
-violetten Lichtring. Der Ring schwebt über 14 Sekunden um 34px nach oben, wächst
-um 8% und wird leicht dunkler. Beide Bewegungen laufen sanft hin und zurück.
+Globaler Hintergrund besteht aus türkisen/violetten Polarlichtern und zwei
+schwachen, offenen Lichtbögen an den äußeren Seiten. Die Lichtbänder bewegen sich
+über 16 Sekunden. Die Bögen verschieben sich über 24 Sekunden um 8px seitlich
+und 18px nach oben, sanft hin und zurück. Ein weicher violetter Schimmer verbindet
+sie mit dem Hintergrund. Die Seitenmitte bleibt frei von dekorativen Konturen.
+Der zuvor verwendete geschlossene Lichtring wurde auf Nutzerwunsch entfernt,
+weil er wie ein unplatziertes Einzelobjekt wirkte. Neue Hintergrundakzente
+bleiben randständig und deutlich schwächer als Fortschritt und Kartenkanten.
 Der Hintergrund liegt viewport-fixiert hinter Glasflächen mit 30–48% Tönung
-und 24px Backdrop-Blur. Im Hellmodus sind Polarlicht und Ring deutlich schwächer;
-die Ringmitte bleibt hell. Die gleichen zwei Ebenen gelten auf allen Seiten,
+und 24px Backdrop-Blur. Im Hellmodus sind Polarlicht und Lichtbögen schwächer.
+Die gleichen zwei Ebenen gelten auf allen Seiten,
 einschließlich Lernseiten, Simulation und Einzeltracker. Countdown-Kontur,
 Glasspiegelung und kurze Hover-Bewegungen ergänzen den Hintergrund. Inhalte bleiben
 sofort bedienbar. Kein Scroll-Lock. Der Pause-Knopf speichert die Wahl unter
