@@ -5,6 +5,7 @@
   const LEARNING_KEY = 'ap2-learning-state-v1';
   const progressId = document.body.dataset.progressId;
   const topicId = document.body.dataset.topicId;
+  const contentRevision = document.body.dataset.contentRevision || 'legacy';
   const saveNote = document.getElementById('learning-save');
   const CLOUD_URL = 'https://snwkmwevqmqulmexgxxr.supabase.co';
   const CLOUD_KEY = 'sb_publishable__EFtmQSsRJMyiWVYVNTGQA_rKx39rML';
@@ -12,6 +13,8 @@
   let cloudUser = null;
   let cloudTimer = null;
   let cloudSyncing = false;
+  // Local learning must remain usable when the optional cloud client is unavailable.
+  let cloudReady = true;
 
   function load(key) {
     try {
@@ -35,8 +38,23 @@
   let tracker = load(TRACKER_KEY);
   let learning = load(LEARNING_KEY);
 
+  const revisionKey = `${topicId}:content-revision`;
+  if (learning[revisionKey] && learning[revisionKey] !== contentRevision) {
+    for (const key of Object.keys(learning)) {
+      if (key.startsWith(`${topicId}:`) && key !== revisionKey) delete learning[key];
+    }
+    if (progressId && tracker[progressId]) {
+      tracker[`mark__${progressId}`] = true;
+      tracker[`ts__${progressId}`] = Date.now();
+      save(TRACKER_KEY, tracker);
+    }
+  }
+  learning[revisionKey] = contentRevision;
+  save(LEARNING_KEY, learning);
+
   function setProgressEnabled(enabled) {
-    document.getElementById('mark-done')?.toggleAttribute('disabled', !enabled);
+    cloudReady = enabled;
+    renderMastery();
     document.getElementById('mark-rep')?.toggleAttribute('disabled', !enabled);
   }
 
@@ -96,6 +114,7 @@
   }
 
   document.getElementById('mark-done')?.addEventListener('click', () => {
+    if (!masteryState().passed && !tracker[progressId]) return;
     const wasDone = Boolean(tracker[progressId]);
     tracker[progressId] = !wasDone;
     tracker[`ts__${progressId}`] = Date.now();
@@ -122,8 +141,36 @@
       card.classList.toggle('is-flipped', next);
       card.setAttribute('aria-pressed', String(next));
       learning[key] = next;
+      learning[`${topicId}:card-seen:${card.dataset.flashcard}`] = true;
       save(LEARNING_KEY, learning);
+      renderMastery();
     });
+  }
+
+  for (const button of document.querySelectorAll('[data-card-rate]')) {
+    const cardId = button.dataset.cardId;
+    button.addEventListener('click', () => {
+      const rating = button.dataset.cardRate;
+      const days = rating === 'known' ? 4 : 1;
+      const due = new Date();
+      due.setDate(due.getDate() + days);
+      learning[`${topicId}:card-rating:${cardId}`] = rating;
+      learning[`${topicId}:review-due:${cardId}`] = due.toISOString().slice(0, 10);
+      save(LEARNING_KEY, learning);
+      const status = document.querySelector(`[data-card-review-status="${cardId}"]`);
+      if (status) status.textContent = `Wiederholung am ${due.toLocaleDateString('de-DE')}`;
+      for (const peer of document.querySelectorAll(`[data-card-id="${cardId}"][data-card-rate]`)) {
+        peer.classList.toggle('selected', peer === button);
+        peer.setAttribute('aria-pressed', String(peer === button));
+      }
+      renderMastery();
+    });
+    const storedRating = learning[`${topicId}:card-rating:${cardId}`];
+    button.classList.toggle('selected', storedRating === button.dataset.cardRate);
+    button.setAttribute('aria-pressed', String(storedRating === button.dataset.cardRate));
+    const due = learning[`${topicId}:review-due:${cardId}`];
+    const status = document.querySelector(`[data-card-review-status="${cardId}"]`);
+    if (due && status) status.textContent = `Wiederholung am ${new Date(`${due}T12:00:00`).toLocaleDateString('de-DE')}`;
   }
 
   function renderQuiz(quiz, selected) {
@@ -138,6 +185,9 @@
       option.classList.toggle('wrong', hasAnswer && answer === selected && selected !== correct);
     }
     if (feedback) feedback.hidden = !hasAnswer;
+    const selectedOption = options.find(option => Number(option.dataset.answer) === selected);
+    const rationale = feedback?.querySelector('[data-selected-feedback]');
+    if (rationale) rationale.textContent = hasAnswer ? selectedOption?.dataset.rationale || '' : '';
   }
 
   for (const quiz of document.querySelectorAll('[data-quiz]')) {
@@ -148,15 +198,56 @@
       option.addEventListener('click', () => {
         const selected = Number(option.dataset.answer);
         learning[key] = selected;
+        learning[`${topicId}:attempts:${quiz.dataset.quiz}`] = Number(learning[`${topicId}:attempts:${quiz.dataset.quiz}`] || 0) + 1;
         save(LEARNING_KEY, learning);
         renderQuiz(quiz, selected);
+        renderMastery();
       });
     }
     quiz.querySelector('[data-quiz-reset]')?.addEventListener('click', () => {
       delete learning[key];
       save(LEARNING_KEY, learning);
       renderQuiz(quiz, undefined);
+      renderMastery();
     });
+  }
+
+  for (const hint of document.querySelectorAll('details[data-hint]')) {
+    hint.addEventListener('toggle', () => {
+      if (!hint.open) return;
+      learning[`${topicId}:hint-used:${hint.dataset.hint}`] = true;
+      save(LEARNING_KEY, learning);
+    });
+  }
+
+  function masteryState() {
+    const required = [...document.querySelectorAll('[data-required-objective]')];
+    if (!required.length) return { passed: true, completed: 0, total: 0 };
+    const objectiveIds = [...new Set(required.map(item => item.dataset.requiredObjective))];
+    const passedIds = objectiveIds.filter(objectiveId => required
+      .filter(item => item.dataset.requiredObjective === objectiveId)
+      .some(quiz => learning[`${topicId}:quiz:${quiz.dataset.quiz}`] === Number(quiz.dataset.correct)));
+    return { passed: passedIds.length === objectiveIds.length, completed: passedIds.length, total: objectiveIds.length };
+  }
+
+  function renderMastery() {
+    const state = masteryState();
+    const button = document.getElementById('mark-done');
+    const count = document.querySelector('[data-mastery-count]');
+    const bar = document.querySelector('[data-mastery-bar]');
+    const note = document.querySelector('[data-mastery-note]');
+    if (state.total === 0) {
+      document.querySelector('[data-mastery-box]')?.setAttribute('hidden', '');
+    } else {
+      document.querySelector('[data-mastery-box]')?.removeAttribute('hidden');
+      if (count) count.textContent = `${state.completed} von ${state.total} Pflichtzielen bestanden`;
+      if (bar) bar.style.width = `${(state.completed / state.total) * 100}%`;
+      if (note) note.textContent = state.passed ? 'Beide Lernziele sind nachgewiesen.' : 'Bestehe die gekennzeichneten Lernziel-Checks.';
+    }
+    const canToggle = state.passed || Boolean(tracker[progressId]);
+    button?.toggleAttribute('disabled', !cloudReady || !canToggle);
+    if (button && !canToggle) button.title = 'Erst nach bestandenen Pflichtzielen verfügbar';
+    else button?.removeAttribute('title');
   }
 
   const progress = document.getElementById('rp');
@@ -190,6 +281,7 @@
   });
 
   renderProgress();
+  renderMastery();
 
   async function initCloudBridge() {
     if (!cloud || !progressId) return;

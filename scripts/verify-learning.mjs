@@ -33,7 +33,7 @@ const learningTemplate = await readFile(path.join(repoRoot, 'scripts', 'template
 check(sourceCatalog.sources.length === 5, 'fünf bereitgestellte Buchquellen werden im Quellenkatalog geführt');
 check(sourceIds.size === sourceCatalog.sources.length, 'Quellen-IDs sind eindeutig');
 check(new Set(sourceCatalog.sources.map(source => source.role)).size >= 3, 'Quellen besitzen unterschiedliche Rollen statt gleicher Gewichtung');
-check(manifest.topics.length > 0, 'Lernmanifest enthält mindestens ein Kernthema');
+check(manifest.topics.length >= 3, 'Lernmanifest enthält mindestens drei kuratierte Kernthemen');
 check(!learningIndex.includes('id="tab-plan"') && !learningIndex.includes('id="pane-plan"'), 'Lernbereich dupliziert den Wochenplan nicht als leeren Tab');
 check(learningIndex.includes('button class="group-head"') && learningIndex.includes('aria-expanded='), 'Lerngruppen sind semantische, tastaturbedienbare Schalter');
 check(learningTemplate.includes('{{DOMAIN_PATH}}') && learningTemplate.includes('{{DOMAIN_CLASS}}'), 'Lernseiten-Template ist für GA1, GA2 und WiSo bereichsneutral');
@@ -44,15 +44,25 @@ for (const topic of manifest.topics) {
   if (!await exists(pagePath)) continue;
   const page = await readFile(pagePath, 'utf8');
   check(page.includes(`data-progress-id="${topic.itemId}"`), `${topic.slug}: kanonischer Fortschritts-Schlüssel ist eingebettet`);
+  check(page.includes(`data-content-revision="${topic.contentRevision}"`), `${topic.slug}: Inhaltsrevision ist eingebettet`);
+  check(['CURATED_DRAFT', 'DIDACTICALLY_REVIEWED', 'PUBLICATION_READY'].includes(topic.contentStatus), `${topic.slug}: Kurationsstatus ist im Manifest`);
+  check(Array.isArray(topic.learningObjectives) && topic.learningObjectives.length >= 2, `${topic.slug}: Lernziele sind maschinenlesbar`);
   check(page.includes('/assets/ap2-learning.js'), `${topic.slug}: gemeinsame Interaktionslogik ist eingebunden`);
   check(page.includes('data-quiz='), `${topic.slug}: Selbsttest ist vorhanden`);
   check(page.includes('data-flashcard='), `${topic.slug}: Karteikarten sind vorhanden`);
+  check(page.includes('data-required-objective='), `${topic.slug}: Abschluss ist an Lernziel-Checks gebunden`);
   check(page.includes('class="bottomnav"'), `${topic.slug}: mobile Navigation ist vorhanden`);
   check(!page.includes('class="ph"'), `${topic.slug}: keine Bild-Platzhalter`);
   check(!page.includes('id="accountBtn"'), `${topic.slug}: kein funktionsloser Konto-Button`);
   check(topic.sources.every(sourceId => sourceIds.has(sourceId)), `${topic.slug}: alle Quellen-IDs sind registriert`);
   check(areaHtml.includes('window.AP2_LEARNING_TOPICS') && areaHtml.includes("'/lernen/' + topic.slug + '/'"), `${topic.slug}: Kernthema nutzt den generierten Lernkatalog`);
 }
+
+const raidPage = await readFile(path.join(repoRoot, 'lernen', 'raid', 'index.html'), 'utf8');
+check(raidPage.includes('data-selected-feedback') && raidPage.includes('data-rationale='), 'RAID-Pilot erklärt auch falsche Antwortoptionen');
+check(raidPage.includes('data-card-rate="known"') && raidPage.includes('data-card-rate="unsure"'), 'RAID-Pilot besitzt eine Karten-Selbsteinschätzung');
+check(raidPage.includes('data-mastery-box'), 'RAID-Pilot zeigt den Lernziel-Fortschritt');
+check(manifest.topics.some(topic => topic.slug === 'raid-operations' && topic.itemId === 'ga1-3__5'), 'RAID-Betrieb ist als eigenes kanonisches Kernthema verdrahtet');
 
 const localCatalogPath = path.join(repoRoot, 'knowledge-base', 'local', 'catalog.json');
 if (await exists(localCatalogPath)) {

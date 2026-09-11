@@ -11,12 +11,18 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "week": "KW 37",
     "estimatedMinutes": 18,
     "relevance": "hoch",
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "access-level",
+      "architecture-selection"
+    ],
     "sources": [
       "europa-integratoren-2026",
       "ihk-bonn",
       "itlf6-9-2022"
     ],
-    "contentHash": "e151f4cbaac7b0032779f9826e77fb654ba671da958df132094c2c1cb0076d14"
+    "contentHash": "995bd3962b4b71407f1e7cd564dfe9d483ad82da867ca88a64ad8b95bfa7b0b4"
   },
   {
     "id": "raid-level",
@@ -28,14 +34,45 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "groupLabel": "Block 3 · Speicherlösungen",
     "itemId": "ga1-3__3",
     "week": "KW 37",
-    "estimatedMinutes": 16,
+    "estimatedMinutes": 24,
     "relevance": "hoch",
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "capacity",
+      "selection"
+    ],
     "sources": [
       "europa-integratoren-2026",
       "ihk-bonn",
       "itlf6-9-2022",
       "it-basiswissen-2012"
     ],
-    "contentHash": "e2b2864864b0a800e9ed4f7fe2e6a4633a069ab3b55d52a2fc6bd04ce53eb859"
+    "contentHash": "6aef46761ba4f62cb338bb72bd16180d35475151fe7db293d76b8ca026cb65a0"
+  },
+  {
+    "id": "raid-operations",
+    "slug": "raid-operations",
+    "title": "Hardware- und Software-RAID betriebssicher planen",
+    "description": "RAID-Implementierungen vergleichen, Hot Spare und Hot Swap trennen und einen sicheren Wiederherstellungsablauf begründen.",
+    "domain": "GA1",
+    "groupId": "ga1-3",
+    "groupLabel": "Block 3 · Speicherlösungen",
+    "itemId": "ga1-3__5",
+    "week": "KW 37",
+    "estimatedMinutes": 20,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "architecture",
+      "recovery"
+    ],
+    "sources": [
+      "europa-integratoren-2026",
+      "ihk-bonn",
+      "itlf6-9-2022"
+    ],
+    "contentHash": "a74bbab221bb6753e499dacb30361c9ec4fe945db782d340773e33eefde12583"
   }
 ]);

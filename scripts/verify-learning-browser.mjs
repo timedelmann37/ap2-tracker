@@ -69,6 +69,7 @@ try {
   const done = page.locator('#mark-done');
   const repeat = page.locator('#mark-rep');
   assert(await done.getAttribute('aria-pressed') === 'false', 'Lernstatus starts open');
+  assert(await done.isDisabled(), 'Completion is gated until required objectives pass');
   assert(await repeat.getAttribute('aria-pressed') === 'false', 'Repeat marker starts off');
 
   const card = page.locator('[data-flashcard="raid-backup"]');
@@ -77,15 +78,24 @@ try {
   await page.reload();
   assert(await page.locator('[data-flashcard="raid-backup"]').getAttribute('aria-pressed') === 'true', 'Flashcard state survives reload');
 
-  const quiz = page.locator('[data-quiz="raid-capacity"]');
+  const quiz = page.locator('[data-quiz="raid-diagnostic"]');
   await quiz.locator('[data-answer="0"]').click();
   assert(await quiz.locator('[data-answer="0"]').evaluate(node => node.classList.contains('wrong')), 'Wrong quiz answer is marked');
-  assert(await quiz.locator('[data-answer="2"]').evaluate(node => node.classList.contains('right')), 'Correct quiz answer is revealed');
+  assert(await quiz.locator('[data-answer="1"]').evaluate(node => node.classList.contains('right')), 'Correct quiz answer is revealed');
   assert(await quiz.locator('[data-feedback]').isVisible(), 'Quiz explanation is shown');
+  assert((await quiz.locator('[data-selected-feedback]').textContent()).includes('zwei Laufwerken'), 'Wrong answer receives distractor-specific feedback');
   await page.reload();
-  assert(await page.locator('[data-quiz="raid-capacity"] [data-feedback]').isVisible(), 'Quiz answer survives reload');
-  await page.locator('[data-quiz="raid-capacity"] [data-quiz-reset]').click();
-  assert(!await page.locator('[data-quiz="raid-capacity"] [data-feedback]').isVisible(), 'Quiz can be retried');
+  assert(await page.locator('[data-quiz="raid-diagnostic"] [data-feedback]').isVisible(), 'Quiz answer survives reload');
+  await page.locator('[data-quiz="raid-diagnostic"] [data-quiz-reset]').click();
+  assert(!await page.locator('[data-quiz="raid-diagnostic"] [data-feedback]').isVisible(), 'Quiz can be retried');
+
+  await page.locator('[data-card-id="raid-backup"][data-card-rate="unsure"]').click();
+  assert((await page.locator('[data-card-review-status="raid-backup"]').textContent()).includes('Wiederholung am'), 'Card self-rating schedules a review');
+
+  await page.locator('[data-quiz="raid-transfer-selection"] [data-answer="2"]').click();
+  assert(await page.locator('#mark-done').isDisabled(), 'One passed objective is not enough for completion');
+  await page.locator('[data-quiz="raid-transfer-capacity"] [data-answer="1"]').click();
+  assert(!await page.locator('#mark-done').isDisabled(), 'Completion unlocks after all required objectives pass');
 
   await page.locator('#mark-done').click();
   await page.locator('#mark-rep').click();
@@ -114,6 +124,9 @@ try {
   const storageQuiz = page.locator('[data-quiz="storage-protocol"]');
   await storageQuiz.locator('[data-answer="2"]').click();
   assert(await storageQuiz.locator('[data-answer="2"]').evaluate(node => node.classList.contains('right')), 'Second topic quiz works');
+  await page.goto(`${base}/lernen/raid-operations/`);
+  assert(await page.locator('[data-required-objective]').count() === 2, 'RAID operations exposes two required objective checks');
+  assert(await page.locator('#mark-done').isDisabled(), 'RAID operations completion is gated');
   assert(errors.length === 0, `No browser errors: ${errors.join('; ')}`);
   await context.close();
 
@@ -160,6 +173,38 @@ try {
   const cloudUpserts = await cloudPage.evaluate(() => window.__cloudUpserts.map(row => structuredClone(row)));
   assert(cloudUpserts.some(row => row.state?.['ga1-3__3'] === false), `Learning progress is pushed through the cloud bridge: ${JSON.stringify(cloudUpserts)}`);
   await cloudContext.close();
+
+  const revisionContext = await browser.newContext({ viewport: { width: 1024, height: 760 } });
+  const revisionPage = await revisionContext.newPage();
+  await revisionPage.addInitScript(() => {
+    localStorage.setItem('ap2-tracker-state-v1', JSON.stringify({ 'ga1-3__3': true, 'mark__ga1-3__3': false }));
+    localStorage.setItem('ap2-learning-state-v1', JSON.stringify({
+      'raid-level:content-revision': '2026-09-10.1',
+      'raid-level:quiz:raid-transfer-capacity': 1,
+      'raid-level:card:raid-backup': true
+    }));
+  });
+  await revisionPage.route('**/supabase-js@2.114.0/dist/umd/supabase.js', route => route.fulfill({
+    contentType: 'text/javascript',
+    body: `window.supabase = {
+      createClient() {
+        return {
+          auth: {
+            async getSession() { return { data: { session: null } }; },
+            onAuthStateChange() { return { data: { subscription: { unsubscribe() {} } } }; }
+          },
+          from() { return {}; }
+        };
+      }
+    };`
+  }));
+  await revisionPage.goto(`${base}/lernen/raid/`);
+  const revisedLearning = await revisionPage.evaluate(() => JSON.parse(localStorage.getItem('ap2-learning-state-v1')));
+  const revisedTracker = await revisionPage.evaluate(() => JSON.parse(localStorage.getItem('ap2-tracker-state-v1')));
+  assert(revisedLearning['raid-level:content-revision'] === '2026-09-11.1', 'Content revision is updated');
+  assert(!('raid-level:quiz:raid-transfer-capacity' in revisedLearning), 'Old topic attempts are cleared after a content revision');
+  assert(revisedTracker['ga1-3__3'] === true && revisedTracker['mark__ga1-3__3'] === true, 'Existing completion is preserved and scheduled for review after a revision');
+  await revisionContext.close();
 
   const mobile = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const mobilePage = await mobile.newPage();

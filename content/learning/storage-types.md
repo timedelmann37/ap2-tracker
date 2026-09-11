@@ -12,6 +12,10 @@ week: KW 37
 estimated_minutes: 18
 relevance: hoch
 sources: ["europa-integratoren-2026", "ihk-bonn", "itlf6-9-2022"]
+content_revision: 2026-09-11.1
+content_status: CURATED_DRAFT
+learning_objectives: ["access-level", "architecture-selection"]
+curation: content/curation/storage-types.json
 ---
 In Prüfungsaufgaben ist nicht das Gehäuse die wichtigste Frage, sondern **wie der Host auf den Speicher zugreift**. Sieht er Dateien und Ordner oder ein rohes Blockgerät, auf dem er selbst ein Dateisystem anlegt? Aus dieser Unterscheidung lassen sich DAS, NAS, SAN und die passenden Protokolle zuverlässig ableiten.
 
@@ -114,7 +118,7 @@ Ein vollständiger Prüfungssatz verbindet Anforderung und Entscheidung: „Für
 
 ## Selbsttest
 
-<section class="quiz" data-quiz="storage-level" data-correct="1">
+<section class="quiz" data-quiz="storage-level" data-correct="1" data-required-objective="access-level">
   <h3>Ein Client greift auf <code>\\dateiserver\projekte</code> zu. Welche Kombination beschreibt den Zugriff am besten?</h3>
   <button class="opt" type="button" data-answer="0"><span class="m">A</span> SAN und Blockzugriff</button>
   <button class="opt" type="button" data-answer="1"><span class="m">B</span> NAS und Dateizugriff</button>
@@ -132,7 +136,7 @@ Ein vollständiger Prüfungssatz verbindet Anforderung und Entscheidung: „Für
   <div class="fb" data-feedback hidden><strong>iSCSI ist richtig.</strong> Ein Initiator sendet SCSI-Kommandos über TCP/IP an ein Target. SMB/CIFS und NFS sind Dateiprotokolle. <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
 </section>
 
-<section class="quiz" data-quiz="storage-classification" data-correct="3">
+<section class="quiz" data-quiz="storage-classification" data-correct="3" data-required-objective="architecture-selection">
   <h3>Eine Appliance bietet parallel eine SMB-Freigabe und ein iSCSI-Target an. Welche Aussage ist korrekt?</h3>
   <button class="opt" type="button" data-answer="0"><span class="m">A</span> Beide Zugriffe sind dateibasiert, weil dasselbe Gehäuse verwendet wird.</button>
   <button class="opt" type="button" data-answer="1"><span class="m">B</span> Beide Zugriffe sind blockbasiert, weil Festplatten eingebaut sind.</button>
@@ -147,6 +151,5 @@ Ein vollständiger Prüfungssatz verbindet Anforderung und Entscheidung: „Für
   <p><strong>EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):</strong> aktuelle Hauptquelle für die Abgrenzung von NAS-Dateifreigaben über SMB/NFS und SAN-Blockspeicher über iSCSI oder Fibre Channel.</p>
   <p><strong>Prüfungsvorbereitung IHK Bonn:</strong> enthält einen älteren Herstellervergleich zu DAS, NAS, iSCSI und Fibre Channel. Verwendet wurden nur zeitstabile Grundprinzipien; historische Produkt-, Bandbreiten- und Kostenangaben wurden bewusst nicht übernommen.</p>
   <p><strong>ITLF6–9 (2022):</strong> liefert Anwendungsszenarien für NAS, direkt angeschlossene Speichererweiterung sowie die Abwägung von iSCSI- und Fibre-Channel-SAN.</p>
-  <p><strong>ITLF10–12:</strong> liegt derzeit als Seitenscan ohne Textschicht vor und wurde für diese Einheit noch nicht ausgewertet. Nach der lokalen OCR kann die Quellenbasis gezielt ergänzt werden.</p>
   <p class="source-note">Text, Aufgaben und Grafik sind eine eigenständig formulierte Synthese. Buchseiten und Originalabbildungen bleiben in der privaten lokalen Wissensbasis.</p>
 </div>

@@ -57,7 +57,7 @@ function renderMarkdown(markdown) {
 }
 
 function validate(metadata, knownSourceIds, fileName) {
-  const required = ['id', 'slug', 'title', 'description', 'domain', 'domain_label', 'group_id', 'group_label', 'item_id', 'week', 'estimated_minutes', 'relevance', 'sources'];
+  const required = ['id', 'slug', 'title', 'description', 'domain', 'domain_label', 'group_id', 'group_label', 'item_id', 'week', 'estimated_minutes', 'relevance', 'sources', 'content_revision', 'content_status', 'learning_objectives', 'curation'];
   for (const key of required) {
     if (metadata[key] === undefined || metadata[key] === '') throw new Error(`${fileName}: Pflichtfeld ${key} fehlt.`);
   }
@@ -66,6 +66,12 @@ function validate(metadata, knownSourceIds, fileName) {
   if (!Array.isArray(metadata.sources) || !metadata.sources.length) throw new Error(`${fileName}: sources muss eine nichtleere Liste sein.`);
   for (const sourceId of metadata.sources) {
     if (!knownSourceIds.has(sourceId)) throw new Error(`${fileName}: unbekannte Quellen-ID ${sourceId}.`);
+  }
+  if (!Array.isArray(metadata.learning_objectives) || metadata.learning_objectives.length < 2) {
+    throw new Error(`${fileName}: mindestens zwei learning_objectives erforderlich.`);
+  }
+  if (!['CURATED_DRAFT', 'DIDACTICALLY_REVIEWED', 'PUBLICATION_READY'].includes(metadata.content_status)) {
+    throw new Error(`${fileName}: ungültiger content_status.`);
   }
 }
 
@@ -83,6 +89,11 @@ function domainConfig(domain, fileName) {
 
 function fillTemplate(template, metadata, content, toc) {
   const domain = domainConfig(metadata.domain, metadata.id);
+  const statusLabels = {
+    CURATED_DRAFT: 'Pilot · fachlich in Prüfung',
+    DIDACTICALLY_REVIEWED: 'Didaktisch geprüft',
+    PUBLICATION_READY: 'Freigegeben'
+  };
   const replacements = {
     TITLE: escapeHtml(metadata.title),
     DESCRIPTION: escapeHtml(metadata.description),
@@ -94,6 +105,10 @@ function fillTemplate(template, metadata, content, toc) {
     GROUP_LABEL: escapeHtml(metadata.group_label),
     ITEM_ID: escapeHtml(metadata.item_id),
     TOPIC_ID: escapeHtml(metadata.id),
+    CONTENT_REVISION: escapeHtml(metadata.content_revision),
+    CONTENT_STATUS: escapeHtml(metadata.content_status),
+    CONTENT_STATUS_LABEL: escapeHtml(statusLabels[metadata.content_status]),
+    OBJECTIVE_COUNT: escapeHtml(metadata.learning_objectives.length),
     MINUTES: escapeHtml(metadata.estimated_minutes),
     RELEVANCE: escapeHtml(metadata.relevance),
     CONTENT: content,
@@ -116,6 +131,21 @@ for (const file of files) {
   const raw = await readFile(path.join(contentDir, file), 'utf8');
   const { metadata, markdown } = parseDocument(raw, file);
   validate(metadata, knownSourceIds, file);
+  const curationPath = path.resolve(repoRoot, metadata.curation);
+  const curationRoot = path.resolve(repoRoot, 'content', 'curation');
+  if (path.dirname(curationPath) !== curationRoot || path.extname(curationPath) !== '.json') {
+    throw new Error(`${file}: curation muss direkt auf eine JSON-Datei unter content/curation zeigen.`);
+  }
+  const curation = JSON.parse(await readFile(curationPath, 'utf8'));
+  if (curation.topicId !== metadata.id || curation.contentRevision !== metadata.content_revision) {
+    throw new Error(`${file}: Curation-Sidecar passt nicht zu Topic oder Inhaltsrevision.`);
+  }
+  if (curation.status !== metadata.content_status || !Array.isArray(curation.evidence) || !curation.evidence.length) {
+    throw new Error(`${file}: Curation-Status oder Evidence fehlt.`);
+  }
+  if (curation.evidence.some(item => !metadata.sources.includes(item.sourceId) || !item.sourceLocator || !item.use || !item.reviewStatus)) {
+    throw new Error(`${file}: Curation-Evidence ist unvollständig oder nutzt eine nicht deklarierte Quelle.`);
+  }
   for (const field of Object.keys(seen)) {
     if (seen[field].has(metadata[field])) throw new Error(`${file}: ${field} ist nicht eindeutig (${metadata[field]}).`);
     seen[field].add(metadata[field]);
@@ -141,6 +171,9 @@ for (const file of files) {
     week: metadata.week || '',
     estimatedMinutes: metadata.estimated_minutes,
     relevance: metadata.relevance,
+    contentRevision: metadata.content_revision,
+    contentStatus: metadata.content_status,
+    learningObjectives: metadata.learning_objectives,
     sources: metadata.sources,
     contentHash: createHash('sha256').update(raw).digest('hex')
   });

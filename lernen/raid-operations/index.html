@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="RAID-Implementierungen vergleichen, Hot Spare und Hot Swap trennen und einen sicheren Wiederherstellungsablauf begründen.">
+<title>Hardware- und Software-RAID betriebssicher planen – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="raid-operations" data-progress-id="ga1-3__5" data-content-revision="2026-09-11.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-3">Block 3 · Speicherlösungen</a><span class="sep">›</span>
+    <span class="here">Hardware- und Software-RAID betriebssicher planen</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Hardware- und Software-RAID betriebssicher planen</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 20 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Ein RAID-Level beschreibt die Datenverteilung. Für einen belastbaren Betrieb musst du zusätzlich entscheiden, <strong>wo die RAID-Logik läuft</strong> und <strong>wie ein Ausfall erkannt, behoben und kontrolliert wird</strong>.</p>
+<section class="learning-goals" aria-labelledby="learning-goals-title">
+  <h2 id="learning-goals-title">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Hardware- und Software-RAID anhand eines konkreten Betriebsfalls abwägen,</li>
+    <li>Hot Spare, Hot Swap und Rebuild korrekt unterscheiden und daraus einen Wiederherstellungsablauf ableiten.</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Begriffe unter Druck</h2>
+<section class="quiz" data-quiz="raid-ops-diagnostic" data-correct="2">
+  <h3>Ein Laufwerk fällt aus. Ein eingebautes Reservelaufwerk startet automatisch den Wiederaufbau. Was beschreibt das Reservelaufwerk?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Hot Swap bezeichnet den möglichen Austausch im laufenden Betrieb, nicht das Reservelaufwerk selbst."><span class="m">A</span> Hot Swap</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Ein Backup ist eine unabhängige Kopie und kein Mitglied des Arrays."><span class="m">B</span> Backup</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Richtig: Ein Hot Spare steht als Reserve bereit und kann nach einem Ausfall automatisch in den Verbund aufgenommen werden."><span class="m">C</span> Hot Spare</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Die Parität ist eine verteilte Recheninformation im Array, kein separates Reservelaufwerk."><span class="m">D</span> Paritätslaufwerk</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2"><span class="num">2</span>Zwei Implementierungen, keine Pauschalantwort</h2>
+<div class="twrap"><table class="knowledge-table">
+<thead>
+<tr>
+<th>Kriterium</th>
+<th>Software-RAID</th>
+<th>Hardware-RAID</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>RAID-Logik</td>
+<td>Betriebssystem oder Hypervisor</td>
+<td>dedizierter Controller</td>
+</tr>
+<tr>
+<td>Abhängigkeit</td>
+<td>CPU, Treiber, Boot- und Metadatenformat</td>
+<td>Controller, Firmware und kompatible Ersatzhardware</td>
+</tr>
+<tr>
+<td>Transparenz</td>
+<td>oft gut mit Systemwerkzeugen automatisierbar</td>
+<td>dem Host häufig als einzelnes logisches Laufwerk präsentiert</td>
+</tr>
+<tr>
+<td>Cache</td>
+<td>nutzt System- und Laufwerks-Caches</td>
+<td>kann eigenen Schreibcache besitzen; Absicherung gegen Stromausfall ist entscheidend</td>
+</tr>
+<tr>
+<td>Geeignet, wenn …</td>
+<td>Standardhardware, Automatisierung und Portabilität zum Betriebskonzept passen</td>
+<td>definierte Controller-Funktionen, Cache und Herstellersupport den Zusatzaufwand rechtfertigen</td>
+</tr>
+</tbody></table></div>
+<p>„Hardware ist immer schneller“ ist keine tragfähige Begründung. Moderne Software-Lösungen können sehr leistungsfähig sein. Entscheidend sind Workload, CPU-Reserve, Cache-Schutz, Treiber, Monitoring, Ersatzteilstrategie und die Fähigkeit des Teams, das System wiederherzustellen.</p>
+<figure class="learning-figure">
+  <img src="/assets/learning/raid-operations.svg" alt="Vergleich der Datenpfade von Software- und Hardware-RAID sowie die Wiederherstellungskette von Ausfall über Ersatz und Rebuild bis zur wiederhergestellten Redundanz.">
+  <figcaption>Eigene Lernskizze: Die Implementierung ändert Verantwortlichkeiten; der kontrollierte Rebuild bleibt in beiden Fällen ein Betriebsprozess.</figcaption>
+</figure><h2 class="sec" id="s3"><span class="num">3</span>Hot Spare, Hot Swap und Backup</h2>
+<ul>
+<li><strong>Hot Spare</strong> ist ein eingeschaltetes Reservelaufwerk. Es kann die Zeit bis zum Rebuild-Start verkürzen, erhöht aber nicht die grundlegende Ausfalltoleranz des RAID-Levels.</li>
+<li><strong>Hot Swap</strong> ist die technische Fähigkeit, ein Laufwerk ohne Abschalten zu tauschen. Ob das erlaubt ist, hängt von Gehäuse, Controller, Betriebssystem und Betriebsanweisung ab.</li>
+<li><strong>Backup</strong> ist eine getrennte, wiederherstellbare Kopie. Es schützt gegen andere Fehlerklassen als ein RAID und muss durch Restore-Tests geprüft werden.</li>
+</ul>
+<aside class="callout merk"><span class="lbl">Merksatz</span><p><strong>Spare startet, Swap tauscht, Backup stellt wieder her.</strong> Keiner der drei Begriffe ist ein RAID-Level.</p></aside><h2 class="sec" id="s4"><span class="num">4</span>Durchgerechneter Betriebsfall</h2>
+<p>Ein Dateiserver nutzt acht HDDs à 4 TB in RAID 6 und besitzt eine zusätzliche 4-TB-HDD als globales Hot Spare.</p>
+<ol>
+<li><strong>Nutzkapazität:</strong> Nur die acht aktiven RAID-Laufwerke zählen: <code>(8 − 2) × 4 TB = 24 TB</code>.</li>
+<li><strong>Erster Ausfall:</strong> Das Array läuft degradiert weiter. Monitoring muss alarmieren.</li>
+<li><strong>Automatischer Ersatz:</strong> Das Hot Spare wird in das Array aufgenommen und der Rebuild startet. Die Nutzkapazität steigt dadurch nicht.</li>
+<li><strong>Während des Rebuilds:</strong> I/O-Last, Laufwerkszustand und Fortschritt beobachten; eine weitere Störung ist weiterhin kritisch.</li>
+<li><strong>Nach dem Rebuild:</strong> Redundanzstatus prüfen, defektes Laufwerk ersetzen, wieder ein Spare bereitstellen und Ursache sowie Verlauf dokumentieren.</li>
+</ol>
+<div class="formula"><span class="cap">Kapazität</span><strong>24 TB nutzbar · das Hot Spare zählt nicht dazu</strong></div><h2 class="sec" id="s5"><span class="num">5</span>Geführte Übung</h2>
+<section class="aufgabe">
+  <div class="h"><span class="b">Schrittweise</span> Controller-Ausfall einplanen</div>
+  <div class="body">
+    <p>Ein Server verwendet Hardware-RAID. Die Laufwerke sind intakt, aber der Controller fällt aus. Welche Punkte gehören in einen Wiederanlaufplan?</p>
+    <details data-hint="raid-ops-guided-1"><summary>Hinweis 1: Abhängigkeit</summary><div class="loesung"><p>Prüfe, welche Controllerfamilie, Firmware und Metadatenformate den vorhandenen Verbund importieren können.</p></div></details>
+    <details data-hint="raid-ops-guided-2"><summary>Hinweis 2: Bevor du experimentierst</summary><div class="loesung"><p>Konfiguration und Laufwerksreihenfolge dokumentieren. Keine Initialisierung oder Neuerstellung des Arrays auslösen.</p></div></details>
+    <details><summary>Musterlösung</summary><div class="loesung"><p>Passenden Ersatzcontroller und gesicherte Konfiguration bereithalten, Kompatibilität prüfen, vorhandene Metadaten kontrolliert importieren, Array zunächst lesend beziehungsweise ohne Initialisierung erkennen lassen, Status prüfen und danach einen Restore-Test aus der unabhängigen Sicherung durchführen.</p></div></details>
+  </div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Karteikarten und Wiederholung</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="ops-spare-swap" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Hot Spare oder Hot Swap?</strong><small>Zum Umdrehen antippen</small></span><span class="face back"><span class="k">Antwort</span><span>Hot Spare ist das Reservelaufwerk; Hot Swap ist der Austausch im laufenden Betrieb.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="ops-controller-cache" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was braucht ein Schreibcache?</strong><small>Zum Umdrehen antippen</small></span><span class="face back"><span class="k">Antwort</span><span>Einen zum System passenden Schutz gegen Stromausfall, etwa Batterie oder nichtflüchtigen Flash-Backed Cache.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Spare/Swap“:</span><button type="button" data-card-id="ops-spare-swap" data-card-rate="known">gewusst</button><button type="button" data-card-id="ops-spare-swap" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ops-spare-swap"></span></div>
+<div class="card-rating"><span>Karte „Controller-Cache“:</span><button type="button" data-card-id="ops-controller-cache" data-card-rate="known">gewusst</button><button type="button" data-card-id="ops-controller-cache" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ops-controller-cache"></span></div><h2 class="sec" id="s7"><span class="num">7</span>Lernziel-Check: Transfer</h2>
+<p>Ein Virtualisierungshost soll auf Standardservern automatisiert ausgerollt werden. Das Team beherrscht die Software-RAID-Werkzeuge, überwacht Laufwerke zentral und hält Boot- sowie Metadaten-Dokumentation vor.</p>
+<section class="quiz" data-quiz="raid-ops-architecture" data-correct="1" data-required-objective="architecture">
+  <h3>Welche Entscheidung ist auf Basis dieser Angaben am besten begründet?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Ein Hardware-Controller kann funktionieren, ist aus den genannten Anforderungen aber nicht automatisch überlegen."><span class="m">A</span> Hardware-RAID, weil es grundsätzlich schneller und sicherer ist</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig: Kompetenz, Automatisierung und dokumentierte Metadaten sprechen hier für Software-RAID; die konkrete Leistung muss trotzdem gemessen werden."><span class="m">B</span> Software-RAID, weil es zum Betriebs- und Automatisierungskonzept passt</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="RAID 0 erfüllt keine Verfügbarkeitsanforderung und beantwortet außerdem nicht die Frage nach der Implementierung."><span class="m">C</span> RAID 0 ohne Monitoring</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Ein NAS wäre eine andere Speicherarchitektur und ist ohne weitere Anforderungen keine begründete Antwort."><span class="m">D</span> Immer ein NAS verwenden</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="raid-ops-recovery" data-correct="3" data-required-objective="recovery">
+  <h3>Welche Reihenfolge beschreibt den sicheren Umgang mit einem Laufwerksausfall am besten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Eine Neuinitialisierung kann vorhandene Metadaten überschreiben und gehört nicht an den Anfang."><span class="m">A</span> Array neu initialisieren → Alarm prüfen → Backup suchen</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Nur das defekte Laufwerk zu ziehen überspringt Alarmierung, Zustandsprüfung und Nachkontrolle."><span class="m">B</span> Laufwerk ziehen → Vorgang beenden</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein Hot Spare ersetzt weder die Zustandskontrolle noch die Wiederherstellung der Reserve nach dem Rebuild."><span class="m">C</span> Hot Spare vorhanden → keine weiteren Schritte nötig</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Richtig: Erst Zustand und Alarm prüfen, dann kontrolliert ersetzen oder Spare nutzen, Rebuild überwachen und anschließend Redundanz sowie Backup-Wiederherstellbarkeit kontrollieren."><span class="m">D</span> Alarm und Zustand prüfen → Ersatz/Rebuild → Redundanz prüfen → dokumentieren und Restore kontrollieren</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s8"><span class="num">8</span>Quellen und Einordnung</h2>
+<div class="src-block">
+  <p><strong>EUROPA Prüfungsvorbereitung Teil 2 – Integratoren (2026):</strong> Hauptquelle für Hardware-/Software-RAID, Hot Spare und betriebliche Auswahlfragen.</p>
+  <p><strong>ITLF6–9 (2022):</strong> Aufgabenbasis für Implementierungsvergleich und RAID-5/6-Betrieb.</p>
+  <p><strong>Prüfungsvorbereitung IHK Bonn:</strong> Szenarien zu RAID 6, Hot Spare und Kapazitätsplanung.</p>
+  <p class="source-note">Die Formulierungen, Aufgaben und Grafik sind eigenständig erstellt. Pauschalaussagen aus älteren Quellen wurden nicht übernommen; Fundstellen und Prüfentscheidungen stehen im Kurations-Sidecar.</p>
+</div>
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-3"><span class="d">zurück zu</span><span class="t">Block 3 · Speicherlösungen</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block 3 · Speicherlösungen</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Begriffe unter Druck</a></li>
+<li><a href="#s2" data-t="s2">Zwei Implementierungen, keine Pauschalantwort</a></li>
+<li><a href="#s3" data-t="s3">Hot Spare, Hot Swap und Backup</a></li>
+<li><a href="#s4" data-t="s4">Durchgerechneter Betriebsfall</a></li>
+<li><a href="#s5" data-t="s5">Geführte Übung</a></li>
+<li><a href="#s6" data-t="s6">Karteikarten und Wiederholung</a></li>
+<li><a href="#s7" data-t="s7">Lernziel-Check: Transfer</a></li>
+<li><a href="#s8" data-t="s8">Quellen und Einordnung</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-3">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>
