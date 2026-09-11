@@ -44,7 +44,7 @@ durch Text und Indikatoren ergänzt.
 
 ## Typografie und Struktur
 
-Lokale Inter / Inter Display, Produkttexte 14–16px, Hub-Titel responsiv 54–94px,
+Lokale Inter / Inter Display, Produkttexte 14–16px, Hub-Titel responsiv 32–60px,
 Überschriften 500/600. Zahlen nutzen dieselben Familien, bei wechselnden Werten
 tabellarische Ziffern. Seiteninhalte bis 1240px, Hub inklusive Außenabständen bis
 1440px. Bis 940px kompakte Navigation. Radien und Abstände aus der jeweils
