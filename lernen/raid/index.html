@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAID-Level lernen - AP2 GA1</title>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+  @font-face{font-family:'Inter';src:url('/assets/fonts/Inter-Regular.woff2') format('woff2');font-weight:400;font-display:swap}
+  @font-face{font-family:'Inter';src:url('/assets/fonts/Inter-Medium.woff2') format('woff2');font-weight:500;font-display:swap}
+  @font-face{font-family:'Inter';src:url('/assets/fonts/Inter-Semibold.woff2') format('woff2');font-weight:600;font-display:swap}
+  @font-face{font-family:'InterDisplay';src:url('/assets/fonts/InterDisplay-Medium.woff2') format('woff2');font-weight:500;font-display:swap}
+  @font-face{font-family:'InterDisplay';src:url('/assets/fonts/InterDisplay-Semibold.woff2') format('woff2');font-weight:600 700 800;font-display:swap}
+
+  :root{
+    color-scheme:light;
+    --font-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+    --font-display:'InterDisplay','Inter',system-ui,sans-serif;
+    --font-mono:ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+    --page:#fcfcfc;--surface-1:#ffffff;--surface-2:#f4f4f2;--surface-3:#ececea;
+    --border:rgba(0,0,0,.09);--border-strong:rgba(0,0,0,.17);
+    --text-primary:#1c1c1b;--text-secondary:#56554f;--text-muted:#6d6c64;
+    --brand:#16794c;--brand-bright:#3ecf8e;--brand-fill:#006239;--brand-fill-hi:#00794a;--brand-tint:rgba(62,207,142,.09);
+    --cat-ga1:#127a86;--cat-ga2:#2f6ecc;--cat-wiso:#a06a12;--marker:#6f49cf;
+    --status-good:#16794c;--status-warning:#a06a12;--status-critical:#c33f39;
+    --r-xs:3px;--r-sm:5px;--r-md:7px;--r-lg:10px;
+    --cat:var(--cat-ga1);--cat-tint:rgba(18,122,134,.10);
+  }
+  @media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    color-scheme:dark;
+    --page:#161817;--surface-1:#1d1f1e;--surface-2:#262825;--surface-3:#30322e;
+    --border:rgba(255,255,255,.08);--border-strong:rgba(255,255,255,.16);
+    --text-primary:#ededeb;--text-secondary:#a1a099;--text-muted:#8b8a80;
+    --brand:#3ecf8e;--brand-bright:#3ecf8e;--brand-tint:rgba(62,207,142,.10);
+    --cat-ga1:#45c4d1;--cat-ga2:#5b9df0;--cat-wiso:#e0b341;--marker:#b083f0;
+    --status-good:#3ecf8e;--status-warning:#e0b341;--status-critical:#f0655e;
+    --cat-tint:rgba(69,196,209,.12);
+  }}
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --page:#161817;--surface-1:#1d1f1e;--surface-2:#262825;--surface-3:#30322e;
+    --border:rgba(255,255,255,.08);--border-strong:rgba(255,255,255,.16);
+    --text-primary:#ededeb;--text-secondary:#a1a099;--text-muted:#8b8a80;
+    --brand:#3ecf8e;--brand-bright:#3ecf8e;--brand-tint:rgba(62,207,142,.10);
+    --cat-ga1:#45c4d1;--cat-ga2:#5b9df0;--cat-wiso:#e0b341;--marker:#b083f0;
+    --status-good:#3ecf8e;--status-warning:#e0b341;--status-critical:#f0655e;
+    --cat-tint:rgba(69,196,209,.12);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--page);color:var(--text-primary);font-family:var(--font-body);font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased}
+  h1,h2,h3,h4{font-family:var(--font-display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+
+  #rp{position:fixed;top:0;left:0;height:3px;background:var(--brand-bright);width:0;z-index:40;transition:width .1s}
+  header.top{border-bottom:1px solid var(--border);background:var(--surface-1);position:sticky;top:0;z-index:20}
+  .top-inner{max-width:1200px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;font-size:15px}
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--brand-bright)}
+  .crumb{color:var(--text-muted);font-size:12.5px;flex:1;min-width:120px}
+  .crumb b{color:var(--text-secondary);font-weight:600}
+  .crumb a{color:var(--cat);text-decoration:none}
+  .tbtn{border:1px solid var(--border);background:var(--surface-1);color:var(--text-secondary);border-radius:var(--r-md);padding:7px 10px;cursor:pointer;font:inherit;font-size:13px}
+  .tbtn:hover{border-color:var(--border-strong)}
+
+  .layout{max-width:1200px;margin:0 auto;padding:0 20px;display:grid;grid-template-columns:1fr 250px;gap:40px;align-items:start}
+  @media(max-width:900px){.layout{grid-template-columns:1fr;gap:0}.rail{display:none}}
+  main{padding-block:30px 70px;min-width:0}
+
+  .eyebrow{font-family:var(--font-mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--cat);display:inline-flex;align-items:center;gap:7px;margin-bottom:12px}
+  .eyebrow::before{content:"";width:16px;height:2px;background:var(--cat);border-radius:2px}
+  h1.title{font-size:32px;font-weight:800;line-height:1.12}
+  .meta{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:14px;color:var(--text-muted);font-size:12.5px}
+  .meta .pill{font-family:var(--font-mono);font-size:11px;border:1px solid var(--border);border-radius:100px;padding:3px 10px}
+  .meta .pill.rel{color:var(--cat);border-color:transparent;background:var(--cat-tint)}
+  .rule{height:1px;background:var(--border);margin:24px 0 28px}
+
+  h2.sec{font-size:20px;font-weight:700;margin:36px 0 12px;scroll-margin-top:70px}
+  h2.sec .num{color:var(--text-muted);font-family:var(--font-mono);font-size:14px;font-weight:500;margin-right:8px}
+  p{margin:0 0 15px;color:var(--text-secondary);max-width:68ch}
+  p strong,li strong{color:var(--text-primary);font-weight:600}
+
+  .callout{border:1px solid var(--border);border-left:3px solid var(--cat);background:var(--surface-1);border-radius:var(--r-md);padding:14px 16px;margin:18px 0;max-width:68ch}
+  .callout .lbl{font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--cat);margin-bottom:5px}
+  .callout.merk{border-left-color:var(--brand-bright)}
+  .callout.merk .lbl{color:var(--brand)}
+  .callout p{margin:0;color:var(--text-primary)}
+
+  .twrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--r-md);margin:18px 0}
+  table.raid{width:100%;border-collapse:collapse;font-size:13.5px}
+  table.raid th,table.raid td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+  table.raid th{font-family:var(--font-display);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);background:var(--surface-2)}
+  table.raid td:first-child{font-weight:600;color:var(--text-primary);white-space:nowrap}
+  table.raid tr:last-child td{border-bottom:0}
+  .tag{font-variant-numeric:tabular-nums}
+
+  figure{margin:22px 0;border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;background:var(--surface-2);max-width:68ch}
+  figure .ph{aspect-ratio:16/8;display:grid;place-items:center;color:var(--text-muted);font-family:var(--font-mono);font-size:12px;background:repeating-linear-gradient(45deg,transparent,transparent 10px,var(--border) 10px,var(--border) 11px)}
+  figcaption{padding:8px 12px;font-size:12px;color:var(--text-muted);border-top:1px solid var(--border)}
+
+  ul.body{margin:0 0 16px;padding-left:0;list-style:none;max-width:68ch;display:grid;gap:8px}
+  ul.body li{position:relative;padding-left:22px;color:var(--text-secondary)}
+  ul.body li::before{content:"";position:absolute;left:3px;top:9px;width:6px;height:6px;border-radius:2px;background:var(--brand-bright)}
+
+  .aufgabe{border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin:24px 0;max-width:68ch}
+  .aufgabe .h{padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--border);font-family:var(--font-display);font-weight:700;font-size:13px;display:flex;align-items:center;gap:8px}
+  .aufgabe .h .b{font-family:var(--font-mono);font-size:10.5px;color:var(--cat);border:1px solid var(--cat);border-radius:100px;padding:1px 8px}
+  .aufgabe .body{padding:16px}
+  .aufgabe .body p{margin:0 0 10px}
+  .aufgabe details{margin-top:8px}
+  .aufgabe summary{cursor:pointer;color:var(--brand);font-weight:600;font-size:13.5px;list-style:none;display:inline-flex;align-items:center;gap:6px}
+  .aufgabe summary::-webkit-details-marker{display:none}
+  .aufgabe summary::before{content:"▸";transition:transform .15s}
+  .aufgabe details[open] summary::before{transform:rotate(90deg)}
+  .aufgabe .loesung{margin-top:12px;padding:13px 15px;background:var(--brand-tint);border-radius:var(--r-md);border:1px solid rgba(62,207,142,.25)}
+  .aufgabe .loesung p{margin:0 0 8px;color:var(--text-primary)}
+
+  .flash{perspective:1200px;max-width:68ch;margin:20px 0}
+  .flash .card{position:relative;height:150px;cursor:pointer;transition:transform .5s;transform-style:preserve-3d}
+  .flash.flipped .card{transform:rotateY(180deg)}
+  .flash .face{position:absolute;inset:0;backface-visibility:hidden;border:1px solid var(--border);border-radius:var(--r-lg);display:grid;place-items:center;text-align:center;padding:20px;background:var(--surface-1)}
+  .flash .face .k{font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);position:absolute;top:12px;left:16px}
+  .flash .front .q{font-family:var(--font-display);font-weight:600;font-size:17px;color:var(--text-primary)}
+  .flash .front small{position:absolute;bottom:12px;color:var(--text-muted);font-size:11.5px}
+  .flash .back{transform:rotateY(180deg);background:var(--cat-tint)}
+  .flash .back p{margin:0;color:var(--text-primary);font-size:14px}
+
+  .quiz{border:1px solid var(--border);border-radius:var(--r-lg);padding:18px;max-width:68ch;margin:20px 0}
+  .quiz .q{font-family:var(--font-display);font-weight:600;font-size:15px;color:var(--text-primary);margin-bottom:12px}
+  .quiz button.opt{border:1px solid var(--border);background:var(--surface-1);border-radius:var(--r-sm);padding:11px 13px;text-align:left;cursor:pointer;font:inherit;font-size:14px;color:var(--text-secondary);width:100%;margin-bottom:8px;display:flex;gap:10px;align-items:center}
+  .quiz button.opt .m{font-family:var(--font-mono);font-size:12px;color:var(--text-muted);border:1px solid var(--border);border-radius:var(--r-xs);width:22px;height:22px;display:grid;place-items:center;flex:none}
+  .quiz button.opt:hover{border-color:var(--border-strong)}
+  .quiz button.right{border-color:var(--status-good);background:var(--brand-tint);color:var(--status-good)}
+  .quiz button.right .m{border-color:var(--status-good);color:var(--status-good)}
+  .quiz button.wrong{border-color:var(--status-critical);color:var(--status-critical)}
+  .quiz .fb{margin-top:6px;font-size:13px;color:var(--text-secondary);display:none}
+
+  .src-block{margin-top:34px;padding-top:18px;border-top:1px solid var(--border);max-width:68ch}
+  .src-block .k{font-family:var(--font-display);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:8px}
+  .src-block p{font-family:var(--font-mono);font-size:12px;color:var(--text-muted);margin:0 0 5px}
+  .src-block a{color:var(--cat);text-decoration:none}
+
+  .pager{display:flex;gap:12px;margin-top:34px;max-width:68ch}
+  .pager a{flex:1;border:1px solid var(--border);border-radius:var(--r-md);padding:12px 14px;text-decoration:none;background:var(--surface-1)}
+  .pager a:hover{border-color:var(--border-strong)}
+  .pager .d{font-family:var(--font-mono);font-size:11px;color:var(--text-muted)}
+  .pager .t{color:var(--text-primary);font-weight:600;font-size:13.5px;margin-top:3px}
+  .pager .next{text-align:right}
+
+  .actionbar{position:sticky;bottom:0;background:var(--surface-1);border-top:1px solid var(--border);padding:12px 20px;display:flex;gap:10px;justify-content:center;z-index:15;flex-wrap:wrap}
+  .btn{border:1px solid var(--border);background:var(--surface-1);color:var(--text-primary);border-radius:var(--r-md);padding:10px 16px;cursor:pointer;font:inherit;font-size:14px;font-weight:500;display:inline-flex;align-items:center;gap:7px;text-decoration:none}
+  .btn:hover{border-color:var(--border-strong)}
+  .btn.primary{background:var(--brand-fill);color:#fff;border-color:transparent}
+  .btn.primary:hover{background:var(--brand-fill-hi)}
+  .btn.primary.done{background:var(--status-good)}
+  .btn.mark.on{color:var(--marker);border-color:var(--marker);background:rgba(111,73,207,.08)}
+
+  .rail{position:sticky;top:74px;padding-block:30px;font-size:13px}
+  .rail .lbl{font-family:var(--font-display);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin:0 0 10px}
+  .toc{list-style:none;margin:0 0 26px;padding:0;border-left:2px solid var(--border);display:grid}
+  .toc a{display:block;padding:5px 0 5px 14px;margin-left:-2px;border-left:2px solid transparent;color:var(--text-secondary);text-decoration:none}
+  .toc a:hover{color:var(--text-primary)}
+  .toc a.active{color:var(--cat);border-left-color:var(--cat);font-weight:600}
+  .rail .rel-topics a{display:block;color:var(--text-secondary);text-decoration:none;padding:7px 0;border-bottom:1px solid var(--border)}
+  .rail .rel-topics a:hover{color:var(--cat)}
+  .rail .rel-topics a small{display:block;color:var(--text-muted);font-size:11.5px}
+  .rail .done-box{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-md);padding:12px 14px;margin-bottom:24px}
+  .rail .done-box .n{font-family:var(--font-display);font-weight:700;font-size:14px}
+  .rail .done-box .s{color:var(--text-muted);font-size:12px}
+  .mini{height:6px;border-radius:100px;background:var(--surface-3);overflow:hidden;margin-top:9px}
+  .mini i{display:block;height:100%;background:var(--cat)}
+</style>
+</head>
+<body>
+<div id="rp"></div>
+<header class="top">
+  <div class="top-inner">
+    <div class="brand"><span class="dot"></span> AP2-Tracker</div>
+    <div class="crumb"><a href="/lernpfad/">Lernpfad GA1</a> › Block 01 · Hardwarekonzeption › <b>RAID-Level</b></div>
+    <button class="tbtn" id="theme">◐ Theme</button>
+  </div>
+</header>
+
+<div class="layout">
+  <main>
+    <article>
+      <span class="eyebrow">GA1 · Kernthema 03 von 19</span>
+      <h1 class="title">RAID-Level und ihre Trade-offs</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz ●●●●○</span>
+        <span class="pill">≈ 8 Min Lesezeit</span>
+        <span class="pill">aus 2 Büchern zusammengeführt</span>
+      </div>
+      <div class="rule"></div>
+
+      <p>Als angehende:r Fachinformatiker:in für Systemintegration musst du im Prüfungsbereich GA1 ein RAID-Level nicht nur benennen, sondern <strong>begründet auswählen</strong> und die nutzbare Kapazität berechnen können. Genau darauf zielt dieses Kernthema.</p>
+
+      <h2 class="sec" id="s1"><span class="num">1</span>Worum geht es?</h2>
+      <p><strong>RAID</strong> (Redundant Array of Independent Disks) fasst mehrere physische Datenträger zu einem logischen Verbund zusammen. Ziel ist je nach Level eine höhere <strong>Ausfallsicherheit</strong>, eine höhere <strong>Leistung</strong> — oder beides. Die Kunst besteht im Abwägen zwischen nutzbarer Kapazität, Schreib-/Leseleistung und der Zahl tolerierbarer Plattenausfälle.</p>
+
+      <div class="callout merk"><div class="lbl">Merksatz</div><p>RAID ersetzt <strong>kein</strong> Backup. Es schützt vor Hardware­ausfall einzelner Platten, nicht vor versehentlichem Löschen, Ransomware oder Standortschäden.</p></div>
+
+      <h2 class="sec" id="s2"><span class="num">2</span>Die wichtigsten Level im Vergleich</h2>
+      <p>Diese fünf Level solltest du sicher unterscheiden können. Achte besonders auf „Ausfalltoleranz" und „Nettokapazität" — danach wird am häufigsten gefragt.</p>
+      <div class="twrap"><table class="raid">
+        <tr><th>Level</th><th>Prinzip</th><th>Ausfalltoleranz</th><th>Nettokapazität</th><th>Typischer Einsatz</th></tr>
+        <tr><td>RAID 0</td><td>Striping</td><td>keine</td><td class="tag">100 %</td><td>Scratch/Cache, wo Tempo zählt</td></tr>
+        <tr><td>RAID 1</td><td>Mirroring</td><td>1 Platte</td><td class="tag">50 %</td><td>Systemplatten, kleine Server</td></tr>
+        <tr><td>RAID 5</td><td>Striping + verteilte Parität</td><td>1 Platte</td><td class="tag">(n−1)/n</td><td>Datei-/Anwendungsserver</td></tr>
+        <tr><td>RAID 6</td><td>Striping + doppelte Parität</td><td>2 Platten</td><td class="tag">(n−2)/n</td><td>große Arrays, lange Rebuilds</td></tr>
+        <tr><td>RAID 10</td><td>gespiegelte Stripes</td><td>1 je Spiegel</td><td class="tag">50 %</td><td>Datenbanken, hohe Last</td></tr>
+      </table></div>
+
+      <figure><div class="ph">📊 extrahierte Abbildung</div><figcaption>Abb. 5.3 — RAID 5: Datenblöcke A/B/C mit verteilter Parität P über drei Platten (aus IT-Basiswissen, S. 163)</figcaption></figure>
+
+      <h2 class="sec" id="s3"><span class="num">3</span>Nettokapazität berechnen</h2>
+      <p>In der Prüfung wird gern die nutzbare Kapazität abgefragt. Zwei Formeln reichen für fast alle Fälle:</p>
+      <ul class="body">
+        <li><strong>RAID 5:</strong> nutzbar = (n − 1) × Plattengröße. Bei 4 × 4 TB also 3 × 4 TB = <strong>12 TB</strong>.</li>
+        <li><strong>RAID 6:</strong> nutzbar = (n − 2) × Plattengröße. Bei 6 × 2 TB also 4 × 2 TB = <strong>8 TB</strong>.</li>
+        <li><strong>RAID 1 / 10:</strong> immer <strong>50 %</strong> der Rohkapazität.</li>
+      </ul>
+
+      <div class="aufgabe">
+        <div class="h"><span class="b">Musteraufgabe</span> IHK-Stil · GA1</div>
+        <div class="body">
+          <p>Ein Server wird mit <strong>5 Festplatten à 4 TB</strong> in einem RAID 5 betrieben. Berechne die nutzbare Kapazität und nenne die Ausfalltoleranz.</p>
+          <details><summary>Lösung anzeigen</summary>
+            <div class="loesung">
+              <p><strong>Nettokapazität:</strong> (5 − 1) × 4 TB = <strong>16 TB</strong> nutzbar.</p>
+              <p><strong>Ausfalltoleranz:</strong> genau <strong>1 Platte</strong> darf ausfallen. Fällt während des Rebuilds eine zweite aus, sind die Daten verloren — deshalb bei großen Platten eher RAID 6.</p>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <h2 class="sec" id="s4"><span class="num">4</span>Karteikarte</h2>
+      <p>Zum Einprägen — Karte antippen zum Umdrehen:</p>
+      <div class="flash" id="flash1"><div class="card">
+        <div class="face front"><span class="k">Frage</span><div class="q">Wofür steht das „I" in RAID?</div><small>Karte antippen</small></div>
+        <div class="face back"><span class="k">Antwort</span><p><strong>Independent</strong> (früher „Inexpensive") — Redundant Array of <strong>Independent</strong> Disks.</p></div>
+      </div></div>
+
+      <h2 class="sec" id="s5"><span class="num">5</span>Selbsttest</h2>
+      <div class="quiz" id="quiz">
+        <div class="q">Welches RAID-Level toleriert den gleichzeitigen Ausfall von <em>zwei</em> Platten?</div>
+        <button class="opt" data-i="0"><span class="m">A</span> RAID 5</button>
+        <button class="opt" data-i="1"><span class="m">B</span> RAID 6</button>
+        <button class="opt" data-i="2"><span class="m">C</span> RAID 10</button>
+        <button class="opt" data-i="3"><span class="m">D</span> RAID 0</button>
+        <div class="fb" id="fb">RAID 6 nutzt <strong>doppelte</strong> Parität und übersteht daher zwei gleichzeitige Ausfälle. RAID 10 verkraftet mehrere Ausfälle nur, solange nie beide Platten <em>desselben</em> Spiegels betroffen sind.</div>
+      </div>
+
+      <div class="src-block">
+        <div class="k">Quellen</div>
+        <p>📖 IT-Basiswissen — Kap. 5 „Einfache IT-Systeme", S. 163</p>
+        <p>📖 EUROPA Prüfungsvorbereitung Teil 2 — Speicherlösungen, S. 71</p>
+      </div>
+
+      <div class="pager">
+        <a href="/lernpfad/"><div class="d">← zurück zum</div><div class="t">Lernpfad GA1</div></a>
+        <a href="/lernpfad/" class="next"><div class="d">nächstes →</div><div class="t">Virtualisierungsarten</div></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail">
+    <div class="done-box">
+      <div class="n">Block 01 · Hardwarekonzeption</div>
+      <div class="s">2 von 3 Kernthemen gelernt</div>
+      <div class="mini"><i style="width:66%"></i></div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc">
+      <li><a href="#s1" data-t="s1">Worum geht es?</a></li>
+      <li><a href="#s2" data-t="s2">Level im Vergleich</a></li>
+      <li><a href="#s3" data-t="s3">Nettokapazität berechnen</a></li>
+      <li><a href="#s4" data-t="s4">Karteikarte</a></li>
+      <li><a href="#s5" data-t="s5">Selbsttest</a></li>
+    </ul>
+    <div class="lbl">Verwandte Kernthemen</div>
+    <div class="rel-topics">
+      <a href="/lernpfad/">Storage: SAN / NAS / DAS<small>GA1 · Block 01</small></a>
+      <a href="/lernpfad/">Backup-Strategien &amp; 3-2-1<small>GA1 · Block 03</small></a>
+      <a href="/lernpfad/">Hochverfügbarkeit &amp; Cluster<small>GA1 · Block 04</small></a>
+    </div>
+  </aside>
+</div>
+
+<div class="actionbar">
+  <button class="btn primary" id="mark-done">✓ Als gelernt markieren</button>
+  <button class="btn mark" id="mark-rep">★ Zur Wiederholung</button>
+  <a class="btn" href="/lernpfad/">Nächstes Thema →</a>
+</div>
+
+<script>
+const rp=document.getElementById('rp');
+addEventListener('scroll',()=>{const h=document.documentElement;const max=h.scrollHeight-h.clientHeight;rp.style.width=(max>0?(h.scrollTop/max*100):0)+'%';},{passive:true});
+
+const links=[...document.querySelectorAll('.toc a')];
+const secs=links.map(a=>document.getElementById(a.dataset.t));
+const spy=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting)links.forEach(l=>l.classList.toggle('active',l.dataset.t===e.target.id));});},{rootMargin:'-40% 0px -55% 0px'});
+secs.forEach(s=>s&&spy.observe(s));
+
+const f=document.getElementById('flash1');
+f.querySelector('.card').onclick=()=>f.classList.toggle('flipped');
+
+const correct=1;
+document.querySelectorAll('#quiz .opt').forEach(b=>{b.onclick=()=>{
+  document.querySelectorAll('#quiz .opt').forEach(x=>x.disabled=true);
+  const i=+b.dataset.i;b.classList.add(i===correct?'right':'wrong');
+  if(i!==correct)document.querySelector(`#quiz .opt[data-i="${correct}"]`).classList.add('right');
+  document.getElementById('fb').style.display='block';
+};});
+
+const md=document.getElementById('mark-done');
+md.onclick=()=>{const on=md.classList.toggle('done');md.innerHTML=on?'✓ Gelernt':'✓ Als gelernt markieren';};
+const mr=document.getElementById('mark-rep');
+mr.onclick=()=>mr.classList.toggle('on');
+
+document.getElementById('theme').onclick=()=>{const r=document.documentElement,cur=r.getAttribute('data-theme');const sysDark=matchMedia('(prefers-color-scheme:dark)').matches;r.setAttribute('data-theme',cur?(cur==='dark'?'light':'dark'):(sysDark?'light':'dark'));};
+</script>
+</body>
+</html>
