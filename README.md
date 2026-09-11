@@ -106,8 +106,12 @@ Im Aufbau. Anforderungen und Spielregeln für die Mitarbeit stehen in
 ## Lokal öffnen
 
 Nach dem Checkout einmal `npm install` ausführen. `npm run build` erzeugt die
-Lernseiten aus `content/learning/*.md` und kopiert ausschließlich die
-öffentlichen Laufzeitdateien nach `dist/`. `npm test` prüft Build, Deploy-
+Lernseiten gemeinsam aus den bisherigen `content/learning/*.md` und den
+kompakten `content/learning-units/*.unit.json`. Kurations-Sidecars und
+deklarative SVGs der kompakten Spezifikationen entstehen automatisch. Ein
+kleines privates Quellenpaket wird mit
+`npm run knowledge:export-batch -- --group ga2-1 --start 1 --limit 8`
+erstellt. `npm test` prüft Compiler, Batch-Paket, Build, Deploy-
 Allowlist und Lernstruktur. `npm run test:browser` startet selbst einen lokalen
 Server gegen `dist/` und prüft Navigation, Theme, Links, Karten, Quiz und
 Fortschritt; falls Chromium lokal noch fehlt, einmal `npx playwright install

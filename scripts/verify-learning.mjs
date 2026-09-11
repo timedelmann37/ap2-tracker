@@ -1,4 +1,5 @@
-import { access, readFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { access, readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -26,15 +27,28 @@ async function exists(target) {
 const sourceCatalog = JSON.parse(await readFile(path.join(repoRoot, 'content', 'sources.json'), 'utf8'));
 const sourceIds = new Set(sourceCatalog.sources.map(source => source.id));
 const manifest = JSON.parse(await readFile(path.join(repoRoot, 'content', 'learning-manifest.json'), 'utf8'));
-const areaHtml = await readFile(path.join(repoRoot, 'konzeption-administration', 'index.html'), 'utf8');
+const areaHtmlByDomain = new Map(await Promise.all([
+  ['GA1', 'konzeption-administration/index.html'],
+  ['GA2', 'netzwerke/index.html'],
+  ['WiSo', 'sowi/index.html']
+].map(async ([domain, file]) => [domain, await readFile(path.join(repoRoot, file), 'utf8')])));
 const learningIndex = await readFile(path.join(repoRoot, 'lernpfad', 'index.html'), 'utf8');
 const learningTemplate = await readFile(path.join(repoRoot, 'scripts', 'templates', 'learning-page.html'), 'utf8');
 const learningCoverage = JSON.parse(await readFile(path.join(repoRoot, 'docs', 'LEARNING_COVERAGE.json'), 'utf8'));
+const legacySources = (await readdir(path.join(repoRoot, 'content', 'learning'))).filter(file => file.endsWith('.md'));
+const compactSources = (await readdir(path.join(repoRoot, 'content', 'learning-units'))).filter(file => file.endsWith('.unit.json'));
+const compactSourceBySlug = new Map();
+for (const file of compactSources) {
+  const raw = await readFile(path.join(repoRoot, 'content', 'learning-units', file), 'utf8');
+  compactSourceBySlug.set(JSON.parse(raw).meta.slug, { file, raw });
+}
 
 check(sourceCatalog.sources.length === 5, 'fünf bereitgestellte Buchquellen werden im Quellenkatalog geführt');
 check(sourceIds.size === sourceCatalog.sources.length, 'Quellen-IDs sind eindeutig');
 check(new Set(sourceCatalog.sources.map(source => source.role)).size >= 3, 'Quellen besitzen unterschiedliche Rollen statt gleicher Gewichtung');
 check(manifest.topics.length >= 3, 'Lernmanifest enthält mindestens drei kuratierte Kernthemen');
+check(manifest.topics.length === legacySources.length + compactSources.length, 'Legacy-Markdown und kompakte Spezifikationen werden gemeinsam gebaut');
+check(manifest.topics.filter(topic => topic.sourceKind === 'compact-spec').length === compactSources.length, 'Manifest kennzeichnet jede kompakte Spezifikation');
 check(learningCoverage.summary.total === 380, 'Abdeckungsliste enthält alle 380 kanonischen Kernthemen');
 check(learningCoverage.summary.implemented === manifest.topics.length, 'Abdeckungsliste und Lernmanifest stimmen überein');
 check(learningCoverage.domains.every(domain => domain.total > 0), 'Abdeckungsliste umfasst GA1, GA2 und WiSo');
@@ -75,8 +89,24 @@ for (const topic of manifest.topics) {
   check(!page.includes('class="ph"'), `${topic.slug}: keine Bild-Platzhalter`);
   check(!page.includes('id="accountBtn"'), `${topic.slug}: kein funktionsloser Konto-Button`);
   check(topic.sources.every(sourceId => sourceIds.has(sourceId)), `${topic.slug}: alle Quellen-IDs sind registriert`);
-  check(areaHtml.includes('window.AP2_LEARNING_TOPICS') && areaHtml.includes("'/lernen/' + topic.slug + '/'"), `${topic.slug}: Kernthema nutzt den generierten Lernkatalog`);
+  const areaHtml = areaHtmlByDomain.get(topic.domain) || '';
+  check(areaHtml.includes('window.AP2_LEARNING_TOPICS') && areaHtml.includes("'/lernen/' + topic.slug + '/'"), `${topic.slug}: Bereich nutzt den generierten Lernkatalog`);
+  if (topic.sourceKind === 'compact-spec') {
+    const source = compactSourceBySlug.get(topic.slug);
+    check(Boolean(source), `${topic.slug}: kompakte Quelle ist auffindbar`);
+    if (source) {
+      check(createHash('sha256').update(source.raw).digest('hex') === topic.contentHash, `${topic.slug}: Hash stammt aus der kompakten Quelle`);
+      const curation = JSON.parse(await readFile(path.join(repoRoot, 'content', 'curation', `${topic.slug}.json`), 'utf8'));
+      check(curation.generatedFrom === `content/learning-units/${source.file}`, `${topic.slug}: Kurationsartefakt nennt seine kompakte Quelle`);
+    }
+  }
 }
+
+const generatedSlugs = (await readdir(path.join(repoRoot, 'lernen'), { withFileTypes: true }))
+  .filter(entry => entry.isDirectory())
+  .map(entry => entry.name)
+  .sort();
+check(JSON.stringify(generatedSlugs) === JSON.stringify(manifest.topics.map(topic => topic.slug).sort()), 'Lernseiten-Verzeichnisse und Manifest sind exakt synchron');
 
 const raidPage = await readFile(path.join(repoRoot, 'lernen', 'raid', 'index.html'), 'utf8');
 check(raidPage.includes('data-selected-feedback') && raidPage.includes('data-rationale='), 'RAID-Pilot erklärt auch falsche Antwortoptionen');

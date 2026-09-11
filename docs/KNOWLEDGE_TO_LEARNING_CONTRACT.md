@@ -20,6 +20,30 @@ bestehenden Schlüssel `Bereich > Themengruppe > Kernthema` zugeordnet.
 
 Ein technischer Import darf niemals einen späteren Status automatisch setzen.
 
+## Tokensparende Produktionspipeline
+
+Die private `learning-queue.json` wird niemals vollständig in einen
+Redaktionskontext geladen. Stattdessen erzeugt
+`npm run knowledge:export-batch -- --group <id> --start <index> --limit <n>`
+ein ignoriertes Batch-Paket unter `knowledge-base/local/batches/`. Es enthält
+für höchstens wenige verwandte Kernthemen nur die kuratierten Fundstellen,
+exakte begrenzte Quellenausschnitte und einen Grafikkandidaten. Das manuelle
+Quellenmapping hat Vorrang vor unscharfen Stichworttreffern.
+
+Neue Lerneinheiten werden kanonisch als
+`content/learning-units/*.unit.json` gepflegt. Die Spezifikation enthält
+Fachtext, Lernziele, Aufgabeninhalte, Quellenbelege und deklarative Diagramme,
+aber kein Button-, Formular-, Zustands- oder ARIA-Markup. Das tiefe
+Compiler-Modul erzeugt daraus beim Build Kurations-Sidecar, SVGs, Lernseite,
+Manifest, Katalog und Abdeckungsstatus. Die vorhandenen Markdown-Einheiten
+bleiben während der schrittweisen Migration über den Legacy-Adapter lauffähig.
+
+Ein sinnvoller Produktionsbatch umfasst sechs bis acht Kernthemen derselben
+Themengruppe. Alle Spezifikationen werden zuerst vollständig normalisiert und
+validiert; erst danach werden öffentliche Artefakte geschrieben. Ungültige
+Diagnosen, doppelte Aktivitäts-IDs, unvollständiges Fehlfeedback und fehlende
+Pflichtnachweise brechen den Build ab.
+
 ## Aufbau einer Lerneinheit
 
 Eine Einheit beantwortet eine eng gefasste Leitfrage und enthält in dieser

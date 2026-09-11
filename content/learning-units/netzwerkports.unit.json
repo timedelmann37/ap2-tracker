@@ -1,0 +1,369 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "netzwerkports",
+    "slug": "netzwerkports",
+    "title": "Netzwerkports und Sockets sicher auswerten",
+    "description": "Quell- und Zielports in Kommunikationsbeziehungen lesen sowie passende Portregeln für Dienste begründet ableiten.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-1",
+    "groupLabel": "Block N1 · Grundlagen, Medien und Verkabelung",
+    "itemId": "ga2-1__4",
+    "week": "KW 35",
+    "estimatedMinutes": 20,
+    "relevance": "hoch",
+    "sources": ["ihk-bonn", "europa-integratoren-2026", "itlf10-12-2023"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "socket-direction",
+      "label": "Quell- und Ziel-IP sowie Quell- und Zielport in Anfrage und Antwort korrekt interpretieren"
+    },
+    {
+      "id": "service-rule",
+      "label": "aus einer Dienstanforderung Transportprotokoll, Zielport und eine geeignete Freigaberegel ableiten"
+    }
+  ],
+  "intro": "Eine Portnummer bezeichnet keinen Rechner, sondern einen Kommunikationsendpunkt auf einem Rechner. Prüfungsaufgaben werden leichter, wenn du zuerst die Richtung des Datenflusses bestimmst und dann prüfst, welcher Endpunkt den Dienst anbietet.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "ihk-bonn",
+        "sourceLocator": "Chunk ihk-bonn:00164",
+        "use": "Aufgabenmuster zu Sockets, Firewallregeln und bekannten Dienstports",
+        "reviewStatus": "Prinzip fachlich geprüft; übernommene Webpassagen und Buchaufgabe nicht verwendet"
+      },
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunk europa-integratoren-2026:00887",
+        "use": "Zielport als Hinweis auf den angesprochenen Dienst in einer Paketspur",
+        "reviewStatus": "stabile Netzgrundlage geprüft und eigenständig formuliert"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seite 193, lokale OCR",
+        "use": "IP-Adresse, Port und optionaler Dienstpfad als Konfigurationsmerkmale eines Load Balancers",
+        "reviewStatus": "OCR gegen Seitenkontext geprüft; keine Buchgrafik veröffentlicht"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seite 10, lokale OCR",
+        "use": "Richtung von Serverport und dynamischem Clientport in einer Socket-Beziehung",
+        "reviewStatus": "nur das fachliche Prinzip verwendet; inkonsistente OCR-Grafik nicht übernommen"
+      }
+    ],
+    "notes": [
+      "Eine bekannte Portnummer zeigt die erwartete oder konfigurierte Dienstzuordnung, beweist aber nicht den tatsächlich übertragenen Anwendungsinhalt.",
+      "TCP und UDP besitzen getrennte Portnamensräume. Eine Regel muss deshalb neben der Nummer auch das Transportprotokoll nennen.",
+      "Portzuweisungen und Protokollvarianten können sich ändern oder abweichend konfiguriert werden. Für reale Produktivregeln ist die aktuelle Hersteller- beziehungsweise IANA-Dokumentation maßgeblich.",
+      "Text, Fälle und Diagramme sind eigenständig erstellt. Private Buchgrafiken werden nicht veröffentlicht."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "socket-flow",
+      "type": "flow",
+      "title": "Eine Verbindung, zwei Richtungen",
+      "description": "Die Anfrage läuft vom dynamischen Clientport zum bekannten Serverport. In der Antwort tauschen Quell- und Zielendpunkt ihre Rollen.",
+      "items": [
+        {
+          "label": "Client öffnet lokalen Endpunkt",
+          "detail": "10.20.30.44:53142; die dynamische Portnummer unterscheidet diese Verbindung von weiteren Verbindungen desselben Clients"
+        },
+        {
+          "label": "Anfrage",
+          "detail": "TCP 10.20.30.44:53142 → 10.20.30.10:443"
+        },
+        {
+          "label": "Server lauscht",
+          "detail": "10.20.30.10:443; der bekannte Port verweist auf den erwarteten HTTPS-Dienst"
+        },
+        {
+          "label": "Antwort",
+          "detail": "TCP 10.20.30.10:443 → 10.20.30.44:53142"
+        }
+      ]
+    },
+    {
+      "id": "port-roles",
+      "type": "comparison",
+      "title": "Portrollen im Vergleich",
+      "description": "Serverport, dynamischer Clientport und vollständiger Kommunikationsfluss erfüllen unterschiedliche Aufgaben.",
+      "items": [
+        {
+          "label": "Serverport",
+          "detail": "meist stabil konfiguriert; macht einen Dienst unter einem erwarteten Endpunkt erreichbar"
+        },
+        {
+          "label": "Clientport",
+          "detail": "meist dynamisch gewählt; ordnet Antworten genau dem anfragenden Socket zu"
+        },
+        {
+          "label": "5-Tupel",
+          "detail": "Transportprotokoll, Quell-IP, Quellport, Ziel-IP und Zielport beschreiben einen Kommunikationsfluss"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Welcher Port gehört zum Dienst?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "ports-diagnostic",
+          "diagnostic": true,
+          "question": "Ein Browser baut ausgehend eine klassische HTTPS-Verbindung auf. Welcher Port kennzeichnet normalerweise den angesprochenen Serverdienst?",
+          "options": [
+            {
+              "text": "der dynamisch gewählte Quellport des Browsers",
+              "rationale": "Dieser Port identifiziert die konkrete Clientverbindung. Er bezeichnet nicht den angebotenen HTTPS-Dienst.",
+              "correct": false
+            },
+            {
+              "text": "TCP-Zielport 443",
+              "rationale": "Richtig. Klassisches HTTPS wird serverseitig normalerweise über TCP-Port 443 angeboten.",
+              "correct": true
+            },
+            {
+              "text": "UDP-Zielport 67",
+              "rationale": "UDP 67 gehört zur Serverrolle von DHCPv4 und nicht zum klassischen HTTPS-Aufruf.",
+              "correct": false
+            },
+            {
+              "text": "TCP-Zielport 22",
+              "rationale": "TCP 22 ist der bekannte Port für SSH. Eine HTTPS-Verbindung nutzt normalerweise einen anderen Dienstport.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Arbeitsregel",
+          "markdown": "Lies eine Verbindung immer in dieser Reihenfolge: **Transportprotokoll → Richtung → Quellendpunkt → Zielendpunkt → erwarteter Dienst**."
+        }
+      ]
+    },
+    {
+      "title": "Port, Socket und Kommunikationsfluss unterscheiden",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Eine IP-Adresse adressiert einen Netzendpunkt. Ein Port ordnet an diesem Endpunkt Daten einem Dienst oder einer konkreten Anwendungskommunikation zu. Erst die Kombination aus IP-Adresse und Port ergibt einen lokalen Kommunikationsendpunkt; das Transportprotokoll gehört bei Regeln und Analysen immer dazu.\n\n| Begriff | Leitfrage | Beispiel |\n| --- | --- | --- |\n| Serverport | Unter welcher bekannten Nummer wird der Dienst angeboten? | TCP 443 für klassisches HTTPS |\n| dynamischer Clientport | Wohin muss die Antwort beim Client zurück? | TCP 53142 |\n| Socket-Endpunkt | Welche IP und welcher Port gehören zusammen? | 10.20.30.44:53142 |\n| 5-Tupel | Welcher konkrete Fluss ist gemeint? | TCP plus beide IP-Adressen und beide Ports |\n\nTCP-Port 53 und UDP-Port 53 sind verschiedene Transportendpunkte. Deshalb ist eine Angabe wie „Port 53 freigeben“ noch unvollständig."
+        },
+        {
+          "type": "figure",
+          "diagramId": "port-roles",
+          "alt": "Vergleich von stabilem Serverport, dynamischem Clientport und dem 5-Tupel eines Kommunikationsflusses.",
+          "caption": "Eigene Lernskizze: Die Portnummer erhält ihre Bedeutung erst zusammen mit Rolle, Richtung, IP-Adresse und Transportprotokoll."
+        },
+        {
+          "type": "callout",
+          "kind": "warning",
+          "label": "Kein Inhaltsbeweis",
+          "markdown": "Ein Zielport ist ein starkes Konfigurationsindiz, aber kein Beweis für den Inhalt. Ein Dienst kann auf einem abweichenden Port laufen, und ein fremdes Protokoll kann technisch über eine bekannte Portnummer übertragen werden."
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Szenario: HTTPS-Anfrage und Antwort",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Client mit der IP-Adresse `10.20.30.44` wählt lokal den dynamischen TCP-Port `53142`. Er verbindet sich mit dem Webserver `10.20.30.10` auf TCP-Port `443`. Die Anfrage besitzt damit den Quellendpunkt `10.20.30.44:53142` und den Zielendpunkt `10.20.30.10:443`.\n\nDie Antwort läuft in Gegenrichtung: Quelle ist nun `10.20.30.10:443`, Ziel ist `10.20.30.44:53142`. Eine zustandsbehaftete Firewall kann die Antwort dem bereits aufgebauten Fluss zuordnen; dafür muss nicht pauschal eine neue eingehende Freigabe auf Port 53142 eingerichtet werden."
+        },
+        {
+          "type": "figure",
+          "diagramId": "socket-flow",
+          "alt": "HTTPS-Anfrage von Client 10.20.30.44 Port 53142 zu Server 10.20.30.10 Port 443 und Antwort mit vertauschten Quell- und Zielendpunkten.",
+          "caption": "Eigene Lernskizze: In der Antwort werden die Endpunkte gegenüber der Anfrage vertauscht."
+        },
+        {
+          "type": "quiz",
+          "id": "ports-response-practice",
+          "question": "Welche Endpunkte stehen in einem Antwortpaket dieses HTTPS-Szenarios?",
+          "options": [
+            {
+              "text": "Quelle 10.20.30.10:443, Ziel 10.20.30.44:53142",
+              "rationale": "Richtig. Der Server antwortet von seinem Dienstport an den dynamischen Port der Clientverbindung.",
+              "correct": true
+            },
+            {
+              "text": "Quelle 10.20.30.44:53142, Ziel 10.20.30.10:443",
+              "rationale": "Das ist die Richtung der ursprünglichen Anfrage, nicht der Antwort.",
+              "correct": false
+            },
+            {
+              "text": "Quelle 10.20.30.10:53142, Ziel 10.20.30.44:443",
+              "rationale": "Hier wurden nur die IP-Adressen vertauscht. Bei der Antwort wechseln die vollständigen Endpunkte einschließlich der Ports ihre Rollen.",
+              "correct": false
+            },
+            {
+              "text": "Quelle 10.20.30.10:80, Ziel 10.20.30.44:443",
+              "rationale": "Weder TCP 80 noch der Serverport als Ziel passen zu dem beschriebenen HTTPS-Fluss.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Geführte Übung: Eine Dienstregel ableiten",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein internes Sicherungsgerät `10.0.8.20` darf Namen ausschließlich über den Resolver `10.0.0.53` auflösen. Formuliere die ausgehende Regel schrittweise: Quelle ist das Sicherungsgerät, Ziel der Resolver. Der Dienst ist DNS. Dafür wird Zielport 53 benötigt. Weil DNS sowohl UDP als auch TCP verwenden kann, muss die Anforderung beide Transportprotokolle abdecken. Rückverkehr wird von einer zustandsbehafteten Firewall dem erlaubten Fluss zugeordnet."
+        },
+        {
+          "type": "quiz",
+          "id": "ports-rule-practice",
+          "question": "Welche Freigabe bildet diese Anforderung am präzisesten ab?",
+          "options": [
+            {
+              "text": "10.0.8.20 → 10.0.0.53, Zielport 53, UDP und TCP",
+              "rationale": "Richtig. Quelle, Ziel, Dienstport und beide für DNS relevanten Transportprotokolle sind präzise begrenzt.",
+              "correct": true
+            },
+            {
+              "text": "beliebige Quelle → beliebiges Ziel, Port 53 ohne Transportprotokoll",
+              "rationale": "Die Regel ist zu weit und bleibt technisch unvollständig, weil TCP und UDP getrennt angegeben werden müssen.",
+              "correct": false
+            },
+            {
+              "text": "10.0.0.53 → 10.0.8.20, Zielport 53, nur UDP",
+              "rationale": "Die Richtung ist für die vom Sicherungsgerät gestartete Anfrage vertauscht; außerdem fehlt TCP für DNS-Fälle, die es benötigen.",
+              "correct": false
+            },
+            {
+              "text": "10.0.8.20 → 10.0.0.53, Zielport 443, TCP",
+              "rationale": "TCP 443 beschreibt gewöhnlich HTTPS, nicht die geforderte DNS-Auflösung.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Regelgerüst",
+          "markdown": "Eine belastbare Freigabe nennt mindestens **Quelle, Ziel, Richtung, Transportprotokoll und Zielport**. Ergänze nur dann Pfade oder Anwendungsmerkmale, wenn die beteiligte Komponente sie tatsächlich auswertet."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "ports-socket",
+              "label": "Socket",
+              "front": "Was unterscheidet Port und Socket-Endpunkt?",
+              "back": "Der Port ist eine Nummer im Kontext eines Transportprotokolls. Ein Socket-Endpunkt verbindet diese Portnummer mit einer IP-Adresse; ein vollständiger Fluss umfasst beide Endpunkte und das Transportprotokoll."
+            },
+            {
+              "id": "ports-direction",
+              "label": "Richtung",
+              "front": "Was passiert mit Quell- und Zielendpunkt in der Antwort?",
+              "back": "Die vollständigen Endpunkte tauschen ihre Rollen: Der Dienstport wird zum Quellport, der dynamische Clientport zum Zielport."
+            },
+            {
+              "id": "ports-dns",
+              "label": "DNS-Regel",
+              "front": "Warum genügt für eine allgemeine DNS-Regel nicht nur UDP 53?",
+              "back": "DNS kann auch TCP 53 benötigen. Eine vollständige Anforderung muss deshalb prüfen, ob UDP und TCP freizugeben sind."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "ports-core-recall",
+          "title": "Ohne Nachschlagen erklären",
+          "prompt": "Erkläre an einem selbst gewählten Client-Server-Beispiel den Unterschied zwischen Serverport, dynamischem Clientport, Socket-Endpunkt und 5-Tupel. Beschreibe auch die Antwort-Richtung.",
+          "label": "Deine Erklärung",
+          "placeholder": "Der Client startet mit … Der Server lauscht auf … Die Antwort …",
+          "minLength": 90,
+          "model": "Der Server lauscht auf einem stabilen Dienstport, während der Client meist einen dynamischen Quellport wählt. IP-Adresse und Port bilden je einen Endpunkt. Mit Transportprotokoll und beiden Endpunkten entsteht das 5-Tupel des Flusses. In der Antwort tauschen die vollständigen Quell- und Zielendpunkte ihre Rollen."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check: Transfer",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "ports-transfer-direction",
+          "requiredObjective": "socket-direction",
+          "question": "Eine Paketspur enthält `TCP 172.16.0.20:22 → 172.16.0.55:60444`. Welche Interpretation ist am besten begründet?",
+          "options": [
+            {
+              "text": "Der SSH-Server antwortet von 172.16.0.20:22 an eine Clientverbindung auf 172.16.0.55:60444.",
+              "rationale": "Richtig. TCP 22 ist der erwartete SSH-Serverport; 60444 passt zur dynamischen Clientseite und die Pfeilrichtung beschreibt eine Antwort.",
+              "correct": true
+            },
+            {
+              "text": "Der Client auf 172.16.0.20 startet von Port 22 eine HTTPS-Anfrage an Port 60444.",
+              "rationale": "Port 22 weist auf SSH hin, nicht auf HTTPS. Außerdem ist ein bekannter Dienstport typischerweise die Serverseite dieses Flusses.",
+              "correct": false
+            },
+            {
+              "text": "Der Serverdienst läuft auf 172.16.0.55:60444, weil jeder Zielport automatisch ein Serverport ist.",
+              "rationale": "In Antwortpaketen ist der dynamische Clientport der Zielport. Die Richtung eines einzelnen Pakets bestimmt nicht allein, welcher Endpunkt den Dienst anbietet.",
+              "correct": false
+            },
+            {
+              "text": "Die Verbindung verwendet UDP, weil 60444 ein dynamischer Port ist.",
+              "rationale": "Das Transportprotokoll ist ausdrücklich TCP. Dynamische Ports können sowohl in TCP- als auch in UDP-Kommunikation vorkommen.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "ports-transfer-rule",
+          "requiredObjective": "service-rule",
+          "question": "Nur das Sicherungsgerät 192.0.2.20 soll den internen Resolver 192.0.2.53 verwenden. Welche ausgehende Regel ist fachlich am vollständigsten?",
+          "options": [
+            {
+              "text": "Quelle 192.0.2.20, Ziel 192.0.2.53, Zielport 53, UDP und TCP",
+              "rationale": "Richtig. Die Regel begrenzt beide Endpunkte und nennt für DNS Zielport sowie beide relevanten Transportprotokolle.",
+              "correct": true
+            },
+            {
+              "text": "Quelle 192.0.2.53, Ziel 192.0.2.20, Zielport 53, UDP und TCP",
+              "rationale": "Die Richtung ist vertauscht: Das Sicherungsgerät startet die Namensauflösung zum Resolver.",
+              "correct": false
+            },
+            {
+              "text": "Quelle 192.0.2.20, beliebiges Ziel, beliebiger Port, TCP",
+              "rationale": "Diese Regel erlaubt weit mehr als die geforderte Namensauflösung und lässt die übliche UDP-Nutzung von DNS unberücksichtigt.",
+              "correct": false
+            },
+            {
+              "text": "beliebige Quelle, Ziel 192.0.2.53, Zielport 53, nur UDP",
+              "rationale": "Die Quelle ist unnötig offen, und nur UDP bildet nicht alle DNS-Transportfälle ab.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Prüfungsformulierung:** Benenne nicht nur eine Portnummer. Begründe die Regel mit Kommunikationsrichtung, Serverrolle, Transportprotokoll sowie Quell- und Zielendpunkt."
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **Prüfungsvorbereitung IHK Bonn:** Aufgabenrahmen zu Sockets, Firewallregeln und bekannten Dienstports.\n- **EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):** Zielport als Auswertungshinweis in einer Paketspur.\n- **IT-Berufe Fachstufe II – Lernfelder 10–12 (2023):** IP-Adresse, Port und Dienstpfad in der Verteilung von Verbindungen sowie Client- und Serverrollen.\n\nText, Fälle, Antwortoptionen und Diagramme wurden eigenständig erstellt. Private Buchgrafiken und OCR-Rohtext werden nicht veröffentlicht."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Quell- und Zielports in Kommunikationsbeziehungen lesen sowie passende Portregeln für Dienste begründet ableiten.">
+<title>Netzwerkports und Sockets sicher auswerten – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="netzwerkports" data-progress-id="ga2-1__4" data-content-revision="2026-09-11.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-1">Block N1 · Grundlagen, Medien und Verkabelung</a><span class="sep">›</span>
+    <span class="here">Netzwerkports und Sockets sicher auswerten</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">Netzwerkports und Sockets sicher auswerten</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 20 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Eine Portnummer bezeichnet keinen Rechner, sondern einen Kommunikationsendpunkt auf einem Rechner. Prüfungsaufgaben werden leichter, wenn du zuerst die Richtung des Datenflusses bestimmst und dann prüfst, welcher Endpunkt den Dienst anbietet.</p>
+<section class="learning-goals" aria-labelledby="netzwerkports-goals">
+  <h2 id="netzwerkports-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Quell- und Ziel-IP sowie Quell- und Zielport in Anfrage und Antwort korrekt interpretieren</li>
+    <li>aus einer Dienstanforderung Transportprotokoll, Zielport und eine geeignete Freigaberegel ableiten</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Welcher Port gehört zum Dienst?</h2>
+<section class="quiz" data-quiz="ports-diagnostic" data-correct="1">
+  <h3>Ein Browser baut ausgehend eine klassische HTTPS-Verbindung auf. Welcher Port kennzeichnet normalerweise den angesprochenen Serverdienst?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Dieser Port identifiziert die konkrete Clientverbindung. Er bezeichnet nicht den angebotenen HTTPS-Dienst."><span class="m">A</span> der dynamisch gewählte Quellport des Browsers</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Klassisches HTTPS wird serverseitig normalerweise über TCP-Port 443 angeboten."><span class="m">B</span> TCP-Zielport 443</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="UDP 67 gehört zur Serverrolle von DHCPv4 und nicht zum klassischen HTTPS-Aufruf."><span class="m">C</span> UDP-Zielport 67</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="TCP 22 ist der bekannte Port für SSH. Eine HTTPS-Verbindung nutzt normalerweise einen anderen Dienstport."><span class="m">D</span> TCP-Zielport 22</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">Arbeitsregel</span><p>Lies eine Verbindung immer in dieser Reihenfolge: <strong>Transportprotokoll → Richtung → Quellendpunkt → Zielendpunkt → erwarteter Dienst</strong>.</p></aside><h2 class="sec" id="s2"><span class="num">2</span>Port, Socket und Kommunikationsfluss unterscheiden</h2>
+<p>Eine IP-Adresse adressiert einen Netzendpunkt. Ein Port ordnet an diesem Endpunkt Daten einem Dienst oder einer konkreten Anwendungskommunikation zu. Erst die Kombination aus IP-Adresse und Port ergibt einen lokalen Kommunikationsendpunkt; das Transportprotokoll gehört bei Regeln und Analysen immer dazu.</p>
+<div class="twrap"><table class="knowledge-table">
+<thead>
+<tr>
+<th>Begriff</th>
+<th>Leitfrage</th>
+<th>Beispiel</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Serverport</td>
+<td>Unter welcher bekannten Nummer wird der Dienst angeboten?</td>
+<td>TCP 443 für klassisches HTTPS</td>
+</tr>
+<tr>
+<td>dynamischer Clientport</td>
+<td>Wohin muss die Antwort beim Client zurück?</td>
+<td>TCP 53142</td>
+</tr>
+<tr>
+<td>Socket-Endpunkt</td>
+<td>Welche IP und welcher Port gehören zusammen?</td>
+<td>10.20.30.44:53142</td>
+</tr>
+<tr>
+<td>5-Tupel</td>
+<td>Welcher konkrete Fluss ist gemeint?</td>
+<td>TCP plus beide IP-Adressen und beide Ports</td>
+</tr>
+</tbody></table></div>
+<p>TCP-Port 53 und UDP-Port 53 sind verschiedene Transportendpunkte. Deshalb ist eine Angabe wie „Port 53 freigeben“ noch unvollständig.</p>
+<figure class="learning-figure">
+  <img src="/assets/learning/netzwerkports-port-roles.svg" alt="Vergleich von stabilem Serverport, dynamischem Clientport und dem 5-Tupel eines Kommunikationsflusses.">
+  <figcaption>Eigene Lernskizze: Die Portnummer erhält ihre Bedeutung erst zusammen mit Rolle, Richtung, IP-Adresse und Transportprotokoll.</figcaption>
+</figure><aside class="callout warn"><span class="lbl">Kein Inhaltsbeweis</span><p>Ein Zielport ist ein starkes Konfigurationsindiz, aber kein Beweis für den Inhalt. Ein Dienst kann auf einem abweichenden Port laufen, und ein fremdes Protokoll kann technisch über eine bekannte Portnummer übertragen werden.</p></aside><h2 class="sec" id="s3"><span class="num">3</span>Durchgearbeitetes Szenario: HTTPS-Anfrage und Antwort</h2>
+<p>Ein Client mit der IP-Adresse <code>10.20.30.44</code> wählt lokal den dynamischen TCP-Port <code>53142</code>. Er verbindet sich mit dem Webserver <code>10.20.30.10</code> auf TCP-Port <code>443</code>. Die Anfrage besitzt damit den Quellendpunkt <code>10.20.30.44:53142</code> und den Zielendpunkt <code>10.20.30.10:443</code>.</p>
+<p>Die Antwort läuft in Gegenrichtung: Quelle ist nun <code>10.20.30.10:443</code>, Ziel ist <code>10.20.30.44:53142</code>. Eine zustandsbehaftete Firewall kann die Antwort dem bereits aufgebauten Fluss zuordnen; dafür muss nicht pauschal eine neue eingehende Freigabe auf Port 53142 eingerichtet werden.</p>
+<figure class="learning-figure">
+  <img src="/assets/learning/netzwerkports-socket-flow.svg" alt="HTTPS-Anfrage von Client 10.20.30.44 Port 53142 zu Server 10.20.30.10 Port 443 und Antwort mit vertauschten Quell- und Zielendpunkten.">
+  <figcaption>Eigene Lernskizze: In der Antwort werden die Endpunkte gegenüber der Anfrage vertauscht.</figcaption>
+</figure><section class="quiz" data-quiz="ports-response-practice" data-correct="0">
+  <h3>Welche Endpunkte stehen in einem Antwortpaket dieses HTTPS-Szenarios?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Der Server antwortet von seinem Dienstport an den dynamischen Port der Clientverbindung."><span class="m">A</span> Quelle 10.20.30.10:443, Ziel 10.20.30.44:53142</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Das ist die Richtung der ursprünglichen Anfrage, nicht der Antwort."><span class="m">B</span> Quelle 10.20.30.44:53142, Ziel 10.20.30.10:443</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Hier wurden nur die IP-Adressen vertauscht. Bei der Antwort wechseln die vollständigen Endpunkte einschließlich der Ports ihre Rollen."><span class="m">C</span> Quelle 10.20.30.10:53142, Ziel 10.20.30.44:443</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Weder TCP 80 noch der Serverport als Ziel passen zu dem beschriebenen HTTPS-Fluss."><span class="m">D</span> Quelle 10.20.30.10:80, Ziel 10.20.30.44:443</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Geführte Übung: Eine Dienstregel ableiten</h2>
+<p>Ein internes Sicherungsgerät <code>10.0.8.20</code> darf Namen ausschließlich über den Resolver <code>10.0.0.53</code> auflösen. Formuliere die ausgehende Regel schrittweise: Quelle ist das Sicherungsgerät, Ziel der Resolver. Der Dienst ist DNS. Dafür wird Zielport 53 benötigt. Weil DNS sowohl UDP als auch TCP verwenden kann, muss die Anforderung beide Transportprotokolle abdecken. Rückverkehr wird von einer zustandsbehafteten Firewall dem erlaubten Fluss zugeordnet.</p>
+<section class="quiz" data-quiz="ports-rule-practice" data-correct="0">
+  <h3>Welche Freigabe bildet diese Anforderung am präzisesten ab?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Quelle, Ziel, Dienstport und beide für DNS relevanten Transportprotokolle sind präzise begrenzt."><span class="m">A</span> 10.0.8.20 → 10.0.0.53, Zielport 53, UDP und TCP</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die Regel ist zu weit und bleibt technisch unvollständig, weil TCP und UDP getrennt angegeben werden müssen."><span class="m">B</span> beliebige Quelle → beliebiges Ziel, Port 53 ohne Transportprotokoll</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die Richtung ist für die vom Sicherungsgerät gestartete Anfrage vertauscht; außerdem fehlt TCP für DNS-Fälle, die es benötigen."><span class="m">C</span> 10.0.0.53 → 10.0.8.20, Zielport 53, nur UDP</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="TCP 443 beschreibt gewöhnlich HTTPS, nicht die geforderte DNS-Auflösung."><span class="m">D</span> 10.0.8.20 → 10.0.0.53, Zielport 443, TCP</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">Regelgerüst</span><p>Eine belastbare Freigabe nennt mindestens <strong>Quelle, Ziel, Richtung, Transportprotokoll und Zielport</strong>. Ergänze nur dann Pfade oder Anwendungsmerkmale, wenn die beteiligte Komponente sie tatsächlich auswertet.</p></aside><h2 class="sec" id="s5"><span class="num">5</span>Karteikarten und freier Abruf</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="ports-socket" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was unterscheidet Port und Socket-Endpunkt?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Der Port ist eine Nummer im Kontext eines Transportprotokolls. Ein Socket-Endpunkt verbindet diese Portnummer mit einer IP-Adresse; ein vollständiger Fluss umfasst beide Endpunkte und das Transportprotokoll.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="ports-direction" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was passiert mit Quell- und Zielendpunkt in der Antwort?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Die vollständigen Endpunkte tauschen ihre Rollen: Der Dienstport wird zum Quellport, der dynamische Clientport zum Zielport.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="ports-dns" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum genügt für eine allgemeine DNS-Regel nicht nur UDP 53?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>DNS kann auch TCP 53 benötigen. Eine vollständige Anforderung muss deshalb prüfen, ob UDP und TCP freizugeben sind.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Socket“:</span><button type="button" data-card-id="ports-socket" data-card-rate="known">gewusst</button><button type="button" data-card-id="ports-socket" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ports-socket"></span></div>
+<div class="card-rating"><span>Karte „Richtung“:</span><button type="button" data-card-id="ports-direction" data-card-rate="known">gewusst</button><button type="button" data-card-id="ports-direction" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ports-direction"></span></div>
+<div class="card-rating"><span>Karte „DNS-Regel“:</span><button type="button" data-card-id="ports-dns" data-card-rate="known">gewusst</button><button type="button" data-card-id="ports-dns" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ports-dns"></span></div><section class="recall-practice" data-recall="ports-core-recall" data-min-length="90" aria-labelledby="ports-core-recall-title">
+  <div class="recall-prompt"><h3 id="ports-core-recall-title">Ohne Nachschlagen erklären</h3><p>Erkläre an einem selbst gewählten Client-Server-Beispiel den Unterschied zwischen Serverport, dynamischem Clientport, Socket-Endpunkt und 5-Tupel. Beschreibe auch die Antwort-Richtung.</p></div>
+  <label class="sr-only" for="ports-core-recall-answer">Deine Erklärung</label>
+  <textarea id="ports-core-recall-answer" data-recall-input rows="4" placeholder="Der Client startet mit … Der Server lauscht auf … Die Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Der Server lauscht auf einem stabilen Dienstport, während der Client meist einen dynamischen Quellport wählt. IP-Adresse und Port bilden je einen Endpunkt. Mit Transportprotokoll und beiden Endpunkten entsteht das 5-Tupel des Flusses. In der Antwort tauschen die vollständigen Quell- und Zielendpunkte ihre Rollen.</div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Lernziel-Check: Transfer</h2>
+<section class="quiz" data-quiz="ports-transfer-direction" data-correct="0" data-required-objective="socket-direction">
+  <h3>Eine Paketspur enthält `TCP 172.16.0.20:22 → 172.16.0.55:60444`. Welche Interpretation ist am besten begründet?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. TCP 22 ist der erwartete SSH-Serverport; 60444 passt zur dynamischen Clientseite und die Pfeilrichtung beschreibt eine Antwort."><span class="m">A</span> Der SSH-Server antwortet von 172.16.0.20:22 an eine Clientverbindung auf 172.16.0.55:60444.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Port 22 weist auf SSH hin, nicht auf HTTPS. Außerdem ist ein bekannter Dienstport typischerweise die Serverseite dieses Flusses."><span class="m">B</span> Der Client auf 172.16.0.20 startet von Port 22 eine HTTPS-Anfrage an Port 60444.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="In Antwortpaketen ist der dynamische Clientport der Zielport. Die Richtung eines einzelnen Pakets bestimmt nicht allein, welcher Endpunkt den Dienst anbietet."><span class="m">C</span> Der Serverdienst läuft auf 172.16.0.55:60444, weil jeder Zielport automatisch ein Serverport ist.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Das Transportprotokoll ist ausdrücklich TCP. Dynamische Ports können sowohl in TCP- als auch in UDP-Kommunikation vorkommen."><span class="m">D</span> Die Verbindung verwendet UDP, weil 60444 ein dynamischer Port ist.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="ports-transfer-rule" data-correct="0" data-required-objective="service-rule">
+  <h3>Nur das Sicherungsgerät 192.0.2.20 soll den internen Resolver 192.0.2.53 verwenden. Welche ausgehende Regel ist fachlich am vollständigsten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Die Regel begrenzt beide Endpunkte und nennt für DNS Zielport sowie beide relevanten Transportprotokolle."><span class="m">A</span> Quelle 192.0.2.20, Ziel 192.0.2.53, Zielport 53, UDP und TCP</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die Richtung ist vertauscht: Das Sicherungsgerät startet die Namensauflösung zum Resolver."><span class="m">B</span> Quelle 192.0.2.53, Ziel 192.0.2.20, Zielport 53, UDP und TCP</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Diese Regel erlaubt weit mehr als die geforderte Namensauflösung und lässt die übliche UDP-Nutzung von DNS unberücksichtigt."><span class="m">C</span> Quelle 192.0.2.20, beliebiges Ziel, beliebiger Port, TCP</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Die Quelle ist unnötig offen, und nur UDP bildet nicht alle DNS-Transportfälle ab."><span class="m">D</span> beliebige Quelle, Ziel 192.0.2.53, Zielport 53, nur UDP</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><p><strong>Prüfungsformulierung:</strong> Benenne nicht nur eine Portnummer. Begründe die Regel mit Kommunikationsrichtung, Serverrolle, Transportprotokoll sowie Quell- und Zielendpunkt.</p>
+<h2 class="sec" id="s7"><span class="num">7</span>Quellen und Einordnung</h2>
+<ul>
+<li><strong>Prüfungsvorbereitung IHK Bonn:</strong> Aufgabenrahmen zu Sockets, Firewallregeln und bekannten Dienstports.</li>
+<li><strong>EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):</strong> Zielport als Auswertungshinweis in einer Paketspur.</li>
+<li><strong>IT-Berufe Fachstufe II – Lernfelder 10–12 (2023):</strong> IP-Adresse, Port und Dienstpfad in der Verteilung von Verbindungen sowie Client- und Serverrollen.</li>
+</ul>
+<p>Text, Fälle, Antwortoptionen und Diagramme wurden eigenständig erstellt. Private Buchgrafiken und OCR-Rohtext werden nicht veröffentlicht.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-1"><span class="d">zurück zu</span><span class="t">Block N1 · Grundlagen, Medien und Verkabelung</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N1 · Grundlagen, Medien und Verkabelung</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Welcher Port gehört zum Dienst?</a></li>
+<li><a href="#s2" data-t="s2">Port, Socket und Kommunikationsfluss unterscheiden</a></li>
+<li><a href="#s3" data-t="s3">Durchgearbeitetes Szenario: HTTPS-Anfrage und Antwort</a></li>
+<li><a href="#s4" data-t="s4">Geführte Übung: Eine Dienstregel ableiten</a></li>
+<li><a href="#s5" data-t="s5">Karteikarten und freier Abruf</a></li>
+<li><a href="#s6" data-t="s6">Lernziel-Check: Transfer</a></li>
+<li><a href="#s7" data-t="s7">Quellen und Einordnung</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-1">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

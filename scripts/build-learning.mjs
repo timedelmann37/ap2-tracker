@@ -3,12 +3,15 @@ import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { marked } from 'marked';
+import { loadCompiledUnitSpecs } from './compile-learning-units.mjs';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, '..');
 const contentDir = path.join(repoRoot, 'content', 'learning');
+const unitSpecDir = path.join(repoRoot, 'content', 'learning-units');
 const templatePath = path.join(repoRoot, 'scripts', 'templates', 'learning-page.html');
 const sourceCatalogPath = path.join(repoRoot, 'content', 'sources.json');
+const coveragePath = path.join(repoRoot, 'docs', 'LEARNING_COVERAGE.json');
 
 function parseValue(raw) {
   const value = raw.trim();
@@ -135,26 +138,47 @@ function fillTemplate(template, metadata, content, toc) {
 const template = await readFile(templatePath, 'utf8');
 const catalog = JSON.parse(await readFile(sourceCatalogPath, 'utf8'));
 const knownSourceIds = new Set(catalog.sources.map(source => source.id));
-const files = (await readdir(contentDir)).filter(file => file.endsWith('.md')).sort();
+const legacyFiles = (await readdir(contentDir)).filter(file => file.endsWith('.md')).sort();
+const structuredUnits = await loadCompiledUnitSpecs(unitSpecDir);
+const inputs = [];
+for (const file of legacyFiles) {
+  const raw = await readFile(path.join(contentDir, file), 'utf8');
+  const parsed = parseDocument(raw, file);
+  inputs.push({ file, raw, sourceKind: 'legacy-markdown', ...parsed, curation: null, assets: [] });
+}
+for (const unit of structuredUnits) {
+  inputs.push({
+    file: `learning-units/${unit.file}`,
+    raw: unit.raw,
+    sourceKind: 'compact-spec',
+    metadata: unit.metadata,
+    markdown: unit.contentMarkdown.trim(),
+    curation: unit.curation,
+    assets: unit.assets
+  });
+}
 const manifest = [];
 const seen = { id: new Set(), slug: new Set(), item_id: new Set() };
+const renderedPages = [];
+const generatedSidecars = [];
+const generatedAssets = [];
 
-for (const file of files) {
-  const raw = await readFile(path.join(contentDir, file), 'utf8');
-  const { metadata, markdown } = parseDocument(raw, file);
+for (const input of inputs) {
+  const { file, raw, metadata, markdown } = input;
   validate(metadata, markdown, knownSourceIds, file);
   const curationPath = path.resolve(repoRoot, metadata.curation);
   const curationRoot = path.resolve(repoRoot, 'content', 'curation');
   if (path.dirname(curationPath) !== curationRoot || path.extname(curationPath) !== '.json') {
     throw new Error(`${file}: curation muss direkt auf eine JSON-Datei unter content/curation zeigen.`);
   }
-  const curation = JSON.parse(await readFile(curationPath, 'utf8'));
+  const curation = input.curation || JSON.parse(await readFile(curationPath, 'utf8'));
   if (curation.topicId !== metadata.id || curation.contentRevision !== metadata.content_revision) {
     throw new Error(`${file}: Curation-Sidecar passt nicht zu Topic oder Inhaltsrevision.`);
   }
-  const curationObjectiveIds = new Set((curation.objectives || []).map(objective => objective.id));
-  if (metadata.learning_objectives.some(id => !curationObjectiveIds.has(id))) {
-    throw new Error(`${file}: Lernziele fehlen im Curation-Sidecar.`);
+  const curationObjectiveIds = (curation.objectives || []).map(objective => objective.id).sort();
+  const metadataObjectiveIds = [...metadata.learning_objectives].sort();
+  if (new Set(curationObjectiveIds).size !== curationObjectiveIds.length || JSON.stringify(curationObjectiveIds) !== JSON.stringify(metadataObjectiveIds)) {
+    throw new Error(`${file}: Lernziele im Curation-Sidecar und Inhalt stimmen nicht exakt überein.`);
   }
   if (curation.status !== metadata.content_status || !Array.isArray(curation.evidence) || !curation.evidence.length) {
     throw new Error(`${file}: Curation-Status oder Evidence fehlt.`);
@@ -172,9 +196,11 @@ for (const file of files) {
   }
   const rendered = renderMarkdown(markdown);
   const page = fillTemplate(template, metadata, rendered.html, rendered.headings);
-  const outputDir = path.join(repoRoot, 'lernen', metadata.slug);
-  await mkdir(outputDir, { recursive: true });
-  await writeFile(path.join(outputDir, 'index.html'), page, 'utf8');
+  renderedPages.push({ path: path.join(repoRoot, 'lernen', metadata.slug, 'index.html'), content: page });
+  if (input.sourceKind === 'compact-spec') {
+    generatedSidecars.push({ path: curationPath, content: `${JSON.stringify(curation, null, 2)}\n` });
+    generatedAssets.push(...input.assets.map(asset => ({ path: path.join(repoRoot, asset.path), content: asset.content })));
+  }
   manifest.push({
     id: metadata.id,
     slug: metadata.slug,
@@ -191,12 +217,37 @@ for (const file of files) {
     contentStatus: metadata.content_status,
     learningObjectives: metadata.learning_objectives,
     sources: metadata.sources,
-    contentHash: createHash('sha256').update(raw).digest('hex')
+    contentHash: createHash('sha256').update(raw).digest('hex'),
+    sourceKind: input.sourceKind
   });
-  console.log(`Gebaut: /lernen/${metadata.slug}/`);
 }
 
 manifest.sort((left, right) => left.itemId.localeCompare(right.itemId, 'de', { numeric: true }));
+
+const coverage = JSON.parse(await readFile(coveragePath, 'utf8'));
+const topicsByItem = new Map(manifest.map(topic => [topic.itemId, topic]));
+for (const group of coverage.groups) {
+  for (const item of group.items) {
+    const topic = topicsByItem.get(item.itemId);
+    item.status = topic ? 'implemented' : 'unmapped';
+    item.learningUnit = topic ? `/lernen/${topic.slug}/` : null;
+  }
+  group.implemented = group.items.filter(item => item.status === 'implemented').length;
+}
+coverage.summary.implemented = manifest.length;
+coverage.summary.remaining = coverage.summary.total - manifest.length;
+for (const domain of coverage.domains) {
+  domain.implemented = coverage.groups
+    .filter(group => group.domain === domain.domain)
+    .reduce((sum, group) => sum + group.implemented, 0);
+  domain.remaining = domain.total - domain.implemented;
+}
+
+for (const artifact of [...generatedSidecars, ...generatedAssets, ...renderedPages]) {
+  await mkdir(path.dirname(artifact.path), { recursive: true });
+  await writeFile(artifact.path, artifact.content, 'utf8');
+}
+for (const topic of manifest) console.log(`Gebaut: /lernen/${topic.slug}/`);
 
 await writeFile(
   path.join(repoRoot, 'content', 'learning-manifest.json'),
@@ -209,3 +260,5 @@ await writeFile(
   `window.AP2_LEARNING_TOPICS = Object.freeze(${JSON.stringify(manifest, null, 2)});\n`,
   'utf8'
 );
+
+await writeFile(coveragePath, `${JSON.stringify(coverage, null, 2)}\n`, 'utf8');

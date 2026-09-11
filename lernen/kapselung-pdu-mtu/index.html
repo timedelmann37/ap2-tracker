@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Den Weg von Anwendungsdaten über Segment, Paket und Frame nachvollziehen und die maximale Nutzlast aus einer MTU begründet bestimmen.">
+<title>Kapselung, PDU und MTU sicher anwenden – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="kapselung-pdu-mtu" data-progress-id="ga2-1__2" data-content-revision="2026-09-11.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-1">Block N1 · Grundlagen, Medien und Verkabelung</a><span class="sep">›</span>
+    <span class="here">Kapselung, PDU und MTU sicher anwenden</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">Kapselung, PDU und MTU sicher anwenden</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 22 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Kapselung bedeutet im Netzwerk nicht, dass Daten mehrfach inhaltlich kopiert werden. Jede Schicht ergänzt die Steuerinformationen, die sie für ihre eigene Aufgabe benötigt. Die MTU setzt dabei eine Grenze für die Größe des IP-Pakets auf einem konkreten Übertragungsabschnitt.</p>
+<section class="learning-goals" aria-labelledby="kapselung-pdu-mtu-goals">
+  <h2 id="kapselung-pdu-mtu-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Anwendungsdaten beim Senden und Empfangen den PDU-Stufen Segment oder Datagramm, Paket, Frame und Bits korrekt zuordnen</li>
+    <li>aus MTU und Headergrößen die maximal verbleibende Transportnutzlast berechnen und MTU-Fehler fachlich einordnen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Welche Hülle sieht der Switch?</h2>
+<section class="quiz" data-quiz="encapsulation-diagnostic" data-correct="1">
+  <h3>Ein Ethernet-Switch entscheidet, an welchen lokalen Port er eine empfangene PDU weiterleitet. Welche Hülle wertet er für diese Kernaufgabe aus?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Der TCP-Header liegt innerhalb des IP-Pakets. Ein gewöhnlicher Layer-2-Switch benötigt den Zielport nicht für seine Weiterleitungsentscheidung."><span class="m">A</span> den TCP-Header mit dem Zielport</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Für die lokale Layer-2-Weiterleitung betrachtet der Switch den Ethernet-Frame und insbesondere dessen Ziel-MAC-Adresse."><span class="m">B</span> den Ethernet-Header mit der Ziel-MAC-Adresse</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Anwendungsdaten liegen in mehreren Hüllen. Sie sind für die normale MAC-basierte Weiterleitung nicht erforderlich."><span class="m">C</span> ausschließlich die Anwendungsdaten</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Die Ziel-IP wird typischerweise für Routing ausgewertet. Der beschriebene Switch entscheidet anhand der lokalen Link-Hülle."><span class="m">D</span> nur die Ziel-IP-Adresse</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">Leserichtung</span><p>Beim <strong>Senden</strong> werden Header von oben nach unten ergänzt. Beim <strong>Empfangen</strong> werden die Hüllen von unten nach oben geprüft und entfernt.</p></aside><h2 class="sec" id="s2"><span class="num">2</span>PDU-Namen als Funktionsmodell</h2>
+<p>Eine Protocol Data Unit ist die Dateneinheit einer bestimmten Schicht. Sie besteht aus der Nutzlast dieser Schicht und ihren Steuerinformationen. Was oben noch eine vollständige Transport-PDU ist, wird für IP zur Nutzlast. Das IP-Paket wird wiederum zur Nutzlast des Ethernet-Frames.</p>
+<div class="twrap"><table class="knowledge-table">
+<thead>
+<tr>
+<th>Ebene</th>
+<th>typische PDU</th>
+<th>wichtige neue Information</th>
+<th>Reichweite der Information</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Anwendung</td>
+<td>Anwendungsdaten</td>
+<td>fachlicher Inhalt</td>
+<td>zwischen Anwendungen</td>
+</tr>
+<tr>
+<td>Transport</td>
+<td>TCP-Segment oder UDP-Datagramm</td>
+<td>Ports; bei TCP zusätzlich Zustands- und Zuverlässigkeitsinformationen</td>
+<td>zwischen Prozessen</td>
+</tr>
+<tr>
+<td>Vermittlung</td>
+<td>IP-Paket</td>
+<td>Quell- und Ziel-IP</td>
+<td>über Netzgrenzen</td>
+</tr>
+<tr>
+<td>Sicherung</td>
+<td>Frame</td>
+<td>lokale Linkadressen und Fehlererkennung</td>
+<td>ein Übertragungsabschnitt</td>
+</tr>
+<tr>
+<td>Bitübertragung</td>
+<td>Bits beziehungsweise Signale</td>
+<td>physische Codierung</td>
+<td>konkretes Medium</td>
+</tr>
+</tbody></table></div>
+<figure class="learning-figure">
+  <img src="/assets/learning/kapselung-pdu-mtu-encapsulation-path.svg" alt="Vertikaler Ablauf von Anwendungsdaten über TCP-Segment oder UDP-Datagramm, IP-Paket und Ethernet-Frame bis zu Bits und Signalen.">
+  <figcaption>Eigene Lernskizze: Jede untere Ebene behandelt die vollständige PDU der darüberliegenden Ebene als Nutzlast.</figcaption>
+</figure><aside class="callout warn"><span class="lbl">Sprachfalle</span><p>Im Alltag wird oft jedes übertragene Objekt „Paket“ genannt. In einer Prüfungsbegründung ist <strong>IP-Paket</strong> präziser; auf der Sicherungsschicht heißt die PDU <strong>Frame</strong>.</p></aside><h2 class="sec" id="s3"><span class="num">3</span>Durchgerechnetes Szenario: Passt die TCP-Nutzlast?</h2>
+<p>Ein Ethernet-Abschnitt verwendet eine MTU von 1500 Byte. Gesendet wird IPv4 mit einem 20-Byte-Header und TCP mit einem 20-Byte-Header; Optionen und zusätzliche Tunnel fehlen. Die MTU begrenzt hier das vollständige IP-Paket. Ethernet-Header und -Trailer werden nicht von diesen 1500 Byte abgezogen.</p>
+<div class="math-display" role="group" aria-label="Maximale TCP-Anwendungsnutzlast bei einer MTU von 1500 Byte"><math display="block" aria-label="Maximale TCP-Anwendungsnutzlast bei einer MTU von 1500 Byte"><mrow><mn>1500</mn><mtext> B</mtext><mo>−</mo><mn>20</mn><mtext> B IPv4</mtext><mo>−</mo><mn>20</mn><mtext> B TCP</mtext><mo>=</mo><mn>1460</mn><mtext> B Nutzlast</mtext></mrow></math><div class="math-legend"><span>1500 B MTU des IP-Pakets</span><span>20 B IPv4 ohne Optionen</span><span>20 B TCP ohne Optionen</span><span>1460 B maximale Anwendungsnutzlast</span></div></div><figure class="learning-figure">
+  <img src="/assets/learning/kapselung-pdu-mtu-mtu-budget.svg" alt="Drei Anteile eines 1500-Byte-IP-Pakets: 20 Byte IPv4-Header, 20 Byte TCP-Header und 1460 Byte Anwendungsdaten.">
+  <figcaption>Eigene Lernskizze: Zusätzliche IP- oder TCP-Optionen sowie Tunnel-Header verkleinern die verbleibende Nutzlast.</figcaption>
+</figure><p>Eine Anwendung, die 1460 Byte TCP-Nutzlast liefert, passt in diesem vereinfachten Fall in ein IP-Paket. Bei 1461 Byte wäre das Größenbudget überschritten. Je nach Protokoll, gesetzten Flags und Pfad wird dann segmentiert, fragmentiert oder das Paket verworfen. In der Praxis soll Path MTU Discovery eine passende Paketgröße entlang des gesamten Pfads ermitteln.</p>
+<h2 class="sec" id="s4"><span class="num">4</span>Geführte Übung: Hüllen in Sendereihenfolge</h2>
+<p>Ordne zuerst ohne Nachschlagen. Frage dich bei jedem Schritt: Welche Schicht erhält die PDU von oben und welche eigenen Steuerinformationen ergänzt sie?</p>
+<section class="sequence-practice" data-sequence="encapsulation-guided-order" data-expected="application,segment,packet,frame,bits" data-correct-feedback="Richtig. Jede Schicht übernimmt das Ergebnis der darüberliegenden Schicht als Nutzlast und ergänzt ihre eigene Hülle." data-wrong-feedback="Beginne bei den Anwendungsdaten. Danach folgen Transport, IP, lokaler Frame und erst zuletzt die physische Übertragung." aria-labelledby="encapsulation-guided-order-title">
+  <div class="lab-heading"><div><h3 id="encapsulation-guided-order-title">Vom Browser bis auf das Kabel</h3><p>Bringe die fünf Schritte in die Reihenfolge, in der sie beim Sender entstehen.</p></div><span class="lab-tag">Übung</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="frame" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Der IP-Paketinhalt wird in einen Ethernet-Frame für den nächsten Link gekapselt.</span></li>
+    <li data-step="application" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Die Anwendung erzeugt die fachlichen Nutzdaten.</span></li>
+    <li data-step="bits" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Der Frame wird als codierte Bits beziehungsweise Signale übertragen.</span></li>
+    <li data-step="packet" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Das TCP-Segment wird mit einem IP-Header zum IP-Paket.</span></li>
+    <li data-step="segment" tabindex="-1"><span class="step-position" data-step-position>5</span><span>TCP ergänzt seinen Header und erzeugt ein Segment.</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s5"><span class="num">5</span>MTU-Fehler erkennen</h2>
+<p>Die MTU gehört zu einem konkreten Link beziehungsweise Pfadabschnitt. Ein Tunnel fügt weitere Header hinzu und kann dadurch die effektive Nutzlast senken. Unterschiedliche MTUs entlang des Pfads werden problematisch, wenn zu große Pakete nicht passend verkleinert werden können oder notwendige Rückmeldungen gefiltert sind.</p>
+<p>Eine saubere Analyse trennt deshalb drei Fragen:</p>
+<ol>
+<li>Wie groß ist die MTU des engsten Pfadabschnitts?</li>
+<li>Welche Netzwerk- und Transportheader liegen tatsächlich vor?</li>
+<li>Welche zusätzlichen Tunnel-, Sicherheits- oder Protokollinformationen werden ergänzt?</li>
+</ol>
+<section class="quiz" data-quiz="mtu-guided-diagnosis" data-correct="0">
+  <h3>Nach dem Aufbau eines VPN funktionieren kleine Anfragen, große Übertragungen bleiben jedoch hängen. Welche Hypothese prüfst du zuerst?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Zusätzliche Tunnel-Header verändern das Größenbudget. Das Fehlerbild mit funktionierenden kleinen und scheiternden großen Übertragungen passt zu einem MTU- oder PMTUD-Problem."><span class="m">A</span> Die Tunnel-Header verkleinern die nutzbare Pfad-MTU, aber die Endpunkte senden weiterhin zu große Pakete.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Ein gewöhnlicher Switch leitet Frames anhand von MAC-Adressen weiter. Der TCP-Zielport erklärt das größenabhängige Fehlerbild nicht."><span class="m">B</span> Der Ethernet-Switch kennt den TCP-Zielport nicht.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Das IP-Paket existiert bereits, bevor es für den lokalen Link in einen Ethernet-Frame gekapselt wird."><span class="m">C</span> Die IP-Adresse wird erst nach der Ethernet-Übertragung ergänzt.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="TCP zerlegt den Bytestrom in Segmente. Problematisch kann hier vielmehr sein, dass das resultierende Paket nicht in die effektive Pfad-MTU passt."><span class="m">D</span> TCP besitzt grundsätzlich keine Segmentierung.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Karteikarten und freier Abruf</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="encapsulation-pdu-names" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wie heißen die typischen PDUs von Transport-, Vermittlungs- und Sicherungsschicht?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>TCP-Segment beziehungsweise UDP-Datagramm, IP-Paket und Frame.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="encapsulation-router-frame" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was geschieht mit dem Ethernet-Frame an einem Router?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Der eingehende Frame endet. Der Router verarbeitet das IP-Paket und kapselt es für den nächsten Link in einen neuen Frame.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="encapsulation-mtu" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche Größe begrenzt eine Ethernet-MTU von 1500 Byte?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Die Größe des IP-Pakets auf diesem Link. Ethernet-Header und -Trailer gehören nicht zu diesen 1500 Byte.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „PDU-Namen“:</span><button type="button" data-card-id="encapsulation-pdu-names" data-card-rate="known">gewusst</button><button type="button" data-card-id="encapsulation-pdu-names" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="encapsulation-pdu-names"></span></div>
+<div class="card-rating"><span>Karte „Router und Frame“:</span><button type="button" data-card-id="encapsulation-router-frame" data-card-rate="known">gewusst</button><button type="button" data-card-id="encapsulation-router-frame" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="encapsulation-router-frame"></span></div>
+<div class="card-rating"><span>Karte „MTU“:</span><button type="button" data-card-id="encapsulation-mtu" data-card-rate="known">gewusst</button><button type="button" data-card-id="encapsulation-mtu" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="encapsulation-mtu"></span></div><section class="recall-practice" data-recall="encapsulation-core-recall" data-min-length="90" aria-labelledby="encapsulation-core-recall-title">
+  <div class="recall-prompt"><h3 id="encapsulation-core-recall-title">Ohne Nachschlagen erklären</h3><p>Beschreibe die Kapselung vom Anwendungsdatum bis zu den Bits. Erkläre außerdem, warum eine MTU von 1500 Byte bei TCP über IPv4 nicht 1500 Byte Anwendungsnutzlast bedeutet.</p></div>
+  <label class="sr-only" for="encapsulation-core-recall-answer">Deine Erklärung</label>
+  <textarea id="encapsulation-core-recall-answer" data-recall-input rows="4" placeholder="Anwendungsdaten … Segment … Paket … Frame … MTU …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Die Anwendung liefert Daten. TCP oder UDP ergänzt einen Transportheader; IP ergänzt logische Adressen; Ethernet ergänzt die lokale Link-Hülle; anschließend werden Bits beziehungsweise Signale übertragen. Bei 1500 Byte MTU benötigen IP- und Transportheader einen Teil des Budgets, sodass weniger Platz für Anwendungsdaten bleibt.</div>
+</section><h2 class="sec" id="s7"><span class="num">7</span>Lernziel-Check: Transfer</h2>
+<section class="sequence-practice" data-sequence="encapsulation-transfer-order" data-expected="link,network,transport,application" data-correct-feedback="Richtig. Beim Empfänger wird vom lokalen Frame über IP und Transport bis zur Anwendung entkapselt." data-wrong-feedback="Beginne mit der äußersten Hülle, die auf dem lokalen Link ankommt. Danach folgen IP, Transport und Anwendung." data-required-objective="pdu-order" aria-labelledby="encapsulation-transfer-order-title">
+  <div class="lab-heading"><div><h3 id="encapsulation-transfer-order-title">Empfangspfad eines Servers</h3><p>Ordne die Verarbeitung beim Empfänger von der Netzwerkkarte bis zur Anwendung.</p></div><span class="lab-tag">Pflichtnachweis</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="transport" tabindex="-1"><span class="step-position" data-step-position>1</span><span>TCP prüft den Segmentkopf und ordnet die Nutzdaten über den Zielport einem Prozess zu.</span></li>
+    <li data-step="link" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Die Netzwerkschnittstelle prüft den Ethernet-Frame und entfernt die lokale Link-Hülle.</span></li>
+    <li data-step="application" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Die Anwendung verarbeitet die gelieferten Nutzdaten fachlich.</span></li>
+    <li data-step="network" tabindex="-1"><span class="step-position" data-step-position>4</span><span>IP prüft die Zieladresse und übergibt die enthaltene Transport-PDU.</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><section class="numeric-practice transfer-number" data-numeric-practice="mtu-transfer-payload" data-required-objective="mtu-calculation" data-expected="1448" data-correct-feedback="Richtig: Nach Abzug von IPv4- und TCP-Header bleiben 1448 Byte Anwendungsnutzlast." data-wrong-feedback="Ziehe sowohl den 20-Byte-IPv4-Header als auch den 32-Byte-TCP-Header von der MTU ab.">
+  <h3>Nutzlast mit TCP-Optionen bestimmen</h3>
+  <p>Ein Pfad besitzt 1500 Byte MTU. IPv4 verwendet 20 Byte Header, TCP durch Optionen 32 Byte Header. Wie viele Byte Anwendungsnutzlast passen maximal in ein IP-Paket?</p>
+  <label for="mtu-transfer-payload-answer">Maximale Anwendungsnutzlast in Byte</label>
+  <div class="answer-row"><input id="mtu-transfer-payload-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Ergebnis"><button type="button" class="lbtn primary" data-numeric-check>Antwort prüfen</button></div>
+  <template data-numeric-correct><span>Richtig: Nach Abzug von IPv4- und TCP-Header bleiben 1448 Byte Anwendungsnutzlast.</span><div class="math-display compact" role="group" aria-label="1500 Byte minus 20 Byte IPv4-Header minus 32 Byte TCP-Header ergibt 1448 Byte"><math display="block" aria-label="1500 Byte minus 20 Byte IPv4-Header minus 32 Byte TCP-Header ergibt 1448 Byte"><mrow><mn>1500</mn><mtext> B</mtext><mo>−</mo><mn>20</mn><mtext> B</mtext><mo>−</mo><mn>32</mn><mtext> B</mtext><mo>=</mo><mn>1448</mn><mtext> B</mtext></mrow></math><div class="math-legend"><span>1500 B MTU</span><span>20 B IPv4</span><span>32 B TCP</span><span>1448 B Nutzlast</span></div></div></template>
+  <template data-numeric-feedback-for="1460">1460 Byte wären nur bei einem 20-Byte-TCP-Header richtig. Die Aufgabe nennt wegen der TCP-Optionen 32 Byte.</template>
+  <template data-numeric-feedback-for="1480">Du hast nur den IPv4-Header abgezogen. Auch der TCP-Header belegt Platz innerhalb der MTU.</template>
+  <template data-numeric-feedback-for="1500">1500 Byte ist die Größe des vollständigen IP-Pakets, nicht die reine Anwendungsnutzlast.</template>
+  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s8"><span class="num">8</span>Quellen und Einordnung</h2>
+<ul>
+<li><strong>EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):</strong> Grundlage für Schichten, TCP als Transportprotokoll und die verschachtelte Darstellung eines Ethernet-/IPv4-/TCP-Mitschnitts.</li>
+<li><strong>IT-Berufe Fachstufe II – Lernfelder 10–12 (2023):</strong> ergänzender Betriebsbeleg für Netzwerkschnittstellen mit MTU 1500.</li>
+</ul>
+<p>Die im ursprünglichen Mapping gefundenen OOP-Stellen wurden nicht fachlich verwertet. Erklärung, Aufgaben und Diagramme sind eigenständig erstellt; private Buchgrafiken und Rohmitschnitte werden nicht veröffentlicht.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-1"><span class="d">zurück zu</span><span class="t">Block N1 · Grundlagen, Medien und Verkabelung</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N1 · Grundlagen, Medien und Verkabelung</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Welche Hülle sieht der Switch?</a></li>
+<li><a href="#s2" data-t="s2">PDU-Namen als Funktionsmodell</a></li>
+<li><a href="#s3" data-t="s3">Durchgerechnetes Szenario: Passt die TCP-Nutzlast?</a></li>
+<li><a href="#s4" data-t="s4">Geführte Übung: Hüllen in Sendereihenfolge</a></li>
+<li><a href="#s5" data-t="s5">MTU-Fehler erkennen</a></li>
+<li><a href="#s6" data-t="s6">Karteikarten und freier Abruf</a></li>
+<li><a href="#s7" data-t="s7">Lernziel-Check: Transfer</a></li>
+<li><a href="#s8" data-t="s8">Quellen und Einordnung</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-1">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

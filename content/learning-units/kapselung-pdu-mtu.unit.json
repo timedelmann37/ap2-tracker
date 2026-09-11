@@ -1,0 +1,390 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "kapselung-pdu-mtu",
+    "slug": "kapselung-pdu-mtu",
+    "title": "Kapselung, PDU und MTU sicher anwenden",
+    "description": "Den Weg von Anwendungsdaten über Segment, Paket und Frame nachvollziehen und die maximale Nutzlast aus einer MTU begründet bestimmen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-1",
+    "groupLabel": "Block N1 · Grundlagen, Medien und Verkabelung",
+    "itemId": "ga2-1__2",
+    "week": "KW 35",
+    "estimatedMinutes": 22,
+    "relevance": "hoch",
+    "sources": ["europa-integratoren-2026", "itlf10-12-2023"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "pdu-order",
+      "label": "Anwendungsdaten beim Senden und Empfangen den PDU-Stufen Segment oder Datagramm, Paket, Frame und Bits korrekt zuordnen"
+    },
+    {
+      "id": "mtu-calculation",
+      "label": "aus MTU und Headergrößen die maximal verbleibende Transportnutzlast berechnen und MTU-Fehler fachlich einordnen"
+    }
+  ],
+  "intro": "Kapselung bedeutet im Netzwerk nicht, dass Daten mehrfach inhaltlich kopiert werden. Jede Schicht ergänzt die Steuerinformationen, die sie für ihre eigene Aufgabe benötigt. Die MTU setzt dabei eine Grenze für die Größe des IP-Pakets auf einem konkreten Übertragungsabschnitt.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunk europa-integratoren-2026:00305, Markdown-Zeilen 2955–2972",
+        "use": "OSI-Rahmen, schichtbezogene Protokolle und TCP als zuverlässiges Transportprotokoll",
+        "reviewStatus": "stabile Grundprinzipien geprüft und eigenständig formuliert"
+      },
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunk europa-integratoren-2026:00366, Markdown-Zeilen 3529–3555",
+        "use": "verschachtelter Paketmitschnitt mit Ethernet-, IPv4- und TCP-Informationen als Kapselungsbeleg",
+        "reviewStatus": "nur Strukturmerkmale verwendet; Mitschnitt und Buchdarstellung nicht übernommen"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "OCR-Chunks itlf10-12-2023:page:0358 und itlf10-12-2023:page:0359, PDF-Seiten 358–359",
+        "use": "MTU 1500 als konkreter Wert an realen Netzwerkschnittstellen",
+        "reviewStatus": "OCR im Seitenkontext geprüft; Wert nur als Ethernet-Beispiel, nicht als universelle MTU verwendet"
+      }
+    ],
+    "notes": [
+      "Die im GA2-Quellenmapping genannten Treffer europa-integratoren-2026:00071, europa-integratoren-2026:00543 und ihk-bonn:00119 behandeln OOP-Kapselung. Sie wurden als Fehlzuordnung erkannt und nicht als Netzwerkbeleg verwendet.",
+      "PDU-Bezeichnungen werden fachlich präzisiert: TCP-Segment, UDP-Datagramm, IP-Paket, Frame sowie Bits beziehungsweise Signale.",
+      "Das Rechenbeispiel gilt für eine Ethernet-MTU von 1500 Byte, IPv4 ohne Optionen und TCP ohne Optionen. Andere Header oder Tunnel verkleinern die verbleibende Anwendungsnutzlast.",
+      "Diagramme, Zahlenfälle und Antwortoptionen sind eigenständig erstellt; private Buchgrafiken werden nicht veröffentlicht."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "encapsulation-path",
+      "type": "flow",
+      "title": "Beim Senden wächst die Hülle schichtweise",
+      "description": "Anwendungsdaten werden zuerst zur Transport-PDU, dann zum IP-Paket, anschließend zum Ethernet-Frame und zuletzt als Bits beziehungsweise Signale übertragen.",
+      "items": [
+        {
+          "label": "Anwendungsdaten",
+          "detail": "fachlicher Inhalt, zum Beispiel eine HTTP-Anfrage"
+        },
+        {
+          "label": "TCP-Segment oder UDP-Datagramm",
+          "detail": "Transport-Header ergänzt unter anderem Quell- und Zielport"
+        },
+        {
+          "label": "IP-Paket",
+          "detail": "IP-Header ergänzt logische Quell- und Zieladresse"
+        },
+        {
+          "label": "Ethernet-Frame",
+          "detail": "Link-Header und Prüfinformationen gelten für den nächsten lokalen Abschnitt"
+        },
+        {
+          "label": "Bits und Signale",
+          "detail": "das Medium überträgt die codierten Werte zum nächsten Gerät"
+        }
+      ]
+    },
+    {
+      "id": "mtu-budget",
+      "type": "comparison",
+      "title": "1500 Byte MTU sind ein Größenbudget für das IP-Paket",
+      "description": "Bei IPv4 und TCP ohne Optionen bleiben von 1500 Byte IP-Paketgröße nach 20 Byte IPv4-Header und 20 Byte TCP-Header höchstens 1460 Byte für Anwendungsdaten.",
+      "items": [
+        {
+          "label": "IPv4-Header",
+          "detail": "20 Byte Mindestgröße ohne IPv4-Optionen"
+        },
+        {
+          "label": "TCP-Header",
+          "detail": "20 Byte Mindestgröße ohne TCP-Optionen"
+        },
+        {
+          "label": "Anwendungsdaten",
+          "detail": "1460 Byte verbleiben im vereinfachten Beispiel"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Welche Hülle sieht der Switch?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "encapsulation-diagnostic",
+          "diagnostic": true,
+          "question": "Ein Ethernet-Switch entscheidet, an welchen lokalen Port er eine empfangene PDU weiterleitet. Welche Hülle wertet er für diese Kernaufgabe aus?",
+          "options": [
+            {
+              "text": "den TCP-Header mit dem Zielport",
+              "rationale": "Der TCP-Header liegt innerhalb des IP-Pakets. Ein gewöhnlicher Layer-2-Switch benötigt den Zielport nicht für seine Weiterleitungsentscheidung.",
+              "correct": false
+            },
+            {
+              "text": "den Ethernet-Header mit der Ziel-MAC-Adresse",
+              "rationale": "Richtig. Für die lokale Layer-2-Weiterleitung betrachtet der Switch den Ethernet-Frame und insbesondere dessen Ziel-MAC-Adresse.",
+              "correct": true
+            },
+            {
+              "text": "ausschließlich die Anwendungsdaten",
+              "rationale": "Anwendungsdaten liegen in mehreren Hüllen. Sie sind für die normale MAC-basierte Weiterleitung nicht erforderlich.",
+              "correct": false
+            },
+            {
+              "text": "nur die Ziel-IP-Adresse",
+              "rationale": "Die Ziel-IP wird typischerweise für Routing ausgewertet. Der beschriebene Switch entscheidet anhand der lokalen Link-Hülle.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Leserichtung",
+          "markdown": "Beim **Senden** werden Header von oben nach unten ergänzt. Beim **Empfangen** werden die Hüllen von unten nach oben geprüft und entfernt."
+        }
+      ]
+    },
+    {
+      "title": "PDU-Namen als Funktionsmodell",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Eine Protocol Data Unit ist die Dateneinheit einer bestimmten Schicht. Sie besteht aus der Nutzlast dieser Schicht und ihren Steuerinformationen. Was oben noch eine vollständige Transport-PDU ist, wird für IP zur Nutzlast. Das IP-Paket wird wiederum zur Nutzlast des Ethernet-Frames.\n\n| Ebene | typische PDU | wichtige neue Information | Reichweite der Information |\n| --- | --- | --- | --- |\n| Anwendung | Anwendungsdaten | fachlicher Inhalt | zwischen Anwendungen |\n| Transport | TCP-Segment oder UDP-Datagramm | Ports; bei TCP zusätzlich Zustands- und Zuverlässigkeitsinformationen | zwischen Prozessen |\n| Vermittlung | IP-Paket | Quell- und Ziel-IP | über Netzgrenzen |\n| Sicherung | Frame | lokale Linkadressen und Fehlererkennung | ein Übertragungsabschnitt |\n| Bitübertragung | Bits beziehungsweise Signale | physische Codierung | konkretes Medium |"
+        },
+        {
+          "type": "figure",
+          "diagramId": "encapsulation-path",
+          "alt": "Vertikaler Ablauf von Anwendungsdaten über TCP-Segment oder UDP-Datagramm, IP-Paket und Ethernet-Frame bis zu Bits und Signalen.",
+          "caption": "Eigene Lernskizze: Jede untere Ebene behandelt die vollständige PDU der darüberliegenden Ebene als Nutzlast."
+        },
+        {
+          "type": "callout",
+          "kind": "warning",
+          "label": "Sprachfalle",
+          "markdown": "Im Alltag wird oft jedes übertragene Objekt „Paket“ genannt. In einer Prüfungsbegründung ist **IP-Paket** präziser; auf der Sicherungsschicht heißt die PDU **Frame**."
+        }
+      ]
+    },
+    {
+      "title": "Durchgerechnetes Szenario: Passt die TCP-Nutzlast?",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Ethernet-Abschnitt verwendet eine MTU von 1500 Byte. Gesendet wird IPv4 mit einem 20-Byte-Header und TCP mit einem 20-Byte-Header; Optionen und zusätzliche Tunnel fehlen. Die MTU begrenzt hier das vollständige IP-Paket. Ethernet-Header und -Trailer werden nicht von diesen 1500 Byte abgezogen."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Maximale TCP-Anwendungsnutzlast bei einer MTU von 1500 Byte",
+          "mathml": "<math display=\"block\"><mrow><mn>1500</mn><mtext> B</mtext><mo>−</mo><mn>20</mn><mtext> B IPv4</mtext><mo>−</mo><mn>20</mn><mtext> B TCP</mtext><mo>=</mo><mn>1460</mn><mtext> B Nutzlast</mtext></mrow></math>",
+          "legend": [
+            "1500 B MTU des IP-Pakets",
+            "20 B IPv4 ohne Optionen",
+            "20 B TCP ohne Optionen",
+            "1460 B maximale Anwendungsnutzlast"
+          ]
+        },
+        {
+          "type": "figure",
+          "diagramId": "mtu-budget",
+          "alt": "Drei Anteile eines 1500-Byte-IP-Pakets: 20 Byte IPv4-Header, 20 Byte TCP-Header und 1460 Byte Anwendungsdaten.",
+          "caption": "Eigene Lernskizze: Zusätzliche IP- oder TCP-Optionen sowie Tunnel-Header verkleinern die verbleibende Nutzlast."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Eine Anwendung, die 1460 Byte TCP-Nutzlast liefert, passt in diesem vereinfachten Fall in ein IP-Paket. Bei 1461 Byte wäre das Größenbudget überschritten. Je nach Protokoll, gesetzten Flags und Pfad wird dann segmentiert, fragmentiert oder das Paket verworfen. In der Praxis soll Path MTU Discovery eine passende Paketgröße entlang des gesamten Pfads ermitteln."
+        }
+      ]
+    },
+    {
+      "title": "Geführte Übung: Hüllen in Sendereihenfolge",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ordne zuerst ohne Nachschlagen. Frage dich bei jedem Schritt: Welche Schicht erhält die PDU von oben und welche eigenen Steuerinformationen ergänzt sie?"
+        },
+        {
+          "type": "sequence",
+          "id": "encapsulation-guided-order",
+          "title": "Vom Browser bis auf das Kabel",
+          "prompt": "Bringe die fünf Schritte in die Reihenfolge, in der sie beim Sender entstehen.",
+          "tag": "Übung",
+          "steps": [
+            {
+              "id": "frame",
+              "label": "Der IP-Paketinhalt wird in einen Ethernet-Frame für den nächsten Link gekapselt."
+            },
+            {
+              "id": "application",
+              "label": "Die Anwendung erzeugt die fachlichen Nutzdaten."
+            },
+            {
+              "id": "bits",
+              "label": "Der Frame wird als codierte Bits beziehungsweise Signale übertragen."
+            },
+            {
+              "id": "packet",
+              "label": "Das TCP-Segment wird mit einem IP-Header zum IP-Paket."
+            },
+            {
+              "id": "segment",
+              "label": "TCP ergänzt seinen Header und erzeugt ein Segment."
+            }
+          ],
+          "expected": ["application", "segment", "packet", "frame", "bits"],
+          "correctFeedback": "Richtig. Jede Schicht übernimmt das Ergebnis der darüberliegenden Schicht als Nutzlast und ergänzt ihre eigene Hülle.",
+          "wrongFeedback": "Beginne bei den Anwendungsdaten. Danach folgen Transport, IP, lokaler Frame und erst zuletzt die physische Übertragung."
+        }
+      ]
+    },
+    {
+      "title": "MTU-Fehler erkennen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Die MTU gehört zu einem konkreten Link beziehungsweise Pfadabschnitt. Ein Tunnel fügt weitere Header hinzu und kann dadurch die effektive Nutzlast senken. Unterschiedliche MTUs entlang des Pfads werden problematisch, wenn zu große Pakete nicht passend verkleinert werden können oder notwendige Rückmeldungen gefiltert sind.\n\nEine saubere Analyse trennt deshalb drei Fragen:\n\n1. Wie groß ist die MTU des engsten Pfadabschnitts?\n2. Welche Netzwerk- und Transportheader liegen tatsächlich vor?\n3. Welche zusätzlichen Tunnel-, Sicherheits- oder Protokollinformationen werden ergänzt?"
+        },
+        {
+          "type": "quiz",
+          "id": "mtu-guided-diagnosis",
+          "question": "Nach dem Aufbau eines VPN funktionieren kleine Anfragen, große Übertragungen bleiben jedoch hängen. Welche Hypothese prüfst du zuerst?",
+          "options": [
+            {
+              "text": "Die Tunnel-Header verkleinern die nutzbare Pfad-MTU, aber die Endpunkte senden weiterhin zu große Pakete.",
+              "rationale": "Richtig. Zusätzliche Tunnel-Header verändern das Größenbudget. Das Fehlerbild mit funktionierenden kleinen und scheiternden großen Übertragungen passt zu einem MTU- oder PMTUD-Problem.",
+              "correct": true
+            },
+            {
+              "text": "Der Ethernet-Switch kennt den TCP-Zielport nicht.",
+              "rationale": "Ein gewöhnlicher Switch leitet Frames anhand von MAC-Adressen weiter. Der TCP-Zielport erklärt das größenabhängige Fehlerbild nicht.",
+              "correct": false
+            },
+            {
+              "text": "Die IP-Adresse wird erst nach der Ethernet-Übertragung ergänzt.",
+              "rationale": "Das IP-Paket existiert bereits, bevor es für den lokalen Link in einen Ethernet-Frame gekapselt wird.",
+              "correct": false
+            },
+            {
+              "text": "TCP besitzt grundsätzlich keine Segmentierung.",
+              "rationale": "TCP zerlegt den Bytestrom in Segmente. Problematisch kann hier vielmehr sein, dass das resultierende Paket nicht in die effektive Pfad-MTU passt.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "encapsulation-pdu-names",
+              "label": "PDU-Namen",
+              "front": "Wie heißen die typischen PDUs von Transport-, Vermittlungs- und Sicherungsschicht?",
+              "back": "TCP-Segment beziehungsweise UDP-Datagramm, IP-Paket und Frame."
+            },
+            {
+              "id": "encapsulation-router-frame",
+              "label": "Router und Frame",
+              "front": "Was geschieht mit dem Ethernet-Frame an einem Router?",
+              "back": "Der eingehende Frame endet. Der Router verarbeitet das IP-Paket und kapselt es für den nächsten Link in einen neuen Frame."
+            },
+            {
+              "id": "encapsulation-mtu",
+              "label": "MTU",
+              "front": "Welche Größe begrenzt eine Ethernet-MTU von 1500 Byte?",
+              "back": "Die Größe des IP-Pakets auf diesem Link. Ethernet-Header und -Trailer gehören nicht zu diesen 1500 Byte."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "encapsulation-core-recall",
+          "title": "Ohne Nachschlagen erklären",
+          "prompt": "Beschreibe die Kapselung vom Anwendungsdatum bis zu den Bits. Erkläre außerdem, warum eine MTU von 1500 Byte bei TCP über IPv4 nicht 1500 Byte Anwendungsnutzlast bedeutet.",
+          "label": "Deine Erklärung",
+          "placeholder": "Anwendungsdaten … Segment … Paket … Frame … MTU …",
+          "minLength": 90,
+          "model": "Die Anwendung liefert Daten. TCP oder UDP ergänzt einen Transportheader; IP ergänzt logische Adressen; Ethernet ergänzt die lokale Link-Hülle; anschließend werden Bits beziehungsweise Signale übertragen. Bei 1500 Byte MTU benötigen IP- und Transportheader einen Teil des Budgets, sodass weniger Platz für Anwendungsdaten bleibt."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check: Transfer",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "encapsulation-transfer-order",
+          "requiredObjective": "pdu-order",
+          "title": "Empfangspfad eines Servers",
+          "prompt": "Ordne die Verarbeitung beim Empfänger von der Netzwerkkarte bis zur Anwendung.",
+          "tag": "Pflichtnachweis",
+          "steps": [
+            {
+              "id": "transport",
+              "label": "TCP prüft den Segmentkopf und ordnet die Nutzdaten über den Zielport einem Prozess zu."
+            },
+            {
+              "id": "link",
+              "label": "Die Netzwerkschnittstelle prüft den Ethernet-Frame und entfernt die lokale Link-Hülle."
+            },
+            {
+              "id": "application",
+              "label": "Die Anwendung verarbeitet die gelieferten Nutzdaten fachlich."
+            },
+            {
+              "id": "network",
+              "label": "IP prüft die Zieladresse und übergibt die enthaltene Transport-PDU."
+            }
+          ],
+          "expected": ["link", "network", "transport", "application"],
+          "correctFeedback": "Richtig. Beim Empfänger wird vom lokalen Frame über IP und Transport bis zur Anwendung entkapselt.",
+          "wrongFeedback": "Beginne mit der äußersten Hülle, die auf dem lokalen Link ankommt. Danach folgen IP, Transport und Anwendung."
+        },
+        {
+          "type": "numeric",
+          "id": "mtu-transfer-payload",
+          "requiredObjective": "mtu-calculation",
+          "title": "Nutzlast mit TCP-Optionen bestimmen",
+          "prompt": "Ein Pfad besitzt 1500 Byte MTU. IPv4 verwendet 20 Byte Header, TCP durch Optionen 32 Byte Header. Wie viele Byte Anwendungsnutzlast passen maximal in ein IP-Paket?",
+          "label": "Maximale Anwendungsnutzlast in Byte",
+          "placeholder": "Ergebnis",
+          "expected": 1448,
+          "correctFeedback": "Richtig: Nach Abzug von IPv4- und TCP-Header bleiben 1448 Byte Anwendungsnutzlast.",
+          "wrongFeedback": "Ziehe sowohl den 20-Byte-IPv4-Header als auch den 32-Byte-TCP-Header von der MTU ab.",
+          "correctMath": {
+            "ariaLabel": "1500 Byte minus 20 Byte IPv4-Header minus 32 Byte TCP-Header ergibt 1448 Byte",
+            "mathml": "<math display=\"block\"><mrow><mn>1500</mn><mtext> B</mtext><mo>−</mo><mn>20</mn><mtext> B</mtext><mo>−</mo><mn>32</mn><mtext> B</mtext><mo>=</mo><mn>1448</mn><mtext> B</mtext></mrow></math>",
+            "legend": ["1500 B MTU", "20 B IPv4", "32 B TCP", "1448 B Nutzlast"]
+          },
+          "misconceptions": [
+            {
+              "value": "1460",
+              "feedback": "1460 Byte wären nur bei einem 20-Byte-TCP-Header richtig. Die Aufgabe nennt wegen der TCP-Optionen 32 Byte."
+            },
+            {
+              "value": "1480",
+              "feedback": "Du hast nur den IPv4-Header abgezogen. Auch der TCP-Header belegt Platz innerhalb der MTU."
+            },
+            {
+              "value": "1500",
+              "feedback": "1500 Byte ist die Größe des vollständigen IP-Pakets, nicht die reine Anwendungsnutzlast."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):** Grundlage für Schichten, TCP als Transportprotokoll und die verschachtelte Darstellung eines Ethernet-/IPv4-/TCP-Mitschnitts.\n- **IT-Berufe Fachstufe II – Lernfelder 10–12 (2023):** ergänzender Betriebsbeleg für Netzwerkschnittstellen mit MTU 1500.\n\nDie im ursprünglichen Mapping gefundenen OOP-Stellen wurden nicht fachlich verwertet. Erklärung, Aufgaben und Diagramme sind eigenständig erstellt; private Buchgrafiken und Rohmitschnitte werden nicht veröffentlicht."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="TCP und UDP aus Anforderungen auswählen, den TCP-Drei-Wege-Handshake aus Paketmerkmalen rekonstruieren und typische Fehlannahmen vermeiden.">
+<title>TCP, UDP und den Handshake sicher unterscheiden – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="tcp-udp-handshake" data-progress-id="ga2-1__3" data-content-revision="2026-09-11.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-1">Block N1 · Grundlagen, Medien und Verkabelung</a><span class="sep">›</span>
+    <span class="here">TCP, UDP und den Handshake sicher unterscheiden</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">TCP, UDP und den Handshake sicher unterscheiden</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 23 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>TCP und UDP stellen Anwendungen unterschiedliche Transportdienste bereit. Die Entscheidung lautet nicht pauschal „sicher oder schnell“, sondern: Welche Eigenschaften benötigt die Anwendung, und welche Verantwortung übernimmt sie selbst? Beim TCP-Verbindungsaufbau lassen sich diese Zustände direkt an Flags und Nummern erkennen.</p>
+<section class="learning-goals" aria-labelledby="tcp-udp-handshake-goals">
+  <h2 id="tcp-udp-handshake-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>für ein neues Anwendungsszenario TCP oder UDP anhand von Zuverlässigkeit, Reihenfolge, Latenz und Anwendungslogik begründet auswählen</li>
+    <li>SYN, SYN-ACK und ACK im TCP-Drei-Wege-Handshake erkennen und Sequenz- sowie Bestätigungsnummern korrekt deuten</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Welcher Transportdienst passt?</h2>
+<section class="quiz" data-quiz="tcp-udp-diagnostic" data-correct="1">
+  <h3>Eine Konfigurationsdatei muss vollständig, ohne Lücken und in der richtigen Reihenfolge ankommen. Die Anwendung soll diese Zuverlässigkeitslogik nicht selbst bauen. Welche Vorauswahl ist am stärksten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="UDP wiederholt verlorene Datagramme nicht automatisch. Eine solche Logik müsste die Anwendung selbst ergänzen."><span class="m">A</span> UDP, weil jedes Datagramm automatisch erneut gesendet wird</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. TCP übernimmt hier wesentliche Transportfunktionen für Reihenfolge und erneute Übertragung verlorener Daten."><span class="m">B</span> TCP, weil der geordnete, bestätigte Bytestrom zur Anforderung passt</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Verbindungslos sagt nichts über fehlerfreie Zustellung. UDP besitzt keine TCP-artige Zustell- und Reihenfolgegarantie."><span class="m">C</span> UDP, weil verbindungslos gleichbedeutend mit fehlerfrei ist</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="TCP und UDP unterscheiden sich gerade in Zustandsführung, Datenmodell und eingebauten Zuverlässigkeitsmechanismen."><span class="m">D</span> Die Wahl ist bedeutungslos, weil beide Protokolle denselben Transportdienst liefern</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">Entscheidungsregel</span><p>Nenne zuerst die <strong>Anforderung</strong>, dann die passende Transporteigenschaft. Ein bloßer Dienstname oder der Satz „TCP ist sicherer“ ist zu ungenau.</p></aside><h2 class="sec" id="s2"><span class="num">2</span>TCP und UDP ohne Schlagworte vergleichen</h2>
+<p>TCP stellt Anwendungen einen geordneten Bytestrom bereit. Vor der Nutzdatenübertragung wird Zustand aufgebaut. Sequenznummern ordnen Daten, Bestätigungen melden den nächsten erwarteten Datenbereich, verlorene Daten können erneut gesendet werden. Flusskontrolle schützt den Empfänger; Überlastungssteuerung reagiert auf die Netzsituation.</p>
+<p>UDP überträgt einzelne Datagramme und erhält deren Grenzen. Das Transportprotokoll baut vorher keinen TCP-artigen Verbindungszustand auf. Reihenfolge, Wiederholung und zeitliche Gültigkeit muss die Anwendung selbst behandeln, sofern sie diese Eigenschaften benötigt.</p>
+<div class="twrap"><table class="knowledge-table">
+<thead>
+<tr>
+<th>Frage</th>
+<th>TCP</th>
+<th>UDP</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Datenmodell</td>
+<td>geordneter Bytestrom</td>
+<td>einzelne Datagramme</td>
+</tr>
+<tr>
+<td>Verbindungsaufbau</td>
+<td>ja</td>
+<td>nein</td>
+</tr>
+<tr>
+<td>Reihenfolge und Wiederholung</td>
+<td>im Transportprotokoll</td>
+<td>nicht eingebaut</td>
+</tr>
+<tr>
+<td>Datagrammgrenzen</td>
+<td>für die Anwendung nicht erhalten</td>
+<td>erhalten</td>
+</tr>
+<tr>
+<td>typische Auswahl</td>
+<td>vollständige, geordnete Übertragung</td>
+<td>geringe Protokollbindung oder anwendungseigene Zeit-/Verlustlogik</td>
+</tr>
+</tbody></table></div>
+<figure class="learning-figure">
+  <img src="/assets/learning/tcp-udp-handshake-transport-choices.svg" alt="Zwei Vergleichsfelder: TCP mit Verbindungszustand, Reihenfolge, Bestätigung und Wiederholung; UDP mit einzelnen Datagrammen ohne eingebauten Verbindungsaufbau und ohne eingebaute Reihenfolge oder Wiederholung.">
+  <figcaption>Eigene Lernskizze: Die Anwendung entscheidet, welche Verantwortung das Transportprotokoll übernehmen soll.</figcaption>
+</figure><aside class="callout warn"><span class="lbl">Kein Automatismus</span><p>UDP ist nicht pauschal „schneller“ und TCP nicht pauschal „sicher“. Verarbeitung, Netzpfad, Anwendung und gegebenenfalls Verschlüsselung entscheiden über das Gesamtsystem.</p></aside><h2 class="sec" id="s3"><span class="num">3</span>Durchgearbeitetes Szenario: Der Drei-Wege-Handshake</h2>
+<p>Ein Client öffnet eine TCP-Verbindung zu einem Server. Der Client wählt als initiale Sequenznummer 40.000, der Server 90.000.</p>
+<ol>
+<li>Der Client sendet <strong>SYN</strong> mit Sequenznummer 40.000.</li>
+<li>Der Server antwortet mit <strong>SYN und ACK</strong>, Sequenznummer 90.000 und Bestätigungsnummer 40.001. Das SYN des Clients belegt eine Position im Sequenzraum.</li>
+<li>Der Client sendet <strong>ACK</strong> mit Sequenznummer 40.001 und Bestätigungsnummer 90.001. Damit bestätigt er das SYN des Servers.</li>
+</ol>
+<p>Die Bestätigungsnummer bezeichnet jeweils die als Nächstes erwartete Sequenzposition. Nach dem dritten Schritt kennen beide Endpunkte den Zustand und die Startwerte der Gegenseite.</p>
+<figure class="learning-figure">
+  <img src="/assets/learning/tcp-udp-handshake-three-way-handshake.svg" alt="Drei Schritte zwischen Client und Server: SYN vom Client, SYN und ACK vom Server, ACK vom Client.">
+  <figcaption>Eigene Lernskizze: Beide Seiten senden ein SYN und bestätigen das SYN der Gegenseite.</figcaption>
+</figure><section class="quiz" data-quiz="handshake-number-practice" data-correct="2">
+  <h3>Der Server empfängt SYN mit Sequenznummer 7.500. Welche Bestätigungsnummer trägt seine SYN-ACK-Antwort?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Die Bestätigungsnummer zeigt vorwärts auf die nächste erwartete Sequenzposition, nicht auf den Wert davor."><span class="m">A</span> 7.499</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Das SYN belegt eine Position im Sequenzraum. Deshalb wird nicht derselbe Wert bestätigt."><span class="m">B</span> 7.500</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Richtig. Der Server bestätigt das SYN, indem er die nächste erwartete Sequenzposition nennt."><span class="m">C</span> 7.501</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Gerade der zweite Schritt kombiniert SYN und ACK und bestätigt damit den Verbindungswunsch des Clients."><span class="m">D</span> Der Server darf im Handshake keine Bestätigungsnummer senden.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Geführte Übung: Flags in die richtige Reihenfolge bringen</h2>
+<p>Ordne erst aus Sicht des Clients: Er startet, der Server bestätigt und startet gleichzeitig seine Richtung, der Client bestätigt abschließend.</p>
+<section class="sequence-practice" data-sequence="handshake-guided-order" data-expected="syn,syn-ack,ack" data-correct-feedback="Richtig. Der Client eröffnet mit SYN, der Server bestätigt und synchronisiert mit SYN-ACK, der Client schließt den Aufbau mit ACK ab." data-wrong-feedback="Der erste Schritt enthält nur SYN. Danach antwortet der Server mit zwei gesetzten Flags; die letzte Nachricht bestätigt diese Antwort." aria-labelledby="handshake-guided-order-title">
+  <div class="lab-heading"><div><h3 id="handshake-guided-order-title">TCP-Verbindungsaufbau</h3><p>Bringe die drei Nachrichten des Drei-Wege-Handshakes in die zeitliche Reihenfolge.</p></div><span class="lab-tag">Übung</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="syn-ack" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Server → Client: SYN und ACK</span></li>
+    <li data-step="ack" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Client → Server: ACK</span></li>
+    <li data-step="syn" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Client → Server: SYN</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Aus Anforderungen entscheiden</h2>
+<p>Prüfe vier Punkte, bevor du TCP oder UDP auswählst:</p>
+<ol>
+<li>Müssen alle Daten vollständig und geordnet ankommen?</li>
+<li>Sind verspätete Daten noch nützlich oder bereits wertlos?</li>
+<li>Muss die Grenze jeder einzelnen Nachricht erhalten bleiben?</li>
+<li>Besitzt die Anwendung bereits eigene Mechanismen für Bestätigung, Wiederholung, Reihenfolge oder Zeitablauf?</li>
+</ol>
+<p>Ein Sprachstrom kann zum Beispiel alte Audiopakete verwerfen, statt die Wiedergabe für eine Wiederholung anzuhalten. Eine Dateiübertragung benötigt dagegen vollständige und geordnete Daten. Moderne Anwendungsprotokolle können auf UDP aufbauen und Zuverlässigkeit selbst ergänzen; deshalb ist der Anwendungsname allein kein Beweis.</p>
+<section class="quiz" data-quiz="transport-guided-selection" data-correct="1">
+  <h3>Ein Sensor sendet jede Sekunde einen vollständigen Statusdatensatz. Ein neuer Datensatz ersetzt den alten; gelegentlicher Verlust ist tolerierbar. Welche Begründung spricht für UDP?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="UDP besitzt keine eingebaute Wiederholung. Außerdem wären verspätete alte Statusdaten laut Szenario wenig hilfreich."><span class="m">A</span> UDP garantiert, dass jeder alte Status später nachgeliefert wird.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Diese Begründung verbindet die Protokolleigenschaften direkt mit dem beschriebenen Last- und Aktualitätsmodell."><span class="m">B</span> UDP erhält die Datagrammgrenze und zwingt nicht zu einem vorherigen TCP-Verbindungsaufbau; die Anwendung akzeptiert einzelne Verluste.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Reihenfolge ist bei UDP nicht eingebaut. Falls nötig, müsste die Anwendung Sequenzen selbst kennzeichnen und behandeln."><span class="m">C</span> UDP sortiert verspätete Datagramme automatisch in die richtige Reihenfolge.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="UDP bietet keine automatische Inhaltsverschlüsselung. Dafür wäre ein zusätzliches Sicherheitsprotokoll oder Anwendungsverfahren nötig."><span class="m">D</span> UDP verschlüsselt jeden Statusdatensatz automatisch.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Karteikarten und freier Abruf</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="tcp-udp-stream-datagram" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welches Datenmodell liefern TCP und UDP an die Anwendung?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>TCP liefert einen geordneten Bytestrom. UDP liefert einzelne Datagramme und erhält deren Grenzen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="tcp-udp-handshake-flags" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wie lautet die Flag-Reihenfolge im TCP-Drei-Wege-Handshake?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>SYN, danach SYN und ACK, danach ACK.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="tcp-udp-ack-number" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was beschreibt die TCP-Bestätigungsnummer?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Sie nennt die nächste erwartete Sequenzposition der Gegenseite.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Datenmodell“:</span><button type="button" data-card-id="tcp-udp-stream-datagram" data-card-rate="known">gewusst</button><button type="button" data-card-id="tcp-udp-stream-datagram" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="tcp-udp-stream-datagram"></span></div>
+<div class="card-rating"><span>Karte „Handshake-Flags“:</span><button type="button" data-card-id="tcp-udp-handshake-flags" data-card-rate="known">gewusst</button><button type="button" data-card-id="tcp-udp-handshake-flags" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="tcp-udp-handshake-flags"></span></div>
+<div class="card-rating"><span>Karte „Bestätigungsnummer“:</span><button type="button" data-card-id="tcp-udp-ack-number" data-card-rate="known">gewusst</button><button type="button" data-card-id="tcp-udp-ack-number" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="tcp-udp-ack-number"></span></div><section class="recall-practice" data-recall="tcp-udp-core-recall" data-min-length="90" aria-labelledby="tcp-udp-core-recall-title">
+  <div class="recall-prompt"><h3 id="tcp-udp-core-recall-title">Ohne Nachschlagen erklären</h3><p>Erkläre TCP und UDP anhand ihres Datenmodells und ihrer Verantwortlichkeiten. Beschreibe anschließend den Drei-Wege-Handshake und die Bedeutung der Bestätigungsnummer.</p></div>
+  <label class="sr-only" for="tcp-udp-core-recall-answer">Deine Erklärung</label>
+  <textarea id="tcp-udp-core-recall-answer" data-recall-input rows="4" placeholder="TCP … UDP … SYN … SYN-ACK … ACK …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> TCP stellt einen geordneten Bytestrom mit Verbindungszustand, Bestätigungen und Wiederholungen bereit. UDP überträgt Datagramme ohne TCP-artigen Aufbau und ohne eingebaute Reihenfolge oder Wiederholung. Beim Handshake sendet der Client SYN, der Server SYN-ACK und der Client ACK. Die ACK-Nummer nennt die nächste erwartete Sequenzposition.</div>
+</section><h2 class="sec" id="s7"><span class="num">7</span>Lernziel-Check: Transfer</h2>
+<section class="quiz" data-quiz="tcp-udp-transfer-selection" data-correct="1" data-required-objective="transport-selection">
+  <h3>Eine Steueranwendung sendet 50 Positionswerte pro Sekunde. Nur der jeweils neueste Wert ist relevant; einzelne Verluste sind zulässig, eine verspätete Wiederholung alter Werte wäre störend. Welche Transportwahl ist am besten begründet?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Das Szenario sagt ausdrücklich, dass alte Werte nicht mehr nützlich sind. Eine zwingende Nachlieferung kann hier zusätzliche Verzögerung erzeugen."><span class="m">A</span> TCP, weil jede Wiederholung unabhängig von der zeitlichen Gültigkeit immer vorteilhaft ist</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Die Auswahl folgt dem Aktualitätsmodell. Sequenzkennzeichnung und Sicherheitsanforderungen bleiben Aufgaben des Gesamtdesigns."><span class="m">B</span> UDP, weil aktuelle Datagramme wichtiger sind als die Nachlieferung veralteter Werte und die Anwendung Verlust toleriert</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="UDP enthält gerade keine solche Garantie. Die Anwendung akzeptiert Verluste, deshalb kann UDP dennoch passen."><span class="m">C</span> UDP, weil es Reihenfolge und Zustellung automatisch garantiert</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Hier sind zeitliche Gültigkeit, Verlusttoleranz und Wiederholungsverhalten entscheidender als eine einzelne Datenmengengrenze."><span class="m">D</span> Die Transportwahl kann nur anhand der Dateigröße getroffen werden</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="tcp-handshake-transfer-analysis" data-correct="0" data-required-objective="handshake-analysis">
+  <h3>Ein Mitschnitt zeigt nacheinander Client → Server SYN mit Seq 3.000 und Server → Client SYN, ACK mit Seq 8.000 und Ack 3.001. Welche dritte Nachricht vervollständigt den Aufbau?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Der Client bestätigt das SYN des Servers und nennt dessen nächste erwartete Sequenzposition."><span class="m">A</span> Client → Server: ACK mit Seq 3.001 und Ack 8.001</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Das SYN des Clients war bereits der erste Schritt. Nun muss der Client die Antwort des Servers bestätigen."><span class="m">B</span> Client → Server: SYN mit Seq 3.000 und Ack 8.000</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die zweite Nachricht kam bereits vom Server. Im dritten Schritt bestätigt der Client das SYN des Servers."><span class="m">C</span> Server → Client: ACK mit Seq 8.001 und Ack 3.001</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="FIN leitet einen Verbindungsabbau ein. Gefragt ist der Abschluss des Verbindungsaufbaus mit ACK."><span class="m">D</span> Client → Server: FIN, ACK mit Seq 3.001 und Ack 8.001</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s8"><span class="num">8</span>Quellen und Einordnung</h2>
+<ul>
+<li><strong>EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):</strong> Grundlage für den anforderungsbezogenen Vergleich von TCP und UDP sowie für die Auswertung von TCP-Flags und Nummern.</li>
+<li><strong>IT-Berufe Fachstufe II – Lernfelder 10–12 (2023):</strong> ergänzende Quelle für den Drei-Wege-Handshake und die zustandsbehaftete Verbindungsanalyse.</li>
+</ul>
+<p>Text, Fälle, Nummern und Diagramme sind eigenständig erstellt. Private Buchgrafiken und Paketmitschnitte werden nicht veröffentlicht.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-1"><span class="d">zurück zu</span><span class="t">Block N1 · Grundlagen, Medien und Verkabelung</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N1 · Grundlagen, Medien und Verkabelung</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Welcher Transportdienst passt?</a></li>
+<li><a href="#s2" data-t="s2">TCP und UDP ohne Schlagworte vergleichen</a></li>
+<li><a href="#s3" data-t="s3">Durchgearbeitetes Szenario: Der Drei-Wege-Handshake</a></li>
+<li><a href="#s4" data-t="s4">Geführte Übung: Flags in die richtige Reihenfolge bringen</a></li>
+<li><a href="#s5" data-t="s5">Aus Anforderungen entscheiden</a></li>
+<li><a href="#s6" data-t="s6">Karteikarten und freier Abruf</a></li>
+<li><a href="#s7" data-t="s7">Lernziel-Check: Transfer</a></li>
+<li><a href="#s8" data-t="s8">Quellen und Einordnung</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-1">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>
