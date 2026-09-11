@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A, AAAA, CNAME, MX, PTR, NS, SOA, SRV und TXT anhand ihrer RDATA-Rolle auswählen und typische Zonendateifehler erkennen.">
+<title>DNS-Recordtypen passend auswählen und prüfen – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=hybrid-1">
+<script defer src="/assets/ap2-space.js?v=hybrid-1"></script>
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="dns-recordtypen" data-progress-id="ga2-3__9" data-content-revision="2026-09-11.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-3">Block N3 · IPv6, DHCP und DNS</a><span class="sep">›</span>
+    <span class="here">DNS-Recordtypen passend auswählen und prüfen</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">DNS-Recordtypen passend auswählen und prüfen</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 24 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Ein DNS-Record ist keine freie Schlüssel-Wert-Zeile. Der Typ legt fest, wie die RDATA gelesen wird: als Adresse, Zielname, Mailroute, Zonenmetadaten, Dienstbeschreibung oder Text. Wer zuerst die Anforderung und dann die Rolle des Zielwerts prüft, kann Recordtypen sicher auswählen und Fehler in Zonendateien erklären.</p>
+<section class="learning-goals" aria-labelledby="dns-recordtypen-goals">
+  <h2 id="dns-recordtypen-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>für eine konkrete DNS-Anforderung den passenden Recordtyp aus A, AAAA, CNAME, MX, PTR, NS, SOA, SRV und TXT auswählen</li>
+    <li>einen kleinen Zonendatei-Ausschnitt lesen und semantische Fehler bei Alias-, Mail- und Zielnamen begründet korrigieren</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Was steht wirklich im MX-Record?</h2>
+<section class="quiz" data-quiz="dns-records-diagnostic" data-correct="1">
+  <h3>Welche RDATA gehört fachlich in einen MX-Record für firma.example.?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Ein MX-Record verweist nicht direkt auf eine IP-Adresse. Er nennt Präferenz und Hostnamen des Mailservers."><span class="m">A</span> nur die IPv4-Adresse 192.0.2.25</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. 10 ist der Präferenzwert, mail.firma.example. der Zielhostname, der anschließend per A oder AAAA aufgelöst wird."><span class="m">B</span> 10 mail.firma.example.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Das ist der Inhalt einer SPF-Policy in einem TXT-Record, kein Mailserverziel."><span class="m">C</span> v=spf1 -all</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Eine administrative Kontaktangabe ist Teil der SOA-RDATA. Sie ersetzt keinen MX-Zielhost."><span class="m">D</span> hostmaster.firma.example. als einziger Wert</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">Record-Leseregel</span><p>Lies eine Zeile als <strong>Owner · TTL · Klasse · Typ · RDATA</strong>. Entscheidend für die Auswahl ist: Welche Art von Information erwartet die RDATA dieses Typs?</p></aside><h2 class="sec" id="s2"><span class="num">2</span>Die neun Recordrollen trennen</h2>
+<div class="twrap"><table class="knowledge-table">
+<thead>
+<tr>
+<th>Typ</th>
+<th>RDATA-Rolle</th>
+<th>Typischer Einsatz</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A</td>
+<td>IPv4-Adresse</td>
+<td><code>www.firma.example.</code> zu einer IPv4-Adresse auflösen</td>
+</tr>
+<tr>
+<td>AAAA</td>
+<td>IPv6-Adresse</td>
+<td>denselben Namen zu einer IPv6-Adresse auflösen</td>
+</tr>
+<tr>
+<td>CNAME</td>
+<td>kanonischer Zielname</td>
+<td>einen Alias wie <code>shop</code> auf einen anderen Namen verweisen lassen</td>
+</tr>
+<tr>
+<td>MX</td>
+<td>Präferenz und Mailserver-Hostname</td>
+<td>Mailserver für eine Empfängerdomäne auswählen; kleinere Präferenz zuerst</td>
+</tr>
+<tr>
+<td>PTR</td>
+<td>Zielname</td>
+<td>eine Adresse im Reverse-Namensraum einem Namen zuordnen</td>
+</tr>
+<tr>
+<td>NS</td>
+<td>Nameserver-Hostname</td>
+<td>autoritative Server einer Zone nennen oder eine Kindzone delegieren</td>
+</tr>
+<tr>
+<td>SOA</td>
+<td>Zonenverwaltungsdaten</td>
+<td>Zonenapex, primäre Quelle, Kontakt, Serial und Zeitparameter beschreiben</td>
+</tr>
+<tr>
+<td>SRV</td>
+<td>Priorität, Gewicht, Port und Zielhost</td>
+<td>Instanz eines benannten Dienstes auffindbar machen</td>
+</tr>
+<tr>
+<td>TXT</td>
+<td>ein oder mehrere Textstrings</td>
+<td>anwendungsspezifische Nachweise oder Policies veröffentlichen, etwa SPF</td>
+</tr>
+</tbody></table></div>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Recordtypen nach der Rolle ihrer RDATA ordnen">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-layers" xmlns="http://www.w3.org/2000/svg" width="960" height="612" viewBox="0 0 960 612" role="img" aria-labelledby="diagram-record-role-map-title diagram-record-role-map-desc">
+  <title id="diagram-record-role-map-title">Recordtypen nach der Rolle ihrer RDATA ordnen</title>
+  <desc id="diagram-record-role-map-desc">Fünf Gruppen von DNS-Recordtypen: Adressen, Namensverweise, Dienstziele, Zonensteuerung und Textdaten.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Recordtypen nach der Rolle ihrer RDATA ordnen</tspan></text>
+  <g><rect class="diagram-row" x="42" y="82" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="82" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="130" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">A / AAAA</tspan></text><text x="194" y="116" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Name zu IPv4- beziehungsweise IPv6-Adresse</tspan></text></g><g><rect class="diagram-row" x="42" y="182" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="182" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="230" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">CNAME / PTR</tspan></text><text x="194" y="216" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Alias zu kanonischem Namen beziehungsweise Reverse-Name zu</tspan><tspan x="194" dy="25">Zielnamen</tspan></text></g><g><rect class="diagram-row" x="42" y="282" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="282" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="330" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">MX / SRV</tspan></text><text x="194" y="316" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Mailroute beziehungsweise Dienstziel mit Auswahlparametern</tspan></text></g><g><rect class="diagram-row" x="42" y="382" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="382" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="430" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">NS / SOA</tspan></text><text x="194" y="416" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">autoritative Nameserver beziehungsweise Verwaltungsdaten</tspan><tspan x="194" dy="25">am Zonenapex</tspan></text></g><g><rect class="diagram-row" x="42" y="482" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="482" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="530" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">TXT</tspan></text><text x="194" y="516" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Textstrings; ihre Bedeutung legt die jeweilige Anwendung</tspan><tspan x="194" dy="25">oder Spezifikation fest</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Der Typ bestimmt, ob die RDATA als Adresse, Name, Dienstbeschreibung, Zonenmetadaten oder Text gelesen wird.</figcaption>
+</figure><aside class="callout warn"><span class="lbl">CNAME ist kein Zusatzfeld</span><p>Ein Name mit CNAME ist ein Alias und soll an diesem Owner nicht gleichzeitig weitere normale Daten wie A oder MX tragen. Lege benötigte Adressdaten am kanonischen Zielnamen ab.</p></aside><h2 class="sec" id="s3"><span class="num">3</span>Beispiel: Eine kleine Zone lesen</h2>
+<p>Der folgende selbst erstellte Ausschnitt nutzt ausschließlich Dokumentationsadressen. Voll qualifizierte Zielnamen enden mit einem Punkt.</p>
+<pre><code class="language-text">firma.example. 3600 IN SOA ns1.firma.example. hostmaster.firma.example. 2026091101 3600 900 1209600 300
+firma.example. 3600 IN NS ns1.firma.example.
+ns1.firma.example. 3600 IN A 192.0.2.53
+www.firma.example. 3600 IN A 192.0.2.80
+www.firma.example. 3600 IN AAAA 2001:db8::80
+shop.firma.example. 3600 IN CNAME www.firma.example.
+firma.example. 3600 IN MX 10 mail.firma.example.
+mail.firma.example. 3600 IN A 192.0.2.25
+_sip._tcp.firma.example. 3600 IN SRV 10 20 5061 sip.firma.example.
+sip.firma.example. 3600 IN A 192.0.2.60
+_service-info.firma.example. 3600 IN TXT &quot;environment=training&quot;
+</code></pre>
+<p>Die SOA- und NS-Zeilen beschreiben die Zone. <code>www</code> ist dual angebunden. <code>shop</code> ist nur ein Alias. MX und SRV nennen jeweils einen Zielhost; dessen Adresse steht in einem eigenen A- oder AAAA-Record. Ein PTR für <code>192.0.2.80</code> läge dagegen im Reverse-Namensraum, beispielsweise unter <code>80.2.0.192.in-addr.arpa.</code>.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: MX liefert einen Namen, erst A oder AAAA liefert die Adresse">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="542" viewBox="0 0 960 542" role="img" aria-labelledby="diagram-mx-resolution-chain-title diagram-mx-resolution-chain-desc">
+  <title id="diagram-mx-resolution-chain-title">MX liefert einen Namen, erst A oder AAAA liefert die Adresse</title>
+  <desc id="diagram-mx-resolution-chain-desc">Vierstufiger Ablauf von Empfängerdomäne über MX-Zielhostname und dessen A- oder AAAA-Auflösung bis zur IP-Verbindung.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">MX liefert einen Namen, erst A oder AAAA liefert die Adresse</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Empfängerdomäne</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Nachricht soll an eine Adresse unter firma.example zugestellt</tspan><tspan x="178" dy="25">werden</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">MX-Abfrage</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">firma.example. MX 10 mail.firma.example.</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">A-/AAAA-Abfrage</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">mail.firma.example. wird in eine erreichbare IP-Adresse</tspan><tspan x="178" dy="25">aufgelöst</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Verbindungsziel</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Der sendende Mailserver verbindet sich mit der ermittelten</tspan><tspan x="178" dy="25">Adresse</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: MX wählt einen Mailservernamen aus; die Adressauflösung ist ein separater Schritt.</figcaption>
+</figure><h2 class="sec" id="s4"><span class="num">4</span>Geführte Übung: Drei Zeilen reparieren</h2>
+<p>Ein Kollege schlägt für eine Zone diese Zeilen vor:</p>
+<pre><code class="language-text">portal.firma.example. IN CNAME web.firma.example.
+portal.firma.example. IN A 192.0.2.90
+firma.example. IN MX 10 192.0.2.25
+</code></pre>
+<p>Prüfe nacheinander: <strong>Welche RDATA erwartet der Typ?</strong> Darf derselbe Owner neben CNAME weitere normale Records tragen? Ist das Ziel selbst wieder auflösbar?</p>
+<section class="quiz" data-quiz="dns-records-guided-fix" data-correct="1">
+  <h3>Welche Korrektur löst beide semantischen Probleme?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Die Klasse IN ist nicht das Problem. Ein CNAME-Owner soll keine parallelen normalen Daten tragen, und MX erwartet weiterhin einen Hostnamen."><span class="m">A</span> CNAME und A bei portal beibehalten; beim MX nur IN entfernen</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. portal bleibt reiner Alias, und der MX-Zielhostname wird in einem getrennten Schritt zu einer Adresse aufgelöst."><span class="m">B</span> Den A-Record bei portal entfernen; MX auf mail.firma.example. zeigen lassen und für mail einen A- oder AAAA-Record anlegen</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="CNAME erwartet einen kanonischen Namen, keine IP-Adresse. Auch der MX-Zielwert bleibt in dieser Form falsch."><span class="m">C</span> Den CNAME-Zielwert durch 192.0.2.90 ersetzen und den MX unverändert lassen</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="TXT macht die Daten nicht für Alias- oder Mailrouting-Abfragen nutzbar. Der Recordtyp muss zur gewünschten DNS-Funktion passen."><span class="m">D</span> Beide Zeilen in TXT umwandeln, weil TXT beliebige Inhalte erlaubt</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Karteikarten und freier Abruf</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="dns-address-alias-card" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wann verwendest du A, AAAA und CNAME?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>A liefert eine IPv4-Adresse, AAAA eine IPv6-Adresse. CNAME macht den Owner zum Alias eines kanonischen DNS-Namens; die Adresse liegt am Zielnamen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="dns-zone-records-card" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wie unterscheiden sich NS und SOA?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>NS nennt autoritative Nameserver oder bildet eine Delegation. SOA markiert den Zonenapex und enthält Verwaltungsdaten wie primäre Quelle, Kontakt, Serial und Zeitparameter.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="dns-service-records-card" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche Felder liefern MX und SRV vor dem eigentlichen Adress-Lookup?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>MX liefert Präferenz und Mailserver-Hostname. SRV liefert Priorität, Gewicht, Port und Zielhost. Beide Zielhosts benötigen anschließend eine Adressauflösung.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Adresse oder Alias“:</span><button type="button" data-card-id="dns-address-alias-card" data-card-rate="known">gewusst</button><button type="button" data-card-id="dns-address-alias-card" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="dns-address-alias-card"></span></div>
+<div class="card-rating"><span>Karte „Zonenrecords“:</span><button type="button" data-card-id="dns-zone-records-card" data-card-rate="known">gewusst</button><button type="button" data-card-id="dns-zone-records-card" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="dns-zone-records-card"></span></div>
+<div class="card-rating"><span>Karte „Dienst und Mail“:</span><button type="button" data-card-id="dns-service-records-card" data-card-rate="known">gewusst</button><button type="button" data-card-id="dns-service-records-card" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="dns-service-records-card"></span></div><section class="recall-practice" data-recall="dns-records-recall" data-min-length="150" aria-labelledby="dns-records-recall-title">
+  <div class="recall-prompt"><h3 id="dns-records-recall-title">Neun Typen ohne Tabelle abrufen</h3><p>Nenne für A, AAAA, CNAME, MX, PTR, NS, SOA, SRV und TXT jeweils die Art der RDATA und einen typischen Einsatz. Erkläre zusätzlich die zweistufige MX-Auflösung.</p></div>
+  <label class="sr-only" for="dns-records-recall-answer">Deine Record-Übersicht</label>
+  <textarea id="dns-records-recall-answer" data-recall-input rows="4" placeholder="A liefert … AAAA liefert …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> A und AAAA liefern IPv4- und IPv6-Adressen. CNAME verweist einen Alias auf einen kanonischen Namen. MX nennt Präferenz und Mailserver-Hostname; dessen Adresse folgt per A oder AAAA. PTR verweist im Reverse-Namensraum auf einen Namen. NS nennt autoritative Server, SOA Zonenverwaltungsdaten. SRV nennt Priorität, Gewicht, Port und Zielhost. TXT transportiert anwendungsspezifische Textstrings.</div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Lernziel-Check: Prüfungstransfer</h2>
+<section class="quiz" data-quiz="dns-records-transfer-select" data-correct="0" data-required-objective="record-select">
+  <h3>Ein Client soll den TCP-Dienst _sip._tcp.firma.example. mit priorisiertem Zielhost und Port finden. Welcher Recordtyp passt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. SRV ist für die Auffindbarkeit eines benannten Dienstes mit diesen Auswahl- und Verbindungsdaten vorgesehen."><span class="m">A</span> SRV, weil dessen RDATA Priorität, Gewicht, Port und Zielhost beschreibt</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="AAAA liefert nur eine IPv6-Adresse zu einem Namen. Dienstname, Priorität und Port werden damit nicht beschrieben."><span class="m">B</span> AAAA, weil jeder Dienst zwingend nur eine IPv6-Adresse enthält</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="SOA beschreibt Verwaltungsdaten einer DNS-Zone, nicht das Verbindungsziel eines Dienstes."><span class="m">C</span> SOA, weil jeder Dienst eine eigene Zone eröffnet</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="PTR ordnet im Reverse-Namensraum einer Adresse einen Namen zu. Es enthält keine Dienstpriorität oder Portangabe."><span class="m">D</span> PTR, weil ein Dienst immer rückwärts aufgelöst wird</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="dns-records-transfer-evaluate" data-correct="1" data-required-objective="record-evaluate">
+  <h3>Welche Zonendatei-Kombination ist semantisch stimmig?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Ein CNAME-Owner soll keine parallelen normalen Daten tragen. Die Adresse gehört an den kanonischen Zielnamen."><span class="m">A</span> app CNAME web.firma.example. und app A 192.0.2.70 am selben Owner</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. MX nennt Präferenz und Zielhostname; der getrennte A-Record macht diesen Host erreichbar."><span class="m">B</span> firma.example. MX 10 mail.firma.example. und mail.firma.example. A 192.0.2.25</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="MX benötigt Präferenz und Hostnamen. Eine IP als MX-Ziel und eine ausgelagerte Präferenz im TXT-Record erfüllen die Semantik nicht."><span class="m">C</span> firma.example. MX 192.0.2.25 und mail.firma.example. TXT 10</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Die Adressfamilien sind vertauscht: A enthält IPv4, AAAA enthält IPv6."><span class="m">D</span> www.firma.example. AAAA 192.0.2.80 und www.firma.example. A 2001:db8::80</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s7"><span class="num">7</span>Quellen und Geltungsbereich</h2>
+<ul>
+<li><strong>IT-Berufe Fachstufe II – Lernfelder 10–12 (2023):</strong> Zonendatei mit SOA, NS, A und AAAA sowie Kontexte für MX, PTR und Delegation.</li>
+</ul>
+<p>Die Einheit erklärt die stabile Kernsemantik der Recordtypen. Konkrete Provider-Vorgaben, dynamische Updates, DNSSEC-Signaturrecords und vollständige BIND-Syntax liegen außerhalb dieses Kernthemas. Beispiele und Diagramme sind eigenständig erstellt.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-3"><span class="d">zurück zu</span><span class="t">Block N3 · IPv6, DHCP und DNS</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N3 · IPv6, DHCP und DNS</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Was steht wirklich im MX-Record?</a></li>
+<li><a href="#s2" data-t="s2">Die neun Recordrollen trennen</a></li>
+<li><a href="#s3" data-t="s3">Beispiel: Eine kleine Zone lesen</a></li>
+<li><a href="#s4" data-t="s4">Geführte Übung: Drei Zeilen reparieren</a></li>
+<li><a href="#s5" data-t="s5">Karteikarten und freier Abruf</a></li>
+<li><a href="#s6" data-t="s6">Lernziel-Check: Prüfungstransfer</a></li>
+<li><a href="#s7" data-t="s7">Quellen und Geltungsbereich</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-3">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

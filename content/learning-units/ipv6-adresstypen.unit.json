@@ -1,0 +1,185 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "ipv6-adresstypen",
+    "slug": "ipv6-adresstypen",
+    "title": "IPv6-Adresstypen und Gültigkeitsbereiche erkennen",
+    "description": "IPv6-Adressen anhand ihres Präfixes und ihrer Zustellungsart als Global Unicast, ULA, Link-Local, Loopback, Multicast oder Anycast einordnen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-3",
+    "groupLabel": "Block N3 · IPv6 und automatische Adresskonfiguration",
+    "itemId": "ga2-3__1",
+    "week": "KW 37",
+    "estimatedMinutes": 20,
+    "relevance": "hoch",
+    "sources": ["itlf6-9-2022", "ihk-bonn", "europa-integratoren-2026", "itlf10-12-2023"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {"id": "prefix-classification", "label": "IPv6-Adressen anhand stabiler Präfixe als Global Unicast, ULA, Link-Local, Loopback oder Multicast klassifizieren"},
+    {"id": "delivery-scope", "label": "Unicast, Anycast und Multicast sowie den Gültigkeitsbereich einer Adresse in einem Netzwerkszenario begründet unterscheiden"}
+  ],
+  "intro": "Bei IPv6 beschreiben Präfix und Zustellungsart unterschiedliche Dinge: Das Präfix kann den Gültigkeitsbereich eingrenzen, während Unicast, Anycast oder Multicast festlegen, wie viele beziehungsweise welche Empfänger erreicht werden.",
+  "curation": {
+    "evidence": [
+      {"sourceId": "itlf6-9-2022", "sourceLocator": "Chunk itlf6-9-2022:00209, Markdown-Zeilen 5762–5790", "use": "direkte Übersicht zu Link-Local, ULA, Multicast, Global Unicast und Loopback", "reviewStatus": "tragfähige Hauptquelle; Begriffe und Scope eigenständig präzisiert"},
+      {"sourceId": "ihk-bonn", "sourceLocator": "Chunk ihk-bonn:00214, Markdown-Zeilen 3198–3237", "use": "Unterscheidung von Unicast, Anycast und Multicast sowie /64-Kontext", "reviewStatus": "Zustellungsarten verwendet; veraltete pauschale EUI-64-Anforderung nicht übernommen"},
+      {"sourceId": "ihk-bonn", "sourceLocator": "Chunk ihk-bonn:00206, Markdown-Zeilen 2967–3036", "use": "Kontext zu ULA, Link-Local, Multicast und zurückgezogenem Site-Local-Bereich", "reviewStatus": "älterer kopierter Webinhalt nur zur Plausibilisierung; keine Passage oder historische FC00-Vergabebehauptung übernommen"},
+      {"sourceId": "europa-integratoren-2026", "sourceLocator": "Chunk europa-integratoren-2026:00506, Markdown-Zeilen 5451–5472", "use": "Global-Unicast-Struktur als Prüfungskontext", "reviewStatus": "Aufgabenimpuls ohne Buchskizze verwendet"},
+      {"sourceId": "itlf10-12-2023", "sourceLocator": "OCR-Chunk itlf10-12-2023:page:0013, PDF-Seite 13", "use": "Link-Local- und Global-Unicast-Adressen innerhalb der Autokonfiguration", "reviewStatus": "Adressrollen geprüft; Prozessdetails bleiben der späteren Einheit vorbehalten"}
+    ],
+    "notes": [
+      "Die private Abbildung europa-integratoren-2026:figure:3f25b0df02a5 wird nicht veröffentlicht.",
+      "FC00::/7 bezeichnet ULA; praktisch lokal erzeugte Präfixe verwenden den Bereich FD00::/8. ULA ist nicht gleichbedeutend mit automatisch sicher oder nur auf einen Link begrenzt.",
+      "Anycast besitzt keinen eigenen reservierten Präfixblock: Eine Unicast-Adresse wird mehreren Interfaces zugewiesen und über Routing zu einer geeigneten beziehungsweise topologisch nahen Instanz geführt.",
+      "Agentisch erstellt; deshalb CURATED_DRAFT bis zur menschlichen Prüfung."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "ipv6-prefix-families",
+      "type": "comparison",
+      "title": "Stabile Präfixanker für die Prüfung",
+      "description": "Die Präfixe grenzen typische Rollen ein, ohne jede einzelne Betriebs- oder Routingentscheidung vorwegzunehmen.",
+      "items": [
+        {"label": "2000::/3", "detail": "Global Unicast; global eindeutiger Adressraum, tatsächliche Erreichbarkeit hängt von Zuweisung und Routing ab"},
+        {"label": "fc00::/7", "detail": "Unique Local Address; für interne Kommunikation, nicht für globale Weiterleitung vorgesehen"},
+        {"label": "fe80::/10", "detail": "Link-Local Unicast; nur auf dem jeweiligen Link gültig"},
+        {"label": "ff00::/8", "detail": "Multicast; die Adresse enthält zusätzlich einen Scope-Wert"},
+        {"label": "::1/128", "detail": "Loopback; ausschließlich der eigene Host"}
+      ]
+    },
+    {
+      "id": "delivery-modes",
+      "type": "flow",
+      "title": "Gleiche Adressform, andere Zustellung",
+      "description": "Unicast, Anycast und Multicast beantworten die Frage, wohin ein Paket zugestellt wird.",
+      "items": [
+        {"label": "Unicast", "detail": "eine Adresse bezeichnet ein einzelnes Interface; das Paket geht genau zu diesem Ziel"},
+        {"label": "Anycast", "detail": "dieselbe Unicast-Adresse liegt auf mehreren Interfaces; Routing wählt eine erreichbare, typischerweise nahe Instanz"},
+        {"label": "Multicast", "detail": "eine ff00::/8-Adresse bezeichnet eine Gruppe; das Paket geht an alle passenden Gruppenmitglieder im angegebenen Scope"},
+        {"label": "Kein Broadcast", "detail": "IPv6 verwendet keinen Broadcast-Adressmodus; passende Aufgaben werden unter anderem mit Multicast gelöst"}
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Was verrät fe80::?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "ipv6-types-diagnostic",
+          "diagnostic": true,
+          "question": "Welche Aussage passt zu `fe80::21a:2bff:fe3c:4d5e`?",
+          "options": [
+            {"text": "Die Adresse ist Link-Local und nur auf dem zugehörigen Link gültig.", "rationale": "Richtig. fe80::/10 kennzeichnet verbindungslokale Unicast-Adressen.", "correct": true},
+            {"text": "Die Adresse ist Global Unicast und muss weltweit erreichbar sein.", "rationale": "Global Unicast liegt typischerweise in 2000::/3; globale Erreichbarkeit wäre außerdem nicht allein durch das Präfix garantiert.", "correct": false},
+            {"text": "Die Adresse ist Multicast, weil mehrere Hosts sie verwenden dürfen.", "rationale": "Multicast beginnt mit ff00::/8. Link-Local beschreibt einen Gültigkeitsbereich, keinen Gruppenversand.", "correct": false},
+            {"text": "Die Adresse ist Loopback für den eigenen Host.", "rationale": "Die IPv6-Loopback-Adresse ist genau ::1/128.", "correct": false}
+          ]
+        },
+        {"type": "callout", "kind": "merksatz", "label": "Zwei Fragen", "markdown": "Frage zuerst: **Welches Präfix und welcher Scope?** Frage danach: **Unicast, Anycast oder Multicast?**"}
+      ]
+    },
+    {
+      "title": "Adressbereiche und Reichweite",
+      "blocks": [
+        {"type": "markdown", "markdown": "**Global Unicast** liegt typischerweise in `2000::/3`. Die Adresse kann global eindeutig und routebar sein; ob ein konkreter Host erreichbar ist, entscheiden Zuweisung, Routing und Filterregeln.\n\n**Unique Local Addresses** stammen aus `fc00::/7`. Für lokal lokal erzeugte Präfixe wird praktisch `fd00::/8` mit einem zufällig gebildeten Global-ID-Anteil verwendet. ULA kann innerhalb einer Organisation oder über Standortverbindungen geroutet werden, ist aber nicht für die globale Internet-Routingtabelle vorgesehen.\n\n**Link-Local** verwendet `fe80::/10` und bleibt am jeweiligen Link. Router besitzen ebenfalls Link-Local-Adressen; ein Host kann seinen Standardrouter darüber erreichen. Bei mehreren Interfaces ist deshalb häufig zusätzlich eine Zonen- beziehungsweise Interfaceangabe notwendig.\n\n**Loopback** ist genau `::1/128`; **Unspecified** ist `::/128` und darf nicht als normale Zieladresse eines Hosts verwendet werden. **Multicast** beginnt mit `ff00::/8` und trägt seinen Gültigkeitsbereich in der Adresse."},
+        {"type": "figure", "diagramId": "ipv6-prefix-families", "alt": "Vergleich von Global Unicast 2000 Doppelpunkt Doppelpunkt Schrägstrich 3, ULA fc00 Doppelpunkt Doppelpunkt Schrägstrich 7, Link-Local fe80 Doppelpunkt Doppelpunkt Schrägstrich 10, Multicast ff00 Doppelpunkt Doppelpunkt Schrägstrich 8 und Loopback Doppelpunkt Doppelpunkt 1.", "caption": "Eigene Lernskizze: Präfixe liefern stabile Anker; konkrete Erreichbarkeit bleibt eine Netz- und Routingfrage."},
+        {"type": "callout", "kind": "warning", "label": "ULA ist nicht Link-Local", "markdown": "ULA darf zwischen eigenen Netzen geroutet werden. Link-Local bleibt dagegen auf genau einen Link begrenzt und benötigt bei Mehrdeutigkeit eine Interfacezone."}
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel: Drei Ziele, drei Reichweiten",
+      "blocks": [
+        {"type": "markdown", "markdown": "Ein Server besitzt `2001:db8:44::20` für ein dokumentiertes Global-Unicast-Beispiel, `fd7a:91b2:3000::20` für interne Standortkommunikation und `fe80::20` auf seiner Netzwerkkarte.\n\nDie erste Adresse veranschaulicht eine global strukturierte Unicast-Adresse; der Dokumentationspräfix `2001:db8::/32` wird in Beispielen verwendet und nicht produktiv vergeben. Die ULA kann über interne Router zu weiteren eigenen Netzen gelangen. Die Link-Local-Adresse eignet sich für Nachbarschafts- und Routerkommunikation auf dem direkt angeschlossenen Link, darf aber nicht standortübergreifend weitergeleitet werden."},
+        {"type": "figure", "diagramId": "delivery-modes", "alt": "Ablaufvergleich von Zustellung an ein einzelnes Unicast-Interface, eine per Routing gewählte Anycast-Instanz und alle Multicast-Gruppenmitglieder.", "caption": "Eigene Lernskizze: Anycast verwendet Unicast-Adressformat; die besondere Wirkung entsteht durch Mehrfachzuweisung und Routing."},
+        {
+          "type": "quiz",
+          "id": "ipv6-types-practice",
+          "question": "Welche Adresse eignet sich im Beispiel für die interne Kommunikation zwischen zwei eigenen Standorten?",
+          "options": [
+            {"text": "fd7a:91b2:3000::20", "rationale": "Richtig. Die ULA kann innerhalb der eigenen gerouteten Infrastruktur standortübergreifend verwendet werden.", "correct": true},
+            {"text": "fe80::20 ohne Interface- und Linkbezug", "rationale": "Link-Local wird von Routern nicht über den direkt angeschlossenen Link hinaus weitergeleitet.", "correct": false},
+            {"text": "::1", "rationale": "Loopback erreicht nur den eigenen Host und niemals einen entfernten Standort.", "correct": false},
+            {"text": "ff02::1 als dauerhafte Serveradresse", "rationale": "ff02::1 ist eine link-lokale Multicast-Gruppenadresse und keine eindeutige Server-Unicast-Adresse.", "correct": false}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Geführte Übung: Zustellungsart prüfen",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "ipv6-type-check-sequence",
+          "title": "Vom Präfix zur Wirkung",
+          "prompt": "Bringe die Prüfschritte in eine sinnvolle Reihenfolge.",
+          "tag": "Übung",
+          "steps": [
+            {"id": "delivery", "label": "Unicast-, Anycast- oder Multicast-Zustellung bestimmen."},
+            {"id": "prefix", "label": "Adresse gegen bekannte Präfixe wie fe80::/10, fc00::/7 und ff00::/8 prüfen."},
+            {"id": "scope", "label": "Gültigkeitsbereich und erlaubte Weiterleitung bestimmen."},
+            {"id": "scenario", "label": "Bewerten, ob Adresstyp und Scope zum geforderten Kommunikationsziel passen."}
+          ],
+          "expected": ["prefix", "scope", "delivery", "scenario"],
+          "correctFeedback": "Richtig. Präfix und Scope werden vor der konkreten Zustellungs- und Szenariobewertung geklärt.",
+          "wrongFeedback": "Beginne mit dem Präfix. Ohne den Gültigkeitsbereich kann die Wirkung im Szenario nicht sicher bewertet werden."
+        },
+        {"type": "callout", "kind": "merksatz", "label": "Anycast erkennen", "markdown": "Anycast hat keinen eigenen Anfangswert. Die gleiche **Unicast-Adresse** wird mehreren Interfaces zugewiesen; Routing entscheidet über die erreichte Instanz."}
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {"id": "ipv6-prefixes", "label": "Präfixanker", "front": "Welche Präfixe kennzeichnen ULA, Link-Local und Multicast?", "back": "ULA: fc00::/7, praktisch meist fd00::/8. Link-Local: fe80::/10. Multicast: ff00::/8."},
+            {"id": "ipv6-loopback", "label": "Sonderadressen", "front": "Wie unterscheiden sich ::1/128 und ::/128?", "back": "::1 ist Loopback zum eigenen Host. :: ist die nicht spezifizierte Adresse und keine normale Zieladresse."},
+            {"id": "ipv6-anycast", "label": "Anycast", "front": "Warum gibt es keinen eigenen Anycast-Präfix?", "back": "Anycast verwendet eine Unicast-Adresse auf mehreren Interfaces; die Zustellung zu einer Instanz entsteht durch das Routing."}
+          ]
+        },
+        {"type": "recall", "id": "ipv6-types-recall", "title": "Ohne Nachschlagen erklären", "prompt": "Ordne 2000::/3, fc00::/7, fe80::/10, ff00::/8 und ::1/128 ihren Rollen zu und erkläre anschließend Unicast, Anycast und Multicast.", "label": "Deine Erklärung", "placeholder": "2000::/3 …", "minLength": 120, "model": "2000::/3 ist Global Unicast, fc00::/7 ULA, fe80::/10 Link-Local, ff00::/8 Multicast und ::1/128 Loopback. Unicast erreicht ein Interface. Anycast verwendet dieselbe Unicast-Adresse auf mehreren Interfaces und erreicht per Routing eine Instanz. Multicast erreicht alle passenden Gruppenmitglieder innerhalb des angegebenen Scope."}
+      ]
+    },
+    {
+      "title": "Lernziel-Check: Transfer",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "ipv6-types-transfer-prefix",
+          "requiredObjective": "prefix-classification",
+          "question": "Wie ist `fd4c:8a21:9000::15` einzuordnen?",
+          "options": [
+            {"text": "Unique Local Address für interne Kommunikation", "rationale": "Richtig. fd00::/8 liegt im ULA-Bereich fc00::/7.", "correct": true},
+            {"text": "Link-Local, nur weil die Adresse mit f beginnt", "rationale": "Link-Local beginnt mit fe80::/10. Der erste Hexadezimalbuchstabe allein reicht nicht zur Klassifikation.", "correct": false},
+            {"text": "Multicast an eine Empfängergruppe", "rationale": "Multicast beginnt mit ff00::/8, nicht mit fd.", "correct": false},
+            {"text": "Loopback des eigenen Hosts", "rationale": "Die IPv6-Loopback-Adresse ist ausschließlich ::1/128.", "correct": false}
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "ipv6-types-transfer-delivery",
+          "requiredObjective": "delivery-scope",
+          "question": "Drei DNS-Serverstandorte kündigen dieselbe Unicast-Adresse an. Das Routing führt Clients jeweils zu einer erreichbaren, topologisch nahen Instanz. Welche Zustellungsart ist beschrieben?",
+          "options": [
+            {"text": "Anycast", "rationale": "Richtig. Eine Unicast-Adresse ist mehreren Interfaces zugewiesen; Routing wählt eine Instanz.", "correct": true},
+            {"text": "Multicast", "rationale": "Multicast würde an alle Gruppenmitglieder im Scope zustellen, nicht nur an eine ausgewählte Instanz.", "correct": false},
+            {"text": "Loopback", "rationale": "Loopback bleibt im eigenen Host und kann keine entfernten Serverstandorte erreichen.", "correct": false},
+            {"text": "Link-Local Unicast", "rationale": "Link-Local wird nicht zwischen Standorten geroutet und beschreibt außerdem keine Mehrfachzuweisung mit Routenauswahl.", "correct": false}
+          ]
+        },
+        {"type": "markdown", "markdown": "**Prüfungsformulierung:** Begründe Adresstyp und Zustellung getrennt. Nenne Präfix, Scope und das tatsächlich erreichte Ziel beziehungsweise die Empfängergruppe."}
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {"type": "markdown", "markdown": "- **IT-Berufe Grundstufe – Lernfelder 6–9 (2022):** Übersicht zentraler IPv6-Präfixe und Gültigkeitsbereiche.\n- **Prüfungsvorbereitung IHK Bonn:** Unicast, Anycast und Multicast sowie ergänzende, teils historische Adressinformationen.\n- **EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):** Global-Unicast-Struktur als Prüfungskontext.\n- **IT-Berufe Fachstufe II – Lernfelder 10–12 (2023):** Link-Local und Global Unicast im Autokonfigurationsablauf.\n\nHistorische oder pauschal veraltete Aussagen wurden nicht übernommen. Alle Diagramme und Fälle sind eigenständig erstellt."}
+      ]
+    }
+  ]
+}

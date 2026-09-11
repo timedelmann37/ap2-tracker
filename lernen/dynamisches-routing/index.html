@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Distanzvektor- und Link-State-Verfahren unterscheiden, Konvergenz nach Änderungen erklären und ein passendes Routingverfahren auswählen.">
+<title>Dynamisches Routing und Konvergenz – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=hybrid-1">
+<script defer src="/assets/ap2-space.js?v=hybrid-1"></script>
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="dynamisches-routing" data-progress-id="ga2-4__3" data-content-revision="2026-09-11.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-4">Block N4 · Routing und NAT</a><span class="sep">›</span>
+    <span class="here">Dynamisches Routing und Konvergenz</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">Dynamisches Routing und Konvergenz</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 24 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Dynamisches Routing bedeutet, dass Router Erreichbarkeitsinformationen austauschen und daraus Routen ableiten. Distanzvektor und Link-State lösen diese Aufgabe mit unterschiedlichen Wissensmodellen. Entscheidend ist nicht nur, ob ein Pfad gefunden wird, sondern wie zuverlässig und schnell sich alle Router nach einer Änderung wieder auf einen widerspruchsfreien Zustand einigen.</p>
+<section class="learning-goals" aria-labelledby="dynamisches-routing-goals">
+  <h2 id="dynamisches-routing-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Distanzvektor- und Link-State-Verfahren anhand ausgetauschter Information und lokaler Pfadberechnung unterscheiden</li>
+    <li>für ein Netzwerkszenario ein dynamisches Routingverfahren anhand von Größe, Änderungen, Konvergenz und Betriebsaufwand begründet auswählen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Was wird dynamisch?</h2>
+<section class="quiz" data-quiz="dynamic-routing-diagnostic" data-correct="0">
+  <h3>Welche Aussage beschreibt dynamisches Routing am treffendsten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Austausch, Berechnung und Aktualisierung machen die Routen dynamisch."><span class="m">A</span> Router tauschen Routinginformationen aus und passen daraus gelernte Routen an Änderungen an.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Normale IP-Weiterleitung arbeitet hop-by-hop; ein Routingprotokoll verteilt Wissen, nicht vollständige Pfadlisten in jedem Nutzpaket."><span class="m">B</span> Jedes IP-Paket enthält bereits die vollständige Liste aller Router bis zum Ziel.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die Ziel-IP bleibt beim normalen Routing erhalten; geändert wird die lokale Weiterleitungsentscheidung."><span class="m">C</span> Die Ziel-IP eines Pakets wird nach jedem Router dynamisch neu vergeben.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Protokolle, Nachbarschaften, Bereiche, Filter und Metriken müssen geplant und betrieben werden."><span class="m">D</span> Dynamische Routen brauchen niemals eine administrative Konfiguration.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">Protokollrollen</span><p>Ein <strong>geroutetes Protokoll</strong> wie IP transportiert Nutzdaten. Ein <strong>Routingprotokoll</strong> tauscht Informationen aus, aus denen Router Weiterleitungswege ableiten.</p></aside><h2 class="sec" id="s2"><span class="num">2</span>Distanzvektor und Link-State</h2>
+<p>Bei einem <strong>Distanzvektorverfahren</strong> erhält ein Router von Nachbarn Aussagen darüber, welche Ziele in welcher Entfernung und Richtung erreichbar sind. Die Einfachheit kann für kleine Netze genügen; ungeeignete oder noch nicht verbreitete Informationen können nach Änderungen jedoch vorübergehend Schleifen oder falsche Wege begünstigen.</p>
+<p>Bei einem <strong>Link-State-Verfahren</strong> beschreiben Router den Zustand ihrer Verbindungen. Aus den verteilten Informationen entsteht pro Router eine Topologiedatenbank; darauf wird ein Kürzeste-Pfade-Verfahren ausgeführt. Das ermöglicht strukturierte, oft schnellere Neuberechnung in größeren Netzen, verlangt aber mehr Planung, Zustandsspeicher und Rechenarbeit. RIP ist ein verbreitetes Distanzvektorbeispiel, OSPF ein Link-State-Beispiel.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Zwei Wissensmodelle für dynamische Routen">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-routing-model-comparison-title diagram-routing-model-comparison-desc">
+  <title id="diagram-routing-model-comparison-title">Zwei Wissensmodelle für dynamische Routen</title>
+  <desc id="diagram-routing-model-comparison-desc">Vier Vergleichskarten zu Informationsmodell und Beispielen von Distanzvektor mit RIP sowie Link-State mit OSPF.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Zwei Wissensmodelle für dynamische Routen</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">Distanzvektor</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">Nachbarn melden</tspan><tspan x="64" dy="30">erreichbare Ziele,</tspan><tspan x="64" dy="30">Entfernungswerte und</tspan></text></g><g><rect class="diagram-row" x="265" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="287" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="287" dy="0">Link-State</tspan></text><text x="287" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="287" dy="0">Router verteilen</tspan><tspan x="287" dy="30">Verbindungszustände,</tspan><tspan x="287" dy="30">halten eine</tspan></text></g><g><rect class="diagram-row" x="488" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="510" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="510" dy="0">Beispiel RIP</tspan></text><text x="510" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="510" dy="0">Distanzvektor;</tspan><tspan x="510" dy="30">einfache</tspan><tspan x="510" dy="30">Hop-basierte Sicht,</tspan></text></g><g><rect class="diagram-row" x="711" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="733" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="733" dy="0">Beispiel OSPF</tspan></text><text x="733" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="733" dy="0">Link-State;</tspan><tspan x="733" dy="30">hierarchisch planbar</tspan><tspan x="733" dy="30">und für größere</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Die Verfahren unterscheiden sich vor allem darin, welches Wissen verteilt wird und wo die Pfadberechnung stattfindet.</figcaption>
+</figure><div class="math-display" role="group" aria-label="Die Kosten eines Pfads sind die Summe der Kosten seiner einzelnen Verbindungen"><math display="block" aria-label="Die Kosten eines Pfads sind die Summe der Kosten seiner einzelnen Verbindungen"><mrow><mi>C</mi><mo>(</mo><mi>P</mi><mo>)</mo><mo>=</mo><munder><mo>∑</mo><mrow><mi>e</mi><mo>∈</mo><mi>P</mi></mrow></munder><mi>c</mi><mo>(</mo><mi>e</mi><mo>)</mo></mrow></math><div class="math-legend"><span>P = betrachteter Pfad</span><span>e = einzelne Verbindung des Pfads</span><span>c(e) = konfigurierte beziehungsweise abgeleitete Verbindungskosten</span><span>konkrete Kostenbildung ist protokoll- und implementationsabhängig</span></div></div><h2 class="sec" id="s3"><span class="num">3</span>Durchgearbeitetes Ausfallszenario</h2>
+<p>Ein Standort A erreicht Standort D normalerweise über A–B–D. Zusätzlich existiert der längere Pfad A–C–D. Fällt B–D aus, erkennt zunächst nur der benachbarte Router den Fehler. Während die Information verteilt und neu berechnet wird, können Router vorübergehend unterschiedliche Ansichten besitzen.</p>
+<p>Nach erfolgreicher <strong>Konvergenz</strong> verwenden alle beteiligten Router konsistente, zur neuen Topologie passende Routen; A kann dann über C weiterleiten. Die Konvergenzzeit umfasst Fehlererkennung, Verteilung und Neuberechnung. Ein niedriger Protokoll-Overhead allein ist deshalb nicht automatisch wichtiger als eine schnelle, schleifenarme Reaktion auf Ausfälle.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Konvergenz nach einem Linkausfall">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="650" viewBox="0 0 960 650" role="img" aria-labelledby="diagram-convergence-flow-title diagram-convergence-flow-desc">
+  <title id="diagram-convergence-flow-title">Konvergenz nach einem Linkausfall</title>
+  <desc id="diagram-convergence-flow-desc">Fünfstufiger zeitlicher Ablauf von einem Linkausfall über Erkennung, Informationsverteilung und Neuberechnung bis zum stabilen Routingzustand.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Konvergenz nach einem Linkausfall</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Link fällt aus</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">ein bisher verwendeter Pfad ist nicht mehr verfügbar</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Änderung erkennen</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">angrenzende Router bemerken den neuen Zustand</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Information verteilen</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Routingnachrichten erreichen weitere beteiligte Router</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Routen neu bewerten</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">jeder Router aktualisiert seine beste erreichbare Route</tspan></text><path d="M480 472v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 494 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="512" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="541" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">stabiler Zustand</tspan></text><text x="178" y="568" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">die relevanten Tabellen stimmen wieder mit der erreichbaren</tspan><tspan x="178" dy="25">Topologie überein</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Konvergenz ist ein Prozess; zwischen Fehler und Stabilität kann eine vorübergehend inkonsistente Phase liegen.</figcaption>
+</figure><section class="quiz" data-quiz="dynamic-routing-guided-practice" data-correct="0">
+  <h3>Ein wachsendes Firmennetz hat viele redundante Wege und verlangt nach Linkausfällen rasche, konsistente Neuberechnung. Welche Begründung ist am stärksten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Netzgröße, Redundanz und Konvergenzanforderung sprechen hier für das Link-State-Modell."><span class="m">A</span> Ein Link-State-Verfahren ist plausibel, weil eine verteilte Topologiesicht und lokale Pfadberechnung die Anforderungen unterstützen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Mehrere physische Wege sind nicht auf Distanzvektor beschränkt. Entscheidend sind Informationsmodell und Betriebsanforderungen."><span class="m">B</span> Ein Distanzvektorverfahren ist zwingend, weil nur dort mehrere Wege existieren dürfen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ohne zusätzliche Mechanismen berechnen statische Routen keinen Ersatzpfad aus der Topologie."><span class="m">C</span> Statische Einzelrouten sind automatisch selbstheilend, sobald irgendwo ein Ersatzlink existiert.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="IP transportiert und adressiert Pakete, tauscht aber nicht selbständig die für diese dynamische Topologiesicht nötigen Routen aus."><span class="m">D</span> Das geroutete Protokoll IP ersetzt ein Routingprotokoll vollständig.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Karteikarten und freier Abruf</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="dynamic-distance-vector" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welches Wissen tauscht ein Distanzvektorverfahren im Grundmodell aus?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Erreichbare Ziele mit Distanz beziehungsweise Metrik und Richtung über Nachbarn; eine vollständige Topologiesicht ist nicht zwingend.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="dynamic-link-state" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was verteilt und berechnet ein Link-State-Verfahren?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Es verteilt Zustände von Verbindungen, baut daraus eine Topologiedatenbank und berechnet lokal kürzeste Pfade.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="dynamic-convergence" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wann gilt ein Routingprozess nach einer Änderung als konvergiert?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Wenn die relevanten Router wieder konsistente, zur erreichbaren Topologie passende Routen besitzen.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Distanzvektor“:</span><button type="button" data-card-id="dynamic-distance-vector" data-card-rate="known">gewusst</button><button type="button" data-card-id="dynamic-distance-vector" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="dynamic-distance-vector"></span></div>
+<div class="card-rating"><span>Karte „Link-State“:</span><button type="button" data-card-id="dynamic-link-state" data-card-rate="known">gewusst</button><button type="button" data-card-id="dynamic-link-state" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="dynamic-link-state"></span></div>
+<div class="card-rating"><span>Karte „Konvergenz“:</span><button type="button" data-card-id="dynamic-convergence" data-card-rate="known">gewusst</button><button type="button" data-card-id="dynamic-convergence" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="dynamic-convergence"></span></div><section class="recall-practice" data-recall="dynamic-routing-recall" data-min-length="130" aria-labelledby="dynamic-routing-recall-title">
+  <div class="recall-prompt"><h3 id="dynamic-routing-recall-title">Verfahren frei vergleichen</h3><p>Erkläre Distanzvektor, Link-State und Konvergenz. Begründe anschließend, welche Anforderungen die Wahl eines dynamischen Routingverfahrens bestimmen.</p></div>
+  <label class="sr-only" for="dynamic-routing-recall-answer">Deine Erklärung</label>
+  <textarea id="dynamic-routing-recall-answer" data-recall-input rows="4" placeholder="Beim Distanzvektorverfahren …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Distanzvektorverfahren erhalten von Nachbarn Ziel-, Richtungs- und Distanzinformationen. Link-State-Verfahren verteilen Verbindungszustände, bilden eine Topologiesicht und berechnen lokal Pfade. Konvergenz ist der Weg vom erkannten Netzwechsel zu wieder konsistenten Tabellen. Für die Auswahl zählen Größe, Redundanz, Änderungshäufigkeit, gewünschte Reaktionszeit und Betriebsaufwand.</div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Lernziel-Check: Transfer</h2>
+<section class="quiz" data-quiz="dynamic-routing-transfer-models" data-correct="0" data-required-objective="routing-models">
+  <h3>Welche Zuordnung beschreibt die Informationsmodelle korrekt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Die Zuordnung trennt ausgetauschtes Wissen und Berechnungsmodell sauber."><span class="m">A</span> Distanzvektor: Ziele und Distanz über Nachbarn; Link-State: Verbindungszustände, Topologiedatenbank und lokale Pfadberechnung.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die Modelle sind vertauscht und Link-State wird zu stark verkürzt."><span class="m">B</span> Distanzvektor: vollständige Linkdatenbank; Link-State: nur die eigene Default-Route an einen Nachbarn senden.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die Algorithmenfamilien betreffen den Routenaustausch und sind nicht durch eine einzige Adressfamilie definiert."><span class="m">C</span> Distanzvektor und Link-State unterscheiden sich ausschließlich durch IPv4 oder IPv6.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Beide sind Routingmodelle; IP bleibt das geroutete Protokoll für Nutzpakete."><span class="m">D</span> Link-State transportiert Nutzdaten, Distanzvektor ersetzt das geroutete Protokoll IP.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="dynamic-routing-transfer-selection" data-correct="0" data-required-objective="routing-selection">
+  <h3>Ein Campusnetz wächst auf 60 Router, besitzt viele redundante Links und fordert kurze Wiederherstellungszeiten. Welche Entscheidung ist am besten begründet?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Die Begründung leitet die Verfahrenswahl direkt aus den Anforderungen ab."><span class="m">A</span> Ein hierarchisch geplantes Link-State-Verfahren prüfen, weil Skalierung, Redundanz und Konvergenz wichtiger sind als minimale Protokollkomplexität.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Bei vielen Routern und Änderungen werden Pflege, Konsistenz und Ausfallreaktion problematisch."><span class="m">B</span> Unabhängig von Topologie und Betrieb immer statische Einzelrouten verwenden.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Eine einzelne Zahl ersetzt keine Analyse von Protokoll, Metrik, Skalierung und Design; die Begründung ist fachlich nicht tragfähig."><span class="m">C</span> Distanzvektor nur deshalb wählen, weil die Zahl 60 größer als 15 ist.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Physische Redundanz erzeugt ohne geplante Routinglogik keinen konsistenten Ersatzpfad."><span class="m">D</span> Kein Routingprotokoll einsetzen, weil redundante Links automatisch dieselbe Routingtabelle erzeugen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Quellen und Aktualität</h2>
+<ul>
+<li><strong>Prüfungsvorbereitung IHK Bonn:</strong> Routingprotokoll versus geroutetes Protokoll sowie Distanzvektor und Link-State als explizite Prüfungsfragen.</li>
+<li><strong>EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):</strong> statisch versus dynamisch und RIPv2 beziehungsweise OSPF als Vergleichsrahmen.</li>
+</ul>
+<p>Konkrete Protokolltimer und Herstellerpräferenzen sind bewusst ausgeschlossen. Alle Beispiele, Rückmeldungen und Diagramme sind eigenständig erstellt; private Buchgrafiken werden nicht veröffentlicht.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-4"><span class="d">zurück zu</span><span class="t">Block N4 · Routing und NAT</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N4 · Routing und NAT</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Was wird dynamisch?</a></li>
+<li><a href="#s2" data-t="s2">Distanzvektor und Link-State</a></li>
+<li><a href="#s3" data-t="s3">Durchgearbeitetes Ausfallszenario</a></li>
+<li><a href="#s4" data-t="s4">Karteikarten und freier Abruf</a></li>
+<li><a href="#s5" data-t="s5">Lernziel-Check: Transfer</a></li>
+<li><a href="#s6" data-t="s6">Quellen und Aktualität</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-4">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

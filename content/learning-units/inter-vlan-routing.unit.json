@@ -1,0 +1,513 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "inter-vlan-routing",
+    "slug": "inter-vlan-routing",
+    "title": "Inter-VLAN-Routing passend entwerfen",
+    "description": "Router-on-a-Stick und Layer-3-Switch anhand des Paketwegs, der Gateway-Rolle, Kapazität, Ausfallsicherheit und Sicherheitskontrollen vergleichen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-4",
+    "groupLabel": "Block N4 · Routing und NAT",
+    "itemId": "ga2-4__9",
+    "week": "KW 38",
+    "estimatedMinutes": 22,
+    "relevance": "hoch",
+    "sources": ["europa-integratoren-2026", "itlf6-9-2022"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "inter-vlan-path",
+      "label": "den Paketweg zwischen zwei VLANs bei Router-on-a-Stick und bei Routing über Switch Virtual Interfaces vollständig beschreiben"
+    },
+    {
+      "id": "architecture-choice",
+      "label": "zwischen Router-on-a-Stick und Layer-3-Switch anhand von Verkehrsmenge, Portkapazität, Redundanz, Betriebsaufwand und Sicherheitsanforderung begründet entscheiden"
+    }
+  ],
+  "intro": "VLANs trennen Layer-2-Broadcastdomänen. Sobald ein Client aus VLAN 10 einen Server in VLAN 20 erreicht, braucht der Verkehr eine Layer-3-Entscheidung und je VLAN ein Default Gateway. Router-on-a-Stick und Layer-3-Switch erfüllen diese Aufgabe auf unterschiedlichen Wegen; die richtige Wahl folgt aus dem Verkehrs- und Sicherheitsprofil, nicht aus einem pauschalen Produkturteil.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunks europa-integratoren-2026:01078 und europa-integratoren-2026:01079",
+        "use": "Tagged-/Trunk-Anbindung, Layer-3-Switch als zentraler Router und Inter-VLAN-Routing in einem Prüfungsszenario",
+        "reviewStatus": "Relevanten Aufgabenteil geprüft; nachfolgende Aussagen zu Loop Protection und STP wurden für dieses Thema nicht verwendet"
+      },
+      {
+        "sourceId": "itlf6-9-2022",
+        "sourceLocator": "Chunk itlf6-9-2022:00242",
+        "use": "Tagged-/Untagged-Portplanung über mehrere VLANs und getrennte Firewallentscheidungen zwischen Netzsegmenten",
+        "reviewStatus": "Als ergänzender VLAN- und Policykontext verwendet; keine private Netzskizze oder beschädigte OCR-Regeltabelle übernommen"
+      }
+    ],
+    "notes": [
+      "Der Batch-Kandidat itlf6-9-2022:00228 ist ein allgemeiner Sicherheits- und Diagnose-Kompetenzcheck. Er enthält keine Erklärung von Router-on-a-Stick oder Layer-3-Switch und wurde als Fehltreffer ausgeschlossen.",
+      "Der Figurenkandidat europa-integratoren-2026:figure:bd8928517e5c betrifft VLAN-Tags in einer konkreten Buchtopologie, nicht den vollständigen Architekturvergleich; er wurde nicht veröffentlicht.",
+      "Eine ACL auf einem Layer-3-Switch kann Verkehrsbeziehungen begrenzen, ist aber nicht automatisch gleichwertig mit einer zustandsbehafteten Firewall samt tieferer Prüfung und Protokollierung.",
+      "Die beiden Topologien, Adressen, Fälle und Antwortoptionen sind eigenständig erstellt."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "router-on-stick-path",
+      "type": "topology",
+      "title": "Router-on-a-Stick führt beide Richtungen über einen Trunk",
+      "description": "Client und Server liegen an Access-Ports in verschiedenen VLANs. Der Layer-2-Switch sendet den Verkehr getaggt zum Router. Dessen Subinterfaces sind die Gateways; der geroutete Verkehr läuft über denselben Trunk zurück.",
+      "zones": [
+        {
+          "id": "roas-vlan10",
+          "label": "VLAN 10 · Clients",
+          "x": 30,
+          "y": 85,
+          "width": 255,
+          "height": 175,
+          "kind": "zone-vlan10"
+        },
+        {
+          "id": "roas-vlan20",
+          "label": "VLAN 20 · Server",
+          "x": 30,
+          "y": 315,
+          "width": 255,
+          "height": 175,
+          "kind": "zone-vlan20"
+        },
+        {
+          "id": "roas-switching",
+          "label": "Layer 2",
+          "x": 340,
+          "y": 85,
+          "width": 250,
+          "height": 405,
+          "kind": "zone-switching"
+        },
+        {
+          "id": "roas-routing",
+          "label": "Layer 3",
+          "x": 650,
+          "y": 85,
+          "width": 275,
+          "height": 405,
+          "kind": "zone-routing"
+        }
+      ],
+      "nodes": [
+        {
+          "id": "roas-client",
+          "label": "Client VLAN 10",
+          "detail": "10.20.10.20",
+          "x": 155,
+          "y": 175,
+          "kind": "client"
+        },
+        {
+          "id": "roas-server",
+          "label": "Server VLAN 20",
+          "detail": "10.20.20.50",
+          "x": 155,
+          "y": 405,
+          "kind": "server"
+        },
+        {
+          "id": "roas-l2-switch",
+          "label": "L2-Switch",
+          "detail": "Access + Trunk",
+          "x": 465,
+          "y": 290,
+          "kind": "switch"
+        },
+        {
+          "id": "roas-router",
+          "label": "Router",
+          "detail": "Subinterfaces .10/.20",
+          "x": 785,
+          "y": 290,
+          "kind": "router"
+        }
+      ],
+      "edges": [
+        {
+          "from": "roas-client",
+          "to": "roas-l2-switch",
+          "label": "Access VLAN 10",
+          "kind": "access"
+        },
+        {
+          "from": "roas-server",
+          "to": "roas-l2-switch",
+          "label": "Access VLAN 20",
+          "kind": "access"
+        },
+        {
+          "from": "roas-l2-switch",
+          "to": "roas-router",
+          "label": "802.1Q-Trunk",
+          "kind": "trunk"
+        }
+      ]
+    },
+    {
+      "id": "layer3-switch-path",
+      "type": "topology",
+      "title": "Beim Layer-3-Switch liegen die VLAN-Gateways auf SVIs",
+      "description": "Client und Server verwenden die SVI-Adressen des Layer-3-Switches als Default Gateways. Das Routing zwischen den VLANs bleibt im zentralen Switch; eine separate Firewall oder ein Router übernimmt den WAN- und Schutzübergang.",
+      "zones": [
+        {
+          "id": "l3-vlan10",
+          "label": "VLAN 10 · Clients",
+          "x": 30,
+          "y": 85,
+          "width": 255,
+          "height": 175,
+          "kind": "zone-vlan10"
+        },
+        {
+          "id": "l3-vlan20",
+          "label": "VLAN 20 · Server",
+          "x": 30,
+          "y": 315,
+          "width": 255,
+          "height": 175,
+          "kind": "zone-vlan20"
+        },
+        {
+          "id": "l3-core",
+          "label": "LAN-Core",
+          "x": 350,
+          "y": 85,
+          "width": 260,
+          "height": 405,
+          "kind": "zone-core"
+        },
+        {
+          "id": "l3-edge",
+          "label": "WAN-/Security-Übergang",
+          "x": 675,
+          "y": 85,
+          "width": 250,
+          "height": 405,
+          "kind": "zone-edge"
+        }
+      ],
+      "nodes": [
+        {
+          "id": "l3-client",
+          "label": "Client VLAN 10",
+          "detail": "GW 10.20.10.1",
+          "x": 155,
+          "y": 175,
+          "kind": "client"
+        },
+        {
+          "id": "l3-server",
+          "label": "Server VLAN 20",
+          "detail": "GW 10.20.20.1",
+          "x": 155,
+          "y": 405,
+          "kind": "server"
+        },
+        {
+          "id": "l3-core-switch",
+          "label": "L3-Switch",
+          "detail": "SVI 10 + SVI 20",
+          "x": 480,
+          "y": 290,
+          "kind": "layer3-switch"
+        },
+        {
+          "id": "l3-firewall",
+          "label": "Firewall/Router",
+          "detail": "WAN + Security",
+          "x": 800,
+          "y": 290,
+          "kind": "firewall"
+        }
+      ],
+      "edges": [
+        {
+          "from": "l3-client",
+          "to": "l3-core-switch",
+          "label": "VLAN 10",
+          "kind": "access"
+        },
+        {
+          "from": "l3-server",
+          "to": "l3-core-switch",
+          "label": "VLAN 20",
+          "kind": "access"
+        },
+        {
+          "from": "l3-core-switch",
+          "to": "l3-firewall",
+          "label": "gerouteter Uplink",
+          "kind": "routed"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Warum reicht ein VLAN-Tag nicht?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "inter-vlan-diagnostic",
+          "diagnostic": true,
+          "question": "Ein Client in VLAN 10 sendet an einen Server in VLAN 20. Welche Funktion wird zwingend benötigt?",
+          "options": [
+            {
+              "text": "Nur ein größerer Layer-2-Broadcastbereich",
+              "rationale": "VLANs sollen gerade getrennte Broadcastdomänen bilden. Zusammenlegen würde die gewünschte Trennung aufheben.",
+              "correct": false
+            },
+            {
+              "text": "Eine Layer-3-Weiterleitung über ein Gateway für beide VLAN-Netze",
+              "rationale": "Richtig. Der Zielhost liegt aus Sicht des Clients in einem anderen IP-Netz, daher sendet der Client zum Default Gateway.",
+              "correct": true
+            },
+            {
+              "text": "Ein DNS-Alias zwischen den VLAN-Nummern",
+              "rationale": "DNS löst Namen auf, entscheidet aber nicht über die Weiterleitung zwischen IP-Netzen.",
+              "correct": false
+            },
+            {
+              "text": "Ausschließlich ein untagged Port zwischen den VLANs",
+              "rationale": "Ein Access-Port gehört üblicherweise genau einem VLAN. Er ersetzt kein Routing zwischen getrennten Netzen.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "VLAN trennt, Routing verbindet",
+          "markdown": "Der Client entscheidet mit IP-Adresse und Präfix, dass das Ziel **nicht lokal** ist, und sendet an sein Default Gateway. Erst dort wird zwischen den VLAN-Netzen geroutet."
+        }
+      ]
+    },
+    {
+      "title": "Router-on-a-Stick: ein Trunk, mehrere Subinterfaces",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Beim Router-on-a-Stick verbindet ein einzelner physischer Routerport den Router mit einem Layer-2-Switch. Der Link ist ein 802.1Q-Trunk. Auf dem Router existiert je VLAN ein logisches Subinterface, etwa `10.20.10.1/24` für VLAN 10 und `10.20.20.1/24` für VLAN 20. Diese Adressen sind die Default Gateways der Endgeräte.\n\nEin Paket vom Client zum Server läuft erst über den Access-Port in VLAN 10, dann getaggt über den Trunk zum Router. Der Router entfernt die alte Layer-2-Hülle, entscheidet anhand der Ziel-IP und sendet das Paket über sein VLAN-20-Subinterface wieder getaggt über denselben physischen Link. Der Switch liefert es am Server-Access-Port aus."
+        },
+        {
+          "type": "figure",
+          "diagramId": "router-on-stick-path",
+          "alt": "Client in VLAN 10 und Server in VLAN 20 sind mit einem Layer-2-Switch verbunden. Ein einzelner 802.1Q-Trunk führt zu einem Router mit je einem Subinterface pro VLAN.",
+          "caption": "Eigene Lernskizze: Beide Richtungen des Inter-VLAN-Verkehrs teilen sich den Trunk und den Routerport."
+        },
+        {
+          "type": "callout",
+          "kind": "warning",
+          "label": "Kapazitäts- und Ausfallpunkt",
+          "markdown": "Der gemeinsame Trunk und Routerpfad tragen den gesamten Inter-VLAN-Verkehr dieser Konstruktion. Ob das genügt, hängt von realer Last, Linkrate, Routerleistung und Redundanz ab."
+        }
+      ]
+    },
+    {
+      "title": "Layer-3-Switch: Gateways als SVIs im LAN-Core",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein routingfähiger Switch stellt für jedes VLAN ein Switch Virtual Interface, kurz SVI, bereit. Im Beispiel verwenden VLAN 10 `10.20.10.1/24` und VLAN 20 `10.20.20.1/24` als Gateways. Der Switch trifft die Layer-3-Entscheidung intern und leitet den Verkehr direkt in das Ziel-VLAN weiter. Bei geeigneter Hardware geschieht das oft mit hoher interner Weiterleitungsleistung.\n\nDer Vorteil ist kein Freibrief: Inter-VLAN-Zugriffe brauchen weiterhin eine dokumentierte Policy. ACLs können Netze, Protokolle und Ports begrenzen. Für zustandsbehaftete Kontrolle, Anwendungsschutz oder zentrale Protokollierung kann ein separater Firewallpfad erforderlich bleiben. Der Uplink zur Firewall oder zum WAN-Router ist eine andere Verkehrsbeziehung als das lokale Inter-VLAN-Routing."
+        },
+        {
+          "type": "figure",
+          "diagramId": "layer3-switch-path",
+          "alt": "Client-VLAN und Server-VLAN enden an einem Layer-3-Switch mit je einem SVI als Gateway. Ein separater gerouteter Uplink führt zur Firewall für WAN- und Sicherheitsaufgaben.",
+          "caption": "Eigene Lernskizze: Das lokale Routing bleibt im LAN-Core; der Security- und WAN-Übergang ist separat."
+        }
+      ]
+    },
+    {
+      "title": "Beispiel: Architektur begründet auswählen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**Kleine Außenstelle:** Zwei VLANs, geringe lokale Datenmenge, vorhandene Firewall mit VLAN-Subinterfaces und keine zusätzlichen Verfügbarkeitsanforderungen. Router-on-a-Stick kann hier wirtschaftlich und gut kontrollierbar sein, wenn Trunk- und Firewallkapazität nachweislich reichen.\n\n**Zentraler Standort:** Mehrere Client-, Server- und Infrastruktur-VLANs übertragen regelmäßig große Datenmengen untereinander. Ein Layer-3-Switch mit SVIs reduziert den Umweg über einen einzelnen externen Routerlink. Redundante Core-Komponenten und Gateways müssen jedoch geplant werden; sensible Verkehrsbeziehungen können weiterhin über eine Firewall geführt oder mit geeigneten ACLs begrenzt werden.\n\nDie Begründung nennt deshalb nicht nur Geschwindigkeit, sondern auch vorhandene Geräte, Spitzenlast, Ausfallwirkung, Redundanz, Policy-Tiefe und Betriebswissen."
+        },
+        {
+          "type": "quiz",
+          "id": "inter-vlan-example-choice",
+          "question": "Ein Backupserver in VLAN 20 überträgt nachts große Datenmengen zu mehreren Systemen in VLAN 10, 30 und 40. Ein einzelner 1-Gbit/s-Routertrunk ist bereits ausgelastet. Welche Schlussfolgerung ist am stärksten?",
+          "options": [
+            {
+              "text": "VLANs entfernen, damit kein Routing mehr nötig ist",
+              "rationale": "Das beseitigt die Segmentierung und löst die Sicherheits- und Broadcastanforderung nicht sauber.",
+              "correct": false
+            },
+            {
+              "text": "Inter-VLAN-Routing im leistungsfähigen Layer-3-Core prüfen und Sicherheitsregeln sowie Redundanz separat planen",
+              "rationale": "Richtig. Die Engstelle wird adressiert, ohne daraus abzuleiten, dass Policy und Ausfallsicherheit automatisch gelöst seien.",
+              "correct": true
+            },
+            {
+              "text": "Mehr DNS-Records anlegen, damit der Trunk schneller wird",
+              "rationale": "Namensauflösung ändert weder Linkrate noch den Layer-3-Paketpfad.",
+              "correct": false
+            },
+            {
+              "text": "Alle ACLs löschen, weil Filterregeln grundsätzlich die einzige Ursache für Auslastung sind",
+              "rationale": "Die gemessene Engstelle liegt am gemeinsamen Trunk. Sicherheitsregeln pauschal zu entfernen wäre unbegründet und riskant.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Geführte Übung: Entscheidung vorbereiten",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "inter-vlan-decision-sequence",
+          "title": "Ordne den Architekturvergleich",
+          "prompt": "Bringe die Schritte für eine nachvollziehbare Entscheidung in Reihenfolge.",
+          "tag": "Geführte Übung",
+          "steps": [
+            {
+              "id": "choose",
+              "label": "Architektur auswählen und verbleibende Risiken dokumentieren"
+            },
+            {
+              "id": "traffic-matrix",
+              "label": "VLAN-Netze, Kommunikationsbeziehungen und Lastspitzen erfassen"
+            },
+            {
+              "id": "gateway-path",
+              "label": "Gateway-Position und vollständigen Hin-/Rückweg für beide Varianten zeichnen"
+            },
+            {
+              "id": "policy",
+              "label": "Benötigte ACL-, Firewall- und Protokollierungsfunktionen festlegen"
+            },
+            {
+              "id": "capacity",
+              "label": "Port-, Gerätekapazität, Engstellen und Ausfallpunkte vergleichen"
+            }
+          ],
+          "expected": ["traffic-matrix", "gateway-path", "capacity", "policy", "choose"],
+          "correctFeedback": "Richtig. Erst Bedarf und Paketweg, dann Kapazität und Kontrollen; die Architekturentscheidung folgt aus diesen Belegen.",
+          "wrongFeedback": "Starte nicht mit dem Gerätenamen. Erfasse zuerst Verkehrsbeziehungen und zeichne, wo die Gateways liegen und welchen Link jedes Paket zweimal benutzt."
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Prüfungssatz:** Router-on-a-Stick ist nicht grundsätzlich schlecht und ein Layer-3-Switch nicht automatisch sicher. Entscheidend ist, ob Paketpfad, Kapazität, Redundanz und benötigte Kontrolltiefe zur konkreten Umgebung passen."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "inter-vlan-roas-card",
+              "label": "Router-on-a-Stick",
+              "front": "Welche Rollen haben Trunk und Router-Subinterfaces beim Router-on-a-Stick?",
+              "back": "Der 802.1Q-Trunk transportiert mehrere VLANs über einen physischen Link. Je VLAN stellt ein Router-Subinterface das Layer-3-Gateway bereit."
+            },
+            {
+              "id": "inter-vlan-svi-card",
+              "label": "SVI",
+              "front": "Was ist ein SVI im Inter-VLAN-Routing?",
+              "back": "Ein Switch Virtual Interface ist die logische Layer-3-Schnittstelle eines VLANs auf einem routingfähigen Switch und dient den Hosts dieses VLANs typischerweise als Gateway."
+            },
+            {
+              "id": "inter-vlan-policy-card",
+              "label": "Policy-Grenze",
+              "front": "Warum ist ein Layer-3-Switch mit ACL nicht automatisch eine vollständige Firewall?",
+              "back": "ACLs können Adressen, Protokolle und Ports filtern. Zustandsführung, Anwendungskontrolle, Bedrohungsschutz und umfassende Protokollierung hängen von den konkreten Geräten und Funktionen ab."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "inter-vlan-core-recall",
+          "title": "Beide Wege ohne Vorlage erklären",
+          "prompt": "Beschreibe den Paketweg von VLAN 10 nach VLAN 20 bei Router-on-a-Stick und Layer-3-Switch. Begründe danach mit mindestens vier Kriterien, wann du welche Variante prüfen würdest.",
+          "label": "Dein Architekturvergleich",
+          "placeholder": "Beim Router-on-a-Stick … Beim Layer-3-Switch …",
+          "minLength": 150,
+          "model": "Beim Router-on-a-Stick sendet der Client zum Subinterface-Gateway; der Frame läuft über einen 802.1Q-Trunk zum Router und geroutet über denselben Link ins Ziel-VLAN zurück. Beim Layer-3-Switch liegen die Gateways als SVIs im Switch, der lokal zwischen den VLANs routet. Für die Wahl prüfe ich Verkehrsmenge und Spitzenlast, Link- und Gerätekapazität, Ausfallpunkte und Redundanz, Betriebsaufwand sowie benötigte ACL-, Firewall- und Loggingfunktionen."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check: Prüfungstransfer",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "inter-vlan-transfer-path",
+          "requiredObjective": "inter-vlan-path",
+          "question": "Welche Beschreibung eines Pakets von VLAN 10 zu VLAN 20 beim Router-on-a-Stick ist vollständig?",
+          "options": [
+            {
+              "text": "Der Client sendet direkt an die MAC-Adresse des Zielservers, weil beide an demselben Switch hängen",
+              "rationale": "Unterschiedliche IP-Netze werden nicht direkt auf Layer 2 zugestellt. Der Client sendet an die MAC-Adresse seines Default Gateways.",
+              "correct": false
+            },
+            {
+              "text": "Der Client sendet zum Gateway; VLAN 10 läuft getaggt über den Trunk zum Subinterface, der Router routet und sendet VLAN 20 getaggt über denselben Link zum Switch zurück",
+              "rationale": "Richtig. Die Beschreibung enthält lokale Gatewayentscheidung, Trunk, Subinterfaces, Routing und Rückführung ins Ziel-VLAN.",
+              "correct": true
+            },
+            {
+              "text": "Der Switch ändert nur den DNS-Namen von VLAN 10 in VLAN 20",
+              "rationale": "DNS-Namen spielen für die eigentliche Layer-3-Weiterleitung zwischen den VLAN-Netzen keine Rolle.",
+              "correct": false
+            },
+            {
+              "text": "Der Router kopiert den Broadcast aus VLAN 10 unverändert in jedes andere VLAN",
+              "rationale": "Router begrenzen Layer-2-Broadcastdomänen. Inter-VLAN-Routing leitet gezielte Layer-3-Pakete weiter, nicht pauschal alle Broadcasts.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "inter-vlan-transfer-choice",
+          "requiredObjective": "architecture-choice",
+          "question": "Ein Standort hat acht VLANs mit hohem internem Ost-West-Verkehr, redundante Core-Switches und eine separate Firewall für besonders sensible Übergänge. Welche Begründung ist am stärksten?",
+          "options": [
+            {
+              "text": "Router-on-a-Stick ist zwingend, weil nur ein externer Router VLANs routen kann",
+              "rationale": "Routingfähige Switches können Inter-VLAN-Routing über SVIs übernehmen. Die Aussage ignoriert die vorhandene Core-Architektur.",
+              "correct": false
+            },
+            {
+              "text": "SVIs auf dem redundanten Layer-3-Core sind plausibel; Kapazität und Ausfallkonzept passen, während sensible Beziehungen weiterhin explizite Firewallpfade oder geeignete Policies erhalten",
+              "rationale": "Richtig. Die Entscheidung verbindet Last, Redundanz und erforderliche Kontrolltiefe, ohne ACL und Firewall gleichzusetzen.",
+              "correct": true
+            },
+            {
+              "text": "Alle VLANs sollten zu einem Netz zusammengelegt werden, damit der Core nicht routen muss",
+              "rationale": "Das hebt die gewünschte Segmentierung auf und vergrößert die Broadcast- und Fehlerdomäne.",
+              "correct": false
+            },
+            {
+              "text": "Die Wahl hängt ausschließlich von der Anzahl der VLAN-Namen ab",
+              "rationale": "Namen entscheiden nicht über Eignung. Relevant sind Verkehrsprofil, Kapazität, Redundanz, Betrieb und Sicherheit.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Geltungsbereich",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):** Layer-3-Switch als zentraler Router, Inter-VLAN-Routing und VLAN-Trunk-Kontext.\n- **IT-Berufe Grundstufe – Lernfelder 6–9 (2022):** ergänzende Übungen zu tagged/untagged Ports und getrennten Firewallbeziehungen.\n\nDie Einheit bleibt herstellerneutral. Konkrete SVI-, Subinterface-, First-Hop-Redundanz- und ACL-Syntax hängt von der Plattform ab. Diagramme und Fallbeispiele sind eigenständig erstellt."
+        }
+      ]
+    }
+  ]
+}

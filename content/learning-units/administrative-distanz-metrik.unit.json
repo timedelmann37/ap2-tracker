@@ -1,0 +1,314 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "administrative-distanz-metrik",
+    "slug": "administrative-distanz-metrik",
+    "title": "Administrative Distanz und Metrik trennen",
+    "description": "Routen zuerst nach Präfixlänge, dann nach Quellenpräferenz und schließlich innerhalb eines Routingverfahrens nach Metrik auswählen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-4",
+    "groupLabel": "Block N4 · Routing und NAT",
+    "itemId": "ga2-4__5",
+    "week": "KW 38",
+    "estimatedMinutes": 20,
+    "relevance": "hoch",
+    "sources": ["itlf6-9-2022"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "distance-vs-metric",
+      "label": "administrative Distanz als lokale Quellenpräferenz von der protokolleigenen Pfadmetrik unterscheiden"
+    },
+    {
+      "id": "route-selection-order",
+      "label": "bei konkurrierenden Routen Präfixlänge, administrative Distanz und Metrik in der korrekten Reihenfolge anwenden"
+    }
+  ],
+  "intro": "Administrative Distanz und Metrik beantworten nicht dieselbe Frage. Die Distanz bewertet lokal, welcher Quelle ein Router für dasselbe Zielpräfix eher vertraut. Die Metrik vergleicht Wege innerhalb eines Routingverfahrens. Davor steht noch die wichtigste Regel der Weiterleitung: Das spezifischste passende Präfix gewinnt.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf6-9-2022",
+        "sourceLocator": "Chunk itlf6-9-2022:00250",
+        "use": "Prüfungsnahes Routingtabellen-Format mit Ziel, Interface, Next Hop und einer expliziten Hop-Metrik",
+        "reviewStatus": "nur als Beleg für die Rolle einer protokolleigenen Metrik verwendet; administrative Distanz wird im Chunk nicht erklärt"
+      }
+    ],
+    "notes": [
+      "Die Batch-Treffer itlf10-12-2023:page:0046 und :page:0047 verwenden Metrik im Cloud-Monitoring und sind keine Routingbelege. Die Figur ihk-bonn:figure:8b70ce025453 betrifft iSCSI. Alle drei sind Fehltreffer und wurden ausgeschlossen.",
+      "Für administrative Distanz existiert in den lokalen Fundstellen kein belastbarer Fachbeleg. Die Einheit ist daher eine konservative, eigenständig formulierte CURATED_DRAFT und benötigt vor Publikation eine technische Quellenprüfung.",
+      "Zahlenwerte und selbst der Begriff unterscheiden sich je Hersteller; manche Plattformen sprechen von Preference oder Route Preference. Niedriger ist in vielen gängigen Systemen bevorzugt, muss aber für die konkrete Plattform geprüft werden.",
+      "Die vereinfachte Prüfungsregel Distanz vor Metrik gilt nur für gleich spezifische Zielpräfixe. Bei der Paketweiterleitung wird zuerst das längste passende Präfix ausgewählt."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "distance-metric-comparison",
+      "type": "comparison",
+      "title": "Zwei Zahlen, zwei Entscheidungsebenen",
+      "description": "Die Werte dürfen nicht ungeprüft miteinander verrechnet werden.",
+      "items": [
+        {
+          "label": "Administrative Distanz",
+          "detail": "Lokale Präferenz zwischen Quellen für dasselbe Präfix, zum Beispiel statisch gegenüber einem dynamischen Protokoll."
+        },
+        {
+          "label": "Metrik",
+          "detail": "Bewertung konkurrierender Wege innerhalb eines Routingverfahrens, etwa Hop Count oder OSPF-Kosten."
+        },
+        {
+          "label": "Vergleichbarkeit",
+          "detail": "Metriken verschiedener Protokolle haben keine gemeinsame Einheit und werden nicht direkt gegeneinander verglichen."
+        },
+        {
+          "label": "Konfiguration",
+          "detail": "Distanzwerte und Tie-Breaker sind lokal beziehungsweise herstellerspezifisch und müssen dokumentiert werden."
+        }
+      ]
+    },
+    {
+      "id": "route-selection-flow",
+      "type": "flow",
+      "title": "Drei Filter bis zur installierten Route",
+      "description": "Nur Kandidaten, die die vorherige Stufe überstehen, werden in der nächsten Stufe verglichen.",
+      "items": [
+        {
+          "label": "1 · Längstes passendes Präfix",
+          "detail": "Für die konkrete Ziel-IP bleibt zuerst die spezifischste Route übrig."
+        },
+        {
+          "label": "2 · Quellenpräferenz",
+          "detail": "Für dasselbe Präfix entscheidet die administrative Distanz zwischen Routingquellen."
+        },
+        {
+          "label": "3 · Protokollmetrik",
+          "detail": "Innerhalb der bevorzugten Quelle gewinnt der nach deren Regeln bessere Pfad."
+        },
+        {
+          "label": "4 · Gleichstand behandeln",
+          "detail": "ECMP oder weitere Tie-Breaker sind protokoll- und plattformabhängig."
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Welche Zahl entscheidet?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "distance-metric-diagnostic",
+          "diagnostic": true,
+          "question": "Ein Router lernt dasselbe Präfix statisch und über OSPF. Welche Größe vergleicht im vereinfachten Prüfungsmodell zunächst die beiden Quellen?",
+          "options": [
+            {
+              "text": "die administrative Distanz beziehungsweise Quellenpräferenz",
+              "rationale": "Richtig. Sie ordnet unterschiedliche Routingquellen für dasselbe Präfix lokal ein.",
+              "correct": true
+            },
+            {
+              "text": "die Summe aus OSPF-Kosten und statischem Next Hop",
+              "rationale": "Ein Next Hop ist keine addierbare Metrik; OSPF-Kosten sind nicht direkt mit einer statischen Route vergleichbar.",
+              "correct": false
+            },
+            {
+              "text": "immer die kleinere IP-Adresse des Nachbarn",
+              "rationale": "Die Nachbaradresse ersetzt weder Quellenpräferenz noch Protokollmetrik.",
+              "correct": false
+            },
+            {
+              "text": "ausschließlich die Bandbreite des Ausgangsports",
+              "rationale": "Bandbreite kann in einer protokollspezifischen Metrik eine Rolle spielen, entscheidet aber nicht allgemein zwischen Routingquellen.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Drei Fragen",
+          "markdown": "**Wohin genau?** Präfixlänge. **Welcher Quelle vertraue ich?** Administrative Distanz. **Welcher Weg dieser Quelle ist besser?** Metrik."
+        }
+      ]
+    },
+    {
+      "title": "Distanz und Metrik fachlich trennen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Die administrative Distanz ist eine lokale Vertrauens- oder Präferenzzahl für die Herkunft einer Route. Sie ist nicht Teil des ausgetauschten Zielnetzes und kein universeller Standardwert. Eine Plattform kann eine statische, direkt verbundene oder dynamisch gelernte Route unterschiedlich priorisieren.\n\nDie Metrik gehört zum jeweiligen Routingverfahren. RIP zählt Hops; OSPF addiert Interfacekosten. Ein OSPF-Wert 20 ist deshalb nicht „besser“ oder „schlechter“ als ein RIP-Wert 2. Zuerst entscheidet die Quellenpräferenz, welches Verfahren für dasselbe Präfix berücksichtigt wird. Erst dessen eigene Metrik ordnet seine Kandidaten."
+        },
+        {
+          "type": "figure",
+          "diagramId": "distance-metric-comparison",
+          "alt": "Vier Vergleichskarten trennen administrative Distanz als Quellenpräferenz von Metrik als protokolleigener Pfadbewertung und weisen auf fehlende Vergleichbarkeit sowie Herstellerabhängigkeit hin.",
+          "caption": "Eigene Lernskizze: Die Zahlen sehen ähnlich aus, gehören aber zu verschiedenen Auswahlstufen."
+        },
+        {
+          "type": "quiz",
+          "id": "distance-vs-metric-transfer",
+          "requiredObjective": "distance-vs-metric",
+          "question": "Welche Aussage ist fachlich korrekt?",
+          "options": [
+            {
+              "text": "Administrative Distanz bewertet die Routingquelle; Metrik bewertet Pfade nach den Regeln eines Protokolls.",
+              "rationale": "Richtig. Damit sind die beiden Entscheidungsebenen sauber getrennt.",
+              "correct": true
+            },
+            {
+              "text": "Administrative Distanz ist die Zahl der Router bis zum Ziel.",
+              "rationale": "Die Zahl der Router ist der Hop Count, also eine mögliche Protokollmetrik.",
+              "correct": false
+            },
+            {
+              "text": "Metriken verschiedener Routingprotokolle werden immer direkt addiert.",
+              "rationale": "Sie können unterschiedliche Bedeutungen und Einheiten besitzen und sind nicht allgemein direkt vergleichbar.",
+              "correct": false
+            },
+            {
+              "text": "Administrative Distanz wird global vom Zielnetz vorgeschrieben.",
+              "rationale": "Sie ist eine lokale beziehungsweise plattformspezifische Präferenz am Router.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Die Auswahlreihenfolge",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Für ein Paket an 10.20.30.44 passen eine Route 10.20.0.0/16 und zwei Routen 10.20.30.0/24. Zuerst gewinnt /24 als längeres, spezifischeres Präfix. Die bessere administrative Distanz der /16-Route darf diese Entscheidung nicht überstimmen.\n\nZwischen den beiden /24-Kandidaten entscheidet anschließend die Quellenpräferenz. Stammen danach mehrere Kandidaten aus demselben Routingverfahren, wird dessen Metrik verwendet."
+        },
+        {
+          "type": "figure",
+          "diagramId": "route-selection-flow",
+          "alt": "Vierstufiger Ablauf aus längstem passenden Präfix, Quellenpräferenz, Protokollmetrik und plattformabhängiger Gleichstandsbehandlung.",
+          "caption": "Eigene Lernskizze: Distanz vor Metrik gilt innerhalb derselben Präfixstufe, nicht vor der Longest-Prefix-Regel."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Routenauswahl als längstes Präfix, danach minimale administrative Distanz und danach minimale Protokollmetrik",
+          "mathml": "<math display=\"block\"><mrow><msup><mi>R</mi><mo>*</mo></msup><mo>=</mo><munder><mi>argmax</mi><mrow><mi>R</mi><mo>:</mo><mi>Ziel</mi><mo>∈</mo><mi>R</mi></mrow></munder><mi>Präfixlänge</mi><mo>→</mo><munder><mi>argmin</mi><mi>R</mi></munder><msub><mi>d</mi><mtext>admin</mtext></msub><mo>→</mo><munder><mi>argmin</mi><mi>R</mi></munder><msub><mi>m</mi><mtext>Protokoll</mtext></msub></mrow></math>",
+          "legend": ["→ = nur verbleibende Kandidaten weiter vergleichen", "d = lokale Quellenpräferenz", "m = protokolleigene Metrik"]
+        }
+      ]
+    },
+    {
+      "title": "Geführtes Tabellenbeispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Für 10.20.30.44 liegen vor: (A) 10.20.0.0/16, Distanz 1, Metrik 0; (B) 10.20.30.0/24, Distanz 110, Metrik 20; (C) 10.20.30.0/24, Distanz 110, Metrik 35. Route A scheidet trotz kleiner Distanz aus, weil /24 spezifischer ist. B und C haben dasselbe Präfix und dieselbe Quelle; daher entscheidet die Metrik 20 für B. Die Zahlen dienen nur dem Rechenweg, nicht als herstellerübergreifende Standardwerte."
+        },
+        {
+          "type": "sequence",
+          "id": "route-selection-transfer",
+          "requiredObjective": "route-selection-order",
+          "title": "Entscheidungsfilter ordnen",
+          "prompt": "Bringe die Schritte für die Auswahl einer Route zu einer konkreten Ziel-IP in die richtige Reihenfolge.",
+          "tag": "Pflichtnachweis",
+          "steps": [
+            {
+              "id": "route-match",
+              "label": "Alle Routen bestimmen, deren Präfix die Ziel-IP enthält."
+            },
+            {
+              "id": "route-prefix",
+              "label": "Nur die Kandidaten mit der längsten passenden Präfixlänge behalten."
+            },
+            {
+              "id": "route-distance",
+              "label": "Für dasselbe Präfix die bevorzugte Routingquelle anhand der lokalen Distanz wählen."
+            },
+            {
+              "id": "route-metric",
+              "label": "Innerhalb der verbleibenden Quelle deren Metrik und gegebenenfalls Tie-Breaker anwenden."
+            }
+          ],
+          "expected": ["route-match", "route-prefix", "route-distance", "route-metric"],
+          "correctFeedback": "Richtig: Passende Route → längstes Präfix → Quellenpräferenz → Protokollmetrik.",
+          "wrongFeedback": "Die spezifischste Route wird vor Distanz und Metrik bestimmt. Erst gleich spezifische Kandidaten durchlaufen die weiteren Filter."
+        },
+        {
+          "type": "quiz",
+          "id": "longest-prefix-practice",
+          "question": "Eine /16-Route hat Distanz 1, eine passende /24-Route Distanz 110. Welche wird für ein Ziel innerhalb beider Präfixe verwendet?",
+          "options": [
+            {
+              "text": "Die /24-Route, weil das längste passende Präfix zuerst entscheidet.",
+              "rationale": "Richtig. Die Distanz wird erst zwischen Kandidaten für dasselbe spezifische Zielpräfix verglichen.",
+              "correct": true
+            },
+            {
+              "text": "Die /16-Route, weil Distanz 1 jede Präfixlänge überstimmt.",
+              "rationale": "Administrative Distanz überstimmt nicht die Longest-Prefix-Auswahl.",
+              "correct": false
+            },
+            {
+              "text": "Beide Zahlen werden zu 17 beziehungsweise 134 addiert.",
+              "rationale": "Präfixlänge und Distanz sind keine addierbaren Größen.",
+              "correct": false
+            },
+            {
+              "text": "Keine Route, weil unterschiedliche Präfixe nie gleichzeitig passen können.",
+              "rationale": "Überlappende Präfixe sind üblich; die spezifischere Route entscheidet für passende Ziele.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "admin-distance-source",
+              "label": "Administrative Distanz",
+              "front": "Welche Frage beantwortet die administrative Distanz?",
+              "back": "Welche Routingquelle der Router lokal für dasselbe Präfix bevorzugt. Werte und Begriffe sind plattformabhängig."
+            },
+            {
+              "id": "route-metric-path",
+              "label": "Metrik",
+              "front": "Welche Frage beantwortet eine Routingmetrik?",
+              "back": "Welcher Kandidatenpfad nach den Regeln desselben Routingverfahrens besser ist."
+            },
+            {
+              "id": "route-order",
+              "label": "Auswahlreihenfolge",
+              "front": "In welcher Reihenfolge prüfst du Präfix, Distanz und Metrik?",
+              "back": "Längstes passendes Präfix, dann Quellenpräferenz beziehungsweise Distanz, dann protokolleigene Metrik."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "distance-metric-free-recall",
+          "title": "Route mündlich auswählen",
+          "prompt": "Erkläre den Unterschied zwischen administrativer Distanz und Metrik. Beschreibe danach die vollständige Auswahl für zwei überlappende Präfixe und mehrere Quellen.",
+          "label": "Deine Auswahlregel",
+          "placeholder": "Zuerst prüfe ich …",
+          "minLength": 120,
+          "model": "Zuerst bleiben für die Ziel-IP die Routen mit dem längsten passenden Präfix. Für dasselbe Präfix bewertet die administrative Distanz lokal die Routingquelle. Innerhalb der gewählten Quelle entscheidet deren eigene Metrik. Metriken unterschiedlicher Protokolle werden nicht direkt verglichen; Zahlenwerte und Gleichstandsregeln sind plattformabhängig."
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **IT-Berufe – Lernfelder 6–9 (2022):** Routingtabellen-Aufgabe mit expliziter Hop-Metrik als begrenzter lokaler Beleg.\n\nDie Batch-Treffer zu Cloud-Metriken und iSCSI wurden ausgeschlossen. Für administrative Distanz fehlt ein belastbarer lokaler Fachbeleg; die Einheit bleibt deshalb bis zur Quellen- und Plattformprüfung CURATED_DRAFT."
+        }
+      ]
+    }
+  ]
+}

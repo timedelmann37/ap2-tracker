@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Passende IPv4-Routen ermitteln, die spezifischste Präfixroute auswählen und die Default-Route ausschließlich als Fallback verwenden.">
+<title>Longest Prefix Match und Default-Route – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=hybrid-1">
+<script defer src="/assets/ap2-space.js?v=hybrid-1"></script>
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="longest-prefix-default-route" data-progress-id="ga2-4__1" data-content-revision="2026-09-11.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-4">Block N4 · Routing und NAT</a><span class="sep">›</span>
+    <span class="here">Longest Prefix Match und Default-Route</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">Longest Prefix Match und Default-Route</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 22 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Eine Zieladresse kann gleichzeitig zu mehreren Routeneinträgen passen. Das ist beabsichtigt: Der Router verwendet die Route mit den meisten übereinstimmenden Präfixbits. Die Default-Route mit Präfixlänge null passt formal zu jedem IPv4-Ziel, verliert aber gegen jeden spezifischeren Treffer.</p>
+<section class="learning-goals" aria-labelledby="longest-prefix-default-route-goals">
+  <h2 id="longest-prefix-default-route-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>für eine IPv4-Zieladresse alle passenden Routingpräfixe mit Netzmaske beziehungsweise Präfixlänge bestimmen</li>
+    <li>aus passenden Routen die größte Präfixlänge auswählen und die Default-Route nur ohne spezifischeren Treffer verwenden</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Welche Route gewinnt?</h2>
+<section class="quiz" data-quiz="lpm-diagnostic" data-correct="0">
+  <h3>Für 10.20.30.77 passen die Routen 0.0.0.0/0, 10.0.0.0/8, 10.20.0.0/16 und 10.20.30.0/24. Welche wird ausgewählt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. /24 ist unter allen Treffern das längste und damit spezifischste Präfix."><span class="m">A</span> 10.20.30.0/24</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die /16-Route passt, wird aber vom noch spezifischeren /24-Treffer überstimmt."><span class="m">B</span> 10.20.0.0/16</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Auch /8 passt, beschreibt aber einen wesentlich größeren Zielbereich als /24."><span class="m">C</span> 10.0.0.0/8</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Die Default-Route passt zwar, verliert aber gegen jeden spezifischeren Treffer."><span class="m">D</span> 0.0.0.0/0</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">Längstes Präfix</span><p>Nicht die erste Tabellenzeile und nicht der vermeintlich schnellste Gatewayname entscheiden. Unter allen <strong>passenden</strong> Routen gewinnt zunächst die größte Präfixlänge.</p></aside><h2 class="sec" id="s2"><span class="num">2</span>Treffer bestimmen und vergleichen</h2>
+<p>Für jede Route wird unabhängig geprüft, ob die Zieladresse im beschriebenen Netz liegt. Dazu werden Zieladresse und Netzmaske bitweise verknüpft. Ergibt das Resultat die Netzadresse des Eintrags, ist die Route ein Kandidat. Erst danach werden die Präfixlängen der Kandidaten verglichen.</p>
+<p>Ein längeres Präfix fixiert mehr Bits und beschreibt deshalb den kleineren, spezifischeren Adressbereich. Eine /24-Route gewinnt gegen eine passende /16-Route. Sind zwei Kandidaten gleich lang, ist Longest Prefix Match abgeschlossen; dann entscheiden andere Regeln wie Routenquelle, Präferenz und Metrik.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Je länger das Präfix, desto enger der Zielbereich">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-prefix-nesting-title diagram-prefix-nesting-desc">
+  <title id="diagram-prefix-nesting-title">Je länger das Präfix, desto enger der Zielbereich</title>
+  <desc id="diagram-prefix-nesting-desc">Vergleich von Default-Route, /8-, /16- und /24-Route mit zunehmend engeren Zielbereichen.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Je länger das Präfix, desto enger der Zielbereich</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">0.0.0.0/0</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">passt zu jeder</tspan><tspan x="64" dy="30">IPv4-Zieladresse;</tspan><tspan x="64" dy="30">nur Fallback</tspan></text></g><g><rect class="diagram-row" x="265" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="287" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="287" dy="0">10.0.0.0/8</tspan></text><text x="287" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="287" dy="0">passt zu allen</tspan><tspan x="287" dy="30">Zielen mit erstem</tspan><tspan x="287" dy="30">Oktett 10</tspan></text></g><g><rect class="diagram-row" x="488" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="510" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="510" dy="0">10.20.0.0/16</tspan></text><text x="510" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="510" dy="0">engerer Bereich</tspan><tspan x="510" dy="30">innerhalb des</tspan><tspan x="510" dy="30">/8-Netzes</tspan></text></g><g><rect class="diagram-row" x="711" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="733" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="733" dy="0">10.20.30.0/24</tspan></text><text x="733" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="733" dy="0">spezifischster</tspan><tspan x="733" dy="30">Bereich für Ziele</tspan><tspan x="733" dy="30">von 10.20.30.0 bis</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Alle vier Routen können gleichzeitig passen, doch die größte Präfixlänge beschreibt den genauesten Zielbereich.</figcaption>
+</figure><div class="math-display" role="group" aria-label="Die gewählte Präfixlänge ist das Maximum aller Präfixlängen, deren maskierte Zieladresse der jeweiligen Netzadresse entspricht"><math display="block" aria-label="Die gewählte Präfixlänge ist das Maximum aller Präfixlängen, deren maskierte Zieladresse der jeweiligen Netzadresse entspricht"><mrow><msup><mi>p</mi><mo>*</mo></msup><mo>=</mo><mi>max</mi><mo>{</mo><mi>p</mi><mo>∣</mo><mo>(</mo><mi>D</mi><mo>∧</mo><msub><mi>M</mi><mi>p</mi></msub><mo>)</mo><mo>=</mo><msub><mi>N</mi><mi>p</mi></msub><mo>}</mo></mrow></math><div class="math-legend"><span>D = Zieladresse</span><span>p = Präfixlänge</span><span>Mₚ = Maske der Route</span><span>Nₚ = Netzadresse der Route</span></div></div><h2 class="sec" id="s3"><span class="num">3</span>Durchgearbeitetes Beispiel mit Fallback</h2>
+<p>Gegeben sind die vier Routen aus der Grafik. Für <code>10.20.30.77</code> passen /0, /8, /16 und /24; ausgewählt wird /24. Für <code>10.20.90.5</code> passen /0, /8 und /16; ausgewählt wird /16. Für <code>10.99.1.1</code> passen /0 und /8; ausgewählt wird /8. Erst für <code>203.0.113.8</code> gibt es keinen spezifischeren Treffer, sodass <code>0.0.0.0/0</code> verwendet wird.</p>
+<p>Fehlt auch die Default-Route, existiert in dieser Tabelle kein Weiterleitungsweg. Das Paket wird dann nicht einfach an einen beliebigen Nachbarn gesendet.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Routenauswahl in zwei getrennten Entscheidungen">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="650" viewBox="0 0 960 650" role="img" aria-labelledby="diagram-lpm-decision-flow-title diagram-lpm-decision-flow-desc">
+  <title id="diagram-lpm-decision-flow-title">Routenauswahl in zwei getrennten Entscheidungen</title>
+  <desc id="diagram-lpm-decision-flow-desc">Ablauf von Zieladresse, Maskenprüfung und Kandidatenliste über den Präfixvergleich bis zur Auswahl der /24-Route.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Routenauswahl in zwei getrennten Entscheidungen</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Zieladresse festhalten</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Beispiel 10.20.30.77</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">jede Route maskieren</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Zieladresse UND Maske mit der jeweiligen Netzadresse</tspan><tspan x="178" dy="25">vergleichen</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">alle Treffer sammeln</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">hier /0, /8, /16 und /24</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Präfixlängen vergleichen</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">24 ist größer als 16, 8 und 0</tspan></text><path d="M480 472v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 494 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="512" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="541" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Route /24 verwenden</tspan></text><text x="178" y="568" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">erst bei gleicher Präfixlänge folgen weitere Auswahlregeln</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Trefferermittlung und Auswahl sind zwei getrennte Schritte.</figcaption>
+</figure><section class="sequence-practice" data-sequence="lpm-guided-sequence" data-expected="destination,list,largest,fallback" data-correct-feedback="Richtig. Die Default-Route wird mitgeprüft, aber nur ohne spezifischeren Treffer tatsächlich gewählt." data-wrong-feedback="Bestimme zuerst Ziel und Treffer. Der Fallback ist keine Vorauswahl, sondern das Ergebnis bei fehlender spezifischer Route." aria-labelledby="lpm-guided-sequence-title">
+  <div class="lab-heading"><div><h3 id="lpm-guided-sequence-title">Routenauswahl reproduzierbar lösen</h3><p>Ordne den Rechen- und Entscheidungsweg für eine neue Zieladresse.</p></div><span class="lab-tag">Geführte Übung</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="fallback" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Nur wenn nichts Spezifischeres passt, die Default-Route verwenden.</span></li>
+    <li data-step="list" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Alle Routingpräfixe auflisten, die die Zieladresse einschließen.</span></li>
+    <li data-step="destination" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Die Zieladresse des Pakets festhalten.</span></li>
+    <li data-step="largest" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Unter den Treffern die numerisch größte Präfixlänge wählen.</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Karteikarten und freier Abruf</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="lpm-specificity" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Woran erkennst du die spezifischere von zwei passenden Routen?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>An der größeren Präfixlänge; sie fixiert mehr Adressbits und beschreibt einen kleineren Bereich.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="lpm-default" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum passt 0.0.0.0/0 zu jeder IPv4-Zieladresse?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Die Präfixlänge null verlangt keine übereinstimmenden Bits; deshalb ist die Route der universelle Fallback.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="lpm-tie" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was geschieht, wenn mehrere passende Routen dieselbe längste Präfixlänge haben?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Dann ist Longest Prefix Match beendet; zusätzliche Regeln zu Routenpräferenz und Metrik entscheiden.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Spezifität“:</span><button type="button" data-card-id="lpm-specificity" data-card-rate="known">gewusst</button><button type="button" data-card-id="lpm-specificity" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="lpm-specificity"></span></div>
+<div class="card-rating"><span>Karte „Default-Route“:</span><button type="button" data-card-id="lpm-default" data-card-rate="known">gewusst</button><button type="button" data-card-id="lpm-default" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="lpm-default"></span></div>
+<div class="card-rating"><span>Karte „Gleichstand“:</span><button type="button" data-card-id="lpm-tie" data-card-rate="known">gewusst</button><button type="button" data-card-id="lpm-tie" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="lpm-tie"></span></div><section class="recall-practice" data-recall="lpm-recall" data-min-length="110" aria-labelledby="lpm-recall-title">
+  <div class="recall-prompt"><h3 id="lpm-recall-title">Die Auswahlregel frei erklären</h3><p>Erkläre, wie du aus einer Ziel-IP und mehreren überlappenden Routingpräfixen die Route bestimmst. Beziehe Default-Route und Gleichstand ein.</p></div>
+  <label class="sr-only" for="lpm-recall-answer">Deine Erklärung</label>
+  <textarea id="lpm-recall-answer" data-recall-input rows="4" placeholder="Zuerst prüfe ich …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Ich prüfe jede Route mit Zieladresse und Maske und sammle alle passenden Präfixe. Unter diesen Treffern gewinnt die größte Präfixlänge. Die Default-Route /0 passt grundsätzlich, wird aber nur ohne spezifischeren Treffer genutzt. Bei gleich langen besten Routen entscheiden anschließend Präferenz und Metrik.</div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Lernziel-Check: Transfer</h2>
+<section class="quiz" data-quiz="lpm-transfer-matches" data-correct="0" data-required-objective="matching-routes">
+  <h3>Welche Routen passen zur Zieladresse 10.20.90.5? Vorhanden sind 0.0.0.0/0, 10.0.0.0/8, 10.20.0.0/16 und 10.20.30.0/24.</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. 10.20.90.5 liegt in den drei Bereichen, aber nicht im Netz 10.20.30.0/24."><span class="m">A</span> /0, /8 und /16</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="/16 ist der spezifischste Treffer, aber auch die übergeordneten /8- und /0-Routen passen."><span class="m">B</span> nur /16</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die /24-Route umfasst nur Ziele mit den ersten drei Oktetten 10.20.30."><span class="m">C</span> /0, /8, /16 und /24</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Die Default-Route passt, aber 10.20.90.5 liegt zusätzlich in den Netzen 10.0.0.0/8 und 10.20.0.0/16."><span class="m">D</span> nur /0</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="lpm-transfer-choice" data-correct="0" data-required-objective="longest-prefix-choice">
+  <h3>Routen: 0.0.0.0/0 via A, 172.16.0.0/12 via B und 172.20.64.0/18 via C. Wohin wird ein Paket an 172.20.70.9 weitergegeben?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Das Ziel liegt in 172.20.64.0/18; diese Route ist spezifischer als /12 und /0."><span class="m">A</span> via C, weil /18 der längste passende Präfix ist</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die Tabellenreihenfolge ersetzt Longest Prefix Match nicht. Die spezifischere passende /18-Route gewinnt."><span class="m">B</span> via B, weil /12 in der Tabelle vor /18 steht</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die Default-Route ist nur Fallback und verliert gegen die passenden /12- und /18-Routen."><span class="m">C</span> via A, weil die Default-Route immer zuerst verwendet wird</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Routingpräfixe gelten für Zielbereiche und damit gerade auch für Hostadressen innerhalb des Netzes."><span class="m">D</span> keine Route, weil 172.20.70.9 keine Netzadresse ist</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Quellen und Aktualität</h2>
+<ul>
+<li><strong>EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):</strong> konkrete Zielpräfixe gemeinsam mit einer IPv4-Default-Route.</li>
+<li><strong>IT-Berufe Fachstufe II – Lernfelder 10–12 (2023):</strong> 0.0.0.0/0 als Standardroute zu einem Gateway.</li>
+<li><strong>Prüfungsvorbereitung IHK Bonn:</strong> Default- beziehungsweise Vorgaberoute als explizites Prüfungsthema.</li>
+</ul>
+<p>Die Longest-Prefix-Regel ist herstellerneutral, wird von den lokalen Buchstellen aber nicht ausdrücklich erklärt. Beispiele, Aufgaben und Diagramme sind eigenständig erstellt; private Buchgrafiken werden nicht veröffentlicht.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-4"><span class="d">zurück zu</span><span class="t">Block N4 · Routing und NAT</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N4 · Routing und NAT</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Welche Route gewinnt?</a></li>
+<li><a href="#s2" data-t="s2">Treffer bestimmen und vergleichen</a></li>
+<li><a href="#s3" data-t="s3">Durchgearbeitetes Beispiel mit Fallback</a></li>
+<li><a href="#s4" data-t="s4">Karteikarten und freier Abruf</a></li>
+<li><a href="#s5" data-t="s5">Lernziel-Check: Transfer</a></li>
+<li><a href="#s6" data-t="s6">Quellen und Aktualität</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-4">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

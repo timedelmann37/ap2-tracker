@@ -1,0 +1,437 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "port-forwarding-dnat",
+    "slug": "port-forwarding-dnat",
+    "title": "Port-Forwarding und DNAT kontrolliert planen",
+    "description": "Eine öffentliche Ziel-IP-/Port-Kombination per DNAT einem Dienst in der DMZ zuordnen und Veröffentlichung, Filterung sowie Rückweg getrennt absichern.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-4",
+    "groupLabel": "Block N4 · Routing und NAT",
+    "itemId": "ga2-4__8",
+    "week": "KW 38",
+    "estimatedMinutes": 23,
+    "relevance": "hoch",
+    "sources": ["itlf10-12-2023", "itlf6-9-2022"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "dnat-mapping",
+      "label": "aus einem Veröffentlichungsszenario die vollständige DNAT-Zuordnung aus externer Ziel-IP, Transportprotokoll, externem Port, interner Ziel-IP und internem Port ableiten"
+    },
+    {
+      "id": "publication-controls",
+      "label": "DNAT, Firewallfreigabe, DMZ-Segmentierung und Rückweg getrennt prüfen und für einen veröffentlichten Dienst angemessene Begrenzungen begründen"
+    }
+  ],
+  "intro": "Port-Forwarding macht eine ausgewählte öffentliche Zielkombination auf einen internen Dienst abbildbar. Es beantwortet damit eine Adressierungsfrage, aber nicht automatisch die Sicherheitsfrage. Eine belastbare Planung trennt DNAT-Regel, Firewallentscheidung, DMZ-Platzierung, Diensthärtung und den zustandsrichtigen Rückweg.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "Chunks itlf10-12-2023:page:0192 und itlf10-12-2023:page:0241",
+        "use": "Port-Weiterleitung als manueller NAT-Eintrag, Ersetzung der Zieladresse und Weiterleitung ausgewählter TCP-Ports an einen internen Server",
+        "reviewStatus": "Seitenkontext und Paketdarstellung geprüft; eigene Dokumentationsadressen und eigener DMZ-Fall verwendet"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "Chunk itlf10-12-2023:page:0240",
+        "use": "Abgrenzung von ausgehendem Source-NAT zur anschließend eingeführten eingehenden Port-Weiterleitung",
+        "reviewStatus": "Der Batch-Ausschnitt ist am Anfang SNAT-bezogen und am Ende abgeschnitten; nur der eindeutig lesbare Übergang zu DNAT wurde genutzt"
+      },
+      {
+        "sourceId": "itlf6-9-2022",
+        "sourceLocator": "Chunk itlf6-9-2022:00242",
+        "use": "Prüfungskontext für gezielt erlaubte Zugriffe aus dem Internet auf einen Webserver in der DMZ und getrennte Firewallregeln",
+        "reviewStatus": "Nur die Aufgabenlogik verwendet; OCR-Regelwerte und private Netzgrafik wurden nicht übernommen"
+      }
+    ],
+    "notes": [
+      "Der Batch-Kandidat itlf10-12-2023:page:0188 behandelt hauptsächlich Forward-/Reverse-Proxy und allgemeine Firewallprotokollierung, nicht die DNAT-Abbildung; er wurde nicht als direkte DNAT-Evidenz verwendet.",
+      "Der Batch-Kandidat itlf10-12-2023:page:0264 behandelt Fail2ban-Regeln für SSH und ist für Port-Forwarding/DNAT ein Fehltreffer.",
+      "Der angebotene Figurenkandidat auf PDF-Seite 185 zeigt Paketfilter und Stateful Packet Inspection, aber keine DNAT-Regel; er wurde weder fachlich übernommen noch veröffentlicht.",
+      "DNAT veröffentlicht Erreichbarkeit. Eine Firewallfreigabe, Segmentierung, Härtung, Authentisierung, Verschlüsselung, Protokollierung und Pflege des Dienstes bleiben eigenständige Kontrollen.",
+      "Diagramme, Tupel, Übungen und Antwortoptionen sind eigenständig erstellt; private Buchgrafiken werden nicht veröffentlicht."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "dmz-publication-path",
+      "type": "topology",
+      "title": "DNAT führt nur den ausgewählten Dienst in die DMZ",
+      "description": "Ein Internetclient erreicht die öffentliche Zielkombination der Firewall. Diese übersetzt sie auf den HTTPS-Dienst des Webservers in der DMZ. Das interne Netz bleibt ein getrenntes Segment ohne diese Veröffentlichung.",
+      "zones": [
+        {
+          "id": "internet-zone",
+          "label": "Internet",
+          "x": 24,
+          "y": 90,
+          "width": 235,
+          "height": 360,
+          "kind": "zone-external"
+        },
+        {
+          "id": "edge-zone",
+          "label": "Netzübergang",
+          "x": 300,
+          "y": 90,
+          "width": 280,
+          "height": 360,
+          "kind": "zone-edge"
+        },
+        {
+          "id": "dmz-zone",
+          "label": "DMZ",
+          "x": 625,
+          "y": 90,
+          "width": 305,
+          "height": 205,
+          "kind": "zone-dmz"
+        },
+        {
+          "id": "lan-zone",
+          "label": "Internes Netz",
+          "x": 625,
+          "y": 325,
+          "width": 305,
+          "height": 125,
+          "kind": "zone-internal"
+        }
+      ],
+      "nodes": [
+        {
+          "id": "internet-client",
+          "label": "Internetclient",
+          "detail": "198.51.100.44",
+          "x": 140,
+          "y": 235,
+          "kind": "client"
+        },
+        {
+          "id": "edge-firewall",
+          "label": "Firewall/NAT",
+          "detail": "203.0.113.10",
+          "x": 440,
+          "y": 235,
+          "kind": "firewall"
+        },
+        {
+          "id": "dmz-web",
+          "label": "DMZ-Webserver",
+          "detail": "10.20.30.10:443",
+          "x": 775,
+          "y": 200,
+          "kind": "server"
+        },
+        {
+          "id": "internal-client",
+          "label": "Interner Client",
+          "detail": "nicht veröffentlicht",
+          "x": 775,
+          "y": 390,
+          "kind": "client"
+        }
+      ],
+      "edges": [
+        {
+          "from": "internet-client",
+          "to": "edge-firewall",
+          "label": "TCP 8443",
+          "kind": "public-request"
+        },
+        {
+          "from": "edge-firewall",
+          "to": "dmz-web",
+          "label": "DNAT auf 443",
+          "kind": "translated-request"
+        },
+        {
+          "from": "internal-client",
+          "to": "edge-firewall",
+          "label": "separates Segment",
+          "kind": "segmented"
+        }
+      ]
+    },
+    {
+      "id": "dnat-tuple-flow",
+      "type": "flow",
+      "title": "Anfrage und Antwort behalten eine nachvollziehbare Zuordnung",
+      "description": "Die eingehende öffentliche Zielkombination wird auf den DMZ-Dienst übersetzt. Nach Firewall- und Routingentscheidung antwortet der Server über denselben zustandsführenden Übergang, der die Quellkombination nach außen zurückübersetzt.",
+      "items": [
+        {
+          "label": "Eingang am WAN",
+          "detail": "198.51.100.44:53000 → 203.0.113.10:8443 TCP"
+        },
+        {
+          "label": "DNAT vor Weiterleitung",
+          "detail": "Ziel wird 10.20.30.10:443; Client-IP und Clientport bleiben erkennbar"
+        },
+        {
+          "label": "Filterung und Routing",
+          "detail": "Nur die beabsichtigte Verbindung wird in das DMZ-Segment zugelassen"
+        },
+        {
+          "label": "Antwort des Servers",
+          "detail": "10.20.30.10:443 → 198.51.100.44:53000 über die Firewall"
+        },
+        {
+          "label": "Rückübersetzung",
+          "detail": "Nach außen erscheint die Antwort von 203.0.113.10:8443"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Welche Aussage trifft DNAT?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "dnat-diagnostic",
+          "diagnostic": true,
+          "question": "Die Regel bildet 203.0.113.10:8443/TCP auf 10.20.30.10:443/TCP ab. Was ist damit allein sicher festgestellt?",
+          "options": [
+            {
+              "text": "Der interne Webserver ist automatisch sicher gehärtet",
+              "rationale": "Adressübersetzung verändert keine Patchstände, Authentisierung oder Anwendungskonfiguration.",
+              "correct": false
+            },
+            {
+              "text": "Passende eingehende Pakete erhalten die interne Ziel-IP und den internen Zielport",
+              "rationale": "Richtig. Das ist die Kernwirkung der DNAT-Zuordnung. Ob die Firewall die Verbindung zulässt, ist eine getrennte Entscheidung.",
+              "correct": true
+            },
+            {
+              "text": "Alle Ports des internen Netzes sind aus dem Internet erreichbar",
+              "rationale": "Die Regel beschreibt nur eine konkrete Protokoll-/Port-Kombination und ein einzelnes Ziel.",
+              "correct": false
+            },
+            {
+              "text": "Die Firewallregel ist überflüssig, weil NAT bereits filtert",
+              "rationale": "NAT und Paketfilterung haben unterschiedliche Aufgaben. Eine Übersetzung ist keine ausdrückliche Erlaubnisregel.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Drei getrennte Fragen",
+          "markdown": "**DNAT:** Wohin wird übersetzt? **Firewall:** Darf die Verbindung passieren? **Routing/Rückweg:** Erreichen Anfrage und Antwort jeweils den richtigen nächsten Hop?"
+        }
+      ]
+    },
+    {
+      "title": "Die DNAT-Regel vollständig lesen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Eine Portweiterleitung braucht mindestens fünf fachliche Angaben:\n\n| Feld | Beispiel | Prüfgedanke |\n| --- | --- | --- |\n| externe Ziel-IP | `203.0.113.10` | An welcher öffentlichen Adresse kommt die Anfrage an? |\n| Transportprotokoll | `TCP` | TCP und UDP sind getrennte Freigaben. |\n| externer Zielport | `8443` | Welchen Port verwendet der Internetclient? |\n| interne Ziel-IP | `10.20.30.10` | Welcher konkrete DMZ-Host erhält die Anfrage? |\n| interner Zielport | `443` | Auf welchem Port lauscht der Dienst intern? |\n\nDer Quellport des Clients ist üblicherweise ein dynamischer Port und wird nicht mit dem Zielport verwechselt. Die Regel sollte außerdem an der richtigen externen Schnittstelle gelten und so eng wie die Anforderung sein."
+        },
+        {
+          "type": "figure",
+          "diagramId": "dmz-publication-path",
+          "alt": "Internetclient, Firewall mit öffentlicher Adresse, separat markierte DMZ mit Webserver und getrenntes internes Netz. Nur TCP 8443 wird per DNAT auf den Webserver-Port 443 geführt.",
+          "caption": "Eigene Lernskizze: Veröffentlicht wird ein definierter Dienst in einem abgegrenzten Segment, nicht das gesamte interne Netz."
+        },
+        {
+          "type": "callout",
+          "kind": "warning",
+          "label": "DMZ ist kein Gütesiegel",
+          "markdown": "Die Platzierung in einer DMZ begrenzt mögliche Folgeschäden nur zusammen mit Regeln zwischen Internet, DMZ und internem Netz. Ein unnötig offener Managementzugang oder ein ungepatchter Dienst bleibt auch in der DMZ riskant."
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Veröffentlichungsszenario",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Partnerportal läuft intern auf `10.20.30.10:443/TCP`. Externe Partner verwenden `203.0.113.10:8443`. Die logische DNAT-Regel lautet daher:\n\n```text\nEingang WAN, Ziel 203.0.113.10, TCP, Zielport 8443\n→ Ziel umschreiben auf 10.20.30.10, TCP, Zielport 443\n```\n\nDazu kommt eine eigene Firewallregel, die nur den benötigten Verkehr zur übersetzten DMZ-Adresse erlaubt. Wenn eine feste Partner-Adressmenge belastbar bekannt ist, kann auch die Quelle begrenzt werden. Der Webserver nutzt die Firewall als Rückweg, damit deren Zustandstabelle die Antwort wieder der öffentlichen Kombination zuordnen kann. Anwendungsschutz bleibt separat: TLS, starke Authentisierung, aktuelle Software, minimale Dienste, Protokollierung und Überwachung."
+        },
+        {
+          "type": "figure",
+          "diagramId": "dnat-tuple-flow",
+          "alt": "Fünf Schritte: öffentliches Eingangstupel, DNAT auf den DMZ-Webserver, separate Filter- und Routingentscheidung, Serverantwort und Rückübersetzung auf die öffentliche Quellkombination.",
+          "caption": "Eigene Lernskizze: Die Antwort muss über den zustandsführenden NAT-Übergang zurücklaufen, damit der Client dieselbe öffentliche Gegenstelle sieht."
+        }
+      ]
+    },
+    {
+      "title": "Geführte Übung: Vom Auftrag zur Freigabe",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "dnat-planning-sequence",
+          "title": "Ordne die Planungsschritte",
+          "prompt": "Ein neuer HTTPS-Dienst soll aus dem Internet erreichbar werden. Bringe die Schritte in eine prüfbare Reihenfolge.",
+          "tag": "Geführte Übung",
+          "steps": [
+            {
+              "id": "verify-service",
+              "label": "Diensthärtung, TLS, Authentisierung, Protokollierung und Überwachung prüfen"
+            },
+            {
+              "id": "define-tuple",
+              "label": "Externe und interne Zielkombination samt Transportprotokoll eindeutig festlegen"
+            },
+            {
+              "id": "test-both-paths",
+              "label": "Übersetzung, Firewalllog, Dienstantwort und zustandsrichtigen Rückweg testen"
+            },
+            {
+              "id": "place-segment",
+              "label": "Dienst in einem geeigneten DMZ-Segment platzieren und erlaubte Folgekommunikation festlegen"
+            },
+            {
+              "id": "create-controls",
+              "label": "DNAT-Regel und separate, möglichst enge Firewallregel erstellen"
+            }
+          ],
+          "expected": ["define-tuple", "place-segment", "verify-service", "create-controls", "test-both-paths"],
+          "correctFeedback": "Richtig. Der technische Zielzustand und die Segmentgrenzen stehen vor der Freigabe; danach werden Übersetzung, Filterung und Rückweg gemeinsam getestet.",
+          "wrongFeedback": "Beginne mit dem vollständigen Verbindungstupel und der Segmententscheidung. Eine DNAT-Regel sollte erst entstehen, wenn Ziel, Schutzbedarf und erlaubte Folgekommunikation feststehen."
+        },
+        {
+          "type": "quiz",
+          "id": "dnat-guided-risk",
+          "question": "Im Test ist das Portal erreichbar, aber der DMZ-Server darf zusätzlich jede interne Datenbank auf beliebigen Ports ansprechen. Wie ist das Ergebnis zu bewerten?",
+          "options": [
+            {
+              "text": "Vollständig sicher, weil die Portweiterleitung nur TCP 8443 verwendet",
+              "rationale": "Der externe Port begrenzt nicht automatisch die ausgehenden Rechte des kompromittierbaren DMZ-Servers ins interne Netz.",
+              "correct": false
+            },
+            {
+              "text": "Funktional erreichbar, aber die Segmentregel ist zu weit und muss auf notwendige Ziele und Ports begrenzt werden",
+              "rationale": "Richtig. Veröffentlichung und interne Folgeberechtigungen werden getrennt bewertet; unnötige DMZ-zu-intern-Rechte erhöhen den Schaden eines Angriffs.",
+              "correct": true
+            },
+            {
+              "text": "Nur der öffentliche Port muss von 8443 auf 443 geändert werden",
+              "rationale": "Die Portabbildung ist nicht die Ursache der überbreiten internen Berechtigung.",
+              "correct": false
+            },
+            {
+              "text": "DNAT muss durch DNS ersetzt werden, weil DNS zugleich Firewallregeln erzeugt",
+              "rationale": "DNS löst Namen auf und erzeugt keine Paketfilterregeln. Es ersetzt die hier benötigte Übersetzung nicht.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "dnat-tuple-card",
+              "label": "DNAT-Tupel",
+              "front": "Welche fünf Angaben brauchst du mindestens für eine eindeutige Portweiterleitung?",
+              "back": "Externe Ziel-IP, Transportprotokoll, externer Zielport, interne Ziel-IP und interner Zielport. Schnittstelle und zulässige Quellen können die Regel weiter begrenzen."
+            },
+            {
+              "id": "dnat-firewall-card",
+              "label": "NAT und Filter",
+              "front": "Warum ersetzt DNAT keine Firewallregel?",
+              "back": "DNAT schreibt Zieladresse und gegebenenfalls Zielport um. Die Firewall entscheidet getrennt, ob das Paket passieren darf."
+            },
+            {
+              "id": "dnat-return-card",
+              "label": "Rückweg",
+              "front": "Warum muss die Antwort über den zustandsführenden NAT-Übergang zurück?",
+              "back": "Nur dort kann die Rückübersetzung der internen Serverkombination auf die vom Client angesprochene öffentliche Kombination konsistent erfolgen."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "dnat-core-recall",
+          "title": "Eine Veröffentlichung ohne Vorlage erklären",
+          "prompt": "Erkläre für 203.0.113.10:8443/TCP auf 10.20.30.10:443/TCP den Weg von Anfrage und Antwort. Trenne DNAT, Firewall, DMZ, Dienstschutz und Rückweg.",
+          "label": "Deine DNAT-Erklärung",
+          "placeholder": "Am WAN trifft … DNAT ändert …",
+          "minLength": 140,
+          "model": "Am WAN trifft ein TCP-Paket mit dem öffentlichen Ziel 203.0.113.10:8443 ein. DNAT ändert Ziel-IP und Zielport auf 10.20.30.10:443. Eine separate Firewallregel muss genau diese Verbindung in die DMZ erlauben. Der Dienst benötigt weiterhin TLS, Authentisierung, Updates und Monitoring; die DMZ begrenzt seine Rechte zum internen Netz. Die Antwort läuft über dieselbe Firewall, die sie zustandsbezogen auf 203.0.113.10:8443 zurückübersetzt."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check: Prüfungstransfer",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "dnat-transfer-mapping",
+          "requiredObjective": "dnat-mapping",
+          "question": "Ein eigener UDP-Messdienst läuft in der DMZ auf 10.40.50.20:50000 und soll extern ausschließlich über 203.0.113.20:45000 erreichbar sein. Welche DNAT-Zuordnung ist vollständig?",
+          "options": [
+            {
+              "text": "203.0.113.20:45000/UDP → 10.40.50.20:50000/UDP",
+              "rationale": "Richtig. Externe und interne Zielkombination sowie das Transportprotokoll sind eindeutig zugeordnet.",
+              "correct": true
+            },
+            {
+              "text": "203.0.113.20:50000/TCP → 10.40.50.20:45000/UDP",
+              "rationale": "Externer und interner Port sind vertauscht, außerdem stimmt das Transportprotokoll nicht durchgängig.",
+              "correct": false
+            },
+            {
+              "text": "Beliebige öffentliche Adresse und beliebiger Port → gesamtes Netz 10.40.50.0/24",
+              "rationale": "Das veröffentlicht wesentlich mehr als den geforderten einzelnen Dienst und benennt kein eindeutiges Ziel.",
+              "correct": false
+            },
+            {
+              "text": "10.40.50.20:50000/UDP → 203.0.113.20:45000/UDP",
+              "rationale": "Das beschreibt die Richtung umgekehrt. DNAT für eingehende Anfragen schreibt das öffentliche Ziel auf das interne Ziel um.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "dnat-transfer-controls",
+          "requiredObjective": "publication-controls",
+          "question": "Welche Bewertung einer neu funktionierenden HTTPS-Portweiterleitung in die DMZ ist am belastbarsten?",
+          "options": [
+            {
+              "text": "Erreichbarkeit beweist Sicherheit; weitere Prüfungen sind unnötig",
+              "rationale": "Ein erfolgreicher Verbindungsaufbau belegt nur Funktion. Er sagt nichts über Härtung oder seitliche Berechtigungen aus.",
+              "correct": false
+            },
+            {
+              "text": "DNAT möglichst eng definieren, Firewallfreigabe separat begrenzen, DMZ-zu-intern-Regeln minimieren, Dienst härten und Hin-/Rückweg samt Logs prüfen",
+              "rationale": "Richtig. Die Antwort trennt Adressübersetzung, Verkehrsfreigabe, Segmentierung, Anwendungsschutz und zustandsrichtigen Paketweg.",
+              "correct": true
+            },
+            {
+              "text": "Alle DMZ-zu-intern-Verbindungen erlauben, damit der Rückweg sicher funktioniert",
+              "rationale": "Der Rückweg einer zustandsgeführten Verbindung verlangt keine pauschale Freigabe vom DMZ-Netz zu allen internen Zielen.",
+              "correct": false
+            },
+            {
+              "text": "Nur einen DNS-Namen anlegen; dadurch entstehen DNAT, Firewall und TLS automatisch",
+              "rationale": "DNS-Namensauflösung konfiguriert weder NAT noch Filterregeln oder Transportverschlüsselung.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Geltungsbereich",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **IT-Berufe Fachstufe II – Lernfelder 10–12 (2023):** Portweiterleitung als Destination NAT, Zielumschreibung und Paketbeobachtung vor und nach der Übersetzung.\n- **IT-Berufe Grundstufe – Lernfelder 6–9 (2022):** prüfungsnaher Kontext für gezielt erlaubte Internetzugriffe auf einen Dienst in der DMZ.\n\nDie Einheit beschreibt eine logische, herstellerneutrale Regel. Syntax, Reihenfolge von NAT- und Filterketten und notwendige Rückübersetzung müssen für die eingesetzte Plattform geprüft werden. Alle Diagramme und Beispieldaten sind neu erstellt."
+        }
+      ]
+    }
+  ]
+}

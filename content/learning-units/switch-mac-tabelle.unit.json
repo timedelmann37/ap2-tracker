@@ -1,0 +1,225 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "switch-mac-tabelle",
+    "slug": "switch-mac-tabelle",
+    "title": "MAC-Lernen, Fluten und Filtern am Switch",
+    "description": "Die MAC-Adresstabelle eines Switches aus eingehenden Frames fortschreiben und bekannte, unbekannte sowie lokale Ziel-MAC-Adressen korrekt weiterleiten.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-5",
+    "groupLabel": "Block N5 · Switching und VLANs",
+    "itemId": "ga2-5__0",
+    "week": "KW 39",
+    "estimatedMinutes": 22,
+    "relevance": "hoch",
+    "sources": ["itlf10-12-2023"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "mac-learning",
+      "label": "aus Quell-MAC-Adresse, Eingangsport und VLAN den korrekten dynamischen Eintrag der MAC-Adresstabelle ableiten"
+    },
+    {
+      "id": "frame-forwarding",
+      "label": "für bekannte und unbekannte Unicast-Ziele sowie Broadcasts die korrekten Ausgangsports oder das Filtern bestimmen"
+    }
+  ],
+  "intro": "Ein Layer-2-Switch lernt nicht aus der Zieladresse, wo ein Gerät sitzt. Er beobachtet die Quell-MAC-Adresse jedes gültig empfangenen Frames und merkt sich den Eingangsport innerhalb des VLANs. Erst danach entscheidet die Ziel-MAC-Adresse, ob gezielt weitergeleitet, innerhalb des VLANs geflutet oder am Eingangsport gefiltert wird.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "OCR-Chunk itlf10-12-2023:page:0350, PDF-Seite 350",
+        "use": "Source Address Table als Lerntabelle eines Switches und Trennung der Zustände Learning und Forwarding",
+        "reviewStatus": "passender Ersatzbeleg; STP-Zustände selbst sind nicht Gegenstand dieser Einheit"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "OCR-Chunk itlf10-12-2023:page:0348, PDF-Seite 348",
+        "use": "Ethernet-Ziel- und Quell-MAC-Felder sowie Flooding eines Broadcasts an alle weiterleitenden Ports außer dem Eingangsport",
+        "reviewStatus": "direkter Teilbeleg für Broadcast-Flooding; Schleifen und STP werden nicht vertieft"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "OCR-Chunk itlf10-12-2023:page:0180, PDF-Seite 180",
+        "use": "VLAN-Zugehörigkeit am Eingangsport und Weiterleitung ausschließlich an Mitglieder desselben VLANs",
+        "reviewStatus": "Kontextbeleg für die VLAN-Grenze der Weiterleitungsdomäne, nicht für den eigentlichen Lernalgorithmus"
+      }
+    ],
+    "notes": [
+      "Die gemappten Seiten itlf10-12-2023:page:0179, :0180 und :0230 sowie europa-integratoren-2026:00340 behandeln überwiegend VLAN-Zuordnung beziehungsweise VLAN-Konfiguration, nicht das Lernen einer MAC-Adresstabelle. Nur Seite 180 bleibt als begrenzter VLAN-Kontext erhalten.",
+      "Der gemappte Grafikkandidat itlf10-12-2023:layout:0198:01 zeigt kryptografische Hashverfahren und ist ein eindeutiger Fehltreffer.",
+      "Die vollständige Lern-/Forwarding-Logik ist in den lokalen Quellen nicht geschlossen erklärt. Sie wurde herstellerneutral neu formuliert und bleibt bis zur Fachprüfung CURATED_DRAFT.",
+      "MAC-Einträge werden praktisch pro VLAN geführt und altern nach einem konfigurierbaren, herstellerabhängigen Zeitraum. Einen festen Aging-Wert lehrt diese Einheit bewusst nicht.",
+      "Multicast kann ohne Zusatzfunktion geflutet werden; Verfahren wie IGMP Snooping verändern dies. Für den Kernfall werden Broadcast und unbekannter Unicast getrennt behandelt."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "mac-learning-flow",
+      "type": "flow",
+      "title": "Erst lernen, dann weiterleiten",
+      "description": "Der Switch aktualisiert die Zuordnung aus Quelle, VLAN und Eingangsport, bevor er das Ziel in derselben VLAN-Tabelle nachschlägt.",
+      "items": [
+        {"label": "Frame an Port empfangen", "detail": "Eingangsport und zugeordnetes VLAN stehen fest"},
+        {"label": "Quell-MAC lernen", "detail": "Zuordnung aus VLAN, Quell-MAC und Eingangsport anlegen oder aktualisieren"},
+        {"label": "Ziel-MAC nachschlagen", "detail": "nur die MAC-Tabelle desselben VLANs verwenden"},
+        {"label": "Ausgangsmenge bilden", "detail": "gezielt senden, innerhalb des VLANs fluten oder am Eingangsport filtern"},
+        {"label": "Aging berücksichtigen", "detail": "veraltete dynamische Einträge verschwinden und müssen neu gelernt werden"}
+      ]
+    },
+    {
+      "id": "mac-forwarding-cases",
+      "type": "comparison",
+      "title": "Drei Zielzustände, drei Entscheidungen",
+      "description": "Ein bekannter Zielport, ein unbekannter Zielport und der bereits verwendete Eingangsport führen zu unterschiedlichen Ausgangsmengen.",
+      "items": [
+        {"label": "bekannter Unicast", "detail": "genau an den gelernten Zielport im selben VLAN senden"},
+        {"label": "unbekannter Unicast", "detail": "an alle weiterleitenden Ports desselben VLANs außer dem Eingangsport fluten"},
+        {"label": "Broadcast", "detail": "innerhalb des VLANs an alle weiterleitenden Ports außer dem Eingangsport fluten"},
+        {"label": "Ziel am Eingangsport", "detail": "Frame filtern; eine Rücksendung auf denselben Port ist unnötig"}
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Quelle oder Ziel?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "mac-table-diagnostic",
+          "diagnostic": true,
+          "question": "Ein Frame mit Quelle AA und Ziel BB trifft in VLAN 20 an Port 3 ein. Welche Information kann der Switch sofort sicher lernen?",
+          "options": [
+            {"text": "MAC AA ist in VLAN 20 über Port 3 erreichbar.", "rationale": "Richtig. Die Quelladresse belegt, von welchem Port und VLAN der Absender gerade erreicht wurde.", "correct": true},
+            {"text": "MAC BB ist in VLAN 20 über Port 3 erreichbar.", "rationale": "BB ist nur das Ziel. Der Frame verrät nicht, an welchem Port dieses Ziel angeschlossen ist.", "correct": false},
+            {"text": "Alle MAC-Adressen des Netzes liegen an Port 3.", "rationale": "Aus einem Frame lässt sich nur die konkrete Quelle lernen.", "correct": false},
+            {"text": "AA und BB werden unabhängig vom VLAN global Port 3 zugeordnet.", "rationale": "Die Lerntabelle ist VLAN-bezogen; außerdem wird nur die Quelle gelernt.", "correct": false}
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Lernrichtung",
+          "markdown": "**Quelle lernt den Weg hinein. Ziel bestimmt den Weg hinaus.** Der Switch lernt aus der Quell-MAC und entscheidet anschließend anhand der Ziel-MAC."
+        }
+      ]
+    },
+    {
+      "title": "MAC-Tabelle als VLAN-bezogene Zuordnung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Beim Empfang eines gültigen Frames speichert oder aktualisiert der Switch die Quell-MAC-Adresse zusammen mit VLAN und Eingangsport. Wandert ein Gerät auf einen anderen Port, wird die dynamische Zuordnung beim nächsten Frame angepasst. Bleibt ein Gerät lange still, kann sein Eintrag nach der konfigurierten Aging-Zeit entfernt werden.\n\nDie Kombination aus VLAN und MAC-Adresse ist wichtig: Dieselbe MAC darf in getrennten VLAN-Kontexten nicht zu einer gemeinsamen Weiterleitungsdomäne führen. Ein Switch lernt außerdem nicht den gesamten Netzpfad, sondern nur den lokalen Port, über den die Quelle erreichbar ist."
+        },
+        {
+          "type": "figure",
+          "diagramId": "mac-learning-flow",
+          "alt": "Fünfstufiger Ablauf vom Frame-Empfang über Quell-MAC-Lernen und Zielnachschlag bis zu Ausgangsmenge und Aging.",
+          "caption": "Eigene Lernskizze: Lernen und Weiterleiten sind getrennte Schritte und beide bleiben auf das jeweilige VLAN begrenzt."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Die MAC-Tabelle ordnet der Kombination aus VLAN und Quell-MAC den Eingangsport zu",
+          "mathml": "<math display=\"block\"><mrow><mi>FDB</mi><mo>(</mo><mi>V</mi><mo>,</mo><msub><mi>MAC</mi><mi>Quelle</mi></msub><mo>)</mo><mo>←</mo><msub><mi>P</mi><mi>ein</mi></msub></mrow></math>",
+          "legend": ["FDB = Forwarding Database beziehungsweise MAC-Tabelle", "V = VLAN", "Pₑᵢₙ = Eingangsport"]
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "In VLAN 20 hängen A an Port 1, B an Port 2 und C an Port 3. Die Tabelle ist zunächst leer. A sendet an B: Der Switch lernt `VLAN 20, A → Port 1`. Da B unbekannt ist, flutet er den Frame an Port 2 und 3. B antwortet: Nun lernt der Switch `VLAN 20, B → Port 2` und sendet die Antwort gezielt an Port 1.\n\nSendet A später an eine MAC, die ebenfalls hinter Port 1 gelernt wurde, filtert der Switch den Frame: Das Ziel befindet sich bereits im Segment des Eingangsports. Ein Broadcast von A wird dagegen weiterhin an Port 2 und 3 geflutet, aber niemals über Ports eines anderen VLANs."
+        },
+        {
+          "type": "figure",
+          "diagramId": "mac-forwarding-cases",
+          "alt": "Vergleich der Weiterleitung für bekannten Unicast, unbekannten Unicast, Broadcast und ein Ziel am Eingangsport.",
+          "caption": "Eigene Lernskizze: Flooding ist eine kontrollierte Ausgangsmenge im VLAN, kein Versand über jeden physischen Port."
+        },
+        {
+          "type": "sequence",
+          "id": "mac-table-guided-sequence",
+          "title": "Einen Frame am Switch simulieren",
+          "prompt": "Bringe die Schritte für den ersten Frame von A an B in die richtige Reihenfolge.",
+          "tag": "Geführte Übung",
+          "steps": [
+            {"id": "flood", "label": "Bei unbekanntem B an alle übrigen Ports in VLAN 20 fluten."},
+            {"id": "learn", "label": "A zusammen mit VLAN 20 und Port 1 in die MAC-Tabelle eintragen."},
+            {"id": "receive", "label": "Frame an Port 1 empfangen und VLAN 20 zuordnen."},
+            {"id": "lookup", "label": "Ziel B in der MAC-Tabelle von VLAN 20 nachschlagen."}
+          ],
+          "expected": ["receive", "learn", "lookup", "flood"],
+          "correctFeedback": "Richtig. Die Quelle wird vor der Zielentscheidung gelernt; erst der erfolglose Zielnachschlag löst Unknown-Unicast-Flooding aus.",
+          "wrongFeedback": "Beginne mit Empfang und VLAN-Zuordnung. Gelernt wird die Quelle, bevor das Ziel nachgeschlagen wird."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {"id": "mac-source-learning", "label": "Quelllernen", "front": "Aus welchem Feld lernt ein Switch einen dynamischen MAC-Eintrag?", "back": "Aus der Quell-MAC-Adresse; gespeichert werden zusätzlich VLAN und Eingangsport."},
+            {"id": "mac-unknown-unicast", "label": "Unknown Unicast", "front": "Was geschieht bei einer unbekannten Unicast-Ziel-MAC?", "back": "Der Frame wird an alle übrigen weiterleitenden Ports desselben VLANs geflutet."},
+            {"id": "mac-filtering", "label": "Filtering", "front": "Wann filtert ein Switch einen bekannten Unicast-Frame am Eingangsport?", "back": "Wenn die Ziel-MAC im selben VLAN bereits am gleichen Port wie der Eingang gelernt ist."}
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "mac-table-recall",
+          "title": "Switchentscheidung frei erklären",
+          "prompt": "Erkläre den vollständigen Ablauf aus Quelllernen, Zielnachschlag, gezielter Weiterleitung, Flooding und Filtering einschließlich der VLAN-Grenze.",
+          "label": "Deine Erklärung",
+          "placeholder": "Beim Empfang eines Frames …",
+          "minLength": 120,
+          "model": "Der Switch lernt die Quell-MAC zusammen mit VLAN und Eingangsport. Danach sucht er die Ziel-MAC in derselben VLAN-Tabelle. Ein bekanntes Ziel wird gezielt gesendet. Ein unbekanntes Unicast-Ziel oder Broadcast wird an alle übrigen weiterleitenden Ports dieses VLANs geflutet. Liegt das bekannte Ziel am Eingangsport, wird der Frame gefiltert."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check: Transfer",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "mac-table-transfer-learning",
+          "requiredObjective": "mac-learning",
+          "question": "Die Tabelle enthält `VLAN 30, DD → Port 4`. Nun trifft ein Frame mit Quelle DD in VLAN 30 an Port 7 ein. Welche Aktualisierung ist richtig?",
+          "options": [
+            {"text": "Den dynamischen Eintrag auf `VLAN 30, DD → Port 7` aktualisieren.", "rationale": "Richtig. Der neue Quellframe zeigt, dass DD im VLAN 30 jetzt über Port 7 erreichbar ist.", "correct": true},
+            {"text": "Den alten Eintrag behalten, bis ein Frame an DD gesendet wurde.", "rationale": "Die Quelladresse reicht für die Aktualisierung; ein Ziel-Frame ist nicht nötig.", "correct": false},
+            {"text": "DD zusätzlich global ohne VLAN an Port 7 eintragen.", "rationale": "Die Weiterleitungszuordnung bleibt VLAN-bezogen und ersetzt den alten dynamischen Port für diese Kombination.", "correct": false},
+            {"text": "Die Ziel-MAC des Frames statt DD auf Port 7 lernen.", "rationale": "Gelernt wird weiterhin die Quell-MAC DD, nicht die Zieladresse.", "correct": false}
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "mac-table-transfer-forwarding",
+          "requiredObjective": "frame-forwarding",
+          "question": "Ein Frame kommt in VLAN 10 an Port 5 an. Seine Ziel-MAC ist in VLAN 10 ebenfalls für Port 5 gelernt. Was tut der Switch?",
+          "options": [
+            {"text": "Er filtert den Frame und sendet ihn nicht auf Port 5 zurück.", "rationale": "Richtig. Das Ziel liegt aus Sicht der Tabelle bereits hinter dem Eingangsport.", "correct": true},
+            {"text": "Er flutet ihn über alle Ports aller VLANs.", "rationale": "Das Ziel ist bekannt; außerdem bleibt jede Layer-2-Weiterleitung auf das VLAN begrenzt.", "correct": false},
+            {"text": "Er sendet ihn genau auf Port 5 zurück.", "rationale": "Eine Rücksendung über den Eingangsport wäre unnötig und wird gefiltert.", "correct": false},
+            {"text": "Er löscht grundsätzlich alle Einträge für VLAN 10.", "rationale": "Ein Ziel am Eingangsport ist kein Grund, die gesamte VLAN-Tabelle zu löschen.", "correct": false}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **IT-Berufe Fachstufe II – Lernfelder 10–12 (2023):** Source Address Table, Ethernet-MAC-Felder, Broadcast-Flooding und VLAN-begrenzte Weiterleitung als Teilbelege.\n\nDie vollständige MAC-Lernlogik ist in den gemappten Buchstellen nicht geschlossen dargestellt. Alle Beispiele, Aufgaben und Diagramme sind eigenständig erstellt; sachfremde Hashgrafik und private Buchabbildungen werden nicht veröffentlicht."
+        }
+      ]
+    }
+  ]
+}

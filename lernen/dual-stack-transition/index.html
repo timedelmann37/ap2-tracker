@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Den Grund für die Übergangsphase erklären und Dual Stack, Tunnel sowie Protokollübersetzung anhand der Kommunikationspartner auswählen.">
+<title>IPv4 und IPv6 kontrolliert parallel betreiben – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=hybrid-1">
+<script defer src="/assets/ap2-space.js?v=hybrid-1"></script>
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="dual-stack-transition" data-progress-id="ga2-3__4" data-content-revision="2026-09-11.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-3">Block N3 · IPv6, DHCP und DNS</a><span class="sep">›</span>
+    <span class="here">IPv4 und IPv6 kontrolliert parallel betreiben</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">IPv4 und IPv6 kontrolliert parallel betreiben</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 20 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>IPv6 ersetzt IPv4 nicht mit einem einzigen Umschalttermin. Endgeräte, Anwendungen, Netze und Provider werden schrittweise migriert. Deshalb beginnt jede Auswahl mit drei Fragen: Welche Protokolle sprechen die Endpunkte, was trägt der Zwischenweg und muss ein Paket nur transportiert oder wirklich übersetzt werden?</p>
+<section class="learning-goals" aria-labelledby="dual-stack-transition-goals">
+  <h2 id="dual-stack-transition-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>begründen, warum IPv4 und IPv6 während der Migration als getrennte Protokollpfade koexistieren</li>
+    <li>Dual Stack, Tunnel oder Übersetzung für ein beschriebenes Übergangsszenario begründet auswählen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Was fehlt auf dem Pfad?</h2>
+<section class="quiz" data-quiz="transition-diagnostic" data-correct="1">
+  <h3>Zwei IPv6-fähige Standortnetze sind nur über einen IPv4-Zwischenweg verbunden. Welche Kategorie passt zunächst am besten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Dual Stack stellt beide Protokolle bereit, überwindet aber nicht automatisch den IPv4-only-Zwischenweg für IPv6-Pakete."><span class="m">A</span> Dual Stack allein</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Beide Enden sprechen IPv6; die Lücke liegt ausschließlich im Transitnetz."><span class="m">B</span> IPv6 in einem Tunnel über den IPv4-Zwischenweg transportieren</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Eine Übersetzung ist nicht erforderlich, wenn beide Kommunikationspartner IPv6 sprechen."><span class="m">C</span> IPv6-Endpunkte in IPv4-Endpunkte umwandeln</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Ohne IPv6-Routen können die Standorte ihre IPv6-Ziele erst recht nicht erreichen."><span class="m">D</span> Die IPv6-Routingtabellen löschen</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">Entscheidungsregel</span><p><strong>Gleiche IP-Version an beiden Enden, ungeeigneter Zwischenweg:</strong> Tunnel prüfen. <strong>Unterschiedliche IP-Versionen an den Enden:</strong> Übersetzung prüfen. <strong>Beide Versionen durchgängig verfügbar:</strong> Dual Stack ermöglicht die schrittweise Migration.</p></aside><h2 class="sec" id="s2"><span class="num">2</span>Warum der Parallelbetrieb nötig ist</h2>
+<p>IPv4 besitzt einen begrenzten Adressraum, während IPv6 einen wesentlich größeren Adressraum bereitstellt. Trotzdem können vorhandene IPv4-Dienste, Altgeräte oder Providerpfade nicht sofort verschwinden. IPv4 und IPv6 sind außerdem eigenständige Netzwerkprotokolle: Ein IPv4-only-Endpunkt versteht ein natives IPv6-Paket nicht allein deshalb, weil beide über dasselbe Kabel laufen.</p>
+<p>Dual Stack bedeutet deshalb mehr als zwei Adressen am Gerät. Beide Protokolle benötigen passende Adressen, Regeln, Namensauflösung, Filter und Routen. Ein funktionierender IPv4-Pfad beweist nicht automatisch, dass IPv6 korrekt geroutet und abgesichert ist.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Dual Stack hält zwei Protokollpfade bereit">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-layers" xmlns="http://www.w3.org/2000/svg" width="960" height="512" viewBox="0 0 960 512" role="img" aria-labelledby="diagram-parallel-protocol-planes-title diagram-parallel-protocol-planes-desc">
+  <title id="diagram-parallel-protocol-planes-title">Dual Stack hält zwei Protokollpfade bereit</title>
+  <desc id="diagram-parallel-protocol-planes-desc">Schichtenbild mit gemeinsamer Anwendung und Infrastruktur, aber getrenntem IPv4- und IPv6-Pfad samt eigenen Adressen und Routingtabellen.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Dual Stack hält zwei Protokollpfade bereit</tspan></text>
+  <g><rect class="diagram-row" x="42" y="82" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="82" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="130" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Anwendung</tspan><tspan x="105" dy="25">und</tspan><tspan x="105" dy="25">Namensauflösung</tspan></text><text x="194" y="116" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Die Anwendung erhält erreichbare Zieladressen und versucht</tspan><tspan x="194" dy="25">einen passenden Pfad.</tspan></text></g><g><rect class="diagram-row" x="42" y="182" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="182" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="230" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">IPv6-Pfad</tspan></text><text x="194" y="216" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Eigene IPv6-Adresse, eigenes Standard-Gateway und eigene</tspan><tspan x="194" dy="25">IPv6-Routingtabelle.</tspan></text></g><g><rect class="diagram-row" x="42" y="282" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="282" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="330" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">IPv4-Pfad</tspan></text><text x="194" y="316" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Eigene IPv4-Adresse, eigene IPv4-Konfiguration und eigene</tspan><tspan x="194" dy="25">IPv4-Routingtabelle.</tspan></text></g><g><rect class="diagram-row" x="42" y="382" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="382" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="430" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Gemeinsame</tspan><tspan x="105" dy="25">Infrastruktur</tspan></text><text x="194" y="416" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Links und Geräte können beide Protokolle tragen, ohne dass</tspan><tspan x="194" dy="25">die Paketformate identisch werden.</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Parallelbetrieb bedeutet zwei prüfbare Netzwerkpfade, nicht eine automatische Umwandlung.</figcaption>
+</figure><section class="quiz" data-quiz="dual-stack-operations-practice" data-correct="1">
+  <h3>Ein Dual-Stack-Webserver ist über IPv4 erreichbar, über IPv6 aber nicht. Welcher erste Schluss ist fachlich sauber?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Der erfolgreiche IPv4-Zugriff zeigt, dass der gemeinsame Link grundsätzlich trägt. Der Fehler kann im IPv6-Pfad liegen."><span class="m">A</span> Der physische Link kann nicht funktionieren.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Dual Stack besitzt getrennte logische Konfigurationen und Fehlerpfade."><span class="m">B</span> IPv6-Adresse, IPv6-Route, DNS-Eintrag und IPv6-Firewallregel müssen getrennt geprüft werden.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Dual Stack ist keine automatische Übersetzung zwischen Paketformaten."><span class="m">C</span> IPv4 übersetzt jede IPv6-Verbindung automatisch.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Die Protokolle verwenden getrennte Routingeinträge und Adressfamilien."><span class="m">D</span> Die IPv4-Routingtabelle ist zugleich die IPv6-Routingtabelle.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s3"><span class="num">3</span>Mechanismen nach Szenario auswählen</h2>
+<p><strong>Dual Stack</strong> passt, wenn Systeme während einer Übergangszeit beide Protokolle nativ verwenden sollen. Es ist transparent, erhöht aber Betriebs- und Prüfaufwand.</p>
+<p><strong>Tunneling</strong> kapselt Pakete einer IP-Version in einen Transport über einen ungeeigneten Zwischenabschnitt. Die Endpunkte bleiben in derselben IP-Version; zusätzliche Header, MTU und Tunnelendpunkte müssen geplant werden.</p>
+<p><strong>Translation</strong> verbindet unterschiedliche Adressfamilien. Beispielsweise kann eine kontrollierte Übersetzung nötig sein, wenn ein IPv6-only-Client einen IPv4-only-Dienst erreichen muss. Nicht jedes Protokoll oder jede eingebettete Adresse lässt sich folgenlos abbilden; konkrete Verfahren wie NAT64 mit DNS64 sind Architekturentscheidungen, keine universelle Standardantwort.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Drei Kategorien lösen unterschiedliche Lücken">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-transition-choice-title diagram-transition-choice-desc">
+  <title id="diagram-transition-choice-title">Drei Kategorien lösen unterschiedliche Lücken</title>
+  <desc id="diagram-transition-choice-desc">Vergleichskarten für Dual Stack, Tunnel, Übersetzung und das langfristige Ziel einer nativen Migration.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Drei Kategorien lösen unterschiedliche Lücken</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">Dual Stack</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">Beide Endpunkte und</tspan><tspan x="64" dy="30">der Weg unterstützen</tspan><tspan x="64" dy="30">das benötigte</tspan></text></g><g><rect class="diagram-row" x="265" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="287" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="287" dy="0">Tunnel</tspan></text><text x="287" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="287" dy="0">Gleichartige</tspan><tspan x="287" dy="30">Endpunkte sprechen</tspan><tspan x="287" dy="30">zum Beispiel IPv6,</tspan></text></g><g><rect class="diagram-row" x="488" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="510" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="510" dy="0">Übersetzung</tspan></text><text x="510" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="510" dy="0">Die Endpunkte</tspan><tspan x="510" dy="30">sprechen</tspan><tspan x="510" dy="30">unterschiedliche</tspan></text></g><g><rect class="diagram-row" x="711" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="733" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="733" dy="0">Native Migration</tspan></text><text x="733" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="733" dy="0">Langfristiges Ziel:</tspan><tspan x="733" dy="30">IPv6 ohne unnötige</tspan><tspan x="733" dy="30">Übergangsschicht</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Erst die Kommunikationslücke bestimmen, dann eine Übergangskategorie wählen.</figcaption>
+</figure><section class="sequence-practice" data-sequence="transition-guided-sequence" data-expected="transition-check-endpoints,transition-check-path,transition-select-category,transition-check-effects" data-correct-feedback="Richtig: Endpunkte und Transportweg bestimmen die Kategorie; erst danach werden Nebenwirkungen getestet." data-wrong-feedback="Beginne nicht mit einem Produktnamen. Prüfe zuerst Endpunkte, dann Pfad, dann Kategorie und zuletzt deren betriebliche Folgen." aria-labelledby="transition-guided-sequence-title">
+  <div class="lab-heading"><div><h3 id="transition-guided-sequence-title">Geführte Auswahl</h3><p>Bringe die Prüfschritte für ein Migrationsszenario in eine belastbare Reihenfolge.</p></div><span class="lab-tag">Übung</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="transition-check-endpoints" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Ermitteln, welche IP-Version jede Anwendung und jeder Endpunkt tatsächlich unterstützt.</span></li>
+    <li data-step="transition-check-path" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Prüfen, welche IP-Versionen der gesamte Zwischenweg nativ transportiert.</span></li>
+    <li data-step="transition-select-category" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Dual Stack, Tunnel oder Übersetzung passend zur gefundenen Lücke auswählen.</span></li>
+    <li data-step="transition-check-effects" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Routing, DNS, Filterregeln, MTU, Protokollverträglichkeit und Rückweg testen.</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Durchgespieltes Migrationsbeispiel</h2>
+<p>Ein Unternehmen aktiviert IPv6 im Campusnetz, muss aber vorerst eine ältere Warenwirtschaft über IPv4 erreichen. Der Internetzugang und moderne Clients unterstützen beide Protokolle. Für diese Phase ist Dual Stack plausibel: Neue Dienste werden über IPv6 getestet, der Altbestand bleibt über IPv4 erreichbar.</p>
+<p>Eine Außenstelle besitzt bereits ein IPv6-LAN, ihr Provider liefert auf dem Übergangsweg jedoch nur IPv4. Wenn beide Tunnelendpunkte kontrolliert betrieben werden, kann ein Tunnel die IPv6-Pakete durch diesen Abschnitt tragen. Greift dagegen ein IPv6-only-Client auf einen unveränderbaren IPv4-only-Dienst zu, ist eine kontrollierte Übersetzungskategorie zu prüfen. In allen drei Fällen braucht es ein Rückbauziel; sonst wird das Provisorium zur dauerhaften, schwer prüfbaren Abhängigkeit.</p>
+<aside class="callout warn"><span class="lbl">Keine pauschale Produktempfehlung</span><p>Historische Mechanismen wie 6to4 oder Teredo belegen die Kategorie <strong>Tunnel</strong>, sind aber keine automatische Empfehlung für neue Netze. Entscheidend sind aktuelle Unterstützung, kontrollierte Endpunkte, Sicherheit und ein dokumentierter Migrationspfad.</p></aside><h2 class="sec" id="s5"><span class="num">5</span>Karteikarten und freier Abruf</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="transition-dual-stack" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was ist der Kern von Dual Stack?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Ein System oder Netz betreibt IPv4 und IPv6 parallel mit jeweils eigener Adressierung, Konfiguration und Routinglogik.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="transition-tunnel" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche Lücke schließt ein Tunnel?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Gleichartige Endpunkte sprechen dieselbe IP-Version, aber ein Zwischenweg trägt sie nicht nativ; die Pakete werden für diesen Abschnitt gekapselt.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="transition-translation" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wann wird statt eines Tunnels eine Übersetzung geprüft?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Wenn die Kommunikationspartner unterschiedliche IP-Versionen sprechen und deshalb Paket- und Adressinformationen abgebildet werden müssen.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Dual Stack“:</span><button type="button" data-card-id="transition-dual-stack" data-card-rate="known">gewusst</button><button type="button" data-card-id="transition-dual-stack" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="transition-dual-stack"></span></div>
+<div class="card-rating"><span>Karte „Tunnel“:</span><button type="button" data-card-id="transition-tunnel" data-card-rate="known">gewusst</button><button type="button" data-card-id="transition-tunnel" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="transition-tunnel"></span></div>
+<div class="card-rating"><span>Karte „Übersetzung“:</span><button type="button" data-card-id="transition-translation" data-card-rate="known">gewusst</button><button type="button" data-card-id="transition-translation" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="transition-translation"></span></div><section class="recall-practice" data-recall="transition-free-recall" data-min-length="120" aria-labelledby="transition-free-recall-title">
+  <div class="recall-prompt"><h3 id="transition-free-recall-title">Szenario aus dem Kopf entscheiden</h3><p>Erkläre die Unterschiede zwischen Dual Stack, Tunnel und Übersetzung. Formuliere zu jeder Kategorie eine passende Ausgangslage und ein zu prüfendes Risiko.</p></div>
+  <label class="sr-only" for="transition-free-recall-answer">Deine Entscheidungshilfe</label>
+  <textarea id="transition-free-recall-answer" data-recall-input rows="4" placeholder="Dual Stack … Tunnel … Übersetzung …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Dual Stack betreibt beide Protokolle parallel und verlangt getrennte Konfiguration und Absicherung. Ein Tunnel trägt Pakete zwischen gleichartigen Endpunkten durch einen nicht nativ geeigneten Transit und erfordert unter anderem MTU- und Endpunktprüfung. Übersetzung verbindet unterschiedliche Adressfamilien, kann aber Protokolleigenschaften verändern. Für alle Varianten gehören aktueller Produktsupport, Rückweg und Rückbauplan zur Entscheidung.</div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Lernziel-Check</h2>
+<section class="quiz" data-quiz="coexistence-transfer" data-correct="1" data-required-objective="coexistence-reasoning">
+  <h3>Welche Aussage begründet den betrieblichen Aufwand von Dual Stack am treffendsten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Die Adressfamilien besitzen getrennte Adressen und Routinginformationen."><span class="m">A</span> IPv4 und IPv6 teilen automatisch dieselben Adressen und Routen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Gemeinsame Hardware beseitigt die logische Trennung der Protokolle nicht."><span class="m">B</span> Beide Protokollpfade müssen hinsichtlich Adressierung, Routing, DNS und Filterung eigenständig funktionieren und getestet werden.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Parallelbetrieb ist keine Protokollübersetzung."><span class="m">C</span> Dual Stack wandelt jedes IPv4-Paket ohne zusätzliche Komponente in IPv6 um.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Gerade der Parallelbetrieb hält den IPv4-Pfad für solche Dienste vorläufig verfügbar."><span class="m">D</span> Nach der IPv6-Aktivierung sind IPv4-only-Dienste sofort unerreichbar.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="mechanism-selection-transfer" data-correct="1" data-required-objective="mechanism-selection">
+  <h3>Ein neues IPv6-only-Clientnetz muss vorübergehend auf einen nicht migrierbaren IPv4-only-Lizenzserver zugreifen. Welche Kategorie adressiert genau diese Protokolllücke?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Ein Tunnel ändert die IP-Version der Endpunkte nicht. Der IPv4-only-Server könnte das innere IPv6-Paket weiterhin nicht verarbeiten."><span class="m">A</span> Ein reiner IPv6-in-IPv4-Tunnel ohne Übersetzung</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Die Endpunkte sprechen unterschiedliche IP-Versionen; daher ist Übersetzung die passende Kategorie."><span class="m">B</span> Eine kontrollierte IPv6-zu-IPv4-Übersetzung, deren Anwendungs- und DNS-Verträglichkeit geprüft wird</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein IPv4-only-System kann keine native IPv6-Route nutzen."><span class="m">C</span> Nur eine zusätzliche IPv6-Route auf dem IPv4-only-Server</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Ein Switch allein erweitert nicht die Protokollfähigkeit des IPv4-only-Servers."><span class="m">D</span> Dual Stack ausschließlich auf einem beliebigen Switch</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s7"><span class="num">7</span>Quellen und Einordnung</h2>
+<ul>
+<li><strong>IT-Berufe – Lernfelder 6–9 (2022):</strong> Motivation für IPv6 und grundlegende Gegenüberstellung der Adressfamilien.</li>
+<li><strong>EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):</strong> getrennte IPv6-Routinginformationen als begrenzter Kontext.</li>
+<li><strong>Prüfungsvorbereitung IHK Bonn:</strong> historische Adress- und Tunnelbeispiele, ausdrücklich nicht als aktuelle Einsatzempfehlung verwendet.</li>
+</ul>
+<p>Alle Texte, Fälle und Diagramme sind eigenständig erstellt.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-3"><span class="d">zurück zu</span><span class="t">Block N3 · IPv6, DHCP und DNS</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N3 · IPv6, DHCP und DNS</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Was fehlt auf dem Pfad?</a></li>
+<li><a href="#s2" data-t="s2">Warum der Parallelbetrieb nötig ist</a></li>
+<li><a href="#s3" data-t="s3">Mechanismen nach Szenario auswählen</a></li>
+<li><a href="#s4" data-t="s4">Durchgespieltes Migrationsbeispiel</a></li>
+<li><a href="#s5" data-t="s5">Karteikarten und freier Abruf</a></li>
+<li><a href="#s6" data-t="s6">Lernziel-Check</a></li>
+<li><a href="#s7" data-t="s7">Quellen und Einordnung</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-3">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

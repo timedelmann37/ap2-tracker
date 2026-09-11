@@ -1,0 +1,250 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "ipv6-schreibweise",
+    "slug": "ipv6-schreibweise",
+    "title": "IPv6-Adressen fehlerfrei kürzen und expandieren",
+    "description": "IPv6-Adressen als acht Hextets lesen, nach RFC 5952 eindeutig kürzen und komprimierte Schreibweisen sicher expandieren.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-3",
+    "groupLabel": "Block N3 · IPv6 und automatische Adresskonfiguration",
+    "itemId": "ga2-3__0",
+    "week": "KW 37",
+    "estimatedMinutes": 20,
+    "relevance": "hoch",
+    "sources": ["itlf6-9-2022", "europa-integratoren-2026", "itlf10-12-2023"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "canonical-compression",
+      "label": "eine vollständige IPv6-Adresse nach den RFC-5952-Regeln eindeutig und kanonisch kürzen"
+    },
+    {
+      "id": "safe-expansion",
+      "label": "eine komprimierte IPv6-Adresse auf genau acht Hextets expandieren und mehrdeutige Schreibweisen erkennen"
+    }
+  ],
+  "intro": "IPv6-Kürzung entfernt nur Schreibarbeit, niemals Information. Sicher wird sie, wenn du zuerst acht Gruppen zählst, führende Nullen und ganze Nullgruppen getrennt behandelst und den Doppelpunkt-Operator höchstens einmal verwendest.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf6-9-2022",
+        "sourceLocator": "Chunk itlf6-9-2022:00210, Markdown-Zeilen 5791–5885",
+        "use": "RFC-5952-Regeln zu Kleinschreibung, führenden Nullen, längster Nullfolge, Linksentscheid und einmaligem Doppelpunkt-Operator",
+        "reviewStatus": "direkte und fachlich tragfähige Hauptquelle; Beispiele vollständig neu gewählt"
+      },
+      {
+        "sourceId": "itlf6-9-2022",
+        "sourceLocator": "Chunk itlf6-9-2022:00209, Markdown-Zeilen 5762–5790",
+        "use": "Übergang von IPv6-Adressbereichen zur vereinfachten Schreibweise nach RFC 5952",
+        "reviewStatus": "Kontextquelle; Adresstypen nicht als Kürzungsregel vermischt"
+      },
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunk europa-integratoren-2026:00512, Markdown-Zeilen 5546–5558",
+        "use": "IPv6-Beispielschreibweisen im Kontext verbindungslokaler Adressen",
+        "reviewStatus": "nur Schreibkontext verwendet; Routingaufgabe und Buchabbildung ausgeschlossen"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "OCR-Chunk itlf10-12-2023:page:0193, PDF-Seite 193",
+        "use": "vollständige und gekürzte Präfixschreibweisen in einem Netzkontext",
+        "reviewStatus": "nur Notationsbeispiele verwendet; fachlich problematische Bezeichnung privater IPv6-Adressen nicht übernommen"
+      }
+    ],
+    "notes": [
+      "Die private Buchgrafik europa-integratoren-2026:figure:93111e0eb1c5 wird nicht veröffentlicht; beide Diagramme werden deklarativ neu erzeugt.",
+      "Der Doppelpunkt-Operator kann syntaktisch Nullgruppen ersetzen, darf in der kanonischen RFC-5952-Schreibweise aber nicht zur Verkürzung nur eines einzelnen Null-Hextets eingesetzt werden.",
+      "Alle Beispiele, Rückmeldungen und Diagramme sind eigenständig erstellt.",
+      "Agentisch erstellt; deshalb bis zur menschlichen Fach- und Verständlichkeitsprüfung CURATED_DRAFT."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "ipv6-anatomy",
+      "type": "layers",
+      "title": "Acht Hextets ergeben 128 Bit",
+      "description": "Jede Gruppe enthält vier Hexadezimalstellen beziehungsweise 16 Bit; Doppelpunkte trennen die Gruppen.",
+      "items": [
+        {"label": "Hextet 1–2", "detail": "32 Bit; häufig Teil eines globalen Routingpräfixes"},
+        {"label": "Hextet 3–4", "detail": "weitere 32 Bit; bei einem /64-Präfix endet hier der Netzanteil"},
+        {"label": "Hextet 5–6", "detail": "32 Bit des unteren Adressteils"},
+        {"label": "Hextet 7–8", "detail": "letzte 32 Bit; zusammen besitzen alle acht Gruppen 128 Bit"}
+      ]
+    },
+    {
+      "id": "compression-flow",
+      "type": "flow",
+      "title": "Kanonisch kürzen, ohne Information zu verlieren",
+      "description": "Führende Nullen werden gruppenweise entfernt; genau eine geeignete Folge ganzer Nullgruppen kann durch zwei Doppelpunkte ersetzt werden.",
+      "items": [
+        {"label": "Acht Gruppen prüfen", "detail": "Ausgangsadresse muss acht Hextets mit je höchstens vier Hexadezimalstellen enthalten"},
+        {"label": "Kleinbuchstaben verwenden", "detail": "A bis F werden für die kanonische Schreibweise zu a bis f"},
+        {"label": "Führende Nullen streichen", "detail": "00a0 wird a0; ein vollständiges 0000-Hextet wird zunächst 0"},
+        {"label": "Längste Nullfolge suchen", "detail": "bei Gleichstand wird die linke Folge gewählt; eine einzelne Nullgruppe bleibt kanonisch als 0 stehen"},
+        {"label": "Doppelpunkt einmal einsetzen", "detail": "die gewählte Folge wird genau einmal durch :: ersetzt"}
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Wie viele Gruppen fehlen?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "ipv6-writing-diagnostic",
+          "diagnostic": true,
+          "question": "Wie viele vollständige Null-Hextets ersetzt `::` in `2001:db8:42::7`?",
+          "options": [
+            {"text": "zwei", "rationale": "Dann ergäben drei Gruppen links, zwei Nullgruppen und eine Gruppe rechts zusammen nur sechs statt acht Hextets.", "correct": false},
+            {"text": "drei", "rationale": "Drei Nullgruppen ergäben insgesamt sieben Hextets. IPv6 benötigt genau acht.", "correct": false},
+            {"text": "vier", "rationale": "Richtig. Drei sichtbare Gruppen links plus vier Nullgruppen plus eine Gruppe rechts ergeben acht.", "correct": true},
+            {"text": "acht", "rationale": "Die bereits sichtbaren Gruppen bleiben erhalten. `::` ergänzt nur die fehlende Anzahl bis acht.", "correct": false}
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Expansionsregel",
+          "markdown": "Zähle alle sichtbaren Hextets links und rechts von `::`. Der Operator ergänzt **genau so viele Nullgruppen, bis acht Gruppen erreicht sind**."
+        }
+      ]
+    },
+    {
+      "title": "Grundaufbau und erlaubte Kürzungen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Eine IPv6-Adresse besitzt acht Gruppen mit je vier Hexadezimalstellen. Eine Gruppe wird Hextet genannt und repräsentiert 16 Bit. Hexadezimalstellen reichen von 0 bis 9 und a bis f. Großbuchstaben sind lesbar, RFC 5952 verlangt für eine kanonische Darstellung jedoch Kleinbuchstaben.\n\nEs gibt zwei getrennte Kürzungen:\n\n1. Innerhalb jedes Hextets werden führende Nullen entfernt. Aus `00a0` wird `a0`, aus `0000` wird `0`. Eine Null am Ende eines Werts darf nicht verschwinden: `0a00` wird `a00`, nicht `a`.\n2. Eine zusammenhängende Folge aus mindestens zwei vollständigen Null-Hextets wird durch `::` ersetzt. Nur die längste Folge wird gewählt; bei Gleichstand die linke. `::` darf höchstens einmal vorkommen, sonst wäre die Expansion mehrdeutig."
+        },
+        {
+          "type": "figure",
+          "diagramId": "ipv6-anatomy",
+          "alt": "IPv6-Adresse als acht Hextets, gruppiert in vier Abschnitte zu jeweils 32 Bit.",
+          "caption": "Eigene Lernskizze: Vier Hexadezimalstellen entsprechen 16 Bit; acht Hextets ergeben 128 Bit."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Acht Hextets mal 16 Bit je Hextet ergeben 128 Bit",
+          "mathml": "<math display=\"block\"><mrow><mn>8</mn><mtext> Hextets</mtext><mo>·</mo><mn>16</mn><mtext> Bit</mtext><mo>=</mo><mn>128</mn><mtext> Bit</mtext></mrow></math>",
+          "legend": ["vier Hexadezimalstellen je Hextet", "acht Hextets je IPv6-Adresse"]
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel mit Gleichstand",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Gegeben ist `2001:0DB8:0000:0000:00A0:0000:0000:0007`. Zuerst werden Buchstaben kleingeschrieben und führende Nullen je Hextet entfernt: `2001:db8:0:0:a0:0:0:7`.\n\nEs gibt zwei gleich lange Folgen aus jeweils zwei Null-Hextets. Für die kanonische Form wird die linke Folge ersetzt. Die rechte Folge bleibt als `0:0` sichtbar. Das eindeutige Ergebnis lautet `2001:db8::a0:0:0:7`. Eine zweite Verwendung von `::` wäre unzulässig."
+        },
+        {
+          "type": "figure",
+          "diagramId": "compression-flow",
+          "alt": "Fünfstufiger Ablauf vom Prüfen der acht Gruppen über Kleinbuchstaben und führende Nullen bis zur einmaligen Kompression der längsten Nullfolge.",
+          "caption": "Eigene Lernskizze: Die Regeln werden in einer festen Reihenfolge angewendet; dadurch bleibt das Ergebnis reproduzierbar."
+        },
+        {
+          "type": "quiz",
+          "id": "ipv6-writing-practice",
+          "question": "Warum bleibt im Ergebnis `2001:db8::a0:0:0:7` die zweite Nullfolge sichtbar?",
+          "options": [
+            {"text": "Weil `::` pro Adresse nur einmal verwendet werden darf und bei Gleichstand die linke längste Folge gewinnt.", "rationale": "Richtig. So bleibt die gekürzte Adresse eindeutig und kanonisch.", "correct": true},
+            {"text": "Weil Nullgruppen nach einem Wert a0 niemals gekürzt werden dürfen.", "rationale": "Auch spätere Nullfolgen können grundsätzlich gekürzt werden. Hier verhindert die bereits verwendete Doppelpunktkompression eine zweite Anwendung.", "correct": false},
+            {"text": "Weil eine IPv6-Adresse höchstens zwei Nullgruppen enthalten darf.", "rationale": "IPv6 kann beliebig viele Null-Hextets enthalten. Beschränkt ist nur der einmalige Einsatz von `::`.", "correct": false},
+            {"text": "Weil Großbuchstaben eine zweite Kompression blockieren.", "rationale": "Groß- oder Kleinschreibung hat keinen Einfluss auf die Zahl erlaubter Doppelpunktkompressionen.", "correct": false}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Geführte Übung: Sicher expandieren",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "ipv6-expansion-sequence",
+          "title": "Von der Kurzform zu acht Hextets",
+          "prompt": "Bringe die Schritte zum Expandieren von `fd12:3456::a:9` in die richtige Reihenfolge.",
+          "tag": "Übung",
+          "steps": [
+            {"id": "pad", "label": "Jedes Hextet auf vier Hexadezimalstellen mit führenden Nullen auffüllen."},
+            {"id": "count", "label": "Die sichtbaren Hextets links und rechts von `::` zählen."},
+            {"id": "insert", "label": "So viele `0000`-Hextets einsetzen, bis insgesamt acht Gruppen vorhanden sind."},
+            {"id": "verify", "label": "Acht Gruppen und genau sieben einfache Trenndoppelpunkte in der Vollform prüfen."}
+          ],
+          "expected": ["count", "insert", "pad", "verify"],
+          "correctFeedback": "Richtig. Zuerst wird die Zahl fehlender Gruppen bestimmt, erst danach werden alle Gruppen auf vier Stellen aufgefüllt.",
+          "wrongFeedback": "Zähle vor dem Auffüllen die sichtbaren Gruppen. `::` ersetzt die Differenz zu insgesamt acht Hextets."
+        },
+        {
+          "type": "callout",
+          "kind": "warning",
+          "label": "Ungültige Form",
+          "markdown": "Eine Adresse wie `2001::db8::1` ist mehrdeutig, weil zwei Doppelpunktoperatoren unabhängig viele Nullgruppen ersetzen könnten."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {"id": "ipv6-hextets", "label": "Aufbau", "front": "Wie viele Hextets und Bit besitzt eine IPv6-Adresse?", "back": "Acht Hextets mit je 16 Bit, insgesamt 128 Bit."},
+            {"id": "ipv6-double-colon", "label": "Doppelpunkt", "front": "Wie oft darf `::` in einer IPv6-Adresse vorkommen?", "back": "Höchstens einmal; beim Expandieren ergänzt es die fehlenden Null-Hextets bis insgesamt acht Gruppen."},
+            {"id": "ipv6-rfc5952-tie", "label": "Gleichstand", "front": "Welche Nullfolge wird bei zwei gleich langen Folgen kanonisch komprimiert?", "back": "Die linke der gleich langen längsten Folgen."}
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "ipv6-writing-recall",
+          "title": "Ohne Nachschlagen erklären",
+          "prompt": "Erkläre die vollständige RFC-5952-Kürzung einschließlich führender Nullen, längster Nullfolge, Gleichstand und einmaliger Verwendung von `::`.",
+          "label": "Deine Erklärung",
+          "placeholder": "Zuerst werden …",
+          "minLength": 110,
+          "model": "Eine IPv6-Adresse hat acht Hextets. Buchstaben werden kleingeschrieben und führende Nullen je Hextet entfernt. Danach wird die längste Folge aus mindestens zwei vollständigen Null-Hextets einmal durch :: ersetzt. Bei gleich langen Folgen gewinnt die linke. :: darf nur einmal vorkommen, damit sich die fehlenden Gruppen eindeutig bis auf acht ergänzen lassen."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check: Transfer",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "ipv6-transfer-compress",
+          "requiredObjective": "canonical-compression",
+          "question": "Welche Form ist die kanonische Kürzung von `2001:0DB8:0000:0000:00A0:0000:0000:0007`?",
+          "options": [
+            {"text": "2001:db8::a0:0:0:7", "rationale": "Richtig. Führende Nullen entfallen; bei den gleich langen Nullfolgen wird die linke komprimiert.", "correct": true},
+            {"text": "2001:db8:0:0:a0::7", "rationale": "Diese Form ist syntaktisch expandierbar, komprimiert bei Gleichstand aber die rechte statt der von RFC 5952 geforderten linken Nullfolge.", "correct": false},
+            {"text": "2001:db8::a::7", "rationale": "`::` kommt zweimal vor und macht die Zahl der jeweils ausgelassenen Gruppen mehrdeutig.", "correct": false},
+            {"text": "2001:DB8::A0:0:0:7", "rationale": "Die Struktur stimmt, aber die kanonische RFC-5952-Darstellung verwendet Kleinbuchstaben.", "correct": false}
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "ipv6-transfer-expand",
+          "requiredObjective": "safe-expansion",
+          "question": "Welche Vollform gehört zu `2001:db8:42::7`?",
+          "options": [
+            {"text": "2001:0db8:0042:0000:0000:0000:0000:0007", "rationale": "Richtig. Vier Null-Hextets ergänzen die vier sichtbaren Gruppen auf insgesamt acht.", "correct": true},
+            {"text": "2001:0db8:0042:0000:0000:0000:0007", "rationale": "Diese Form besitzt nur sieben Hextets; eine Nullgruppe fehlt.", "correct": false},
+            {"text": "2001:0db8:0042:0000:0000:0000:0000:0000:0007", "rationale": "Diese Form besitzt neun Hextets und wäre länger als eine IPv6-Adresse.", "correct": false},
+            {"text": "2001:0db8:0042:0007:0000:0000:0000:0000", "rationale": "Die sichtbare Gruppe 7 steht rechts von `::` und muss deshalb das letzte Hextet bleiben.", "correct": false}
+          ]
+        },
+        {"type": "markdown", "markdown": "**Prüfungsformulierung:** Markiere beim Expandieren zuerst die sichtbaren Gruppen. Setze die fehlenden Null-Hextets in die Position von `::` ein und prüfe abschließend die Gesamtzahl acht."}
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {"type": "markdown", "markdown": "- **IT-Berufe Grundstufe – Lernfelder 6–9 (2022):** direkte RFC-5952-Regeln und Übungsmuster zum Kürzen und Expandieren.\n- **EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):** ergänzende IPv6-Schreibweisen im Netzkontext.\n- **IT-Berufe Fachstufe II – Lernfelder 10–12 (2023):** Präfixschreibweisen als Kontextbeleg.\n\nAlle Aufgaben und Diagramme sind neu erstellt. Private Buchabbildungen sowie OCR-Rohtext werden nicht veröffentlicht."}
+      ]
+    }
+  ]
+}

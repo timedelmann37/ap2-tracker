@@ -1,0 +1,172 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "portfast-bpdu-guard",
+    "slug": "portfast-bpdu-guard",
+    "title": "Edge-Ports mit BPDU-Schutz absichern",
+    "description": "Layer-2-Loops als Ausfallkette erklären und Edge-/PortFast-Verhalten sowie BPDU Guard anhand der tatsächlichen Portrolle konservativ auswählen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-5",
+    "groupLabel": "Block N5 · Switching und VLANs",
+    "itemId": "ga2-5__6",
+    "week": "KW 39",
+    "estimatedMinutes": 23,
+    "relevance": "hoch",
+    "sources": ["itlf10-12-2023", "europa-integratoren-2026"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {"id": "loop-failure-chain", "label": "die technische Ausfallkette eines Layer-2-Loops erklären und Edge-Beschleunigung von Schleifenschutz unterscheiden"},
+    {"id": "edge-guard-decision", "label": "für Endpoint-, Uplink- und unsichere Ports eine herstellerneutrale Edge-/BPDU-Guard-Entscheidung mit Reaktionsplan treffen"}
+  ],
+  "intro": "Ein Edge-Port darf schneller weiterleiten, weil dort administrativ genau ein Endgerät erwartet wird. Das ist Komfort, kein Loop-Schutz. Erscheint an einem geschützten Edge-Port dennoch eine BPDU, deutet das auf einen Switch, eine Bridge oder eine Fehlverkabelung hin. BPDU Guard kann den Port dann gemäß Plattformkonfiguration sperren oder deaktivieren.",
+  "curation": {
+    "evidence": [
+      {"sourceId": "itlf10-12-2023", "sourceLocator": "Chunks itlf10-12-2023:page:0349 und :0350", "use": "BPDUs, Root-Port-Kontext und nicht weiterleitende STP-Zustände als Grundlage für die Loop- und Kontrollrahmen-Erklärung", "reviewStatus": "nur als STP-Kontext genutzt; kein direkter PortFast-/BPDU-Guard-Beleg"},
+      {"sourceId": "europa-integratoren-2026", "sourceLocator": "Chunk europa-integratoren-2026:01079", "use": "Prüfungsnaher Kontext zu Layer-2-Loops, Broadcast-Storm sowie STP/RSTP/MSTP", "reviewStatus": "nur Loop-Kontext; konkrete Zeitangaben und fehlende Edge-Schutzdetails nicht übernommen"}
+    ],
+    "notes": [
+      "Der in der gemeinsamen Source-Map referenzierte Chunk itlf6-9-2022:00183 ist eine Projekteinführung zu einer Azubi-Plattform und damit ein klarer Fehltreffer; er wurde ausgeschlossen.",
+      "In der lokalen Wissensbasis wurde kein direkter Textbeleg für PortFast oder BPDU Guard gefunden. Die Einheit bleibt deshalb CURATED_DRAFT und formuliert die Konzepte herstellerneutral: PortFast ist ein Cisco-Begriff, andere Plattformen sprechen zum Beispiel von Edge- oder Admin-Edge-Ports.",
+      "Die private Figur itlf10-12-2023:layout:0350:01 ist eine STP-Topologie, keine PortFast-/BPDU-Guard-Erklärung. Sie wurde nicht übernommen; beide Diagramme sind eigenständig.",
+      "BPDU-Guard-Reaktion und automatische Wiederfreigabe sind plattform- und konfigurationsabhängig. Die Einheit verspricht weder einen universellen Error-Disable-Zustand noch eine feste Recovery-Zeit.",
+      "Edge-/PortFast-Verhalten deaktiviert STP nicht und darf nicht mit BPDU Filter verwechselt werden. Auf Uplinks, Trunks oder Ports mit möglichem Bridge-Nachbarn ist eine pauschale Edge-Kennzeichnung riskant."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "loop-failure-flow",
+      "type": "flow",
+      "title": "Vom Patchfehler zum Netzausfall",
+      "description": "Ein Layer-2-Loop wird durch wiederholtes Flooding und instabile Lerninformationen schnell zum gemeinsamen Fehler.",
+      "items": [
+        {"label": "1 · Redundanter Layer-2-Pfad", "detail": "Ein unerwarteter Switch oder ein Patchkabel schließt eine Schleife."},
+        {"label": "2 · Frame-Kopien zirkulieren", "detail": "Broadcasts und unbekannte Ziele werden über mehrere Ports geflutet; Ethernet besitzt kein Hop-Limit."},
+        {"label": "3 · MAC-Tabelle flappt", "detail": "Dieselbe Quell-MAC erscheint abwechselnd an verschiedenen Ports."},
+        {"label": "4 · Gemeinsamer Ausfall", "detail": "Linkkapazität und Steuerung werden belastet; normale Kommunikation verzögert sich oder fällt aus."}
+      ]
+    },
+    {
+      "id": "edge-port-decisions",
+      "type": "comparison",
+      "title": "Portrolle entscheidet über Edge-Schutz",
+      "description": "Die Konfiguration folgt der physisch und organisatorisch garantierten Rolle, nicht dem Portnamen.",
+      "items": [
+        {"label": "Vertrauenswürdiger Einzel-Endpoint", "detail": "Edge/Admin-Edge möglich; BPDU Guard sinnvoll, wenn an diesem Port nie eine Bridge erwartet wird."},
+        {"label": "Switch-Uplink oder Trunk", "detail": "Kein Edge-Port. BPDUs sind erwartete Steuerinformationen und dürfen nicht pauschal als Fehler behandelt werden."},
+        {"label": "Daisy-Chain-Telefon oder Dock", "detail": "Nur als Edge klassifizieren, wenn die Plattform und das angeschlossene Design ausdrücklich geprüft sind."},
+        {"label": "Unbekannte Wanddose", "detail": "Erst Inventar und Anschlussrolle klären; Schutzrichtlinie sowie Recovery-Verfahren dokumentieren."}
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Zwei Funktionen, zwei Zwecke",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "edge-guard-diagnostic",
+          "diagnostic": true,
+          "question": "Was ist die fachlich wichtigste Aussage zu einem als Edge/PortFast konfigurierten Access-Port?",
+          "options": [
+            {"text": "Er darf bei erwartetem Einzel-Endpoint schneller weiterleiten, ist dadurch aber nicht automatisch gegen Loops geschützt.", "rationale": "Richtig. Edge-Verhalten und BPDU-basierter Schutz lösen unterschiedliche Aufgaben.", "correct": true},
+            {"text": "Er ignoriert alle BPDUs und kann deshalb nie in einen Loop geraten.", "rationale": "Edge-Verhalten ist kein universeller BPDU-Filter und verhindert keine Fehlverkabelung.", "correct": false},
+            {"text": "Er gehört auf jeden Switch-Uplink, damit STP schneller wird.", "rationale": "Ein Uplink erwartet einen Bridge-Nachbarn und darf nicht pauschal als Edge behandelt werden.", "correct": false},
+            {"text": "Er ersetzt STP für das gesamte Netz.", "rationale": "STP bleibt für die Schleifenfreiheit der Switch-Topologie zuständig.", "correct": false}
+          ]
+        },
+        {"type": "callout", "kind": "merksatz", "label": "Trennung", "markdown": "**Edge/Admin-Edge:** schneller Anschluss eines erwarteten Endgeräts. **BPDU Guard:** Schutzreaktion, wenn an diesem Port unerwartet eine BPDU erscheint."
+        }
+      ]
+    },
+    {
+      "title": "Warum ein Loop das ganze Segment trifft",
+      "blocks": [
+        {"type": "markdown", "markdown": "Ein Layer-2-Broadcast wird an alle passenden Ausgangsports außer dem Eingangsport geflutet. Schließt die Topologie eine Schleife, können Kopien erneut ankommen und wieder verteilt werden. Anders als ein IP-Paket besitzt der Ethernet-Frame kein TTL-/Hop-Limit, das diese Runde zuverlässig beendet. Parallel kann die MAC-Tabelle zwischen Ports wechseln, weil dieselbe Quelladresse aus verschiedenen Richtungen gelernt wird.\n\nEdge-Verhalten verkürzt lediglich den Weg eines geeigneten Ports in den Forwarding-Zustand. Es verhindert weder ein falsch angeschlossenes Switch noch eine Kabelschleife. Der Schutz muss auf einer ausdrücklich definierten Annahme beruhen: An diesem Port gibt es keinen Bridge-Nachbarn."},
+        {"type": "figure", "diagramId": "loop-failure-flow", "alt": "Vier Schritte zeigen vom redundanten Layer-2-Pfad über zirkulierende Frame-Kopien und eine instabile MAC-Tabelle bis zum gemeinsamen Netzausfall.", "caption": "Eigene Lernskizze: Der lokale Patchfehler kann den gesamten Broadcast-Bereich beeinträchtigen."}
+      ]
+    },
+    {
+      "title": "Portrolle als Auswahlregel",
+      "blocks": [
+        {"type": "math", "ariaLabel": "Die Menge geeigneter Edge-Ports enthält nur Ports mit Einzel-Endpunkt, ohne Trunk und ohne Bridge-Nachbarn", "mathml": "<math display=\"block\"><msub><mi>P</mi><mtext>Edge</mtext></msub><mo>=</mo><mo>{</mo><mi>p</mi><mo>|</mo><mi>Endpoint</mi><mo>(</mo><mi>p</mi><mo>)</mo><mo>∧</mo><mo>¬</mo><mi>Trunk</mi><mo>(</mo><mi>p</mi><mo>)</mo><mo>∧</mo><mo>¬</mo><mi>BridgeNeighbor</mi><mo>(</mo><mi>p</mi><mo>)</mo><mo>}</mo></math>", "legend": ["Endpoint(p) = administrativ genau ein geeignetes Endgerät erwartet", "Trunk(p) = Verbindung transportiert mehrere VLANs oder ist ein Uplink", "BridgeNeighbor(p) = Switch/Bridge ist möglich oder erwartet"]},
+        {"type": "figure", "diagramId": "edge-port-decisions", "alt": "Vergleichskarten bewerten einen vertrauenswürdigen Einzel-Endpoint, einen Switch-Uplink, eine Daisy-Chain und eine unbekannte Wanddose.", "caption": "Eigene Entscheidungshilfe: Bei Unsicherheit nicht beschleunigen, sondern Portrolle klären."},
+        {"type": "markdown", "markdown": "**Beispiel:** An Port 12 hängt laut Inventar ein einzelner Arbeitsplatz-PC. Der Port ist Access, nicht Trunk, und ein Switch ist dort organisatorisch verboten. Edge/Admin-Edge plus BPDU Guard passt. Trifft eine BPDU ein, wird der Port gemäß Plattformrichtlinie geschützt. Danach folgen Alarm, Prüfung der Verkabelung und eine kontrollierte Wiederfreigabe.\n\nPort 48 verbindet den Etagen-Switch mit dem Core. Dort werden BPDUs erwartet. Eine Edge-Kennzeichnung oder ein Guard, der erwartete BPDUs als Fehler behandelt, wäre hier falsch und kann die legitime Verbindung auslösen oder sperren."
+        }
+      ]
+    },
+    {
+      "title": "Geführte Störungsreaktion",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "bpdu-guard-response-sequence",
+          "title": "Unerwartete BPDU am Edge-Port",
+          "prompt": "Bringe die sichere Reaktion in Reihenfolge. Die genaue Portzustandsbezeichnung bleibt plattformabhängig.",
+          "tag": "Übung",
+          "steps": [
+            {"id": "guard-reacts", "label": "Die konfigurierte Guard-Funktion begrenzt den betroffenen Port gemäß Plattformrichtlinie."},
+            {"id": "record-alert", "label": "Ereignis, Port, Zeit und angeschlossenes Gerät protokollieren und alarmieren."},
+            {"id": "inspect-cabling", "label": "Vor Ort auf Switch, Bridge, falsches Patchkabel oder Docking-Sonderfall prüfen."},
+            {"id": "remove-cause", "label": "Fehlerursache beseitigen und korrekte Portrolle sowie Schutzrichtlinie bestätigen."},
+            {"id": "controlled-recovery", "label": "Port nach Herstellerverfahren kontrolliert freigeben und Loop-/BPDU-Test dokumentieren."}
+          ],
+          "expected": ["guard-reacts", "record-alert", "inspect-cabling", "remove-cause", "controlled-recovery"],
+          "correctFeedback": "Richtig: Ursache vor Wiederfreigabe; die konkrete Recovery folgt der Plattformdokumentation.",
+          "wrongFeedback": "Nicht blind reaktivieren: Schutzreaktion, Belege, Verkabelungsprüfung, Ursachenbehebung und kontrollierte Freigabe."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {"id": "edge-purpose", "label": "Edge-Port", "front": "Was ist der Zweck von Edge-/PortFast-Verhalten?", "back": "Ein administrativ als Endgeräteanschluss bestätigter Port darf schneller in die Weiterleitung gelangen; es ist kein Loop-Schutz."},
+            {"id": "guard-purpose", "label": "BPDU Guard", "front": "Was bedeutet eine BPDU am geschützten Edge-Port?", "back": "Die Edge-Annahme ist verletzt. Die Plattform soll den Port nach der konfigurierten Schutzrichtlinie begrenzen und alarmieren."},
+            {"id": "uplink-rule", "label": "Uplink", "front": "Warum gehört Edge-/BPDU-Guard-Logik nicht pauschal auf einen Switch-Uplink?", "back": "Dort ist ein Bridge-Nachbar vorgesehen und BPDUs sind legitime Steuerrahmen."}
+          ]
+        },
+        {"type": "recall", "id": "edge-guard-free-recall", "title": "Konfiguration begründen", "prompt": "Erkläre den Unterschied zwischen Edge/PortFast und BPDU Guard. Nenne je ein geeignetes und ungeeignetes Portbeispiel sowie deine Reaktion auf eine unerwartete BPDU.", "label": "Deine Erklärung", "placeholder": "Edge-Verhalten …", "minLength": 130, "model": "Edge/PortFast beschleunigt einen bestätigten Endgeräteport, schützt aber nicht selbst vor Loops. BPDU Guard reagiert auf eine unerwartete BPDU gemäß Plattformrichtlinie. Geeignet ist ein vertrauenswürdiger Einzel-PC-Port, ungeeignet ein Switch-Uplink. Nach einer Schutzreaktion werden Ereignis und Verkabelung geprüft, die Ursache entfernt und der Port kontrolliert freigegeben."}
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "loop-failure-chain-transfer",
+          "requiredObjective": "loop-failure-chain",
+          "question": "Welche Fehlerkette erklärt einen Layer-2-Loop und die Grenze von Edge/PortFast korrekt?",
+          "options": [
+            {"text": "Frame-Kopien zirkulieren ohne Hop-Limit, Flooding und MAC-Flapping belasten das Netz; schnelleres Forwarding eines Edge-Ports verhindert das nicht.", "rationale": "Richtig. Ursache, Wirkung und Funktionsgrenze sind vollständig beschrieben.", "correct": true},
+            {"text": "Das IP-TTL läuft ab und beendet jeden Ethernet-Loop; Edge/PortFast erhöht nur das TTL.", "rationale": "Ein Ethernet-Frame besitzt kein IP-TTL, und Edge-Verhalten verändert keines.", "correct": false},
+            {"text": "Nur Unicast kann zirkulieren, Broadcasts verlassen den Switch nie.", "rationale": "Gerade Broadcast-Flooding ist ein typischer Auslöser eines Broadcast-Sturms.", "correct": false},
+            {"text": "BPDU Guard verteilt Broadcasts gleichmäßig auf alle Links.", "rationale": "BPDU Guard ist eine Schutzreaktion auf unerwartete Steuerrahmen, kein Lastverteilungsverfahren.", "correct": false}
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "edge-guard-decision-transfer",
+          "requiredObjective": "edge-guard-decision",
+          "question": "Welche Portentscheidung ist am sichersten und herstellerneutral formuliert?",
+          "options": [
+            {"text": "Ein bestätigter Einzel-Endpoint-Port darf Edge plus BPDU Guard nutzen; ein Uplink bleibt Nicht-Edge, und Recovery folgt der dokumentierten Plattformrichtlinie.", "rationale": "Richtig. Rolle, Schutz und Recovery werden ohne herstellerspezifische Universalannahme verbunden.", "correct": true},
+            {"text": "Alle Ports erhalten Edge plus BPDU Guard, auch Uplinks, weil BPDUs immer ein Angriff sind.", "rationale": "Auf Uplinks sind BPDUs legitime STP-Steuerinformationen.", "correct": false},
+            {"text": "Unbekannte Wanddosen werden blind als Edge markiert; bei einer BPDU wird der Port sofort dauerhaft gelöscht.", "rationale": "Die Portrolle muss geklärt werden; Schutz- und Recovery-Verhalten sind konfigurationsabhängig.", "correct": false},
+            {"text": "BPDU Guard wird deaktiviert, sobald ein Endpoint angeschlossen ist, weil Endpoints nie fehlverkabelt werden.", "rationale": "Gerade Anschlussfehler oder unerlaubte Bridges machen den Guard an geeigneten Edge-Ports sinnvoll.", "correct": false}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {"type": "markdown", "markdown": "- **IT-Berufe – Lernfelder 10–12 (2023), PDF-Seiten 349–350:** BPDUs, Portrollen und STP-Zustände als Loop-Kontext.\n- **EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026), Chunk 01079:** Loop-/Broadcast-Storm-Kontext.\n\nDie lokalen Buchstellen belegen PortFast/BPDU Guard nicht direkt. Die herstellerneutrale Synthese ist deshalb ausdrücklich CURATED_DRAFT; Produktnamen, Sperrzustände und Wiederanlaufverfahren müssen gegen die Zielplattform geprüft werden."}
+      ]
+    }
+  ]
+}

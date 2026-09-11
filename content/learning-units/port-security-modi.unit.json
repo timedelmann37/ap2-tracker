@@ -1,0 +1,201 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "port-security-modi",
+    "slug": "port-security-modi",
+    "title": "Port-Security-Modi betriebssicher unterscheiden",
+    "description": "Konfigurierte und sticky gelernte MAC-Adressen, Adresslimits sowie Protect-, Restrict- und Shutdown-Reaktionen anhand eines Betriebsfalls unterscheiden.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-5",
+    "groupLabel": "Block N5 · Switching und VLANs",
+    "itemId": "ga2-5__9",
+    "week": "KW 39",
+    "estimatedMinutes": 24,
+    "relevance": "hoch",
+    "sources": ["itlf10-12-2023", "europa-integratoren-2026"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "address-mode-choice",
+      "label": "konfigurierte und sticky gelernte sichere MAC-Adressen samt Höchstzahl anhand von Rollout, Änderungsprozess und Persistenzanforderung auswählen"
+    },
+    {
+      "id": "violation-response",
+      "label": "Protect, Restrict und Shutdown als herstellerabhängige Beispielmodi nach Datenpfad, Meldung, Portzustand und Wiederherstellung unterscheiden"
+    }
+  ],
+  "intro": "Port Security besteht aus zwei getrennten Entscheidungen: Wie gelangt eine MAC-Adresse in die sichere Adressmenge, und was geschieht bei einer nicht erlaubten Quelle? Begriffe wie sticky, protect, restrict und shutdown sind verbreitet, aber kein herstellerübergreifend identischer Vertrag. Deshalb wird zuerst das gewünschte Betriebsverhalten beschrieben und danach die konkrete Plattformsyntax geprüft.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "Chunks itlf10-12-2023:page:0179 und itlf10-12-2023:page:0180",
+        "use": "Statische und MAC-basierte Zuordnung am Switch sowie deren Änderungs- und Verwaltungsaufwand als fachlicher Nachbarkontext",
+        "reviewStatus": "Es handelt sich um VLAN-Zuordnung, nicht um sichere MAC-Lernmodi; die Grenze wird in der Einheit ausdrücklich offengelegt"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "Chunk itlf10-12-2023:page:0217",
+        "use": "Portabschaltung nach fehlgeschlagener 802.1X-Authentisierung als Kontrast zu einer Port-Security-Verstoßreaktion",
+        "reviewStatus": "Nur zur Abgrenzung genutzt; 802.1X und Port Security werden weder funktional noch terminologisch gleichgesetzt"
+      },
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunk europa-integratoren-2026:00857",
+        "use": "Vergleich einer MAC-basierten Zuordnung mit RADIUS-basierter Benutzerzuordnung und Hinweis auf unterschiedlichen Schutzwert",
+        "reviewStatus": "Relevanter Sicherheitsvergleich, aber keine direkte Quelle für sticky MAC oder die drei Violation-Modi"
+      }
+    ],
+    "notes": [
+      "Die Batch-Kandidaten itlf10-12-2023:page:0230 und europa-integratoren-2026:01078 behandeln VLAN-Tagging beziehungsweise PVIDs und sind keine Belege für Port-Security-Modi.",
+      "Der Batch-Kandidat itlf10-12-2023:page:0254 behandelt Zertifikate und RSA; er ist ein vollständiger Fehltreffer.",
+      "Der Figurenkandidat itlf10-12-2023:layout:0011:01 zeigt DHCP-Adressvergabeverfahren; DHCP-Reservierung und sticky Port Security sind verschiedene Funktionen. Die Grafik wurde ausgeschlossen.",
+      "Protect, Restrict und Shutdown werden als Cisco-artige, verbreitete Beispielbegriffe erklärt. Benachrichtigung, Zähler, Fehlerzustand, automatische Recovery, Alterung und Speichern sticky gelernter Adressen hängen von Hersteller, Betriebssystem und Version ab.",
+      "Diagramme, Zustände, Fälle und Antwortoptionen sind eigenständig erstellt; private Buchgrafiken werden nicht veröffentlicht."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "secure-address-sources",
+      "type": "comparison",
+      "title": "Konfiguriert und sticky lösen verschiedene Rolloutprobleme",
+      "description": "Beide Wege können eine sichere Adressmenge erzeugen. Sie unterscheiden sich darin, wer die Adresse einträgt, wann sie bekannt wird und wie ihr Fortbestand nach Konfigurationsänderung oder Neustart abgesichert wird.",
+      "items": [
+        {"label": "Konfiguriert", "detail": "Administrator trägt erwartete MAC-Adresse bewusst ein; hoher Erfassungsaufwand, klarer Sollzustand"},
+        {"label": "Sticky gelernt", "detail": "Switch übernimmt beobachtete Quelle in eine sichere Bindung; Rollout einfacher, Lernfenster muss kontrolliert sein"},
+        {"label": "Persistenz", "detail": "Nicht unterstellen: Speichern in laufender/startender Konfiguration und Verhalten nach Neustart plattformspezifisch prüfen"},
+        {"label": "Gemeinsam", "detail": "Höchstzahl, Alterung, Austauschprozess, Monitoring und Verstoßreaktion bleiben ausdrücklich zu planen"}
+      ]
+    },
+    {
+      "id": "violation-modes",
+      "type": "flow",
+      "title": "Ein Verstoß hat Datenpfad- und Betriebsauswirkungen",
+      "description": "Die drei verbreiteten Bezeichnungen werden entlang derselben Prüffragen verglichen. Die genaue Umsetzung muss am Zielsystem verifiziert werden.",
+      "items": [
+        {"label": "Verstoß erkannt", "detail": "unbekannte oder überzählige Quell-MAC am geschützten Port"},
+        {"label": "Protect-artig", "detail": "verletzenden Verkehr verwerfen; Port bleibt für erlaubte Quellen nutzbar, Meldung oft gering"},
+        {"label": "Restrict-artig", "detail": "verletzenden Verkehr verwerfen; Port bleibt nutzbar, Zähler und Meldung typischerweise vorhanden"},
+        {"label": "Shutdown-artig", "detail": "Port in Fehler-/Sperrzustand versetzen; legitimer Verkehr wird ebenfalls unterbrochen"},
+        {"label": "Recovery prüfen", "detail": "Ursache bewerten, sichere Adressen kontrollieren und plattformspezifisch wieder freigeben"}
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Zwei Entscheidungen nicht vermischen",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "port-modes-diagnostic",
+          "diagnostic": true,
+          "question": "Ein Switch hat eine neue MAC-Adresse sticky gelernt. Welche Aussage folgt daraus allein?",
+          "options": [
+            {"text": "Die Adresse wurde durch einen Benutzer kryptografisch nachgewiesen", "rationale": "Sticky Learning beobachtet typischerweise eine Quell-MAC; es ist keine Benutzer- oder Zertifikatsauthentisierung.", "correct": false},
+            {"text": "Die beobachtete Adresse wurde nach der konfigurierten Lernregel als sicher behandelt", "rationale": "Richtig. Ob und wie sie einen Neustart übersteht, muss getrennt geprüft werden.", "correct": true},
+            {"text": "Die Adresse bleibt auf jeder Plattform automatisch dauerhaft gespeichert", "rationale": "Persistenz und notwendiges Speichern sind plattform- und versionsabhängig.", "correct": false},
+            {"text": "Jeder spätere Verstoß schaltet den Port zwingend ab", "rationale": "Die Reaktion ist eine zweite, separat konfigurierte Entscheidung.", "correct": false}
+          ]
+        },
+        {"type": "callout", "kind": "merksatz", "label": "Doppelte Designentscheidung", "markdown": "**Adressmodus:** Wer bestimmt die sichere MAC-Menge? **Violation-Modus:** Was geschieht mit einer nicht erlaubten Quelle? Beide Antworten gehören in die Betriebsdokumentation."}
+      ]
+    },
+    {
+      "title": "Sichere Adressen aufbauen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**Konfigurierte sichere MAC-Adressen** eignen sich, wenn das Sollgerät vorab feststeht und Änderungen kontrolliert freigegeben werden. Der Preis ist manueller Erfassungs- und Pflegeaufwand.\n\n**Sticky Learning** kann den Rollout vereinfachen: Eine während des Lernfensters beobachtete Quell-MAC wird in die sichere Menge übernommen. Genau deshalb muss während dieses Fensters sichergestellt sein, dass das richtige Gerät angeschlossen ist. Anschließend werden gelernte Adressen, Höchstzahl und Konfigurationspersistenz geprüft.\n\nDie **maximale Anzahl** ist unabhängig von der Lernart. Bei Telefon plus PC kann zwei sinnvoll sein; bei einem einzelnen Drucker vielleicht eins. Alte Bindungen, Adressalterung und Gerätetausch brauchen einen dokumentierten Lebenszyklus."
+        },
+        {"type": "figure", "diagramId": "secure-address-sources", "alt": "Vergleich von administrativ konfigurierten und sticky gelernten sicheren MAC-Adressen mit den gemeinsamen Fragen Höchstzahl, Persistenz und Lebenszyklus.", "caption": "Eigene Lernskizze: Sticky reduziert Erfassung, nicht die Verantwortung für Lernfenster und Persistenz."},
+        {"type": "callout", "kind": "warning", "label": "Sticky ist nicht DHCP", "markdown": "Eine DHCP-Reservierung ordnet einer Client-MAC eine IP-Adresse zu. Sticky Port Security ordnet eine beobachtete Quell-MAC einem Switchport als sicher zu. Die ähnlichen Wörter **MAC** und **lernen** machen daraus nicht dieselbe Funktion."}
+      ]
+    },
+    {
+      "title": "Verstoßmodi mit vier Prüffragen vergleichen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Für jede Plattform werden vier Punkte geprüft: **Wird der verletzende Verkehr verworfen? Bleibt der Port für erlaubte Quellen aktiv? Entsteht eine Meldung beziehungsweise ein Zähler? Wie erfolgt die Wiederherstellung?**\n\nIn einer verbreiteten Cisco-artigen Semantik gilt als Arbeitsmodell:\n\n| Modus | Verletzender Verkehr | Port für erlaubte Quellen | Beobachtbarkeit | Betriebseffekt |\n| --- | --- | --- | --- | --- |\n| Protect | verworfen | bleibt typischerweise aktiv | gering oder keine unmittelbare Meldung | geringe Störung, Verstoß kann unbemerkt bleiben |\n| Restrict | verworfen | bleibt typischerweise aktiv | Zähler und Meldung typischerweise vorhanden | guter Diagnosekompromiss |\n| Shutdown | verworfen | Port wird in Fehler-/Sperrzustand versetzt | Ereignis und Zustand sichtbar | höchste unmittelbare Unterbrechung, Recovery nötig |\n\nDiese Namen sind **kein universeller Standardvertrag**. Vor jeder Prüfung oder Umsetzung zählt das in der Aufgabe genannte Herstellerverhalten beziehungsweise die Dokumentation des konkreten Geräts."
+        },
+        {"type": "figure", "diagramId": "violation-modes", "alt": "Verzweigter Vergleich der Protect-, Restrict- und Shutdown-artigen Reaktion nach einem Port-Security-Verstoß mit anschließendem Recovery-Schritt.", "caption": "Eigene Lernskizze: Nicht nur Drop ja oder nein, sondern Portzustand, Meldung und Recovery entscheiden den Betriebswert."}
+      ]
+    },
+    {
+      "title": "Beispiel und geführte Reaktion",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Produktionsdrucker ist dauerhaft an Port 12 angeschlossen. Sein Austausch erfolgt nur mit Ticket. Die alte MAC ist dokumentiert, der Switch soll maximal eine sichere Adresse führen. Für diesen Fall ist eine administrativ konfigurierte Bindung nachvollziehbar. Ob eine shutdown-artige Reaktion gewünscht ist, hängt von der betrieblichen Folge ab: Sie macht den Verstoß deutlich, unterbricht aber auch jeden legitimen Druckauftrag bis zur geprüften Wiederfreigabe.\n\nAn einem Schulungsarbeitsplatz mit häufigem, freigegebenem Gerätetausch kann sticky Learning den Rollout vereinfachen. Dann sind kontrolliertes Lernfenster, Entfernen alter Bindungen, Speichern der Konfiguration und Restrict-artige Meldungen oft wichtiger als eine pauschale Abschaltung."
+        },
+        {
+          "type": "sequence",
+          "id": "violation-response-sequence",
+          "title": "Nach einem Shutdown-artigen Verstoß",
+          "prompt": "Bringe die Reaktion auf einen gesperrten Druckerport in eine sichere Reihenfolge.",
+          "tag": "Geführte Übung",
+          "steps": [
+            {"id": "restore", "label": "Port mit der dokumentierten Plattformprozedur wieder freigeben"},
+            {"id": "identify", "label": "Verstoßzeit, Port, beobachtete Quell-MAC und Sollgerät ermitteln"},
+            {"id": "test", "label": "Zulässiges Gerät, erneuten Verstoß und Monitoring kontrolliert testen"},
+            {"id": "correct", "label": "Ursache beseitigen und sichere Adressmenge beziehungsweise Austauschfreigabe korrigieren"},
+            {"id": "preserve", "label": "Logs, Zähler und Portzustand vor dem Zurücksetzen als Beleg sichern"}
+          ],
+          "expected": ["preserve", "identify", "correct", "restore", "test"],
+          "correctFeedback": "Richtig. Erst Belege sichern und Ursache klären, dann gezielt korrigieren, freigeben und erneut nachweisen.",
+          "wrongFeedback": "Ein blindes Zurücksetzen vernichtet Diagnosewert und kann denselben Verstoß sofort wiederholen. Sichere zuerst Zustand und Ereignis."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {"id": "sticky-card", "label": "Sticky", "front": "Was ist der wichtigste Betriebsunterschied zwischen konfiguriert und sticky gelernt?", "back": "Konfiguriert trägt der Administrator die Solladresse ein; sticky übernimmt eine beobachtete Adresse. Sticky verlangt daher ein kontrolliertes Lernfenster und eine explizite Persistenzprüfung."},
+            {"id": "restrict-card", "label": "Restrict-artig", "front": "Wie unterscheidet sich Restrict-artig typischerweise von Protect-artig?", "back": "Beide verwerfen verletzenden Verkehr und lassen erlaubte Quellen meist weiterlaufen; Restrict liefert typischerweise Zähler und Meldung. Exaktes Verhalten plattformspezifisch prüfen."},
+            {"id": "shutdown-card", "label": "Shutdown-artig", "front": "Welcher zusätzliche Betriebseffekt entsteht gegenüber einem reinen Drop?", "back": "Der Port geht typischerweise in einen Fehler- oder Sperrzustand; damit wird auch legitimer Verkehr unterbrochen, bis Recovery greift."}
+          ]
+        },
+        {"type": "recall", "id": "port-modes-recall", "title": "Die Modiwahl frei erklären", "prompt": "Vergleiche konfigurierte und sticky gelernte sichere MAC-Adressen. Erkläre danach Protect, Restrict und Shutdown anhand von Drop, Portzustand, Meldung und Recovery und nenne die Herstellerabhängigkeit.", "label": "Dein Vergleich", "placeholder": "Konfiguriert bedeutet … Sticky bedeutet …", "minLength": 180, "model": "Konfigurierte sichere Adressen werden bewusst als Sollzustand eingetragen; sticky Learning übernimmt während eines kontrollierten Lernfensters beobachtete Quellen. Für beide werden Höchstzahl, Alterung, Gerätetausch und Persistenz geplant. Protect-artig verwirft meist nur verletzenden Verkehr mit geringer Meldung, Restrict-artig verwirft ebenfalls, zählt und meldet typischerweise, Shutdown-artig sperrt den Port und benötigt Recovery. Namen und Details hängen von Hersteller, Plattform und Version ab."}
+      ]
+    },
+    {
+      "title": "Lernziel-Check und Quellenlage",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "address-mode-transfer",
+          "requiredObjective": "address-mode-choice",
+          "question": "Für 60 neue, vorher unbekannte Firmen-PCs soll der Erstrollout zügig erfolgen. Danach dürfen die Ports jeweils nur den zuerst kontrolliert angeschlossenen PC führen; ein Neustart darf die Bindung nicht unbemerkt verlieren. Welche Planung passt?",
+          "options": [
+            {"text": "Sticky Learning in kontrolliertem Rollout, Höchstzahl eins, gelernte Adressen prüfen und die plattformspezifische Persistenz ausdrücklich sichern", "rationale": "Richtig. Die Antwort nutzt den Rolloutvorteil, ohne Persistenz oder Lernfenster zu unterstellen.", "correct": true},
+            {"text": "Unbegrenztes dynamisches Lernen ohne Kontrolle und ohne Speicherung", "rationale": "Damit könnten falsche Geräte gelernt und Bindungen nach einem Neustart verloren werden.", "correct": false},
+            {"text": "DHCP-Reservierungen anlegen; dadurch sind die Switchports automatisch geschützt", "rationale": "Eine IP-Adresszuordnung im DHCP-Server erzeugt keine sichere MAC-Bindung am Switchport.", "correct": false},
+            {"text": "Alle Ports abschalten und keine Sollgeräte dokumentieren", "rationale": "Das verhindert auch den geplanten Betrieb und liefert keine verwaltbare Adressregel.", "correct": false}
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "violation-mode-transfer",
+          "requiredObjective": "violation-response",
+          "question": "Ein Büroport soll unbekannte Quellen verwerfen und den Vorfall sichtbar zählen und melden, während der bereits zugelassene Telefonverkehr möglichst weiterläuft. Welches Cisco-artige Arbeitsmodell passt am ehesten?",
+          "options": [
+            {"text": "Protect-artig, weil dort Meldung und Zähler definitionsgemäß immer garantiert sind", "rationale": "Protect-artig steht typischerweise gerade für geringere Beobachtbarkeit; eine universelle Garantie gibt es nicht.", "correct": false},
+            {"text": "Restrict-artig, danach Zähler, Meldung und erlaubten Datenpfad auf der konkreten Plattform prüfen", "rationale": "Richtig. Das entspricht dem gewünschten Arbeitsmodell und wahrt die Herstellerabhängigkeit.", "correct": true},
+            {"text": "Shutdown-artig, weil der Port dann sicher für das erlaubte Telefon weiterleitet", "rationale": "Eine Port-Sperre unterbricht typischerweise auch den legitimen Verkehr.", "correct": false},
+            {"text": "Sticky, weil Sticky bereits die vollständige Verstoßreaktion bezeichnet", "rationale": "Sticky beschreibt den Erwerb einer sicheren Adresse, nicht den Violation-Modus.", "correct": false}
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "Die lokalen Treffer liefern nur VLAN-, MAC-Zuordnungs- und 802.1X-Kontext. Sie belegen weder sticky Learning noch Protect, Restrict und Shutdown direkt. Der Modivergleich ist deshalb ausdrücklich ein **Cisco-artiges, plattformabhängiges Arbeitsmodell** und bleibt **CURATED_DRAFT**. In einer Prüfung haben vorgegebene Gerätebeschreibung und Aufgabentext Vorrang."
+        }
+      ]
+    }
+  ]
+}

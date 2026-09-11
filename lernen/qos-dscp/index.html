@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Verkehr klassifizieren, DSCP als Kennzeichnung einem lokalen Per-Hop-Verhalten zuordnen und Priorisierung unter Engpassbedingungen samt Domänengrenzen beurteilen.">
+<title>QoS und DSCP ohne falsche Garantien planen – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=hybrid-1">
+<script defer src="/assets/ap2-space.js?v=hybrid-1"></script>
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="qos-dscp" data-progress-id="ga2-5__10" data-content-revision="2026-09-11.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-5">Block N5 · Switching und VLANs</a><span class="sep">›</span>
+    <span class="here">QoS und DSCP ohne falsche Garantien planen</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">QoS und DSCP ohne falsche Garantien planen</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 25 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Quality of Service ordnet Verkehrsklassen bei knappen Ressourcen unterschiedlich. DSCP trägt dazu eine sechs Bit breite Kennzeichnung im IP-Header, doch die Kennzeichnung selbst reserviert keine Bandbreite. Erst die konfigurierte Abbildung auf Warteschlangen, Scheduler, Policer oder Shaper an jedem relevanten Hop erzeugt ein Verhalten. QoS priorisiert vorhandene Kapazität; es erschafft keine neue.</p>
+<section class="learning-goals" aria-labelledby="qos-dscp-goals">
+  <h2 id="qos-dscp-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>DSCP als sechs Bit breite IP-Kennzeichnung lesen und den Weg von Klassifizierung über Markierung oder Remarking bis zur lokalen Warteschlangenbehandlung erklären</li>
+    <li>für einen Engpass eine begründete Priorisierungsregel entwerfen und ihre Grenzen bezüglich Kapazität, Überlast, Vertrauensgrenzen und Ende-zu-Ende-Wirkung beurteilen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Markiert heißt nicht reserviert</h2>
+<section class="quiz" data-quiz="qos-diagnostic" data-correct="1">
+  <h3>Ein VoIP-Paket trägt einen hohen DSCP-Wert. Was ist damit allein bewiesen?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="DSCP ist eine Kennzeichnung. Behandlung und Zusicherung hängen von der Policy jedes Hops beziehungsweise Vertrags ab."><span class="m">A</span> Jeder Router garantiert diesem Paket eine feste Bandbreite</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Erst die lokale Policy macht aus dem Codepoint eine konkrete Behandlung."><span class="m">B</span> Im IP-Header steht eine Kennzeichnung, die ein konfigurierter Hop auf ein Per-Hop-Verhalten abbilden kann</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Auch priorisierter Verkehr kann bei Überlast, Policing, Fehlern oder fehlender Policy verworfen werden."><span class="m">C</span> Das Paket kann niemals verworfen werden</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Eine Headermarkierung ändert keine Port- oder Leitungsrate."><span class="m">D</span> Die physische Linkrate wurde durch DSCP erhöht</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">DSCP ist ein Hinweis an die Policy</span><p>DSCP benennt eine gewünschte <strong>Per-Hop-Behandlung</strong>. Vertrauen, Queue-Zuordnung und Ressourcenzuteilung werden an jeder administrativen Grenze festgelegt.</p></aside><h2 class="sec" id="s2"><span class="num">2</span>Klassifizieren, markieren, behandeln</h2>
+<p>Das DS-Feld im IPv4- beziehungsweise IPv6-Header enthält sechs Bits für den <strong>Differentiated Services Code Point (DSCP)</strong>. Damit sind 64 Bitmuster möglich. Ein Codepoint ist aber keine weltweit identische Warteschlange: Ein Netzbetreiber bildet ihn innerhalb seiner Domäne auf ein Per-Hop-Verhalten ab.</p>
+<p>Eine belastbare Policy trennt:</p>
+<ol>
+<li><strong>Klassifizierung:</strong> Welcher Verkehr gehört fachlich zu welcher Klasse?</li>
+<li><strong>Trust Boundary:</strong> Darf ein Endgerät selbst markieren, oder setzt der Netzrand die Kennzeichnung neu?</li>
+<li><strong>Marking/Remarking:</strong> Welcher DSCP-Wert wird nach der lokalen Policy getragen?</li>
+<li><strong>Queue/Scheduler:</strong> Welche Warteschlange, Bedienreihenfolge und Mindest-/Maximalanteile gelten am Ausgangsinterface?</li>
+<li><strong>Conditioning:</strong> Policing verwirft oder markiert übermäßigen Verkehr; Shaping puffert und glättet ihn innerhalb einer Zielrate.</li>
+</ol>
+<p>Ungeprüft alle hohen Markierungen zu vertrauen ermöglicht Missbrauch: Ein Backup könnte sich selbst als Echtzeitverkehr ausgeben und die eigentliche Sprachklasse verdrängen.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Vom Paketmerkmal zur tatsächlichen Behandlung">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="758" viewBox="0 0 960 758" role="img" aria-labelledby="diagram-qos-processing-pipeline-title diagram-qos-processing-pipeline-desc">
+  <title id="diagram-qos-processing-pipeline-title">Vom Paketmerkmal zur tatsächlichen Behandlung</title>
+  <desc id="diagram-qos-processing-pipeline-desc">Sechsstufiger QoS-Ablauf von Klassifizierung und Vertrauensprüfung über DSCP-Markierung und Queue-Zuordnung bis Scheduler beziehungsweise Begrenzung und dem nächsten Hop.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Vom Paketmerkmal zur tatsächlichen Behandlung</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Klassifizieren</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Anwendung, Adresse, Protokoll oder vertrauenswürdige</tspan><tspan x="178" dy="25">Eingangsrolle erkennen</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Vertrauen prüfen</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Endgerätemarkierung übernehmen, verwerfen oder an der Grenze</tspan><tspan x="178" dy="25">neu bewerten</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">DSCP setzen</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">sechs Bit markieren eine gewünschte Behandlung innerhalb der</tspan><tspan x="178" dy="25">Policy</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Warteschlange wählen</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Codepoint wird lokal auf ein Per-Hop-Verhalten abgebildet</tspan></text><path d="M480 472v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 494 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="512" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="541" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Planen und begrenzen</tspan></text><text x="178" y="568" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Scheduler bedient Klassen; Policing, Shaping oder Drop</tspan><tspan x="178" dy="25">schützen die Ressourcen</tspan></text><path d="M480 580v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 602 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="620" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="649" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Nächster Hop</tspan></text><text x="178" y="676" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Markierung reist weiter, die Behandlung muss dort erneut</tspan><tspan x="178" dy="25">konfiguriert sein</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Ein Codepoint wirkt erst durch die konfigurierte Behandlung.</figcaption>
+</figure><h2 class="sec" id="s3"><span class="num">3</span>Engpassrechnung und durchgearbeitetes Szenario</h2>
+<p>Am 100-Mbit/s-WAN-Ausgang fallen gleichzeitig 8 Mbit/s Sprache, 20 Mbit/s interaktive Fachanwendung und 120 Mbit/s Backup an. Die angebotene Last beträgt 148 Mbit/s. Der Engpass ist real; kein Scheduler kann 148 Mbit/s verlustfrei und ohne Verzögerung durch einen 100-Mbit/s-Link schicken.</p>
+<p>Die Policy klassifiziert Sprache am vertrauenswürdigen Access-Rand, priorisiert sie am WAN-Ausgang innerhalb eines begrenzten Anteils, gibt der Fachanwendung einen planbaren Anteil und lässt das Backup die Restkapazität nutzen beziehungsweise formt es. Die Begrenzung der Prioritätsklasse verhindert, dass fehlerhaft markierter Verkehr alle anderen Klassen verdrängt. Bei nur 40 Mbit/s Gesamtlast hat die Priorisierung kaum Nutzen, weil kein Queue-Engpass besteht.</p>
+<div class="math-display" role="group" aria-label="Angebotene Last ist acht plus zwanzig plus einhundertzwanzig gleich einhundertachtundvierzig Megabit pro Sekunde; Überlast ist achtundvierzig Megabit pro Sekunde"><math display="block" aria-label="Angebotene Last ist acht plus zwanzig plus einhundertzwanzig gleich einhundertachtundvierzig Megabit pro Sekunde; Überlast ist achtundvierzig Megabit pro Sekunde"><mtable columnalign="right center left" rowspacing="0.5em"><mtr><mtd><msub><mi>D</mi><mtext>gesamt</mtext></msub></mtd><mtd><mo>=</mo></mtd><mtd><mn>8</mn><mo>+</mo><mn>20</mn><mo>+</mo><mn>120</mn><mo>=</mo><mn>148</mn><mtext> Mbit/s</mtext></mtd></mtr><mtr><mtd><msub><mi>D</mi><mtext>über</mtext></msub></mtd><mtd><mo>=</mo></mtd><mtd><mn>148</mn><mo>−</mo><mn>100</mn><mo>=</mo><mn>48</mn><mtext> Mbit/s</mtext></mtd></mtr></mtable></math><div class="math-legend"><span>D = gleichzeitig angebotene Last</span><span>100 Mbit/s = Engpasskapazität</span><span>QoS verteilt die knappe Kapazität; 48 Mbit/s verschwinden nicht durch Markierung</span></div></div><figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Jede administrative Grenze kann DSCP neu bewerten">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-topology" xmlns="http://www.w3.org/2000/svg" width="960" height="560" viewBox="0 0 960 560" role="img" aria-labelledby="diagram-qos-domain-path-title diagram-qos-domain-path-desc">
+  <title id="diagram-qos-domain-path-title">Jede administrative Grenze kann DSCP neu bewerten</title>
+  <desc id="diagram-qos-domain-path-desc">VoIP-Telefon und Backup-Client führen über eine eigene Policy-Grenze entweder in eine vertraglich definierte Providerklasse oder in einen Internetpfad ohne eigene QoS-Zusicherung.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Jede administrative Grenze kann DSCP neu bewerten</tspan></text>
+  <g class="diagram-zone zone-customer"><rect x="25" y="80" width="535" height="350" rx="18"/><text x="41" y="107">Eigene QoS-Domäne</text></g><g class="diagram-zone zone-provider"><rect x="610" y="80" width="320" height="350" rx="18"/><text x="626" y="107">Provider-Domäne</text></g><g class="diagram-edge priority"><path d="M135 165 L385 250"/><text class="diagram-edge-label" x="260" y="199.5" text-anchor="middle">Sprache</text></g><g class="diagram-edge default"><path d="M135 335 L385 250"/><text class="diagram-edge-label" x="260" y="284.5" text-anchor="middle">Best Effort</text></g><g class="diagram-edge boundary"><path d="M385 250 L750 190"/><text class="diagram-edge-label" x="567.5" y="212" text-anchor="middle">vertragliche Klasse?</text></g><g class="diagram-edge boundary"><path d="M385 250 L750 345"/><text class="diagram-edge-label" x="567.5" y="289.5" text-anchor="middle">Markierung ohne Garantie</text></g><g class="diagram-node phone" transform="translate(135 165)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="135" y="160" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="135" dy="0">VoIP-Telefon</tspan></text><text class="diagram-node-detail" x="135" y="184" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="135" dy="0">latenz- und</tspan><tspan x="135" dy="25">jitterempfindlich</tspan></text><g class="diagram-node client" transform="translate(135 335)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="135" y="330" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="135" dy="0">Backup-Client</tspan></text><text class="diagram-node-detail" x="135" y="354" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="135" dy="0">durchsatzorientiert</tspan></text><g class="diagram-node switch" transform="translate(385 250)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="385" y="245" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="385" dy="0">Policy-Grenze</tspan></text><text class="diagram-node-detail" x="385" y="269" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="385" dy="0">klassifizieren und</tspan><tspan x="385" dy="25">markieren</tspan></text><g class="diagram-node router" transform="translate(750 190)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="750" y="185" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="750" dy="0">Provider Edge</tspan></text><text class="diagram-node-detail" x="750" y="209" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="750" dy="0">SLA/Policy</tspan><tspan x="750" dy="25">entscheidet</tspan></text><g class="diagram-node cloud" transform="translate(750 345)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="750" y="340" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="750" dy="0">Internetpfad</tspan></text><text class="diagram-node-detail" x="750" y="364" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="750" dy="0">keine eigene</tspan><tspan x="750" dy="25">Zusicherung</tspan></text>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Die eigene Policy endet an der Verwaltungsgrenze; dort muss die Behandlung neu vereinbart werden.</figcaption>
+</figure><h2 class="sec" id="s4"><span class="num">4</span>Geführte Übung: Eine Policy statt einer Wunschliste</h2>
+<section class="sequence-practice" data-sequence="qos-policy-sequence" data-expected="baseline,classify,boundary,schedule,verify" data-correct-feedback="Richtig. Messbarer Engpass und Klassen stehen vor Markierung und Scheduler; die Wirkung wird unter realistischer Last geprüft." data-wrong-feedback="Beginne mit dem Engpassbeleg. Eine DSCP-Markierung ohne bekannte Last, Trust Boundary und Queue-Policy ist noch keine Lösung." aria-labelledby="qos-policy-sequence-title">
+  <div class="lab-heading"><div><h3 id="qos-policy-sequence-title">Ordne die QoS-Planung</h3><p>VoIP leidet während großer Sicherungen unter Jitter. Bringe die Schritte in eine prüfbare Reihenfolge.</p></div><span class="lab-tag">Geführte Übung</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="verify" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Unter Last Queue-Zähler, Drops, Latenz und Jitter messen und Policy anpassen</span></li>
+    <li data-step="baseline" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Engpassort, Linkkapazität, gleichzeitige Last und Qualitätsanforderung messen</span></li>
+    <li data-step="classify" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Sprache, Fachanwendung und Backup reproduzierbar klassifizieren</span></li>
+    <li data-step="boundary" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Trust Boundary sowie Marking oder Remarking festlegen</span></li>
+    <li data-step="schedule" tabindex="-1"><span class="step-position" data-step-position>5</span><span>Queues, begrenzte Priorität, Scheduler und Backup-Shaping konfigurieren</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><section class="quiz" data-quiz="qos-guided-provider" data-correct="1">
+  <h3>Das eigene WAN-Gateway priorisiert Sprache korrekt, der anschließende öffentliche Internetpfad hat aber keine Vereinbarung. Welche Erwartung ist belastbar?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Außerhalb der eigenen Domäne kann DSCP anders abgebildet, geändert oder ignoriert werden."><span class="m">A</span> Die lokale Verbesserung gilt automatisch und garantiert bis zum Ziel dieselbe Behandlung</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. QoS-Wirkung muss pro administrativer Domäne betrachtet werden."><span class="m">B</span> Die eigene Warteschlange kann den lokalen Engpass verbessern; für den weiteren Pfad ist ohne Vereinbarung keine identische Behandlung garantiert</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Markierung schafft keine zusätzliche Leitungskapazität."><span class="m">C</span> DSCP verdoppelt auf dem Internetpfad die physische Datenrate</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Die lokale Engpassbehandlung kann trotzdem nützen; nur die Ende-zu-Ende-Garantie fehlt."><span class="m">D</span> QoS ist wirkungslos, sobald irgendwo ein Best-Effort-Abschnitt folgt</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Karteikarten und freier Abruf</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="dscp-card" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was leistet ein DSCP-Wert allein?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Er kennzeichnet im IP-Header eine gewünschte Behandlung. Erst eine konfigurierte Zuordnung auf ein Per-Hop-Verhalten erzeugt Priorisierung oder andere Queue-Behandlung.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="trust-card" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum werden Endgerätemarkierungen am Netzrand geprüft?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Ungeprüfte hohe Markierungen können Ressourcen stehlen. Die Domänenpolicy übernimmt, verwirft oder ändert sie anhand vertrauenswürdiger Merkmale.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="capacity-card" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum garantiert QoS keine zusätzliche Bandbreite?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Der Scheduler verteilt nur die vorhandene Ausgangskapazität. Bei zu hoher Gesamtlast entstehen weiterhin Wartezeit, Policing oder Drops.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „DSCP“:</span><button type="button" data-card-id="dscp-card" data-card-rate="known">gewusst</button><button type="button" data-card-id="dscp-card" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="dscp-card"></span></div>
+<div class="card-rating"><span>Karte „Trust Boundary“:</span><button type="button" data-card-id="trust-card" data-card-rate="known">gewusst</button><button type="button" data-card-id="trust-card" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="trust-card"></span></div>
+<div class="card-rating"><span>Karte „Kapazitätsgrenze“:</span><button type="button" data-card-id="capacity-card" data-card-rate="known">gewusst</button><button type="button" data-card-id="capacity-card" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="capacity-card"></span></div><section class="recall-practice" data-recall="qos-recall" data-min-length="170" aria-labelledby="qos-recall-title">
+  <div class="recall-prompt"><h3 id="qos-recall-title">QoS ohne Vorlage erklären</h3><p>Erkläre den Weg eines VoIP-Pakets von Klassifizierung und Trust Boundary über DSCP und Queue bis zum Provider. Nenne ausdrücklich, warum daraus keine automatische Bandbreitengarantie entsteht.</p></div>
+  <label class="sr-only" for="qos-recall-answer">Deine QoS-Erklärung</label>
+  <textarea id="qos-recall-answer" data-recall-input rows="4" placeholder="Am Access-Rand wird …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Am Access-Rand wird Verkehr anhand einer belastbaren Regel klassifiziert. Die Trust Boundary entscheidet, ob eine Endgerätemarkierung übernommen oder durch einen passenden DSCP ersetzt wird. Jeder konfigurierte Hop bildet den Codepoint auf eine Queue und ein Per-Hop-Verhalten ab; Scheduler und gegebenenfalls Policing oder Shaping steuern die knappe Ressource. An der Providergrenze gilt eine neue Policy. DSCP erhöht keine Linkrate, und ohne konsistente Behandlung sowie vertragliche Zusicherung gibt es keine automatische Ende-zu-Ende-Bandbreitengarantie.</div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Lernziel-Check und Quellenlage</h2>
+<section class="quiz" data-quiz="dscp-transfer" data-correct="0" data-required-objective="dscp-treatment">
+  <h3>Welche Beschreibung trifft DSCP und seine Verarbeitung fachlich vollständig?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Kennzeichnung, Vertrauensentscheidung und Per-Hop-Abbildung sind getrennt benannt."><span class="m">A</span> DSCP ist ein sechs Bit breiter Codepoint im IP-Header; eine lokale Policy klassifiziert, markiert oder ändert ihn und ordnet ihn pro Hop einer Behandlung zu</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="DSCP ist ein Headerfeld, keine Leitung oder automatische Reservierung."><span class="m">B</span> DSCP ist eine feste physische Leitung, die jedem markierten Paket reservierte Bandbreite gibt</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Der Codepoint liegt im IPv4- beziehungsweise IPv6-Header."><span class="m">C</span> DSCP wirkt nur auf Ethernet-MAC-Adressen und ist nicht Teil von IP</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Die Codepoint-zu-PHB-Abbildung ist innerhalb administrativer Policies konfigurierbar."><span class="m">D</span> Jeder Codepoint hat in allen Netzen zwingend dieselbe Queue und denselben Scheduler</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="qos-policy-transfer" data-correct="1" data-required-objective="qos-policy">
+  <h3>An einem 200-Mbit/s-Uplink treten nur während paralleler Backups Sprachprobleme auf. Welche Maßnahme ist am belastbarsten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Wenn alles Priorität erhält, fehlt Differenzierung; die Kapazität bleibt 200 Mbit/s."><span class="m">A</span> Alle Pakete maximal markieren; dadurch wächst der Uplink automatisch</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Die Maßnahme verbindet Beleg, Policy, Missbrauchsschutz und Ende-zu-Ende-Grenze."><span class="m">B</span> Engpass und Last messen, Sprache vertrauenswürdig klassifizieren, eine begrenzte Prioritätsqueue konfigurieren, Backups formen und Wirkung unter Last sowie an Domänengrenzen prüfen</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ohne Trust- und Queue-Policy ist die Markierung nur ein unbehandelter Wert."><span class="m">C</span> Nur am Telefon DSCP setzen und alle Netzkomponenten unverändert lassen</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="QoS kann relative Behandlung unter Engpass verbessern, auch ohne absolute Garantie."><span class="m">D</span> QoS entfernen, weil jede Priorisierung eine feste Bandbreitengarantie wäre</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><p>Die lokalen Quellen stützen Engpass-, Echtzeit-, Best-Effort- und Domänengrenzen. DSCP selbst ist dort nur unzureichend belegt; die sechs Bit, Per-Hop-Abbildung und Remarking-Logik wurden deshalb standardnah und konservativ formuliert. Konkrete Codepoints, Queue-Gewichte, Scheduler und Provider-SLAs bleiben <strong>plattform- und vertragsspezifisch</strong>; die Einheit ist <strong>CURATED_DRAFT</strong>.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-5"><span class="d">zurück zu</span><span class="t">Block N5 · Switching und VLANs</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N5 · Switching und VLANs</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Markiert heißt nicht reserviert</a></li>
+<li><a href="#s2" data-t="s2">Klassifizieren, markieren, behandeln</a></li>
+<li><a href="#s3" data-t="s3">Engpassrechnung und durchgearbeitetes Szenario</a></li>
+<li><a href="#s4" data-t="s4">Geführte Übung: Eine Policy statt einer Wunschliste</a></li>
+<li><a href="#s5" data-t="s5">Karteikarten und freier Abruf</a></li>
+<li><a href="#s6" data-t="s6">Lernziel-Check und Quellenlage</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-5">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

@@ -1,0 +1,226 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "routingtabelle",
+    "slug": "routingtabelle",
+    "title": "Routingtabellen sicher lesen",
+    "description": "Routingeinträge aus Zielpräfix, Next Hop, Ausgangsinterface und Metrik lesen und den Weiterleitungsweg eines Pakets nachvollziehen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-4",
+    "groupLabel": "Block N4 · Routing und NAT",
+    "itemId": "ga2-4__0",
+    "week": "KW 38",
+    "estimatedMinutes": 21,
+    "relevance": "hoch",
+    "sources": ["europa-integratoren-2026", "itlf6-9-2022"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "route-fields",
+      "label": "Zielpräfix, Next Hop, Ausgangsinterface und Metrik eines Routingeintrags korrekt deuten"
+    },
+    {
+      "id": "forwarding-path",
+      "label": "für eine Zieladresse den durch eine Routingtabellenzeile beschriebenen nächsten Weiterleitungsschritt bestimmen"
+    }
+  ],
+  "intro": "Eine Routingtabelle ist keine Liste kompletter Ende-zu-Ende-Wege. Jede Zeile beantwortet nur den nächsten Schritt: Für welchen Zielbereich gilt der Eintrag, über welches Interface verlässt das Paket den Router und muss es zuvor an einen weiteren Router übergeben werden?",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunk europa-integratoren-2026:00331, Markdown-Zeilen 3197–3225",
+        "use": "Tabellenfelder Ziel-Adresse, Interface und Next Hop sowie die Kennzeichnung direkt angeschlossener Netze als lokal",
+        "reviewStatus": "direkter Aufgabenbeleg; die leeren Buchtabellen wurden nicht übernommen"
+      },
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunk europa-integratoren-2026:00840, Markdown-Zeilen 8273–8311",
+        "use": "ausgefüllte IPv4-Routingtabellen mit lokalen Netzen, Next Hops und Default-Route",
+        "reviewStatus": "fachlich tragfähiger Lösungsbeleg; OCR-beschädigte Interface-Bezeichnungen wurden nicht verwendet"
+      },
+      {
+        "sourceId": "itlf6-9-2022",
+        "sourceLocator": "Chunk itlf6-9-2022:00250, Markdown-Zeilen 7559–7579",
+        "use": "ergänzende Tabellenstruktur mit Ziel, Interface, nächstem Router und Metrik",
+        "reviewStatus": "passender Ersatzbeleg für das im Mapping fehlende Metrikfeld; Zahlen und Fälle neu erstellt"
+      }
+    ],
+    "notes": [
+      "Die gemappte OCR-Seite itlf10-12-2023:page:0201 behandelt IPsec-Security-Associations und vergleicht deren Auswahl nur beiläufig mit einer Routingtabelle. Sie ist kein Beleg für Aufbau oder Auswahlregeln einer Routingtabelle und wurde durch itlf6-9-2022:00250 ersetzt.",
+      "europa-integratoren-2026:table:0091 ist eine leere Aufgabentabelle. Sie bestätigt nur die Feldnamen und liefert keine Musterlösung.",
+      "Die privaten Buchabbildungen europa-integratoren-2026:figure:b6b216a055bc und die zugehörigen Netzpläne werden nicht veröffentlicht; beide Diagramme sind eigenständig deklarativ erstellt.",
+      "Metrik, Routentyp und Präferenz werden je Betriebssystem beziehungsweise Hersteller unterschiedlich angezeigt. Die Einheit trennt daher die herstellerneutrale Bedeutung von konkreter CLI-Syntax.",
+      "Agentisch erstellt; deshalb CURATED_DRAFT bis zur menschlichen Fach- und Verständlichkeitsprüfung."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "route-row-anatomy",
+      "type": "layers",
+      "title": "Anatomie eines Routingeintrags",
+      "description": "Vier Felder beschreiben Gültigkeitsbereich, Übergabe und Bewertung eines nächsten Weiterleitungsschritts.",
+      "items": [
+        {"label": "Ziel", "detail": "Netzadresse plus Präfixlänge; beschreibt den Adressbereich, für den die Zeile kandidiert"},
+        {"label": "Next Hop", "detail": "Adresse des unmittelbar nächsten Routers; bei direkt verbundenen Netzen entfällt ein weiterer Router"},
+        {"label": "Interface", "detail": "lokale Ausgangsschnittstelle, über die Paket oder Next Hop erreicht werden"},
+        {"label": "Metrik", "detail": "Bewertung innerhalb eines Verfahrens; kleinere oder größere Werte sind protokoll- und systemspezifisch"}
+      ]
+    },
+    {
+      "id": "route-forwarding-flow",
+      "type": "flow",
+      "title": "Von der Ziel-IP zum nächsten Link",
+      "description": "Die Zieladresse wird mit Routen verglichen; die gewählte Zeile liefert Ausgangsinterface und gegebenenfalls einen Next Hop.",
+      "items": [
+        {"label": "Ziel-IP lesen", "detail": "Der Router betrachtet die Zieladresse des IP-Pakets"},
+        {"label": "passende Präfixe finden", "detail": "Netzadresse und Maske bestimmen, welche Zeilen das Ziel einschließen"},
+        {"label": "beste Zeile wählen", "detail": "zuerst entscheidet die größte passende Präfixlänge; Gleichstände werden separat bewertet"},
+        {"label": "Nachbar bestimmen", "detail": "direktes Ziel im lokalen Netz oder angegebener Next Hop"},
+        {"label": "über Interface senden", "detail": "für den lokalen Link wird anschließend die passende Link-Layer-Adresse aufgelöst"}
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Was sagt eine Zeile aus?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "routing-table-diagnostic",
+          "diagnostic": true,
+          "question": "Eine Route lautet `10.40.0.0/16 via 192.0.2.2 dev eth1`. Welche Aussage ist korrekt?",
+          "options": [
+            {"text": "Alle Ziele im Netz 10.40.0.0/16 werden an den nächsten Router 192.0.2.2 über eth1 übergeben.", "rationale": "Richtig. Zielpräfix, Next Hop und Ausgangsinterface beschreiben genau diesen nächsten Schritt.", "correct": true},
+            {"text": "192.0.2.2 ist die endgültige Zieladresse jedes Pakets.", "rationale": "192.0.2.2 ist nur der nächste Router. Die ursprüngliche Ziel-IP bleibt für das Routing erhalten.", "correct": false},
+            {"text": "eth1 ist das Interface des Zielhosts.", "rationale": "eth1 bezeichnet die lokale Ausgangsschnittstelle des betrachteten Routers.", "correct": false},
+            {"text": "Die Route gilt ausschließlich für die Hostadresse 10.40.0.0.", "rationale": "Die Präfixlänge /16 beschreibt einen ganzen Zielbereich, nicht nur eine einzelne Hostadresse.", "correct": false}
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Nächster Schritt",
+          "markdown": "Eine Route beschreibt **nicht den vollständigen Pfad**. Sie legt fest, wie der betrachtete Router das Paket als Nächstes weitergibt."
+        }
+      ]
+    },
+    {
+      "title": "Felder und Netzzugehörigkeit",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Das **Zielpräfix** kombiniert Netzadresse und Präfixlänge. `10.40.0.0/16` umfasst alle Adressen, deren erste 16 Bit dem Netz entsprechen. Der **Next Hop** ist ein unmittelbar erreichbarer Nachbarrouter. Das **Ausgangsinterface** ist eine lokale Schnittstelle des aktuellen Routers. Bei einem direkt angeschlossenen Zielnetz kann die Tabelle statt eines Next Hops sinngemäß `lokal` oder `connected` anzeigen.\n\nEine **Metrik** bewertet Routen innerhalb eines Routingverfahrens. Ihre genaue Bedeutung ist nicht universell: Je nach Protokoll oder System kann sie beispielsweise Hops oder zusammengesetzte Kosten ausdrücken. Auch Ursprung und Präferenz einer Route können separat angezeigt werden; diese Entscheidungsebene folgt in einer späteren Einheit."
+        },
+        {
+          "type": "figure",
+          "diagramId": "route-row-anatomy",
+          "alt": "Schichtenartige Darstellung der vier Routingtabellenfelder Zielpräfix, Next Hop, Interface und Metrik mit ihrer jeweiligen Bedeutung.",
+          "caption": "Eigene Lernskizze: Eine Zeile trennt den gültigen Zielbereich von der lokalen Weiterleitungsentscheidung."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Eine Zieladresse gehört zu einer Route, wenn bitweises UND aus Zieladresse und Maske der Netzadresse entspricht",
+          "mathml": "<math display=\"block\"><mrow><mi>D</mi><mo>∧</mo><mi>M</mi><mo>=</mo><mi>N</mi></mrow></math>",
+          "legend": ["D = Zieladresse", "M = Netzmaske", "N = Netzadresse der Route", "∧ = bitweises UND"]
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Router R1 besitzt drei Einträge:\n\n| Zielpräfix | Next Hop | Interface | Bedeutung |\n| --- | --- | --- | --- |\n| 192.168.10.0/24 | lokal | lan0 | direkt angeschlossenes Büronetz |\n| 172.20.0.0/16 | 10.0.0.2 | transit0 | an Nachbarrouter R2 übergeben |\n| 0.0.0.0/0 | 10.0.0.254 | transit0 | Fallback für sonstige IPv4-Ziele |\n\nFür `172.20.8.15` gilt die zweite Zeile. R1 sendet das Paket nicht direkt an den Zielhost, sondern über `transit0` an R2 mit der Adresse `10.0.0.2`. Für einen Host im eigenen Büronetz ist kein Router als Next Hop nötig."
+        },
+        {
+          "type": "figure",
+          "diagramId": "route-forwarding-flow",
+          "alt": "Fünfstufiger Ablauf von der Ziel-IP über passende Präfixe und die Routenauswahl bis zu Nachbar und Ausgangsinterface.",
+          "caption": "Eigene Lernskizze: Nach der Routenauswahl wird nur der nächste lokale Übertragungsschritt ausgeführt."
+        },
+        {
+          "type": "sequence",
+          "id": "routing-table-guided-sequence",
+          "title": "Eine Tabellenzeile systematisch lesen",
+          "prompt": "Bringe die Prüfschritte für ein eingehendes IP-Paket in eine belastbare Reihenfolge.",
+          "tag": "Geführte Übung",
+          "steps": [
+            {"id": "neighbor", "label": "Ermitteln, ob ein Next Hop benötigt wird oder das Ziel direkt verbunden ist."},
+            {"id": "destination", "label": "Die Ziel-IP aus dem Paket lesen."},
+            {"id": "candidates", "label": "Alle Routingzeilen bestimmen, deren Präfix das Ziel einschließt."},
+            {"id": "interface", "label": "Das in der gewählten Zeile angegebene Ausgangsinterface verwenden."},
+            {"id": "choose", "label": "Aus den Kandidaten die beste Route auswählen."}
+          ],
+          "expected": ["destination", "candidates", "choose", "neighbor", "interface"],
+          "correctFeedback": "Richtig. Erst Ziel und Kandidaten, dann Auswahl und konkreter nächster Übertragungsschritt.",
+          "wrongFeedback": "Beginne mit der Ziel-IP. Next Hop und Interface werden erst aus der ausgewählten Tabellenzeile gelesen."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {"id": "route-field-prefix", "label": "Zielpräfix", "front": "Was beschreibt das Zielpräfix einer Routingtabellenzeile?", "back": "Den IP-Adressbereich, für den der Eintrag als Kandidat gilt."},
+            {"id": "route-field-next-hop", "label": "Next Hop", "front": "Was ist der Next Hop?", "back": "Der unmittelbar nächste Router, an den das Paket auf dem lokalen Link übergeben wird."},
+            {"id": "route-field-connected", "label": "Direkt verbunden", "front": "Wann braucht eine Route keinen weiteren Router als Next Hop?", "back": "Wenn das Zielnetz direkt an einer aktiven Schnittstelle des betrachteten Routers angeschlossen ist."}
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "routing-table-recall",
+          "title": "Eine Route aus dem Kopf erklären",
+          "prompt": "Erkläre die Rollen von Zielpräfix, Next Hop, Ausgangsinterface und Metrik und grenze einen direkt verbundenen Eintrag von einer Route über einen Nachbarrouter ab.",
+          "label": "Deine Erklärung",
+          "placeholder": "Das Zielpräfix legt fest …",
+          "minLength": 110,
+          "model": "Das Zielpräfix bestimmt den Adressbereich der Route. Der Next Hop ist der unmittelbar nächste Router, das Ausgangsinterface die lokale Schnittstelle dorthin. Eine Metrik bewertet Routen innerhalb eines Verfahrens. Bei einem direkt angeschlossenen Netz entfällt ein weiterer Router; die Zustellung erfolgt über das lokale Interface."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check: Transfer",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "routing-table-transfer-fields",
+          "requiredObjective": "route-fields",
+          "question": "Welche Deutung von `192.168.50.0/24 via 10.1.1.2 dev wan1 metric 20` ist fachlich korrekt?",
+          "options": [
+            {"text": "192.168.50.0/24 ist der Zielbereich, 10.1.1.2 der nächste Router, wan1 das lokale Ausgangsinterface und 20 eine Routenbewertung.", "rationale": "Richtig. Die vier Angaben erfüllen genau diese getrennten Rollen.", "correct": true},
+            {"text": "10.1.1.2 ist das Zielnetz und 192.168.50.0/24 das Ausgangsinterface.", "rationale": "Netzpräfix und Interface wurden vertauscht; eine Schnittstelle trägt hier einen Namen, keine Netzadresse.", "correct": false},
+            {"text": "metric 20 bedeutet herstellerneutral, dass exakt 20 Router durchlaufen werden.", "rationale": "Die Bedeutung einer Metrik hängt vom Routingverfahren und System ab; sie ist nicht pauschal die Hopzahl.", "correct": false},
+            {"text": "wan1 bezeichnet das Interface des Routers 10.1.1.2.", "rationale": "Die Routingtabelle beschreibt das lokale Ausgangsinterface des aktuellen Routers.", "correct": false}
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "routing-table-transfer-forwarding",
+          "requiredObjective": "forwarding-path",
+          "question": "R1 hat `10.8.0.0/16 via 192.0.2.6 dev eth2`. Was tut R1 mit einem Paket an 10.8.44.9 als nächsten Schritt?",
+          "options": [
+            {"text": "Es übergibt das Paket über eth2 an den Nachbarrouter 192.0.2.6.", "rationale": "Richtig. Die Zieladresse liegt im /16; Next Hop und Ausgangsinterface bestimmen die lokale Übergabe.", "correct": true},
+            {"text": "Es ersetzt die Ziel-IP durch 192.0.2.6.", "rationale": "Normales Routing ersetzt die IP-Zieladresse nicht durch den Next Hop; dieser ist nur der nächste Link-Nachbar.", "correct": false},
+            {"text": "Es sendet das Paket direkt an die Link-Layer-Adresse von 10.8.44.9 über eth2.", "rationale": "Der Eintrag nennt einen Next Hop. R1 löst daher den lokalen Nachbarn 192.0.2.6 auf, nicht den entfernten Zielhost.", "correct": false},
+            {"text": "Es verwirft das Paket, weil 10.8.44.9 nicht exakt der Netzadresse 10.8.0.0 entspricht.", "rationale": "Eine Präfixroute gilt für den gesamten eingeschlossenen Zielbereich, nicht nur für die Netzadresse.", "correct": false}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):** Routingtabellen mit Ziel, Interface, Next Hop, direkt verbundenen Netzen und Default-Route.\n- **IT-Berufe Fachstufe – Lernfelder 6–9 (2022):** ergänzendes Prüfungsmuster mit Ziel, Interface, nächstem Router und Metrik.\n\nAlle Tabellenfälle, Rückmeldungen und Diagramme sind eigenständig erstellt. Private Buchgrafiken und OCR-beschädigte Interfaceangaben werden nicht veröffentlicht."
+        }
+      ]
+    }
+  ]
+}

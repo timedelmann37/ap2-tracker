@@ -1,0 +1,202 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "slaac-dhcpv6-ndp",
+    "slug": "slaac-dhcpv6-ndp",
+    "title": "SLAAC, DHCPv6 und NDP im Ablauf unterscheiden",
+    "description": "IPv6-Autokonfiguration mit DAD, Router Solicitation und Router Advertisement erklären sowie SLAAC und DHCPv6 passend kombinieren.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-3",
+    "groupLabel": "Block N3 · IPv6 und automatische Adresskonfiguration",
+    "itemId": "ga2-3__3",
+    "week": "KW 37",
+    "estimatedMinutes": 24,
+    "relevance": "hoch",
+    "sources": ["itlf10-12-2023", "europa-integratoren-2026", "ihk-bonn"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {"id": "slaac-ndp-flow", "label": "den SLAAC-Ablauf mit Link-Local-Adresse, DAD, Router Solicitation und Router Advertisement in korrekter Reihenfolge erklären"},
+    {"id": "configuration-modes", "label": "SLAAC, stateless DHCPv6 und stateful DHCPv6 anhand von Adressquelle, Zusatzoptionen und Router Advertisement passend auswählen"}
+  ],
+  "intro": "IPv6-Konfiguration ist kein einzelner DHCP-Ablauf. NDP schafft Nachbarschafts- und Routerwissen, Router Advertisements liefern Präfix- und Standardrouterinformationen, SLAAC kann daraus Adressen bilden und DHCPv6 ergänzt je nach Betriebsart Optionen oder eine verwaltete Adresse.",
+  "curation": {
+    "evidence": [
+      {"sourceId": "itlf10-12-2023", "sourceLocator": "OCR-Chunk itlf10-12-2023:page:0013, PDF-Seite 13", "use": "SLAAC-Ablauf mit Link-Local, DAD, RS, RA, Global Unicast und DNS-Informationen im RA", "reviewStatus": "starker Prozessbeleg; veraltete RFC-3315-Nennung und vereinfachte Gateway-Formulierung fachlich aktualisiert"},
+      {"sourceId": "europa-integratoren-2026", "sourceLocator": "Chunk europa-integratoren-2026:01089, Markdown-Zeilen 10333–10350", "use": "Abgrenzung von stateless und stateful DHCPv6, RA-Präfix und Managed-Flag", "reviewStatus": "direkter Lösungsbeleg; abgeschnittenen stateful Ablauf nur in belegtem Umfang verwendet"},
+      {"sourceId": "europa-integratoren-2026", "sourceLocator": "Chunk europa-integratoren-2026:00509, Markdown-Zeilen 5530–5541", "use": "Prüfungsanforderung zur Beschreibung und Skizze von stateless und stateful DHCPv6", "reviewStatus": "nur didaktischer Aufgabenrahmen, da Antwortfelder leer sind"},
+      {"sourceId": "ihk-bonn", "sourceLocator": "Chunk ihk-bonn:00213, Markdown-Zeilen 3125–3197", "use": "Prüfungsimpuls zu SLAAC und IPv6-Adressbestandteilen", "reviewStatus": "nur Themenbezug; handschriftliche und MAC-fixierte Antwort nicht als Fachbeleg verwendet"}
+    ],
+    "notes": [
+      "RFC 3315 aus der Buchquelle wurde durch RFC 8415 abgelöst; die Einheit verwendet daher keine versionsgebundene Nachrichtendefinition aus dem älteren Verweis.",
+      "DHCPv6 liefert im normalen IPv6-LAN nicht den Standardrouter. Der Host lernt den Default Router aus einem Router Advertisement, genauer aus dessen Absender und Router-Lifetime.",
+      "Ein Router Advertisement kann DNS-Informationen per RDNSS/DNSSL transportieren; alternativ können sie per stateless oder stateful DHCPv6 bereitgestellt werden.",
+      "SLAAC legt keine MAC-basierte Modified-EUI-64-IID fest. Stabile opake und temporäre Privacy-IIDs bleiben mögliche Strategien.",
+      "Alle Abläufe, Fälle und Diagramme sind eigenständig erstellt; private Buchgrafiken werden nicht veröffentlicht."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "slaac-flow",
+      "type": "flow",
+      "title": "Vom Interface zur nutzbaren IPv6-Adresse",
+      "description": "Der Host schafft zuerst lokale Kommunikationsfähigkeit, entdeckt danach Routerinformationen und prüft neu gebildete Adressen auf Doppelvergabe.",
+      "items": [
+        {"label": "Link-Local-Adresse bilden", "detail": "der Host erzeugt eine Adresse für den direkt angeschlossenen Link"},
+        {"label": "DAD ausführen", "detail": "Neighbor Solicitation prüft, ob die tentative Adresse bereits verwendet wird"},
+        {"label": "Router Solicitation senden", "detail": "der Host fordert ein Router Advertisement an oder wartet auf eine periodische Ankündigung"},
+        {"label": "Router Advertisement auswerten", "detail": "Präfix, Autonomous-Flag, Router-Lifetime und mögliche Zusatzoptionen steuern die Konfiguration"},
+        {"label": "Global-Unicast-Adresse bilden und prüfen", "detail": "bei geeignetem /64-Präfix erzeugt der Host eine IID nach seiner Strategie und führt erneut DAD aus"}
+      ]
+    },
+    {
+      "id": "ipv6-config-modes",
+      "type": "comparison",
+      "title": "Drei typische Konfigurationsmodelle",
+      "description": "Router Advertisement bleibt in allen drei Modellen zentral; DHCPv6 übernimmt je nach Modus keine, ergänzende oder verwaltete Adressinformationen.",
+      "items": [
+        {"label": "SLAAC mit RA-Optionen", "detail": "Adresse aus angekündigtem /64; Default Router aus RA; DNS kann per RDNSS/DNSSL im RA kommen"},
+        {"label": "SLAAC plus stateless DHCPv6", "detail": "Adresse per SLAAC; weitere Angaben wie DNS oder Domänensuche nach O-Flag über DHCPv6"},
+        {"label": "Stateful DHCPv6 plus RA", "detail": "verwaltete Adresse über DHCPv6 nach M-Flag; Default Router weiterhin aus RA"},
+        {"label": "NDP als Grundlage", "detail": "RS, RA, NS und NA ermöglichen Router- und Nachbarerkennung sowie DAD"}
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Woher kommt der Standardrouter?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "slaac-diagnostic",
+          "diagnostic": true,
+          "question": "Ein IPv6-Client bezieht seine Adresse stateful per DHCPv6. Woher lernt er im gewöhnlichen LAN seinen Standardrouter?",
+          "options": [
+            {"text": "aus dem Router Advertisement", "rationale": "Richtig. Die Default-Route entsteht aus dem RA und dessen Router-Lifetime, nicht aus einer DHCPv6-Gatewayoption.", "correct": true},
+            {"text": "aus einer DHCPv6-Option für das Standardgateway", "rationale": "DHCPv6 stellt im normalen Modell keine Standardrouteroption wie DHCPv4 bereit.", "correct": false},
+            {"text": "aus Duplicate Address Detection", "rationale": "DAD prüft nur, ob eine tentative Adresse bereits verwendet wird; es bestimmt keinen Router.", "correct": false},
+            {"text": "aus der MAC-Adresse des Clients", "rationale": "Die eigene Hardwarekennung liefert keine Information über den erreichbaren Standardrouter.", "correct": false}
+          ]
+        },
+        {"type": "callout", "kind": "merksatz", "label": "RA bleibt wichtig", "markdown": "Auch bei **stateful DHCPv6** bleibt das Router Advertisement für den Standardrouter und weitere Linkinformationen erforderlich."}
+      ]
+    },
+    {
+      "title": "NDP und SLAAC Schritt für Schritt",
+      "blocks": [
+        {"type": "markdown", "markdown": "Neighbor Discovery Protocol verwendet ICMPv6-Nachrichten. Für die Autokonfiguration sind besonders wichtig:\n\n- **Neighbor Solicitation und Neighbor Advertisement:** Nachbarschaftsauflösung und Duplicate Address Detection.\n- **Router Solicitation:** Ein Host bittet Router um eine zeitnahe Ankündigung.\n- **Router Advertisement:** Ein Router kündigt Präfixe, seine Routerrolle, Linkparameter und Flags an.\n\nNach Aktivierung des Interfaces bildet der Host zunächst eine Link-Local-Adresse und prüft sie mit DAD. Danach sendet er eine Router Solicitation oder wartet auf ein Router Advertisement. Enthält die Prefix Information Option ein geeignetes /64 und das Autonomous-Flag, kann der Host daraus per SLAAC eine Adresse bilden. Die Interface-ID kann stabil opak oder temporär sein; Modified EUI-64 ist keine SLAAC-Pflicht. Auch die neue Adresse wird vor regulärer Nutzung mit DAD geprüft."},
+        {"type": "figure", "diagramId": "slaac-flow", "alt": "Fünfstufiger SLAAC-Ablauf von der Link-Local-Adresse über DAD, Router Solicitation und Router Advertisement bis zur geprüften Global-Unicast-Adresse.", "caption": "Eigene Lernskizze: DAD ist eine Prüfung, RA eine Routerinformation und SLAAC die lokale Adressbildung des Hosts."},
+        {
+          "type": "quiz",
+          "id": "slaac-flow-practice",
+          "question": "Welche Nachricht fordert ein Host aktiv an, wenn er nicht bis zum nächsten periodischen Router Advertisement warten möchte?",
+          "options": [
+            {"text": "Router Solicitation", "rationale": "Richtig. Eine RS veranlasst Router dazu, zeitnah mit einem RA zu antworten.", "correct": true},
+            {"text": "Neighbor Advertisement", "rationale": "Eine NA beantwortet typischerweise eine Neighbor Solicitation und kündigt keinen Routerpräfixsatz an.", "correct": false},
+            {"text": "DHCPv6 Reply", "rationale": "Eine Reply gehört zum DHCPv6-Austausch und fordert kein Router Advertisement an.", "correct": false},
+            {"text": "IPv6 Broadcast", "rationale": "IPv6 besitzt keinen Broadcast-Adressmodus; NDP verwendet ICMPv6 und Multicastmechanismen.", "correct": false}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel: SLAAC plus stateless DHCPv6",
+      "blocks": [
+        {"type": "markdown", "markdown": "Ein Unternehmens-LAN soll Clientadressen ohne zentrale Leaseverwaltung bilden. DNS-Server und Suchdomäne sollen jedoch aus einer zentralen DHCPv6-Konfiguration kommen.\n\nDer Router kündigt das /64-Präfix mit gesetztem Autonomous-Flag an. Das Managed-Flag bleibt aus, weil DHCPv6 keine Adresse vergeben soll. Das Other-Configuration-Flag wird gesetzt und weist den Client auf weitere DHCPv6-Optionen hin. Der Client bildet seine Adresse per SLAAC, lernt den Standardrouter aus dem RA und fragt DNS- sowie Domäneninformationen stateless beim DHCPv6-Server ab.\n\nAlternativ könnte der Router DNS-Informationen selbst per RDNSS/DNSSL ankündigen. Die gewählte Variante ist daher eine Betriebsentscheidung und muss mit den Clients abgestimmt werden."},
+        {"type": "figure", "diagramId": "ipv6-config-modes", "alt": "Vergleich von SLAAC mit Router-Advertisement-Optionen, SLAAC plus stateless DHCPv6 und stateful DHCPv6 plus Router Advertisement.", "caption": "Eigene Lernskizze: Adressquelle, Zusatzoptionen und Standardrouter können aus unterschiedlichen Protokollteilen stammen."},
+        {
+          "type": "quiz",
+          "id": "dhcpv6-mode-practice",
+          "question": "Welche Zuordnung passt zu diesem Unternehmens-LAN?",
+          "options": [
+            {"text": "Adresse per SLAAC, Standardrouter per RA, Zusatzoptionen per stateless DHCPv6", "rationale": "Richtig. Genau diese Aufgabenverteilung erfüllt die beschriebene Richtlinie.", "correct": true},
+            {"text": "Adresse, Standardrouter und DAD ausschließlich per DHCPv6", "rationale": "DHCPv6 liefert den Standardrouter nicht; DAD ist zudem ein NDP-Verfahren des Hosts.", "correct": false},
+            {"text": "Adresse per stateful DHCPv6, obwohl das Managed-Flag aus ist und keine Leaseverwaltung gewünscht wird", "rationale": "Das widerspricht der Vorgabe, Clientadressen ohne zentrale DHCPv6-Leasevergabe zu bilden.", "correct": false},
+            {"text": "Adresse per Link-Local, weil ein /64-Präfix nicht mit SLAAC verwendet werden kann", "rationale": "Ein geeignetes /64-Präfix mit Autonomous-Flag ist gerade der reguläre SLAAC-Fall.", "correct": false}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Geführte Übung: Nachrichten und Aufgaben trennen",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "slaac-guided-sequence",
+          "title": "Erster Start im IPv6-LAN",
+          "prompt": "Bringe die Schritte eines vereinfachten Clientstarts in die richtige Reihenfolge.",
+          "tag": "Übung",
+          "steps": [
+            {"id": "ra", "label": "Router Advertisement mit Präfix, Flags und Router-Lifetime auswerten."},
+            {"id": "ll", "label": "Tentative Link-Local-Adresse bilden."},
+            {"id": "gua", "label": "SLAAC-Adresse bilden und ebenfalls mit DAD prüfen."},
+            {"id": "dad", "label": "Link-Local-Adresse mit Duplicate Address Detection prüfen."},
+            {"id": "rs", "label": "Router Solicitation senden."}
+          ],
+          "expected": ["ll", "dad", "rs", "ra", "gua"],
+          "correctFeedback": "Richtig. Lokale Kommunikationsfähigkeit und DAD kommen vor der Routeranfrage; die globale Adresse folgt aus dem RA.",
+          "wrongFeedback": "Beginne mit einer tentativen Link-Local-Adresse und ihrer DAD-Prüfung. Erst danach kann der Host regulär Routerinformationen anfordern und auswerten."
+        },
+        {"type": "callout", "kind": "warning", "label": "Flags sind Hinweise, keine Gatewayoption", "markdown": "M weist auf verwaltete Adressvergabe per DHCPv6 hin, O auf weitere DHCPv6-Konfiguration. Der Standardrouter bleibt unabhängig davon eine Information aus dem RA."}
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {"id": "slaac-rs-ra", "label": "RS und RA", "front": "Welche Rollen haben Router Solicitation und Router Advertisement?", "back": "Der Host fordert mit RS Routerinformationen an; der Router liefert mit RA Präfixe, Flags, Router-Lifetime und mögliche Zusatzoptionen."},
+            {"id": "slaac-dad", "label": "DAD", "front": "Wozu dient Duplicate Address Detection?", "back": "Der Host prüft per NDP, ob eine tentative IPv6-Adresse auf dem Link bereits verwendet wird."},
+            {"id": "dhcpv6-gateway", "label": "Standardrouter", "front": "Liefert stateful DHCPv6 den Standardrouter?", "back": "Im gewöhnlichen IPv6-LAN nein. Der Standardrouter wird aus einem Router Advertisement gelernt."}
+          ]
+        },
+        {"type": "recall", "id": "slaac-dhcpv6-recall", "title": "Ohne Nachschlagen erklären", "prompt": "Erkläre einen vollständigen SLAAC-Start und grenze anschließend SLAAC-only, stateless DHCPv6 und stateful DHCPv6 ab. Nenne ausdrücklich die Quelle des Standardrouters.", "label": "Deine Erklärung", "placeholder": "Der Host bildet zuerst …", "minLength": 140, "model": "Der Host bildet eine Link-Local-Adresse, prüft sie mit DAD, sendet RS und wertet ein RA aus. Bei geeignetem /64 und Autonomous-Flag bildet er eine SLAAC-Adresse und prüft auch diese. SLAAC-only kann DNS per RA erhalten. Stateless DHCPv6 ergänzt Optionen, vergibt aber keine Adresse. Stateful DHCPv6 verwaltet die Adresse. In allen üblichen Fällen kommt der Standardrouter aus dem RA."}
+      ]
+    },
+    {
+      "title": "Lernziel-Check: Transfer",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "slaac-transfer-flow",
+          "requiredObjective": "slaac-ndp-flow",
+          "title": "Neuer Client am SLAAC-LAN",
+          "prompt": "Ordne die Ereignisse vom Aktivieren des Interfaces bis zur nutzbaren Global-Unicast-Adresse.",
+          "tag": "Pflichtnachweis",
+          "steps": [
+            {"id": "global-dad", "label": "Global-Unicast-Adresse bilden und per DAD prüfen."},
+            {"id": "linklocal", "label": "Tentative Link-Local-Adresse bilden."},
+            {"id": "solicit", "label": "Router Solicitation senden."},
+            {"id": "local-dad", "label": "DAD für die Link-Local-Adresse durchführen."},
+            {"id": "advert", "label": "Router Advertisement mit /64-Präfix und Router-Lifetime empfangen."}
+          ],
+          "expected": ["linklocal", "local-dad", "solicit", "advert", "global-dad"],
+          "correctFeedback": "Richtig. Der Host sichert zuerst die lokale Adresse ab, entdeckt dann den Router und bildet anschließend die globale Adresse.",
+          "wrongFeedback": "Die Link-Local-Adresse und ihre DAD-Prüfung müssen vor der Routerkommunikation liegen. Die Global-Unicast-Adresse folgt erst aus dem RA."
+        },
+        {
+          "type": "quiz",
+          "id": "dhcpv6-transfer-mode",
+          "requiredObjective": "configuration-modes",
+          "question": "Ein Netz verlangt zentral vergebene Clientadressen mit Leasezustand. Der Standardrouter soll korrekt gelernt werden. Welche Kombination passt?",
+          "options": [
+            {"text": "RA mit Managed-Hinweis plus stateful DHCPv6; Standardrouter aus dem RA", "rationale": "Richtig. DHCPv6 verwaltet die Adresse, während das RA weiterhin die Routerrolle bekannt macht.", "correct": true},
+            {"text": "Nur stateful DHCPv6; Standardrouter aus einer DHCPv6-Gatewayoption", "rationale": "Die normale DHCPv6-Konfiguration liefert keine Standardrouteroption. Ohne RA fehlt diese zentrale Routerinformation.", "correct": false},
+            {"text": "Nur Link-Local und DAD; beide ersetzen eine globale Adresse und den Standardrouter", "rationale": "Link-Local und DAD schaffen lokale Eindeutigkeit, aber keine verwaltete globale Adresse und keine Default-Route.", "correct": false},
+            {"text": "SLAAC plus Other-Configuration-Flag; DHCPv6 verwaltet dadurch automatisch die Adresse", "rationale": "Das O-Flag weist auf weitere Optionen hin. Für verwaltete Adressvergabe ist der stateful Modus mit Managed-Hinweis vorgesehen.", "correct": false}
+          ]
+        },
+        {"type": "markdown", "markdown": "**Prüfungsformulierung:** Schreibe zu jeder Information ihre Quelle: Adresse per SLAAC oder DHCPv6, Standardrouter per RA, Zusatzoptionen per RA oder DHCPv6 und Eindeutigkeitsprüfung per NDP/DAD."}
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {"type": "markdown", "markdown": "- **IT-Berufe Fachstufe II – Lernfelder 10–12 (2023):** SLAAC-Ablauf mit Link-Local, DAD, RS, RA und Global Unicast.\n- **EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):** stateless und stateful DHCPv6 sowie Managed-/Other-Kontext.\n- **Prüfungsvorbereitung IHK Bonn:** ergänzender SLAAC-Prüfungsimpuls.\n\nDer veraltete RFC-3315-Verweis und MAC-fixierte Vereinfachungen wurden nicht fortgeschrieben. Die Prozesse und Diagramme sind vollständig neu erstellt."}
+      ]
+    }
+  ]
+}

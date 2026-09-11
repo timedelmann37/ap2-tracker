@@ -155,6 +155,7 @@ try {
   assert(await storageQuiz.locator('[data-answer="2"]').evaluate(node => node.classList.contains('right')), 'Second topic quiz works');
   await page.goto(`${base}/lernen/tcp-ip-osi-zuordnung/`);
   assert(await page.locator('[id]').evaluateAll(nodes => new Set(nodes.map(node => node.id)).size === nodes.length), 'Compact topic has no duplicate DOM ids');
+  assert(await page.locator('figure .learning-diagram').count() === 2, 'Compiler diagrams are inline and inherit the active theme');
   assert(await page.locator('[data-required-objective]').count() === 2, 'Compact topic exposes exactly one check per objective');
   assert(await page.locator('#mark-done').isDisabled(), 'Compact topic completion starts gated');
   const compactCard = page.locator('[data-flashcard="tcp-ip-four-layers"]');
@@ -167,6 +168,98 @@ try {
   assert(await page.locator('#mark-done').isDisabled(), 'One compiler-generated objective is not enough for completion');
   await page.locator('[data-quiz="tcp-ip-transfer-function"] [data-answer="1"]').click();
   assert(!await page.locator('#mark-done').isDisabled(), 'All compiler-generated objectives unlock completion');
+
+  await page.goto(`${base}/lernen/lichtwellenleiter/`);
+  const fiberNumeric = page.locator('[data-numeric-practice="fiber-budget-practice"]');
+  await fiberNumeric.locator('[data-numeric-input]').fill('2,735');
+  await fiberNumeric.locator('[data-numeric-check]').click();
+  assert(await fiberNumeric.locator('[data-numeric-feedback]').getAttribute('data-result') === 'correct', 'Declared numeric tolerance accepts a value inside its boundary');
+  await fiberNumeric.locator('[data-numeric-input]').fill('2,75');
+  await fiberNumeric.locator('[data-numeric-check]').click();
+  assert(await fiberNumeric.locator('[data-numeric-feedback]').getAttribute('data-result') === 'wrong', 'Declared numeric tolerance rejects a value outside its boundary');
+
+  await page.goto(`${base}/lernen/kupferverkabelung/`);
+  const exactNumeric = page.locator('[data-numeric-practice="copper-length-practice"]');
+  await exactNumeric.locator('[data-numeric-input]').fill('8,0005');
+  await exactNumeric.locator('[data-numeric-check]').click();
+  assert(await exactNumeric.locator('[data-numeric-feedback]').getAttribute('data-result') === 'wrong', 'Zero tolerance requires an exact numeric answer');
+
+  await page.goto(`${base}/lernen/vlsm/`);
+  assert(await page.locator('figure .learning-diagram').count() === 2, 'VLSM topic exposes both instructional diagrams');
+  assert(await page.locator('.math-display > math').count() >= 2, 'VLSM calculations use visual accessible MathML instead of text-only formulas');
+  const vlsmNextNetwork = page.locator('[data-numeric-practice="vlsm-next-network"]');
+  await vlsmNextNetwork.locator('[data-numeric-input]').fill('160');
+  await vlsmNextNetwork.locator('[data-numeric-check]').click();
+  assert(await vlsmNextNetwork.locator('[data-numeric-feedback]').getAttribute('data-result') === 'correct', 'VLSM boundary exercise validates the next network address');
+  await page.locator('[data-quiz="vlsm-transfer-block-prefix"] [data-answer="0"]').click();
+  assert(await page.locator('#mark-done').isDisabled(), 'One VLSM transfer objective does not unlock completion');
+  await page.locator('[data-quiz="vlsm-transfer-plan"] [data-answer="0"]').click();
+  assert(!await page.locator('#mark-done').isDisabled(), 'Both VLSM transfer objectives unlock completion');
+
+  await page.goto(`${base}/lernen/dns-aufloesung-caching/`);
+  assert(await page.locator('figure .learning-diagram').count() === 2, 'DNS resolution topic exposes both instructional diagrams');
+  const dnsSequence = page.locator('[data-sequence="dns-resolution-practice-sequence"]');
+  assert(await dnsSequence.locator('[data-step]').count() === 4, 'DNS resolution exercise exposes the complete resolution path');
+  await page.locator('[data-quiz="dns-resolution-transfer-roles"] [data-answer="0"]').click();
+  assert(await page.locator('#mark-done').isDisabled(), 'One DNS transfer objective does not unlock completion');
+  await page.locator('[data-quiz="dns-resolution-transfer-cache"] [data-answer="1"]').click();
+  assert(!await page.locator('#mark-done').isDisabled(), 'Both DNS transfer objectives unlock completion');
+
+  await page.goto(`${base}/lernen/longest-prefix-default-route/`);
+  assert(await page.locator('figure .learning-diagram').count() === 2, 'Longest-prefix topic exposes both instructional diagrams');
+  assert(await page.locator('.math-display > math').count() >= 1, 'Longest-prefix selection rule uses visual accessible MathML');
+  assert(await page.locator('[data-sequence="lpm-guided-sequence"] [data-step]').count() === 4, 'Longest-prefix exercise exposes the complete selection routine');
+  await page.locator('[data-quiz="lpm-transfer-matches"] [data-answer="0"]').click();
+  assert(await page.locator('#mark-done').isDisabled(), 'One longest-prefix transfer objective does not unlock completion');
+  await page.locator('[data-quiz="lpm-transfer-choice"] [data-answer="0"]').click();
+  assert(!await page.locator('#mark-done').isDisabled(), 'Both longest-prefix transfer objectives unlock completion');
+
+  await page.goto(`${base}/lernen/port-security/`);
+  assert(await page.locator('figure .learning-diagram').count() === 2, 'Port-security topic exposes both instructional diagrams');
+  assert(await page.locator('[data-sequence="port-security-planning-sequence"] [data-step]').count() === 5, 'Port-security exercise exposes the complete planning routine');
+  await page.locator('[data-quiz="port-policy-transfer"] [data-answer="0"]').click();
+  assert(await page.locator('#mark-done').isDisabled(), 'One port-security transfer objective does not unlock completion');
+  await page.locator('[data-quiz="port-boundary-transfer"] [data-answer="1"]').click();
+  assert(!await page.locator('#mark-done').isDisabled(), 'Both port-security transfer objectives unlock completion');
+
+  await page.goto(`${base}/lernen/jumbo-frames-oversubscription/`);
+  assert(await page.locator('figure .learning-diagram').count() === 2, 'Jumbo-frame topic exposes both instructional diagrams');
+  assert(await page.locator('.math-display > math').count() >= 2, 'MTU and oversubscription calculations use visual accessible MathML');
+  assert(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'Jumbo-frame topic has no horizontal page overflow');
+
+  await page.goto(`${base}/lernen/ethernet-standards/`);
+  const domainAccentMatches = await page.evaluate(() => {
+    const probe = document.createElement('span');
+    document.body.append(probe);
+    probe.style.color = 'var(--cat)';
+    const actual = getComputedStyle(probe).color;
+    probe.style.color = 'var(--cat-ga2)';
+    const expected = getComputedStyle(probe).color;
+    probe.remove();
+    return actual === expected;
+  });
+  assert(domainAccentMatches, 'GA2 learning page uses the GA2 area accent');
+  const diagramCanvas = page.locator('.learning-diagram .diagram-canvas').first();
+  const canvasBeforeTheme = await diagramCanvas.evaluate(node => getComputedStyle(node).fill);
+  await page.locator('#themeToggle').click();
+  const canvasAfterTheme = await diagramCanvas.evaluate(node => getComputedStyle(node).fill);
+  assert(canvasBeforeTheme !== canvasAfterTheme, 'Inline diagram changes surface color with the explicit theme toggle');
+
+  for (const [pathName, tokenName] of [['/lernen/raid/', '--cat-ga1'], ['/lernen/company-goals/', '--cat-wiso']]) {
+    await page.goto(`${base}${pathName}`);
+    const matches = await page.evaluate(token => {
+      const probe = document.createElement('span');
+      document.body.append(probe);
+      probe.style.color = 'var(--cat)';
+      const actual = getComputedStyle(probe).color;
+      probe.style.color = `var(${token})`;
+      const expected = getComputedStyle(probe).color;
+      probe.remove();
+      return actual === expected;
+    }, tokenName);
+    assert(matches, `${pathName} uses its declared area accent`);
+  }
+
   await page.goto(`${base}/lernen/raid-operations/`);
   assert(await page.locator('[data-required-objective]').count() === 2, 'RAID operations exposes two required objective checks');
   assert(await page.locator('#mark-done').isDisabled(), 'RAID operations completion is gated');
@@ -277,6 +370,9 @@ try {
   await mobilePage.goto(`${base}/lernen/raid/`);
   assert(await mobilePage.locator('.bottomnav-link[href="/lernpfad/"]').isVisible(), 'Learning page has mobile navigation');
   assert(await mobilePage.locator('#mark-done').isVisible(), 'Mobile learning actions remain reachable');
+  await mobilePage.goto(`${base}/lernen/netzwerktopologien/`);
+  assert(await mobilePage.locator('.learning-diagram').count() === 2, 'Topology diagrams render on mobile');
+  assert(await mobilePage.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'Topology learning page has no horizontal page overflow at 390px');
   await mobile.close();
 
   console.log('PASS learning route, persistence, quiz retry, shared progress and mobile navigation');

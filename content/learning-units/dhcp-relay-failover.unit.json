@@ -1,0 +1,414 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "dhcp-relay-failover",
+    "slug": "dhcp-relay-failover",
+    "title": "DHCP über Netzgrenzen verfügbar planen",
+    "description": "DHCP-Relay für entfernte Clientnetze platzieren und Split Scope klar von zustandssynchronisiertem DHCP-Failover unterscheiden.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-3",
+    "groupLabel": "Block N3 · IPv6, DHCP und DNS",
+    "itemId": "ga2-3__7",
+    "week": "KW 37",
+    "estimatedMinutes": 24,
+    "relevance": "hoch",
+    "sources": ["itlf10-12-2023"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "relay-path",
+      "label": "einen DHCP-Relay am passenden Routerinterface platzieren und die Auswahl des entfernten Scopes erklären"
+    },
+    {
+      "id": "redundancy-model",
+      "label": "Split Scope und zustandssynchronisiertes DHCP-Failover anhand von Lease-Zustand und Ausfallverhalten unterscheiden"
+    }
+  ],
+  "intro": "DHCP-Relay und DHCP-Redundanz lösen zwei verschiedene Probleme. Ein Relay überbrückt die Routergrenze für Clientanfragen. Redundanz entscheidet dagegen, welcher Server bei Last oder Ausfall gültige Leases vergeben kann. Erst wenn beide Ebenen getrennt geplant sind, ist die Adressvergabe wirklich belastbar.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seiten 11–12, Chunks itlf10-12-2023:page:0011 und :page:0012",
+        "use": "Relay-Agent am Router, Weiterleitung über Netzgrenzen und Auswahl eines zum Clientnetz passenden Scopes",
+        "reviewStatus": "Relaypfad fachlich geprüft; durch OCR beschädigte Satzteile nicht wörtlich übernommen"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seiten 12–13, Chunks itlf10-12-2023:page:0012 und :page:0013",
+        "use": "Active-Passive, Load Balancing, Zustandsabgleich und Einordnung implementationsabhängiger DHCP-Failover-Funktionen",
+        "reviewStatus": "Begriffe anhand von Lease-Synchronisation und Ausfallverhalten neu strukturiert; keine Produktkonfiguration abgeleitet"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seite 64, Chunk itlf10-12-2023:page:0064",
+        "use": "Adressvergabeplan mit Relayposition sowie separate Planung von Bereichsaufteilung und Serverausfall",
+        "reviewStatus": "nur Konzept verwendet; fehlerhafte doppelte OCR-Adressen vollständig ausgeschlossen"
+      }
+    ],
+    "notes": [
+      "Der Source-Map-Treffer ihk-bonn:00219 behandelt eine IPv6-Multicast-Adresse und enthält DHCP nur als Tabellenbezeichnung einer Multicast-Gruppe. Er ist für Relay und Failover falsch und wurde ausgeschlossen.",
+      "Split Scope bedeutet hier zwei unabhängige, nicht überlappende Pools ohne replizierten Lease-Zustand. Ein Failover-Verbund teilt dagegen Lease-Zustand und kann je nach Implementierung Active-Passive oder lastverteilend arbeiten.",
+      "Für DHCPv4 existiert laut Quelle kein einheitliches, herstellerübergreifend standardisiertes IETF-Failover-Protokoll; konkrete Kompatibilität, Zustandswechsel und Ausfalltimer sind produktabhängig. DHCPv6-Failover ist separat zu beurteilen.",
+      "Alle Diagramme sind eigenständig und deklarativ erstellt; private Buchgrafiken werden nicht veröffentlicht."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "relay-topology",
+      "type": "topology",
+      "title": "Relay verbindet Clientnetz und zentralen DHCP-Dienst",
+      "description": "Der lokale Broadcast erreicht das Routerinterface. Der dort konfigurierte Relay-Agent leitet die Anfrage gezielt an die Server weiter und kennzeichnet das Ursprungsnetz.",
+      "zones": [
+        {
+          "id": "client-zone",
+          "label": "VLAN 20 · 192.168.20.0/24",
+          "x": 30,
+          "y": 55,
+          "width": 300,
+          "height": 420,
+          "kind": "client-net"
+        },
+        {
+          "id": "server-zone",
+          "label": "Servernetz · 192.168.10.0/24",
+          "x": 620,
+          "y": 55,
+          "width": 310,
+          "height": 420,
+          "kind": "server-net"
+        }
+      ],
+      "nodes": [
+        {
+          "id": "dhcp-client",
+          "label": "DHCP-Client",
+          "detail": "startet mit lokalem Discover",
+          "x": 165,
+          "y": 250,
+          "kind": "endpoint"
+        },
+        {
+          "id": "relay-router",
+          "label": "Router mit Relay",
+          "detail": "Relay am Interface von VLAN 20",
+          "x": 475,
+          "y": 250,
+          "kind": "router"
+        },
+        {
+          "id": "dhcp-server-a",
+          "label": "DHCP-Server A",
+          "detail": "besitzt Scope für 192.168.20.0/24",
+          "x": 775,
+          "y": 170,
+          "kind": "server"
+        },
+        {
+          "id": "dhcp-server-b",
+          "label": "DHCP-Server B",
+          "detail": "Redundanzpartner je nach Modell",
+          "x": 775,
+          "y": 335,
+          "kind": "server"
+        }
+      ],
+      "edges": [
+        {
+          "from": "dhcp-client",
+          "to": "relay-router",
+          "label": "lokaler Broadcast",
+          "kind": "broadcast"
+        },
+        {
+          "from": "relay-router",
+          "to": "dhcp-server-a",
+          "label": "weitergeleitete Anfrage + Ursprungsnetz",
+          "kind": "relay"
+        },
+        {
+          "from": "relay-router",
+          "to": "dhcp-server-b",
+          "label": "optional zweites Ziel",
+          "kind": "relay"
+        }
+      ]
+    },
+    {
+      "id": "redundancy-comparison",
+      "type": "comparison",
+      "title": "Split Scope ist nicht dasselbe wie Failover",
+      "description": "Entscheidend ist, ob die Server nur Adressanteile besitzen oder zusätzlich gültigen Lease-Zustand austauschen.",
+      "items": [
+        {
+          "label": "Split Scope · getrennte Pools",
+          "detail": "Server A und B vergeben nicht überlappende Teile des Bereichs; keine gemeinsame Lease-Datenbank erforderlich."
+        },
+        {
+          "label": "Split Scope bei Ausfall",
+          "detail": "Der verbleibende Server kann zunächst nur aus seinem eigenen Pool vergeben; Kapazität und Optionen müssen auf beiden Seiten ausreichen."
+        },
+        {
+          "label": "Failover · geteilter Zustand",
+          "detail": "Partner synchronisieren Lease-Informationen für denselben Dienst; Rollen können Active-Passive oder lastverteilend sein."
+        },
+        {
+          "label": "Failover bei Ausfall",
+          "detail": "Die Übernahme folgt dem konkreten Produktprotokoll, seinen Zuständen und Timern; Interoperabilität darf nicht angenommen werden."
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Welches Problem wird gelöst?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "relay-failover-diagnostic",
+          "diagnostic": true,
+          "question": "Clients in VLAN 20 erreichen den zentralen DHCP-Server hinter einem Router nicht, während Clients im Servernetz funktionieren. Welche Maßnahme adressiert zuerst genau diese Netzgrenze?",
+          "options": [
+            {
+              "text": "DHCP-Relay am Routerinterface von VLAN 20 konfigurieren",
+              "rationale": "Richtig. Der Relay-Agent nimmt die lokale Anfrage auf und leitet sie zum zentralen Dienst weiter.",
+              "correct": true
+            },
+            {
+              "text": "Nur die Lease-Zeit verdoppeln",
+              "rationale": "Eine längere Lease transportiert den initialen Broadcast nicht über den Router.",
+              "correct": false
+            },
+            {
+              "text": "Zwei unabhängige Pools im selben Servernetz anlegen",
+              "rationale": "Redundanz ersetzt nicht den fehlenden Pfad aus VLAN 20 zum DHCP-Dienst.",
+              "correct": false
+            },
+            {
+              "text": "Den Client-Broadcast unverändert durch alle Router fluten",
+              "rationale": "Router begrenzen Broadcastdomänen. Relay vermittelt gezielt, statt Broadcasts global weiterzureichen.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Zwei Achsen",
+          "markdown": "**Relay = Erreichbarkeit über Subnetzgrenzen. Redundanz = gültige Vergabe bei Last oder Serverausfall.** Ein Netz kann das eine benötigen, ohne dass das andere damit automatisch gelöst ist."
+        }
+      ]
+    },
+    {
+      "title": "Relaypfad und Scope-Auswahl",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein unkonfigurierter Client sendet seine erste DHCP-Anfrage lokal. Der Router leitet diesen Broadcast nicht wie normalen Unicastverkehr weiter. Ein Relay-Agent am Interface des Clientnetzes nimmt die Anfrage auf und sendet sie gezielt an einen oder mehrere konfigurierte DHCP-Server.\n\nDabei liefert der Relaypfad dem Server Information darüber, aus welchem Clientnetz die Anfrage stammt. Der Server kann dadurch den Scope für genau dieses Subnetz auswählen. Ein erreichbarer Server ohne passenden Scope kann dem Client keine passende Adresse anbieten."
+        },
+        {
+          "type": "figure",
+          "diagramId": "relay-topology",
+          "alt": "Topologie mit DHCP-Client in VLAN 20, Router mit Relay und zwei DHCP-Servern im Servernetz. Der Client sendet lokal zum Relay, das die Anfrage samt Ursprungsnetz weiterleitet.",
+          "caption": "Eigene Lernskizze: Der Relay-Agent sitzt logisch am Eingang des Clientnetzes und kennt damit dessen Subnetzkontext."
+        },
+        {
+          "type": "quiz",
+          "id": "relay-scope-practice",
+          "question": "Der Server erhält über einen Relay eine Anfrage aus 192.168.30.0/24. Er besitzt nur einen Scope für 192.168.20.0/24. Was ist die stärkste Diagnose?",
+          "options": [
+            {
+              "text": "Der Relaypfad kann funktionieren, aber dem Server fehlt ein passender Scope für das Clientnetz.",
+              "rationale": "Richtig. Erreichbarkeit und Adressangebot sind getrennt zu prüfen.",
+              "correct": true
+            },
+            {
+              "text": "Der Server muss eine Adresse aus 192.168.20.0/24 anbieten, weil dies sein einziger Pool ist.",
+              "rationale": "Eine Adresse aus dem falschen Subnetz wäre für den Clientpfad unpassend.",
+              "correct": false
+            },
+            {
+              "text": "Ein Relay entfernt grundsätzlich jede Information über das Clientnetz.",
+              "rationale": "Gerade der Subnetzkontext ermöglicht dem Server die passende Scope-Auswahl.",
+              "correct": false
+            },
+            {
+              "text": "Ein zweiter DHCP-Server erzeugt automatisch den fehlenden Scope.",
+              "rationale": "Redundanz ersetzt keine korrekte Scope-Konfiguration."
+              ,"correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Geführte Übung: drei VLANs anbinden",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "relay-plan-sequence",
+          "title": "Planungsschritte sortieren",
+          "prompt": "Ein zentraler DHCP-Dienst soll Clients in drei gerouteten VLANs versorgen. Bringe die Schritte in eine prüfbare Reihenfolge.",
+          "tag": "Übung",
+          "steps": [
+            {
+              "id": "relay-list-client-nets",
+              "label": "Clientsubnetze, Routerinterfaces und benötigte DHCP-Optionen vollständig erfassen."
+            },
+            {
+              "id": "relay-create-scopes",
+              "label": "Für jedes Clientsubnetz einen konfliktfreien Scope auf dem Server anlegen."
+            },
+            {
+              "id": "relay-configure-targets",
+              "label": "Relay an jedem relevanten Clientinterface mit den autorisierten Serverzielen konfigurieren."
+            },
+            {
+              "id": "relay-test-path",
+              "label": "DORA, Scope-Auswahl, Optionen, Rückweg sowie Verhalten bei Serverausfall je VLAN testen."
+            }
+          ],
+          "expected": ["relay-list-client-nets", "relay-create-scopes", "relay-configure-targets", "relay-test-path"],
+          "correctFeedback": "Richtig: Erst Netze und Parameter erfassen, dann Scopes und Relayziele konfigurieren, zuletzt jeden Pfad und Ausfallfall testen.",
+          "wrongFeedback": "Ein Relay ohne passenden Scope reicht nicht. Plane Clientnetze → Scopes → Relayziele → Funktions- und Ausfalltest."
+        },
+        {
+          "type": "quiz",
+          "id": "relay-path-transfer",
+          "requiredObjective": "relay-path",
+          "question": "Wo gehört der Relay-Agent für Clients in VLAN 40 hin und warum?",
+          "options": [
+            {
+              "text": "An das geroutete Interface von VLAN 40, damit der lokale Broadcast aufgenommen und mit Subnetzkontext zum Server vermittelt wird.",
+              "rationale": "Richtig. Dort erreicht die Clientanfrage den Router innerhalb ihrer Broadcastdomäne.",
+              "correct": true
+            },
+            {
+              "text": "Nur an die Netzwerkkarte des DHCP-Servers, weil sie die Lease speichert.",
+              "rationale": "Der Server liegt bereits am Ziel. Der fehlende Schritt ist die Aufnahme der Anfrage im entfernten Clientnetz.",
+              "correct": false
+            },
+            {
+              "text": "An einen beliebigen Access-Port eines anderen VLANs, weil DHCP unabhängig vom Ursprungsnetz ist.",
+              "rationale": "Der Ursprungsnetzkontext ist für die Auswahl des passenden Scopes entscheidend.",
+              "correct": false
+            },
+            {
+              "text": "Nirgends; Router leiten DHCP-Broadcasts standardmäßig in alle Netze weiter.",
+              "rationale": "Router begrenzen Broadcastdomänen. Ohne Relay oder lokalen Server erreicht die initiale Anfrage den entfernten Dienst nicht regulär.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Split Scope und Failover sauber trennen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Beim **Split Scope** erhält Server A beispielsweise einen nicht überlappenden Teil des Pools und Server B den anderen. Beide können Clients erreichen, führen aber keine gemeinsame Lease-Datenbank. Fällt A aus, bleiben nur die noch freien Adressen im Teil von B unmittelbar verfügbar. Reservierungen und Optionen müssen konsistent auf beiden Servern gepflegt werden.\n\nBei **zustandssynchronisiertem Failover** tauschen Partner Lease-Informationen aus. Im Active-Passive-Modell vergibt normalerweise ein Server, während der Partner den Zustand übernimmt. In einem lastverteilenden Failover-Modus beantworten beide Server Anfragen nach den Regeln ihrer Implementierung und können bei Ausfall die Zuständigkeit erweitern. Das ist nicht bloß Split Scope: Der gemeinsame Zustand ist das entscheidende Merkmal."
+        },
+        {
+          "type": "figure",
+          "diagramId": "redundancy-comparison",
+          "alt": "Vier Vergleichskarten zeigen getrennte Pools und begrenzte Restkapazität bei Split Scope sowie geteilten Lease-Zustand und produktabhängige Übernahme bei Failover.",
+          "caption": "Eigene Lernskizze: Eine Prozentaufteilung allein beweist kein Failover; ausschlaggebend ist der synchronisierte Lease-Zustand."
+        },
+        {
+          "type": "callout",
+          "kind": "warning",
+          "label": "Produktgrenzen dokumentieren",
+          "markdown": "Bei DHCPv4 darfst du keinen herstellerübergreifenden Failover-Verbund voraussetzen. Prüfe unterstützte Partner, Zustände, Timer, Kommunikationspfad und das Verhalten bei Netztrennung anhand der eingesetzten Implementierung."
+        }
+      ]
+    },
+    {
+      "title": "Beispiel: Ausfall richtig bewerten",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein /24-Clientnetz nutzt Split Scope: Server A vergibt .50 bis .169, Server B .170 bis .219. Es gibt keinen Zustandsabgleich. Fällt A aus, ist B zwar weiter erreichbar, kann aber nicht einfach freie Adressen aus dem Bereich von A übernehmen. Die verfügbare Neukundenkapazität beschränkt sich auf Bs eigene noch freie Leases.\n\nIn einem kompatiblen Failover-Verbund könnten beide Partner den Lease-Zustand synchronisieren. Ob und wann B nach einem Fehler zusätzliche Zuständigkeit übernimmt, folgt jedoch dem konfigurierten Modus und dessen Timern. „Zweiter Server vorhanden“ ist deshalb noch kein ausreichender Verfügbarkeitsnachweis."
+        },
+        {
+          "type": "quiz",
+          "id": "redundancy-model-transfer",
+          "requiredObjective": "redundancy-model",
+          "question": "Welche Konfiguration beschreibt eindeutig zustandssynchronisiertes DHCP-Failover und nicht nur Split Scope?",
+          "options": [
+            {
+              "text": "Server A vergibt .50–.149, Server B .150–.220; beide kennen nur ihre eigenen Leases.",
+              "rationale": "Das sind getrennte, nicht überlappende Pools ohne gemeinsamen Lease-Zustand: Split Scope.",
+              "correct": false
+            },
+            {
+              "text": "Zwei kompatible Partner verwalten denselben Dienst, replizieren Lease-Zustand und besitzen definierte Rollen und Übernahmebedingungen.",
+              "rationale": "Richtig. Zustandsabgleich und geregelte Übernahme kennzeichnen den Failover-Verbund.",
+              "correct": true
+            },
+            {
+              "text": "Ein einzelner Server besitzt zwei Netzwerkkarten, aber nur eine lokale Lease-Datei.",
+              "rationale": "Mehrere Schnittstellen ersetzen keinen zweiten DHCP-Partner und keinen replizierten Lease-Zustand.",
+              "correct": false
+            },
+            {
+              "text": "Ein Relay sendet jede Anfrage an denselben einzelnen Server.",
+              "rationale": "Relay schafft Erreichbarkeit, aber keine Serverredundanz."
+              ,"correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "relay-purpose",
+              "label": "Relay",
+              "front": "Welches Problem löst ein DHCP-Relay?",
+              "back": "Es vermittelt DHCP-Anfragen aus einer entfernten Broadcastdomäne gezielt zu einem zentralen Server und liefert den Kontext des Clientnetzes."
+            },
+            {
+              "id": "split-scope-definition",
+              "label": "Split Scope",
+              "front": "Was kennzeichnet Split Scope?",
+              "back": "Zwei Server besitzen getrennte, nicht überlappende Poolanteile und benötigen keinen replizierten Lease-Zustand."
+            },
+            {
+              "id": "failover-definition",
+              "label": "Failover",
+              "front": "Welches Merkmal unterscheidet Failover grundlegend von Split Scope?",
+              "back": "Die Partner synchronisieren Lease-Zustand und verwenden definierte Rollen beziehungsweise Regeln für Last und Übernahme."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "relay-failover-free-recall",
+          "title": "Netzplan mündlich prüfen",
+          "prompt": "Erkläre den Weg eines DHCP-Discover aus einem entfernten VLAN zum Server. Vergleiche danach das Ausfallverhalten von Split Scope und einem zustandssynchronisierten Failover-Verbund.",
+          "label": "Deine Erklärung",
+          "placeholder": "Der Client-Broadcast erreicht …",
+          "minLength": 130,
+          "model": "Der lokale Broadcast erreicht das Routerinterface des Client-VLANs. Der dortige Relay-Agent leitet die Anfrage an konfigurierte Server weiter und liefert den Subnetzkontext, damit der passende Scope gewählt wird. Split Scope nutzt getrennte Pools ohne gemeinsamen Lease-Zustand; beim Ausfall bleibt nur der andere Pool. Failover repliziert Lease-Zustand und übernimmt nach produktabhängigen Rollen und Timern."
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **IT-Berufe Fachstufe II – Lernfelder 10–12 (2023), PDF-Seiten 11–12:** DHCP-Relay und Scope-Auswahl über Netzgrenzen.\n- **Dieselbe Quelle, PDF-Seiten 12–13 und 64:** Redundanzmodelle, Lease-Zustand und Adressvergabeplanung.\n\nDer falsche IHK-Multicast-Treffer wurde ausgeschlossen. Diagramme, Fälle und Antwortoptionen sind eigenständig erstellt."
+        }
+      ]
+    }
+  ]
+}

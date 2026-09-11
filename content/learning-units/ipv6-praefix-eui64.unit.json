@@ -1,0 +1,208 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "ipv6-praefix-eui64",
+    "slug": "ipv6-praefix-eui64",
+    "title": "IPv6-/64-Präfixe und Modified EUI-64 einordnen",
+    "description": "Aus einem Providerpräfix /64-LANs bilden, Modified EUI-64 nachvollziehen und moderne stabile sowie temporäre Interface-IDs berücksichtigen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-3",
+    "groupLabel": "Block N3 · IPv6 und automatische Adresskonfiguration",
+    "itemId": "ga2-3__2",
+    "week": "KW 37",
+    "estimatedMinutes": 24,
+    "relevance": "hoch",
+    "sources": ["ihk-bonn", "europa-integratoren-2026"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {"id": "prefix-subnetting", "label": "aus einem delegierten IPv6-Präfix die Anzahl verfügbarer /64-LAN-Präfixe berechnen und ein gültiges /64 bilden"},
+    {"id": "iid-strategy", "label": "eine Modified-EUI-64-Interface-ID aus einer MAC-Adresse ableiten und gegenüber modernen stabilen oder temporären Interface-IDs einordnen"}
+  ],
+  "intro": "Ein übliches IPv6-LAN mit SLAAC verwendet ein /64-Präfix: Die oberen 64 Bit bezeichnen das Subnetz, die unteren 64 Bit die Interface-ID. Modified EUI-64 ist eine mögliche und prüfungsrelevante Bildung dieser ID, aber heute nicht die pauschal empfohlene Standardwahl für Clientadressen.",
+  "curation": {
+    "evidence": [
+      {"sourceId": "ihk-bonn", "sourceLocator": "Chunk ihk-bonn:00214, Markdown-Zeilen 3198–3237", "use": "Prüfungsfall zur Aufteilung eines /56-Präfixes in /64-Subnetze und historischer Modified-EUI-64-Bezug", "reviewStatus": "Rechenrahmen verwendet; pauschale EUI-64-Anforderung als historisch überholt markiert"},
+      {"sourceId": "europa-integratoren-2026", "sourceLocator": "Chunk europa-integratoren-2026:00335, Markdown-Zeilen 3236–3247", "use": "IPv6-Präfixverlängerung zur Bildung gleich großer Subnetze", "reviewStatus": "direkter Subnettingimpuls; eigenes /56-zu-/64-Beispiel erstellt"},
+      {"sourceId": "europa-integratoren-2026", "sourceLocator": "Chunk europa-integratoren-2026:00507, Markdown-Zeilen 5473–5523", "use": "Adressschema mit reservierten Präfixbits für Standorte", "reviewStatus": "nur Hierarchieprinzip verwendet; leere Buchvorlage nicht übernommen"}
+    ],
+    "notes": [
+      "Die ältere RFC-4291-Passage der IHK-Quelle wird nicht als heutige Pflicht zur MAC-basierten Modified-EUI-64-Bildung gelehrt. Moderne Systeme verwenden häufig stabile semantisch opake IIDs und zusätzliche temporäre Privacy-Adressen.",
+      "Privacy Extensions verhindern langfristiges Wiedererkennen nicht allein in jeder Situation, reduzieren aber die stabile Sichtbarkeit einer MAC-abgeleiteten Interface-ID.",
+      "/64 ist die reguläre LAN-Präfixlänge für SLAAC. Sonderfälle wie /127 auf Punkt-zu-Punkt-Verbindungen dürfen nicht zu der Aussage verkürzt werden, jede IPv6-Verbindung müsse ausnahmslos /64 verwenden.",
+      "Alle Diagramme und Adressbeispiele sind eigenständig erstellt; private Buchgrafiken werden nicht veröffentlicht."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "prefix-64-split",
+      "type": "layers",
+      "title": "Vom /56-Providerpräfix zum /64-LAN",
+      "description": "Acht zusätzliche Präfixbits bilden die Subnetz-ID; die unteren 64 Bit bleiben für die Interface-ID.",
+      "items": [
+        {"label": "Bit 1–56 · delegiertes Präfix", "detail": "vom Provider oder übergeordneten Adressplan fest vorgegeben"},
+        {"label": "Bit 57–64 · Subnetz-ID", "detail": "acht frei planbare Bit ergeben 256 verschiedene /64-LAN-Präfixe"},
+        {"label": "Bit 65–128 · Interface-ID", "detail": "64 Bit für eine Adresse innerhalb des gewählten LAN-Präfixes"}
+      ]
+    },
+    {
+      "id": "eui64-flow",
+      "type": "flow",
+      "title": "Modified EUI-64 aus 48 Bit MAC bilden",
+      "description": "Die MAC wird geteilt, ff:fe eingefügt und das U/L-Bit des ersten Oktetts invertiert.",
+      "items": [
+        {"label": "MAC lesen", "detail": "00:1a:2b:3c:4d:5e"},
+        {"label": "In zwei Hälften teilen", "detail": "00:1a:2b und 3c:4d:5e"},
+        {"label": "ff:fe einsetzen", "detail": "00:1a:2b:ff:fe:3c:4d:5e ergibt 64 Bit"},
+        {"label": "U/L-Bit invertieren", "detail": "erstes Oktett 00 XOR 02 wird 02"},
+        {"label": "Hextets gruppieren", "detail": "Interface-ID 021a:2bff:fe3c:4d5e"}
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Was bleibt bei /64 übrig?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "ipv6-prefix-diagnostic",
+          "diagnostic": true,
+          "question": "Welche Aufteilung beschreibt eine gewöhnliche IPv6-LAN-Adresse mit /64?",
+          "options": [
+            {"text": "64 Bit Präfix und 64 Bit Interface-ID", "rationale": "Richtig. Das Präfix bezeichnet das LAN, die unteren 64 Bit die Schnittstelle darin.", "correct": true},
+            {"text": "56 Bit Präfix und 72 Bit Interface-ID", "rationale": "Ein delegiertes /56 kann mehrere /64-LANs enthalten. Die einzelne SLAAC-LAN-Adresse verwendet dabei weiterhin eine 64-Bit-Interface-ID.", "correct": false},
+            {"text": "128 Bit Präfix und keine Interface-ID", "rationale": "Ein /128 bezeichnet eine einzelne Adresse. Es ist nicht die reguläre Präfixlänge eines SLAAC-LANs.", "correct": false},
+            {"text": "48 Bit Präfix und 80 Bit MAC-Adresse", "rationale": "Eine MAC besitzt typischerweise 48 Bit, ist aber nicht identisch mit dem IPv6-Präfix und wird nicht als 80-Bit-Feld angehängt.", "correct": false}
+          ]
+        },
+        {"type": "callout", "kind": "merksatz", "label": "/64 richtig einordnen", "markdown": "Für ein gewöhnliches SLAAC-LAN gilt **64 Bit Präfix plus 64 Bit Interface-ID**. Ein größeres delegiertes Präfix liefert die Bits für mehrere solcher LANs."}
+      ]
+    },
+    {
+      "title": "Ein /56 in /64-LANs aufteilen",
+      "blocks": [
+        {"type": "markdown", "markdown": "Das Unternehmen erhält `2001:db8:44aa:1200::/56`. Die ersten 56 Bit stehen fest. Bis zur gewünschten LAN-Grenze /64 bleiben acht Bit für die Subnetz-ID. Dadurch entstehen 256 verschiedene /64-Präfixe.\n\nDas vierte Hextet reicht im delegierten Bereich von `1200` bis `12ff`. Die Wahl der Subnetz-ID `2a` erzeugt das LAN-Präfix `2001:db8:44aa:122a::/64`. Diese Adresse ist die Präfixdarstellung; eine vollständige Hostadresse benötigt zusätzlich eine 64-Bit-Interface-ID."},
+        {"type": "figure", "diagramId": "prefix-64-split", "alt": "IPv6-Bitaufteilung mit 56 Bit delegiertem Präfix, acht Bit Subnetz-ID und 64 Bit Interface-ID.", "caption": "Eigene Lernskizze: Die Differenz zwischen /56 und /64 steht für die interne LAN-Auswahl zur Verfügung."},
+        {
+          "type": "math",
+          "ariaLabel": "Zwei hoch 64 minus 56 ergibt zwei hoch 8 und damit 256 mögliche Schrägstrich 64 Subnetze",
+          "mathml": "<math display=\"block\"><mrow><msup><mn>2</mn><mrow><mn>64</mn><mo>−</mo><mn>56</mn></mrow></msup><mo>=</mo><msup><mn>2</mn><mn>8</mn></msup><mo>=</mo><mn>256</mn><mtext> mögliche /64-LANs</mtext></mrow></math>",
+          "legend": ["56 bereits festgelegte Präfixbits", "64 gewünschte LAN-Präfixbits", "acht freie Bit für die Subnetz-ID"]
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Modified-EUI-64-Beispiel",
+      "blocks": [
+        {"type": "markdown", "markdown": "Für eine Laboraufgabe soll aus der MAC-Adresse `00:1a:2b:3c:4d:5e` ausdrücklich eine Modified-EUI-64-ID gebildet werden. Die MAC wird nach dem dritten Byte geteilt. Dazwischen wird `ff:fe` eingefügt. Danach wird im ersten Oktett das U/L-Bit invertiert; rechnerisch wird `00` mit `02` exklusiv ODER verknüpft.\n\nEs entsteht die Interface-ID `021a:2bff:fe3c:4d5e`. Mit dem zuvor gebildeten Präfix lautet die gekürzte Adresse `2001:db8:44aa:122a:21a:2bff:fe3c:4d5e`. Die führende Null im ersten IID-Hextet entfällt nur in der Schreibweise, nicht im 64-Bit-Wert."},
+        {"type": "figure", "diagramId": "eui64-flow", "alt": "Fünfstufige Bildung der Interface-ID aus MAC 00 1a 2b 3c 4d 5e durch Teilen, Einsetzen von ff fe, Invertieren des U/L-Bits und Gruppieren in Hextets.", "caption": "Eigene Lernskizze: Modified EUI-64 ist ein nachvollziehbares Verfahren, aber nicht automatisch die heutige Standardwahl eines Betriebssystems."},
+        {
+          "type": "math",
+          "ariaLabel": "Erstes MAC-Oktett hexadezimal 00 exklusiv ODER 02 ergibt hexadezimal 02",
+          "mathml": "<math display=\"block\"><mrow><msub><mn>00</mn><mtext>hex</mtext></msub><mo>⊕</mo><msub><mn>02</mn><mtext>hex</mtext></msub><mo>=</mo><msub><mn>02</mn><mtext>hex</mtext></msub></mrow></math>",
+          "legend": ["⊕ = exklusives ODER", "02 hex markiert das zu invertierende U/L-Bit im ersten Oktett"]
+        },
+        {
+          "type": "callout",
+          "kind": "warning",
+          "label": "Privacy Extensions nicht vergessen",
+          "markdown": "Eine MAC-abgeleitete IID ist über Netze und Zeit leichter wiederzuerkennen. Moderne Systeme verwenden häufig **stabile semantisch opake IIDs** und für ausgehende Clientverbindungen zusätzlich **temporäre Privacy-Adressen**. Aus einer beobachteten IPv6-Adresse darf deshalb nicht pauschal eine MAC rekonstruiert werden."
+        }
+      ]
+    },
+    {
+      "title": "Geführte Übung: EUI-64 nur auf ausdrückliche Anforderung",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "eui64-guided-sequence",
+          "title": "Modified-EUI-64-Schritte",
+          "prompt": "Bringe die Schritte für die MAC 0c:4d:e9:12:34:56 in die richtige Reihenfolge.",
+          "tag": "Übung",
+          "steps": [
+            {"id": "flip", "label": "U/L-Bit im ersten Oktett invertieren."},
+            {"id": "split", "label": "48-Bit-MAC in zwei 24-Bit-Hälften teilen."},
+            {"id": "group", "label": "Das 64-Bit-Ergebnis als vier Hextets gruppieren."},
+            {"id": "insert", "label": "Zwischen den Hälften ff:fe einsetzen."}
+          ],
+          "expected": ["split", "insert", "flip", "group"],
+          "correctFeedback": "Richtig. Nach Teilen und Einfügen wird das U/L-Bit verändert; erst dann wird die fertige IID gruppiert.",
+          "wrongFeedback": "Beginne mit den beiden MAC-Hälften. ff:fe wird zwischen ihnen eingesetzt, bevor die fertigen Hextets notiert werden."
+        },
+        {
+          "type": "quiz",
+          "id": "iid-strategy-practice",
+          "question": "Welche Aussage beschreibt eine heutige Clientkonfiguration am besten?",
+          "options": [
+            {"text": "Jede SLAAC-Adresse muss dauerhaft aus der MAC per Modified EUI-64 entstehen.", "rationale": "SLAAC schreibt keine dauerhafte MAC-basierte IID für jeden modernen Client vor.", "correct": false},
+            {"text": "Ein Client kann eine stabile opake IID und zusätzliche temporäre Privacy-Adressen verwenden.", "rationale": "Richtig. Dadurch bleibt eine stabile Erreichbarkeit möglich, während ausgehende Verbindungen weniger dauerhaft korrelierbar sind.", "correct": true},
+            {"text": "Privacy Extensions ersetzen das /64-Präfix durch ein zufälliges /128-Präfix.", "rationale": "Privacy Extensions verändern die Interface-ID, nicht das vom Netz angekündigte Präfix.", "correct": false},
+            {"text": "Mit Privacy Extensions ist Duplicate Address Detection nicht mehr erforderlich.", "rationale": "Auch zufällig oder opak gebildete Adressen werden auf Doppelvergabe geprüft.", "correct": false}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {"id": "ipv6-64-split", "label": "/64", "front": "Wie ist eine gewöhnliche SLAAC-LAN-Adresse bei /64 aufgeteilt?", "back": "64 Bit Präfix und 64 Bit Interface-ID."},
+            {"id": "ipv6-eui-insert", "label": "EUI-64", "front": "Welche Bytefolge wird bei Modified EUI-64 in die 48-Bit-MAC eingesetzt?", "back": "ff:fe zwischen die beiden 24-Bit-Hälften; zusätzlich wird das U/L-Bit des ersten Oktetts invertiert."},
+            {"id": "ipv6-privacy", "label": "Privatsphäre", "front": "Warum verwenden moderne Clients nicht zwingend eine MAC-basierte IID?", "back": "Stabile opake und temporäre Privacy-IIDs erschweren die dauerhafte Korrelation einer Adresse mit der Hardwarekennung."}
+          ]
+        },
+        {"type": "recall", "id": "ipv6-prefix-eui-recall", "title": "Ohne Nachschlagen erklären", "prompt": "Erkläre die Aufteilung eines /56 in /64-LANs und bilde anschließend verbal eine Modified-EUI-64-IID. Ordne das Verfahren gegenüber Privacy Extensions ein.", "label": "Deine Erklärung", "placeholder": "Zwischen /56 und /64 …", "minLength": 130, "model": "Zwischen /56 und /64 liegen acht Subnetzbits, also 256 mögliche /64-LANs. Für Modified EUI-64 wird eine 48-Bit-MAC geteilt, ff:fe eingesetzt und das U/L-Bit des ersten Oktetts invertiert. Das Ergebnis bildet eine 64-Bit-IID. Moderne Clients verwenden häufig stabile opake und zusätzliche temporäre IIDs, damit die Adresse nicht dauerhaft die Hardwarekennung offenlegt."}
+      ]
+    },
+    {
+      "title": "Lernziel-Check: Transfer",
+      "blocks": [
+        {
+          "type": "numeric",
+          "id": "ipv6-prefix-transfer-count",
+          "requiredObjective": "prefix-subnetting",
+          "title": "Anzahl der /64-LANs",
+          "prompt": "Wie viele unterschiedliche /64-LAN-Präfixe lassen sich aus einem delegierten /56-Präfix bilden?",
+          "label": "Anzahl /64-LANs",
+          "placeholder": "Anzahl",
+          "expected": 256,
+          "correctFeedback": "Richtig. Acht zusätzliche Präfixbits stehen als Subnetz-ID zur Verfügung.",
+          "wrongFeedback": "Bestimme zuerst die Differenz zwischen 64 und 56 und bilde anschließend zwei hoch dieser Bitzahl.",
+          "correctMath": {
+            "ariaLabel": "Zwei hoch 64 minus 56 ergibt 256",
+            "mathml": "<math display=\"block\"><mrow><msup><mn>2</mn><mrow><mn>64</mn><mo>−</mo><mn>56</mn></mrow></msup><mo>=</mo><mn>256</mn></mrow></math>",
+            "legend": ["acht zusätzliche Präfixbits", "jede Bitkombination bezeichnet ein /64-LAN"]
+          },
+          "misconceptions": [
+            {"value": "8", "feedback": "Acht ist die Zahl der verfügbaren Bits, nicht die Zahl ihrer möglichen Kombinationen."},
+            {"value": "64", "feedback": "Die Zielpräfixlänge ist keine Anzahl von Subnetzen."},
+            {"value": "128", "feedback": "Mit acht freien Bits entstehen 256 Kombinationen; 128 entspräche nur sieben freien Bits."}
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "ipv6-eui-transfer",
+          "requiredObjective": "iid-strategy",
+          "question": "Eine Laboraufgabe verlangt ausdrücklich Modified EUI-64 für die MAC `00:1a:2b:3c:4d:5e`. Welche IID ist korrekt?",
+          "options": [
+            {"text": "021a:2bff:fe3c:4d5e", "rationale": "Richtig. ff:fe ist eingesetzt und das erste Oktett wurde durch Invertieren des U/L-Bits von 00 zu 02 geändert.", "correct": true},
+            {"text": "001a:2bff:fe3c:4d5e", "rationale": "ff:fe wurde eingesetzt, aber das U/L-Bit des ersten Oktetts blieb unverändert.", "correct": false},
+            {"text": "021a:2bfe:ff3c:4d5e", "rationale": "Die einzusetzende Folge lautet ff:fe und wurde hier vertauscht.", "correct": false},
+            {"text": "001a:2b3c:4d5e:0000", "rationale": "Das Anhängen von Nullen ersetzt weder das Einfügen von ff:fe noch die U/L-Bit-Invertierung.", "correct": false}
+          ]
+        },
+        {"type": "markdown", "markdown": "**Prüfungsformulierung:** Nutze Modified EUI-64 nur, wenn es ausdrücklich verlangt wird. Ergänze bei einer Konzeptfrage, dass moderne Betriebssysteme auch stabile opake und temporäre Privacy-IIDs verwenden."}
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {"type": "markdown", "markdown": "- **Prüfungsvorbereitung IHK Bonn:** /56-zu-/64-Prüfungsfall und historischer Modified-EUI-64-Bezug.\n- **EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):** Präfixverlängerung und hierarchische IPv6-Adressplanung.\n\nDie ältere pauschale EUI-64-Anforderung wurde fachlich eingeordnet statt fortgeschrieben. Privacy Extensions und stabile opake Interface-IDs sind ausdrücklich Teil der Einheit. Alle Beispiele und Diagramme sind neu erstellt."}
+      ]
+    }
+  ]
+}

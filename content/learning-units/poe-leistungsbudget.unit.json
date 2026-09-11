@@ -1,0 +1,419 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "poe-leistungsbudget",
+    "slug": "poe-leistungsbudget",
+    "title": "PoE-Standard und Leistungsbudget sicher planen",
+    "description": "PSE und PD unterscheiden, PoE-Typen zuordnen und ein Switchbudget mit Portgrenzen und 20 Prozent Reserve berechnen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-1",
+    "groupLabel": "Block N1 · Grundlagen, Medien und Verkabelung",
+    "itemId": "ga2-1__10",
+    "week": "KW 35",
+    "estimatedMinutes": 22,
+    "relevance": "hoch",
+    "sources": ["europa-integratoren-2026", "itlf6-9-2022", "itlf10-12-2023", "ihk-bonn"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "poe-roles-types",
+      "label": "PSE und PD unterscheiden und einen Gerätebedarf dem ausreichenden IEEE-PoE-Typ zuordnen"
+    },
+    {
+      "id": "poe-budget",
+      "label": "ein PoE-Gesamtbudget mit Einzelportgrenze und 20 Prozent Planungsreserve berechnen und bewerten"
+    }
+  ],
+  "intro": "Ein PoE-Switch kann genügend Gesamtleistung besitzen und ein Gerät trotzdem nicht versorgen, wenn der einzelne Port den benötigten PoE-Typ nicht unterstützt. Eine belastbare Planung passiert deshalb in zwei Schritten: erst jeden Port prüfen, dann alle Leistungen gegen das reservierte Gesamtbudget rechnen.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunk europa-integratoren-2026:01065, Zeilen 10127–10140",
+        "use": "Grundbegriffe PSE und PD, Gleichspannungsversorgung sowie Leistungswerte für PoE Type 1 und Type 4",
+        "reviewStatus": "fachlich geprüft; gerundete Buchwerte mit Bezugsseite PSE beziehungsweise PD präzisiert"
+      },
+      {
+        "sourceId": "itlf6-9-2022",
+        "sourceLocator": "Tabelle itlf6-9-2022:table:0205 im Chunk itlf6-9-2022:00212, Zeilen 6004–6006",
+        "use": "praxisnahes Switch-Datenblatt mit PoE+ und 480-W-Gesamtbudget",
+        "reviewStatus": "als Datenblattmuster verwendet; kein konkretes Herstellerprodukt übernommen"
+      },
+      {
+        "sourceId": "itlf6-9-2022",
+        "sourceLocator": "Tabelle itlf6-9-2022:table:0206, Zeilen 6012–6021",
+        "use": "PoE-versorgte Access Points als Geräteklasse",
+        "reviewStatus": "nur als Anwendungskontext verwendet, da Leistungsaufnahme und PoE-Klasse fehlen"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seite 74, lokale OCR",
+        "use": "PoE-Telefone als Möglichkeit, zusätzlichen Verkabelungsaufwand zu vermeiden",
+        "reviewStatus": "Anwendungskontext geprüft; allgemeine VoIP-Grafik nicht übernommen"
+      },
+      {
+        "sourceId": "ihk-bonn",
+        "sourceLocator": "Chunk ihk-bonn:00382, Zeilen 6879–6883",
+        "use": "Abgrenzung von Power over Ethernet gegenüber Powerline beziehungsweise dLAN",
+        "reviewStatus": "nur die Begriffsdifferenz verwendet"
+      }
+    ],
+    "notes": [
+      "Die im Quellenmapping genannte Grafik it-basiswissen-2012:figure:3bd4d8d2559c zeigt einen Fehlerstrom- beziehungsweise Elektrosicherheitskontext und wurde als Fehltreffer ausgeschlossen.",
+      "PoE+ wird üblicherweise für IEEE 802.3at Type 2 verwendet. Bezeichnungen wie PoE++ sind uneinheitlich; für Planungen sind Standard, Typ und Geräteklasse maßgeblich.",
+      "PSE- und PD-Leistungswerte dürfen in Berechnungen nicht unkommentiert gemischt werden. Die Einheit kennzeichnet deshalb jeweils die Bezugsseite.",
+      "Diagramme, Fälle und Rechnungen sind eigenständig erstellt; private Buchgrafiken werden nicht veröffentlicht."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "poe-power-path",
+      "type": "flow",
+      "title": "Vom PSE-Port bis zum versorgten Gerät",
+      "description": "Der Switch stellt als PSE Leistung bereit; nach Leitungsverlusten kommt am PD eine geringere garantierte Leistung an.",
+      "items": [
+        {
+          "label": "PSE erkennt und klassifiziert",
+          "detail": "der PoE-Switch oder Injektor prüft ein kompatibles Powered Device und bestimmt die Versorgung"
+        },
+        {
+          "label": "PSE stellt Portleistung bereit",
+          "detail": "die zulässige Obergrenze hängt vom unterstützten IEEE-Typ und der Portkonfiguration ab"
+        },
+        {
+          "label": "Ethernetleitung transportiert Daten und Energie",
+          "detail": "Kabel und Steckverbindungen verursachen Verluste; PoE ist nicht mit Powerline zu verwechseln"
+        },
+        {
+          "label": "PD erhält garantierte Eingangsleistung",
+          "detail": "Access Point, Kamera oder Telefon muss mit diesem verfügbaren Wert auskommen"
+        }
+      ]
+    },
+    {
+      "id": "poe-budget-gates",
+      "type": "comparison",
+      "title": "Zwei unabhängige Prüfungen",
+      "description": "Eine Planung ist nur zulässig, wenn jedes Gerät die Portprüfung und die gesamte Installation die Budgetprüfung besteht.",
+      "items": [
+        {
+          "label": "Tor 1 · Einzelport",
+          "detail": "Unterstützt der Port den für das PD nötigen Typ und mindestens dessen geforderte Leistung?"
+        },
+        {
+          "label": "Tor 2 · Gesamtbudget",
+          "detail": "Bleibt die Summe aller geplanten Geräte innerhalb des Budgets nach Abzug der Reserve?"
+        },
+        {
+          "label": "20 Prozent Reserve",
+          "detail": "nur 80 Prozent des angegebenen Gesamtbudgets werden für die geplante Dauerlast verplant"
+        },
+        {
+          "label": "Datenblattkontrolle",
+          "detail": "Netzteilbestückung, redundanter Betrieb und herstellerspezifische Grenzen können das verfügbare Budget verändern"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Wer liefert die Leistung?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "poe-diagnostic",
+          "diagnostic": true,
+          "question": "Welche Aussage beschreibt PSE und PD korrekt?",
+          "options": [
+            {
+              "text": "Das PD speist Leistung in den Switch ein; das PSE nimmt sie auf.",
+              "rationale": "Die Rollen sind vertauscht. Das Power Sourcing Equipment stellt Leistung bereit, das Powered Device nimmt sie auf.",
+              "correct": false
+            },
+            {
+              "text": "Das PSE speist Leistung ein; das PD ist das versorgte Endgerät.",
+              "rationale": "Richtig. Ein PoE-Switch kann PSE sein, während etwa Access Point, Kamera oder Telefon das PD ist.",
+              "correct": true
+            },
+            {
+              "text": "PSE und PD bezeichnen zwei Powerline-Adapter im Stromnetz.",
+              "rationale": "Powerline überträgt Daten über die Strominstallation. PoE versorgt dagegen ein Netzwerkgerät über die Ethernetverkabelung.",
+              "correct": false
+            },
+            {
+              "text": "Nur das Netzwerkkabel ist ein PD; aktive Geräte besitzen keine PoE-Rolle.",
+              "rationale": "Das Kabel transportiert die Leistung. PD bezeichnet das aktive, über PoE versorgte Gerät.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Rollen merken",
+          "markdown": "**PSE gibt**, **PD nimmt**. Das ist auch der Schlüssel, um die unterschiedlichen Wattangaben eines Standards richtig zu lesen."
+        }
+      ]
+    },
+    {
+      "title": "PoE-Typen und Bezugsseiten",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "PoE nutzt die Ethernetverkabelung gleichzeitig für Daten und Gleichspannungsversorgung. Vor der Versorgung erkennt ein standardkonformes PSE ein geeignetes PD und handelt beziehungsweise klassifiziert die benötigte Leistung. Passive, nicht standardisierte Einspeisungen dürfen damit nicht gleichgesetzt werden.\n\n| IEEE-Variante | Typ | maximale PSE-Abgabe | am PD verfügbar | Planungsbedeutung |\n| --- | ---: | ---: | ---: | --- |\n| 802.3af | 1 | 15,4 W | 12,95 W | genügt für sparsame Endgeräte |\n| 802.3at | 2 | 30 W | 25,5 W | häufig als PoE+ bezeichnet |\n| 802.3bt | 3 | bis 60 W | bis 51 W | höhere Leistung über bis zu vier Aderpaare |\n| 802.3bt | 4 | bis 90 W | rund 71,3 W | höchste Leistung dieser Übersicht |\n\nDie niedrigeren Werte am PD berücksichtigen die zulässigen Verluste der Leitung. Prüfe deshalb, ob ein Gerät seinen Bedarf als **PD-Eingangsleistung** nennt oder ob ein PSE-Wert angegeben ist."
+        },
+        {
+          "type": "figure",
+          "diagramId": "poe-power-path",
+          "alt": "Ablauf vom erkennenden und einspeisenden PSE-Port über die Ethernetleitung mit Verlusten bis zum versorgten Powered Device.",
+          "caption": "Eigene Lernskizze: PSE-Abgabe und garantierte PD-Leistung liegen auf unterschiedlichen Seiten der Leitung."
+        },
+        {
+          "type": "quiz",
+          "id": "poe-type-practice",
+          "question": "Ein Gerät benötigt garantiert 22 W am PD. Welcher kleinste Typ der Tabelle reicht aus?",
+          "options": [
+            {
+              "text": "Type 1 nach 802.3af",
+              "rationale": "Type 1 stellt am PD höchstens 12,95 W bereit und unterschreitet den Bedarf.",
+              "correct": false
+            },
+            {
+              "text": "Type 2 nach 802.3at",
+              "rationale": "Richtig. Bis zu 25,5 W am PD decken den Bedarf von 22 W ab.",
+              "correct": true
+            },
+            {
+              "text": "Type 4 ist zwingend, weil jedes Gerät über 15,4 W vier Aderpaare benötigt.",
+              "rationale": "Type 2 reicht bereits aus. Die 15,4 W sind zudem die PSE-Abgabe von Type 1, nicht die allgemeine Schwelle für Type 4.",
+              "correct": false
+            },
+            {
+              "text": "Kein PoE-Typ, weil 22 W nur über Powerline möglich sind.",
+              "rationale": "PoE Type 2 und höhere Typen können diesen Bedarf decken. Powerline ist eine andere Technik.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Durchgerechnetes Szenario mit 20 Prozent Reserve",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein PoE+-Switch besitzt laut Datenblatt ein Gesamtbudget von 240 W. Für Erweiterungen und Lastspitzen sollen 20 Prozent frei bleiben. Dauerhaft verplant werden deshalb nur 80 Prozent des Budgets.\n\nVier Kameras benötigen jeweils 8 W. Zusätzlich sind sechs Access Points mit jeweils 18 W vorgesehen. Zuerst wird für jedes Gerät geprüft, ob der einzelne Port den erforderlichen Typ unterstützt. Danach folgt die Summe: Kameras benötigen 32 W, Access Points 108 W, insgesamt also 140 W. Dieser Wert liegt unter dem nutzbaren Budget von 192 W; es verbleiben innerhalb der Planungsgrenze 52 W."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Nutzbares PoE-Budget ist Switchbudget mal eins minus Reserve; 240 Watt mal 0 Komma 8 ergibt 192 Watt",
+          "mathml": "<math display=\"block\"><mrow><msub><mi>P</mi><mtext>nutzbar</mtext></msub><mo>=</mo><msub><mi>P</mi><mtext>Switch</mtext></msub><mo>·</mo><mrow><mo>(</mo><mn>1</mn><mo>−</mo><mi>r</mi><mo>)</mo></mrow><mo>=</mo><mn>240</mn><mtext> W</mtext><mo>·</mo><mn>0,8</mn><mo>=</mo><mn>192</mn><mtext> W</mtext></mrow></math>",
+          "legend": [
+            "P Switch = 240 W Gesamtbudget",
+            "r = 0,20 Reserveanteil",
+            "P nutzbar = 192 W für die geplante Dauerlast"
+          ]
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Vier mal 8 Watt plus sechs mal 18 Watt ergibt 140 Watt; 192 Watt minus 140 Watt ergibt 52 Watt Rest innerhalb des Planungsbudgets",
+          "mathml": "<math display=\"block\"><mrow><msub><mi>P</mi><mtext>Bedarf</mtext></msub><mo>=</mo><mn>4</mn><mo>·</mo><mn>8</mn><mtext> W</mtext><mo>+</mo><mn>6</mn><mo>·</mo><mn>18</mn><mtext> W</mtext><mo>=</mo><mn>140</mn><mtext> W</mtext><mo>;</mo><mspace width=\"0.5em\"/><msub><mi>P</mi><mtext>frei</mtext></msub><mo>=</mo><mn>192</mn><mtext> W</mtext><mo>−</mo><mn>140</mn><mtext> W</mtext><mo>=</mo><mn>52</mn><mtext> W</mtext></mrow></math>",
+          "legend": [
+            "32 W für vier Kameras",
+            "108 W für sechs Access Points",
+            "52 W verbleiben innerhalb der Grenze mit Reserve"
+          ]
+        },
+        {
+          "type": "figure",
+          "diagramId": "poe-budget-gates",
+          "alt": "Vergleich der Einzelportprüfung mit der Gesamtbudgetprüfung einschließlich 20 Prozent Planungsreserve.",
+          "caption": "Eigene Lernskizze: Auch ein rechnerisch freies Gesamtbudget heilt keinen zu schwachen Einzelport."
+        }
+      ]
+    },
+    {
+      "title": "Geführte Übung: Rechenweg und Grenzen",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "poe-budget-sequence",
+          "title": "PoE-Planung in vier Schritten",
+          "prompt": "Bringe die Prüfschritte in die richtige Reihenfolge.",
+          "tag": "Übung",
+          "steps": [
+            {
+              "id": "sum",
+              "label": "Leistungsbedarf aller geplanten PDs addieren."
+            },
+            {
+              "id": "reserve",
+              "label": "Aus dem Gesamtbudget nach Abzug von 20 Prozent Reserve das nutzbare Budget bestimmen."
+            },
+            {
+              "id": "ports",
+              "label": "Für jedes PD den benötigten Typ und die Leistungsgrenze des einzelnen Ports prüfen."
+            },
+            {
+              "id": "compare",
+              "label": "Gesamtbedarf mit dem nutzbaren Budget vergleichen und Rest oder Fehlbetrag ausweisen."
+            }
+          ],
+          "expected": ["ports", "reserve", "sum", "compare"],
+          "correctFeedback": "Richtig. Erst müssen alle Einzelports geeignet sein; anschließend werden Reserve, Summe und Ergebnis berechnet.",
+          "wrongFeedback": "Beginne mit der technischen Eignung jedes Ports. Ein Gesamtbudget darf erst danach als verfügbare Planungsgrenze verwendet werden."
+        },
+        {
+          "type": "quiz",
+          "id": "poe-budget-practice",
+          "question": "Ein Switch hat noch 60 W im Gesamtbudget frei. Ein einzelner Port liefert am PD aber höchstens 12,95 W. Kann dieser Port ein PD mit 20 W Bedarf versorgen?",
+          "options": [
+            {
+              "text": "Ja, weil das Gesamtbudget größer als 20 W ist.",
+              "rationale": "Das freie Gesamtbudget genügt zwar insgesamt, aber die Grenze des konkreten Ports wird überschritten.",
+              "correct": false
+            },
+            {
+              "text": "Nein, der einzelne Port erfüllt den Gerätebedarf nicht.",
+              "rationale": "Richtig. Portgrenze und Gesamtbudget sind zwei getrennte Bedingungen, die beide erfüllt sein müssen.",
+              "correct": true
+            },
+            {
+              "text": "Ja, sobald zwei Ports mit einem normalen Patchkabel zusammengeschaltet werden.",
+              "rationale": "Die Leistung zweier Ports darf nicht ohne ausdrücklich unterstützte Technik zu einem PD zusammengeführt werden.",
+              "correct": false
+            },
+            {
+              "text": "Nein, weil PoE niemals mehr als 12,95 W am PD liefern kann.",
+              "rationale": "Höhere PoE-Typen können mehr bereitstellen. Nur der beschriebene Port ist hier zu schwach.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "poe-pse-pd",
+              "label": "PSE und PD",
+              "front": "Welche Rollen bezeichnen PSE und PD?",
+              "back": "Das Power Sourcing Equipment speist Leistung ein. Das Powered Device ist das versorgte Endgerät."
+            },
+            {
+              "id": "poe-two-gates",
+              "label": "Zwei Grenzen",
+              "front": "Welche zwei Leistungsgrenzen müssen in einer PoE-Planung erfüllt sein?",
+              "back": "Jeder einzelne Port muss den Gerätebedarf decken und die Summe aller Geräte muss innerhalb des nutzbaren Gesamtbudgets bleiben."
+            },
+            {
+              "id": "poe-reserve",
+              "label": "20 Prozent Reserve",
+              "front": "Wie wird bei 20 Prozent Reserve das planbare Budget berechnet?",
+              "back": "Gesamtbudget mal 0,8. Von 240 W werden beispielsweise höchstens 192 W fest verplant."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "poe-core-recall",
+          "title": "Ohne Nachschlagen erklären",
+          "prompt": "Erkläre den vollständigen Prüfweg für einen neuen PoE-Access-Point: von PSE und PD über den erforderlichen Typ bis zur Budgetrechnung mit Reserve.",
+          "label": "Deine Erklärung",
+          "placeholder": "Der Switch ist … Der Access Point ist …",
+          "minLength": 100,
+          "model": "Der Switch beziehungsweise Injektor ist das PSE, der Access Point das PD. Zuerst wird der PD-Bedarf mit der garantierten Leistung des konkreten Porttyps verglichen. Danach werden 20 Prozent Reserve vom Gesamtbudget abgezogen, alle geplanten PD-Leistungen auf derselben Bezugsseite addiert und die Summe mit dem nutzbaren Budget verglichen."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check: Transfer",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "poe-transfer-type",
+          "requiredObjective": "poe-roles-types",
+          "question": "Eine Netzwerkkamera fordert laut Datenblatt 22 W am PD. Welcher kleinste Porttyp aus der Übersicht erfüllt diese Anforderung?",
+          "options": [
+            {
+              "text": "802.3af Type 1 mit maximal 12,95 W am PD",
+              "rationale": "12,95 W liegen unter dem geforderten Gerätebedarf von 22 W.",
+              "correct": false
+            },
+            {
+              "text": "802.3at Type 2 mit maximal 25,5 W am PD",
+              "rationale": "Richtig. Type 2 ist der kleinste aufgeführte Typ, dessen garantierte PD-Leistung 22 W abdeckt.",
+              "correct": true
+            },
+            {
+              "text": "802.3bt Type 3, weil jede Kamera zwingend vier Aderpaare benötigt",
+              "rationale": "Type 3 würde den Bedarf zwar übertreffen, ist aber nicht der kleinste ausreichende Typ. Kameras benötigen nicht pauschal Type 3.",
+              "correct": false
+            },
+            {
+              "text": "Keinen PoE-Port; 22 W müssen grundsätzlich über ein separates Netzteil bereitgestellt werden",
+              "rationale": "Type 2 und höhere Typen können 22 W am PD bereitstellen, sofern Gerät und Port kompatibel sind.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "numeric",
+          "id": "poe-transfer-budget",
+          "requiredObjective": "poe-budget",
+          "title": "Maximale Zahl zusätzlicher Access Points",
+          "prompt": "Ein Switch besitzt 240 W PoE-Gesamtbudget. 20 Prozent bleiben als Reserve frei. Vier Kameras mit je 8 W sind bereits eingeplant. Wie viele zusätzliche Access Points mit je 18 W dürfen maximal geplant werden? Alle Einzelports unterstützen den benötigten Typ.",
+          "label": "Maximale Anzahl Access Points",
+          "placeholder": "Anzahl",
+          "expected": 8,
+          "correctFeedback": "Richtig. Nach Reserve und Kameras bleiben 160 W. Darin passen acht vollständige Access Points zu je 18 W.",
+          "wrongFeedback": "Berechne zuerst 80 Prozent von 240 W, ziehe anschließend die vier Kameras ab und teile den Rest ganzzahlig durch 18 W.",
+          "correctMath": {
+            "ariaLabel": "240 Watt mal 0 Komma 8 minus vier mal 8 Watt ergibt 160 Watt; 160 Watt geteilt durch 18 Watt wird abgerundet zu 8 Access Points",
+            "mathml": "<math display=\"block\"><mrow><mfrac><mrow><mn>240</mn><mtext> W</mtext><mo>·</mo><mn>0,8</mn><mo>−</mo><mn>4</mn><mo>·</mo><mn>8</mn><mtext> W</mtext></mrow><mrow><mn>18</mn><mtext> W je AP</mtext></mrow></mfrac><mo>=</mo><mfrac><mrow><mn>160</mn><mtext> W</mtext></mrow><mrow><mn>18</mn><mtext> W je AP</mtext></mrow></mfrac><mo>≈</mo><mn>8,88</mn><mo>⇒</mo><mn>8</mn><mtext> APs</mtext></mrow></math>",
+            "legend": [
+              "192 W nutzbares Budget nach 20 Prozent Reserve",
+              "32 W für vier Kameras",
+              "160 W verbleiben für Access Points",
+              "Nur vollständige Geräte zählen: auf acht abrunden"
+            ]
+          },
+          "misconceptions": [
+            {
+              "value": "11",
+              "feedback": "Du hast vermutlich die 20-Prozent-Reserve berücksichtigt, aber die bereits eingeplanten Kameras nicht abgezogen."
+            },
+            {
+              "value": "9",
+              "feedback": "160 durch 18 ergibt etwa 8,88. Aufrunden würde das nutzbare Budget überschreiten; deshalb sind höchstens acht APs möglich."
+            },
+            {
+              "value": "13",
+              "feedback": "Du hast wahrscheinlich mit dem vollständigen 240-W-Budget gerechnet. Die geforderten 20 Prozent Reserve und die Kameras müssen vorher abgezogen werden."
+            }
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Prüfungsformulierung:** Weise erst die Eignung jedes Ports nach. Rechne danach mit einem einheitlichen Leistungsbezug und nenne Reserve, Gesamtbedarf sowie verbleibenden Spielraum."
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):** PSE, PD und Leistungsgrenzen von PoE Type 1 und Type 4.\n- **IT-Berufe Grundstufe – Lernfelder 6–9 (2022):** Switch-Datenblatt mit PoE+-Gesamtbudget und PoE-versorgte Access Points.\n- **IT-Berufe Fachstufe II – Lernfelder 10–12 (2023):** PoE-Telefone als Verkabelungs- und Versorgungsszenario.\n- **Prüfungsvorbereitung IHK Bonn:** Begriffliche Abgrenzung von PoE und Powerline.\n\nDie Standardübersicht und alle Rechenfälle wurden eigenständig didaktisch aufbereitet. Für reale Beschaffungen sind aktuelle Herstellerdaten zu Portgrenzen, Netzteilbestückung und tatsächlich verfügbarem Budget maßgeblich."
+        }
+      ]
+    }
+  ]
+}

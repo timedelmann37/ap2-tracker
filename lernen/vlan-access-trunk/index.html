@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Switchports herstellerneutral als Access oder 802.1Q-Trunk planen und Native- sowie Voice-VLAN-Sonderfälle sicher einordnen.">
+<title>Access, Trunk, Native und Voice VLAN – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=hybrid-1">
+<script defer src="/assets/ap2-space.js?v=hybrid-1"></script>
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="vlan-access-trunk" data-progress-id="ga2-5__2" data-content-revision="2026-09-11.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-5">Block N5 · Switching und VLANs</a><span class="sep">›</span>
+    <span class="here">Access, Trunk, Native und Voice VLAN</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">Access, Trunk, Native und Voice VLAN</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 24 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Access und Trunk beschreiben nicht den Gerätetyp am Kabel, sondern die VLAN-Behandlung eines Switchports. Ein Accessport verbindet typischerweise ein nicht taggendes Endgerät mit genau einem Daten-VLAN. Ein Trunk transportiert mehrere VLANs mit 802.1Q-Tags. Native- und Voice-VLANs sind Zusatzkonzepte, deren Verhalten explizit und auf beiden Seiten konsistent geplant werden muss.</p>
+<section class="learning-goals" aria-labelledby="vlan-access-trunk-goals">
+  <h2 id="vlan-access-trunk-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>für Access- und Trunkports die VLAN-Zuordnung eingehender sowie die Tag-Behandlung ausgehender Ethernet-Frames bestimmen</li>
+    <li>Native- und Voice-VLAN-Konfigurationen mit konsistenten Portrollen, erlaubten VLANs und sicheren Annahmen planen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Ein oder mehrere VLANs?</h2>
+<section class="quiz" data-quiz="vlan-port-diagnostic" data-correct="0">
+  <h3>Zwei Switches sollen VLAN 10, 20 und 30 über eine gemeinsame Leitung austauschen. Welche Portrolle ist passend?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Tags halten mehrere VLANs auf derselben Leitung unterscheidbar; die Allowed-Listen müssen zusammenpassen."><span class="m">A</span> Ein Trunk mit den ausdrücklich erlaubten VLANs 10, 20 und 30 auf beiden Seiten.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Ein normaler Accessport führt ein Daten-VLAN ungetaggt und kann die drei VLANs nicht unterscheidbar übertragen."><span class="m">B</span> Ein Accessport in VLAN 10, der automatisch auch alle anderen VLANs transportiert.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="802.1Q-VLAN-IDs sind Layer-2-Informationen und nicht Bestandteil einer IP-Adresse."><span class="m">C</span> Ein beliebiger unkonfigurierter Port, weil VLAN-IDs in IP-Adressen stehen.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Ein ungetaggter Frame trägt keine VLAN-ID. Mehrere ungetaggte VLANs wären auf derselben Leitung nicht unterscheidbar."><span class="m">D</span> Drei Native VLANs gleichzeitig auf demselben Trunk.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">Tag-Regel</span><p><strong>Ein ungetaggter Frame verrät kein VLAN.</strong> Der Eingangsport muss ihn genau einem VLAN zuordnen. Mehrere VLANs bleiben auf einer Leitung nur durch Tags unterscheidbar.</p></aside><h2 class="sec" id="s2"><span class="num">2</span>Access und Trunk herstellerneutral</h2>
+<p>Ein <strong>Accessport</strong> ist typischerweise Mitglied genau eines ungetaggten Daten-VLANs. Ein ungetaggter Eingangsframe wird anhand der Portkonfiguration intern diesem VLAN zugeordnet. Beim Ausgang entfernt beziehungsweise setzt der Switch für das Endgerät keinen 802.1Q-Tag. Unerwartet getaggte Eingänge sollten nicht stillschweigend als normale Access-Daten akzeptiert werden.</p>
+<p>Ein <strong>Trunk</strong> transportiert mehrere VLANs. Getaggte Frames tragen ihre VLAN-ID im 802.1Q-Header; eine Allowed-Liste begrenzt, welche VLANs den Link nutzen dürfen. Beide Linkseiten müssen VLANs, Tagging und gegebenenfalls ungetaggte Behandlung konsistent konfigurieren. Das Wort Trunk ist verbreitet, doch manche Systeme sprechen nur von Tagged- und Untagged-Mitgliedschaft.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Portrolle und Framezustand">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-access-trunk-comparison-title diagram-access-trunk-comparison-desc">
+  <title id="diagram-access-trunk-comparison-title">Portrolle und Framezustand</title>
+  <desc id="diagram-access-trunk-comparison-desc">Vier Karten vergleichen ungetaggten Access-Eingang und -Ausgang mit getaggtem Trunk-Eingang und -Ausgang.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Portrolle und Framezustand</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">Access Eingang</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">ungetaggter Frame</tspan><tspan x="64" dy="30">erhält intern das</tspan><tspan x="64" dy="30">konfigurierte</tspan></text></g><g><rect class="diagram-row" x="265" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="287" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="287" dy="0">Access Ausgang</tspan></text><text x="287" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="287" dy="0">Frame des einen</tspan><tspan x="287" dy="30">Daten-VLANs wird</tspan><tspan x="287" dy="30">typischerweise ohne</tspan></text></g><g><rect class="diagram-row" x="488" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="510" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="510" dy="0">Trunk Eingang</tspan></text><text x="510" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="510" dy="0">getaggte Frames</tspan><tspan x="510" dy="30">werden nur für</tspan><tspan x="510" dy="30">ausdrücklich</tspan></text></g><g><rect class="diagram-row" x="711" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="733" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="733" dy="0">Trunk Ausgang</tspan></text><text x="733" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="733" dy="0">mehrere erlaubte</tspan><tspan x="733" dy="30">VLANs werden</tspan><tspan x="733" dy="30">normalerweise</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Die interne VLAN-Zugehörigkeit bleibt erhalten, auch wenn ein Tag am Accessausgang nicht auf dem Kabel steht.</figcaption>
+</figure><div class="math-display" role="group" aria-label="Das interne Eingangs-VLAN ist bei einem getaggten Frame die VLAN-ID des Tags und bei einem ungetaggten Frame die Port-VLAN-ID"><math display="block" aria-label="Das interne Eingangs-VLAN ist bei einem getaggten Frame die VLAN-ID des Tags und bei einem ungetaggten Frame die Port-VLAN-ID"><mrow><msub><mi>V</mi><mi>ein</mi></msub><mo>=</mo><mfenced open="{" close=""><mtable><mtr><mtd><msub><mi>VID</mi><mi>Tag</mi></msub></mtd><mtd><mtext>wenn Tag erlaubt</mtext></mtd></mtr><mtr><mtd><mi>PVID</mi><mo>(</mo><msub><mi>P</mi><mi>ein</mi></msub><mo>)</mo></mtd><mtd><mtext>wenn Frame ungetaggt</mtext></mtd></mtr></mtable></mfenced></mrow></math><div class="math-legend"><span>VID = VLAN Identifier im 802.1Q-Tag</span><span>PVID = Port-VLAN-ID für ungetaggten Eingang</span><span>nicht erlaubte Tags werden verworfen statt umgedeutet</span></div></div><h2 class="sec" id="s3"><span class="num">3</span>Reales Beispiel mit Voice VLAN</h2>
+<p>In einem Büro nutzt der PC das Daten-VLAN 20 und das IP-Telefon das Voice VLAN 30. Der PC ist am Telefon angeschlossen. Nach ausdrücklich geprüfter Telefon- und Switchkonfiguration reicht das Telefon PC-Frames ungetaggt weiter, taggt seine eigenen Sprachframes mit VLAN 30 und erhält diese Zuordnung beispielsweise per LLDP-MED. Der Switch klassifiziert ungetaggten Eingang als VLAN 20 und akzeptiert am selben Anschluss getaggtes VLAN 30.</p>
+<p>Der Uplink zum nächsten Switch ist ein Trunk, auf dem VLAN 20 und 30 getaggt erlaubt sind. Ein Native VLAN wird nicht benötigt. Falls ein Betriebskonzept dennoch ein ungetaggtes Native VLAN vorsieht, müssen beide Seiten exakt übereinstimmen; unerwarteter ungetaggter Verkehr sollte verworfen und das Native VLAN nicht als normales Benutzer-VLAN genutzt werden.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Telefon und PC an einem Switchport">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="650" viewBox="0 0 960 650" role="img" aria-labelledby="diagram-voice-data-flow-title diagram-voice-data-flow-desc">
+  <title id="diagram-voice-data-flow-title">Telefon und PC an einem Switchport</title>
+  <desc id="diagram-voice-data-flow-desc">Ablauf eines kombinierten Telefon-PC-Anschlusses mit ungetaggtem Daten-VLAN 20 und getaggtem Voice VLAN 30.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Telefon und PC an einem Switchport</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">PC sendet ungetaggt</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">das Telefon reicht Datenframes transparent zum Switch weiter</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Daten-VLAN zuordnen</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">der Switch klassifiziert ungetaggten Eingang beispielsweise</tspan><tspan x="178" dy="25">als VLAN 20</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Telefon taggt Sprache</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Sprachframes tragen nach korrekter Signalisierung</tspan><tspan x="178" dy="25">beispielsweise VLAN-ID 30</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Voice VLAN prüfen</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">der Switch akzeptiert das erlaubte getaggte VLAN 30 am</tspan><tspan x="178" dy="25">Anschluss</tspan></text><path d="M480 472v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 494 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="512" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="541" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">getrennt weiterleiten</tspan></text><text x="178" y="568" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Daten- und Sprachverkehr bleiben getrennte Layer-2-Domänen mit</tspan><tspan x="178" dy="25">eigenen Richtlinien</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Die Sonderkonfiguration funktioniert nur, wenn Telefon, Switch und Signalisierung dasselbe Verhalten unterstützen.</figcaption>
+</figure><section class="sequence-practice" data-sequence="vlan-port-guided-sequence" data-expected="need,role,allow,untagged,verify" data-correct-feedback="Richtig. Bedarf und Portrolle kommen vor Allowed-Liste und Native-Entscheidung; der Test schließt die Inbetriebnahme ab." data-wrong-feedback="Beginne mit den benötigten VLANs. Konfiguriere beide Linkenden konsistent und prüfe erst danach den tatsächlichen Framefluss." aria-labelledby="vlan-port-guided-sequence-title">
+  <div class="lab-heading"><div><h3 id="vlan-port-guided-sequence-title">Einen Trunk sicher in Betrieb nehmen</h3><p>Bringe die Schritte für den Uplink zwischen zwei Switches in eine kontrollierbare Reihenfolge.</p></div><span class="lab-tag">Geführte Übung</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="verify" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Mit getaggten Testframes und Portzählern prüfen, ob nur die geplanten VLANs passieren.</span></li>
+    <li data-step="need" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Die tatsächlich benötigten VLANs 20 und 30 ermitteln.</span></li>
+    <li data-step="allow" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Auf beiden Seiten dieselbe Allowed-Liste für VLAN 20 und 30 setzen.</span></li>
+    <li data-step="untagged" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Entscheiden, dass kein Benutzer-Native-VLAN ungetaggt transportiert wird.</span></li>
+    <li data-step="role" tabindex="-1"><span class="step-position" data-step-position>5</span><span>Beide verbundenen Ports als 802.1Q-Trunk beziehungsweise Tagged-Link konfigurieren.</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Karteikarten und freier Abruf</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="vlan-access-card" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wie wird ein ungetaggter Frame am normalen Accessport einem VLAN zugeordnet?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Über das am Eingangsport konfigurierte Daten-VLAN beziehungsweise die PVID.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="vlan-trunk-card" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche zwei Bedingungen braucht ein sicherer Trunk?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Konsistentes 802.1Q-Tagging an beiden Enden und eine auf benötigte VLANs begrenzte Allowed-Liste.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="vlan-voice-card" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche Annahme darf bei einem Voice VLAN nicht stillschweigend gemacht werden?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Dass jedes Telefon automatisch taggt oder die VLAN-Zuordnung kennt; Geräteunterstützung und Signalisierung müssen geprüft werden.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Access“:</span><button type="button" data-card-id="vlan-access-card" data-card-rate="known">gewusst</button><button type="button" data-card-id="vlan-access-card" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="vlan-access-card"></span></div>
+<div class="card-rating"><span>Karte „Trunk“:</span><button type="button" data-card-id="vlan-trunk-card" data-card-rate="known">gewusst</button><button type="button" data-card-id="vlan-trunk-card" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="vlan-trunk-card"></span></div>
+<div class="card-rating"><span>Karte „Voice VLAN“:</span><button type="button" data-card-id="vlan-voice-card" data-card-rate="known">gewusst</button><button type="button" data-card-id="vlan-voice-card" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="vlan-voice-card"></span></div><section class="recall-practice" data-recall="vlan-port-recall" data-min-length="135" aria-labelledby="vlan-port-recall-title">
+  <div class="recall-prompt"><h3 id="vlan-port-recall-title">Portverhalten frei erklären</h3><p>Erkläre Access, Trunk, Allowed-Liste, Native VLAN und Voice VLAN einschließlich der Tag-Behandlung am Ein- und Ausgang.</p></div>
+  <label class="sr-only" for="vlan-port-recall-answer">Deine Erklärung</label>
+  <textarea id="vlan-port-recall-answer" data-recall-input rows="4" placeholder="Ein Accessport …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Ein Accessport ordnet ungetaggten Eingang über seine PVID einem Daten-VLAN zu und sendet dieses VLAN zum Endgerät typischerweise ungetaggt. Ein Trunk transportiert mehrere erlaubte VLANs getaggt. Ein Native VLAN ist ein ausdrücklich ungetaggt behandeltes Trunk-VLAN und muss an beiden Enden übereinstimmen. Ein Voice VLAN setzt ein kompatibles Telefon und eine geprüfte Signalisierung voraus.</div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Lernziel-Check: Transfer</h2>
+<section class="quiz" data-quiz="vlan-port-transfer-flow" data-correct="0" data-required-objective="access-trunk-flow">
+  <h3>Ein ungetaggter Frame trifft an einem Accessport mit PVID 40 ein und soll über einen Trunk hinausgehen, auf dem VLAN 40 erlaubt ist. Welche Verarbeitung ist korrekt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Die PVID klassifiziert den ungetaggten Eingang; der Trunk hält VLAN 40 per Tag unterscheidbar."><span class="m">A</span> Intern VLAN 40 zuordnen und am Trunkausgang mit VLAN-ID 40 taggen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Ein ungetaggter Frame wird genau einer PVID zugeordnet, nicht allen VLANs."><span class="m">B</span> Den Frame VLAN 0 zuordnen und am Trunk ungetaggt in alle VLANs kopieren.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="802.1Q-Tagging ist eine Layer-2-Funktion und verändert nicht automatisch die IP-Adresse."><span class="m">C</span> Die IP-Adresse ändern, weil ein VLAN-Tag nur auf Schicht 3 existiert.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Gerade ungetaggte Endgeräteframes sind der typische Accessport-Eingang und werden per PVID klassifiziert."><span class="m">D</span> Den Frame grundsätzlich verwerfen, weil Accessports niemals ungetaggte Frames annehmen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="vlan-port-transfer-voice" data-correct="0" data-required-objective="native-voice-plan">
+  <h3>PC und IP-Telefon teilen einen Anschluss. PC-Daten sollen VLAN 20, Sprache VLAN 30 nutzen. Welche Planung ist konservativ korrekt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Die Zuordnung ist explizit, geräteabhängige Voice-Funktion geprüft und am Trunk eindeutig."><span class="m">A</span> Ungetaggte PC-Daten als VLAN 20 klassifizieren, getaggtes VLAN 30 nur nach geprüfter Telefonunterstützung erlauben und beide VLANs am Uplink getaggt führen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Ohne Tag kann ein Frame auf derselben Leitung nicht zwischen zwei VLAN-IDs unterscheiden."><span class="m">B</span> VLAN 20 und 30 beide ungetaggt senden, damit das Kabel sie automatisch unterscheidet.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Voice-VLAN-Verhalten ist geräte- und konfigurationsabhängig und muss verifiziert werden."><span class="m">C</span> Jedes Telefon taggt ab Werk immer VLAN 30; Prüfung und Signalisierung sind unnötig.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Die VLAN-Trennung allein garantiert weder Priorisierung noch Identität oder erlaubte Layer-3-Verbindungen."><span class="m">D</span> Voice VLAN ersetzt QoS, Authentisierung und Firewallregeln vollständig.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Quellen und Aktualität</h2>
+<ul>
+<li><strong>EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):</strong> Tagged/Trunk für mehrere VLANs und Untagged/Access für typische Endgeräte.</li>
+<li><strong>IT-Berufe Fachstufe II – Lernfelder 10–12 (2023):</strong> Access-, Trunk- und Hybrid-Fälle, PVID sowie Tagged-/Untagged-Mitgliedschaft.</li>
+</ul>
+<p>Native- und Voice-Verhalten bleibt implementationsabhängig und muss am aktuellen Datenblatt geprüft werden. Alle Diagramme und Beispiele sind neu erstellt; private Buchgrafiken werden nicht veröffentlicht.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-5"><span class="d">zurück zu</span><span class="t">Block N5 · Switching und VLANs</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N5 · Switching und VLANs</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Ein oder mehrere VLANs?</a></li>
+<li><a href="#s2" data-t="s2">Access und Trunk herstellerneutral</a></li>
+<li><a href="#s3" data-t="s3">Reales Beispiel mit Voice VLAN</a></li>
+<li><a href="#s4" data-t="s4">Karteikarten und freier Abruf</a></li>
+<li><a href="#s5" data-t="s5">Lernziel-Check: Transfer</a></li>
+<li><a href="#s6" data-t="s6">Quellen und Aktualität</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-5">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

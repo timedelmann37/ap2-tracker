@@ -292,7 +292,9 @@
     checkButton?.addEventListener('click', () => {
       const value = Number(String(input?.value || '').replace(',', '.'));
       const expected = Number(practice.dataset.expected);
-      const correct = Number.isFinite(value) && Math.abs(value - expected) < 0.001;
+      const tolerance = practice.dataset.tolerance === undefined ? 0.001 : Number(practice.dataset.tolerance);
+      const correct = Number.isFinite(value) && Number.isFinite(expected) && Number.isFinite(tolerance)
+        && tolerance >= 0 && Math.abs(value - expected) <= tolerance;
       learning[`${key}:value`] = input?.value || '';
       learning[`${key}:result`] = correct ? 'correct' : 'wrong';
       learning[`${key}:attempts`] = Number(learning[`${key}:attempts`] || 0) + 1;

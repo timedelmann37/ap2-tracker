@@ -1,0 +1,182 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "lacp-link-aggregation",
+    "slug": "lacp-link-aggregation",
+    "title": "LACP-Bündel realistisch dimensionieren",
+    "description": "Link Aggregation als logische Verbindung erklären, Kapazität und Ausfallverhalten berechnen sowie den Unterschied zwischen Gesamtbündel und einzelnem Flow anwenden.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-5",
+    "groupLabel": "Block N5 · Switching und VLANs",
+    "itemId": "ga2-5__7",
+    "week": "KW 39",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "sources": ["itlf10-12-2023"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {"id": "capacity-and-flow", "label": "für ein LACP-Bündel die theoretische Gesamtkapazität und Restkapazität berechnen sowie die Bandbreitengrenze eines einzelnen Flows erklären"},
+    {"id": "bundle-operation", "label": "geeignete LACP-Partner- und Mitgliedsparameter auswählen und das Verhalten bei Aushandlung oder Linkausfall begründen"}
+  ],
+  "intro": "Link Aggregation fasst mehrere physische Ethernet-Verbindungen zu einer logischen Verbindung zusammen. LACP handelt die Mitgliedschaft dynamisch aus und kann ausgefallene Links aus dem Bündel entfernen. Die Summe der Linkraten ist eine Obergrenze für mehrere passend verteilte Flows, nicht automatisch die Datenrate eines einzelnen Flows.",
+  "curation": {
+    "evidence": [
+      {"sourceId": "itlf10-12-2023", "sourceLocator": "Chunks itlf10-12-2023:page:0353 und :0354", "use": "Link Aggregation als logisches Bündel, IEEE-802.1AX-Kontext, gleiche Linkparameter, LACP aktiv/passiv, Ausfallerkennung und Verteilungsverfahren", "reviewStatus": "Text und private Layout-Figur geprüft; eigene Diagramme erstellt"},
+      {"sourceId": "itlf10-12-2023", "sourceLocator": "Chunks itlf10-12-2023:page:0359 und :0360", "use": "Produktspezifische Beispiele, in denen angezeigte Summenrate und praktisch genutzte Datenrate auseinanderfallen", "reviewStatus": "nur als Warnhinweis gegen pauschale Bandbreitenversprechen; Befehle und Produktdetails ausgeschlossen"}
+    ],
+    "notes": [
+      "Die private Figur itlf10-12-2023:layout:0353:01 ist thematisch passend, wurde aber nicht übernommen. Beide deklarativen Diagramme sind eigenständige Lernmodelle.",
+      "Die Buchaussage zur vervielfachten Datenrate wird als theoretische Bündelobergrenze für mehrere verteilbare Flows eingeordnet. Ein einzelner Flow bleibt bei üblicher flowbasierter Hash-Verteilung normalerweise auf einem Mitgliedslink, damit die Reihenfolge erhalten bleibt.",
+      "Die Seiten 359 und 360 zeigen konkrete MikroTik-/Windows-Konfigurationen und dort ausbleibende Nutzdatenratensteigerung. Das ist kein universeller LACP-Nachteil; Ergebnis und Hashing hängen von Plattform, Verkehrsprofil und Gegenstelle ab.",
+      "Kompatibilitätsregeln für Geschwindigkeit, Duplex, VLAN-Zulassung, MTU und Mindestzahl aktiver Links müssen auf beiden Plattformen geprüft werden. LACP ersetzt keine Ende-zu-Ende-Redundanz.",
+      "Bei aktiv/passiv muss mindestens eine Seite LACP aktiv initiieren; passiv/passiv bildet ohne zusätzlichen Mechanismus kein dynamisch ausgehandeltes Bündel."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "lacp-four-link-bundle",
+      "type": "topology",
+      "title": "Vier Leitungen, eine logische Verbindung",
+      "description": "LACP verwaltet vier physische Mitglieder zwischen zwei Partnern als ein logisches Bündel.",
+      "nodes": [
+        {"id": "switch-a", "label": "Switch A", "detail": "LACP aktiv", "x": 180, "y": 280, "kind": "switch"},
+        {"id": "switch-b", "label": "Switch B", "detail": "LACP passiv", "x": 780, "y": 280, "kind": "switch"}
+      ],
+      "edges": [
+        {"from": "switch-a", "to": "switch-b", "label": "Mitglied 1 · 1 Gbit/s", "kind": "active"},
+        {"from": "switch-a", "to": "switch-b", "label": "Mitglied 2 · 1 Gbit/s", "kind": "active"},
+        {"from": "switch-a", "to": "switch-b", "label": "Mitglied 3 · 1 Gbit/s", "kind": "active"},
+        {"from": "switch-a", "to": "switch-b", "label": "Mitglied 4 · 1 Gbit/s", "kind": "active"}
+      ]
+    },
+    {
+      "id": "lacp-capacity-cases",
+      "type": "comparison",
+      "title": "Gesamtbündel ist nicht Einzel-Flow",
+      "description": "Die nutzbare Rate hängt von aktiven Mitgliedern, Verkehrsverteilung und Ausfallzustand ab.",
+      "items": [
+        {"label": "Viele unabhängige Flows", "detail": "Bei guter Hash-Verteilung können vier 1-Gbit/s-Links zusammen bis zur theoretischen Obergrenze von 4 Gbit/s beitragen."},
+        {"label": "Ein einzelner Flow", "detail": "Bei üblicher flowbasierter Verteilung bleibt er auf einem Mitglied: typischerweise höchstens 1 Gbit/s statt 4 Gbit/s."},
+        {"label": "Ein Mitglied fällt aus", "detail": "LACP entfernt den ausgefallenen Link; mit drei verbleibenden Mitgliedern sinkt die Obergrenze auf 3 Gbit/s."},
+        {"label": "Ungleiches Hashing", "detail": "Mehrere Flows können zufällig denselben Mitgliedslink treffen. Die reale Summe bleibt dann unter der rechnerischen Obergrenze."}
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Was bedeutet 4 × 1 Gbit/s?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "lacp-diagnostic",
+          "diagnostic": true,
+          "question": "Vier 1-Gbit/s-Links bilden ein LACP-Bündel. Welche Aussage ist am belastbarsten?",
+          "options": [
+            {"text": "Mehrere Flows können zusammen bis zu 4 Gbit/s erreichen; ein einzelner Flow bleibt bei üblichem Hashing meist auf 1 Gbit/s begrenzt.", "rationale": "Richtig. Bündelkapazität und Einzel-Flow-Grenze sind zwei verschiedene Größen.", "correct": true},
+            {"text": "Jeder einzelne TCP-Flow erreicht garantiert 4 Gbit/s.", "rationale": "Flowbasiertes Hashing hält einen Flow normalerweise auf einem Mitgliedslink.", "correct": false},
+            {"text": "LACP vervierfacht automatisch die Datenrate jedes Endgeräts im Netz.", "rationale": "Ende-zu-Ende-Flaschenhälse und Verkehrsverteilung bleiben bestehen.", "correct": false},
+            {"text": "LACP dient nur der Redundanz und kann nie aggregierte Kapazität bereitstellen.", "rationale": "Mehrere unabhängige Flows können auf mehrere aktive Mitglieder verteilt werden.", "correct": false}
+          ]
+        },
+        {"type": "callout", "kind": "merksatz", "label": "Prüfungsfalle", "markdown": "**n × r** ist die theoretische Kapazitätsobergrenze des Bündels. Sie ist keine Garantie für **einen** Flow und keine Ende-zu-Ende-Zusage."
+        }
+      ]
+    },
+    {
+      "title": "Kapazität und Ausfall berechnen",
+      "blocks": [
+        {"type": "figure", "diagramId": "lacp-four-link-bundle", "alt": "Zwei Switches sind über vier aktive physische 1-Gbit/s-Mitgliedslinks zu einer logischen LACP-Verbindung verbunden.", "caption": "Eigene Topologie: Mindestens eine Seite initiiert aktiv; hier ist A aktiv und B passiv."},
+        {
+          "type": "math",
+          "ariaLabel": "Maximale Bündelkapazität ist Zahl aktiver Links mal Linkrate, nach einem Linkausfall ein Link weniger, und ein einzelner Flow ist höchstens so schnell wie ein Mitgliedslink",
+          "mathml": "<math display=\"block\"><mtable columnalign=\"right center left\" rowspacing=\"0.45em\"><mtr><mtd><msub><mi>C</mi><mtext>Bündel,max</mtext></msub></mtd><mtd><mo>=</mo></mtd><mtd><msub><mi>n</mi><mtext>aktiv</mtext></msub><mo>·</mo><mi>r</mi></mtd></mtr><mtr><mtd><msub><mi>C</mi><mtext>nach Ausfall</mtext></msub></mtd><mtd><mo>=</mo></mtd><mtd><mo>(</mo><msub><mi>n</mi><mtext>aktiv</mtext></msub><mo>−</mo><mn>1</mn><mo>)</mo><mo>·</mo><mi>r</mi></mtd></mtr><mtr><mtd><msub><mi>C</mi><mtext>Einzelflow</mtext></msub></mtd><mtd><mo>≤</mo></mtd><mtd><mi>r</mi></mtd></mtr></mtable></math>",
+          "legend": ["naktiv = aktive kompatible Mitglieder", "r = Rate eines Mitgliedslinks", "Einzelflow-Grenze gilt für übliche flowbasierte Verteilung; Plattform prüfen"]
+        },
+        {"type": "markdown", "markdown": "**Beispiel:** Vier aktive Mitglieder mit je 1 Gbit/s ergeben eine theoretische Bündelobergrenze von 4 Gbit/s. Fällt ein Mitglied aus und bleibt das Bündel gemäß Mindestlink-Konfiguration betriebsbereit, sind es 3 Gbit/s. Ein einzelner großer Datenstrom erreicht bei üblichem Flow-Hashing trotzdem höchstens die Rate eines Mitgliedslinks. Mehrere unabhängige Flows können dagegen auf verschiedene Mitglieder verteilt werden."
+        }
+      ]
+    },
+    {
+      "title": "Aushandlung und Mitgliedschaft",
+      "blocks": [
+        {"type": "markdown", "markdown": "LACP tauscht Kontrollinformationen zwischen zwei Partnern aus und entscheidet, welche kompatiblen Ports in das logische Bündel aufgenommen werden. Ein aktiver Partner initiiert; ein passiver Partner antwortet. Aktiv/aktiv und aktiv/passiv können aushandeln, passiv/passiv startet das dynamische LACP-Bündel nicht.\n\nMitgliedslinks müssen auf beiden Seiten zum selben logischen Bündel passen. Geschwindigkeit und Duplex sind grundlegende Kriterien; VLAN-Zulassung, MTU, System-/Portprioritäten und eine Mindestzahl aktiver Links sind plattformspezifisch zu prüfen. Bleiben erwartete LACPDUs oder der physische Link aus, kann das Mitglied aus der Weiterleitung genommen werden. Das Bündel arbeitet nur weiter, wenn seine Betriebsbedingungen erfüllt bleiben."},
+        {"type": "figure", "diagramId": "lacp-capacity-cases", "alt": "Vier Vergleichskarten zeigen viele Flows bis 4 Gbit/s, einen einzelnen Flow bis 1 Gbit/s, den Ausfall eines Mitglieds mit 3 Gbit/s Restobergrenze und mögliche Hash-Unwucht.", "caption": "Eigene Lernskizze: Rechenwert, Verkehrsprofil und Betriebszustand gemeinsam betrachten."}
+      ]
+    },
+    {
+      "title": "Geführte Ausfallanalyse",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "lacp-failure-sequence",
+          "title": "Ein Mitglied liefert keine Kontrollinformationen mehr",
+          "prompt": "Ordne den vereinfachten Analyseweg.",
+          "tag": "Übung",
+          "steps": [
+            {"id": "detect-member", "label": "Physik- und LACP-Status des betroffenen Mitglieds erkennen."},
+            {"id": "remove-member", "label": "Den nicht mehr geeigneten Link aus der aktiven Weiterleitungsmenge nehmen."},
+            {"id": "check-minimum", "label": "Prüfen, ob Mindestzahl und Partnerbedingungen des Bündels noch erfüllt sind."},
+            {"id": "recalculate-capacity", "label": "Restobergrenze aus verbleibenden aktiven Mitgliedern neu berechnen."},
+            {"id": "verify-flows", "label": "Verteilung mehrerer Flows und Ende-zu-Ende-Durchsatz messen statt nur die angezeigte Linkrate abzulesen."}
+          ],
+          "expected": ["detect-member", "remove-member", "check-minimum", "recalculate-capacity", "verify-flows"],
+          "correctFeedback": "Richtig: Mitgliedschaft, Betriebsbedingung, Rechenwert und realer Verkehr werden getrennt geprüft.",
+          "wrongFeedback": "Zuerst Zustand erkennen, Mitglied entfernen, Mindestbedingungen prüfen, Kapazität berechnen und reale Flows testen."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {"id": "lacp-purpose", "label": "LACP", "front": "Was macht LACP?", "back": "Es handelt geeignete physische Mitglieder einer dynamischen Link Aggregation aus und überwacht ihre Mitgliedschaft."},
+            {"id": "single-flow", "label": "Einzelflow", "front": "Warum erreicht ein einzelner Flow meist nicht die Summe aller Linkraten?", "back": "Übliche Hash-Verteilung hält einen Flow zur Reihenfolgeerhaltung auf einem Mitgliedslink."},
+            {"id": "active-passive", "label": "Modi", "front": "Welche LACP-Moduskombination startet sicher eine Aushandlung?", "back": "Aktiv/aktiv oder aktiv/passiv; mindestens eine Seite muss initiieren."
+            }
+          ]
+        },
+        {"type": "recall", "id": "lacp-free-recall", "title": "Bündel ohne Werbeversprechen erklären", "prompt": "Erkläre für 4 × 1 Gbit/s die Obergrenze, die Einzel-Flow-Grenze, das Ergebnis nach einem Linkausfall und die notwendige aktiv/passiv-Bedingung.", "label": "Deine Erklärung", "placeholder": "Die Obergrenze …", "minLength": 130, "model": "Vier aktive 1-Gbit/s-Mitglieder liefern für mehrere gut verteilte Flows höchstens 4 Gbit/s. Ein einzelner Flow bleibt bei üblichem Hashing bei höchstens 1 Gbit/s. Nach Ausfall eines Mitglieds beträgt die Restobergrenze 3 Gbit/s, sofern Mindestbedingungen erfüllt sind. Für dynamisches LACP muss mindestens eine Seite aktiv initiieren."}
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "capacity-and-flow-transfer",
+          "requiredObjective": "capacity-and-flow",
+          "question": "Ein Bündel enthält vier aktive 1-Gbit/s-Links. Einer fällt aus. Welche Aussage ist vollständig richtig?",
+          "options": [
+            {"text": "Die Restobergrenze beträgt 3 Gbit/s für mehrere verteilbare Flows; ein einzelner Flow bleibt bei üblichem Hashing höchstens bei 1 Gbit/s.", "rationale": "Richtig. 3 × 1 Gbit/s ist die Bündelobergrenze, nicht die Rate eines einzelnen Flows.", "correct": true},
+            {"text": "Jeder einzelne Flow erreicht nach dem Ausfall garantiert 3 Gbit/s.", "rationale": "Ein einzelner Flow wird normalerweise nicht über mehrere Mitglieder aufgeteilt.", "correct": false},
+            {"text": "Die Restobergrenze bleibt 4 Gbit/s, weil LACP ausgefallene Kabel logisch ersetzt.", "rationale": "LACP entfernt das ausgefallene Mitglied, erzeugt aber keine zusätzliche physische Kapazität.", "correct": false},
+            {"text": "Das gesamte Bündel muss unabhängig von Mindestlink-Regeln immer vollständig ausfallen.", "rationale": "Es kann mit verbleibenden Mitgliedern weiterarbeiten, sofern die Betriebsbedingungen erfüllt sind.", "correct": false}
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "bundle-operation-transfer",
+          "requiredObjective": "bundle-operation",
+          "question": "Welche Konfiguration und Fehlerreaktion passt zu einem dynamischen LACP-Bündel?",
+          "options": [
+            {"text": "Mindestens ein Partner ist aktiv; Mitgliedsparameter passen; ein ausgefallener Link wird entfernt und Mindestbedingungen werden geprüft.", "rationale": "Richtig. Aushandlung, Kompatibilität und Ausfallbetrieb sind vollständig berücksichtigt.", "correct": true},
+            {"text": "Beide Partner sind passiv; unterschiedliche Geschwindigkeiten werden automatisch zu einem einzelnen schnelleren Link verschmolzen.", "rationale": "Passiv/passiv initiiert nicht, und inkompatible Mitglieder werden nicht magisch angeglichen.", "correct": false},
+            {"text": "LACP verteilt jedes Paket eines Flows abwechselnd, unabhängig von Reihenfolge und Plattform.", "rationale": "Typisch ist eine flowbasierte Hash-Verteilung; per-Paket-Round-Robin ist keine universelle LACP-Eigenschaft.", "correct": false},
+            {"text": "VLAN-, MTU- und Mindestlink-Konfigurationen müssen nur auf einer Seite stimmen.", "rationale": "Das logische Bündel muss auf beiden Partnern kompatibel konfiguriert sein.", "correct": false}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {"type": "markdown", "markdown": "- **IT-Berufe – Lernfelder 10–12 (2023), PDF-Seiten 353–354:** Link Aggregation, LACP, aktiv/passiv, Mitgliedsparameter und Verteilungsverfahren.\n- **PDF-Seiten 359–360:** plattformspezifische Beispiele für die Differenz zwischen angezeigter Summenrate und realem Durchsatz.\n\nPrivate Grafiken und Konfigurationsbefehle wurden nicht veröffentlicht. Lastverteilung, Mindestlinks und Reaktionszeiten müssen gegen die eingesetzte Plattform geprüft werden."}
+      ]
+    }
+  ]
+}

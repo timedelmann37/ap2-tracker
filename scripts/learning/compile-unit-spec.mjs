@@ -1,5 +1,6 @@
 const STATUS_VALUES = new Set(['CURATED_DRAFT', 'DIDACTICALLY_REVIEWED', 'PUBLICATION_READY']);
 const BLOCK_TYPES = new Set(['markdown', 'quiz', 'callout', 'math', 'figure', 'recall', 'flashcards', 'numeric', 'sequence']);
+const DIAGRAM_TYPES = new Set(['layers', 'flow', 'comparison', 'topology']);
 
 function fail(fileName, message) {
   throw new Error(`${fileName}: ${message}`);
@@ -101,6 +102,9 @@ export function validateUnitSpec(spec, fileName = 'Lern-Spezifikation') {
       if (!id || block.expected === undefined || !block.prompt || !block.label || !block.correctFeedback || !block.wrongFeedback) {
         fail(fileName, 'numeric benötigt id, expected, prompt, label und Feedback.');
       }
+      if (!Number.isFinite(Number(block.expected)) || block.tolerance !== undefined && (!Number.isFinite(Number(block.tolerance)) || Number(block.tolerance) < 0)) {
+        fail(fileName, `numeric ${id} benötigt endliche Zahlen für expected und eine nichtnegative tolerance.`);
+      }
     }
     if (block.type === 'recall') {
       if (!id || !block.prompt || !block.model || !Number.isInteger(block.minLength)) fail(fileName, 'recall benötigt id, prompt, model und minLength.');
@@ -139,8 +143,30 @@ export function validateUnitSpec(spec, fileName = 'Lern-Spezifikation') {
   const diagramIds = (spec.diagrams || []).map(diagram => diagram.id);
   if (new Set(diagramIds).size !== diagramIds.length) fail(fileName, 'Diagramm-IDs müssen eindeutig sein.');
   for (const diagram of spec.diagrams || []) {
-    if (!['layers', 'flow', 'comparison'].includes(diagram.type) || !diagram.id || !diagram.title || !Array.isArray(diagram.items) || diagram.items.length < 2) {
-      fail(fileName, 'jedes Diagramm benötigt id, title, type und mindestens zwei items.');
+    if (!DIAGRAM_TYPES.has(diagram.type) || !diagram.id || !diagram.title) {
+      fail(fileName, 'jedes Diagramm benötigt id, title und einen unterstützten type.');
+    }
+    if (diagram.type !== 'topology' && (!Array.isArray(diagram.items) || diagram.items.length < 2)) {
+      fail(fileName, 'layers-, flow- und comparison-Diagramme benötigen mindestens zwei items.');
+    }
+    if (diagram.type === 'topology') {
+      if (!Array.isArray(diagram.nodes) || diagram.nodes.length < 2 || !Array.isArray(diagram.edges) || diagram.edges.length < 1) {
+        fail(fileName, 'topology-Diagramme benötigen mindestens zwei nodes und eine edge.');
+      }
+      const nodeIds = diagram.nodes.map(node => node.id);
+      if (nodeIds.some(id => !/^[a-z0-9-]+$/.test(id || '')) || new Set(nodeIds).size !== nodeIds.length) {
+        fail(fileName, `topology-Diagramm ${diagram.id} benötigt eindeutige, slugförmige node-IDs.`);
+      }
+      if (diagram.nodes.some(node => !node.label || !Number.isFinite(node.x) || !Number.isFinite(node.y))) {
+        fail(fileName, `topology-Diagramm ${diagram.id} benötigt label sowie numerische x/y-Koordinaten je node.`);
+      }
+      if (diagram.edges.some(edge => !nodeIds.includes(edge.from) || !nodeIds.includes(edge.to) || edge.from === edge.to)) {
+        fail(fileName, `topology-Diagramm ${diagram.id} enthält eine ungültige edge.`);
+      }
+      if (diagram.zones !== undefined && (!Array.isArray(diagram.zones) || diagram.zones.some(zone =>
+        !zone.id || !zone.label || ![zone.x, zone.y, zone.width, zone.height].every(Number.isFinite)))) {
+        fail(fileName, `topology-Diagramm ${diagram.id} enthält eine ungültige zone.`);
+      }
     }
   }
   for (const block of blocks.filter(block => block.type === 'figure' && block.diagramId)) {
@@ -180,9 +206,12 @@ function renderMath(block) {
   return `<div class="math-display${compact}" role="group" aria-label="${escapeHtml(block.ariaLabel)}">${math}${legend}</div>`;
 }
 
-function renderFigure(block, meta) {
-  const src = block.diagramId ? `/assets/learning/${meta.slug}-${block.diagramId}.svg` : block.src;
-  return `<figure class="learning-figure">\n  <img src="${escapeHtml(src)}" alt="${escapeHtml(block.alt)}">\n  <figcaption>${escapeHtml(block.caption)}</figcaption>\n</figure>`;
+function renderFigure(block, meta, diagramsById) {
+  if (block.diagramId) {
+    const diagram = diagramsById.get(block.diagramId);
+    return `<figure class="learning-figure learning-figure-inline">\n  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: ${escapeHtml(diagram.title)}">\n    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>\n    ${renderDiagram(diagram, block.alt).trim()}\n  </div>\n  <figcaption>${escapeHtml(block.caption)}</figcaption>\n</figure>`;
+  }
+  return `<figure class="learning-figure">\n  <img src="${escapeHtml(block.src)}" alt="${escapeHtml(block.alt)}">\n  <figcaption>${escapeHtml(block.caption)}</figcaption>\n</figure>`;
 }
 
 function renderRecall(block) {
@@ -213,12 +242,12 @@ function renderSequence(block) {
   return `<section class="sequence-practice" data-sequence="${escapeHtml(block.id)}" data-expected="${escapeHtml(block.expected.join(','))}" data-correct-feedback="${escapeHtml(block.correctFeedback)}" data-wrong-feedback="${escapeHtml(block.wrongFeedback)}"${required} aria-labelledby="${escapeHtml(block.id)}-title">\n  <div class="lab-heading"><div><h3 id="${escapeHtml(block.id)}-title">${escapeHtml(block.title)}</h3><p>${escapeHtml(block.prompt)}</p></div><span class="lab-tag">${escapeHtml(block.tag || 'Ablauf')}</span></div>\n  <ol class="sequence-list" data-sequence-list>\n${steps}\n  </ol>\n  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>\n  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>\n</section>`;
 }
 
-function renderBlock(block, meta) {
+function renderBlock(block, meta, diagramsById) {
   if (block.type === 'markdown') return block.markdown.trim();
   if (block.type === 'quiz') return renderQuiz(block);
   if (block.type === 'callout') return renderCallout(block);
   if (block.type === 'math') return renderMath(block);
-  if (block.type === 'figure') return renderFigure(block, meta);
+  if (block.type === 'figure') return renderFigure(block, meta, diagramsById);
   if (block.type === 'recall') return renderRecall(block);
   if (block.type === 'flashcards') return renderFlashcards(block);
   if (block.type === 'numeric') return renderNumeric(block);
@@ -246,7 +275,8 @@ function svgText(text, x, y, options = {}) {
   const anchor = options.anchor || 'start';
   const weight = options.weight || 500;
   const size = options.size || 20;
-  return `<text x="${x}" y="${y}" text-anchor="${anchor}" font-family="Inter, Arial, sans-serif" font-size="${size}" font-weight="${weight}" fill="${options.fill || '#17211b'}">${lines.map((line, index) => `<tspan x="${x}" dy="${index ? 25 : 0}">${escapeXml(line)}</tspan>`).join('')}</text>`;
+  const className = options.className ? ` class="${escapeXml(options.className)}"` : '';
+  return `<text${className} x="${x}" y="${y}" text-anchor="${anchor}" font-family="Inter, Arial, sans-serif" font-size="${size}" font-weight="${weight}" fill="${options.fill || 'var(--diagram-text, #f1f0ec)'}">${lines.map((line, index) => `<tspan x="${x}" dy="${index ? 25 : 0}">${escapeXml(line)}</tspan>`).join('')}</text>`;
 }
 
 function renderLayersSvg(diagram) {
@@ -254,7 +284,7 @@ function renderLayersSvg(diagram) {
   const height = 112 + diagram.items.length * rowHeight;
   const rows = diagram.items.map((item, index) => {
     const y = 82 + index * rowHeight;
-    return `<g><rect x="42" y="${y}" width="876" height="82" rx="12" fill="${index % 2 ? '#eef2ed' : '#f8faf6'}" stroke="#cfd8d0"/><rect x="42" y="${y}" width="126" height="82" rx="12" fill="#dce8df"/>${svgText(item.label, 105, y + 48, { anchor: 'middle', weight: 700, size: 22, max: 12 })}${svgText(item.detail || '', 194, y + 34, { size: 21, max: 58 })}</g>`;
+    return `<g><rect class="diagram-row" x="42" y="${y}" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="${y}" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/>${svgText(item.label, 105, y + 48, { anchor: 'middle', weight: 700, size: 22, max: 12 })}${svgText(item.detail || '', 194, y + 34, { size: 21, max: 58, fill: 'var(--diagram-muted, #c8c1d2)' })}</g>`;
   }).join('');
   return { width: 960, height, body: rows };
 }
@@ -264,8 +294,8 @@ function renderFlowSvg(diagram) {
   const height = 110 + diagram.items.length * rowHeight;
   const rows = diagram.items.map((item, index) => {
     const y = 80 + index * rowHeight;
-    const arrow = index === diagram.items.length - 1 ? '' : `<path d="M480 ${y + 68}v30" stroke="#7f9183" stroke-width="3"/><path d="m470 ${y + 90} 10 10 10-10" fill="none" stroke="#7f9183" stroke-width="3"/>`;
-    return `<g><rect x="150" y="${y}" width="660" height="72" rx="14" fill="${index === 0 ? '#dce8df' : '#f8faf6'}" stroke="#c3cec5"/>${svgText(item.label, 178, y + 29, { weight: 700, size: 21, max: 50 })}${svgText(item.detail || '', 178, y + 56, { size: 18, fill: '#48564c', max: 62 })}${arrow}</g>`;
+    const arrow = index === diagram.items.length - 1 ? '' : `<path d="M480 ${y + 68}v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 ${y + 90} 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/>`;
+    return `<g><rect class="diagram-row" x="150" y="${y}" width="660" height="72" rx="14" fill="${index === 0 ? 'var(--diagram-key, #342c40)' : 'var(--diagram-surface, #241e2e)'}" stroke="var(--diagram-border, #5f526e)"/>${svgText(item.label, 178, y + 29, { weight: 700, size: 21, max: 50 })}${svgText(item.detail || '', 178, y + 56, { size: 18, fill: 'var(--diagram-muted, #c8c1d2)', max: 62 })}${arrow}</g>`;
   }).join('');
   return { width: 960, height, body: rows };
 }
@@ -278,23 +308,65 @@ function renderComparisonSvg(diagram) {
   const cards = diagram.items.map((item, index) => {
     const x = 42 + index * (cardWidth + gap);
     const detail = wrapLines(item.detail || '', Math.max(20, Math.floor(cardWidth / 10))).slice(0, 5);
-    return `<g><rect x="${x}" y="92" width="${cardWidth}" height="252" rx="16" fill="${index % 2 ? '#f3f6f1' : '#e7efe8'}" stroke="#c3cec5"/>${svgText(item.label, x + 22, 132, { weight: 700, size: 23, max: Math.floor(cardWidth / 11) })}<text x="${x + 22}" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="#344239">${detail.map((line, lineIndex) => `<tspan x="${x + 22}" dy="${lineIndex ? 30 : 0}">${escapeXml(line)}</tspan>`).join('')}</text></g>`;
+    return `<g><rect class="diagram-row" x="${x}" y="92" width="${cardWidth}" height="252" rx="16" fill="${index % 2 ? 'var(--diagram-surface-alt, #2c2438)' : 'var(--diagram-surface, #241e2e)'}" stroke="var(--diagram-border, #5f526e)"/>${svgText(item.label, x + 22, 132, { weight: 700, size: 23, max: Math.floor(cardWidth / 11) })}<text x="${x + 22}" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)">${detail.map((line, lineIndex) => `<tspan x="${x + 22}" dy="${lineIndex ? 30 : 0}">${escapeXml(line)}</tspan>`).join('')}</text></g>`;
   }).join('');
   return { width: 960, height, body: cards };
 }
 
-export function renderDiagram(diagram) {
+function diagramClass(kind, fallback = '') {
+  return /^[a-z0-9-]+$/.test(kind || '') ? kind : fallback;
+}
+
+function renderTopologySvg(diagram) {
+  const width = 960;
+  const height = Number.isFinite(diagram.height) ? diagram.height : 560;
+  const nodeById = new Map(diagram.nodes.map(node => [node.id, node]));
+  const zones = (diagram.zones || []).map(zone => `<g class="diagram-zone ${diagramClass(zone.kind)}"><rect x="${zone.x}" y="${zone.y}" width="${zone.width}" height="${zone.height}" rx="18"/><text x="${zone.x + 16}" y="${zone.y + 27}">${escapeXml(zone.label)}</text></g>`).join('');
+  const edges = diagram.edges.map(edge => {
+    const from = nodeById.get(edge.from);
+    const to = nodeById.get(edge.to);
+    const label = edge.label ? `<text class="diagram-edge-label" x="${(from.x + to.x) / 2}" y="${(from.y + to.y) / 2 - 8}" text-anchor="middle">${escapeXml(edge.label)}</text>` : '';
+    return `<g class="diagram-edge ${diagramClass(edge.kind)}"><path d="M${from.x} ${from.y} L${to.x} ${to.y}"/>${label}</g>`;
+  }).join('');
+  const nodes = diagram.nodes.map(node => {
+    const nodeClass = diagramClass(node.kind, 'device');
+    const detail = node.detail ? svgText(node.detail, node.x, node.y + 19, { anchor: 'middle', size: 14, weight: 500, max: 20, className: 'diagram-node-detail', fill: 'var(--diagram-muted, #c8c1d2)' }) : '';
+    return `<g class="diagram-node ${nodeClass}" transform="translate(${node.x} ${node.y})"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g>${svgText(node.label, node.x, node.y - 5, { anchor: 'middle', size: 18, weight: 700, max: 17, className: 'diagram-node-label' })}${detail}`;
+  }).join('');
+  return { width, height, body: `${zones}${edges}${nodes}` };
+}
+
+function diagramDescription(diagram) {
+  if (diagram.description) return diagram.description;
+  if (diagram.type === 'topology') {
+    const nodes = diagram.nodes.map(node => `${node.label}${node.detail ? `: ${node.detail}` : ''}`).join('. ');
+    const edges = diagram.edges.map(edge => `${nodeLabel(diagram, edge.from)} verbunden mit ${nodeLabel(diagram, edge.to)}${edge.label ? ` (${edge.label})` : ''}`).join('. ');
+    return `${nodes}. Verbindungen: ${edges}.`;
+  }
+  return diagram.items.map(item => `${item.label}: ${item.detail || ''}`).join('. ');
+}
+
+function nodeLabel(diagram, nodeId) {
+  return diagram.nodes.find(node => node.id === nodeId)?.label || nodeId;
+}
+
+export function renderDiagram(diagram, descriptionOverride = '') {
   const rendered = diagram.type === 'layers'
     ? renderLayersSvg(diagram)
     : diagram.type === 'flow'
       ? renderFlowSvg(diagram)
-      : renderComparisonSvg(diagram);
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${rendered.width}" height="${rendered.height}" viewBox="0 0 ${rendered.width} ${rendered.height}" role="img" aria-labelledby="title desc">\n  <title id="title">${escapeXml(diagram.title)}</title>\n  <desc id="desc">${escapeXml(diagram.description || diagram.items.map(item => `${item.label}: ${item.detail || ''}`).join('. '))}</desc>\n  <rect width="100%" height="100%" rx="20" fill="#f7f8f4"/>\n  ${svgText(diagram.title, 42, 48, { weight: 700, size: 28, max: 60 })}\n  ${rendered.body}\n</svg>\n`;
+      : diagram.type === 'comparison'
+        ? renderComparisonSvg(diagram)
+        : renderTopologySvg(diagram);
+  const titleId = `diagram-${diagram.id}-title`;
+  const descId = `diagram-${diagram.id}-desc`;
+  return `<svg class="learning-diagram diagram-${escapeXml(diagram.type)}" xmlns="http://www.w3.org/2000/svg" width="${rendered.width}" height="${rendered.height}" viewBox="0 0 ${rendered.width} ${rendered.height}" role="img" aria-labelledby="${titleId} ${descId}">\n  <title id="${titleId}">${escapeXml(diagram.title)}</title>\n  <desc id="${descId}">${escapeXml(descriptionOverride || diagramDescription(diagram))}</desc>\n  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>\n  ${svgText(diagram.title, 42, 48, { weight: 700, size: 28, max: 60, className: 'diagram-title' })}\n  ${rendered.body}\n</svg>\n`;
 }
 
 export function compileUnitSpec(spec, fileName = 'Lern-Spezifikation') {
   validateUnitSpec(spec, fileName);
   const meta = spec.meta;
+  const diagramsById = new Map((spec.diagrams || []).map(diagram => [diagram.id, diagram]));
   const curationPath = `content/curation/${meta.slug}.json`;
   const metadata = {
     id: meta.id,
@@ -317,7 +389,7 @@ export function compileUnitSpec(spec, fileName = 'Lern-Spezifikation') {
   };
   const frontmatter = Object.entries(metadata).map(([key, value]) => `${key}: ${Array.isArray(value) ? jsonFrontmatter(value) : value}`).join('\n');
   const goals = `<section class="learning-goals" aria-labelledby="${escapeHtml(meta.slug)}-goals">\n  <h2 id="${escapeHtml(meta.slug)}-goals">Nach dieser Einheit kannst du …</h2>\n  <ul>\n${spec.objectives.map(objective => `    <li>${escapeHtml(objective.label)}</li>`).join('\n')}\n  </ul>\n</section>`;
-  const body = spec.sections.map(section => `## ${section.title}\n\n${section.blocks.map(block => renderBlock(block, meta)).join('\n\n')}`).join('\n\n');
+  const body = spec.sections.map(section => `## ${section.title}\n\n${section.blocks.map(block => renderBlock(block, meta, diagramsById)).join('\n\n')}`).join('\n\n');
   const contentMarkdown = `${spec.intro.trim()}\n\n${goals}\n\n${body}\n`;
   const markdown = `<!-- GENERATED from content/learning-units/${fileName}; edit the unit spec, not this file. -->\n---\n${frontmatter}\n---\n${contentMarkdown}`;
   const curation = {

@@ -1,0 +1,210 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "supernetting-routenaggregation",
+    "slug": "supernetting-routenaggregation",
+    "title": "Routen mit Supernetting zusammenfassen",
+    "description": "Benachbarte IPv4-Netze über ihr gemeinsames Binärpräfix aggregieren und prüfen, ob die Summenroute exakt oder bewusst weiter gefasst ist.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-2",
+    "groupLabel": "Block N2 · IPv4 und Subnetting",
+    "itemId": "ga2-2__5",
+    "week": "KW 36",
+    "estimatedMinutes": 24,
+    "relevance": "hoch",
+    "sources": ["itlf6-9-2022"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "common-prefix",
+      "label": "für zusammenhängende IPv4-Netze das längste gemeinsame Binärpräfix bestimmen"
+    },
+    {
+      "id": "aggregation-scope",
+      "label": "eine Summenroute auf exakte Abdeckung und unbeabsichtigt eingeschlossene Netze prüfen"
+    }
+  ],
+  "intro": "Eine Summenroute ersetzt mehrere spezifische Routeneinträge durch ein gemeinsames Präfix. Der entscheidende Schritt ist nicht das Raten einer kürzeren Maske, sondern der Binärvergleich: Nur die von links identischen Bits dürfen Netzanteil bleiben. Danach muss geprüft werden, welchen vollständigen Adressraum die neue Route tatsächlich umfasst.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf6-9-2022",
+        "sourceLocator": "Chunks itlf6-9-2022:00250 und itlf6-9-2022:00251, Zeilen 7559–7585",
+        "use": "Prüfungsmuster zur Routenaggregation und fachliche Abgrenzung zum Subnetting",
+        "reviewStatus": "fachlich geprüft; Zahlenbeispiele und Erklärgrafiken vollständig neu erstellt"
+      }
+    ],
+    "notes": [
+      "Die im Quellenmapping zusätzlich genannte EUROPA-Stelle europa-integratoren-2026:00351 behandelt Firewall und DMZ und wurde als Fehltreffer ausgeschlossen.",
+      "Die Einheit verwendet den in Prüfungsaufgaben weiterhin geläufigen Begriff Supernetting, bevorzugt fachlich aber Routenaggregation beziehungsweise Summarization.",
+      "Alle Beispiele setzen zusammenhängende, gleich große Ausgangsnetze voraus; disjunkte Netze lassen sich nicht ohne zusätzliche Abdeckung in genau eine Präfixroute zwingen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "aggregation-prefix",
+      "type": "layers",
+      "title": "Vier /24-Netze teilen ein /22-Präfix",
+      "description": "Die dritten Oktette 8 bis 11 stimmen in den ersten sechs Bits überein. Zusammen mit den ersten 16 Bits ergibt das ein gemeinsames Präfix von 22 Bits.",
+      "items": [
+        { "label": "8", "detail": "00001000 · die ersten sechs Bits 000010 bleiben gleich" },
+        { "label": "9", "detail": "00001001 · nur die letzten zwei Bits variieren" },
+        { "label": "10", "detail": "00001010 · weiterhin gemeinsames Präfix 000010" },
+        { "label": "11", "detail": "00001011 · letzter Wert des Viererblocks" }
+      ]
+    },
+    {
+      "id": "aggregation-check",
+      "type": "flow",
+      "title": "Summenroute in vier Kontrollen",
+      "description": "Sortieren, Binärpräfix bestimmen, Netzgrenze bilden und den kompletten abgedeckten Bereich gegen die gewünschten Netze prüfen.",
+      "items": [
+        { "label": "1 · Netze sortieren", "detail": "nur zusammenhängende Ausgangsnetze gemeinsam betrachten" },
+        { "label": "2 · Abweichendes Oktett binär", "detail": "von links bis zum ersten unterschiedlichen Bit vergleichen" },
+        { "label": "3 · Restbits auf null", "detail": "daraus Netzadresse und Präfixlänge der Summenroute bilden" },
+        { "label": "4 · Reichweite prüfen", "detail": "erste und letzte eingeschlossene Adresse mit dem Auftrag abgleichen" }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Darf daraus eine Route werden?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "aggregation-diagnostic",
+          "diagnostic": true,
+          "question": "Welche Eigenschaft ist für eine exakte Summenroute aus mehreren gleich großen Netzen unverzichtbar?",
+          "options": [
+            { "text": "Die Netze liegen zusammenhängend und beginnen an einer zur Gesamtblockgröße passenden Grenze.", "rationale": "Richtig. Nur dann beschreibt das gemeinsame Präfix genau den gewünschten, zusammenhängenden Zweierblock.", "correct": true },
+            { "text": "Alle Router verwenden dieselbe Herstellerplattform.", "rationale": "Die Präfixrechnung ist herstellerneutral. Entscheidend sind Adresslage und Blockgrenze.", "correct": false },
+            { "text": "Alle letzten Oktette der Netzadressen sind identisch.", "rationale": "Bei /24-Netzen ist das letzte Oktett ohnehin null; die Aggregation wird meist im vorherigen Oktett entschieden.", "correct": false },
+            { "text": "Zwischen den Netzen liegt mindestens ein freies Netz.", "rationale": "Eine Lücke führt gerade dazu, dass eine einzige Summenroute zusätzliche Adressen einschließt.", "correct": false }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Links gewinnt",
+          "markdown": "Vergleiche Bits immer **von links**. Am ersten Unterschied endet das gemeinsame Präfix; alles rechts davon gehört zur zusammengefassten variablen Fläche."
+        }
+      ]
+    },
+    {
+      "title": "Gemeinsames Präfix statt Maskenraten",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Die vier Netze 192.168.8.0/24 bis 192.168.11.0/24 unterscheiden sich im dritten Oktett. Binär lauten diese Oktette 00001000, 00001001, 00001010 und 00001011. Die ersten sechs Bits sind gleich; nur die letzten zwei Bits wechseln. Zu den unveränderten ersten beiden Oktetten kommen deshalb sechs weitere Netzbits: 16 + 6 = 22. Die Summenroute lautet 192.168.8.0/22."
+        },
+        {
+          "type": "figure",
+          "diagramId": "aggregation-prefix",
+          "alt": "Vier binäre dritte Oktette von 8 bis 11 mit sechs gleichen Präfixbits und zwei variablen Bits.",
+          "caption": "Eigene Lernskizze: Die sechs gleichen Bits im dritten Oktett verlängern die festen 16 Bits auf ein /22-Präfix."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Anzahl enthaltener 24er Netze ist zwei hoch 24 minus 22 gleich vier",
+          "mathml": "<math display=\"block\"><mrow><mi>N</mi><mo>=</mo><msup><mn>2</mn><mrow><mn>24</mn><mo>−</mo><mn>22</mn></mrow></msup><mo>=</mo><mn>4</mn><mtext> Netze der Größe /24</mtext></mrow></math>",
+          "legend": ["Ausgangspräfix /24", "Summenpräfix /22", "zwei freigegebene Bits ergeben vier Teilnetze"]
+        }
+      ]
+    },
+    {
+      "title": "Abdeckung kontrollieren",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein /22-Block umfasst vier /24-Netze. Er muss an einer Vierergrenze im dritten Oktett beginnen. 192.168.8.0 ist gültig, weil 8 durch 4 teilbar ist; die Reichweite endet bei 192.168.11.255. Würden nur die Netze 8, 9 und 11 benötigt, würde dieselbe Route auch 192.168.10.0/24 einschließen. Das kann bewusst akzeptiert werden, muss aber als zusätzliche Abdeckung dokumentiert sein."
+        },
+        {
+          "type": "figure",
+          "diagramId": "aggregation-check",
+          "alt": "Vierstufiger Kontrollweg für eine Summenroute: sortieren, binär vergleichen, Netzgrenze bilden und Reichweite prüfen.",
+          "caption": "Eigene Lernskizze: Eine rechnerisch mögliche Aggregation ist erst nach der Reichweitenprüfung fachlich belastbar."
+        },
+        {
+          "type": "sequence",
+          "id": "aggregation-practice-sequence",
+          "title": "Rechenweg ordnen",
+          "prompt": "Bringe die Prüfschritte in die Reihenfolge, die auch in einer schriftlichen Lösung nachvollziehbar ist.",
+          "tag": "Übung",
+          "steps": [
+            { "id": "range", "label": "Den tatsächlich abgedeckten Adressbereich der Summenroute bestimmen." },
+            { "id": "binary", "label": "Das erste abweichende Oktett binär gegenüberstellen." },
+            { "id": "sort", "label": "Die gleich großen Ausgangsnetze numerisch sortieren." },
+            { "id": "prefix", "label": "Gleiche Bits zählen und die übrigen Bits der Netzadresse auf null setzen." }
+          ],
+          "expected": ["sort", "binary", "prefix", "range"],
+          "correctFeedback": "Richtig. So wird aus der Bitrechnung eine prüfbare Aussage über die reale Reichweite.",
+          "wrongFeedback": "Beginne mit der sortierten Ausgangslage. Die Reichweite lässt sich erst prüfen, nachdem das gemeinsame Präfix feststeht."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            { "id": "aggregation-purpose", "label": "Zweck", "front": "Was ist das Ziel einer Routenaggregation?", "back": "Mehrere spezifische, zusammenhängende Routen werden durch ein gemeinsames Präfix ersetzt, damit Routingtabellen kompakter werden." },
+            { "id": "aggregation-prefix-end", "label": "Präfixende", "front": "Wo endet das gemeinsame Präfix?", "back": "Unmittelbar vor dem ersten Bit, das sich zwischen den betrachteten Netzadressen unterscheidet." },
+            { "id": "aggregation-risk", "label": "Risiko", "front": "Was muss nach der Präfixberechnung geprüft werden?", "back": "Ob die Summenroute zusätzliche, nicht beabsichtigte Netze oder Adressbereiche einschließt." }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "aggregation-core-recall",
+          "title": "Ohne Vorlage erklären",
+          "prompt": "Erkläre, wie du vier aufeinanderfolgende /24-Netze zu einer Summenroute zusammenfasst und anschließend absicherst, dass die Route nicht zu weit reicht.",
+          "label": "Dein Rechenweg",
+          "placeholder": "Zuerst sortiere ich …",
+          "minLength": 110,
+          "model": "Ich sortiere die Netzadressen, stelle das erste unterschiedliche Oktett binär dar und zähle die von links gemeinsamen Bits. Alle folgenden Bits setze ich für die Netzadresse auf null. Danach bestimme ich Blockgröße sowie erste und letzte abgedeckte Adresse und vergleiche diese Reichweite mit genau den Netzen, die zusammengefasst werden sollen."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check: Transfer",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "aggregation-transfer-prefix",
+          "requiredObjective": "common-prefix",
+          "question": "Welche Summenroute deckt 10.40.12.0/24, 10.40.13.0/24, 10.40.14.0/24 und 10.40.15.0/24 exakt ab?",
+          "options": [
+            { "text": "10.40.12.0/22", "rationale": "Richtig. Der Viererblock beginnt an der passenden Grenze 12 und reicht bis 15.", "correct": true },
+            { "text": "10.40.12.0/23", "rationale": "Ein /23 umfasst nur zwei /24-Netze und deckt deshalb nicht alle vier Netze ab.", "correct": false },
+            { "text": "10.40.0.0/22", "rationale": "Ein /22 ab 0 deckt die dritten Oktette 0 bis 3 ab, nicht 12 bis 15.", "correct": false },
+            { "text": "10.40.12.0/24", "rationale": "Das ist nur die erste Ausgangsroute und keine Zusammenfassung der vier Netze.", "correct": false }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "aggregation-transfer-scope",
+          "requiredObjective": "aggregation-scope",
+          "question": "Es werden nur 172.20.8.0/24, 172.20.9.0/24 und 172.20.11.0/24 benötigt. Wie ist die Route 172.20.8.0/22 zu bewerten?",
+          "options": [
+            { "text": "Sie ist ungültig, weil ein /22 niemals /24-Netze enthalten kann.", "rationale": "Ein /22 enthält vier /24-Netze. Genau das erzeugt hier die zusätzliche Abdeckung.", "correct": false },
+            { "text": "Sie deckt zusätzlich 172.20.10.0/24 ab; das muss bewusst akzeptiert oder durch spezifischere Routen vermieden werden.", "rationale": "Richtig. Der /22-Block reicht lückenlos von 8 bis 11 und kann die Lücke nicht auslassen.", "correct": true },
+            { "text": "Sie deckt exakt nur die drei genannten Netze ab, weil 10 nicht aufgeführt wurde.", "rationale": "Eine Präfixroute enthält immer den gesamten zusammenhängenden Block, unabhängig von einer Aufzählung.", "correct": false },
+            { "text": "Sie erreicht zusätzlich alle Netze von 172.20.0.0 bis 172.20.255.0.", "rationale": "Das entspräche einer wesentlich kürzeren Route. Ein /22 umfasst hier nur vier /24-Netze.", "correct": false }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Aktualität",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **IT-Berufe Fachstufe – Lernfelder 6–9 (2022):** Routenaggregation als Verringerung von Routingtabelleneinträgen und prüfungsnahe Aggregationsaufgabe.\n\nDie mathematischen IPv4-Präfixregeln sind stabil. Konkrete Routingentscheidungen hängen zusätzlich von Topologie, Sicherheitsgrenzen und der gewünschten Fehlerdomäne ab. Alle Beispiele und Diagramme wurden neu erstellt; private Buchgrafiken werden nicht veröffentlicht."
+        }
+      ]
+    }
+  ]
+}

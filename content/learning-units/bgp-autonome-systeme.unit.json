@@ -1,0 +1,413 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "bgp-autonome-systeme",
+    "slug": "bgp-autonome-systeme",
+    "title": "BGP und autonome Systeme einordnen",
+    "description": "IGP und EGP nach ihrem Geltungsbereich unterscheiden sowie BGP-Routen anhand von autonomem System, AS_PATH und Richtlinie grundlegend beurteilen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-4",
+    "groupLabel": "Block N4 · Routing und NAT",
+    "itemId": "ga2-4__6",
+    "week": "KW 38",
+    "estimatedMinutes": 21,
+    "relevance": "mittel",
+    "sources": ["europa-integratoren-2026", "itlf6-9-2022"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "as-igp-egp",
+      "label": "autonomes System, IGP, EGP, eBGP und iBGP anhand ihrer administrativen Reichweite korrekt zuordnen"
+    },
+    {
+      "id": "bgp-policy-path",
+      "label": "einen einfachen AS_PATH auf Schleifen prüfen und BGP-Pfadauswahl als richtliniengesteuert begründen"
+    }
+  ],
+  "intro": "Ein Unternehmensrouter sucht innerhalb einer eigenen Routingdomäne den passenden technischen Pfad. Das Internet verbindet dagegen viele unabhängig verwaltete Routingdomänen. BGP tauscht Erreichbarkeit zwischen solchen autonomen Systemen aus und bewertet sie nach Richtlinien und Pfadattributen, nicht einfach nach Routeranzahl oder Bandbreite.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunks europa-integratoren-2026:00331 und :00840",
+        "use": "Dynamisches Routing mit RIPv2 und OSPF als begrenzter Binnenrouting-Kontext zur Abgrenzung eines IGP",
+        "reviewStatus": "kein BGP-Beleg; nur zur klar gekennzeichneten IGP-Kontrastbildung verwendet"
+      },
+      {
+        "sourceId": "itlf6-9-2022",
+        "sourceLocator": "Chunk itlf6-9-2022:00250",
+        "use": "Prüfungsnaher Binnen-Routingtabellen-Kontext mit Next Hop und Metrik als Gegenfolie zur richtlinienbasierten Interdomain-Auswahl",
+        "reviewStatus": "kein BGP-Beleg; fachliche Reichweite bewusst begrenzt"
+      }
+    ],
+    "notes": [
+      "Alle Batch-Kandidaten für BGP sind Fehltreffer: itlf10-12-2023:page:0190 behandelt einen Anwendungs-Gateway/Proxy, :page:0186 Firewall-Gateways und ihk-bonn:00381 Bandbreitenrechnungen. Auch die vorgeschlagene Figur gehört zu einer Firewall. Keiner dieser Treffer wurde als BGP-Quelle genutzt.",
+      "In der lokalen Wissensbasis existiert kein belastbarer BGP-Fachchunk. Die Einheit ist daher eine konservative, eigenständig formulierte CURATED_DRAFT und benötigt vor Publikation eine Prüfung gegen aktuelle Primärquellen.",
+      "Die reale BGP-Pfadauswahl umfasst mehrere Attribute, lokale Richtlinien und implementationsabhängige Tie-Breaker. Die Einheit lehrt bewusst keine universelle feste Rangfolge; ein kürzerer AS_PATH gewinnt nicht ausnahmslos.",
+      "Beispiel-ASNs dienen nur der Übung. Zuteilung, private Bereiche und Betriebsanforderungen müssen für ein reales Netz aktuell geprüft werden."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "as-routing-topology",
+      "type": "topology",
+      "title": "IGP innerhalb, BGP zwischen autonomen Systemen",
+      "description": "Autonome Systeme bilden administrative Routingdomänen; ihre Randrouter tauschen Präfixerreichbarkeit aus.",
+      "zones": [
+        {
+          "id": "as-65010",
+          "label": "AS 65010 · Unternehmen A",
+          "x": 25,
+          "y": 55,
+          "width": 275,
+          "height": 420,
+          "kind": "autonomous-system"
+        },
+        {
+          "id": "as-65020",
+          "label": "AS 65020 · Transit",
+          "x": 340,
+          "y": 55,
+          "width": 280,
+          "height": 420,
+          "kind": "autonomous-system"
+        },
+        {
+          "id": "as-65030",
+          "label": "AS 65030 · Unternehmen B",
+          "x": 660,
+          "y": 55,
+          "width": 275,
+          "height": 420,
+          "kind": "autonomous-system"
+        }
+      ],
+      "nodes": [
+        {
+          "id": "a-core",
+          "label": "A-Core",
+          "detail": "IGP innerhalb AS 65010",
+          "x": 115,
+          "y": 310,
+          "kind": "router"
+        },
+        {
+          "id": "a-edge",
+          "label": "A-Edge",
+          "detail": "iBGP intern, eBGP extern",
+          "x": 235,
+          "y": 190,
+          "kind": "router"
+        },
+        {
+          "id": "transit-edge-1",
+          "label": "Transit West",
+          "detail": "AS 65020",
+          "x": 410,
+          "y": 190,
+          "kind": "router"
+        },
+        {
+          "id": "transit-edge-2",
+          "label": "Transit Ost",
+          "detail": "AS 65020",
+          "x": 550,
+          "y": 310,
+          "kind": "router"
+        },
+        {
+          "id": "b-edge",
+          "label": "B-Edge",
+          "detail": "AS 65030",
+          "x": 725,
+          "y": 190,
+          "kind": "router"
+        },
+        {
+          "id": "b-core",
+          "label": "B-Core",
+          "detail": "IGP innerhalb AS 65030",
+          "x": 845,
+          "y": 310,
+          "kind": "router"
+        }
+      ],
+      "edges": [
+        {
+          "from": "a-core",
+          "to": "a-edge",
+          "label": "IGP / ggf. iBGP",
+          "kind": "internal"
+        },
+        {
+          "from": "a-edge",
+          "to": "transit-edge-1",
+          "label": "eBGP",
+          "kind": "external"
+        },
+        {
+          "from": "transit-edge-1",
+          "to": "transit-edge-2",
+          "label": "iBGP im Transit-AS",
+          "kind": "internal"
+        },
+        {
+          "from": "transit-edge-2",
+          "to": "b-edge",
+          "label": "eBGP",
+          "kind": "external"
+        },
+        {
+          "from": "b-edge",
+          "to": "b-core",
+          "label": "IGP / ggf. iBGP",
+          "kind": "internal"
+        }
+      ]
+    },
+    {
+      "id": "bgp-decision-flow",
+      "type": "flow",
+      "title": "BGP-Route vom Empfang bis zur Nutzung",
+      "description": "Die Schleifenprüfung ist nur ein früher Filter; danach folgen Richtlinie, Attribute und Erreichbarkeit des nächsten Hops.",
+      "items": [
+        {
+          "label": "Präfix und Attribute empfangen",
+          "detail": "Der Nachbar kündigt Erreichbarkeit mit Pfadinformationen wie AS_PATH an."
+        },
+        {
+          "label": "AS-Schleife ausschließen",
+          "detail": "Enthält AS_PATH die eigene AS-Nummer, wird die Route verworfen."
+        },
+        {
+          "label": "Import-Richtlinie anwenden",
+          "detail": "Lokale Policy entscheidet, welche Route akzeptiert und wie sie bevorzugt wird."
+        },
+        {
+          "label": "Attribute und Next Hop prüfen",
+          "detail": "Nur erreichbare, nach der lokalen Auswahlregel beste Kandidaten können installiert werden."
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Innen oder zwischen Domänen?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "bgp-diagnostic",
+          "diagnostic": true,
+          "question": "Zwei unabhängig betriebene Netze mit eigenen Routingrichtlinien tauschen Internetpräfixe aus. Welche Einordnung passt?",
+          "options": [
+            {
+              "text": "eBGP zwischen zwei autonomen Systemen",
+              "rationale": "Richtig. eBGP bezeichnet BGP-Nachbarschaften über AS-Grenzen hinweg.",
+              "correct": true
+            },
+            {
+              "text": "ausschließlich ein IGP innerhalb einer gemeinsamen Area",
+              "rationale": "Ein IGP organisiert Routen innerhalb einer administrativen Routingdomäne, nicht die Richtlinien zweier unabhängiger AS.",
+              "correct": false
+            },
+            {
+              "text": "PAT, weil dabei Ports übersetzt werden",
+              "rationale": "PAT ist Adress-/Portübersetzung und kein Routingprotokoll zwischen AS.",
+              "correct": false
+            },
+            {
+              "text": "DHCP-Relay, weil Broadcasts weitergeleitet werden",
+              "rationale": "DHCP-Relay vermittelt Adresskonfiguration, nicht Interdomain-Routen."
+              ,"correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Geltungsbereich",
+          "markdown": "**IGP** organisiert Erreichbarkeit innerhalb eines autonomen Systems. **BGP** transportiert Präfixe und Richtlinien zwischen AS; iBGP verteilt BGP-Informationen innerhalb eines AS."
+        }
+      ]
+    },
+    {
+      "title": "Autonome Systeme und BGP-Rollen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein autonomes System fasst Netze und Router unter gemeinsamer administrativer Kontrolle und einer nach außen erkennbaren Routingrichtlinie zusammen. Seine AS-Nummer identifiziert diese Routingdomäne im BGP-Kontext.\n\nEin Interior Gateway Protocol wie OSPF oder RIP verteilt interne Wege. eBGP tauscht Routen mit einem anderen AS aus. iBGP verteilt BGP-gelernte Erreichbarkeit innerhalb desselben AS. iBGP ersetzt dabei nicht automatisch das IGP: Der nächste BGP-Hop und die internen Router müssen weiterhin erreichbar sein."
+        },
+        {
+          "type": "figure",
+          "diagramId": "as-routing-topology",
+          "alt": "Drei autonome Systeme mit Core- und Edge-Routern. Innerhalb der AS verlaufen IGP beziehungsweise iBGP, zwischen den Randroutern eBGP-Verbindungen.",
+          "caption": "Eigene Lernskizze: Die Grenze eines AS ist eine Verwaltungs- und Richtliniengrenze, nicht bloß ein einzelnes Kabel."
+        },
+        {
+          "type": "quiz",
+          "id": "as-igp-egp-transfer",
+          "requiredObjective": "as-igp-egp",
+          "question": "Welche Zuordnung ist vollständig korrekt?",
+          "options": [
+            {
+              "text": "OSPF als IGP innerhalb eines AS; eBGP zwischen AS; iBGP zur Verteilung von BGP-Routen innerhalb eines AS",
+              "rationale": "Richtig. Die drei Begriffe sind nach ihrer administrativen Reichweite korrekt zugeordnet.",
+              "correct": true
+            },
+            {
+              "text": "eBGP ausschließlich innerhalb einer OSPF-Area; iBGP nur zwischen Providern",
+              "rationale": "eBGP überschreitet AS-Grenzen, iBGP bleibt innerhalb desselben AS.",
+              "correct": false
+            },
+            {
+              "text": "Ein AS ist immer genau ein einzelner Router ohne gemeinsame Richtlinie",
+              "rationale": "Ein AS kann viele Router und Netze unter gemeinsamer Verwaltung und Routingpolicy umfassen.",
+              "correct": false
+            },
+            {
+              "text": "BGP ersetzt in jedem AS automatisch jede interne Erreichbarkeitsplanung",
+              "rationale": "Interne Next-Hop-Erreichbarkeit und Binnenrouting bleiben eigenständige Aufgaben.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "AS_PATH und Richtlinie",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "AS_PATH zeichnet auf, welche autonomen Systeme eine Route durchlaufen hat. Sieht ein Router seine eigene AS-Nummer bereits im Pfad, erkennt er eine AS-Schleife und verwirft den Kandidaten. Die Anzahl der AS-Einträge ist damit sichtbar, aber kein universelles Distanzmaß wie der RIP-Hop-Count.\n\nEin kürzerer AS_PATH kann in einer BGP-Auswahl bevorzugt werden, jedoch erst im Zusammenspiel mit lokalen Richtlinien und weiteren Attributen. Unternehmen können zum Beispiel einen vertraglich bevorzugten Provider höher priorisieren, obwohl dessen AS_PATH länger ist."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Wenn die eigene AS-Nummer im AS-Pfad enthalten ist, wird die Route als Schleife verworfen; die AS-Pfadlänge ist die Anzahl der Sequenzeinträge",
+          "mathml": "<math display=\"block\"><mtable columnalign=\"right center left\" rowspacing=\"0.5em\"><mtr><mtd><msub><mi>ASN</mi><mtext>lokal</mtext></msub><mo>∈</mo><mi>AS_PATH</mi></mtd><mtd><mo>⇒</mo></mtd><mtd><mtext>Route verwerfen</mtext></mtd></mtr><mtr><mtd><mi>L</mi><mo>(</mo><mi>AS_PATH</mi><mo>)</mo></mtd><mtd><mo>=</mo></mtd><mtd><mtext>Anzahl der AS-Sequenzeinträge</mtext></mtd></mtr></mtable></math>",
+          "legend": ["Schleifenfilter ist zwingend", "Kürzerer Pfad ist nur ein Auswahlfaktor"]
+        },
+        {
+          "type": "figure",
+          "diagramId": "bgp-decision-flow",
+          "alt": "Vierstufiger Ablauf aus Empfang einer BGP-Route, AS-Schleifenprüfung, Import-Richtlinie sowie Attribut- und Next-Hop-Prüfung.",
+          "caption": "Eigene Lernskizze: BGP wählt keine Route allein durch Zählen der AS-Einträge."
+        }
+      ]
+    },
+    {
+      "title": "Geführte Interaktion: Route prüfen",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "bgp-route-sequence",
+          "title": "Eingehende BGP-Route bearbeiten",
+          "prompt": "Bringe die Schritte für eine neu empfangene Route in eine sichere Reihenfolge.",
+          "tag": "Übung",
+          "steps": [
+            {
+              "id": "bgp-read-prefix",
+              "label": "Angekündigtes Präfix, Nachbar und Pfadattribute erfassen."
+            },
+            {
+              "id": "bgp-loop-check",
+              "label": "AS_PATH auf die eigene AS-Nummer und damit auf eine Schleife prüfen."
+            },
+            {
+              "id": "bgp-import-policy",
+              "label": "Lokale Import-Richtlinie und erlaubte Präfixe anwenden."
+            },
+            {
+              "id": "bgp-best-and-reachability",
+              "label": "Verbleibende Attribute vergleichen und Next-Hop-Erreichbarkeit prüfen."
+            }
+          ],
+          "expected": ["bgp-read-prefix", "bgp-loop-check", "bgp-import-policy", "bgp-best-and-reachability"],
+          "correctFeedback": "Richtig: Route erfassen, Schleifen und Policy prüfen, danach erst unter gültigen Kandidaten auswählen.",
+          "wrongFeedback": "Der kürzeste sichtbare AS_PATH darf nicht vor Schleifen- und Importprüfung ungeprüft installiert werden."
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Beispiel:** Der Router in AS 65010 erhält für dasselbe Präfix Pfad A „65030 65010 64496“ und Pfad B „65040 64496“. Pfad A enthält die eigene Nummer 65010 und wird als Schleife verworfen. Pfad B bleibt Kandidat, wird aber erst nach Importpolicy, weiteren Attributen und erreichbarem Next Hop nutzbar."
+        },
+        {
+          "type": "quiz",
+          "id": "bgp-policy-path-transfer",
+          "requiredObjective": "bgp-policy-path",
+          "question": "AS 65010 empfängt Pfad A „65030 65010 64496“ und Pfad B „65040 65050 64496“. Welche Auswertung ist korrekt?",
+          "options": [
+            {
+              "text": "Pfad A wird wegen der eigenen AS-Nummer verworfen; Pfad B bleibt für die weitere richtlinienbasierte Auswahl übrig.",
+              "rationale": "Richtig. Die eigene ASN im AS_PATH kennzeichnet eine Schleife.",
+              "correct": true
+            },
+            {
+              "text": "Pfad A gewinnt zwingend, weil er gleich viele Zahlen wie Pfad B besitzt.",
+              "rationale": "Eine Route mit eigener AS-Nummer wird nicht als gültiger Kandidat behalten.",
+              "correct": false
+            },
+            {
+              "text": "Pfad B wird zwingend installiert, ohne Policy und Next Hop zu prüfen.",
+              "rationale": "Schleifenfreiheit allein garantiert weder Importerlaubnis noch Erreichbarkeit oder beste Policy.",
+              "correct": false
+            },
+            {
+              "text": "AS_PATH enthält Router-Hops innerhalb jedes AS und ist identisch zum RIP-Hop-Count.",
+              "rationale": "AS_PATH beschreibt autonome Systeme, nicht jeden internen Routerübergang.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "bgp-autonomous-system",
+              "label": "Autonomes System",
+              "front": "Was kennzeichnet ein autonomes System?",
+              "back": "Netze und Router unter gemeinsamer administrativer Kontrolle und einer nach außen erkennbaren Routingrichtlinie."
+            },
+            {
+              "id": "bgp-ebgp-ibgp",
+              "label": "eBGP und iBGP",
+              "front": "Was unterscheidet eBGP und iBGP?",
+              "back": "eBGP verbindet unterschiedliche AS; iBGP verteilt BGP-Erreichbarkeit innerhalb desselben AS."
+            },
+            {
+              "id": "bgp-as-path",
+              "label": "AS_PATH",
+              "front": "Welche zwei Aussagen darfst du aus AS_PATH ableiten?",
+              "back": "Welche AS-Sequenz angekündigt wurde und ob die eigene ASN bereits enthalten ist. Die Pfadlänge allein entscheidet nicht immer."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "bgp-free-recall",
+          "title": "Interdomain-Routing erklären",
+          "prompt": "Erkläre autonomes System, IGP, eBGP, iBGP und AS_PATH. Begründe, warum BGP nicht einfach den Weg mit den wenigsten Routern auswählt.",
+          "label": "Deine Erklärung",
+          "placeholder": "Ein autonomes System …",
+          "minLength": 130,
+          "model": "Ein AS ist eine gemeinsam verwaltete Routingdomäne. Ein IGP verteilt interne Wege. eBGP tauscht Routen zwischen AS aus, iBGP verteilt BGP-Routen intern. AS_PATH nennt durchlaufene AS und verhindert Schleifen durch Prüfung der eigenen ASN. Die Auswahl folgt lokaler Policy und mehreren Attributen; die sichtbare AS-Zahl ist kein universeller Hop Count."
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Die lokalen Batch-Treffer liefern nur Binnenrouting-Kontext; alle vermeintlichen direkten BGP-Kandidaten waren themenfremd. Deshalb bleibt diese eigenständig formulierte Einheit ausdrücklich CURATED_DRAFT und benötigt vor Publikation eine Prüfung gegen aktuelle BGP-Primärquellen und die Zielplattform."
+        }
+      ]
+    }
+  ]
+}

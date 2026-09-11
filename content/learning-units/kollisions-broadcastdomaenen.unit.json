@@ -1,0 +1,239 @@
+{
+  "meta": {
+    "id": "kollisions-broadcastdomaenen",
+    "slug": "kollisions-broadcastdomaenen",
+    "title": "Kollisions- und Broadcastdomänen sicher zählen",
+    "description": "Hub-, Switch-, VLAN- und Layer-3-Grenzen unterscheiden und Domänen in Netzplänen mit ausdrücklich genannten Prüfungsannahmen korrekt bestimmen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-1",
+    "groupLabel": "Block N1 · Grundlagen, Medien und Verkabelung",
+    "itemId": "ga2-1__13",
+    "week": "KW 35",
+    "estimatedMinutes": 24,
+    "relevance": "hoch",
+    "sources": ["europa-integratoren-2026", "ihk-bonn", "itlf6-9-2022"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "collision-boundaries",
+      "label": "in einer Hub-, Switch- und Routertopologie Kollisionsdomänen unter den genannten Prüfungsannahmen zählen und jede Grenze begründen"
+    },
+    {
+      "id": "broadcast-boundaries",
+      "label": "Broadcastdomänen anhand von VLAN- und Layer-3-Grenzen zählen und physische von logischen Netzgrenzen unterscheiden"
+    }
+  ],
+  "intro": "Zwei Geräte können am selben Switch hängen und trotzdem in unterschiedlichen Kollisionsdomänen liegen. Umgekehrt können Rechner an verschiedenen Switches derselben Broadcastdomäne angehören. Entscheidend ist deshalb nicht die Anzahl der Kästen im Netzplan, sondern welche Layer-1-, Layer-2- und Layer-3-Grenzen zwischen den Endgeräten wirken.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunks europa-integratoren-2026:00340, :00851 und :01077",
+        "use": "VLANs als logisch getrennte, kleinere Broadcastdomänen und typische Prüfungsformulierungen zur Segmentierung",
+        "reviewStatus": "Die beiden nahezu identischen Aufgaben-Chunks wurden nicht als unabhängige Belege gezählt; Antwortoptionen wurden nicht ungeprüft als Lösung übernommen"
+      },
+      {
+        "sourceId": "ihk-bonn",
+        "sourceLocator": "Chunk ihk-bonn:00381",
+        "use": "Prüfungskontext zur Einordnung von Hub, Switch und Router nach ausgewerteter OSI-Schicht",
+        "reviewStatus": "Aufgabenstellung geprüft; sie liefert keine vollständige Domänenzählregel"
+      },
+      {
+        "sourceId": "itlf6-9-2022",
+        "sourceLocator": "Chunk itlf6-9-2022:00184",
+        "use": "Prüfungskontext zu CSMA/CD und Gerätezuordnung im Ethernet",
+        "reviewStatus": "Nur fachlich lesbare Aussagen verwendet; beschädigte Antworttabellen nicht übernommen"
+      }
+    ],
+    "notes": [
+      "Die lokale Buchbasis deckt die vollständige Hub-/Switch-/Router-Zählregel nicht geschlossen ab. Die Einheit bleibt deshalb CURATED_DRAFT und benennt ihr vereinfachtes Prüfungsmodell ausdrücklich.",
+      "Im modernen Full-Duplex-Switchbetrieb treten praktisch keine Ethernet-Kollisionen auf. Die Zählregel beschreibt eine logische Segmentgrenze, nicht eine Behauptung über reale Kollisionshäufigkeit.",
+      "Die als Kandidat gelistete Grafik itlf10-12-2023:layout:0198:01 behandelt kryptografische Hash-Kollisionen und wurde verworfen. Beide Netzgrafiken sind eigenständig erstellt."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "collision-domain-map",
+      "type": "topology",
+      "title": "Drei Kollisionsdomänen im Prüfungsmodell",
+      "description": "PC A und PC B teilen sich mit dem Hub und seinem Uplink die Kollisionsdomäne C1. Der Direktlink von PC C zum Switch ist C2, der Link zwischen Switch und Router ist C3.",
+      "zones": [
+        {"id": "c1", "label": "C1 · gemeinsames Hubsegment", "x": 38, "y": 88, "width": 500, "height": 350, "kind": "collision"},
+        {"id": "c2", "label": "C2 · eigener Switchport", "x": 548, "y": 88, "width": 374, "height": 145, "kind": "collision"},
+        {"id": "c3", "label": "C3 · eigener Switchport", "x": 548, "y": 315, "width": 374, "height": 145, "kind": "collision"}
+      ],
+      "nodes": [
+        {"id": "pc-a", "label": "PC A", "x": 125, "y": 185, "kind": "endpoint"},
+        {"id": "pc-b", "label": "PC B", "x": 125, "y": 350, "kind": "endpoint"},
+        {"id": "hub", "label": "Hub H1", "detail": "Layer 1", "x": 340, "y": 268, "kind": "hub"},
+        {"id": "switch", "label": "Switch S1", "detail": "Layer 2", "x": 590, "y": 268, "kind": "switch"},
+        {"id": "pc-c", "label": "PC C", "x": 820, "y": 162, "kind": "endpoint"},
+        {"id": "router", "label": "Router R1", "detail": "Layer 3", "x": 820, "y": 390, "kind": "router"}
+      ],
+      "edges": [
+        {"from": "pc-a", "to": "hub"},
+        {"from": "pc-b", "to": "hub"},
+        {"from": "hub", "to": "switch"},
+        {"from": "switch", "to": "pc-c"},
+        {"from": "switch", "to": "router"}
+      ]
+    },
+    {
+      "id": "broadcast-domain-map",
+      "type": "topology",
+      "title": "Zwei VLANs bleiben über den Trunk getrennt",
+      "description": "Die logische Sicht zeigt VLAN 10 als Broadcastdomäne B1 und VLAN 20 als Broadcastdomäne B2. Der Trunk transportiert beide VLANs, verschmilzt sie aber nicht. Das Layer-3-Gateway routet zwischen ihnen und begrenzt Layer-2-Broadcasts.",
+      "zones": [
+        {"id": "b1", "label": "B1 · VLAN 10", "x": 42, "y": 82, "width": 876, "height": 178, "kind": "broadcast"},
+        {"id": "b2", "label": "B2 · VLAN 20", "x": 42, "y": 292, "width": 876, "height": 178, "kind": "broadcast"}
+      ],
+      "nodes": [
+        {"id": "host-a", "label": "Host A", "detail": "VLAN 10", "x": 135, "y": 180, "kind": "endpoint"},
+        {"id": "sw1-v10", "label": "Switch 1", "detail": "VLAN 10", "x": 365, "y": 180, "kind": "switch"},
+        {"id": "sw2-v10", "label": "Switch 2", "detail": "VLAN 10", "x": 595, "y": 180, "kind": "switch"},
+        {"id": "host-b", "label": "Host B", "detail": "VLAN 10", "x": 825, "y": 180, "kind": "endpoint"},
+        {"id": "host-c", "label": "Host C", "detail": "VLAN 20", "x": 135, "y": 390, "kind": "endpoint"},
+        {"id": "sw1-v20", "label": "Switch 1", "detail": "VLAN 20", "x": 365, "y": 390, "kind": "switch"},
+        {"id": "sw2-v20", "label": "Switch 2", "detail": "VLAN 20", "x": 595, "y": 390, "kind": "switch"},
+        {"id": "host-d", "label": "Host D", "detail": "VLAN 20", "x": 825, "y": 390, "kind": "endpoint"},
+        {"id": "gateway", "label": "L3-Gateway", "detail": "routet zwischen B1/B2", "x": 480, "y": 520, "kind": "router"}
+      ],
+      "edges": [
+        {"from": "host-a", "to": "sw1-v10"},
+        {"from": "sw1-v10", "to": "sw2-v10", "label": "Trunk · VLAN 10", "kind": "trunk"},
+        {"from": "sw2-v10", "to": "host-b"},
+        {"from": "host-c", "to": "sw1-v20"},
+        {"from": "sw1-v20", "to": "sw2-v20", "label": "Trunk · VLAN 20", "kind": "trunk"},
+        {"from": "sw2-v20", "to": "host-d"},
+        {"from": "sw1-v10", "to": "gateway", "kind": "trunk"},
+        {"from": "sw1-v20", "to": "gateway", "kind": "trunk"}
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Welche Grenze zählt?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "domains-diagnostic",
+          "diagnostic": true,
+          "question": "Zwei Hosts sind über verschiedene Access-Ports desselben Switches verbunden und liegen im selben VLAN. Welche Aussage passt zum üblichen Prüfungsmodell?",
+          "options": [
+            {"text": "Sie liegen in getrennten Kollisionsdomänen, aber in derselben Broadcastdomäne.", "rationale": "Richtig. Jeder Switchport bildet im Prüfungsmodell eine eigene Kollisionsdomäne; ohne VLAN- oder Layer-3-Grenze bleibt die Broadcastdomäne gemeinsam.", "correct": true},
+            {"text": "Sie teilen Kollisions- und Broadcastdomäne, weil nur ein Switch vorhanden ist.", "rationale": "Die Zahl der Switches entscheidet nicht allein. Verschiedene Switchports trennen Kollisionsdomänen.", "correct": false},
+            {"text": "Sie liegen automatisch in zwei Broadcastdomänen, weil jeder Switchport Broadcasts stoppt.", "rationale": "Ein Layer-2-Switch leitet Broadcasts innerhalb desselben VLANs an die übrigen zugehörigen Ports weiter.", "correct": false},
+            {"text": "Es existiert gar keine logische Kollisionsdomäne mehr, deshalb kann man keine Grenze einzeichnen.", "rationale": "Reale Full-Duplex-Links kollidieren praktisch nicht. Prüfungsaufgaben zählen dennoch jeden Switchport als getrenntes Segment beziehungsweise eigene Kollisionsdomäne.", "correct": false}
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "warning",
+          "label": "Modell offenlegen",
+          "markdown": "Frage bei jeder Aufgabe zuerst: Wird ein **vereinfachtes Prüfungsmodell** oder ein realer Full-Duplex-Betrieb beschrieben? Die Zählregel erklärt Segmentgrenzen, nicht die heutige Kollisionshäufigkeit."
+        }
+      ]
+    },
+    {
+      "title": "Kollisionsdomänen: Ports statt Geräte zählen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein **Hub** arbeitet auf Layer 1 und wiederholt eintreffende Signale an seine anderen Ports. Alle daran angeschlossenen Stationen einschließlich des Uplinks teilen im vereinfachten Halbduplex-Modell ein gemeinsames Segment. Ein **Switch** wertet Layer-2-Informationen aus und trennt die Segmente an seinen Ports. Ein Routeranschluss ist deshalb nicht allein wegen des Routerkastens doppelt zu zählen: Die Leitung zwischen Switchport und Routerinterface bildet genau ein Segment.\n\n| Element im Netzplan | Wirkung im Prüfungsmodell | typische Fehlannahme |\n| --- | --- | --- |\n| Hub mit mehreren Ports | ein gemeinsames Segment | jeden Hubport einzeln zählen |\n| belegter Switchport | eigenes Punkt-zu-Punkt-Segment oder Grenze zum Hubsegment | den ganzen Switch als ein Segment zählen |\n| Routerinterface am Switch | Link ist eine Kollisionsdomäne; das Interface setzt zusätzlich eine Layer-3-Grenze für Broadcasts | auf derselben Leitung zwei Kollisionsdomänen zählen |"
+        },
+        {
+          "type": "figure",
+          "diagramId": "collision-domain-map",
+          "alt": "Netzplan mit PC A und PC B an einem Hub, dem Hub an Switch S1 sowie PC C und Router R1 an eigenen Switchports. Die Flächen C1, C2 und C3 markieren genau drei Kollisionsdomänen.",
+          "caption": "Eigene Lernskizze: Hubports bleiben gemeinsam; jeder weitere belegte Switchport begrenzt ein eigenes Segment."
+        },
+        {
+          "type": "quiz",
+          "id": "collision-hub-practice",
+          "question": "Am Hub H1 aus der Grafik kommt ein weiterer PC D hinzu. Wie verändert sich die Zahl der Kollisionsdomänen?",
+          "options": [
+            {"text": "Sie bleibt bei 3.", "rationale": "Richtig. PC D erweitert das bestehende gemeinsame Hubsegment C1, erzeugt aber keine neue Switchportgrenze.", "correct": true},
+            {"text": "Sie steigt auf 4.", "rationale": "Ein zusätzlicher Hubport ist keine eigene Kollisionsdomäne. Erst ein eigener Switchport würde im Prüfungsmodell ein weiteres Segment bilden.", "correct": false},
+            {"text": "Sie sinkt auf 2.", "rationale": "Das zusätzliche Endgerät hebt keine vorhandene Segmentgrenze auf.", "correct": false}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Broadcastdomänen: VLAN und Layer 3",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Layer-2-Broadcast wird innerhalb seines **VLANs** verteilt. Er kann dabei über mehrere Switches und einen Trunk laufen. Deshalb ist ein Trunk weder automatisch eine neue Broadcastdomäne noch verbindet er verschiedene VLANs zu einer gemeinsamen Domäne. Erst ein Layer-3-Gerät routet gezielt zwischen den Netzen; normale Layer-2-Broadcasts werden dabei nicht einfach in die andere Domäne weitergereicht.\n\nDie physische Anzahl der Switches ist somit kein Zähler. Entscheidend sind die logischen VLAN-Zugehörigkeiten und die vorhandenen Layer-3-Interfaces. Zwei VLANs ergeben in der gezeigten Situation zwei Broadcastdomänen, auch wenn beide dieselben physischen Switches und dieselbe Trunkleitung verwenden."
+        },
+        {
+          "type": "figure",
+          "diagramId": "broadcast-domain-map",
+          "alt": "Logische Darstellung zweier VLANs über zwei Switches. Oben bildet VLAN 10 die Broadcastdomäne B1, unten bildet VLAN 20 die Broadcastdomäne B2. Ein Trunk transportiert beide getrennt; ein Layer-3-Gateway verbindet sie nur durch Routing.",
+          "caption": "Eigene Lernskizze: Die Switches sind zur besseren Lesbarkeit je VLAN logisch wiederholt dargestellt; physisch sind es dieselben Geräte."
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Zählregel",
+          "markdown": "**Kollision:** Hubsegment und einzelne Switchlinks betrachten. **Broadcast:** VLANs und Layer-3-Grenzen betrachten. Die Zahl gezeichneter Geräte ist bei beiden Fragen nur ein Hinweis."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {"id": "domains-hub-card", "label": "Hubsegment", "front": "Wie zählen mehrere Endgeräte an einem Hub?", "back": "Im vereinfachten Prüfungsmodell teilen alle Hubports einschließlich des Uplinks eine Kollisionsdomäne."},
+            {"id": "domains-switch-card", "label": "Switchport", "front": "Was trennt ein belegter Switchport?", "back": "Er grenzt im Prüfungsmodell eine eigene Kollisionsdomäne ab. Innerhalb desselben VLANs trennt er aber keine Broadcastdomäne."},
+            {"id": "domains-trunk-card", "label": "Trunk", "front": "Ist ein Trunk eine zusätzliche Broadcastdomäne?", "back": "Nein. Er transportiert mehrere VLANs logisch getrennt; jedes VLAN bleibt seine eigene Broadcastdomäne."}
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "domains-core-recall",
+          "title": "Beide Grenzen aus dem Kopf erklären",
+          "prompt": "Erkläre ohne Nachschlagen, warum zwei Hosts an verschiedenen Switchports im selben VLAN getrennte Kollisionsdomänen, aber eine gemeinsame Broadcastdomäne haben können.",
+          "label": "Deine Begründung",
+          "placeholder": "Der Switch trennt an seinen Ports … Das VLAN bestimmt dagegen …",
+          "minLength": 90,
+          "model": "Im Prüfungsmodell begrenzt jeder belegte Switchport ein eigenes Ethernet-Segment und damit eine Kollisionsdomäne. Der Switch leitet Layer-2-Broadcasts jedoch an die übrigen Ports desselben VLANs weiter. Solange keine VLAN- oder Layer-3-Grenze dazwischenliegt, gehören beide Hosts deshalb derselben Broadcastdomäne an."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check: Domänen begründen",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "collision-count-transfer",
+          "requiredObjective": "collision-boundaries",
+          "question": "Wie viele Kollisionsdomänen zeigt die Grafik mit Hub H1, Switch S1, PC C und Router R1 im angegebenen Prüfungsmodell?",
+          "options": [
+            {"text": "1", "rationale": "Damit würdest du den ganzen Switch als gemeinsames Segment behandeln. Seine belegten Ports trennen jedoch die Bereiche C1, C2 und C3.", "correct": false},
+            {"text": "3", "rationale": "Richtig: C1 ist das gesamte Hubsegment einschließlich Uplink, C2 der Link zu PC C und C3 der Link zum Router.", "correct": true},
+            {"text": "4", "rationale": "Damit würdest du vermutlich einzelne Hubports getrennt zählen. Alle Ports von H1 gehören hier gemeinsam zu C1.", "correct": false},
+            {"text": "5", "rationale": "Die Zahl der Endgeräte oder Leitungen kann nicht ungeprüft übernommen werden. Mehrere Leitungen innerhalb des Hubsegments bleiben eine Domäne.", "correct": false}
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "broadcast-count-transfer",
+          "requiredObjective": "broadcast-boundaries",
+          "question": "Wie viele Broadcastdomänen zeigt die logische VLAN-Grafik?",
+          "options": [
+            {"text": "1, weil der Trunk beide VLANs transportiert", "rationale": "Ein Trunk transportiert VLAN 10 und VLAN 20 mit getrennter Kennzeichnung. Er verschmilzt ihre Broadcastdomänen nicht.", "correct": false},
+            {"text": "2, nämlich B1 für VLAN 10 und B2 für VLAN 20", "rationale": "Richtig. Die VLAN-Zugehörigkeit bestimmt die beiden Broadcastdomänen; das Layer-3-Gateway routet zwischen ihnen.", "correct": true},
+            {"text": "3, weil der Trunk selbst eine weitere Broadcastdomäne bildet", "rationale": "Der Trunk ist ein Übertragungsweg für bestehende VLANs, keine zusätzliche Broadcastdomäne.", "correct": false},
+            {"text": "4, weil zwei VLANs über zwei Switches laufen", "rationale": "Die Anzahl der Switches wird nicht mit der Anzahl der VLANs multipliziert. Ein VLAN kann sich über mehrere Switches erstrecken.", "correct": false}
+          ]
+        }
+      ]
+    }
+  ]
+}

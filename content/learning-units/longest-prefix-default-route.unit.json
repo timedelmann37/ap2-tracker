@@ -1,0 +1,230 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "longest-prefix-default-route",
+    "slug": "longest-prefix-default-route",
+    "title": "Longest Prefix Match und Default-Route",
+    "description": "Passende IPv4-Routen ermitteln, die spezifischste Präfixroute auswählen und die Default-Route ausschließlich als Fallback verwenden.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-4",
+    "groupLabel": "Block N4 · Routing und NAT",
+    "itemId": "ga2-4__1",
+    "week": "KW 38",
+    "estimatedMinutes": 22,
+    "relevance": "hoch",
+    "sources": ["europa-integratoren-2026", "itlf10-12-2023", "ihk-bonn"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "matching-routes",
+      "label": "für eine IPv4-Zieladresse alle passenden Routingpräfixe mit Netzmaske beziehungsweise Präfixlänge bestimmen"
+    },
+    {
+      "id": "longest-prefix-choice",
+      "label": "aus passenden Routen die größte Präfixlänge auswählen und die Default-Route nur ohne spezifischeren Treffer verwenden"
+    }
+  ],
+  "intro": "Eine Zieladresse kann gleichzeitig zu mehreren Routeneinträgen passen. Das ist beabsichtigt: Der Router verwendet die Route mit den meisten übereinstimmenden Präfixbits. Die Default-Route mit Präfixlänge null passt formal zu jedem IPv4-Ziel, verliert aber gegen jeden spezifischeren Treffer.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunk europa-integratoren-2026:00840, Markdown-Zeilen 8273–8311",
+        "use": "gefüllte Routingtabellen mit mehreren konkreten Zielpräfixen und einer IPv4-Default-Route 0.0.0.0/0",
+        "reviewStatus": "direkter Tabellenbeleg für spezifische Routen und Fallback; Interface-OCR nicht übernommen"
+      },
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunk europa-integratoren-2026:00514, Markdown-Zeilen 5561–5568",
+        "use": "Prüfungskontext, in dem konkrete Netze und eine Default-Route gemeinsam in einer Routingtabelle geplant werden",
+        "reviewStatus": "nur Aufgabenrahmen verwendet; private IPv6-Netzgrafik ausgeschlossen"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "OCR-Chunk itlf10-12-2023:page:0245, PDF-Seite 245",
+        "use": "konkrete Default-Route 0.0.0.0/0 zu einem Gateway in einer Netplan-Konfiguration",
+        "reviewStatus": "passender Ersatz für die falsch gemappte IPsec-Seite; nur die Default-Routenbedeutung verwendet"
+      },
+      {
+        "sourceId": "ihk-bonn",
+        "sourceLocator": "Chunk ihk-bonn:00161, Markdown-Zeilen 2390–2413",
+        "use": "prüfungsnahe Abfrage zur Vorgabe- beziehungsweise Default-Route und ihrer IPv4-Darstellung",
+        "reviewStatus": "Aufgabenbeleg ohne Lösung; Begriffe eigenständig und herstellerneutral erklärt"
+      }
+    ],
+    "notes": [
+      "Die gemappte Stelle itlf10-12-2023:page:0201 erklärt IPsec-Security-Associations und ist trotz eines beiläufigen Routingtabellenvergleichs kein Fachbeleg für Longest Prefix Match. Sie wurde durch itlf10-12-2023:page:0245 und den ausgefüllten Routentabellen-Chunk europa-integratoren-2026:00840 ersetzt.",
+      "Die gemappte private Grafik europa-integratoren-2026:figure:b4b78d7b5c7d zeigt laut OCR eine RIPv2-/OSPF-Zuordnung, nicht Longest Prefix Match, und wurde als Fehltreffer ausgeschlossen.",
+      "Keine lokale Buchstelle formuliert die Longest-Prefix-Regel explizit. Die Regel ist stabile, herstellerneutrale IP-Weiterleitungslogik und bleibt bis zur menschlichen Quellenprüfung als CURATED_DRAFT markiert.",
+      "Bei mehreren gleich spezifischen Routen folgen zusätzliche Auswahlstufen wie Routenpräferenz und Metrik. Diese werden hier bewusst nicht mit Longest Prefix Match vermischt."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "prefix-nesting",
+      "type": "comparison",
+      "title": "Je länger das Präfix, desto enger der Zielbereich",
+      "description": "Vier überlappende Routen reichen vom universellen Fallback bis zum konkreten Teilnetz.",
+      "items": [
+        {"label": "0.0.0.0/0", "detail": "passt zu jeder IPv4-Zieladresse; nur Fallback"},
+        {"label": "10.0.0.0/8", "detail": "passt zu allen Zielen mit erstem Oktett 10"},
+        {"label": "10.20.0.0/16", "detail": "engerer Bereich innerhalb des /8-Netzes"},
+        {"label": "10.20.30.0/24", "detail": "spezifischster Bereich für Ziele von 10.20.30.0 bis 10.20.30.255"}
+      ]
+    },
+    {
+      "id": "lpm-decision-flow",
+      "type": "flow",
+      "title": "Routenauswahl in zwei getrennten Entscheidungen",
+      "description": "Zuerst werden Präfixe auf Übereinstimmung geprüft, danach gewinnt die größte Präfixlänge.",
+      "items": [
+        {"label": "Zieladresse festhalten", "detail": "Beispiel 10.20.30.77"},
+        {"label": "jede Route maskieren", "detail": "Zieladresse UND Maske mit der jeweiligen Netzadresse vergleichen"},
+        {"label": "alle Treffer sammeln", "detail": "hier /0, /8, /16 und /24"},
+        {"label": "Präfixlängen vergleichen", "detail": "24 ist größer als 16, 8 und 0"},
+        {"label": "Route /24 verwenden", "detail": "erst bei gleicher Präfixlänge folgen weitere Auswahlregeln"}
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Welche Route gewinnt?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "lpm-diagnostic",
+          "diagnostic": true,
+          "question": "Für 10.20.30.77 passen die Routen 0.0.0.0/0, 10.0.0.0/8, 10.20.0.0/16 und 10.20.30.0/24. Welche wird ausgewählt?",
+          "options": [
+            {"text": "10.20.30.0/24", "rationale": "Richtig. /24 ist unter allen Treffern das längste und damit spezifischste Präfix.", "correct": true},
+            {"text": "10.20.0.0/16", "rationale": "Die /16-Route passt, wird aber vom noch spezifischeren /24-Treffer überstimmt.", "correct": false},
+            {"text": "10.0.0.0/8", "rationale": "Auch /8 passt, beschreibt aber einen wesentlich größeren Zielbereich als /24.", "correct": false},
+            {"text": "0.0.0.0/0", "rationale": "Die Default-Route passt zwar, verliert aber gegen jeden spezifischeren Treffer.", "correct": false}
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Längstes Präfix",
+          "markdown": "Nicht die erste Tabellenzeile und nicht der vermeintlich schnellste Gatewayname entscheiden. Unter allen **passenden** Routen gewinnt zunächst die größte Präfixlänge."
+        }
+      ]
+    },
+    {
+      "title": "Treffer bestimmen und vergleichen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Für jede Route wird unabhängig geprüft, ob die Zieladresse im beschriebenen Netz liegt. Dazu werden Zieladresse und Netzmaske bitweise verknüpft. Ergibt das Resultat die Netzadresse des Eintrags, ist die Route ein Kandidat. Erst danach werden die Präfixlängen der Kandidaten verglichen.\n\nEin längeres Präfix fixiert mehr Bits und beschreibt deshalb den kleineren, spezifischeren Adressbereich. Eine /24-Route gewinnt gegen eine passende /16-Route. Sind zwei Kandidaten gleich lang, ist Longest Prefix Match abgeschlossen; dann entscheiden andere Regeln wie Routenquelle, Präferenz und Metrik."
+        },
+        {
+          "type": "figure",
+          "diagramId": "prefix-nesting",
+          "alt": "Vergleich von Default-Route, /8-, /16- und /24-Route mit zunehmend engeren Zielbereichen.",
+          "caption": "Eigene Lernskizze: Alle vier Routen können gleichzeitig passen, doch die größte Präfixlänge beschreibt den genauesten Zielbereich."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Die gewählte Präfixlänge ist das Maximum aller Präfixlängen, deren maskierte Zieladresse der jeweiligen Netzadresse entspricht",
+          "mathml": "<math display=\"block\"><mrow><msup><mi>p</mi><mo>*</mo></msup><mo>=</mo><mi>max</mi><mo>{</mo><mi>p</mi><mo>∣</mo><mo>(</mo><mi>D</mi><mo>∧</mo><msub><mi>M</mi><mi>p</mi></msub><mo>)</mo><mo>=</mo><msub><mi>N</mi><mi>p</mi></msub><mo>}</mo></mrow></math>",
+          "legend": ["D = Zieladresse", "p = Präfixlänge", "Mₚ = Maske der Route", "Nₚ = Netzadresse der Route"]
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel mit Fallback",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Gegeben sind die vier Routen aus der Grafik. Für `10.20.30.77` passen /0, /8, /16 und /24; ausgewählt wird /24. Für `10.20.90.5` passen /0, /8 und /16; ausgewählt wird /16. Für `10.99.1.1` passen /0 und /8; ausgewählt wird /8. Erst für `203.0.113.8` gibt es keinen spezifischeren Treffer, sodass `0.0.0.0/0` verwendet wird.\n\nFehlt auch die Default-Route, existiert in dieser Tabelle kein Weiterleitungsweg. Das Paket wird dann nicht einfach an einen beliebigen Nachbarn gesendet."
+        },
+        {
+          "type": "figure",
+          "diagramId": "lpm-decision-flow",
+          "alt": "Ablauf von Zieladresse, Maskenprüfung und Kandidatenliste über den Präfixvergleich bis zur Auswahl der /24-Route.",
+          "caption": "Eigene Lernskizze: Trefferermittlung und Auswahl sind zwei getrennte Schritte."
+        },
+        {
+          "type": "sequence",
+          "id": "lpm-guided-sequence",
+          "title": "Routenauswahl reproduzierbar lösen",
+          "prompt": "Ordne den Rechen- und Entscheidungsweg für eine neue Zieladresse.",
+          "tag": "Geführte Übung",
+          "steps": [
+            {"id": "fallback", "label": "Nur wenn nichts Spezifischeres passt, die Default-Route verwenden."},
+            {"id": "list", "label": "Alle Routingpräfixe auflisten, die die Zieladresse einschließen."},
+            {"id": "destination", "label": "Die Zieladresse des Pakets festhalten."},
+            {"id": "largest", "label": "Unter den Treffern die numerisch größte Präfixlänge wählen."}
+          ],
+          "expected": ["destination", "list", "largest", "fallback"],
+          "correctFeedback": "Richtig. Die Default-Route wird mitgeprüft, aber nur ohne spezifischeren Treffer tatsächlich gewählt.",
+          "wrongFeedback": "Bestimme zuerst Ziel und Treffer. Der Fallback ist keine Vorauswahl, sondern das Ergebnis bei fehlender spezifischer Route."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {"id": "lpm-specificity", "label": "Spezifität", "front": "Woran erkennst du die spezifischere von zwei passenden Routen?", "back": "An der größeren Präfixlänge; sie fixiert mehr Adressbits und beschreibt einen kleineren Bereich."},
+            {"id": "lpm-default", "label": "Default-Route", "front": "Warum passt 0.0.0.0/0 zu jeder IPv4-Zieladresse?", "back": "Die Präfixlänge null verlangt keine übereinstimmenden Bits; deshalb ist die Route der universelle Fallback."},
+            {"id": "lpm-tie", "label": "Gleichstand", "front": "Was geschieht, wenn mehrere passende Routen dieselbe längste Präfixlänge haben?", "back": "Dann ist Longest Prefix Match beendet; zusätzliche Regeln zu Routenpräferenz und Metrik entscheiden."}
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "lpm-recall",
+          "title": "Die Auswahlregel frei erklären",
+          "prompt": "Erkläre, wie du aus einer Ziel-IP und mehreren überlappenden Routingpräfixen die Route bestimmst. Beziehe Default-Route und Gleichstand ein.",
+          "label": "Deine Erklärung",
+          "placeholder": "Zuerst prüfe ich …",
+          "minLength": 110,
+          "model": "Ich prüfe jede Route mit Zieladresse und Maske und sammle alle passenden Präfixe. Unter diesen Treffern gewinnt die größte Präfixlänge. Die Default-Route /0 passt grundsätzlich, wird aber nur ohne spezifischeren Treffer genutzt. Bei gleich langen besten Routen entscheiden anschließend Präferenz und Metrik."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check: Transfer",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "lpm-transfer-matches",
+          "requiredObjective": "matching-routes",
+          "question": "Welche Routen passen zur Zieladresse 10.20.90.5? Vorhanden sind 0.0.0.0/0, 10.0.0.0/8, 10.20.0.0/16 und 10.20.30.0/24.",
+          "options": [
+            {"text": "/0, /8 und /16", "rationale": "Richtig. 10.20.90.5 liegt in den drei Bereichen, aber nicht im Netz 10.20.30.0/24.", "correct": true},
+            {"text": "nur /16", "rationale": "/16 ist der spezifischste Treffer, aber auch die übergeordneten /8- und /0-Routen passen.", "correct": false},
+            {"text": "/0, /8, /16 und /24", "rationale": "Die /24-Route umfasst nur Ziele mit den ersten drei Oktetten 10.20.30.", "correct": false},
+            {"text": "nur /0", "rationale": "Die Default-Route passt, aber 10.20.90.5 liegt zusätzlich in den Netzen 10.0.0.0/8 und 10.20.0.0/16.", "correct": false}
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "lpm-transfer-choice",
+          "requiredObjective": "longest-prefix-choice",
+          "question": "Routen: 0.0.0.0/0 via A, 172.16.0.0/12 via B und 172.20.64.0/18 via C. Wohin wird ein Paket an 172.20.70.9 weitergegeben?",
+          "options": [
+            {"text": "via C, weil /18 der längste passende Präfix ist", "rationale": "Richtig. Das Ziel liegt in 172.20.64.0/18; diese Route ist spezifischer als /12 und /0.", "correct": true},
+            {"text": "via B, weil /12 in der Tabelle vor /18 steht", "rationale": "Die Tabellenreihenfolge ersetzt Longest Prefix Match nicht. Die spezifischere passende /18-Route gewinnt.", "correct": false},
+            {"text": "via A, weil die Default-Route immer zuerst verwendet wird", "rationale": "Die Default-Route ist nur Fallback und verliert gegen die passenden /12- und /18-Routen.", "correct": false},
+            {"text": "keine Route, weil 172.20.70.9 keine Netzadresse ist", "rationale": "Routingpräfixe gelten für Zielbereiche und damit gerade auch für Hostadressen innerhalb des Netzes.", "correct": false}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Aktualität",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):** konkrete Zielpräfixe gemeinsam mit einer IPv4-Default-Route.\n- **IT-Berufe Fachstufe II – Lernfelder 10–12 (2023):** 0.0.0.0/0 als Standardroute zu einem Gateway.\n- **Prüfungsvorbereitung IHK Bonn:** Default- beziehungsweise Vorgaberoute als explizites Prüfungsthema.\n\nDie Longest-Prefix-Regel ist herstellerneutral, wird von den lokalen Buchstellen aber nicht ausdrücklich erklärt. Beispiele, Aufgaben und Diagramme sind eigenständig erstellt; private Buchgrafiken werden nicht veröffentlicht."
+        }
+      ]
+    }
+  ]
+}

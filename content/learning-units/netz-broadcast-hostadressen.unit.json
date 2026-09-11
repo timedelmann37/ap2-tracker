@@ -1,0 +1,372 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "netz-broadcast-hostadressen",
+    "slug": "netz-broadcast-hostadressen",
+    "title": "IPv4-Netzgrenzen sicher berechnen",
+    "description": "Aus IPv4-Adresse und Präfix Netzadresse, Broadcastadresse sowie erste und letzte nutzbare Hostadresse schrittweise bestimmen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-2",
+    "groupLabel": "Block N2 · IPv4 und Subnetting",
+    "itemId": "ga2-2__2",
+    "week": "KW 36",
+    "estimatedMinutes": 24,
+    "relevance": "hoch",
+    "sources": ["europa-integratoren-2026"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "network-broadcast",
+      "label": "aus einer beliebigen IPv4-Adresse und einem Präfix Netz- und Broadcastadresse fehlerfrei herleiten"
+    },
+    {
+      "id": "host-boundaries",
+      "label": "erste und letzte nutzbare Hostadresse bestimmen und Grenzadressen korrekt einordnen"
+    }
+  ],
+  "intro": "Bei Subnetting-Aufgaben genügt es nicht, vier Adressen auswendig zu kennen. Du brauchst ein wiederholbares Verfahren: Maske und Blockgröße bestimmen, das passende Intervall finden und erst danach Netz, Broadcast und Hostbereich benennen.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunk europa-integratoren-2026:01046",
+        "use": "Binäres Bestimmen von Netz und Broadcast sowie Ableitung der ersten und letzten Hostadresse in mehreren Präfixlängen",
+        "reviewStatus": "Rechenwege gegen den Seitenkontext geprüft und vollständig neu formuliert"
+      },
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunks europa-integratoren-2026:00320 und europa-integratoren-2026:00828",
+        "use": "Prüfungsnahes Tabellenschema und konsistente /26-Beispiele für Netz-, Broadcast- und Hostgrenzen",
+        "reviewStatus": "Aufgabe und Lösung gegengeprüft; vereinzelte OCR-Zellfehler nicht übernommen"
+      }
+    ],
+    "notes": [
+      "Die Einheit behandelt die in IHK-Aufgaben übliche Adressierung klassischer IPv4-Subnetze bis einschließlich /30. /31-Punkt-zu-Punkt-Netze und /32-Hostrouten sind ausdrücklich Sonderfälle.",
+      "Die private Buchabbildung europa-integratoren-2026:figure:ff7e1647df7a@p57 wird nicht veröffentlicht; beide Diagramme sind eigenständige, code-native Lernskizzen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "boundary-workflow",
+      "type": "flow",
+      "title": "Vom Präfix zu den vier Grenzadressen",
+      "description": "Ein fester Ablauf verhindert, dass eine Hostadresse versehentlich als Netzgrenze übernommen wird.",
+      "items": [
+        {
+          "label": "1 · Präfix in Maske übersetzen",
+          "detail": "/27 ergibt im relevanten Oktett 224 und damit 5 Hostbits."
+        },
+        {
+          "label": "2 · Blockgröße bilden",
+          "detail": "256 minus 224 ergibt eine Schrittweite von 32 Adressen."
+        },
+        {
+          "label": "3 · Enthaltenen Block finden",
+          "detail": "141 liegt zwischen den Grenzen 128 und 159."
+        },
+        {
+          "label": "4 · Netz und Broadcast setzen",
+          "detail": "Unterste Adresse 128 ist das Netz, oberste Adresse 159 der Broadcast."
+        },
+        {
+          "label": "5 · Hostbereich ableiten",
+          "detail": "Erster Host ist 129, letzter Host ist 158."
+        }
+      ]
+    },
+    {
+      "id": "address-roles",
+      "type": "comparison",
+      "title": "Vier Rollen im Beispiel 192.168.77.141/27",
+      "description": "Die eingegebene Adresse liegt im Adressblock 192.168.77.128 bis 192.168.77.159.",
+      "items": [
+        {
+          "label": "Netz · 192.168.77.128",
+          "detail": "Alle fünf Hostbits sind 0; diese Adresse bezeichnet das Subnetz."
+        },
+        {
+          "label": "Erster Host · 192.168.77.129",
+          "detail": "Direkt nach der Netzadresse beginnt der nutzbare Bereich."
+        },
+        {
+          "label": "Letzter Host · 192.168.77.158",
+          "detail": "Direkt vor der Broadcastadresse endet der nutzbare Bereich."
+        },
+        {
+          "label": "Broadcast · 192.168.77.159",
+          "detail": "Alle fünf Hostbits sind 1; die Adresse steht für alle Hosts im Subnetz."
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Welche Grenze gehört zum Netz?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "ipv4-boundary-diagnostic",
+          "diagnostic": true,
+          "question": "Die Adresse 192.168.10.70 liegt in einem /26-Subnetz. Welche Netzadresse vermutest du?",
+          "options": [
+            {
+              "text": "192.168.10.0",
+              "rationale": "Ein /26 teilt das letzte Oktett in 64er-Blöcke. 70 liegt nicht im Block 0 bis 63.",
+              "correct": false
+            },
+            {
+              "text": "192.168.10.64",
+              "rationale": "Richtig. Der zweite 64er-Block reicht von 64 bis 127.",
+              "correct": true
+            },
+            {
+              "text": "192.168.10.70",
+              "rationale": "70 ist die gegebene Hostadresse. Für die Netzadresse müssen alle Hostbits 0 sein.",
+              "correct": false
+            },
+            {
+              "text": "192.168.10.128",
+              "rationale": "128 ist bereits die Netzadresse des folgenden /26-Blocks.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Vier feste Rollen",
+          "markdown": "In einem klassischen IPv4-Subnetz gilt: **Netzadresse – erster Host – letzter Host – Broadcastadresse**. Die beiden äußeren Adressen werden nicht an normale Endgeräte vergeben."
+        }
+      ]
+    },
+    {
+      "title": "Das bitgenaue Verfahren",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Die Subnetzmaske trennt Netz- und Hostbits. Für die Netzadresse bleiben die Netzbits erhalten und alle Hostbits werden 0. Für die Broadcastadresse bleiben die Netzbits erhalten und alle Hostbits werden 1. Bitweise lässt sich das ohne Raten ausdrücken:"
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Netzadresse gleich IP-Adresse UND Maske; Broadcastadresse gleich Netzadresse ODER invertierte Maske",
+          "mathml": "<math display=\"block\"><mtable columnalign=\"right center left\" rowspacing=\"0.5em\"><mtr><mtd><mi>N</mi></mtd><mtd><mo>=</mo></mtd><mtd><mi>IP</mi><mo>∧</mo><mi>M</mi></mtd></mtr><mtr><mtd><mi>B</mi></mtd><mtd><mo>=</mo></mtd><mtd><mi>N</mi><mo>∨</mo><mo>¬</mo><mi>M</mi></mtd></mtr><mtr><mtd><msub><mi>H</mi><mtext>erste</mtext></msub></mtd><mtd><mo>=</mo></mtd><mtd><mi>N</mi><mo>+</mo><mn>1</mn></mtd></mtr><mtr><mtd><msub><mi>H</mi><mtext>letzte</mtext></msub></mtd><mtd><mo>=</mo></mtd><mtd><mi>B</mi><mo>−</mo><mn>1</mn></mtd></mtr></mtable></math>",
+          "legend": ["N = Netzadresse", "B = Broadcastadresse", "M = Subnetzmaske"]
+        },
+        {
+          "type": "figure",
+          "diagramId": "boundary-workflow",
+          "alt": "Fünfstufiger Rechenweg von Präfix und Maske über Blockgröße und Adressintervall bis zu Netz, Broadcast und Hostbereich.",
+          "caption": "Eigene Lernskizze: Derselbe Ablauf funktioniert auch dann, wenn die gegebene IPv4-Adresse mitten im Subnetz liegt."
+        }
+      ]
+    },
+    {
+      "title": "Durchgerechnet: 192.168.77.141/27",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Das Präfix /27 entspricht 255.255.255.224. Im letzten Oktett beträgt die Blockgröße 256 − 224 = 32. Die Blockgrenzen lauten 0, 32, 64, 96, 128, 160, 192 und 224. Der Wert 141 liegt daher im Block 128 bis 159.\n\nDie binäre Probe betrachtet nur das Oktett, in dem die Grenze verläuft. Das UND mit der Maske setzt die fünf Hostbits auf 0; für den Broadcast werden diese fünf Bits auf 1 gesetzt."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Binäre Berechnung des letzten Oktetts von Netz und Broadcast für die Adresse 141 mit Präfix 27",
+          "mathml": "<math display=\"block\"><mtable columnalign=\"right center left\" rowspacing=\"0.5em\"><mtr><mtd><msub><mn>10001101</mn><mn>2</mn></msub></mtd><mtd><mo>∧</mo></mtd><mtd><msub><mn>11100000</mn><mn>2</mn></msub><mo>=</mo><msub><mn>10000000</mn><mn>2</mn></msub><mo>=</mo><mn>128</mn></mtd></mtr><mtr><mtd><msub><mn>10000000</mn><mn>2</mn></msub></mtd><mtd><mo>∨</mo></mtd><mtd><msub><mn>00011111</mn><mn>2</mn></msub><mo>=</mo><msub><mn>10011111</mn><mn>2</mn></msub><mo>=</mo><mn>159</mn></mtd></mtr></mtable></math>",
+          "legend": ["141 = gegebenes Oktett", "224 = Maskenoktett", "31 = invertierte Maske im Oktett"]
+        },
+        {
+          "type": "figure",
+          "diagramId": "address-roles",
+          "alt": "Vier Karten zeigen Netzadresse 192.168.77.128, ersten Host .129, letzten Host .158 und Broadcast .159.",
+          "caption": "Eigene Lernskizze: Erst den gesamten Block festlegen, dann die beiden Hostgrenzen um genau eins nach innen verschieben."
+        },
+        {
+          "type": "numeric",
+          "id": "network-octet-practice",
+          "title": "Zwischenübung: Netzgrenze finden",
+          "prompt": "Die Adresse 172.16.5.174 hat das Präfix /28. Welchen Wert hat das letzte Oktett der Netzadresse?",
+          "label": "Letztes Oktett der Netzadresse",
+          "placeholder": "z. B. 160",
+          "expected": 160,
+          "tolerance": 0,
+          "correctFeedback": "Richtig: /28 ergibt 16er-Blöcke; 174 liegt im Bereich 160 bis 175.",
+          "wrongFeedback": "Bilde zuerst 256 − 240 = 16 und suche das größte Vielfache von 16, das nicht größer als 174 ist.",
+          "misconceptions": [
+            {
+              "value": 174,
+              "feedback": "174 ist die gegebene Hostadresse. Eine Netzadresse liegt auf einer Blockgrenze."
+            },
+            {
+              "value": 175,
+              "feedback": "175 ist die Broadcastadresse des Blocks 160 bis 175."
+            },
+            {
+              "value": 176,
+              "feedback": "176 ist bereits die Netzadresse des nächsten /28-Blocks."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Typische Fehler gezielt erkennen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**Fehler 1: Präfix als Anzahl der Hosts lesen.** /27 bedeutet 27 Netzbits und 5 Hostbits, nicht 27 Hosts. **Fehler 2: Den nächsten Block als Broadcast verwenden.** Die nächste Netzadresse liegt genau eins hinter dem Broadcast. **Fehler 3: Netz und Broadcast als Endgeräte zählen.** Bei den hier betrachteten klassischen Subnetzen beginnt und endet der nutzbare Bereich jeweils eine Adresse innerhalb der Grenzen.\n\nPrüfe dein Ergebnis rückwärts: Die gegebene IP muss zwischen Netz und Broadcast liegen. Netz und Broadcast müssen außerdem zur Blockgröße passen."
+        },
+        {
+          "type": "quiz",
+          "id": "boundary-error-practice",
+          "question": "Für 10.20.30.200/26 notiert jemand das Netz 10.20.30.192 und den Broadcast 10.20.30.256. Welche Diagnose ist richtig?",
+          "options": [
+            {
+              "text": "Beide Angaben sind korrekt; IPv4-Oktette dürfen bis 256 reichen.",
+              "rationale": "Ein IPv4-Oktett reicht nur von 0 bis 255. Außerdem muss der Broadcast noch im selben 64er-Block liegen.",
+              "correct": false
+            },
+            {
+              "text": "Das Netz ist korrekt; 256 bezeichnet rechnerisch die nächste Blockgrenze, der Broadcast ist daher 255.",
+              "rationale": "Richtig. Der Block 192 bis 255 endet bei 255; 256 wäre als Oktett ungültig und entspricht mit Übertrag bereits der folgenden Adresse.",
+              "correct": true
+            },
+            {
+              "text": "Der Broadcast ist korrekt; die Netzadresse muss 10.20.30.200 lauten.",
+              "rationale": "Die gegebene Hostadresse ist nicht automatisch die Netzadresse. /26 setzt die Blockgrenze auf 192.",
+              "correct": false
+            },
+            {
+              "text": "Das Netz muss 10.20.30.128 und der Broadcast 10.20.30.191 sein.",
+              "rationale": "Dieser Block enthält die Adresse 200 nicht. 200 liegt im folgenden Bereich 192 bis 255.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "warning",
+          "label": "Sonderfälle",
+          "markdown": "Die Regeln **erster Host = Netz + 1**, **letzter Host = Broadcast − 1** und **2 hoch Hostbits minus 2** gelten für klassische IPv4-Subnetze. /31 kann auf Punkt-zu-Punkt-Verbindungen beide Adressen nutzen; /32 bezeichnet genau eine Adresse."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "boundary-network-rule",
+              "label": "Netzadresse",
+              "front": "Wie entsteht die Netzadresse aus IP-Adresse und Subnetzmaske?",
+              "back": "Durch bitweises UND. Dadurch werden alle Hostbits der IP-Adresse auf 0 gesetzt."
+            },
+            {
+              "id": "boundary-broadcast-rule",
+              "label": "Broadcastadresse",
+              "front": "Wie leitest du die Broadcastadresse aus der Netzadresse ab?",
+              "back": "Setze alle Hostbits auf 1; gleichwertig: Netzadresse ODER invertierte Maske."
+            },
+            {
+              "id": "boundary-host-range",
+              "label": "Hostbereich",
+              "front": "Wie lauten in einem klassischen Subnetz die erste und letzte nutzbare Adresse?",
+              "back": "Erste nutzbare Adresse = Netz + 1; letzte nutzbare Adresse = Broadcast − 1."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "boundary-free-recall",
+          "title": "Rechenweg ohne Vorlage",
+          "prompt": "Beschreibe für eine beliebige IPv4-Adresse mit Präfix deinen vollständigen Weg zu Netz, Broadcast, erstem und letztem Host. Nenne mindestens zwei Plausibilitätsprüfungen.",
+          "label": "Dein Rechenweg",
+          "placeholder": "Ich beginne mit …",
+          "minLength": 100,
+          "model": "Präfix in Maske übersetzen, im Grenzoktett die Blockgröße 256 minus Maskenwert berechnen und das Intervall finden, das die IP enthält. Untere Grenze ist das Netz, obere Grenze beziehungsweise nächste Netzgrenze minus 1 der Broadcast. Erster Host ist Netz plus 1, letzter Host Broadcast minus 1. Zur Kontrolle muss die IP im Intervall liegen und beide Grenzen müssen zur Blockgröße passen."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check: zwei prüfungsnahe Nachweise",
+      "blocks": [
+        {
+          "type": "numeric",
+          "id": "broadcast-octet-transfer",
+          "requiredObjective": "network-broadcast",
+          "title": "Broadcast aus einer beliebigen Hostadresse",
+          "prompt": "Die Adresse 10.24.6.173 hat das Präfix /28. Welchen Wert hat das letzte Oktett der Broadcastadresse?",
+          "label": "Letztes Oktett der Broadcastadresse",
+          "placeholder": "Ergebnis",
+          "expected": 175,
+          "tolerance": 0,
+          "correctFeedback": "Richtig: /28 ergibt 16er-Blöcke. 173 liegt im Block 160 bis 175; dessen obere Grenze ist der Broadcast.",
+          "wrongFeedback": "Bestimme mit 256 − 240 die Blockgröße 16. Suche dann das Intervall, das 173 enthält, und nimm dessen obere Grenze.",
+          "correctMath": {
+            "ariaLabel": "Blockgröße 16; 173 liegt zwischen 160 und 175; Broadcast ist 175",
+            "mathml": "<math display=\"block\"><mrow><mn>256</mn><mo>−</mo><mn>240</mn><mo>=</mo><mn>16</mn><mo>;</mo><mn>160</mn><mo>≤</mo><mn>173</mn><mo>≤</mo><mn>175</mn><mo>⇒</mo><mi>B</mi><mo>=</mo><mn>175</mn></mrow></math>",
+            "legend": ["/28 = 255.255.255.240", "Block 160–175"]
+          },
+          "misconceptions": [
+            {
+              "value": 160,
+              "feedback": "160 ist die Netzadresse, also die untere Grenze des Blocks. Gesucht ist die obere Grenze."
+            },
+            {
+              "value": 174,
+              "feedback": "174 ist eine nutzbare Hostadresse direkt vor dem Broadcast."
+            },
+            {
+              "value": 176,
+              "feedback": "176 ist die nächste Netzadresse. Der Broadcast des vorherigen Blocks liegt genau eins darunter."
+            }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "host-boundaries-transfer",
+          "requiredObjective": "host-boundaries",
+          "question": "Welcher nutzbare Hostbereich gehört zum Subnetz 192.0.2.64/26?",
+          "options": [
+            {
+              "text": "192.0.2.64 bis 192.0.2.127",
+              "rationale": "Das ist der gesamte Adressblock einschließlich Netzadresse .64 und Broadcastadresse .127.",
+              "correct": false
+            },
+            {
+              "text": "192.0.2.65 bis 192.0.2.126",
+              "rationale": "Richtig. Der Hostbereich liegt jeweils eine Adresse innerhalb der Grenzen .64 und .127.",
+              "correct": true
+            },
+            {
+              "text": "192.0.2.66 bis 192.0.2.125",
+              "rationale": "Hier wurden an beiden Seiten je zwei Adressen entfernt. Reserviert sind in diesem klassischen Subnetz nur Netz und Broadcast.",
+              "correct": false
+            },
+            {
+              "text": "192.0.2.65 bis 192.0.2.127",
+              "rationale": ".127 ist der Broadcast des /26-Blocks und keine normale Hostadresse.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Prüfungstipp:** Schreibe immer das Präfix oder die Maske dazu und halte die Reihenfolge Netz – erster Host – letzter Host – Broadcast ein. So lassen sich Folgefehler in Tabellen leichter erkennen."
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):** Rechenverfahren und prüfungsnahe Tabellenaufgaben zu Netz-, Broadcast- und Hostgrenzen.\n\nText, Aufgaben, Fehlfeedback und Diagramme wurden eigenständig erstellt. Private Buchgrafiken und OCR-Rohtext werden nicht veröffentlicht."
+        }
+      ]
+    }
+  ]
+}

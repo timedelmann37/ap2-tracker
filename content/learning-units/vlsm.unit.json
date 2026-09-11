@@ -1,0 +1,404 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "vlsm",
+    "slug": "vlsm",
+    "title": "VLSM sicher planen: vom Bedarf zum Adressraum",
+    "description": "Ein IPv4-Ausgangsnetz mit VLSM bedarfsgerecht aufteilen, Blockgrößen und Präfixe berechnen sowie belegte und freie Adressbereiche lückenlos dokumentieren.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-2",
+    "groupLabel": "Block N2 · IPv4 und Subnetting",
+    "itemId": "ga2-2__4",
+    "week": "KW 36",
+    "estimatedMinutes": 32,
+    "relevance": "sehr hoch",
+    "sources": [
+      "europa-integratoren-2026",
+      "ihk-bonn",
+      "it-basiswissen-2012"
+    ],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "block-prefix",
+      "label": "aus einem gegebenen Hostbedarf die kleinste passende IPv4-Blockgröße und den zugehörigen CIDR-Präfix berechnen"
+    },
+    {
+      "id": "vlsm-plan",
+      "label": "mehrere unterschiedlich große Subnetze vom größten Bedarf ausgehend überlappungsfrei anordnen und den Restadressraum exakt ausweisen"
+    }
+  ],
+  "intro": "Bei VLSM bekommen nicht alle Teilnetze dieselbe Maske. Jedes Netz erhält den kleinsten passenden Zweierpotenz-Block. Das spart Adressen, verlangt aber eine feste Arbeitsreihenfolge: Bedarfe absteigend sortieren, Blockgröße und Präfix bestimmen, an einer gültigen Netzgrenze zuweisen und nach jedem Block den nächsten freien sowie den verbleibenden Adressraum notieren.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunks europa-integratoren-2026:00324 und europa-integratoren-2026:00325 sowie Tabelle europa-integratoren-2026:table:0198",
+        "use": "VLSM-Aufgabentyp mit unterschiedlichen Abteilungsgrößen, Sortierung vom größten zum kleinsten Netz sowie fortlaufende Berechnung von Netz- und Broadcastgrenzen",
+        "reviewStatus": "Tabellen- und Seitenkontext geprüft; Rechenbeispiel und Formulierungen für diese Einheit vollständig neu erstellt"
+      },
+      {
+        "sourceId": "ihk-bonn",
+        "sourceLocator": "Chunk ihk-bonn:00365 und Tabelle ihk-bonn:table:0073",
+        "use": "prüfungstypische Dokumentation von Netzadresse, erster und letzter Hostadresse sowie Broadcastadresse und Einplanung von Reserve",
+        "reviewStatus": "OCR ist teilweise beschädigt; nur Aufgabenstruktur und eindeutig lesbare Felder verwendet, keine erkannten Zahlen ungeprüft übernommen"
+      },
+      {
+        "sourceId": "it-basiswissen-2012",
+        "sourceLocator": "Chunk it-basiswissen-2012:00192",
+        "use": "Adresskonzept als Handlungssituation mit VLSM, CIDR, Hostbereichen, Subnetzmaske und Broadcastadresse",
+        "reviewStatus": "als stabiler didaktischer Aufgabenrahmen geprüft; Inhalte eigenständig formuliert und gerechnet"
+      }
+    ],
+    "notes": [
+      "Der Source-Map-Kandidat itlf10-12-2023:page:0043 wurde geprüft und ausgeschlossen: Die OCR-Seite behandelt Betriebssysteme, nicht VLSM.",
+      "Die Regel Blockgröße minus zwei gilt hier für gewöhnliche IPv4-LAN-Subnetze. Die Sonderpräfixe /31 und /32 sind nicht Gegenstand dieser Einheit.",
+      "Die beiden Diagramme, alle Szenarien und alle Antwortoptionen sind eigenständig erstellt; private Buchgrafiken und beschädigte OCR-Tabellen werden nicht veröffentlicht.",
+      "Ein freier Restbereich ist nur dann genau ein CIDR-Netz, wenn Startadresse und Größe zu einer gültigen Präfixgrenze passen. Andernfalls wird er als Bereich oder als Folge mehrerer CIDR-Blöcke dokumentiert."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "vlsm-method",
+      "type": "flow",
+      "title": "Fünf Schritte verhindern Überlappungen",
+      "description": "Der Ablauf beginnt mit der absteigenden Bedarfsliste, bestimmt Blockgröße und Präfix, weist an einer gültigen Grenze zu und dokumentiert zuletzt den freien Restadressraum.",
+      "items": [
+        {
+          "label": "1 · Bedarfe sortieren",
+          "detail": "Benötigte nutzbare Hostadressen absteigend ordnen; das größte Netz wird zuerst geplant"
+        },
+        {
+          "label": "2 · Blockgröße wählen",
+          "detail": "Kleinste Zweierpotenz B finden, für die bei einem gewöhnlichen LAN B minus 2 mindestens dem Hostbedarf H entspricht"
+        },
+        {
+          "label": "3 · Präfix ableiten",
+          "detail": "Aus B gleich 2 hoch h folgen h Hostbits und der Präfix p gleich 32 minus h"
+        },
+        {
+          "label": "4 · Grenzen eintragen",
+          "detail": "Netzadresse, erster Host, letzter Host und Broadcast; nächstes Netz beginnt exakt eine Blockgröße später"
+        },
+        {
+          "label": "5 · Rest ausweisen",
+          "detail": "Nach der letzten Broadcastadresse beginnt der freie Bereich; Größe, Grenzen und mögliche CIDR-Zerlegung festhalten"
+        }
+      ]
+    },
+    {
+      "id": "worked-address-space",
+      "type": "layers",
+      "title": "Ein /24 wird lückenlos von groß nach klein belegt",
+      "description": "Das Netz 192.168.80.0/24 wird in Blöcke mit 128, 64, 32 und 16 Adressen aufgeteilt. Die letzten 16 Adressen bleiben als ausgerichteter /28-Block frei.",
+      "items": [
+        {
+          "label": "Produktion · /25",
+          "detail": "192.168.80.0 bis .127 · 128 Adressen · nutzbare Hosts .1 bis .126"
+        },
+        {
+          "label": "Vertrieb · /26",
+          "detail": "192.168.80.128 bis .191 · 64 Adressen · nutzbare Hosts .129 bis .190"
+        },
+        {
+          "label": "Verwaltung · /27",
+          "detail": "192.168.80.192 bis .223 · 32 Adressen · nutzbare Hosts .193 bis .222"
+        },
+        {
+          "label": "IoT · /28",
+          "detail": "192.168.80.224 bis .239 · 16 Adressen · nutzbare Hosts .225 bis .238"
+        },
+        {
+          "label": "Rest · /28",
+          "detail": "192.168.80.240 bis .255 · 16 Adressen bleiben frei und beginnen an einer gültigen /28-Grenze"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Diagnose: Welcher Bedarf kommt zuerst?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "vlsm-diagnostic",
+          "diagnostic": true,
+          "question": "Aus einem /24 werden Netze für 70, 25 und 10 nutzbare Hostadressen benötigt. Welches Netz planst du mit welchem Präfix zuerst?",
+          "options": [
+            {
+              "text": "Zuerst 70 Hosts mit /25",
+              "rationale": "Richtig. /26 bietet in einem gewöhnlichen LAN nur 62 nutzbare Hostadressen. Der Bedarf 70 benötigt daher einen 128er-Block mit /25 und wird als größtes Netz zuerst platziert.",
+              "correct": true
+            },
+            {
+              "text": "Zuerst 10 Hosts mit /28",
+              "rationale": "Ein /28 passt zwar zu 10 Hosts, doch ein kleiner Block am Anfang kann eine spätere große Präfixgrenze ungünstig zerschneiden. Die robuste VLSM-Methode beginnt mit dem größten Bedarf.",
+              "correct": false
+            },
+            {
+              "text": "Zuerst 70 Hosts mit /26",
+              "rationale": "Ein /26 umfasst 64 Adressen. Nach Netz- und Broadcastadresse bleiben 62 nutzbare Adressen; das reicht nicht für 70 Hosts.",
+              "correct": false
+            },
+            {
+              "text": "Die Reihenfolge ist beliebig, solange alle Präfixe verschieden sind",
+              "rationale": "Verschiedene Präfixe verhindern noch keine Überlappung. Jeder Block muss zusätzlich auf einer passenden Netzgrenze liegen; die absteigende Reihenfolge macht das zuverlässig prüfbar.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Kernidee",
+          "markdown": "**VLSM** steht für Variable Length Subnet Mask. Innerhalb eines Ausgangsnetzes werden mehrere Präfixlängen verwendet, damit jeder Bedarf den kleinsten passenden Adressblock erhält."
+        }
+      ]
+    },
+    {
+      "title": "Vom Hostbedarf zu Blockgröße und Präfix",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Arbeite immer mit der Zahl der **nutzbaren** Adressen, die der Fall tatsächlich verlangt. Für ein gewöhnliches IPv4-LAN sind die Netzadresse und die Broadcastadresse nicht an Endgeräte vergebbar. Deshalb muss ein Block mit B Adressen mindestens H plus zwei Adressen aufnehmen. Weil IPv4-Präfixe Bitgrenzen verwenden, ist B eine Zweierpotenz.\n\n| nutzbarer Bedarf H | kleinster Block B | Hostbits h | Präfix p | nutzbar B − 2 |\n| ---: | ---: | ---: | ---: | ---: |\n| 1 bis 2 | 4 | 2 | /30 | 2 |\n| 3 bis 6 | 8 | 3 | /29 | 6 |\n| 7 bis 14 | 16 | 4 | /28 | 14 |\n| 15 bis 30 | 32 | 5 | /27 | 30 |\n| 31 bis 62 | 64 | 6 | /26 | 62 |\n| 63 bis 126 | 128 | 7 | /25 | 126 |\n\nBeispiel: 45 nutzbare Hostadressen passen nicht in einen 32er-Block, denn dort bleiben nur 30 nutzbar. Der nächste Block hat 64 Adressen, sechs Hostbits und damit den Präfix /26."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Blockgröße B ist zwei hoch h; B minus zwei muss mindestens dem Hostbedarf H entsprechen; der Präfix p ist 32 minus h",
+          "mathml": "<math display=\"block\"><mtable><mtr><mtd><mi>B</mi><mo>=</mo><msup><mn>2</mn><mi>h</mi></msup></mtd></mtr><mtr><mtd><mi>B</mi><mo>−</mo><mn>2</mn><mo>≥</mo><mi>H</mi></mtd></mtr><mtr><mtd><mi>p</mi><mo>=</mo><mn>32</mn><mo>−</mo><mi>h</mi></mtd></mtr></mtable></math>",
+          "legend": [
+            "H = verlangte nutzbare Hostadressen",
+            "B = gesamte Blockgröße als Zweierpotenz",
+            "h = Hostbits, p = CIDR-Präfixlänge"
+          ]
+        },
+        {
+          "type": "figure",
+          "diagramId": "vlsm-method",
+          "alt": "Fünfstufiger VLSM-Ablauf: Bedarfe absteigend sortieren, passende Zweierpotenz als Blockgröße wählen, Präfix aus den Hostbits ableiten, Netz- und Broadcastgrenzen eintragen und den Restadressraum dokumentieren.",
+          "caption": "Eigene Lernskizze: Größtes Netz zuerst ist die verlässliche Prüfungsstrategie, weil große ausgerichtete Blöcke nicht durch vorher vergebene kleine Netze zerschnitten werden."
+        },
+        {
+          "type": "callout",
+          "kind": "warning",
+          "label": "Nicht nur zählen",
+          "markdown": "Ein passender Block darf nicht an jeder beliebigen Adresse beginnen. Seine Netzadresse muss auf der zugehörigen Blockgrenze liegen. Bei einem /26 innerhalb eines /24 sind das im letzten Oktett beispielsweise 0, 64, 128 und 192."
+        }
+      ]
+    },
+    {
+      "title": "Durchgerechnetes Firmenszenario",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Betrieb erhält **192.168.80.0/24** und benötigt vier getrennte Netze: Produktion 90, Vertrieb 40, Verwaltung 20 und IoT 10 nutzbare Adressen.\n\n1. Die Bedarfe sind bereits absteigend sortiert.\n2. Produktion benötigt 128 Adressen: **/25**.\n3. Vertrieb benötigt 64 Adressen: **/26**.\n4. Verwaltung benötigt 32 Adressen: **/27**.\n5. IoT benötigt 16 Adressen: **/28**.\n\n| Netz | Netzadresse | erster Host | letzter Host | Broadcast | Block |\n| --- | --- | --- | --- | --- | ---: |\n| Produktion /25 | 192.168.80.0 | 192.168.80.1 | 192.168.80.126 | 192.168.80.127 | 128 |\n| Vertrieb /26 | 192.168.80.128 | 192.168.80.129 | 192.168.80.190 | 192.168.80.191 | 64 |\n| Verwaltung /27 | 192.168.80.192 | 192.168.80.193 | 192.168.80.222 | 192.168.80.223 | 32 |\n| IoT /28 | 192.168.80.224 | 192.168.80.225 | 192.168.80.238 | 192.168.80.239 | 16 |\n\nDie belegten Blöcke umfassen 128 + 64 + 32 + 16 = 240 Adressen. Von den 256 Adressen des /24 bleiben 16 frei. Der Rest beginnt nach der letzten Broadcastadresse bei **192.168.80.240** und endet mit dem Ausgangsnetz bei **192.168.80.255**. Da 240 eine gültige /28-Grenze ist, kann dieser Rest als **192.168.80.240/28** reserviert werden."
+        },
+        {
+          "type": "figure",
+          "diagramId": "worked-address-space",
+          "alt": "Der Adressraum 192.168.80.0 bis 192.168.80.255 ist nacheinander in Produktion /25, Vertrieb /26, Verwaltung /27 und IoT /28 aufgeteilt. Der Bereich 192.168.80.240 bis .255 bleibt als /28 frei.",
+          "caption": "Eigene Lernskizze: Jeder folgende Block startet an der ersten Adresse nach dem vorherigen Broadcast; der freie Rest wird genauso exakt begrenzt wie ein belegtes Netz."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Die nächste Netzadresse ist die aktuelle Netzadresse plus Blockgröße; die Broadcastadresse ist die nächste Netzadresse minus eins",
+          "mathml": "<math display=\"block\"><mtable><mtr><mtd><msub><mi>N</mi><mtext>nächst</mtext></msub><mo>=</mo><msub><mi>N</mi><mtext>aktuell</mtext></msub><mo>+</mo><mi>B</mi></mtd></mtr><mtr><mtd><msub><mi>A</mi><mtext>Broadcast</mtext></msub><mo>=</mo><msub><mi>N</mi><mtext>nächst</mtext></msub><mo>−</mo><mn>1</mn></mtd></mtr><mtr><mtd><mn>128</mn><mo>+</mo><mn>64</mn><mo>=</mo><mn>192</mn><mo>;</mo><mspace width=\"0.5em\"/><mn>192</mn><mo>−</mo><mn>1</mn><mo>=</mo><mn>191</mn></mtd></mtr></mtable></math>",
+          "legend": [
+            "N aktuell = Netzadresse des gerade geplanten Blocks",
+            "B = Blockgröße dieses Netzes",
+            "Beispiel Vertrieb: nächstes Netz .192, daher Broadcast .191"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Methode aktiv anwenden",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "vlsm-method-sequence",
+          "title": "Bringe die Planung in eine prüfbare Reihenfolge",
+          "prompt": "Ordne die Arbeitsschritte so, dass Blockgrößen und Grenzen vor der Dokumentation feststehen.",
+          "tag": "Methodentraining",
+          "steps": [
+            {
+              "id": "document-rest",
+              "label": "Verbleibenden Adressraum mit Start, Ende und möglicher CIDR-Zerlegung dokumentieren"
+            },
+            {
+              "id": "sort",
+              "label": "Hostbedarfe absteigend sortieren"
+            },
+            {
+              "id": "choose-block",
+              "label": "Je Bedarf kleinste passende Zweierpotenz und Präfix bestimmen"
+            },
+            {
+              "id": "allocate",
+              "label": "Blöcke vom Anfang des Ausgangsnetzes an gültigen Netzgrenzen zuweisen"
+            },
+            {
+              "id": "record",
+              "label": "Netzadresse, Hostbereich und Broadcast jedes zugewiesenen Blocks eintragen"
+            }
+          ],
+          "expected": [
+            "sort",
+            "choose-block",
+            "allocate",
+            "record",
+            "document-rest"
+          ],
+          "correctFeedback": "Richtig. Die Reihenfolge trennt Bedarf, Blockwahl, Platzierung und Dokumentation und macht jede Grenze kontrollierbar.",
+          "wrongFeedback": "Prüfe den ersten abweichenden Schritt: Sortierung und Blockwahl müssen vor der Platzierung liegen; der Rest lässt sich erst nach dem letzten belegten Block bestimmen."
+        },
+        {
+          "type": "numeric",
+          "id": "vlsm-next-network",
+          "title": "Nächste Netzgrenze berechnen",
+          "prompt": "Ein Block beginnt bei 172.20.8.128/27. Welchen Wert hat das letzte Oktett der nächsten Netzadresse?",
+          "label": "Letztes Oktett der nächsten Netzadresse",
+          "placeholder": "z. B. 160",
+          "expected": 160,
+          "tolerance": 0,
+          "correctFeedback": "Richtig. /27 bedeutet einen 32er-Block: 128 + 32 = 160. Der aktuelle Broadcast ist deshalb 159.",
+          "wrongFeedback": "Bestimme zuerst die Blockgröße von /27. Addiere sie zur aktuellen Netzadresse; ziehe nicht eins ab, denn gesucht ist das nächste Netz und nicht der Broadcast.",
+          "correctMath": {
+            "ariaLabel": "128 plus Blockgröße 32 ergibt 160 als letztes Oktett der nächsten Netzadresse",
+            "mathml": "<math display=\"block\"><mrow><mn>128</mn><mo>+</mo><msup><mn>2</mn><mn>5</mn></msup><mo>=</mo><mn>128</mn><mo>+</mo><mn>32</mn><mo>=</mo><mn>160</mn></mrow></math>",
+            "legend": [
+              "/27 lässt 5 Hostbits",
+              "2 hoch 5 ergibt 32 Adressen",
+              "172.20.8.160 ist das nächste Netz"
+            ]
+          },
+          "misconceptions": [
+            {
+              "value": 159,
+              "feedback": "159 ist die Broadcastadresse des Blocks .128/27. Die nächste Netzadresse folgt erst bei 160."
+            },
+            {
+              "value": 129,
+              "feedback": "129 ist die erste nutzbare Hostadresse im aktuellen Netz, nicht die nächste Netzadresse."
+            },
+            {
+              "value": 32,
+              "feedback": "32 ist die Blockgröße. Gesucht ist die neue Grenze: 128 plus 32."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "vlsm-block-prefix-card",
+              "label": "Block und Präfix",
+              "front": "Wie leitest du aus 50 benötigten Hostadressen Blockgröße und Präfix ab?",
+              "back": "50 plus Netz- und Broadcastadresse benötigen mindestens 52 Adressen. Die nächste Zweierpotenz ist 64, also sechs Hostbits und Präfix /26."
+            },
+            {
+              "id": "vlsm-largest-first-card",
+              "label": "Größtes Netz zuerst",
+              "front": "Warum werden VLSM-Bedarfe in der Prüfungsstrategie absteigend sortiert?",
+              "back": "Große Blöcke brauchen seltenere, weiter auseinanderliegende Netzgrenzen. Werden sie zuerst platziert, können kleinere Zweierpotenz-Blöcke den verbleibenden Raum anschließend ohne Überlappung füllen."
+            },
+            {
+              "id": "vlsm-rest-card",
+              "label": "Restadressraum",
+              "front": "Welche Angaben gehören zu einem sauber dokumentierten Restadressraum?",
+              "back": "Erste freie Adresse, letzte Adresse des Ausgangsnetzes, Anzahl freier Adressen und die Frage, ob der Bereich ein einzelner ausgerichteter CIDR-Block ist oder in mehrere Blöcke zerlegt werden muss."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "vlsm-core-recall",
+          "title": "VLSM ohne Vorlage erklären",
+          "prompt": "Beschreibe aus dem Gedächtnis, wie du aus einem /24 drei verschieden große Netze planst. Verwende die Begriffe Hostbedarf, Blockgröße, Präfix, Netzadresse, Broadcastadresse und Restadressraum.",
+          "label": "Deine VLSM-Methode",
+          "placeholder": "Zuerst sortiere ich … Danach bestimme ich …",
+          "minLength": 120,
+          "model": "Ich sortiere die nutzbaren Hostbedarfe absteigend. Für jeden Bedarf wähle ich die kleinste Zweierpotenz B mit B minus zwei größer oder gleich H und leite aus den Hostbits den Präfix ab. Das größte Netz startet an der ersten freien gültigen Netzgrenze. Broadcast ist die Adresse vor dem nächsten Netz; dazwischen liegen erster und letzter Host. Nach jedem Block addiere ich die Blockgröße. Nach dem letzten Block dokumentiere ich den Rest bis zum Ende des Ausgangsnetzes und prüfe seine CIDR-Grenzen."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check: Prüfungstransfer",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "vlsm-transfer-block-prefix",
+          "requiredObjective": "block-prefix",
+          "question": "Ein neues VLAN benötigt 45 nutzbare IPv4-Adressen. Welcher kleinste gewöhnliche LAN-Block passt?",
+          "options": [
+            {
+              "text": "64 Adressen mit /26",
+              "rationale": "Richtig. Ein 64er-Block besitzt sechs Hostbits und liefert nach Abzug von Netz- und Broadcastadresse 62 nutzbare Adressen.",
+              "correct": true
+            },
+            {
+              "text": "32 Adressen mit /27",
+              "rationale": "Ein /27 umfasst nur 32 Adressen und damit 30 nutzbare Hostadressen. Das reicht nicht für 45.",
+              "correct": false
+            },
+            {
+              "text": "45 Adressen mit /27",
+              "rationale": "IPv4-Subnetze besitzen keine beliebige Blockgröße. Präfixe erzeugen Zweierpotenzen; außerdem gehören Netz- und Broadcastadresse zum Block.",
+              "correct": false
+            },
+            {
+              "text": "128 Adressen mit /25, weil immer auf den nächsten vollen Oktettwert gerundet wird",
+              "rationale": "Ein /25 wäre groß genug, aber nicht der kleinste passende Block. Die nächste passende Zweierpotenz nach 47 benötigten Gesamtadressen ist 64, nicht 128.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "vlsm-transfer-plan",
+          "requiredObjective": "vlsm-plan",
+          "question": "Aus 10.44.12.0/24 werden Netze für 62, 29, 14 und 6 nutzbare Hosts geplant. Welche lückenlose Zuordnung nach der Größtes-zuerst-Methode ist korrekt?",
+          "options": [
+            {
+              "text": "10.44.12.0/26, 10.44.12.64/27, 10.44.12.96/28, 10.44.12.112/29; frei ab 10.44.12.120",
+              "rationale": "Richtig. Die Blockgrößen 64, 32, 16 und 8 grenzen direkt aneinander. Der letzte Block endet bei .119, daher beginnt der Rest bei .120.",
+              "correct": true
+            },
+            {
+              "text": "10.44.12.0/27, 10.44.12.32/27, 10.44.12.64/28, 10.44.12.80/29; frei ab 10.44.12.88",
+              "rationale": "Der erste /27-Block liefert nur 30 nutzbare Adressen und kann den Bedarf von 62 Hosts nicht aufnehmen.",
+              "correct": false
+            },
+            {
+              "text": "10.44.12.0/26, 10.44.12.63/27, 10.44.12.95/28, 10.44.12.111/29; frei ab 10.44.12.119",
+              "rationale": ".63, .95 und .111 sind jeweils Broadcastadressen des vorherigen Blocks. Das nächste Netz beginnt eine Adresse später und muss zusätzlich auf seiner Blockgrenze liegen.",
+              "correct": false
+            },
+            {
+              "text": "10.44.12.0/26, 10.44.12.64/28, 10.44.12.80/28, 10.44.12.96/29; frei ab 10.44.12.104",
+              "rationale": "Ein /28 liefert 14 nutzbare Hostadressen und reicht nicht für den Bedarf von 29. Dafür ist ein /27 erforderlich.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Geltungsbereich",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):** VLSM-Szenario, absteigende Bedarfssortierung und fortlaufende Blockgrenzen.\n- **Prüfungsvorbereitung IHK Bonn:** prüfungstypische Tabelle mit Netz-, Host- und Broadcastfeldern; OCR-Zahlen wurden wegen Erkennungsfehlern nicht übernommen.\n- **IT-Basiswissen (2012):** handlungsorientiertes Adresskonzept mit VLSM- und CIDR-Bezug.\n\nDie Rechenmethode ist für gewöhnliche IPv4-LAN-Subnetze formuliert. Punkt-zu-Punkt-Sonderfälle mit /31 und Einzelrouten mit /32 benötigen eigene Regeln."
+        }
+      ]
+    }
+  ]
+}

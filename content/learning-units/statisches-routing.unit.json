@@ -1,0 +1,232 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "statisches-routing",
+    "slug": "statisches-routing",
+    "title": "Statische Routen planen und prüfen",
+    "description": "Statisches Routing für überschaubare Netze begründet auswählen, fehlende Routen ergänzen und Next Hop sowie Rückweg kontrollieren.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-4",
+    "groupLabel": "Block N4 · Routing und NAT",
+    "itemId": "ga2-4__2",
+    "week": "KW 38",
+    "estimatedMinutes": 23,
+    "relevance": "hoch",
+    "sources": ["itlf6-9-2022", "europa-integratoren-2026"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "static-fit",
+      "label": "für ein Netzwerkszenario begründen, ob statische Routen hinsichtlich Größe, Änderungen und Ausfallsicherheit geeignet sind"
+    },
+    {
+      "id": "static-route-plan",
+      "label": "eine fehlende statische Route mit Zielpräfix und erreichbarem Next Hop ergänzen sowie den Rückweg prüfen"
+    }
+  ],
+  "intro": "Statische Routen werden bewusst von einer Administratorin oder einem Administrator eingetragen. Das macht kleine, stabile Pfade vorhersehbar und erzeugt keinen Austausch von Routinginformationen. Es bedeutet aber auch: Topologieänderungen werden nicht automatisch erkannt, und zu jeder erfolgreichen Kommunikation gehört ein funktionierender Hin- und Rückweg.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf6-9-2022",
+        "sourceLocator": "Chunk itlf6-9-2022:00249, Markdown-Zeilen 7541–7558",
+        "use": "überschaubares Zwei-Router-Szenario und bewusste Entscheidung für manuell gepflegte statische Routen",
+        "reviewStatus": "direkte Hauptquelle für Einsatzkontext; Netz- und Adressbeispiel vollständig neu erstellt"
+      },
+      {
+        "sourceId": "itlf6-9-2022",
+        "sourceLocator": "Chunk itlf6-9-2022:00250, Markdown-Zeilen 7559–7579",
+        "use": "prüfungsnahe Ergänzung einer Routingtabelle mit Ziel, Interface, nächstem Router und Metrik",
+        "reviewStatus": "direkter Übungsbeleg; lückenhafte OCR-Tabelle nicht übernommen"
+      },
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunk europa-integratoren-2026:00331, Markdown-Zeilen 3197–3225",
+        "use": "Definition des manuellen Eintragens als statisches Routing und Abgrenzung zu per Routingprotokoll erzeugten Einträgen",
+        "reviewStatus": "fachlich tragfähiger Direktbeleg; private Abbildung ausgeschlossen"
+      },
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunk europa-integratoren-2026:00514, Markdown-Zeilen 5561–5568",
+        "use": "Aufgabe zum Einpflegen statischer IPv6-Routen und einer Default-Route in einer Mehrrouter-Topologie",
+        "reviewStatus": "nur als adressfamilienübergreifender Aufgabenrahmen genutzt; keine Grafik oder konkrete Buchlösung übernommen"
+      }
+    ],
+    "notes": [
+      "Der Batch-Grafikkandidat itlf10-12-2023:layout:0043:01 zeigt laut OCR einen Betriebssystemvergleich und ist ein eindeutiger Fehltreffer. Er wurde nicht verwendet.",
+      "europa-integratoren-2026:table:0091 ist eine leere Arbeitsvorlage ohne fachliche Lösung; die konkret ausgefüllte Tabelle in europa-integratoren-2026:00840 diente nur zur Plausibilisierung.",
+      "Die Konfiguration bleibt herstellerneutral. Konkrete CLI-Befehle unterscheiden sich zwischen Betriebssystemen und sind nicht Teil der nachgewiesenen Quellenbasis.",
+      "Eine statische Route überwacht allein nicht die Ende-zu-Ende-Erreichbarkeit. Ein Interface- oder Next-Hop-Status kann zur Entfernung einer Route führen, ersetzt aber kein dynamisches Routing über alternative Pfade.",
+      "Agentisch erstellt; deshalb CURATED_DRAFT bis zur menschlichen Fachprüfung."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "static-fit-comparison",
+      "type": "comparison",
+      "title": "Wann statische Routen gut passen",
+      "description": "Stabilität und Kontrolle stehen manueller Pflege und fehlender automatischer Neuberechnung gegenüber.",
+      "items": [
+        {"label": "Stärke", "detail": "vorhersehbarer Pfad, kein Routingprotokoll-Verkehr, kleine Angriffsfläche"},
+        {"label": "passt zu", "detail": "kleinen stabilen Netzen, Stub-Netzen, gezielten Default- oder Sonderrouten"},
+        {"label": "Grenze", "detail": "jede Änderung und jeder neue Zielbereich erfordern konsistente manuelle Pflege"},
+        {"label": "Ausfall", "detail": "ohne zusätzliche Mechanismen wird kein alternativer Pfad automatisch gelernt"}
+      ]
+    },
+    {
+      "id": "static-route-check-flow",
+      "type": "flow",
+      "title": "Eine statische Route vollständig prüfen",
+      "description": "Zielpräfix, direkt erreichbarer Next Hop, Ausgangsinterface und Rückweg werden nacheinander kontrolliert.",
+      "items": [
+        {"label": "entferntes Zielnetz", "detail": "nicht die Hostadresse, sondern Netzadresse plus Präfix eintragen"},
+        {"label": "Next Hop", "detail": "Nachbarrouter wählen, der auf dem Weg zum Ziel liegt"},
+        {"label": "lokale Erreichbarkeit", "detail": "Next Hop muss über ein direkt verbundenes Transitnetz erreichbar sein"},
+        {"label": "Ausgangsinterface", "detail": "muss zum Transitnetz und zum gewählten Nachbarn passen"},
+        {"label": "Rückroute", "detail": "Gegenrouter benötigt ebenfalls einen Weg zurück zum Quellnetz"}
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Statisch oder nicht?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "static-routing-diagnostic",
+          "diagnostic": true,
+          "question": "Zwei feste Standorte sind über genau eine stabile Routerverbindung gekoppelt. Die Netze ändern sich selten. Was spricht für statisches Routing?",
+          "options": [
+            {"text": "Wenige, stabile Routen lassen sich kontrolliert pflegen, ohne ein Routingprotokoll zu betreiben.", "rationale": "Richtig. Kleine, überschaubare und selten veränderte Topologien sind ein typischer Einsatzfall.", "correct": true},
+            {"text": "Statische Routen entdecken jeden neuen Alternativpfad automatisch.", "rationale": "Gerade die automatische Pfadentdeckung fehlt; Änderungen müssen administrativ abgebildet werden.", "correct": false},
+            {"text": "Eine einzige statische Route garantiert automatisch Hin- und Rückweg.", "rationale": "Die Gegenrichtung benötigt ebenfalls einen passenden Eintrag oder eine andere funktionierende Rückroute.", "correct": false},
+            {"text": "Statische Routen funktionieren nur bei direkt angeschlossenen Zielnetzen.", "rationale": "Sie werden typischerweise gerade für entfernte Netze über einen erreichbaren Next Hop verwendet.", "correct": false}
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Manuell bedeutet Verantwortung",
+          "markdown": "Statisches Routing ist **vorhersehbar**, aber nicht selbstheilend. Jede notwendige Ziel- und Rückroute muss bewusst geplant, dokumentiert und getestet werden."
+        }
+      ]
+    },
+    {
+      "title": "Einsatzentscheidung und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Statische Routen eignen sich besonders für kleine Netze mit wenigen Routern, stabile Stub-Netze mit nur einem Ausgang und gezielte Default-Routen. Vorteile sind geringe Protokollkomplexität, kein Austausch von Routing-Updates und ein bewusst festgelegter Pfad.\n\nMit wachsender Topologie steigen jedoch Pflege- und Fehlerrisiko. Eine neue Verbindung oder ein ausgefallener Pfad wird nicht automatisch in allen betroffenen Tabellen verarbeitet. Eine statische Route kann zwar verschwinden, wenn ihr lokales Interface nicht mehr verwendbar ist; daraus entsteht aber nicht automatisch Wissen über eine alternative Ende-zu-Ende-Route."
+        },
+        {
+          "type": "figure",
+          "diagramId": "static-fit-comparison",
+          "alt": "Vier Karten vergleichen Stärke, passende Einsatzfälle, Pflegegrenzen und Ausfallverhalten statischer Routen.",
+          "caption": "Eigene Lernskizze: Die Größe des Netzes allein entscheidet nicht; Änderungshäufigkeit und benötigte Ausfallreaktion gehören dazu."
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Zwei-Router-Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Router R-A verbindet das LAN `192.168.10.0/24` mit dem Transitnetz `10.0.0.0/30` und hat dort `10.0.0.1`. Router R-B besitzt am Transitlink `10.0.0.2` und verbindet das LAN `192.168.20.0/24`.\n\nR-A benötigt für das entfernte Netz eine Route zu `192.168.20.0/24` via `10.0.0.2`. R-B benötigt spiegelbildlich eine Rückroute zu `192.168.10.0/24` via `10.0.0.1`. Die Next Hops liegen im direkt verbundenen Transitnetz. Ohne die Rückroute kann das Hinpaket R-B erreichen, die Antwort aber nicht zuverlässig zum Quellnetz zurückkehren."
+        },
+        {
+          "type": "figure",
+          "diagramId": "static-route-check-flow",
+          "alt": "Fünfstufige Prüfung einer statischen Route von Zielnetz und Next Hop über lokale Erreichbarkeit und Interface bis zur Rückroute.",
+          "caption": "Eigene Lernskizze: Ein syntaktisch plausibler Eintrag ist erst mit erreichbarem Next Hop und geprüftem Rückweg vollständig geplant."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Der Next Hop ist lokal erreichbar, wenn bitweises UND aus Next-Hop-Adresse und Transitmaske der direkt verbundenen Transitnetzadresse entspricht",
+          "mathml": "<math display=\"block\"><mrow><mi>H</mi><mo>∧</mo><msub><mi>M</mi><mi>T</mi></msub><mo>=</mo><msub><mi>N</mi><mi>T</mi></msub></mrow></math>",
+          "legend": ["H = Next-Hop-Adresse", "Mₜ = Maske des lokalen Transitnetzes", "Nₜ = Netzadresse des lokalen Transitnetzes"]
+        },
+        {
+          "type": "sequence",
+          "id": "static-route-guided-sequence",
+          "title": "Fehlende Route ergänzen",
+          "prompt": "Bringe die Arbeitsschritte für R-A in eine prüfungstaugliche Reihenfolge.",
+          "tag": "Geführte Übung",
+          "steps": [
+            {"id": "return", "label": "Auf R-B die Rückroute zum Quellnetz kontrollieren."},
+            {"id": "target", "label": "Das entfernte Zielnetz 192.168.20.0/24 bestimmen."},
+            {"id": "next-hop", "label": "Den Nachbarrouter 10.0.0.2 als Next Hop wählen."},
+            {"id": "reachability", "label": "Prüfen, ob 10.0.0.2 im direkt verbundenen Transitnetz liegt."},
+            {"id": "test", "label": "Hin- und Rückweg mit passenden Tests und Tabellenkontrolle verifizieren."}
+          ],
+          "expected": ["target", "next-hop", "reachability", "return", "test"],
+          "correctFeedback": "Richtig. Ziel und erreichbarer Nachbar werden zuerst geplant; Rückweg und Test schließen die Konfiguration ab.",
+          "wrongFeedback": "Beginne mit dem entfernten Zielnetz. Ein Test ist erst aussagekräftig, nachdem Next-Hop-Erreichbarkeit und Rückroute geprüft wurden."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {"id": "static-definition", "label": "Definition", "front": "Was macht eine Route statisch?", "back": "Sie wird administrativ festgelegt und nicht als Ergebnis eines Routingprotokolls gelernt."},
+            {"id": "static-next-hop", "label": "Next Hop", "front": "Welche Grundbedingung muss ein angegebener Next Hop erfüllen?", "back": "Er muss vom aktuellen Router über einen lokalen, direkt verbundenen Pfad erreichbar sein."},
+            {"id": "static-return", "label": "Rückweg", "front": "Warum reicht eine korrekte Hinroute nicht für erfolgreiche Kommunikation?", "back": "Antwortpakete benötigen ebenfalls eine passende Route zurück zum ursprünglichen Quellnetz."}
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "static-routing-recall",
+          "title": "Planung ohne Vorlage erklären",
+          "prompt": "Erkläre, wann statisches Routing geeignet ist und welche vier Kontrollen du beim Ergänzen einer Route bis zum erfolgreichen Ende-zu-Ende-Test durchführst.",
+          "label": "Deine Erklärung",
+          "placeholder": "Statisches Routing eignet sich …",
+          "minLength": 120,
+          "model": "Statisches Routing passt zu kleinen, stabilen Netzen und Stub-Szenarien, wenn kontrollierte Pfade wichtiger sind als automatische Anpassung. Ich bestimme das entfernte Zielpräfix, wähle einen unmittelbar erreichbaren Next Hop, prüfe das lokale Ausgangsinterface und ergänze beziehungsweise kontrolliere die Rückroute. Danach teste ich beide Richtungen."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check: Transfer",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "static-routing-transfer-fit",
+          "requiredObjective": "static-fit",
+          "question": "Welches Szenario ist am ehesten allein mit statischen Routen beherrschbar?",
+          "options": [
+            {"text": "Ein kleines Außenstellen-LAN mit genau einem stabilen Uplink und seltenen Netzänderungen.", "rationale": "Richtig. Wenige vorhersehbare Ziele und ein eindeutiger Ausgang begrenzen Pflege und Ausfallvarianten.", "correct": true},
+            {"text": "Ein stark wachsendes Campusnetz mit vielen redundanten Routern und täglichen Topologieänderungen.", "rationale": "Hier würden manuelle Pflege und konsistente Ausweichpfade schnell unübersichtlich; dynamischer Austausch ist typischerweise geeigneter.", "correct": false},
+            {"text": "Ein WAN, das bei jedem Linkausfall ohne Zusatzmechanismus automatisch den besten Ersatzpfad berechnen soll.", "rationale": "Eine normale statische Route berechnet keinen neuen Pfad aus der Topologie.", "correct": false},
+            {"text": "Ein Netz, dessen Zielpräfixe noch unbekannt sind und automatisch entdeckt werden müssen.", "rationale": "Unbekannte Ziele lassen sich nicht als konkrete statische Routen vorab eintragen.", "correct": false}
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "static-routing-transfer-plan",
+          "requiredObjective": "static-route-plan",
+          "question": "R-X hat 10.10.0.1/30 am Transitlink zu R-Y mit 10.10.0.2/30. Hinter R-Y liegt 192.168.70.0/24. Welcher Eintrag gehört auf R-X?",
+          "options": [
+            {"text": "Ziel 192.168.70.0/24 via 10.10.0.2; anschließend Rückroute auf R-Y prüfen.", "rationale": "Richtig. Ziel ist das entfernte LAN, der Next Hop der direkt erreichbare Nachbar; der Rückweg bleibt eigener Pflichtschritt.", "correct": true},
+            {"text": "Ziel 10.10.0.2/30 via 192.168.70.0; eine Rückroute ist unnötig.", "rationale": "Zielnetz und Next Hop sind vertauscht. Außerdem benötigt bidirektionale Kommunikation einen Rückweg.", "correct": false},
+            {"text": "Ziel 192.168.70.42/24 via 10.10.0.1; anschließend nur R-X testen.", "rationale": "Die Route soll das Netz 192.168.70.0/24 beschreiben; 10.10.0.1 ist zudem die eigene, nicht die Nachbaradresse.", "correct": false},
+            {"text": "Ziel 0.0.0.0/0 via 192.168.70.1; der Next Hop darf hinter R-Y liegen.", "rationale": "Der angegebene Next Hop ist nicht unmittelbar im lokalen Transitnetz erreichbar und die Default-Route wäre unnötig breit.", "correct": false}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **IT-Berufe Fachstufe – Lernfelder 6–9 (2022):** kleines Zwei-Router-Szenario, manuelle Routenwahl und Routingtabellenübung.\n- **EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):** Definition statischer Einträge und zusätzliche IPv4-/IPv6-Aufgabenrahmen.\n\nAlle Adressen, Aufgaben und Diagramme sind eigenständig erstellt. Private Netzpläne, leere Buchtabellen und der sachfremde Betriebssystem-Grafiktreffer werden nicht veröffentlicht."
+        }
+      ]
+    }
+  ]
+}

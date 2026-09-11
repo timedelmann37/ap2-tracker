@@ -1,0 +1,391 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "hostanzahl-subnetze",
+    "slug": "hostanzahl-subnetze",
+    "title": "Hostanzahl und gleich große Subnetze berechnen",
+    "description": "Aus Präfix und Bedarf die nutzbare Hostanzahl bestimmen sowie ein IPv4-Netz schrittweise in gleich große Subnetze aufteilen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-2",
+    "groupLabel": "Block N2 · IPv4 und Subnetting",
+    "itemId": "ga2-2__3",
+    "week": "KW 36",
+    "estimatedMinutes": 26,
+    "relevance": "hoch",
+    "sources": ["europa-integratoren-2026", "itlf6-9-2022", "ihk-bonn"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "usable-host-count",
+      "label": "zu einem Präfix die nutzbare Hostanzahl berechnen und für einen Gerätebedarf den kleinsten ausreichenden Adressblock wählen"
+    },
+    {
+      "id": "equal-subnet-splitting",
+      "label": "ein IPv4-Netz in die geforderte Anzahl gleich großer Subnetze teilen und deren Netzgrenzen systematisch angeben"
+    }
+  ],
+  "intro": "Zwei Rechnungen werden in Prüfungen oft vermischt: Wie viele Endgeräte passen in ein Subnetz, und wie viele gleich große Subnetze entstehen durch ausgeliehene Bits? Wenn du Hostbits und geliehene Netzbits sauber trennst, folgen Präfix, Kapazität und Schrittweite aus wenigen Formeln.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunk europa-integratoren-2026:00834",
+        "use": "Bedarfsrechnung, Zweierpotenzen, Blockgrößen und Sortierlogik als Grundlage der Präfixwahl",
+        "reviewStatus": "Rechenprinzip geprüft; fehlerhafte OCR-Zellen nicht übernommen und VLSM-Abfolge für diese Einheit ausgeklammert"
+      },
+      {
+        "sourceId": "itlf6-9-2022",
+        "sourceLocator": "Chunk itlf6-9-2022:00184",
+        "use": "Prüfungsnahes Aufteilen eines /23-Netzes in vier gleich große Subnetze einschließlich neuem Präfix und Hostanzahl",
+        "reviewStatus": "relevante Aufgabenstellung geprüft; themenfremde und beschädigte OCR-Passagen ausgeschlossen"
+      },
+      {
+        "sourceId": "ihk-bonn",
+        "sourceLocator": "Chunk ihk-bonn:00364",
+        "use": "IHK-nahe Anforderung, mehrere gleich große Teilnetze plus Reserve zu bilden und die maximale Hostanzahl zu bestimmen",
+        "reviewStatus": "Aufgabenlogik geprüft; tabellarische OCR-Artefakte nicht als fachliche Lösung verwendet"
+      }
+    ],
+    "notes": [
+      "Die Einheit rechnet mit klassischen IPv4-Subnetzen bis /30. Bei /31 und /32 gelten für Punkt-zu-Punkt-Verbindungen beziehungsweise Hostrouten Sonderregeln.",
+      "Gerätebedarf zählt alle tatsächlich zu adressierenden Schnittstellen, zum Beispiel Server, Drucker und Routerinterface. Netz- und Broadcastadresse werden durch die Formel minus 2 bereits berücksichtigt und nicht zusätzlich als Hosts gezählt.",
+      "Die private Tabelle europa-integratoren-2026:table:0198 wird nicht veröffentlicht; beide Diagramme sind eigenständig und code-native."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "capacity-ladder",
+      "type": "comparison",
+      "title": "Kapazitätsleiter für klassische IPv4-Subnetze",
+      "description": "Jedes zusätzliche Hostbit verdoppelt den gesamten Adressblock; zwei Adressen bleiben für Netz und Broadcast reserviert.",
+      "items": [
+        {
+          "label": "/28 · 4 Hostbits",
+          "detail": "16 Adressen insgesamt, 14 für normale Hosts nutzbar."
+        },
+        {
+          "label": "/27 · 5 Hostbits",
+          "detail": "32 Adressen insgesamt, 30 für normale Hosts nutzbar."
+        },
+        {
+          "label": "/26 · 6 Hostbits",
+          "detail": "64 Adressen insgesamt, 62 für normale Hosts nutzbar."
+        },
+        {
+          "label": "/25 · 7 Hostbits",
+          "detail": "128 Adressen insgesamt, 126 für normale Hosts nutzbar."
+        }
+      ]
+    },
+    {
+      "id": "equal-split-workflow",
+      "type": "flow",
+      "title": "Ein /24 in acht gleich große Subnetze teilen",
+      "description": "Für acht Teilnetze werden drei Hostbits zu Netzbits; daraus folgen /27 und eine Schrittweite von 32.",
+      "items": [
+        {
+          "label": "Bedarf · 8 Subnetze",
+          "detail": "Gesucht ist die kleinste Zweierpotenz, die mindestens acht Teilnetze liefert."
+        },
+        {
+          "label": "3 Bits ausleihen",
+          "detail": "2 hoch 3 ergibt genau 8 mögliche Subnetze."
+        },
+        {
+          "label": "Neues Präfix · /27",
+          "detail": "Zum Ausgangspräfix /24 werden die drei geliehenen Bits addiert."
+        },
+        {
+          "label": "Blockgröße · 32",
+          "detail": "Im letzten Oktett ist die Maske 224; 256 minus 224 ergibt 32."
+        },
+        {
+          "label": "Netzadressen auflisten",
+          "detail": ".0, .32, .64, .96, .128, .160, .192 und .224."
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Kapazität nicht schätzen",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "host-count-diagnostic",
+          "diagnostic": true,
+          "question": "Wie viele normale Hostadressen bietet ein klassisches IPv4-Subnetz mit Präfix /27?",
+          "options": [
+            {
+              "text": "27",
+              "rationale": "27 ist die Zahl der Netzbits, nicht die Zahl der nutzbaren Hostadressen.",
+              "correct": false
+            },
+            {
+              "text": "32",
+              "rationale": "32 ist die Gesamtzahl der Adressen im Block. Netz- und Broadcastadresse sind darin enthalten.",
+              "correct": false
+            },
+            {
+              "text": "30",
+              "rationale": "Richtig. Fünf Hostbits ergeben 32 Adressen; nach Abzug von Netz und Broadcast bleiben 30.",
+              "correct": true
+            },
+            {
+              "text": "25",
+              "rationale": "32 minus 27 vermischt Gesamtadressen und Präfixlänge. Maßgeblich sind 32 minus Präfix gleich Hostbits.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Zuerst die Fragestellung markieren",
+          "markdown": "Geht es um **Hosts pro Subnetz** oder um die **Anzahl der Subnetze**? Hosts hängen von den verbleibenden Hostbits ab; Teilnetze von den ausgeliehenen Bits."
+        }
+      ]
+    },
+    {
+      "title": "Hostkapazität aus dem Präfix",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Eine IPv4-Adresse besitzt 32 Bits. Bei Präfix /p bleiben h = 32 − p Hostbits. Diese bilden einen Block mit 2 hoch h Adressen. In klassischen Subnetzen sind Netz- und Broadcastadresse nicht an normale Endgeräte vergebbar."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Hostbits gleich 32 minus Präfix; Gesamtadressen gleich zwei hoch Hostbits; nutzbare Hosts gleich zwei hoch Hostbits minus zwei",
+          "mathml": "<math display=\"block\"><mtable columnalign=\"right center left\" rowspacing=\"0.5em\"><mtr><mtd><mi>h</mi></mtd><mtd><mo>=</mo></mtd><mtd><mn>32</mn><mo>−</mo><mi>p</mi></mtd></mtr><mtr><mtd><mi>A</mi></mtd><mtd><mo>=</mo></mtd><mtd><msup><mn>2</mn><mi>h</mi></msup></mtd></mtr><mtr><mtd><msub><mi>H</mi><mtext>nutzbar</mtext></msub></mtd><mtd><mo>=</mo></mtd><mtd><msup><mn>2</mn><mi>h</mi></msup><mo>−</mo><mn>2</mn></mtd></mtr></mtable></math>",
+          "legend": ["p = Präfixlänge", "h = Hostbits", "A = alle Adressen im Block"]
+        },
+        {
+          "type": "figure",
+          "diagramId": "capacity-ladder",
+          "alt": "Vergleich von /28, /27, /26 und /25 mit vier bis sieben Hostbits und 14, 30, 62 beziehungsweise 126 nutzbaren Hostadressen.",
+          "caption": "Eigene Lernskizze: Eine Stufe nach unten beim Präfix verdoppelt den Block, nicht exakt die nutzbaren Hosts."
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Beispiel /27:** h = 32 − 27 = 5. Damit umfasst der Block 2⁵ = 32 Adressen und 32 − 2 = 30 nutzbare Hostadressen.\n\n**Bedarf rückwärts prüfen:** Für 50 zu adressierende Schnittstellen reichen 5 Hostbits nicht, denn 2⁵ − 2 = 30. Mit 6 Hostbits entstehen 2⁶ − 2 = 62 nutzbare Adressen. Der kleinste ausreichende Adressblock hat daher das Präfix 32 − 6 = /26."
+        }
+      ]
+    },
+    {
+      "title": "Gleich große Subnetze bilden",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Beim Aufteilen eines vorhandenen Netzes werden Hostbits ausgeliehen und zu zusätzlichen Netzbits. Für q geforderte gleich große Subnetze wählst du die kleinste Zahl b mit 2 hoch b mindestens q. Das neue Präfix ist das alte Präfix plus b.\n\nBeispiel: 192.168.40.0/24 soll acht gleich große Subnetze liefern. Drei geliehene Bits erzeugen 2³ = 8 Teilnetze. Das neue Präfix ist /27; fünf Hostbits bleiben. Jedes Teilnetz besitzt 32 Adressen und 30 nutzbare Hosts."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Subnetzanzahl gleich zwei hoch geliehene Bits; neues Präfix gleich altes Präfix plus geliehene Bits; Beispiel acht Subnetze aus Präfix 24 ergeben Präfix 27",
+          "mathml": "<math display=\"block\"><mtable columnalign=\"right center left\" rowspacing=\"0.5em\"><mtr><mtd><mi>S</mi></mtd><mtd><mo>=</mo></mtd><mtd><msup><mn>2</mn><mi>b</mi></msup></mtd></mtr><mtr><mtd><msub><mi>p</mi><mtext>neu</mtext></msub></mtd><mtd><mo>=</mo></mtd><mtd><msub><mi>p</mi><mtext>alt</mtext></msub><mo>+</mo><mi>b</mi></mtd></mtr><mtr><mtd><msup><mn>2</mn><mn>3</mn></msup></mtd><mtd><mo>=</mo></mtd><mtd><mn>8</mn><mo>;</mo><mn>24</mn><mo>+</mo><mn>3</mn><mo>=</mo><mn>27</mn></mtd></mtr></mtable></math>",
+          "legend": ["S = mögliche gleich große Subnetze", "b = geliehene Bits"]
+        },
+        {
+          "type": "figure",
+          "diagramId": "equal-split-workflow",
+          "alt": "Fünfstufiger Ablauf: acht Subnetze fordern, drei Bits ausleihen, Präfix /27 bilden, Blockgröße 32 berechnen und acht Netzadressen auflisten.",
+          "caption": "Eigene Lernskizze: Anzahl, Präfix und Schrittweite werden nacheinander hergeleitet."
+        },
+        {
+          "type": "sequence",
+          "id": "equal-split-practice",
+          "title": "Rechenweg sortieren",
+          "prompt": "Bringe die Schritte für das Teilen von 10.8.0.0/24 in mindestens vier gleich große Subnetze in eine fachlich sichere Reihenfolge.",
+          "tag": "Übung",
+          "steps": [
+            {
+              "id": "split-find-bits",
+              "label": "Kleinste Zweierpotenz suchen: 2² = 4, also zwei Bits ausleihen."
+            },
+            {
+              "id": "split-new-prefix",
+              "label": "Neues Präfix bilden: /24 + 2 = /26."
+            },
+            {
+              "id": "split-block-size",
+              "label": "Blockgröße bestimmen: /26 entspricht im letzten Oktett 192, also 256 − 192 = 64."
+            },
+            {
+              "id": "split-list-networks",
+              "label": "Netzadressen mit Schrittweite 64 notieren: .0, .64, .128 und .192."
+            }
+          ],
+          "expected": ["split-find-bits", "split-new-prefix", "split-block-size", "split-list-networks"],
+          "correctFeedback": "Richtig: Erst die benötigten Bits, dann Präfix und Blockgröße, zuletzt die konkreten Netzgrenzen.",
+          "wrongFeedback": "Leite die Schrittweite nicht vor dem neuen Präfix her: Bedarf → geliehene Bits → neues Präfix → Blockgröße → Netzadressen."
+        }
+      ]
+    },
+    {
+      "title": "Bedarf zählen und Fehler diagnostizieren",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Zähle alle Schnittstellen, die tatsächlich eine Hostadresse benötigen. 30 Arbeitsplätze, 3 IP-Drucker und ein Routerinterface ergeben 34 benötigte Hostadressen. Danach suchst du direkt das kleinste h mit 2 hoch h minus 2 mindestens 34. Sechs Hostbits liefern 62 nutzbare Adressen, also passt /26.\n\nAlternativ kann man zum Gerätebedarf zwei reservierte Adressen addieren und die nächste Zweierpotenz suchen. Beide Wege sind gleichwertig. Vermische sie aber nicht: Wer erst Netz und Broadcast addiert und anschließend nochmals 2 hoch h minus 2 vergleicht, zählt dieselben Reserven doppelt."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Vierunddreißig Geräte benötigen sechs Hostbits, weil dreißig nutzbare Adressen zu wenig und zweiundsechzig ausreichend sind",
+          "mathml": "<math display=\"block\"><mrow><msup><mn>2</mn><mn>5</mn></msup><mo>−</mo><mn>2</mn><mo>=</mo><mn>30</mn><mo>&lt;</mo><mn>34</mn><mo>≤</mo><msup><mn>2</mn><mn>6</mn></msup><mo>−</mo><mn>2</mn><mo>=</mo><mn>62</mn><mo>⇒</mo><mi>p</mi><mo>=</mo><mn>32</mn><mo>−</mo><mn>6</mn><mo>=</mo><mn>26</mn></mrow></math>",
+          "legend": ["34 adressierbare Schnittstellen", "5 Hostbits zu klein", "6 Hostbits passend"]
+        },
+        {
+          "type": "quiz",
+          "id": "double-count-error-practice",
+          "question": "Ein Raum benötigt Adressen für 28 PCs, einen Drucker und ein Routerinterface. Welche Rechnung wählt das kleinste klassische Subnetz korrekt?",
+          "options": [
+            {
+              "text": "30 Geräte; 2⁵ − 2 = 30, daher /27",
+              "rationale": "Richtig. Alle 30 adressierbaren Schnittstellen sind gezählt; Netz und Broadcast sind durch minus 2 bereits berücksichtigt.",
+              "correct": true
+            },
+            {
+              "text": "28 Geräte; 2⁵ − 2 = 30, daher /27",
+              "rationale": "Drucker und Routerinterface benötigen ebenfalls Hostadressen und dürfen nicht fehlen.",
+              "correct": false
+            },
+            {
+              "text": "32 Geräte plus Netz und Broadcast; deshalb reicht /27 nicht und /26 ist nötig",
+              "rationale": "Hier werden Netz und Broadcast doppelt berücksichtigt: zuerst im Bedarf und erneut durch minus 2 in der Kapazitätsformel.",
+              "correct": false
+            },
+            {
+              "text": "30 Geräte; das Präfix lautet /30, weil 30 Adressen benötigt werden",
+              "rationale": "Präfixlänge und Hostanzahl sind nicht identisch. /30 besitzt nur zwei klassische Hostadressen.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "warning",
+          "label": "Nicht automatisch VLSM rechnen",
+          "markdown": "Diese Einheit teilt Netze **gleich groß**. Unterschiedlich große Teilnetze werden mit VLSM geplant; dabei kommt zusätzlich die Reihenfolge vom größten zum kleinsten Bedarf hinzu."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "hosts-prefix-formula",
+              "label": "Hostformel",
+              "front": "Wie berechnest du bei einem klassischen IPv4-Subnetz die nutzbaren Hostadressen aus /p?",
+              "back": "Hostbits h = 32 − p; nutzbare Hosts = 2 hoch h − 2."
+            },
+            {
+              "id": "subnets-borrowed-bits",
+              "label": "Subnetzbits",
+              "front": "Wie viele gleich große Subnetze entstehen durch b ausgeliehene Bits?",
+              "back": "2 hoch b Subnetze; das neue Präfix ist altes Präfix plus b."
+            },
+            {
+              "id": "capacity-count-devices",
+              "label": "Bedarf zählen",
+              "front": "Was zählt zum Hostbedarf und wie behandelst du Netz und Broadcast?",
+              "back": "Alle adressierbaren Schnittstellen zählen, einschließlich Routerinterface. Netz und Broadcast sind keine Hosts und in 2 hoch h minus 2 bereits abgezogen."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "host-subnet-free-recall",
+          "title": "Beide Rechenrichtungen erklären",
+          "prompt": "Erkläre ohne Nachschlagen erst die Präfixwahl für einen gegebenen Hostbedarf und danach das Teilen eines vorhandenen Netzes in eine geforderte Anzahl gleich großer Subnetze.",
+          "label": "Deine Herleitung",
+          "placeholder": "Für den Hostbedarf … Für die Subnetzanzahl …",
+          "minLength": 110,
+          "model": "Für D Geräte suche ich die kleinste Zahl h mit 2 hoch h minus 2 mindestens D und bilde p = 32 minus h. Für q gleich große Subnetze suche ich die kleinste Zahl b mit 2 hoch b mindestens q, addiere b zum Ausgangspräfix, leite daraus die Blockgröße ab und liste die Netzadressen in dieser Schrittweite auf."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check: Prüfungstransfer",
+      "blocks": [
+        {
+          "type": "numeric",
+          "id": "smallest-prefix-transfer",
+          "requiredObjective": "usable-host-count",
+          "title": "Kleinster ausreichender Adressblock",
+          "prompt": "Ein klassisches IPv4-Subnetz muss 50 adressierbare Schnittstellen aufnehmen. Welches Präfix liefert den kleinsten noch ausreichenden Adressblock? Gib nur die Zahl nach dem Schrägstrich ein.",
+          "label": "Präfixlänge",
+          "placeholder": "z. B. 26",
+          "expected": 26,
+          "tolerance": 0,
+          "correctFeedback": "Richtig: 5 Hostbits liefern nur 30 nutzbare Adressen, 6 Hostbits liefern 62. 32 − 6 ergibt /26.",
+          "wrongFeedback": "Vergleiche den Bedarf mit 2 hoch h minus 2. Wähle die kleinste ausreichende Zahl von Hostbits und berechne dann 32 minus h.",
+          "correctMath": {
+            "ariaLabel": "Zwei hoch fünf minus zwei ist dreißig und zu klein; zwei hoch sechs minus zwei ist zweiundsechzig und ausreichend; Präfix ist sechsundzwanzig",
+            "mathml": "<math display=\"block\"><mrow><msup><mn>2</mn><mn>5</mn></msup><mo>−</mo><mn>2</mn><mo>=</mo><mn>30</mn><mo>&lt;</mo><mn>50</mn><mo>≤</mo><mn>62</mn><mo>=</mo><msup><mn>2</mn><mn>6</mn></msup><mo>−</mo><mn>2</mn><mo>;</mo><mn>32</mn><mo>−</mo><mn>6</mn><mo>=</mo><mn>26</mn></mrow></math>",
+            "legend": ["50 Schnittstellen", "6 Hostbits", "Präfix /26"]
+          },
+          "misconceptions": [
+            {
+              "value": 27,
+              "feedback": "/27 besitzt nur 30 nutzbare Hostadressen und reicht für 50 Schnittstellen nicht."
+            },
+            {
+              "value": 25,
+              "feedback": "/25 würde 126 nutzbare Adressen liefern, verwendet aber einen größeren Block als nötig."
+            },
+            {
+              "value": 50,
+              "feedback": "50 ist der Gerätebedarf, keine gültige IPv4-Präfixlänge."
+            }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "equal-split-transfer",
+          "requiredObjective": "equal-subnet-splitting",
+          "question": "10.12.8.0/24 soll in acht gleich große Subnetze geteilt werden. Welche Angabe ist vollständig korrekt?",
+          "options": [
+            {
+              "text": "Neues Präfix /27; Netzadressen im letzten Oktett: 0, 32, 64, 96, 128, 160, 192, 224",
+              "rationale": "Richtig. Drei geliehene Bits ergeben acht Subnetze; /27 hat eine Schrittweite von 32.",
+              "correct": true
+            },
+            {
+              "text": "Neues Präfix /27; Netzadressen im letzten Oktett: 0, 27, 54, 81, 108, 135, 162, 189",
+              "rationale": "Die Präfixzahl ist nicht die Blockgröße. /27 entspricht im letzten Oktett 224 und damit einer Schrittweite von 32.",
+              "correct": false
+            },
+            {
+              "text": "Neues Präfix /26; Netzadressen im letzten Oktett: 0, 64, 128, 192",
+              "rationale": "Das erzeugt nur vier gleich große Subnetze. Für acht müssen drei statt zwei Bits ausgeliehen werden.",
+              "correct": false
+            },
+            {
+              "text": "Neues Präfix /28; Netzadressen im letzten Oktett beginnen 0, 16, 32, 48 und es entstehen genau acht Subnetze",
+              "rationale": "/28 leiht gegenüber /24 vier Bits aus und erzeugt 16 Subnetze, nicht genau acht.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Plausibilitätsprüfung:** Die Zahl der aufgelisteten Teilnetze muss zur Zweierpotenz passen. Außerdem muss jedes neue Subnetz gleich groß sein und vollständig innerhalb des Ausgangsnetzes liegen."
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):** Bedarfs- und Blockgrößenrechnung als fachliche Grundlage.\n- **IT-Berufe – Lernfelder 6–9 (2022):** prüfungsnahe Aufgabe zum gleich großen Teilen eines vorhandenen Netzes.\n- **Prüfungsvorbereitung IHK Bonn:** ergänzendes Aufgabenschema zu Teilnetzen, Reserve und maximaler Hostanzahl.\n\nText, Rechenfälle, Fehlfeedback und Diagramme wurden eigenständig erstellt. Private Buchtabellen und OCR-Rohtext werden nicht veröffentlicht."
+        }
+      ]
+    }
+  ]
+}

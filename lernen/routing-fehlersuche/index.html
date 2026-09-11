@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Routingstörungen anhand von Endpunktkonfiguration, Präfixentscheidung, Routingtabellen, Paketspuren und getrennten Hin- und Rückwegen systematisch diagnostizieren.">
+<title>Routingfehler über Hin- und Rückweg eingrenzen – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=hybrid-1">
+<script defer src="/assets/ap2-space.js?v=hybrid-1"></script>
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="routing-fehlersuche" data-progress-id="ga2-4__10" data-content-revision="2026-09-11.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-4">Block N4 · Routing und NAT</a><span class="sep">›</span>
+    <span class="here">Routingfehler über Hin- und Rückweg eingrenzen</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">Routingfehler über Hin- und Rückweg eingrenzen</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 25 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Eine erfolgreiche Hinroute beweist noch keine funktionierende Verbindung. Jede Anfrage braucht einen Weg zum Ziel und jede Antwort einen eigenen Weg zurück. Gute Routingdiagnose verfolgt deshalb ein konkretes Paket mit Quell- und Zieladresse, prüft an jedem Hop die Entscheidung und betrachtet Filter, NAT und Zustandsführung getrennt von der reinen Route.</p>
+<section class="learning-goals" aria-labelledby="routing-fehlersuche-goals">
+  <h2 id="routing-fehlersuche-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>eine Routingstörung mit Endpunktdaten, lokaler Gatewayprüfung, Route je Hop und beobachtbaren Paketen systematisch eingrenzen</li>
+    <li>falsche Präfixmaske, fehlende Rückroute und problematische asymmetrische Pfade anhand konkreter Beobachtungen unterscheiden und gezielt beheben</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Anfrage angekommen, trotzdem keine Verbindung</h2>
+<section class="quiz" data-quiz="routing-diagnostic" data-correct="1">
+  <h3>Ein Mitschnitt am Server zeigt die Anfrage des Clients. Am Client kommt keine Antwort an. Was ist als Nächstes am aussagekräftigsten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Die Anfrage ist bereits am Ziel angekommen. Der nächste Erkenntnisgewinn liegt bei Antworterzeugung und Rückweg."><span class="m">A</span> Die Hinroute ungeprüft erneut konfigurieren</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Die Beobachtung belegt den Hinweg, nicht aber die Antwort und ihre Rückroute."><span class="m">B</span> Prüfen, ob der Server antwortet und welche Route jeder Rückweg-Hop zur Clientquelle wählt</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Bei einem bereits adressbasiert beobachteten Paket ist Namensauflösung nicht die naheliegende Ursache."><span class="m">C</span> DNS neu konfigurieren, obwohl mit IP-Adressen getestet wurde</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Der Server hat eine Anfrage dieses Clients gesehen. Das schließt nicht alle lokalen Fehler aus, macht aber eine reine Kabelhypothese ohne Rückwegprüfung schwach."><span class="m">D</span> Nur das Netzwerkkabel des Clients austauschen</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">Richtungsbeweis</span><p>Jede Beobachtung gilt zunächst nur für die <strong>beobachtete Richtung</strong>. Anfrage am Server beweist den Hinweg; Antwort am Server beweist noch nicht ihre Ankunft beim Client.</p></aside><h2 class="sec" id="s2"><span class="num">2</span>Eine reproduzierbare Diagnosekette</h2>
+<p>Beginne mit genau einer Verbindung: Quell-IP, Ziel-IP, Protokoll und gegebenenfalls Port. Dokumentiere Sollweg und erwartete Gateways. Prüfe dann in dieser Reihenfolge:</p>
+<ol>
+<li><strong>Quellhost:</strong> Linkstatus, eigene IP, Präfix, Default Gateway und lokale Routen.</li>
+<li><strong>Lokale Entscheidung:</strong> Hält der Host das Ziel wegen seiner Maske für lokal oder sendet er zum Gateway?</li>
+<li><strong>Hinweg:</strong> Auf jedem Router die tatsächlich passende Route, Next Hop, Ausgangsschnittstelle sowie Filter- und NAT-Entscheidung prüfen.</li>
+<li><strong>Ziel:</strong> Kommt die Anfrage an, lauscht der Dienst, und erzeugt das Ziel eine Antwort?</li>
+<li><strong>Rückweg:</strong> Mit vertauschter Quelle und Ziel dieselben Fragen erneut stellen.</li>
+<li><strong>Belegen:</strong> Routingtabellen, Neighbor-/ARP-Zustand, Logs, zielgerichtete Traces und Paketmitschnitte vergleichen.</li>
+</ol>
+<p><code>ping</code> und <code>traceroute</code> oder <code>tracert</code> liefern Hinweise, aber keinen Alleinbeweis: ICMP kann gefiltert sein, und Traces können unvollständig oder asymmetrisch erscheinen. Teste zusätzlich den tatsächlich betroffenen Dienst.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Routingdiagnose folgt dem Paket in beiden Richtungen">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="758" viewBox="0 0 960 758" role="img" aria-labelledby="diagram-routing-diagnostic-loop-title diagram-routing-diagnostic-loop-desc">
+  <title id="diagram-routing-diagnostic-loop-title">Routingdiagnose folgt dem Paket in beiden Richtungen</title>
+  <desc id="diagram-routing-diagnostic-loop-desc">Sechsstufiger Diagnoseablauf von exakter Verbindung und Quellhost über Hinweg und Zielhost zum separat geprüften Rückweg und dem Vergleich von Routen, Logs und Paketspuren.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Routingdiagnose folgt dem Paket in beiden Richtungen</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Verbindung festlegen</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Quelle, Ziel, Protokoll und Port statt nur pauschal das Netz</tspan><tspan x="178" dy="25">prüfen</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Quellhost prüfen</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Link, IP, Präfix, Gateway und Entscheidung lokal oder entfernt</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Hinweg je Hop</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">passende Route, längstes Präfix, Next Hop, Interface und</tspan><tspan x="178" dy="25">Filter/NAT</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Zielhost prüfen</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Ankunft, Dienst, lokales Firewallverhalten und</tspan><tspan x="178" dy="25">Antworterzeugung</tspan></text><path d="M480 472v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 494 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="512" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="541" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Rückweg separat</tspan></text><text x="178" y="568" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Quelle und Ziel vertauschen; Route, Gateway, Filter und NAT</tspan><tspan x="178" dy="25">erneut prüfen</tspan></text><path d="M480 580v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 602 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="620" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="649" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Beleg vergleichen</tspan></text><text x="178" y="676" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Routen, Logs und Mitschnitte zeigen die erste Abweichung</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Nach dem Ziel beginnt keine Vermutung, sondern dieselbe Routenprüfung in Gegenrichtung.</figcaption>
+</figure><h2 class="sec" id="s3"><span class="num">3</span>Beispiel: Die fehlende Rückroute</h2>
+<p>Client A <code>10.10.10.20/24</code> nutzt Router A <code>10.10.10.1</code>. Server B <code>10.20.20.50/24</code> nutzt Router B <code>10.20.20.1</code>. Die Router sind über <code>10.255.0.0/30</code> verbunden.</p>
+<p>Router A besitzt die Route <code>10.20.20.0/24 via 10.255.0.2</code>. Die Anfrage erreicht daher den Server. Router B besitzt aber keine Route zu <code>10.10.10.0/24</code>; seine Default Route zeigt zum ISP. Der Server erzeugt eine Antwort und sendet sie an Router B, doch Router B leitet sie falsch zum ISP.</p>
+<p>Die gezielte Korrektur ist eine Route zu <code>10.10.10.0/24 via 10.255.0.1</code> auf Router B oder eine gleichwertig gelernte Route. Eine zusätzliche Hinroute auf Router A behebt diesen konkreten Fehler nicht. Danach werden Rückroute, Filter und tatsächliche Pakete erneut geprüft.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Die Anfrage kommt an, die Antwort nimmt den falschen Ausgang">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-topology" xmlns="http://www.w3.org/2000/svg" width="960" height="560" viewBox="0 0 960 560" role="img" aria-labelledby="diagram-missing-return-route-title diagram-missing-return-route-desc">
+  <title id="diagram-missing-return-route-title">Die Anfrage kommt an, die Antwort nimmt den falschen Ausgang</title>
+  <desc id="diagram-missing-return-route-desc">Client A erreicht über Router A und Router B den Server B. Router B hat keine Rückroute zum Clientnetz und sendet die Antwort fälschlich über seine Default Route zum ISP.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Die Anfrage kommt an, die Antwort nimmt den falschen Ausgang</tspan></text>
+  <g class="diagram-zone zone-source"><rect x="25" y="90" width="345" height="360" rx="18"/><text x="41" y="117">Standort A</text></g><g class="diagram-zone zone-target"><rect x="430" y="90" width="505" height="220" rx="18"/><text x="446" y="117">Standort B</text></g><g class="diagram-zone zone-error"><rect x="680" y="345" width="255" height="105" rx="18"/><text x="696" y="372">Falscher Rückweg</text></g><g class="diagram-edge forward"><path d="M120 220 L315 220"/><text class="diagram-edge-label" x="217.5" y="212" text-anchor="middle">Gateway</text></g><g class="diagram-edge forward"><path d="M315 220 L555 220"/><text class="diagram-edge-label" x="435" y="212" text-anchor="middle">Hinweg korrekt</text></g><g class="diagram-edge local"><path d="M555 220 L815 220"/><text class="diagram-edge-label" x="685" y="212" text-anchor="middle">Anfrage + Antwort</text></g><g class="diagram-edge error"><path d="M555 220 L815 395"/><text class="diagram-edge-label" x="685" y="299.5" text-anchor="middle">Antwort fehlgeleitet</text></g><g class="diagram-node client" transform="translate(120 220)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="120" y="215" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="120" dy="0">Client A</tspan></text><text class="diagram-node-detail" x="120" y="239" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="120" dy="0">10.10.10.20/24</tspan></text><g class="diagram-node router" transform="translate(315 220)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="315" y="215" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="315" dy="0">Router A</tspan></text><text class="diagram-node-detail" x="315" y="239" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="315" dy="0">Hinroute vorhanden</tspan></text><g class="diagram-node router" transform="translate(555 220)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="555" y="215" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="555" dy="0">Router B</tspan></text><text class="diagram-node-detail" x="555" y="239" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="555" dy="0">Rückroute fehlt</tspan></text><g class="diagram-node server" transform="translate(815 220)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="815" y="215" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="815" dy="0">Server B</tspan></text><text class="diagram-node-detail" x="815" y="239" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="815" dy="0">10.20.20.50/24</tspan></text><g class="diagram-node internet" transform="translate(815 395)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="815" y="390" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="815" dy="0">ISP-Next-Hop</tspan></text><text class="diagram-node-detail" x="815" y="414" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="815" dy="0">Default Route</tspan></text>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Der erste abweichende Hop liegt auf dem Rückweg bei Router B.</figcaption>
+</figure><section class="quiz" data-quiz="routing-return-practice" data-correct="1">
+  <h3>Welche einzelne Beobachtung belegt in diesem Fall am direktesten die fehlende Rückroute?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Das erklärt den funktionierenden Hinweg, belegt aber noch nicht die Entscheidung von Router B für die Antwort."><span class="m">A</span> Router A hat eine spezifische Route zum Servernetz</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Damit ist der erste falsche Routenentscheid für die konkrete Rückzieladresse sichtbar."><span class="m">B</span> Die Routingtabelle von Router B wählt für 10.10.10.20 nur die Default Route zum ISP</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein DNS-Name sagt nichts darüber aus, welchen Next Hop Router B für das Clientnetz wählt."><span class="m">C</span> Der Server besitzt einen DNS-Namen</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Das prüft nur den lokalen IP-Stack des Clients und nicht die Rückroute am entfernten Router."><span class="m">D</span> Der Client kann sein eigenes Loopback-Interface pingen</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Drei Fehlerbilder unterscheiden</h2>
+<div class="twrap"><table class="knowledge-table">
+<thead>
+<tr>
+<th>Fehlerbild</th>
+<th>Typische Beobachtung</th>
+<th>Gezielte Prüfung</th>
+<th>Geeignete Korrektur</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>falsches Präfix am Host</td>
+<td>Ein tatsächlich entferntes Ziel wird für lokal gehalten; der Host sucht es direkt per Neighbor Discovery oder ARP statt das Gateway zu nutzen</td>
+<td>IP und Präfix mit Sollnetz vergleichen; lokale Routenentscheidung ansehen</td>
+<td>korrekten Präfix konfigurieren, nicht pauschal eine Routerroute ergänzen</td>
+</tr>
+<tr>
+<td>fehlende Rückroute</td>
+<td>Anfrage erreicht das Ziel, Antwort verlässt Zielnetz aber über falschen oder keinen Next Hop</td>
+<td>Route zur ursprünglichen Quell-IP auf Zielhost und jedem Rückweg-Router prüfen</td>
+<td>spezifische oder dynamisch gelernte Rückroute ergänzen</td>
+</tr>
+<tr>
+<td>asymmetrischer Pfad</td>
+<td>Hin- und Rückweg nutzen unterschiedliche Übergänge; ein zustandsbehaftetes Gerät sieht nur eine Richtung</td>
+<td>Traces, Routingentscheidungen und Zustands-/Firewalllogs beider Richtungen vergleichen</td>
+<td>Routing oder Policy so anpassen, dass alle beteiligten Systeme den Pfad unterstützen</td>
+</tr>
+</tbody></table></div>
+<p>Asymmetrie allein ist kein Beweis für einen Fehler. Sie wird erst relevant, wenn Stateful Firewalling, NAT, Quellvalidierung, unterschiedliche MTU oder betriebliche Beobachtbarkeit einen konsistenten Pfad verlangen.</p>
+<aside class="callout warn"><span class="lbl">Nicht am Symptom reparieren</span><p>Eine zusätzliche Default Route kann einen falschen Präfix am Host nicht korrigieren. Eine neue Hinroute löst keine fehlende Rückroute. Benenne zuerst den <strong>ersten abweichenden Entscheid</strong> und ändere genau dort.</p></aside><h2 class="sec" id="s5"><span class="num">5</span>Geführte Übung: Den ersten Fehler finden</h2>
+<section class="sequence-practice" data-sequence="routing-diagnostic-sequence" data-expected="define-flow,source-config,forward-hops,target,return" data-correct-feedback="Richtig. Die Diagnose folgt einer genau definierten Verbindung bis zum Ziel und beginnt dort mit vertauschten Endpunkten für den Rückweg." data-wrong-feedback="Definiere zuerst die konkrete Verbindung. Ohne Quelle, Ziel und Port sind Traces und Logs schwer vergleichbar; der Rückweg folgt erst nach dem Nachweis am Ziel." aria-labelledby="routing-diagnostic-sequence-title">
+  <div class="lab-heading"><div><h3 id="routing-diagnostic-sequence-title">Ordne die Beweisschritte</h3><p>Ein Client meldet, ein entfernter HTTPS-Dienst sei nicht erreichbar. Bringe die ersten Prüfschritte in eine belastbare Reihenfolge.</p></div><span class="lab-tag">Geführte Übung</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="return" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Nach nachgewiesener Zielankunft den Rückweg zur ursprünglichen Quell-IP separat verfolgen</span></li>
+    <li data-step="define-flow" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Quell-IP, Ziel-IP, TCP-Port und erwarteten Sollweg festhalten</span></li>
+    <li data-step="source-config" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Link, Adresse, Präfix, Gateway und lokale Routenentscheidung am Client prüfen</span></li>
+    <li data-step="forward-hops" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Route, Next Hop, Filter und NAT des Hinwegs Hop für Hop prüfen</span></li>
+    <li data-step="target" tabindex="-1"><span class="step-position" data-step-position>5</span><span>Am Ziel Eingang der Anfrage, lokalen Filter, Dienst und Antworterzeugung prüfen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><section class="quiz" data-quiz="routing-mask-practice" data-correct="0">
+  <h3>Client 10.10.10.20 soll über Gateway 10.10.10.1 das Ziel 10.10.20.50 erreichen. Statt /24 ist /16 konfiguriert, und der Client sendet ARP-Anfragen für 10.10.20.50. Was ist die beste Diagnose?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Mit /16 wirkt 10.10.20.50 lokal; der Client versucht direkte Layer-2-Auflösung statt zum Gateway zu senden."><span class="m">A</span> Der Client hält das entfernte Ziel wegen des zu breiten Präfixes fälschlich für lokal</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die Störung tritt bereits bei der lokalen Zielklassifikation des Clients auf. Der Router erhält das Paket noch nicht."><span class="m">B</span> Am Ziel fehlt zwingend eine Rückroute, weil jede ARP-Anfrage vom Ziel beantwortet wird</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Im Fall wird direkt mit IPv4-Adressen gearbeitet; die ARP-Beobachtung erklärt sich aus dem falschen Präfix."><span class="m">C</span> DNS liefert eine falsche IPv6-Adresse</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Asymmetrie beschreibt unterschiedliche Wege in zwei Richtungen. Hier scheitert schon die lokale Entscheidung vor dem Gateway."><span class="m">D</span> Asymmetrisches Routing ist bewiesen, obwohl kein Router passiert wurde</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Karteikarten und freier Abruf</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="routing-direction-card" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum beweist eine am Ziel sichtbare Anfrage noch keine funktionierende Verbindung?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Das Ziel muss eine Antwort erzeugen, und diese braucht eine eigene passende Route, Filterentscheidung und gegebenenfalls NAT-/Firewall-Zuordnung zurück zur Quelle.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="routing-mask-card" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wie kann ein zu breites Präfix eine entfernte Verbindung verhindern?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Der Host hält das entfernte Ziel fälschlich für lokal und versucht direkte ARP- oder Neighbor-Auflösung, statt das Paket an sein Default Gateway zu senden.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="routing-asymmetry-card" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wann wird ein unterschiedlicher Hin- und Rückweg problematisch?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Wenn ein beteiligtes System beide Richtungen für Zustand, NAT, Policy, Quellvalidierung, MTU oder verlässliche Beobachtung zusammenführen muss. Asymmetrie allein ist nicht automatisch ein Fehler.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Zwei Richtungen“:</span><button type="button" data-card-id="routing-direction-card" data-card-rate="known">gewusst</button><button type="button" data-card-id="routing-direction-card" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="routing-direction-card"></span></div>
+<div class="card-rating"><span>Karte „Falsche Maske“:</span><button type="button" data-card-id="routing-mask-card" data-card-rate="known">gewusst</button><button type="button" data-card-id="routing-mask-card" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="routing-mask-card"></span></div>
+<div class="card-rating"><span>Karte „Asymmetrie“:</span><button type="button" data-card-id="routing-asymmetry-card" data-card-rate="known">gewusst</button><button type="button" data-card-id="routing-asymmetry-card" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="routing-asymmetry-card"></span></div><section class="recall-practice" data-recall="routing-troubleshooting-recall" data-min-length="170" aria-labelledby="routing-troubleshooting-recall-title">
+  <div class="recall-prompt"><h3 id="routing-troubleshooting-recall-title">Eine Routingstörung ohne Checkliste untersuchen</h3><p>Beschreibe eine vollständige Diagnose vom Quellhost bis zum Ziel und zurück. Erkläre, wie du falsche Maske, fehlende Rückroute und problematische Asymmetrie jeweils belegst.</p></div>
+  <label class="sr-only" for="routing-troubleshooting-recall-answer">Deine Diagnosekette</label>
+  <textarea id="routing-troubleshooting-recall-answer" data-recall-input rows="4" placeholder="Zuerst definiere ich … Am Quellhost …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Ich definiere Quelle, Ziel, Protokoll und Port. Am Quellhost prüfe ich Link, IP, Präfix, Gateway und die Entscheidung lokal oder entfernt. Dann verfolge ich die passende Route, den Next Hop sowie Filter und NAT je Hinweg-Hop bis zum Ziel und prüfe Dienst und Antwort. Mit vertauschten Endpunkten prüfe ich den Rückweg. Ein falsches Präfix zeigt sich an einer falschen lokalen Zustellung, eine fehlende Rückroute an der Route zur Quell-IP und problematische Asymmetrie durch unterschiedliche Pfade plus Zustands- oder Policyfehler.</div>
+</section><h2 class="sec" id="s7"><span class="num">7</span>Lernziel-Check: Prüfungstransfer</h2>
+<section class="quiz" data-quiz="routing-transfer-workflow" data-correct="1" data-required-objective="diagnostic-workflow">
+  <h3>Welche Vorgehensweise liefert bei einer unbekannten Routingstörung die stärkste Beweiskette?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Mehrere Änderungen zerstören die Zuordnung zwischen Ursache und Wirkung; ping allein bildet den betroffenen Dienst nicht vollständig ab."><span class="m">A</span> Mehrere Routen gleichzeitig ändern und anschließend nur ping ausführen</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Diese Reihenfolge trennt lokale Konfiguration, Routing, Filter/NAT, Zielverhalten und beide Richtungen mit überprüfbaren Beobachtungen."><span class="m">B</span> Eine konkrete Verbindung definieren, Endpunktentscheidung prüfen, Hinweg je Hop verfolgen, Zielbeobachtung sichern und den Rückweg mit vertauschten Endpunkten wiederholen</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein adressbasiert reproduzierbarer Routingfehler benötigt zuerst eine IP-Pfadprüfung, nicht eine unbelegte DNS-Änderung."><span class="m">C</span> Sofort DNS neu starten, auch wenn der Fehler mit Ziel-IP reproduzierbar ist</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Jeder Hop und besonders der Rückweg kann eine andere Routingtabelle und spezifischere Route verwenden."><span class="m">D</span> Nur die Default Route des Quellrouters ansehen und daraus beide Richtungen ableiten</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="routing-transfer-fault" data-correct="1" data-required-objective="path-faults">
+  <h3>Ein TCP-SYN erreicht den Server über Firewall A. Der Server antwortet, aber die Antwort läuft wegen einer gleichwertigen Route über Firewall B, die keinen Verbindungszustand kennt und verwirft. Welche Diagnose und Maßnahme passen?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Der Hinweg und die Antworterzeugung funktionieren. Das Problem entsteht erst durch den abweichenden zustandsbehafteten Rückweg."><span class="m">A</span> Falsches Hostpräfix; am Client muss /16 statt /24 gesetzt werden</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Nicht die Asymmetrie als solche, sondern die fehlende Zustandskenntnis von Firewall B verursacht den Abbruch."><span class="m">B</span> Problematische Asymmetrie; Routing oder Firewallzustand so gestalten, dass beide Richtungen konsistent verarbeitet werden</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="DNS-Records steuern nicht den Routerpfad einer bereits adressierten TCP-Antwort."><span class="m">C</span> Fehlende DNS-Zone; ein PTR-Record zwingt die Antwort über Firewall A</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Der SYN erreicht den Server bereits über Firewall A. Eine zusätzliche Default Route kann die Asymmetrie sogar verstärken."><span class="m">D</span> Fehlende Hinroute; Router vor Firewall A muss eine zweite Default Route erhalten</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s8"><span class="num">8</span>Quellen und Geltungsbereich</h2>
+<ul>
+<li><strong>EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):</strong> Netzplan und Routingtabellen mit lokalen, entfernten und Default-Routen.</li>
+<li><strong>Prüfungsvorbereitung IHK Bonn:</strong> bidirektionales Standort-Szenario und statische Routen auf beiden Routern.</li>
+<li><strong>IT-Basiswissen (2012):</strong> systematische Netzwerkdiagnose mit Endpunktdaten, Gateway, ping, tracert und dokumentierten Prüfroutinen.</li>
+</ul>
+<p>Die Einheit bleibt protokoll- und herstellerneutral. Konkrete Kommandos, ECMP-Verhalten, Policy-Based Routing, dynamische Routingprotokolle und Firewall-Cluster müssen an der eingesetzten Plattform geprüft werden.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-4"><span class="d">zurück zu</span><span class="t">Block N4 · Routing und NAT</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N4 · Routing und NAT</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Anfrage angekommen, trotzdem keine Verbindung</a></li>
+<li><a href="#s2" data-t="s2">Eine reproduzierbare Diagnosekette</a></li>
+<li><a href="#s3" data-t="s3">Beispiel: Die fehlende Rückroute</a></li>
+<li><a href="#s4" data-t="s4">Drei Fehlerbilder unterscheiden</a></li>
+<li><a href="#s5" data-t="s5">Geführte Übung: Den ersten Fehler finden</a></li>
+<li><a href="#s6" data-t="s6">Karteikarten und freier Abruf</a></li>
+<li><a href="#s7" data-t="s7">Lernziel-Check: Prüfungstransfer</a></li>
+<li><a href="#s8" data-t="s8">Quellen und Geltungsbereich</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-4">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

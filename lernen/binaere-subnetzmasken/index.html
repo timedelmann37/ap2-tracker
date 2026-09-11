@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Oktette mit den acht Zweierpotenzen umrechnen und CIDR-Präfixe sicher zwischen Binär- und Dezimalschreibweise übertragen.">
+<title>Binäre Subnetzmasken schnell lesen – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=hybrid-1">
+<script defer src="/assets/ap2-space.js?v=hybrid-1"></script>
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="binaere-subnetzmasken" data-progress-id="ga2-2__7" data-content-revision="2026-09-11.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-2">Block N2 · IPv4 und Subnetting</a><span class="sep">›</span>
+    <span class="here">Binäre Subnetzmasken schnell lesen</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">Binäre Subnetzmasken schnell lesen</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 20 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Subnetting wird schnell, sobald ein Oktett nicht mehr wie acht einzelne Rätsel aussieht. Jede Position besitzt ein festes Gewicht: 128, 64, 32, 16, 8, 4, 2 und 1. Bei einer gültigen Subnetzmaske stehen die Einsen lückenlos links. Deshalb muss man nur die wenigen möglichen Grenzwerte 0, 128, 192, 224, 240, 248, 252, 254 und 255 sicher erkennen.</p>
+<section class="learning-goals" aria-labelledby="binaere-subnetzmasken-goals">
+  <h2 id="binaere-subnetzmasken-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>ein IPv4-Oktett mit den Gewichten 128 bis 1 sicher zwischen Binär und Dezimal umrechnen</li>
+    <li>ein CIDR-Präfix in eine gültige dezimale Subnetzmaske übertragen und umgekehrt</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Eine Maske erkennen</h2>
+<section class="quiz" data-quiz="binary-mask-diagnostic" data-correct="0">
+  <h3>Welches Bitmuster entspricht im letzten Oktett einer gültigen Subnetzmaske?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Die Einsen stehen lückenlos links, danach folgen nur Nullen."><span class="m">A</span> 11110000</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Nach der ersten Null erscheint erneut eine Eins. Das ist keine zusammenhängende Präfixmaske."><span class="m">B</span> 11011000</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Bei einer Subnetzmaske beginnen gesetzte Präfixbits links, nicht rechts."><span class="m">C</span> 00111111</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Wechselnde Bits beschreiben keine gültige zusammenhängende Subnetzmaske."><span class="m">D</span> 10101010</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">Maskenregel</span><p>In der Maske kommt der Wechsel <strong>höchstens einmal</strong>: erst Einsen, dann Nullen.</p></aside><h2 class="sec" id="s2"><span class="num">2</span>Oktette mit Gewichten umrechnen</h2>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Die acht Gewichte eines Oktetts">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-layers" xmlns="http://www.w3.org/2000/svg" width="960" height="512" viewBox="0 0 960 512" role="img" aria-labelledby="diagram-binary-weights-title diagram-binary-weights-desc">
+  <title id="diagram-binary-weights-title">Die acht Gewichte eines Oktetts</title>
+  <desc id="diagram-binary-weights-desc">Die acht Bitgewichte eines IPv4-Oktetts sind in vier Zweiergruppen von 128 und 64 bis 2 und 1 dargestellt.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Die acht Gewichte eines Oktetts</tspan></text>
+  <g><rect class="diagram-row" x="42" y="82" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="82" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="130" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Bit 7–6</tspan></text><text x="194" y="116" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">128 und 64 · zusammen 192</tspan></text></g><g><rect class="diagram-row" x="42" y="182" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="182" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="230" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Bit 5–4</tspan></text><text x="194" y="216" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">32 und 16 · mit den ersten beiden zusammen 240</tspan></text></g><g><rect class="diagram-row" x="42" y="282" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="282" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="330" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Bit 3–2</tspan></text><text x="194" y="316" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">8 und 4 · fortlaufende Einsen ergeben 248 beziehungsweise</tspan><tspan x="194" dy="25">252</tspan></text></g><g><rect class="diagram-row" x="42" y="382" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="382" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="430" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Bit 1–0</tspan></text><text x="194" y="416" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">2 und 1 · fortlaufende Einsen ergeben 254 beziehungsweise</tspan><tspan x="194" dy="25">255</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Jedes gesetzte Bit steuert genau sein Positionsgewicht zur Dezimalzahl bei.</figcaption>
+</figure><p>Für das Bitmuster 10110100 werden die Gewichte der gesetzten Positionen addiert: 128 + 32 + 16 + 4 = 180. Umgekehrt wird eine Dezimalzahl von links zerlegt: Für 224 passt 128, Rest 96; danach 64, Rest 32; danach 32, Rest 0. Das Ergebnis ist 11100000.</p>
+<div class="math-display" role="group" aria-label="Binär 10110100 entspricht 128 plus 32 plus 16 plus 4 gleich 180"><math display="block" aria-label="Binär 10110100 entspricht 128 plus 32 plus 16 plus 4 gleich 180"><mrow><msub><mrow><mn>10110100</mn></mrow><mn>2</mn></msub><mo>=</mo><mn>128</mn><mo>+</mo><mn>32</mn><mo>+</mo><mn>16</mn><mo>+</mo><mn>4</mn><mo>=</mo><mn>180</mn></mrow></math><div class="math-legend"><span>Nullbits tragen nichts zur Summe bei</span><span>ein Oktett liegt immer zwischen 0 und 255</span></div></div><section class="numeric-practice transfer-number" data-numeric-practice="binary-octet-practice" data-expected="208" data-tolerance="0" data-correct-feedback="Richtig. 128 plus 64 plus 16 ergibt 208." data-wrong-feedback="Lege 128, 64, 32, 16, 8, 4, 2 und 1 unter die Bits und addiere nur die Positionen mit einer Eins.">
+  <h3>Binärmuster auswerten</h3>
+  <p>Welchen Dezimalwert hat das Oktett 11010000?</p>
+  <label for="binary-octet-practice-answer">Dezimalwert</label>
+  <div class="answer-row"><input id="binary-octet-practice-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="0 bis 255"><button type="button" class="lbtn" data-numeric-check>Antwort prüfen</button></div><p>  <template data-numeric-feedback-for="192">Du hast nur 128 und 64 addiert; das gesetzte 16er-Bit fehlt.</template>
+  <template data-numeric-feedback-for="224">224 wäre 11100000. Im gegebenen Muster ist das 32er-Bit null und das 16er-Bit eins.</template>
+  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p></p>
+</section><h2 class="sec" id="s3"><span class="num">3</span>CIDR und Dezimalmaske verbinden</h2>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Grenzwerte einer gültigen Maskenposition">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-mask-boundaries-title diagram-mask-boundaries-desc">
+  <title id="diagram-mask-boundaries-title">Grenzwerte einer gültigen Maskenposition</title>
+  <desc id="diagram-mask-boundaries-desc">Die neun möglichen Werte eines teilweise gesetzten Maskenoktetts von 0 über 128, 192 und 224 bis 255 mit den zugehörigen Bitmustern.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Grenzwerte einer gültigen Maskenposition</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">0 / 128 / 192</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">00000000 · 10000000 ·</tspan><tspan x="64" dy="30">11000000</tspan></text></g><g><rect class="diagram-row" x="340" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="362" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="362" dy="0">224 / 240 / 248</tspan></text><text x="362" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="362" dy="0">11100000 · 11110000 ·</tspan><tspan x="362" dy="30">11111000</tspan></text></g><g><rect class="diagram-row" x="638" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="660" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="660" dy="0">252 / 254 / 255</tspan></text><text x="660" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="660" dy="0">11111100 · 11111110 ·</tspan><tspan x="660" dy="30">11111111</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Diese neun Werte ersetzen das Auswendiglernen beliebiger Dezimalzahlen.</figcaption>
+</figure><p>Das Präfix /27 setzt 24 Bits in den ersten drei Oktetten und noch drei Bits im vierten Oktett. Drei gesetzte Bits ergeben dort 128 + 64 + 32 = 224. Die Maske lautet 255.255.255.224. Umgekehrt zählt man bei 255.255.240.0: 8 + 8 + 4 gesetzte Bits ergeben /20.</p>
+<div class="math-display" role="group" aria-label="Präfix 27 ist 8 plus 8 plus 8 plus 3 gesetzte Bits; letztes Maskenoktett ist 128 plus 64 plus 32 gleich 224"><math display="block" aria-label="Präfix 27 ist 8 plus 8 plus 8 plus 3 gesetzte Bits; letztes Maskenoktett ist 128 plus 64 plus 32 gleich 224"><mrow><mn>27</mn><mo>=</mo><mn>8</mn><mo>+</mo><mn>8</mn><mo>+</mo><mn>8</mn><mo>+</mo><mn>3</mn><mo>;</mo><mspace width="0.5em"/><mn>128</mn><mo>+</mo><mn>64</mn><mo>+</mo><mn>32</mn><mo>=</mo><mn>224</mn></mrow></math><div class="math-legend"><span>/27 = 27 zusammenhängende Einsbits</span><span>Maske 255.255.255.224</span></div></div><h2 class="sec" id="s4"><span class="num">4</span>Karteikarten und freier Abruf</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="binary-mask-weights" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wie lauten die acht Bitgewichte eines Oktetts?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>128, 64, 32, 16, 8, 4, 2 und 1.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="binary-mask-values" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche Dezimalwerte kann ein teilweise gesetztes Maskenoktett annehmen?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>0, 128, 192, 224, 240, 248, 252, 254 oder 255.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="binary-mask-cidr" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was zählt die Zahl hinter dem Schrägstrich?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Die Anzahl der von links zusammenhängend gesetzten Netzbits in der 32-Bit-Subnetzmaske.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Bitgewichte“:</span><button type="button" data-card-id="binary-mask-weights" data-card-rate="known">gewusst</button><button type="button" data-card-id="binary-mask-weights" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="binary-mask-weights"></span></div>
+<div class="card-rating"><span>Karte „Maskenwerte“:</span><button type="button" data-card-id="binary-mask-values" data-card-rate="known">gewusst</button><button type="button" data-card-id="binary-mask-values" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="binary-mask-values"></span></div>
+<div class="card-rating"><span>Karte „CIDR“:</span><button type="button" data-card-id="binary-mask-cidr" data-card-rate="known">gewusst</button><button type="button" data-card-id="binary-mask-cidr" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="binary-mask-cidr"></span></div><section class="recall-practice" data-recall="binary-mask-core-recall" data-min-length="90" aria-labelledby="binary-mask-core-recall-title">
+  <div class="recall-prompt"><h3 id="binary-mask-core-recall-title">Ohne Tabelle herleiten</h3><p>Leite die Maske zu /21 her und erkläre dabei, warum das dritte Oktett 248 lautet.</p></div>
+  <label class="sr-only" for="binary-mask-core-recall-answer">Deine Herleitung</label>
+  <textarea id="binary-mask-core-recall-answer" data-recall-input rows="4" placeholder="Die ersten 16 Bits …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Die ersten zwei Oktette enthalten 16 gesetzte Bits und ergeben jeweils 255. Für /21 fehlen noch fünf Einsbits im dritten Oktett. Ihre Gewichte 128, 64, 32, 16 und 8 ergeben 248. Danach folgen nur Nullen. Die Maske lautet deshalb 255.255.248.0.</div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Lernziel-Check: Transfer</h2>
+<section class="numeric-practice transfer-number" data-numeric-practice="binary-mask-transfer-octet" data-required-objective="binary-octet-conversion" data-expected="224" data-tolerance="0" data-correct-feedback="Richtig. 128 plus 64 plus 32 ergibt 224." data-wrong-feedback="Addiere die drei gesetzten Gewichte von links: 128, 64 und 32.">
+  <h3>Grenzoktett berechnen</h3>
+  <p>Welchen Dezimalwert besitzt das Bitmuster 11100000?</p>
+  <label for="binary-mask-transfer-octet-answer">Dezimalwert</label>
+  <div class="answer-row"><input id="binary-mask-transfer-octet-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Zahl"><button type="button" class="lbtn primary" data-numeric-check>Antwort prüfen</button></div><p>  <template data-numeric-feedback-for="192">192 enthält nur zwei gesetzte Bits: 11000000.</template>
+  <template data-numeric-feedback-for="240">240 enthält vier gesetzte Bits: 11110000.</template>
+  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p></p>
+</section><section class="quiz" data-quiz="binary-mask-transfer-cidr" data-correct="2" data-required-objective="cidr-mask-conversion">
+  <h3>Welches CIDR-Präfix gehört zur Maske 255.255.255.240?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Damit würden nur die drei vollständigen 255-Oktette gezählt; im letzten Oktett sind aber vier weitere Bits gesetzt."><span class="m">A</span> /24</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="/26 besitzt im letzten Oktett zwei Einsbits und damit den Wert 192."><span class="m">B</span> /26</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Richtig. Drei volle Oktette liefern 24 Bits, und 240 entspricht vier weiteren Einsbits."><span class="m">C</span> /28</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="/30 hätte im letzten Oktett sechs Einsbits und damit den Wert 252."><span class="m">D</span> /30</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Quellen und Aktualität</h2>
+<ul>
+<li><strong>EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):</strong> Binärdarstellung von IPv4-Adresse, Maske, Netz- und Hostanteil.</li>
+<li><strong>Prüfungsvorbereitung IHK Bonn:</strong> prüfungsnahe Umrechnung zwischen Dezimal- und Binärschreibweise.</li>
+</ul>
+<p>Die Umrechnungsregeln sind stabil. OCR-Fehler und unvollständige Lösungstabellen der privaten Quellen wurden nicht übernommen. Sämtliche Beispiele und Grafiken wurden eigenständig erstellt.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-2"><span class="d">zurück zu</span><span class="t">Block N2 · IPv4 und Subnetting</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N2 · IPv4 und Subnetting</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Eine Maske erkennen</a></li>
+<li><a href="#s2" data-t="s2">Oktette mit Gewichten umrechnen</a></li>
+<li><a href="#s3" data-t="s3">CIDR und Dezimalmaske verbinden</a></li>
+<li><a href="#s4" data-t="s4">Karteikarten und freier Abruf</a></li>
+<li><a href="#s5" data-t="s5">Lernziel-Check: Transfer</a></li>
+<li><a href="#s6" data-t="s6">Quellen und Aktualität</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-2">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

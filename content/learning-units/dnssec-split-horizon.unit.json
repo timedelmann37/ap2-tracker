@@ -1,0 +1,172 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "dnssec-split-horizon",
+    "slug": "dnssec-split-horizon",
+    "title": "DNSSEC und Split-Horizon richtig einordnen",
+    "description": "DNSSEC als prüfbare Vertrauenskette erklären und interne von externen DNS-Sichten trennen, ohne Verschlüsselung oder Zugriffsschutz vorzutäuschen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-3",
+    "groupLabel": "Block N3 · IPv6, DHCP und DNS",
+    "itemId": "ga2-3__12",
+    "week": "KW 37",
+    "estimatedMinutes": 24,
+    "relevance": "mittel",
+    "sources": ["itlf10-12-2023"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    { "id": "dnssec-trust", "label": "DNSSEC als Signatur- und Vertrauenskette erklären und klar von Transportverschlüsselung abgrenzen" },
+    { "id": "split-horizon-design", "label": "interne und externe DNS-Sichten für ein Szenario sicher trennen und typische Fehlkonfigurationen erkennen" }
+  ],
+  "intro": "DNSSEC und Split-Horizon lösen zwei verschiedene Probleme. DNSSEC hilft einem validierenden Resolver zu prüfen, ob DNS-Daten authentisch und unverändert sind. Split-Horizon liefert abhängig vom anfragenden Netz unterschiedliche, bewusst gepflegte DNS-Sichten. Keines von beiden ersetzt das andere, und DNSSEC verschlüsselt weder den Namen noch die Antwort.",
+  "curation": {
+    "evidence": [
+      { "sourceId": "itlf10-12-2023", "sourceLocator": "PDF-Seite 18, lokale OCR", "use": "DNSSEC-Grundprinzip mit DNSKEY, DS und hierarchischer Chain of Trust sowie Abgrenzung zu DoT und DoH", "reviewStatus": "Seitenkontext geprüft und terminologisch präzisiert" },
+      { "sourceId": "itlf10-12-2023", "sourceLocator": "PDF-Seiten 16 und 66, lokale OCR", "use": "autoritative Zonen, Delegation, interne Unterdomänen und Weiterleitung externer Anfragen", "reviewStatus": "als Grundlage für getrennte interne und externe Sichten verwendet; Split-Horizon selbst nur teilweise belegt" }
+    ],
+    "notes": [
+      "DNSSEC bietet Datenursprungs-Authentifizierung und Integrität für DNS-Daten, aber keine Vertraulichkeit und keine Garantie, dass der aufgelöste Dienst sicher ist.",
+      "Split-Horizon ist in den lokalen Direktbelegen nicht als eigener Begriff ausgearbeitet. Die Einheit bleibt deshalb CURATED_DRAFT.",
+      "Die internen Beispieldomänen und Adressen sind eigens für die Lerneinheit gewählt."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "dnssec-chain",
+      "type": "flow",
+      "title": "DNSSEC-Vertrauen von oben nach unten",
+      "description": "Ein Trust Anchor führt über signierte Delegationsinformationen zur DNSKEY der Zielzone und damit zur Prüfung ihres Datensatzes.",
+      "items": [
+        { "label": "1 · Vertrauensanker", "detail": "der validierende Resolver vertraut einem bekannten öffentlichen Schlüssel der Root-Zone" },
+        { "label": "2 · DS in der Elternzone", "detail": "verknüpft die Delegation kryptografisch mit dem Schlüssel der Kindzone" },
+        { "label": "3 · DNSKEY der Zielzone", "detail": "ermöglicht die Prüfung der Signatur über den Zonendaten" },
+        { "label": "4 · Validiertes Ergebnis", "detail": "Antwort ist authentisch und unverändert oder die Validierung schlägt fehl" }
+      ]
+    },
+    {
+      "id": "split-horizon-views",
+      "type": "comparison",
+      "title": "Ein Name, zwei kontrollierte Sichten",
+      "description": "Interne Clients erhalten interne Ziele; externe Clients sehen ausschließlich öffentlich vorgesehene Datensätze.",
+      "items": [
+        { "label": "Interne Sicht", "detail": "portal.example.test → 10.20.0.25; interne Service- und Managementnamen können sichtbar sein" },
+        { "label": "Externe Sicht", "detail": "portal.example.test → 203.0.113.25; nur veröffentlichte Namen und Adressen werden ausgeliefert" },
+        { "label": "Trennregel", "detail": "Antwort hängt an der vorgesehenen Resolver-/Zonensicht, nicht an einer beliebigen Clientangabe" },
+        { "label": "Betriebsrisiko", "detail": "inkonsistente Datensätze, falsche Weiterleitung oder interne Namen in der externen Zone" }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Was schützt DNSSEC?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "dnssec-split-diagnostic",
+          "diagnostic": true,
+          "question": "Welche Aussage über DNSSEC ist korrekt?",
+          "options": [
+            { "text": "DNSSEC verschlüsselt jede DNS-Anfrage und verbirgt den abgefragten Namen.", "rationale": "DNSSEC signiert DNS-Daten. Vertraulichkeit auf dem Transportweg ist eine andere Schutzaufgabe.", "correct": false },
+            { "text": "DNSSEC ermöglicht die Prüfung von Herkunft und Unverändertheit signierter DNS-Daten.", "rationale": "Richtig. Ein validierender Resolver prüft die Signatur über eine Vertrauenskette.", "correct": true },
+            { "text": "DNSSEC ersetzt TLS auf der aufgerufenen Webseite.", "rationale": "Eine validierte Adresse beweist nicht die Identität oder Verschlüsselung des späteren Anwendungsdienstes.", "correct": false },
+            { "text": "DNSSEC verhindert jeden Ausfall eines autoritativen Servers.", "rationale": "DNSSEC ist kein Verfügbarkeitsmechanismus. Redundanz und DDoS-Schutz müssen separat geplant werden.", "correct": false }
+          ]
+        },
+        { "type": "callout", "kind": "merksatz", "label": "Schutzversprechen", "markdown": "DNSSEC prüft **signierte DNS-Daten**. Es verschlüsselt die Abfrage nicht und bewertet den späteren Dienst nicht automatisch als sicher." }
+      ]
+    },
+    {
+      "title": "Die Chain of Trust",
+      "blocks": [
+        { "type": "figure", "diagramId": "dnssec-chain", "alt": "Vierstufige DNSSEC-Vertrauenskette vom Trust Anchor über DS und DNSKEY zum validierten Zonendatensatz.", "caption": "Eigene Lernskizze: Jede Delegationsstufe verbindet den bekannten Elternschlüssel mit dem Schlüssel der Kindzone." },
+        { "type": "markdown", "markdown": "Die Zielzone signiert ihre Resource Records und veröffentlicht passende DNSKEY-Daten. Die Elternzone enthält mit einem **DS-Record** einen kryptografischen Verweis auf den Schlüssel der Kindzone. Ein validierender Resolver beginnt bei einem bekannten **Trust Anchor**, prüft die Kette und akzeptiert die Antwort nur als sicher validiert, wenn alle benötigten Signaturen und Delegationen zusammenpassen. Fehlt eine Delegationskette, kann eine Zone bewusst unsigniert sein; eine gebrochene erwartete Kette ist dagegen ein Validierungsfehler." },
+        {
+          "type": "sequence",
+          "id": "dnssec-chain-practice",
+          "title": "Validierung ordnen",
+          "prompt": "Bringe die stark vereinfachten Prüfschritte in die richtige Reihenfolge.",
+          "tag": "Übung",
+          "steps": [
+            { "id": "record", "label": "Signatur des angefragten Zonendatensatzes mit dem geprüften Zonenschlüssel validieren." },
+            { "id": "anchor", "label": "Beim lokal bekannten Trust Anchor beginnen." },
+            { "id": "child", "label": "DNSKEY der Kindzone gegen die Delegationsinformation prüfen." },
+            { "id": "ds", "label": "Signierte DS-Information der Elternzone entlang der Delegation prüfen." }
+          ],
+          "expected": ["anchor", "ds", "child", "record"],
+          "correctFeedback": "Richtig. Das Vertrauen wird von einer bekannten Stelle bis zum konkreten Zonendatensatz fortgeführt.",
+          "wrongFeedback": "Beginne beim Vertrauensanker. Der Datensatz der Zielzone kann erst nach Prüfung des Zonenschlüssels validiert werden."
+        }
+      ]
+    },
+    {
+      "title": "Split-Horizon als Sichtentrennung",
+      "blocks": [
+        { "type": "figure", "diagramId": "split-horizon-views", "alt": "Vergleich einer internen DNS-Sicht mit privaten Zielen und einer externen Sicht mit ausschließlich öffentlichen Zielen sowie den zugehörigen Risiken.", "caption": "Eigene Lernskizze: Gleiche Namen dürfen je Sicht unterschiedliche Ziele besitzen, wenn Zuständigkeit und Betrieb bewusst getrennt sind." },
+        { "type": "markdown", "markdown": "Bei **Split-Horizon DNS** existieren getrennte interne und externe Antworten. Interne Resolver können private Adressen und interne Servicenamen liefern; öffentliche autoritative Server veröffentlichen nur die externe Sicht. Die Trennung reduziert unnötige Informationspreisgabe und erlaubt passende interne Ziele. Sie ist aber kein Zugriffsmechanismus: Eine nicht veröffentlichte Adresse ersetzt weder Firewallregeln noch Authentisierung. Beide Sichten müssen gemeinsam geändert und überwacht werden, damit Namen, Mailrouting und Zertifikatsanforderungen nicht auseinanderlaufen." },
+        {
+          "type": "quiz",
+          "id": "split-horizon-practice",
+          "question": "Was ist die wichtigste Sicherheitsregel für eine externe DNS-Sicht?",
+          "options": [
+            { "text": "Sie darf nur ausdrücklich öffentlich vorgesehene Namen und Daten enthalten.", "rationale": "Richtig. Interne Ziele und Verwaltungsnamen gehören nicht versehentlich in die öffentliche Zone.", "correct": true },
+            { "text": "Sie muss alle privaten IP-Adressen veröffentlichen, damit Split-Horizon funktioniert.", "rationale": "Gerade die Trennung interner und externer Daten ist der Zweck der getrennten Sicht.", "correct": false },
+            { "text": "Sie ersetzt die Firewall, weil unbekannte Namen nicht erreichbar sind.", "rationale": "DNS-Sichtbarkeit ist keine belastbare Zugriffssteuerung. Adressen können auch ohne DNS-Namen erreicht werden.", "correct": false },
+            { "text": "Sie muss für interne und externe Clients immer identisch antworten.", "rationale": "Dann wäre keine geteilte Sicht vorhanden. Konsistenz ist nur für bewusst gemeinsame Daten erforderlich.", "correct": false }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            { "id": "dnssec-split-ds", "label": "DS-Record", "front": "Welche Rolle hat ein DS-Record bei DNSSEC?", "back": "Er liegt in der Elternzone und verbindet deren Vertrauenskette kryptografisch mit einem Schlüssel der delegierten Kindzone." },
+            { "id": "dnssec-split-limit", "label": "Grenze", "front": "Was schützt DNSSEC ausdrücklich nicht?", "back": "Es bietet keine Vertraulichkeit der DNS-Abfrage, keinen Zugriffsschutz für den Dienst und keine Verfügbarkeitsgarantie." },
+            { "id": "dnssec-split-view", "label": "Split-Horizon", "front": "Was trennt Split-Horizon DNS?", "back": "Bewusst unterschiedliche interne und externe DNS-Sichten, beispielsweise private und öffentliche Zieladressen desselben Namens." }
+          ]
+        },
+        { "type": "recall", "id": "dnssec-split-core-recall", "title": "Zwei Konzepte trennen", "prompt": "Erkläre DNSSEC und Split-Horizon jeweils in zwei Sätzen. Nenne danach für beide ein Problem, das sie nicht lösen.", "label": "Deine Abgrenzung", "placeholder": "DNSSEC … Split-Horizon …", "minLength": 130, "model": "DNSSEC erlaubt einem validierenden Resolver, signierte DNS-Daten über eine Chain of Trust auf Herkunft und Unverändertheit zu prüfen. Es verschlüsselt die Abfrage und den späteren Anwendungsverkehr nicht. Split-Horizon liefert internen und externen Anfragern bewusst getrennte DNS-Sichten. Es ersetzt keine Firewall, Authentisierung oder Autorisierung." }
+      ]
+    },
+    {
+      "title": "Lernziel-Check: Transfer",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "dnssec-transfer-trust",
+          "requiredObjective": "dnssec-trust",
+          "question": "Ein Resolver meldet eine erfolgreich validierte DNSSEC-Antwort für shop.example. Was darf daraus geschlossen werden?",
+          "options": [
+            { "text": "Die DNS-Daten wurden entlang der Vertrauenskette authentifiziert und nicht unbemerkt verändert.", "rationale": "Richtig. Genau diese Aussage trägt die erfolgreiche DNSSEC-Validierung.", "correct": true },
+            { "text": "Jede Verbindung zum Shop ist automatisch Ende-zu-Ende verschlüsselt.", "rationale": "DNSSEC sagt nichts über TLS oder den Schutz des anschließenden Anwendungsverkehrs aus.", "correct": false },
+            { "text": "Der Shop ist frei von Schadsoftware und rechtlich vertrauenswürdig.", "rationale": "DNSSEC bewertet weder Inhalte noch Betreibervertrauen.", "correct": false },
+            { "text": "Der DNS-Server kann nicht ausfallen.", "rationale": "Authentizität und Integrität sind keine Verfügbarkeitsgarantie.", "correct": false }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "split-horizon-transfer-design",
+          "requiredObjective": "split-horizon-design",
+          "question": "Intern soll files.example.test auf 10.20.4.10 zeigen; extern darf dieser Dienst nicht veröffentlicht werden. Welche Lösung ist am stärksten?",
+          "options": [
+            { "text": "Den internen Record in der internen Sicht pflegen, extern keinen Record veröffentlichen und den Zugriff zusätzlich per Netz- und Dienstregeln schützen.", "rationale": "Richtig. DNS-Sicht und tatsächlicher Zugriffsschutz werden getrennt und passend umgesetzt.", "correct": true },
+            { "text": "Die private Adresse öffentlich veröffentlichen; private Adressen sind automatisch geheim.", "rationale": "Private Adressen sind nicht im öffentlichen Internet routbar, ihre Veröffentlichung kann aber interne Struktur verraten und ist kein Schutzkonzept.", "correct": false },
+            { "text": "Nur den Namen verbergen; dann sind Firewall und Authentisierung unnötig.", "rationale": "Ein fehlender öffentlicher Name verhindert keinen direkten oder internen Zugriff und ersetzt keine Sicherheitskontrolle.", "correct": false },
+            { "text": "DNSSEC deaktivieren, weil es mit getrennten Sichten grundsätzlich unvereinbar ist.", "rationale": "Getrennte Sichten können jeweils passend signiert und betrieben werden. Die Umsetzung erfordert Planung, ist aber nicht grundsätzlich ausgeschlossen.", "correct": false }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Aktualität",
+      "blocks": [
+        { "type": "markdown", "markdown": "- **IT-Berufe Fachstufe II – Lernfelder 10–12 (2023):** DNSSEC-Chain-of-Trust mit DS und DNSKEY, Abgrenzung zu verschlüsseltem DNS-Transport sowie interne Delegations- und Forwarderbeispiele.\n\nSplit-Horizon wird durch die Direktbelege nur teilweise abgedeckt; die Einheit bleibt deshalb im Kurationsentwurf. Konkrete Signaturalgorithmen, Schlüsselwechsel und Resolverkonfigurationen gehören in eine spätere vertiefte Betriebslektion. Diagramme und Szenarien wurden neu erstellt." }
+      ]
+    }
+  ]
+}

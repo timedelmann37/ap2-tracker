@@ -1,0 +1,189 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "arp-cache-spoofing",
+    "slug": "arp-cache-spoofing",
+    "title": "ARP-Cache und Spoofing verstehen",
+    "description": "IPv4-Adressen im lokalen Netz auf MAC-Adressen abbilden, ARP-Cache-Einträge deuten und ARP-Spoofing samt wirksamer Gegenmaßnahmen erklären.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-3",
+    "groupLabel": "Block N3 · IPv6, DHCP und DNS",
+    "itemId": "ga2-3__13",
+    "week": "KW 37",
+    "estimatedMinutes": 22,
+    "relevance": "hoch",
+    "sources": ["itlf10-12-2023", "ihk-bonn"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    { "id": "arp-resolution", "label": "den ARP-Ablauf aus Broadcast Request, Reply und zeitlich begrenztem Cache-Eintrag für IPv4 erklären" },
+    { "id": "arp-spoofing-defense", "label": "eine manipulierte ARP-Zuordnung erkennen und passende technische sowie protokollseitige Schutzmaßnahmen auswählen" }
+  ],
+  "intro": "Ein Ethernet-Frame benötigt im lokalen Segment eine Ziel-MAC-Adresse. Kennt ein IPv4-Host nur die Ziel-IP seines lokalen Kommunikationspartners oder Gateways, ermittelt er die passende MAC-Adresse mit ARP und speichert die Zuordnung vorübergehend. Weil klassische ARP-Antworten keine starke Echtheitsprüfung mitbringen, kann ein Angreifer falsche Zuordnungen einschleusen.",
+  "curation": {
+    "evidence": [
+      { "sourceId": "itlf10-12-2023", "sourceLocator": "PDF-Seite 348, lokale OCR", "use": "ARP Request als Ethernet-Broadcast und Wirkung von Broadcasts innerhalb eines Layer-2-Segments", "reviewStatus": "direkte Aussage geprüft; übriger STP-Kontext nicht als ARP-Beleg verwendet" },
+      { "sourceId": "ihk-bonn", "sourceLocator": "Chunk ihk-bonn:00381, Zeilen 6779–6878", "use": "ARP als zu erklärendes Diagnosekommando im prüfungsnahen Netzwerkgrundlagenkontext", "reviewStatus": "nur als Prüfungsrelevanz verwendet; keine fachliche Musterlösung vorhanden" }
+    ],
+    "notes": [
+      "Die Source-Map-Verweise itlf10-12-2023:page:0361 und europa-integratoren-2026:00548 behandeln RSTP beziehungsweise Fernwartung und wurden als Fehltreffer ausgeschlossen.",
+      "Die lokalen Quellen decken ARP-Spoofing nur schwach ab. Die Einheit beschränkt sich deshalb auf zeitstabile Grundprinzipien und bleibt CURATED_DRAFT.",
+      "ARP gilt für IPv4 im lokalen Segment. IPv6 verwendet Neighbor Discovery und nicht ARP."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "arp-resolution-path",
+      "type": "topology",
+      "title": "ARP bleibt im lokalen Segment",
+      "description": "Der Client sendet einen Broadcast Request. Nur der Host mit der gesuchten IPv4-Adresse antwortet mit seiner MAC-Adresse; für entfernte Ziele wird die MAC des Gateways gesucht.",
+      "height": 500,
+      "zones": [
+        { "id": "lan", "label": "Layer-2-Segment / VLAN 20", "x": 35, "y": 82, "width": 890, "height": 350, "kind": "broadcast" }
+      ],
+      "nodes": [
+        { "id": "client", "label": "Client A", "detail": "192.168.20.10", "x": 170, "y": 255, "kind": "client" },
+        { "id": "switch", "label": "Switch", "detail": "flutet Broadcast", "x": 480, "y": 255, "kind": "switch" },
+        { "id": "target", "label": "Client B", "detail": "192.168.20.25", "x": 790, "y": 165, "kind": "client" },
+        { "id": "gateway", "label": "Gateway", "detail": "192.168.20.1", "x": 790, "y": 350, "kind": "router" }
+      ],
+      "edges": [
+        { "from": "client", "to": "switch", "label": "ARP Request" },
+        { "from": "switch", "to": "target", "label": "Broadcast" },
+        { "from": "switch", "to": "gateway", "label": "Broadcast" },
+        { "from": "target", "to": "client", "label": "ARP Reply" }
+      ]
+    },
+    {
+      "id": "arp-spoofing-impact",
+      "type": "flow",
+      "title": "Von der falschen Antwort zum Verkehrsrisiko",
+      "description": "Eine gefälschte Zuordnung kann Verkehr zum Angreifer lenken. Weitere Schutzschichten begrenzen die Folgen.",
+      "items": [
+        { "label": "1 · Falsche ARP-Aussage", "detail": "Angreifer behauptet, seine MAC gehöre zur IPv4-Adresse des Gateways" },
+        { "label": "2 · Cache wird vergiftet", "detail": "Client speichert die manipulierte IP-MAC-Zuordnung" },
+        { "label": "3 · Verkehr wird umgeleitet", "detail": "Pakete erreichen zuerst den Angreifer oder werden verworfen" },
+        { "label": "4 · Kontrollen begrenzen", "detail": "Switchschutz, Segmentierung, Monitoring und Ende-zu-Ende-Verschlüsselung reduzieren Risiko" }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Welche MAC wird gebraucht?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "arp-diagnostic",
+          "diagnostic": true,
+          "question": "Client A möchte ein IPv4-Ziel außerhalb seines eigenen Subnetzes erreichen. Welche MAC-Adresse ermittelt er per ARP?",
+          "options": [
+            { "text": "Die MAC-Adresse des entfernten Zielservers über alle Router hinweg.", "rationale": "MAC-Adressen gelten nur auf dem lokalen Übertragungsabschnitt und werden an jedem Router neu gesetzt.", "correct": false },
+            { "text": "Die MAC-Adresse seines lokalen Standardgateways.", "rationale": "Richtig. Der Ethernet-Frame geht lokal zum Router; die Ziel-IP im Paket bleibt die des entfernten Systems.", "correct": true },
+            { "text": "Die Broadcast-MAC als dauerhafte Zieladresse für den gesamten Datenverkehr.", "rationale": "Nur der ARP Request wird gebroadcastet. Normale Unicast-Frames verwenden anschließend die ermittelte MAC.", "correct": false },
+            { "text": "Keine MAC-Adresse, weil IPv4 direkt ohne Ethernet-Frame übertragen wird.", "rationale": "In einem Ethernet-LAN benötigt die lokale Zustellung einen Frame mit Ziel-MAC-Adresse.", "correct": false }
+          ]
+        },
+        { "type": "callout", "kind": "merksatz", "label": "Lokale Zustellung", "markdown": "ARP fragt: **Welche MAC gehört hier im lokalen Segment zu dieser IPv4-Adresse?** Bei entfernten Zielen ist diese IPv4-Adresse die des nächsten Gateways." }
+      ]
+    },
+    {
+      "title": "Request, Reply und Cache",
+      "blocks": [
+        { "type": "figure", "diagramId": "arp-resolution-path", "alt": "Client A sendet über einen Switch einen ARP Broadcast an Client B und Gateway; Client B antwortet mit seiner MAC-Adresse.", "caption": "Eigene Lernskizze: Der Request erreicht das ganze VLAN, die gelernte Zuordnung wird anschließend für lokale Unicast-Frames verwendet." },
+        { "type": "markdown", "markdown": "Vor einer ARP-Anfrage prüft der Host seinen ARP- beziehungsweise Neighbor-Cache. Fehlt eine gültige Zuordnung, sendet er einen Ethernet-Broadcast: Wer besitzt die gesuchte IPv4-Adresse? Der angesprochene Host antwortet mit seiner MAC-Adresse. Der Sender speichert die Zuordnung nur zeitlich begrenzt, weil Geräte, Interfaces und Adressen wechseln können. Der Befehl `arp` beziehungsweise moderne betriebssystemspezifische Nachfolger zeigen und verwalten solche Einträge; die genaue Syntax hängt vom System ab." },
+        {
+          "type": "sequence",
+          "id": "arp-resolution-practice",
+          "title": "ARP-Ablauf ordnen",
+          "prompt": "Bringe die Schritte einer noch nicht gecachten lokalen Auflösung in die richtige Reihenfolge.",
+          "tag": "Übung",
+          "steps": [
+            { "id": "cache", "label": "Sender speichert die gelernte IPv4-MAC-Zuordnung vorübergehend." },
+            { "id": "request", "label": "Sender überträgt einen ARP Request als Broadcast im VLAN." },
+            { "id": "need", "label": "Sender erkennt, dass ihm die Ziel-MAC für den nächsten lokalen Hop fehlt." },
+            { "id": "reply", "label": "Der Host mit der gesuchten IPv4-Adresse meldet seine MAC-Adresse." }
+          ],
+          "expected": ["need", "request", "reply", "cache"],
+          "correctFeedback": "Richtig. Erst der fehlende Cacheeintrag löst die Broadcast-Anfrage aus; gelernt wird erst nach der Antwort.",
+          "wrongFeedback": "Beginne bei der fehlenden lokalen Zuordnung. Ein Cacheeintrag kann erst aus einer erhaltenen Antwort entstehen."
+        }
+      ]
+    },
+    {
+      "title": "ARP-Spoofing erkennen",
+      "blocks": [
+        { "type": "figure", "diagramId": "arp-spoofing-impact", "alt": "Vier Schritte von einer gefälschten ARP-Antwort über einen vergifteten Cache und umgeleiteten Verkehr bis zu begrenzenden Schutzmaßnahmen.", "caption": "Eigene Lernskizze: Die Manipulation betrifft die lokale Zustellung; verschlüsselte Anwendungsprotokolle bleiben als zusätzliche Schutzschicht wichtig." },
+        { "type": "markdown", "markdown": "Beim **ARP-Spoofing** sendet ein Angreifer falsche Zuordnungen, etwa Gateway-IP → Angreifer-MAC. Übernimmt ein Client den Eintrag, kann Verkehr am Angreifer ankommen. Leitet dieser weiter, entsteht eine Man-in-the-Middle-Position; verwirft er Pakete, entsteht eine Störung. Hinweise sind unerwartet wechselnde MAC-Adressen für stabile Infrastrukturziele, gleiche MAC-Adressen für mehrere wichtige IPs oder Warnungen aus Switch- und Monitoring-Systemen." },
+        {
+          "type": "quiz",
+          "id": "arp-spoofing-practice",
+          "question": "Im ARP-Cache wechseln Einträge für die stabile Gateway-IP wiederholt zwischen zwei MAC-Adressen. Welche Reaktion ist zuerst sinnvoll?",
+          "options": [
+            { "text": "Als möglichen Angriff oder Fehlzustand behandeln, Switch-Port und Zuordnungen prüfen und den Verkehr absichern.", "rationale": "Richtig. Der Wechsel ist ein belastbarer Anlass zur Prüfung, aber noch kein Beweis für eine bestimmte Ursache.", "correct": true },
+            { "text": "Ignorieren, weil Gateway-MAC-Adressen bei jedem Paket zufällig wechseln.", "rationale": "Eine stabile Gateway-Schnittstelle besitzt nicht pro Paket eine neue zufällige MAC-Adresse.", "correct": false },
+            { "text": "Alle TLS-Verbindungen abschalten, damit der Angreifer nichts entschlüsseln muss.", "rationale": "Ende-zu-Ende-Verschlüsselung begrenzt gerade die Folgen einer möglichen Verkehrsumleitung.", "correct": false },
+            { "text": "Den DNS-Cache löschen; damit sind ARP-Zuordnungen automatisch korrekt.", "rationale": "DNS- und ARP-Cache lösen verschiedene Zuordnungsprobleme. Das Löschen des DNS-Caches repariert keine falsche IP-MAC-Zuordnung.", "correct": false }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Schutz in mehreren Schichten",
+      "blocks": [
+        { "type": "markdown", "markdown": "Geeignete Gegenmaßnahmen hängen von der Switchplattform und dem Betriebsmodell ab. In verwalteten Zugangsnetzen kann **Dynamic ARP Inspection** ARP-Aussagen gegen vertrauenswürdige Bindings prüfen, häufig im Zusammenspiel mit DHCP Snooping. Port Security, 802.1X und kleinere VLANs begrenzen unberechtigten Zugang und Reichweite. Statische ARP-Einträge eignen sich nur für wenige besonders stabile Beziehungen und erhöhen den Pflegeaufwand. Unabhängig davon schützen TLS, SSH oder IPsec die Inhalte auch dann, wenn lokaler Verkehr fehlgeleitet wird; Zertifikatswarnungen dürfen nicht ignoriert werden." },
+        { "type": "callout", "kind": "warning", "label": "Keine Einzelmaßnahme", "markdown": "Ein statischer Eintrag schützt nicht das ganze VLAN, und Verschlüsselung verhindert keine Störung. Kombiniere **Zugangskontrolle, Switchprüfung, Segmentierung, Monitoring und geschützte Protokolle**." }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            { "id": "arp-card-purpose", "label": "ARP-Zweck", "front": "Welche Zuordnung ermittelt ARP?", "back": "Für IPv4 im lokalen Segment ordnet ARP einer Ziel- beziehungsweise Next-Hop-IP eine MAC-Adresse zu." },
+            { "id": "arp-card-broadcast", "label": "Broadcast", "front": "Welche ARP-Nachricht wird typischerweise als Broadcast gesendet?", "back": "Der ARP Request, weil der Sender die MAC-Adresse des gesuchten lokalen Teilnehmers noch nicht kennt." },
+            { "id": "arp-card-spoofing", "label": "Spoofing", "front": "Was ist das Kernprinzip von ARP-Spoofing?", "back": "Ein Angreifer verbreitet eine falsche IPv4-MAC-Zuordnung, damit lokale Frames zu seiner MAC-Adresse gesendet werden." }
+          ]
+        },
+        { "type": "recall", "id": "arp-core-recall", "title": "Ablauf und Angriff erklären", "prompt": "Erkläre ARP vom fehlenden Cacheeintrag bis zum Unicast-Frame. Beschreibe danach, wo ARP-Spoofing eingreift und nenne drei unterschiedliche Schutzebenen.", "label": "Deine Erklärung", "placeholder": "Der Host benötigt …", "minLength": 140, "model": "Fehlt die MAC-Adresse für ein lokales Ziel oder Gateway, sendet der IPv4-Host einen ARP Request als Broadcast. Der zuständige Host antwortet mit seiner MAC, die zeitlich begrenzt gecacht wird. ARP-Spoofing schleust eine falsche Zuordnung ein und kann Verkehr umleiten oder stören. Schutz bieten kontrollierter Netzzugang und Segmentierung, Switchfunktionen wie DAI mit verlässlichen Bindings, Monitoring sowie Ende-zu-Ende geschützte Protokolle." }
+      ]
+    },
+    {
+      "title": "Lernziel-Check: Transfer",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "arp-transfer-resolution",
+          "requiredObjective": "arp-resolution",
+          "question": "192.168.20.10/24 sendet zu 203.0.113.50. Welches Ziel löst der Client lokal per ARP auf?",
+          "options": [
+            { "text": "203.0.113.50, obwohl die Adresse außerhalb des LANs liegt", "rationale": "Der entfernte Server befindet sich nicht im lokalen Broadcastsegment und antwortet dort nicht auf ARP.", "correct": false },
+            { "text": "Die IPv4-Adresse des konfigurierten Standardgateways", "rationale": "Richtig. Der lokale Ethernet-Frame wird an die MAC des nächsten Routers gesendet.", "correct": true },
+            { "text": "Die Adresse des DNS-Root-Servers", "rationale": "DNS-Auflösung und lokale Ethernetzustellung sind getrennte Schritte.", "correct": false },
+            { "text": "Die eigene IPv4-Adresse des Clients", "rationale": "Der Client benötigt die MAC des nächsten Hops, nicht erneut seine eigene Zuordnung.", "correct": false }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "arp-transfer-defense",
+          "requiredObjective": "arp-spoofing-defense",
+          "question": "Welches Maßnahmenpaket begrenzt ARP-Spoofing in einem verwalteten Campusnetz am überzeugendsten?",
+          "options": [
+            { "text": "Nur den DNS-Cache häufiger löschen", "rationale": "DNS-Caching verändert keine ARP-Zuordnungen im lokalen Segment.", "correct": false },
+            { "text": "Kontrollierter Netzzugang, passende VLAN-Grenzen, DAI mit verlässlichen Bindings, Monitoring und verschlüsselte Anwendungsprotokolle", "rationale": "Richtig. Das Paket adressiert Zugang, Reichweite, Zuordnungsprüfung, Erkennung und die Folgen einer Umleitung.", "correct": true },
+            { "text": "Alle Switches durch Hubs ersetzen", "rationale": "Hubs beseitigen das ARP-Vertrauensproblem nicht und verschlechtern Segmentierung sowie Beobachtbarkeit.", "correct": false },
+            { "text": "Nur längere ARP-Cachezeiten konfigurieren", "rationale": "Längere Cachezeiten können einen falschen Eintrag sogar länger wirksam halten und sind keine Echtheitsprüfung.", "correct": false }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Aktualität",
+      "blocks": [
+        { "type": "markdown", "markdown": "- **IT-Berufe Fachstufe II – Lernfelder 10–12 (2023):** ARP Request als Broadcast im Layer-2-Segment.\n- **Prüfungsvorbereitung IHK Bonn:** ARP als prüfungsrelevantes Diagnosekommando.\n\nDie lokalen Direktbelege behandeln Spoofing und Gegenmaßnahmen nur teilweise; die Einheit bleibt daher im Kurationsentwurf. Konkrete Switchbefehle und Funktionsnamen müssen gegen die eingesetzte Plattform geprüft werden. Alle Diagramme und Fälle sind eigenständig erstellt." }
+      ]
+    }
+  ]
+}

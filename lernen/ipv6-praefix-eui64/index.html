@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Aus einem Providerpräfix /64-LANs bilden, Modified EUI-64 nachvollziehen und moderne stabile sowie temporäre Interface-IDs berücksichtigen.">
+<title>IPv6-/64-Präfixe und Modified EUI-64 einordnen – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=hybrid-1">
+<script defer src="/assets/ap2-space.js?v=hybrid-1"></script>
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="ipv6-praefix-eui64" data-progress-id="ga2-3__2" data-content-revision="2026-09-11.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-3">Block N3 · IPv6 und automatische Adresskonfiguration</a><span class="sep">›</span>
+    <span class="here">IPv6-/64-Präfixe und Modified EUI-64 einordnen</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">IPv6-/64-Präfixe und Modified EUI-64 einordnen</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 24 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Ein übliches IPv6-LAN mit SLAAC verwendet ein /64-Präfix: Die oberen 64 Bit bezeichnen das Subnetz, die unteren 64 Bit die Interface-ID. Modified EUI-64 ist eine mögliche und prüfungsrelevante Bildung dieser ID, aber heute nicht die pauschal empfohlene Standardwahl für Clientadressen.</p>
+<section class="learning-goals" aria-labelledby="ipv6-praefix-eui64-goals">
+  <h2 id="ipv6-praefix-eui64-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>aus einem delegierten IPv6-Präfix die Anzahl verfügbarer /64-LAN-Präfixe berechnen und ein gültiges /64 bilden</li>
+    <li>eine Modified-EUI-64-Interface-ID aus einer MAC-Adresse ableiten und gegenüber modernen stabilen oder temporären Interface-IDs einordnen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Was bleibt bei /64 übrig?</h2>
+<section class="quiz" data-quiz="ipv6-prefix-diagnostic" data-correct="0">
+  <h3>Welche Aufteilung beschreibt eine gewöhnliche IPv6-LAN-Adresse mit /64?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Das Präfix bezeichnet das LAN, die unteren 64 Bit die Schnittstelle darin."><span class="m">A</span> 64 Bit Präfix und 64 Bit Interface-ID</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Ein delegiertes /56 kann mehrere /64-LANs enthalten. Die einzelne SLAAC-LAN-Adresse verwendet dabei weiterhin eine 64-Bit-Interface-ID."><span class="m">B</span> 56 Bit Präfix und 72 Bit Interface-ID</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein /128 bezeichnet eine einzelne Adresse. Es ist nicht die reguläre Präfixlänge eines SLAAC-LANs."><span class="m">C</span> 128 Bit Präfix und keine Interface-ID</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Eine MAC besitzt typischerweise 48 Bit, ist aber nicht identisch mit dem IPv6-Präfix und wird nicht als 80-Bit-Feld angehängt."><span class="m">D</span> 48 Bit Präfix und 80 Bit MAC-Adresse</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">/64 richtig einordnen</span><p>Für ein gewöhnliches SLAAC-LAN gilt <strong>64 Bit Präfix plus 64 Bit Interface-ID</strong>. Ein größeres delegiertes Präfix liefert die Bits für mehrere solcher LANs.</p></aside><h2 class="sec" id="s2"><span class="num">2</span>Ein /56 in /64-LANs aufteilen</h2>
+<p>Das Unternehmen erhält <code>2001:db8:44aa:1200::/56</code>. Die ersten 56 Bit stehen fest. Bis zur gewünschten LAN-Grenze /64 bleiben acht Bit für die Subnetz-ID. Dadurch entstehen 256 verschiedene /64-Präfixe.</p>
+<p>Das vierte Hextet reicht im delegierten Bereich von <code>1200</code> bis <code>12ff</code>. Die Wahl der Subnetz-ID <code>2a</code> erzeugt das LAN-Präfix <code>2001:db8:44aa:122a::/64</code>. Diese Adresse ist die Präfixdarstellung; eine vollständige Hostadresse benötigt zusätzlich eine 64-Bit-Interface-ID.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Vom /56-Providerpräfix zum /64-LAN">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-layers" xmlns="http://www.w3.org/2000/svg" width="960" height="412" viewBox="0 0 960 412" role="img" aria-labelledby="diagram-prefix-64-split-title diagram-prefix-64-split-desc">
+  <title id="diagram-prefix-64-split-title">Vom /56-Providerpräfix zum /64-LAN</title>
+  <desc id="diagram-prefix-64-split-desc">IPv6-Bitaufteilung mit 56 Bit delegiertem Präfix, acht Bit Subnetz-ID und 64 Bit Interface-ID.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Vom /56-Providerpräfix zum /64-LAN</tspan></text>
+  <g><rect class="diagram-row" x="42" y="82" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="82" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="130" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Bit 1–56 ·</tspan><tspan x="105" dy="25">delegiertes</tspan><tspan x="105" dy="25">Präfix</tspan></text><text x="194" y="116" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">vom Provider oder übergeordneten Adressplan fest</tspan><tspan x="194" dy="25">vorgegeben</tspan></text></g><g><rect class="diagram-row" x="42" y="182" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="182" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="230" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Bit 57–64 ·</tspan><tspan x="105" dy="25">Subnetz-ID</tspan></text><text x="194" y="216" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">acht frei planbare Bit ergeben 256 verschiedene</tspan><tspan x="194" dy="25">/64-LAN-Präfixe</tspan></text></g><g><rect class="diagram-row" x="42" y="282" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="282" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="330" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Bit 65–128 ·</tspan><tspan x="105" dy="25">Interface-ID</tspan></text><text x="194" y="316" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">64 Bit für eine Adresse innerhalb des gewählten</tspan><tspan x="194" dy="25">LAN-Präfixes</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Die Differenz zwischen /56 und /64 steht für die interne LAN-Auswahl zur Verfügung.</figcaption>
+</figure><div class="math-display" role="group" aria-label="Zwei hoch 64 minus 56 ergibt zwei hoch 8 und damit 256 mögliche Schrägstrich 64 Subnetze"><math display="block" aria-label="Zwei hoch 64 minus 56 ergibt zwei hoch 8 und damit 256 mögliche Schrägstrich 64 Subnetze"><mrow><msup><mn>2</mn><mrow><mn>64</mn><mo>−</mo><mn>56</mn></mrow></msup><mo>=</mo><msup><mn>2</mn><mn>8</mn></msup><mo>=</mo><mn>256</mn><mtext> mögliche /64-LANs</mtext></mrow></math><div class="math-legend"><span>56 bereits festgelegte Präfixbits</span><span>64 gewünschte LAN-Präfixbits</span><span>acht freie Bit für die Subnetz-ID</span></div></div><h2 class="sec" id="s3"><span class="num">3</span>Durchgearbeitetes Modified-EUI-64-Beispiel</h2>
+<p>Für eine Laboraufgabe soll aus der MAC-Adresse <code>00:1a:2b:3c:4d:5e</code> ausdrücklich eine Modified-EUI-64-ID gebildet werden. Die MAC wird nach dem dritten Byte geteilt. Dazwischen wird <code>ff:fe</code> eingefügt. Danach wird im ersten Oktett das U/L-Bit invertiert; rechnerisch wird <code>00</code> mit <code>02</code> exklusiv ODER verknüpft.</p>
+<p>Es entsteht die Interface-ID <code>021a:2bff:fe3c:4d5e</code>. Mit dem zuvor gebildeten Präfix lautet die gekürzte Adresse <code>2001:db8:44aa:122a:21a:2bff:fe3c:4d5e</code>. Die führende Null im ersten IID-Hextet entfällt nur in der Schreibweise, nicht im 64-Bit-Wert.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Modified EUI-64 aus 48 Bit MAC bilden">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="650" viewBox="0 0 960 650" role="img" aria-labelledby="diagram-eui64-flow-title diagram-eui64-flow-desc">
+  <title id="diagram-eui64-flow-title">Modified EUI-64 aus 48 Bit MAC bilden</title>
+  <desc id="diagram-eui64-flow-desc">Fünfstufige Bildung der Interface-ID aus MAC 00 1a 2b 3c 4d 5e durch Teilen, Einsetzen von ff fe, Invertieren des U/L-Bits und Gruppieren in Hextets.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Modified EUI-64 aus 48 Bit MAC bilden</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">MAC lesen</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">00:1a:2b:3c:4d:5e</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">In zwei Hälften teilen</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">00:1a:2b und 3c:4d:5e</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">ff:fe einsetzen</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">00:1a:2b:ff:fe:3c:4d:5e ergibt 64 Bit</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">U/L-Bit invertieren</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">erstes Oktett 00 XOR 02 wird 02</tspan></text><path d="M480 472v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 494 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="512" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="541" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Hextets gruppieren</tspan></text><text x="178" y="568" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Interface-ID 021a:2bff:fe3c:4d5e</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Modified EUI-64 ist ein nachvollziehbares Verfahren, aber nicht automatisch die heutige Standardwahl eines Betriebssystems.</figcaption>
+</figure><div class="math-display" role="group" aria-label="Erstes MAC-Oktett hexadezimal 00 exklusiv ODER 02 ergibt hexadezimal 02"><math display="block" aria-label="Erstes MAC-Oktett hexadezimal 00 exklusiv ODER 02 ergibt hexadezimal 02"><mrow><msub><mn>00</mn><mtext>hex</mtext></msub><mo>⊕</mo><msub><mn>02</mn><mtext>hex</mtext></msub><mo>=</mo><msub><mn>02</mn><mtext>hex</mtext></msub></mrow></math><div class="math-legend"><span>⊕ = exklusives ODER</span><span>02 hex markiert das zu invertierende U/L-Bit im ersten Oktett</span></div></div><aside class="callout warn"><span class="lbl">Privacy Extensions nicht vergessen</span><p>Eine MAC-abgeleitete IID ist über Netze und Zeit leichter wiederzuerkennen. Moderne Systeme verwenden häufig <strong>stabile semantisch opake IIDs</strong> und für ausgehende Clientverbindungen zusätzlich <strong>temporäre Privacy-Adressen</strong>. Aus einer beobachteten IPv6-Adresse darf deshalb nicht pauschal eine MAC rekonstruiert werden.</p></aside><h2 class="sec" id="s4"><span class="num">4</span>Geführte Übung: EUI-64 nur auf ausdrückliche Anforderung</h2>
+<section class="sequence-practice" data-sequence="eui64-guided-sequence" data-expected="split,insert,flip,group" data-correct-feedback="Richtig. Nach Teilen und Einfügen wird das U/L-Bit verändert; erst dann wird die fertige IID gruppiert." data-wrong-feedback="Beginne mit den beiden MAC-Hälften. ff:fe wird zwischen ihnen eingesetzt, bevor die fertigen Hextets notiert werden." aria-labelledby="eui64-guided-sequence-title">
+  <div class="lab-heading"><div><h3 id="eui64-guided-sequence-title">Modified-EUI-64-Schritte</h3><p>Bringe die Schritte für die MAC 0c:4d:e9:12:34:56 in die richtige Reihenfolge.</p></div><span class="lab-tag">Übung</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="flip" tabindex="-1"><span class="step-position" data-step-position>1</span><span>U/L-Bit im ersten Oktett invertieren.</span></li>
+    <li data-step="split" tabindex="-1"><span class="step-position" data-step-position>2</span><span>48-Bit-MAC in zwei 24-Bit-Hälften teilen.</span></li>
+    <li data-step="group" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Das 64-Bit-Ergebnis als vier Hextets gruppieren.</span></li>
+    <li data-step="insert" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Zwischen den Hälften ff:fe einsetzen.</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><section class="quiz" data-quiz="iid-strategy-practice" data-correct="1">
+  <h3>Welche Aussage beschreibt eine heutige Clientkonfiguration am besten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="SLAAC schreibt keine dauerhafte MAC-basierte IID für jeden modernen Client vor."><span class="m">A</span> Jede SLAAC-Adresse muss dauerhaft aus der MAC per Modified EUI-64 entstehen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Dadurch bleibt eine stabile Erreichbarkeit möglich, während ausgehende Verbindungen weniger dauerhaft korrelierbar sind."><span class="m">B</span> Ein Client kann eine stabile opake IID und zusätzliche temporäre Privacy-Adressen verwenden.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Privacy Extensions verändern die Interface-ID, nicht das vom Netz angekündigte Präfix."><span class="m">C</span> Privacy Extensions ersetzen das /64-Präfix durch ein zufälliges /128-Präfix.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Auch zufällig oder opak gebildete Adressen werden auf Doppelvergabe geprüft."><span class="m">D</span> Mit Privacy Extensions ist Duplicate Address Detection nicht mehr erforderlich.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Karteikarten und freier Abruf</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="ipv6-64-split" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wie ist eine gewöhnliche SLAAC-LAN-Adresse bei /64 aufgeteilt?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>64 Bit Präfix und 64 Bit Interface-ID.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="ipv6-eui-insert" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche Bytefolge wird bei Modified EUI-64 in die 48-Bit-MAC eingesetzt?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>ff:fe zwischen die beiden 24-Bit-Hälften; zusätzlich wird das U/L-Bit des ersten Oktetts invertiert.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="ipv6-privacy" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum verwenden moderne Clients nicht zwingend eine MAC-basierte IID?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Stabile opake und temporäre Privacy-IIDs erschweren die dauerhafte Korrelation einer Adresse mit der Hardwarekennung.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „/64“:</span><button type="button" data-card-id="ipv6-64-split" data-card-rate="known">gewusst</button><button type="button" data-card-id="ipv6-64-split" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ipv6-64-split"></span></div>
+<div class="card-rating"><span>Karte „EUI-64“:</span><button type="button" data-card-id="ipv6-eui-insert" data-card-rate="known">gewusst</button><button type="button" data-card-id="ipv6-eui-insert" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ipv6-eui-insert"></span></div>
+<div class="card-rating"><span>Karte „Privatsphäre“:</span><button type="button" data-card-id="ipv6-privacy" data-card-rate="known">gewusst</button><button type="button" data-card-id="ipv6-privacy" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ipv6-privacy"></span></div><section class="recall-practice" data-recall="ipv6-prefix-eui-recall" data-min-length="130" aria-labelledby="ipv6-prefix-eui-recall-title">
+  <div class="recall-prompt"><h3 id="ipv6-prefix-eui-recall-title">Ohne Nachschlagen erklären</h3><p>Erkläre die Aufteilung eines /56 in /64-LANs und bilde anschließend verbal eine Modified-EUI-64-IID. Ordne das Verfahren gegenüber Privacy Extensions ein.</p></div>
+  <label class="sr-only" for="ipv6-prefix-eui-recall-answer">Deine Erklärung</label>
+  <textarea id="ipv6-prefix-eui-recall-answer" data-recall-input rows="4" placeholder="Zwischen /56 und /64 …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Zwischen /56 und /64 liegen acht Subnetzbits, also 256 mögliche /64-LANs. Für Modified EUI-64 wird eine 48-Bit-MAC geteilt, ff:fe eingesetzt und das U/L-Bit des ersten Oktetts invertiert. Das Ergebnis bildet eine 64-Bit-IID. Moderne Clients verwenden häufig stabile opake und zusätzliche temporäre IIDs, damit die Adresse nicht dauerhaft die Hardwarekennung offenlegt.</div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Lernziel-Check: Transfer</h2>
+<section class="numeric-practice transfer-number" data-numeric-practice="ipv6-prefix-transfer-count" data-required-objective="prefix-subnetting" data-expected="256" data-correct-feedback="Richtig. Acht zusätzliche Präfixbits stehen als Subnetz-ID zur Verfügung." data-wrong-feedback="Bestimme zuerst die Differenz zwischen 64 und 56 und bilde anschließend zwei hoch dieser Bitzahl.">
+  <h3>Anzahl der /64-LANs</h3>
+  <p>Wie viele unterschiedliche /64-LAN-Präfixe lassen sich aus einem delegierten /56-Präfix bilden?</p>
+  <label for="ipv6-prefix-transfer-count-answer">Anzahl /64-LANs</label>
+  <div class="answer-row"><input id="ipv6-prefix-transfer-count-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Anzahl"><button type="button" class="lbtn primary" data-numeric-check>Antwort prüfen</button></div>
+  <template data-numeric-correct><span>Richtig. Acht zusätzliche Präfixbits stehen als Subnetz-ID zur Verfügung.</span><div class="math-display compact" role="group" aria-label="Zwei hoch 64 minus 56 ergibt 256"><math display="block" aria-label="Zwei hoch 64 minus 56 ergibt 256"><mrow><msup><mn>2</mn><mrow><mn>64</mn><mo>−</mo><mn>56</mn></mrow></msup><mo>=</mo><mn>256</mn></mrow></math><div class="math-legend"><span>acht zusätzliche Präfixbits</span><span>jede Bitkombination bezeichnet ein /64-LAN</span></div></div></template>
+  <template data-numeric-feedback-for="8">Acht ist die Zahl der verfügbaren Bits, nicht die Zahl ihrer möglichen Kombinationen.</template>
+  <template data-numeric-feedback-for="64">Die Zielpräfixlänge ist keine Anzahl von Subnetzen.</template>
+  <template data-numeric-feedback-for="128">Mit acht freien Bits entstehen 256 Kombinationen; 128 entspräche nur sieben freien Bits.</template>
+  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p>
+</section><section class="quiz" data-quiz="ipv6-eui-transfer" data-correct="0" data-required-objective="iid-strategy">
+  <h3>Eine Laboraufgabe verlangt ausdrücklich Modified EUI-64 für die MAC `00:1a:2b:3c:4d:5e`. Welche IID ist korrekt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. ff:fe ist eingesetzt und das erste Oktett wurde durch Invertieren des U/L-Bits von 00 zu 02 geändert."><span class="m">A</span> 021a:2bff:fe3c:4d5e</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="ff:fe wurde eingesetzt, aber das U/L-Bit des ersten Oktetts blieb unverändert."><span class="m">B</span> 001a:2bff:fe3c:4d5e</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die einzusetzende Folge lautet ff:fe und wurde hier vertauscht."><span class="m">C</span> 021a:2bfe:ff3c:4d5e</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Das Anhängen von Nullen ersetzt weder das Einfügen von ff:fe noch die U/L-Bit-Invertierung."><span class="m">D</span> 001a:2b3c:4d5e:0000</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><p><strong>Prüfungsformulierung:</strong> Nutze Modified EUI-64 nur, wenn es ausdrücklich verlangt wird. Ergänze bei einer Konzeptfrage, dass moderne Betriebssysteme auch stabile opake und temporäre Privacy-IIDs verwenden.</p>
+<h2 class="sec" id="s7"><span class="num">7</span>Quellen und Einordnung</h2>
+<ul>
+<li><strong>Prüfungsvorbereitung IHK Bonn:</strong> /56-zu-/64-Prüfungsfall und historischer Modified-EUI-64-Bezug.</li>
+<li><strong>EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):</strong> Präfixverlängerung und hierarchische IPv6-Adressplanung.</li>
+</ul>
+<p>Die ältere pauschale EUI-64-Anforderung wurde fachlich eingeordnet statt fortgeschrieben. Privacy Extensions und stabile opake Interface-IDs sind ausdrücklich Teil der Einheit. Alle Beispiele und Diagramme sind neu erstellt.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-3"><span class="d">zurück zu</span><span class="t">Block N3 · IPv6 und automatische Adresskonfiguration</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N3 · IPv6 und automatische Adresskonfiguration</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Was bleibt bei /64 übrig?</a></li>
+<li><a href="#s2" data-t="s2">Ein /56 in /64-LANs aufteilen</a></li>
+<li><a href="#s3" data-t="s3">Durchgearbeitetes Modified-EUI-64-Beispiel</a></li>
+<li><a href="#s4" data-t="s4">Geführte Übung: EUI-64 nur auf ausdrückliche Anforderung</a></li>
+<li><a href="#s5" data-t="s5">Karteikarten und freier Abruf</a></li>
+<li><a href="#s6" data-t="s6">Lernziel-Check: Transfer</a></li>
+<li><a href="#s7" data-t="s7">Quellen und Einordnung</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-3">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

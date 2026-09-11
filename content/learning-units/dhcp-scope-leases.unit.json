@@ -1,0 +1,350 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "dhcp-scope-leases",
+    "slug": "dhcp-scope-leases",
+    "title": "DHCP-Scope und Lease-Zeiten planen",
+    "description": "Adresspool, Ausschlüsse, Reservierungen und Optionen konfliktfrei planen sowie Lease-Dauer, T1 und T2 passend zum Einsatz einordnen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-3",
+    "groupLabel": "Block N3 · IPv6, DHCP und DNS",
+    "itemId": "ga2-3__6",
+    "week": "KW 37",
+    "estimatedMinutes": 23,
+    "relevance": "hoch",
+    "sources": ["itlf10-12-2023"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "scope-design",
+      "label": "für ein IPv4-Subnetz dynamischen Pool, Ausschluss, Reservierung und DHCP-Optionen konfliktfrei festlegen"
+    },
+    {
+      "id": "lease-strategy",
+      "label": "Lease-Dauer anhand der Nutzung wählen und das Verhalten bei T1, T2 und Lease-Ende korrekt erklären"
+    }
+  ],
+  "intro": "Ein DHCP-Scope ist kein beliebiger Zahlenbereich. Er verbindet ein konkretes Subnetz mit einem dynamischen Pool, bewusst nicht zu vergebenden Adressen, festen Zuordnungen und Optionen. Die Lease-Zeit bestimmt anschließend, wie lange eine Zuweisung gilt und wie früh der Client sie zu verlängern versucht.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seiten 63–64, Chunks itlf10-12-2023:page:0063 und :page:0064",
+        "use": "DHCP-Pool, Adressvergabeplan, Ausnahmen, feste Zuordnungen sowie Gateway- und DNS-Optionen",
+        "reviewStatus": "Planungsprinzip geprüft; OCR-bedingte doppelte und widersprüchliche Beispieladressen nicht übernommen"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seite 11, Chunk itlf10-12-2023:page:0011",
+        "use": "Dynamische Zuordnung, Lease-Ablauf sowie Modellwerte T1 gleich ein Halb und T2 gleich sieben Achtel der Lease",
+        "reviewStatus": "als Default-Rechenmodell eingeordnet, nicht als unveränderliche Serverkonfiguration"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seite 89, Chunk itlf10-12-2023:page:0089",
+        "use": "Konkrete, separat konfigurierte Werte für Pool, Lease, Renew, Rebind, feste Zuordnungen und DHCP-Optionen",
+        "reviewStatus": "Konfigurationsidee geprüft; OCR-beschädigte Syntax nicht übernommen"
+      }
+    ],
+    "notes": [
+      "Die Source-Map-Fundstellen itlf10-12-2023:page:0012 und :page:0013 behandeln vor allem Relay und Redundanz beziehungsweise SLAAC. Sie sind für Ausschlüsse und Reservierungen zu schwach und wurden für diese Einheit ausgeschlossen.",
+      "T1 gleich 50 Prozent und T2 gleich 87,5 Prozent werden ausschließlich als Default-Rechenmodell verwendet. Ein Server kann andere Timer übermitteln; vorgegebene Aufgaben- oder Konfigurationswerte haben Vorrang.",
+      "Ob und wie Reservierungen außerhalb eines dynamischen Pools zulässig sind, ist implementierungsabhängig. Das Beispiel hält die Reservierung deshalb innerhalb des Poolrahmens und nimmt sie aus der freien Vergabe.",
+      "Die private Layoutgrafik itlf10-12-2023:layout:0011:01@p11 wird nicht veröffentlicht; beide Diagramme sind eigenständig erstellt."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "scope-address-plan",
+      "type": "comparison",
+      "title": "Ein Scope enthält mehrere Adressrollen",
+      "description": "Beispiel für 192.168.50.0/24 mit einem konfigurierten Poolrahmen von .50 bis .220.",
+      "items": [
+        {
+          "label": "Scope · 192.168.50.0/24",
+          "detail": "Ordnet Pool und Optionen genau diesem Subnetz zu; .0 und .255 sind keine Hostadressen."
+        },
+        {
+          "label": "Ausschluss · .50 bis .79",
+          "detail": "Liegt im geplanten Poolrahmen, wird aber nicht dynamisch vergeben, etwa wegen statischer Infrastruktur."
+        },
+        {
+          "label": "Reservierung · .150",
+          "detail": "Der Drucker erhält über DHCP anhand seiner Clientkennung immer diese feste Zuordnung."
+        },
+        {
+          "label": "Freie Dynamik · .80–.149 und .151–.220",
+          "detail": "Nur diese 140 Adressen stehen normalen dynamischen Leases zur Verfügung."
+        }
+      ]
+    },
+    {
+      "id": "lease-timeline",
+      "type": "flow",
+      "title": "Lease-Lebenslauf im Default-Rechenmodell",
+      "description": "T1 und T2 sind Zeitpunkte innerhalb der laufenden Lease, nicht zusätzliche Laufzeiten.",
+      "items": [
+        {
+          "label": "0 Prozent · ACK",
+          "detail": "Die bestätigte Lease beginnt; der Client verwendet die Konfiguration."
+        },
+        {
+          "label": "50 Prozent · T1 Renewal",
+          "detail": "Im Default-Modell fragt der Client zunächst direkt beim bisherigen Server nach Verlängerung."
+        },
+        {
+          "label": "87,5 Prozent · T2 Rebinding",
+          "detail": "Bleibt der bisherige Server aus, sucht der Client breiter nach einem Server, der verlängern kann."
+        },
+        {
+          "label": "100 Prozent · Lease abgelaufen",
+          "detail": "Ohne erfolgreiche Verlängerung darf die abgelaufene Konfiguration nicht einfach dauerhaft weitergenutzt werden."
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Was gehört wohin?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "scope-diagnostic",
+          "diagnostic": true,
+          "question": "Ein Netzwerkdrucker soll seine Adresse weiterhin per DHCP, aber immer identisch erhalten. Welches Mittel passt?",
+          "options": [
+            {
+              "text": "eine DHCP-Reservierung für die Clientkennung des Druckers",
+              "rationale": "Richtig. Die feste Zuordnung wird zentral im DHCP-Dienst verwaltet.",
+              "correct": true
+            },
+            {
+              "text": "eine zufällig kürzere Lease",
+              "rationale": "Eine kürzere Lease macht die Adresse nicht dauerhaft identisch.",
+              "correct": false
+            },
+            {
+              "text": "die Broadcastadresse des Subnetzes",
+              "rationale": "Die Broadcastadresse darf keinem einzelnen Endgerät zugewiesen werden.",
+              "correct": false
+            },
+            {
+              "text": "ein zweites Standard-Gateway",
+              "rationale": "Eine Gateway-Option steuert den Weg aus dem Subnetz, nicht die feste Adresszuordnung."
+              ,"correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Begriffe trennen",
+          "markdown": "**Scope:** Konfiguration für ein Subnetz. **Pool:** dynamisch vergebbarer Rahmen. **Ausschluss:** nicht frei vergeben. **Reservierung:** feste DHCP-Zuordnung für einen bestimmten Client."
+        }
+      ]
+    },
+    {
+      "title": "Scope als Adressplan",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Plane zuerst das Subnetz und seine nicht vergebbaren Grenzen. Danach legst du fest, welche Infrastruktur statisch adressiert wird, welcher Bereich grundsätzlich für DHCP vorgesehen ist und welche Adressen darin ausgeschlossen oder reserviert sind. Optionen wie Standard-Gateway, DNS- und gegebenenfalls NTP-Server gehören ebenfalls zum Scope.\n\nEine Reservierung ist nicht dasselbe wie eine manuell am Gerät konfigurierte statische Adresse: Der Client fragt weiterhin DHCP, erhält aber anhand einer bekannten Kennung dieselbe Adresse. Ein Ausschluss bindet dagegen keinen bestimmten Client; er verhindert nur die freie Vergabe dieser Adresse oder dieses Bereichs."
+        },
+        {
+          "type": "figure",
+          "diagramId": "scope-address-plan",
+          "alt": "Vier Vergleichskarten zeigen Scope 192.168.50.0/24, Ausschluss .50 bis .79, Reservierung .150 und die übrigen 140 dynamisch freien Adressen.",
+          "caption": "Eigene Lernskizze: Jede Adresse erhält eine dokumentierte Rolle, damit DHCP nicht mit statischer Infrastruktur kollidiert."
+        }
+      ]
+    },
+    {
+      "title": "Geführte Übung: freien Pool prüfen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Im Beispiel reicht der Poolrahmen einschließlich beider Grenzen von .50 bis .220. Das sind 220 − 50 + 1 = 171 Adressen. Der Ausschluss .50 bis .79 umfasst 30 Adressen. Die Reservierung .150 belegt eine weitere Adresse. Damit bleiben 171 − 30 − 1 = 140 frei vergebbare dynamische Leases."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Poolrahmen 220 minus 50 plus 1 ergibt 171; freie Leases 171 minus 30 minus 1 ergeben 140",
+          "mathml": "<math display=\"block\"><mtable columnalign=\"right center left\" rowspacing=\"0.5em\"><mtr><mtd><msub><mi>A</mi><mtext>Rahmen</mtext></msub></mtd><mtd><mo>=</mo></mtd><mtd><mn>220</mn><mo>−</mo><mn>50</mn><mo>+</mo><mn>1</mn><mo>=</mo><mn>171</mn></mtd></mtr><mtr><mtd><msub><mi>A</mi><mtext>frei</mtext></msub></mtd><mtd><mo>=</mo></mtd><mtd><mn>171</mn><mo>−</mo><mn>30</mn><mo>−</mo><mn>1</mn><mo>=</mo><mn>140</mn></mtd></mtr></mtable></math>",
+          "legend": ["Grenzen werden mitgezählt", "30 ausgeschlossene Adressen", "1 Reservierung"]
+        },
+        {
+          "type": "numeric",
+          "id": "scope-capacity-practice",
+          "title": "Verbleibende dynamische Adressen",
+          "prompt": "Ein Poolrahmen reicht einschließlich von 192.168.60.100 bis .199. Davon sind .100 bis .119 ausgeschlossen und zwei weitere Adressen reserviert. Wie viele Adressen bleiben für normale dynamische Leases?",
+          "label": "Freie dynamische Adressen",
+          "placeholder": "Ergebnis",
+          "expected": 78,
+          "tolerance": 0,
+          "correctFeedback": "Richtig: 100 Adressen im Poolrahmen minus 20 ausgeschlossene minus 2 reservierte ergeben 78.",
+          "wrongFeedback": "Zähle Bereiche einschließlich beider Grenzen: 199 − 100 + 1. Ziehe danach Ausschlüsse und Reservierungen ab.",
+          "correctMath": {
+            "ariaLabel": "199 minus 100 plus 1 minus 20 minus 2 ergibt 78 freie dynamische Adressen",
+            "mathml": "<math display=\"block\"><mrow><mo>(</mo><mn>199</mn><mo>−</mo><mn>100</mn><mo>+</mo><mn>1</mn><mo>)</mo><mo>−</mo><mn>20</mn><mo>−</mo><mn>2</mn><mo>=</mo><mn>78</mn></mrow></math>",
+            "legend": ["100 Adressen im Rahmen", "20 ausgeschlossen", "2 reserviert"]
+          },
+          "misconceptions": [
+            {
+              "value": 79,
+              "feedback": "Beim Bereich .100 bis .199 wurde vermutlich eine Grenze nicht mitgezählt. Es sind 100 Adressen."
+            },
+            {
+              "value": 80,
+              "feedback": "80 berücksichtigt den Ausschluss, aber nicht die beiden reservierten Adressen."
+            },
+            {
+              "value": 98,
+              "feedback": "98 zieht nur die Reservierungen ab; der Ausschlussbereich fehlt."
+            }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "scope-design-transfer",
+          "requiredObjective": "scope-design",
+          "question": "Für 192.168.70.0/24 ist .1 das Gateway, .10 ein statischer DNS-Server, .100 bis .200 der DHCP-Poolrahmen und .150 für einen Drucker reserviert. Welche Dokumentation ist konfliktfrei?",
+          "options": [
+            {
+              "text": "Scope 192.168.70.0/24; Pool .100–.200; Reservierung .150; Gateway-Option .1; DNS-Option .10",
+              "rationale": "Richtig. Infrastruktur liegt außerhalb des Poolrahmens, die feste DHCP-Zuordnung ist als Reservierung dokumentiert und die Optionen gehören zum richtigen Subnetz.",
+              "correct": true
+            },
+            {
+              "text": "Pool .0–.255; keine Ausnahmen; Gateway .0; DNS .255",
+              "rationale": ".0 ist die Netzadresse und .255 der Broadcast; beide dürfen hier weder Host noch Optionziel sein.",
+              "correct": false
+            },
+            {
+              "text": "Pool .100–.200; .150 zugleich frei dynamisch und unabhängig statisch am Drucker konfigurieren",
+              "rationale": "Damit könnten DHCP und das statisch konfigurierte Gerät dieselbe Adresse verwenden. Die feste Zuordnung muss für den DHCP-Dienst eindeutig sein.",
+              "correct": false
+            },
+            {
+              "text": "Scope 192.168.71.0/24; Pool .100–.200; Gateway .1 aus 192.168.70.0/24",
+              "rationale": "Scope und Gateway gehören nicht zum selben Subnetz; die Konfiguration passt nicht zum beschriebenen Netz."
+              ,"correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Lease, T1 und T2 sinnvoll lesen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Eine lange Lease reduziert Erneuerungsverkehr und hilft stabilen Clients, ihre Adresse länger zu behalten. Eine kurze Lease gibt Adressen in stark wechselnden Netzen schneller zurück und verteilt Änderungen früher, erzeugt aber mehr DHCP-Verkehr und macht die Erreichbarkeit des Dienstes zeitkritischer.\n\nIm Default-Rechenmodell liegt T1 bei der Hälfte und T2 bei sieben Achteln der Lease. Bei 12 Stunden ergeben sich T1 = 6 Stunden und T2 = 10,5 Stunden. Das Lehrbuch zeigt daneben eine explizite Konfiguration mit 12 Stunden Lease, 6 Stunden Renew und 9 Stunden Rebind. Das ist kein Widerspruch: Werden Timer vorgegeben oder vom Server geliefert, gelten diese Werte statt der Default-Bruchteile."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Im Defaultmodell ist T1 die Hälfte der Lease und T2 sieben Achtel der Lease; bei zwölf Stunden sind das sechs und zehneinhalb Stunden",
+          "mathml": "<math display=\"block\"><mtable columnalign=\"right center left\" rowspacing=\"0.5em\"><mtr><mtd><mi>T</mi><mn>1</mn></mtd><mtd><mo>=</mo></mtd><mtd><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>·</mo><mi>L</mi><mo>=</mo><mn>6</mn><mtext> h</mtext></mtd></mtr><mtr><mtd><mi>T</mi><mn>2</mn></mtd><mtd><mo>=</mo></mtd><mtd><mfrac><mn>7</mn><mn>8</mn></mfrac><mo>·</mo><mi>L</mi><mo>=</mo><mn>10,5</mn><mtext> h</mtext></mtd></mtr></mtable></math>",
+          "legend": ["L = Lease-Dauer von 12 Stunden", "Defaultwerte; gelieferte Timer haben Vorrang"]
+        },
+        {
+          "type": "figure",
+          "diagramId": "lease-timeline",
+          "alt": "Zeitstrahl einer Lease mit Start bei ACK, Renewal T1 bei 50 Prozent, Rebinding T2 bei 87,5 Prozent und Ablauf bei 100 Prozent.",
+          "caption": "Eigene Lernskizze: T1 startet die gezielte Verlängerung; T2 weitet die Suche aus; erst am Lease-Ende ist die bisherige Zuweisung abgelaufen."
+        },
+        {
+          "type": "callout",
+          "kind": "warning",
+          "label": "Aufgabenwert vor Default",
+          "markdown": "Stehen T1 oder T2 ausdrücklich in einer Konfiguration oder Aufgabe, übernimm diese Werte. Die Bruchteile 1/2 und 7/8 sind ein **Default-Rechenmodell**, keine Regel zum Überschreiben gelieferter Timer."
+        }
+      ]
+    },
+    {
+      "title": "Beispiel und Entscheidung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Schulungsraum wird nur an einzelnen Tagen genutzt und die Geräte wechseln häufig. Eine kürzere Lease kann dort Adressen schneller wieder verfügbar machen. Ein festes Büronetz mit reichlich Adressreserve und überwiegend gleichbleibenden Clients profitiert eher von einer längeren Lease und weniger Erneuerungsverkehr.\n\nDie Entscheidung ist kein Bauchgefühl: Dokumentiere Clientwechsel, Poolauslastung, Ausfalltoleranz des DHCP-Dienstes und Geschwindigkeit notwendiger Optionsänderungen. Prüfe anschließend im Monitoring, ob Adressmangel oder übermäßiger Erneuerungsverkehr auftreten."
+        },
+        {
+          "type": "quiz",
+          "id": "lease-strategy-transfer",
+          "requiredObjective": "lease-strategy",
+          "question": "Ein Gäste-WLAN hat einen knappen Pool und täglich stark wechselnde Geräte. Welche Entscheidung ist am besten begründet?",
+          "options": [
+            {
+              "text": "Eine eher kürzere Lease prüfen und Poolauslastung sowie DHCP-Erreichbarkeit beobachten.",
+              "rationale": "Richtig. Adressen werden bei hoher Fluktuation früher frei; zugleich müssen zusätzlicher Verkehr und Dienstverfügbarkeit kontrolliert werden.",
+              "correct": true
+            },
+            {
+              "text": "Eine unbegrenzte Lease setzen, damit niemals erneuert wird.",
+              "rationale": "Bei wechselnden Gästen würde der knappe Pool dadurch besonders lange gebunden.",
+              "correct": false
+            },
+            {
+              "text": "T2 vor T1 setzen, damit zuerst alle Server angefragt werden.",
+              "rationale": "Der normale Ablauf versucht zuerst bei T1 die gezielte Verlängerung und weitet die Suche erst bei T2 aus.",
+              "correct": false
+            },
+            {
+              "text": "Die Lease-Dauer ändert automatisch die Größe des IPv4-Subnetzes.",
+              "rationale": "Lease-Dauer und Subnetzgröße sind unabhängige Planungsgrößen.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "scope-pool-exclusion",
+              "label": "Pool und Ausschluss",
+              "front": "Was unterscheidet Pool und Ausschlussbereich?",
+              "back": "Der Poolrahmen beschreibt vorgesehene DHCP-Adressen; ein Ausschluss nimmt Adressen daraus aus der freien dynamischen Vergabe."
+            },
+            {
+              "id": "scope-reservation",
+              "label": "Reservierung",
+              "front": "Was unterscheidet eine DHCP-Reservierung von einer manuell statischen Adresse?",
+              "back": "Bei der Reservierung fragt der Client weiterhin DHCP und erhält anhand seiner Kennung eine feste Zuordnung vom Server."
+            },
+            {
+              "id": "lease-t1-t2",
+              "label": "T1 und T2",
+              "front": "Was geschieht im Default-Modell bei T1 und T2?",
+              "back": "Bei T1 versucht der Client zunächst die Verlängerung beim bisherigen Server; bei T2 weitet er die Suche aus. Vorgegebene Serverwerte haben Vorrang."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "scope-lease-free-recall",
+          "title": "Einen Scope aus dem Kopf entwerfen",
+          "prompt": "Beschreibe für ein /24-Netz einen konfliktfreien DHCP-Plan mit Pool, Ausschluss, Reservierung, Gateway, DNS und Lease-Strategie. Erkläre auch T1 und T2.",
+          "label": "Dein Plan",
+          "placeholder": "Scope … Pool … Ausschluss …",
+          "minLength": 130,
+          "model": "Der Scope gehört eindeutig zum /24-Subnetz. Netz und Broadcast bleiben unvergaben; statische Infrastruktur wird dokumentiert und bei Überschneidung ausgeschlossen. Der dynamische Pool enthält eine Reservierung für einen bekannten Client. Gateway und DNS werden als Optionen verteilt. Die Lease-Dauer folgt Fluktuation und Poolreserve. T1 startet die gezielte Verlängerung, T2 die breitere Suche; gelieferte Timer gehen dem Defaultmodell vor."
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **IT-Berufe Fachstufe II – Lernfelder 10–12 (2023), PDF-Seiten 63–64:** Scope-Planung, Adressbereiche, Ausnahmen und Optionen.\n- **Dieselbe Quelle, PDF-Seiten 11 und 89:** Lease-Ablauf, Default-Bruchteile und explizit konfigurierbare Timer.\n\nPrivate Buchgrafiken und OCR-Konfigurationscode wurden nicht übernommen. Diagramme und Aufgaben sind eigenständig erstellt."
+        }
+      ]
+    }
+  ]
+}

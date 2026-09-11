@@ -1,0 +1,382 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "ipv4-adressaufbau-cidr",
+    "slug": "ipv4-adressaufbau-cidr",
+    "title": "IPv4-Adressen und CIDR-Präfixe sicher lesen",
+    "description": "IPv4-Adressen als 32 Bit verstehen, CIDR-Präfixe in Netz- und Hostanteil übersetzen und die zugehörige Netzadresse bestimmen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-2",
+    "groupLabel": "Block N2 · IPv4-Adressierung und Subnetting",
+    "itemId": "ga2-2__0",
+    "week": "KW 36",
+    "estimatedMinutes": 22,
+    "relevance": "hoch",
+    "sources": ["europa-integratoren-2026", "itlf6-9-2022"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "prefix-mask",
+      "label": "aus einem CIDR-Präfix die Anzahl der Netz- und Hostbits sowie die dezimale Subnetzmaske bestimmen"
+    },
+    {
+      "id": "network-split",
+      "label": "eine IPv4-Adresse mit Präfix bitweise in Netz- und Hostanteil zerlegen und die Netzadresse ermitteln"
+    }
+  ],
+  "intro": "Eine IPv4-Adresse benennt ohne Präfix noch kein eindeutiges Netz. Erst die CIDR-Länge legt fest, welche der 32 Stellen zum Netz gehören und welche Stellen innerhalb dieses Netzes Geräte unterscheiden.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunk europa-integratoren-2026:01046, Markdown-Zeilen 9932–10019",
+        "use": "CIDR- und Dezimalmasken, binäre Trennung von Netz- und Hostanteil sowie schrittweise Adressplanung",
+        "reviewStatus": "Lösungsweg fachlich geprüft und vollständig neu formuliert"
+      },
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunk europa-integratoren-2026:00494, Markdown-Zeilen 5085–5180",
+        "use": "prüfungsnaher Ausgangsfall zur Auswahl von Netzgröße, Subnetzmaske und CIDR-Präfix",
+        "reviewStatus": "nur Aufgabenstruktur verwendet; keine Buchaufgabe oder Grafik übernommen"
+      },
+      {
+        "sourceId": "itlf6-9-2022",
+        "sourceLocator": "Chunk itlf6-9-2022:00184, Markdown-Zeilen 5240–5345",
+        "use": "Grundregel zur Aufteilung durch die Subnetzmaske und Subnetting-Prüfungsmuster",
+        "reviewStatus": "relevante Aussagen aus einem umfangreichen Mischchunk isoliert geprüft"
+      }
+    ],
+    "notes": [
+      "Die im Mapping genannte private Abbildung europa-integratoren-2026:figure:807ea3c648ec zeigt ein VLSM-Szenario und wird nicht veröffentlicht oder nachgezeichnet.",
+      "Die Einheit behandelt den Adressaufbau und die Netzgrenze. Broadcast- und vollständige Hostbereichsberechnungen werden im nachfolgenden Kernthema vertieft.",
+      "Alle Diagramme, Zahlenfälle und Antwortoptionen sind eigenständig erstellt.",
+      "Gemäß Lernmodul-Vertrag bleibt die agentisch erstellte Einheit bis zur menschlichen Fach- und Verständlichkeitsprüfung CURATED_DRAFT."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "ipv4-bit-layout",
+      "type": "layers",
+      "title": "32 Bit werden als vier Oktette geschrieben",
+      "description": "Die Punktnotation macht vier Gruppen sichtbar; das CIDR-Präfix kann die Grenze auch mitten durch ein Oktett legen.",
+      "items": [
+        {
+          "label": "Oktett 1 · 8 Bit",
+          "detail": "dezimaler Wert von 0 bis 255"
+        },
+        {
+          "label": "Oktett 2 · 8 Bit",
+          "detail": "zusammen mit Oktett 1 sind 16 Bit erreicht"
+        },
+        {
+          "label": "Oktett 3 · 8 Bit",
+          "detail": "ein Präfix wie /20 oder /22 endet innerhalb dieses Oktetts"
+        },
+        {
+          "label": "Oktett 4 · 8 Bit",
+          "detail": "bei /24 vollständig Hostanteil, bei /26 nur die letzten sechs Bit"
+        }
+      ]
+    },
+    {
+      "id": "cidr-and-flow",
+      "type": "flow",
+      "title": "Von Adresse und Präfix zur Netzadresse",
+      "description": "Die CIDR-Länge erzeugt eine Maske aus zusammenhängenden Einsen und Nullen; das bitweise UND entfernt den Hostanteil.",
+      "items": [
+        {
+          "label": "Adresse lesen",
+          "detail": "192.168.42.77 wird als 32-Bit-Wert betrachtet"
+        },
+        {
+          "label": "Präfix /26 anwenden",
+          "detail": "26 führende Einsen bilden den Netzanteil, sechs Nullen markieren Hostbits"
+        },
+        {
+          "label": "Maske bilden",
+          "detail": "11111111.11111111.11111111.11000000 entspricht 255.255.255.192"
+        },
+        {
+          "label": "Bitweises UND",
+          "detail": "Adressbit und Maskenbit bleiben nur dann eins, wenn beide eins sind"
+        },
+        {
+          "label": "Netzadresse",
+          "detail": "192.168.42.64; alle sechs Hostbits stehen auf null"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Was bedeutet /24?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "ipv4-cidr-diagnostic",
+          "diagnostic": true,
+          "question": "Was sagt das Präfix /24 hinter einer IPv4-Adresse aus?",
+          "options": [
+            {
+              "text": "24 Bit gehören zum Netzanteil.",
+              "rationale": "Richtig. Die verbleibenden acht der insgesamt 32 Bit bilden den Hostanteil.",
+              "correct": true
+            },
+            {
+              "text": "24 Bit gehören zum Hostanteil.",
+              "rationale": "Die Präfixlänge zählt die Netzbits von links. Der Hostanteil besteht aus den übrigen Bit.",
+              "correct": false
+            },
+            {
+              "text": "Das Netz darf genau 24 Geräte enthalten.",
+              "rationale": "Die Zahl beschreibt eine Bitgrenze und keine direkte Geräteanzahl.",
+              "correct": false
+            },
+            {
+              "text": "Nur das vierte Oktett besitzt einen gültigen Wert.",
+              "rationale": "Alle vier Oktette gehören zur IPv4-Adresse. Das Präfix legt nur die funktionale Grenze innerhalb der 32 Bit fest.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "CIDR lesen",
+          "markdown": "Die Zahl hinter dem Schrägstrich zählt **zusammenhängende Netzbits von links**. Alles rechts davon ist zunächst Hostanteil."
+        }
+      ]
+    },
+    {
+      "title": "IPv4-Struktur und Präfixgrenze",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Eine IPv4-Adresse besteht aus 32 Bit. Für Menschen wird sie als vier dezimale Oktette geschrieben. Jedes Oktett enthält acht Bit und kann deshalb Werte von 0 bis 255 darstellen.\n\nDie Subnetzmaske besitzt ebenfalls 32 Bit. Gültige CIDR-Masken enthalten von links zunächst nur Einsen und danach nur Nullen. Die Einsen markieren den Netzanteil, die Nullen den Hostanteil. Das Präfix `/26` bedeutet daher nicht „26 Hosts“, sondern 26 Netzbits und sechs Hostbits.\n\n| Präfix | Netzbits | Hostbits | Dezimalmaske |\n| --- | ---: | ---: | --- |\n| /16 | 16 | 16 | 255.255.0.0 |\n| /20 | 20 | 12 | 255.255.240.0 |\n| /24 | 24 | 8 | 255.255.255.0 |\n| /26 | 26 | 6 | 255.255.255.192 |\n| /27 | 27 | 5 | 255.255.255.224 |\n| /28 | 28 | 4 | 255.255.255.240 |"
+        },
+        {
+          "type": "figure",
+          "diagramId": "ipv4-bit-layout",
+          "alt": "Vier aufeinanderfolgende IPv4-Oktette mit je acht Bit und Hinweisen auf Präfixgrenzen innerhalb eines Oktetts.",
+          "caption": "Eigene Lernskizze: CIDR zählt über alle vier Oktette hinweg und endet nicht zwingend an einem Punkt der Dezimalschreibweise."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Anzahl der Hostbits ist 32 minus Präfixlänge; bei Präfix 26 bleiben sechs Hostbits",
+          "mathml": "<math display=\"block\"><mrow><mi>h</mi><mo>=</mo><mn>32</mn><mo>−</mo><mi>p</mi><mo>;</mo><mspace width=\"0.6em\"/><mi>h</mi><mo>=</mo><mn>32</mn><mo>−</mo><mn>26</mn><mo>=</mo><mn>6</mn><mtext> Hostbits</mtext></mrow></math>",
+          "legend": [
+            "p = CIDR-Präfixlänge beziehungsweise Netzbits",
+            "h = verbleibende Hostbits",
+            "IPv4 besitzt insgesamt 32 Bit"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Durchgerechnetes Beispiel: 192.168.42.77/26",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Die ersten 24 Netzbits decken die ersten drei Oktette ab. Zwei weitere Netzbits liegen im letzten Oktett. Die letzten sechs Stellen bleiben Hostanteil. Deshalb lautet die Maske 255.255.255.192.\n\nFür die Netzadresse wird die Adresse bitweise mit der Maske verknüpft. Im letzten Oktett steht 77 binär als `01001101`, die Maske als `11000000`. Nur Bitpositionen, an denen beide Werte eine Eins tragen, bleiben gesetzt. Das Ergebnis `01000000` entspricht dezimal 64. Die Netzadresse lautet somit 192.168.42.64."
+        },
+        {
+          "type": "figure",
+          "diagramId": "cidr-and-flow",
+          "alt": "Fünfstufiger Ablauf von der IPv4-Adresse 192.168.42.77 und dem Präfix 26 über Maske und bitweises UND zur Netzadresse 192.168.42.64.",
+          "caption": "Eigene Lernskizze: Die Maske erhält den Netzanteil und setzt alle Hostbits im Ergebnis auf null."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Letztes Adressoktett 01001101 bitweise UND mit Maskenoktett 11000000 ergibt 01000000 und damit dezimal 64",
+          "mathml": "<math display=\"block\"><mtable><mtr><mtd><mtext>Adresse</mtext></mtd><mtd><mn>01001101</mn></mtd></mtr><mtr><mtd><mtext>UND Maske</mtext></mtd><mtd><mn>11000000</mn></mtd></mtr><mtr><mtd><mtext>Netz</mtext></mtd><mtd><mn>01000000</mn><mo>=</mo><mn>64</mn></mtd></mtr></mtable></math>",
+          "legend": [
+            "77 ist das letzte Oktett der Adresse",
+            "192 ist das letzte Oktett der /26-Maske",
+            "64 ist das letzte Oktett der Netzadresse"
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "ipv4-example-practice",
+          "question": "Warum lautet die Netzadresse nicht 192.168.42.77?",
+          "options": [
+            {
+              "text": "Weil bei der Netzadresse alle Hostbits auf null gesetzt werden.",
+              "rationale": "Richtig. Die UND-Verknüpfung mit der Maske entfernt den individuellen Hostanteil.",
+              "correct": true
+            },
+            {
+              "text": "Weil das letzte Oktett jeder Netzadresse immer null sein muss.",
+              "rationale": "Nur alle Hostbits müssen null sein. Bei Präfixen länger als /24 kann das letzte Oktett der Netzadresse ungleich null sein.",
+              "correct": false
+            },
+            {
+              "text": "Weil /26 die Zahl 77 grundsätzlich nicht erlaubt.",
+              "rationale": "77 ist eine gültige Adresse innerhalb des betrachteten Blocks. Das Präfix verändert ihre Rolle, nicht die dezimale Schreibbarkeit.",
+              "correct": false
+            },
+            {
+              "text": "Weil die ersten 26 Bit vollständig gelöscht werden.",
+              "rationale": "Die Netzbits bleiben erhalten. Gelöscht beziehungsweise auf null gesetzt werden die sechs Hostbits.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Geführte Übung: Netzanteil ermitteln",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "ipv4-split-sequence",
+          "title": "Vom Präfix zur Netzadresse",
+          "prompt": "Bringe die Arbeitsschritte in eine sinnvolle Reihenfolge.",
+          "tag": "Übung",
+          "steps": [
+            {
+              "id": "and",
+              "label": "Adressbits und Maskenbits mit UND verknüpfen."
+            },
+            {
+              "id": "prefix",
+              "label": "Präfixlänge als Anzahl der Netzbits lesen."
+            },
+            {
+              "id": "network",
+              "label": "Ergebnis wieder in Dezimalpunktnotation als Netzadresse schreiben."
+            },
+            {
+              "id": "mask",
+              "label": "Maske aus führenden Einsen und anschließenden Nullen bilden."
+            }
+          ],
+          "expected": ["prefix", "mask", "and", "network"],
+          "correctFeedback": "Richtig. Das Präfix bestimmt die Maske; die UND-Verknüpfung liefert anschließend die Netzadresse.",
+          "wrongFeedback": "Beginne mit der Präfixlänge. Ohne daraus gebildete Maske lässt sich die Adresse nicht korrekt in Netz- und Hostanteil zerlegen."
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Plausibilitätsprüfung",
+          "markdown": "In einer Netzadresse sind **alle Hostbits null**. Das bedeutet nicht automatisch, dass das letzte Oktett dezimal null ist."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "ipv4-32-bit",
+              "label": "Aufbau",
+              "front": "Wie ist eine IPv4-Adresse aufgebaut?",
+              "back": "Sie besitzt 32 Bit, dargestellt als vier Oktette mit je acht Bit und dezimalen Werten von 0 bis 255."
+            },
+            {
+              "id": "ipv4-cidr",
+              "label": "CIDR",
+              "front": "Was zählt die Zahl hinter dem Schrägstrich?",
+              "back": "Die zusammenhängenden Netzbits von links; die übrigen Bit bilden den Hostanteil."
+            },
+            {
+              "id": "ipv4-network-and",
+              "label": "Netzadresse",
+              "front": "Wie wird die Netzadresse bitweise ermittelt?",
+              "back": "IPv4-Adresse und Subnetzmaske werden bitweise mit UND verknüpft. Dadurch werden alle Hostbits null."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "ipv4-cidr-recall",
+          "title": "Ohne Nachschlagen erklären",
+          "prompt": "Erkläre den Weg von einer IPv4-Adresse mit CIDR-Präfix zur Netzadresse. Begründe dabei die Rollen von Netzbits, Hostbits und Subnetzmaske.",
+          "label": "Deine Erklärung",
+          "placeholder": "IPv4 hat insgesamt … Das Präfix …",
+          "minLength": 90,
+          "model": "IPv4 besitzt 32 Bit in vier Oktetten. Das CIDR-Präfix zählt die Netzbits von links; die übrigen Bit sind Hostbits. Eine passende Maske enthält an den Netzpositionen Einsen und an den Hostpositionen Nullen. Durch bitweises UND von Adresse und Maske bleiben die Netzbits erhalten und die Hostbits werden null."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check: Transfer",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "ipv4-transfer-prefix",
+          "requiredObjective": "prefix-mask",
+          "question": "Welche Beschreibung gehört zu einem IPv4-Präfix /27?",
+          "options": [
+            {
+              "text": "27 Netzbits, 5 Hostbits, Maske 255.255.255.224",
+              "rationale": "Richtig. Nach 27 führenden Einsen bleiben fünf Nullen; das letzte Maskenoktett 11100000 entspricht 224.",
+              "correct": true
+            },
+            {
+              "text": "27 Hostbits, 5 Netzbits, Maske 248.0.0.0",
+              "rationale": "Das Präfix zählt Netzbits, nicht Hostbits. Bei /27 liegen 24 volle Netzbits bereits in den ersten drei Oktetten.",
+              "correct": false
+            },
+            {
+              "text": "27 Netzbits, 5 Hostbits, Maske 255.255.255.192",
+              "rationale": "255.255.255.192 enthält nur 26 Netzbits. Für /27 muss im letzten Oktett eine weitere Eins gesetzt sein.",
+              "correct": false
+            },
+            {
+              "text": "24 Netzbits, 8 Hostbits, Maske 255.255.255.0",
+              "rationale": "Diese Kombination beschreibt /24 und ignoriert die drei zusätzlichen Netzbits von /27.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "ipv4-transfer-network",
+          "requiredObjective": "network-split",
+          "question": "Welche Netzadresse gehört zu 192.168.50.173/27?",
+          "options": [
+            {
+              "text": "192.168.50.160",
+              "rationale": "Richtig. /27 bildet im letzten Oktett Blöcke zu 32 Adressen; 173 liegt im Block, der bei 160 beginnt.",
+              "correct": true
+            },
+            {
+              "text": "192.168.50.173",
+              "rationale": "Das ist die gegebene Adresse mit gesetzten Hostbits, nicht die Netzadresse mit vollständig genulltem Hostanteil.",
+              "correct": false
+            },
+            {
+              "text": "192.168.50.128",
+              "rationale": "128 wäre der Beginn des vorherigen /27-Blocks. Der Block 128 bis 159 enthält die Adresse 173 nicht.",
+              "correct": false
+            },
+            {
+              "text": "192.168.50.192",
+              "rationale": "192 ist der Beginn des nächsten /27-Blocks und damit größer als die gegebene Adresse 173.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Prüfungsformulierung:** Schreibe Präfix, Netz- und Hostbits, Maske und UND-Ergebnis nachvollziehbar auf. Ein korrektes Endergebnis ohne sichtbaren Rechenweg ist unnötig riskant."
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):** binäre Trennung von Netz- und Hostanteil, CIDR- und Dezimalmasken sowie prüfungsnahe Subnetzplanung.\n- **IT-Berufe Grundstufe – Lernfelder 6–9 (2022):** Grundregel zur Adressaufteilung durch die Subnetzmaske und ein Subnetting-Prüfungsmuster.\n\nText, Rechenfälle und Diagramme wurden vollständig neu erstellt. Die private VLSM-Buchgrafik wird nicht veröffentlicht."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,229 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "switching-verfahren",
+    "slug": "switching-verfahren",
+    "title": "Store-and-Forward, Cut-Through und Management",
+    "description": "Switching-Verfahren nach Latenz und Fehlerbehandlung vergleichen sowie Managed und Unmanaged Switches aus Betriebsanforderungen auswählen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-5",
+    "groupLabel": "Block N5 · Switching und VLANs",
+    "itemId": "ga2-5__1",
+    "week": "KW 39",
+    "estimatedMinutes": 23,
+    "relevance": "mittel bis hoch",
+    "sources": ["itlf6-9-2022"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "forwarding-method",
+      "label": "Store-and-Forward und Cut-Through anhand Startzeitpunkt, Latenz, Pufferung und Fehlerweitergabe unterscheiden"
+    },
+    {
+      "id": "management-choice",
+      "label": "Managed oder Unmanaged Switch anhand notwendiger VLAN-, Diagnose-, Schutz- und Betriebsfunktionen begründet auswählen"
+    }
+  ],
+  "intro": "Zwei Entscheidungen werden häufig vermischt: Das Switching-Verfahren bestimmt, wann ein empfangener Frame weitergesendet werden kann. Der Managementgrad bestimmt, ob das Gerät überwacht und Funktionen wie VLAN, QoS oder Schleifenschutz konfiguriert werden können. Ein Managed Switch ist daher nicht automatisch schneller, aber wesentlich steuerbarer.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf6-9-2022",
+        "sourceLocator": "Chunk itlf6-9-2022:00212, Markdown-Zeilen 5898–6028, insbesondere 5915–5943",
+        "use": "Prüfungsfrage Managed versus Unmanaged sowie beispielhafte Managementfunktionen wie VLAN, QoS, IGMP, Link Aggregation und Sicherheitsoptionen",
+        "reviewStatus": "direkter Beleg für Managementbedarf; herstellerspezifische Produktstufen und Marketingangaben nicht übernommen"
+      }
+    ],
+    "notes": [
+      "Die gemappte Stelle ihk-bonn:00150 behandelt das Großvater-Vater-Sohn-Sicherungsverfahren und ist ein eindeutiger Fehltreffer.",
+      "Die gemappte OCR-Seite itlf10-12-2023:page:0179 behandelt VLAN-Zugehörigkeitsmodelle, nicht Store-and-Forward oder Cut-Through, und wurde ausgeschlossen.",
+      "Auch itlf6-9-2022:00212 belegt nur Managed-/Unmanaged-Anforderungen. Für Store-and-Forward und Cut-Through enthält der lokale Bestand keinen direkten Fachtext; die stabile Grundlogik ist eigenständig formuliert und bleibt CURATED_DRAFT.",
+      "Der genaue Cut-Through-Startpunkt, adaptive Betriebsarten, Pufferarchitektur und Fallback-Verhalten sind implementationsabhängig. Deshalb wird keine pauschale absolute Latenzersparnis versprochen.",
+      "Smart Managed, Web Managed und ähnliche Bezeichnungen sind keine einheitliche Funktionsklasse. Maßgeblich ist die konkrete Anforderungsliste, nicht der Produktname."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "switching-timing-flow",
+      "type": "flow",
+      "title": "Wann beginnt die Weiterleitung?",
+      "description": "Store-and-Forward wartet auf den gesamten Frame und prüft die FCS; Cut-Through kann nach ausreichendem Header beginnen.",
+      "items": [
+        {"label": "Frame trifft ein", "detail": "Bits werden seriell am Eingangsport empfangen"},
+        {"label": "Ziel-MAC verfügbar", "detail": "Cut-Through kann je Implementierung mit der Weiterleitung beginnen"},
+        {"label": "vollständiger Frame da", "detail": "Store-and-Forward hat nun Länge, Nutzdaten und FCS vollständig"},
+        {"label": "FCS prüfen", "detail": "Store-and-Forward kann einen beschädigten Frame vor der Ausgabe verwerfen"},
+        {"label": "Ausgabe und Puffer", "detail": "Geschwindigkeitswechsel oder belegter Ausgang können beide Verfahren zum Puffern zwingen"}
+      ]
+    },
+    {
+      "id": "management-comparison",
+      "type": "comparison",
+      "title": "Managementgrad aus Anforderungen ableiten",
+      "description": "Plug-and-play steht konfigurierbaren Segmentierungs-, Diagnose- und Schutzfunktionen gegenüber.",
+      "items": [
+        {"label": "Unmanaged", "detail": "ohne reguläre Administrationsoberfläche; für einfache, unveränderliche Anschlussaufgaben"},
+        {"label": "Managed", "detail": "VLANs, Monitoring, Diagnose, Portschutz, QoS oder Schleifenschutz je nach Modell konfigurierbar"},
+        {"label": "Entscheidung", "detail": "benötigte Funktionen, Protokolle, Support und Dokumentation konkret gegen das Datenblatt prüfen"},
+        {"label": "Kein Tempoetikett", "detail": "Management allein sagt nichts über Portdatenrate, Puffergröße oder Switching-Verfahren aus"}
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Schnell starten oder vollständig prüfen?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "switching-method-diagnostic",
+          "diagnostic": true,
+          "question": "Welcher Unterschied zwischen Store-and-Forward und Cut-Through ist grundlegend korrekt?",
+          "options": [
+            {"text": "Store-and-Forward empfängt den ganzen Frame und kann die FCS vor der Weiterleitung prüfen; Cut-Through kann früher beginnen.", "rationale": "Richtig. Daraus entstehen der zentrale Fehlerprüfungs- und Latenzunterschied.", "correct": true},
+            {"text": "Cut-Through korrigiert beschädigte Frames, Store-and-Forward nicht.", "rationale": "Cut-Through kann bereits senden, bevor die am Frameende stehende FCS vollständig empfangen wurde.", "correct": false},
+            {"text": "Store-and-Forward funktioniert nur auf Unmanaged Switches.", "rationale": "Switching-Verfahren und Managementgrad sind getrennte Geräteeigenschaften.", "correct": false},
+            {"text": "Beide Begriffe bezeichnen ausschließlich die Zahl konfigurierbarer VLANs.", "rationale": "Die Begriffe beschreiben den Empfangs- und Weiterleitungszeitpunkt eines Frames, nicht die VLAN-Anzahl.", "correct": false}
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Zwei Achsen",
+          "markdown": "**Switching-Verfahren** beschreibt den Datenpfad. **Managed oder Unmanaged** beschreibt die administrative Steuerbarkeit. Beide Eigenschaften müssen getrennt bewertet werden."
+        }
+      ]
+    },
+    {
+      "title": "Latenz und Fehlerbehandlung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Bei **Store-and-Forward** wird ein Frame vollständig empfangen. Erst dann kann der Switch die am Ende stehende Frame Check Sequence prüfen und beschädigte Frames vor dem Ausgang verwerfen. Das kostet mindestens die Empfangs- beziehungsweise Serialisierungszeit des Frames, erleichtert aber auch die Anpassung zwischen unterschiedlichen Portgeschwindigkeiten.\n\nBei **Cut-Through** kann die Ausgabe beginnen, sobald genügend Headerinformation für die Weiterleitungsentscheidung vorliegt. Das reduziert besonders bei langen Frames und unbelasteten gleich schnellen Ports die reine Gerätewartezeit. Ein später erkannter Fehler kann dann jedoch bereits teilweise oder vollständig weitergegeben worden sein. Bei belegten Ausgängen, Geschwindigkeitswechseln oder internen Prüfungen kann trotzdem Pufferung nötig werden."
+        },
+        {
+          "type": "figure",
+          "diagramId": "switching-timing-flow",
+          "alt": "Zeitlicher Ablauf eines eingehenden Ethernet-Frames mit frühem Cut-Through-Start und späterem Store-and-Forward-Start nach vollständigem Empfang und FCS-Prüfung.",
+          "caption": "Eigene Lernskizze: Cut-Through senkt die mögliche Startlatenz; Store-and-Forward besitzt den vollständigen Frame für die Prüfung."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Die Serialisierungszeit ist die Rahmenlänge in Bit geteilt durch die Datenrate in Bit pro Sekunde",
+          "mathml": "<math display=\"block\"><mrow><msub><mi>t</mi><mi>ser</mi></msub><mo>=</mo><mfrac><msub><mi>L</mi><mi>bit</mi></msub><mi>R</mi></mfrac></mrow></math>",
+          "legend": ["Lᵦᵢₜ = betrachtete Frame-Länge in Bit", "R = Portdatenrate in Bit pro Sekunde", "zusätzliche Puffer-, Verarbeitungs- und Leitungszeiten sind nicht enthalten"]
+        },
+        {
+          "type": "numeric",
+          "id": "switching-serialization-practice",
+          "title": "Empfangszeit berechnen",
+          "prompt": "Ein betrachteter Ethernet-Frame ist 1518 Byte lang; Präambel und Inter-Frame-Gap bleiben außerhalb der Rechnung. Wie viele Mikrosekunden dauert seine Serialisierung bei 1 Gbit/s?",
+          "label": "Zeit in Mikrosekunden",
+          "placeholder": "z. B. 12,144",
+          "expected": 12.144,
+          "tolerance": 0.01,
+          "correctFeedback": "Richtig. 1518 mal 8 Bit geteilt durch 1.000.000.000 Bit pro Sekunde ergeben 12,144 Mikrosekunden.",
+          "wrongFeedback": "Wandle zuerst Byte in Bit um und anschließend Sekunden in Mikrosekunden. Präambel und Inter-Frame-Gap werden hier ausdrücklich nicht mitgerechnet.",
+          "misconceptions": [
+            {"value": 1.518, "feedback": "Hier wurde Byte nicht mit acht in Bit umgerechnet."},
+            {"value": 12144, "feedback": "Das ist die Zahl der Bit, noch keine Zeit in Mikrosekunden."}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Reales Auswahlbeispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Für einen unkritischen Besprechungsraum werden acht Geräte in einem einzigen Netz angeschlossen; es gibt keine VLAN-, Überwachungs- oder Fernwartungsanforderung. Ein passender Unmanaged Switch kann genügen.\n\nIm Ausbildungslabor sollen dagegen getrennte VLANs, QoS für Echtzeitverkehr, Portstatistiken, Schleifenschutz und eine dokumentierte Konfiguration betrieben werden. Dafür ist ein Managed Switch erforderlich, dessen Datenblatt genau diese Funktionen und den benötigten Support bestätigt. Ob dieser Switch Store-and-Forward oder Cut-Through nutzt, muss separat bewertet werden."
+        },
+        {
+          "type": "figure",
+          "diagramId": "management-comparison",
+          "alt": "Vier Vergleichskarten zu Unmanaged, Managed, anforderungsbasierter Auswahl und der Trennung von Managementgrad und Geschwindigkeit.",
+          "caption": "Eigene Lernskizze: Der Funktionsbedarf entscheidet über Management; Porttempo und Weiterleitungsverfahren bleiben eigene Kriterien."
+        },
+        {
+          "type": "sequence",
+          "id": "switch-management-guided-sequence",
+          "title": "Einen Switch anforderungsbasiert auswählen",
+          "prompt": "Bringe die Schritte einer belastbaren Produktauswahl in die richtige Reihenfolge.",
+          "tag": "Geführte Übung",
+          "steps": [
+            {"id": "verify", "label": "Im Datenblatt und Supportumfang prüfen, ob die benötigten Funktionen wirklich enthalten sind."},
+            {"id": "requirements", "label": "VLAN-, Diagnose-, Schutz-, QoS- und Betriebsanforderungen erfassen."},
+            {"id": "class", "label": "Aus den Anforderungen den nötigen Managementgrad ableiten."},
+            {"id": "separate", "label": "Portdatenrate, Pufferung und Switching-Verfahren als eigene Leistungsmerkmale bewerten."}
+          ],
+          "expected": ["requirements", "class", "verify", "separate"],
+          "correctFeedback": "Richtig. Erst der Bedarf, dann die Managementklasse und konkrete Datenblattprüfung; Leistungsmerkmale bleiben separat.",
+          "wrongFeedback": "Beginne mit den betrieblichen Anforderungen. Ein Produktname ersetzt weder die Funktions- noch die Leistungsprüfung."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {"id": "switch-store-forward", "label": "Store-and-Forward", "front": "Welchen entscheidenden Vorteil hat vollständiger Frame-Empfang?", "back": "Der Switch kann die FCS prüfen und beschädigte Frames vor der Weiterleitung verwerfen."},
+            {"id": "switch-cut-through", "label": "Cut-Through", "front": "Woher stammt der mögliche Latenzvorteil von Cut-Through?", "back": "Die Ausgabe kann beginnen, sobald genügend Headerinformation vorliegt, noch bevor der ganze Frame empfangen ist."},
+            {"id": "switch-managed", "label": "Management", "front": "Wann ist ein Managed Switch fachlich begründet?", "back": "Wenn Funktionen wie VLAN, Monitoring, Diagnose, QoS, Portschutz oder Schleifenschutz konfiguriert und betrieben werden müssen."}
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "switching-method-recall",
+          "title": "Beide Entscheidungsachsen erklären",
+          "prompt": "Vergleiche Store-and-Forward mit Cut-Through und erkläre anschließend, warum diese Wahl unabhängig von Managed versus Unmanaged ist.",
+          "label": "Deine Erklärung",
+          "placeholder": "Store-and-Forward wartet …",
+          "minLength": 120,
+          "model": "Store-and-Forward empfängt den vollständigen Frame, kann die FCS prüfen und startet dadurch später. Cut-Through kann nach ausreichender Headerinformation früher senden, kann aber einen später erkannten Fehler weitertragen. Managed und Unmanaged beschreiben nicht dieses Timing, sondern ob Konfiguration, Überwachung und Schutzfunktionen verfügbar sind."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check: Transfer",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "switching-method-transfer",
+          "requiredObjective": "forwarding-method",
+          "question": "Ein Messnetz verlangt, dass Frames mit fehlerhafter FCS möglichst nicht über den nächsten Switchport weiterlaufen. Welches Verfahren passt besser zur Begründung?",
+          "options": [
+            {"text": "Store-and-Forward, weil der vollständige Frame samt FCS vor der Ausgabe geprüft werden kann.", "rationale": "Richtig. Die vollständige Empfangsprüfung erfüllt die genannte Anforderung direkt.", "correct": true},
+            {"text": "Cut-Through, weil die FCS vor der Ziel-MAC im Frame steht.", "rationale": "Die FCS steht am Frameende; Cut-Through kann bereits senden, bevor sie vollständig empfangen ist.", "correct": false},
+            {"text": "Unmanaged, weil Management immer alle Bitfehler entfernt.", "rationale": "Managementgrad und Fehlerprüfung des Switching-Verfahrens sind unterschiedliche Eigenschaften.", "correct": false},
+            {"text": "Beide sind immer identisch, weil Pufferung technisch unmöglich ist.", "rationale": "Der Startzeitpunkt und die Möglichkeit zur vollständigen FCS-Prüfung unterscheiden die Verfahren gerade.", "correct": false}
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "switch-management-transfer",
+          "requiredObjective": "management-choice",
+          "question": "Ein Standort benötigt VLANs, Portstatistiken, RSTP und dokumentierbare Konfigurationssicherungen. Welche Auswahl ist belastbar?",
+          "options": [
+            {"text": "Einen Managed Switch wählen und die vier benötigten Funktionen im konkreten Datenblatt prüfen.", "rationale": "Richtig. Die Anforderungen verlangen Konfiguration und Betrieb; der Produktumfang muss trotzdem konkret verifiziert werden.", "correct": true},
+            {"text": "Jeden beliebigen Unmanaged Switch wählen, weil VLANs ausschließlich im Router entstehen.", "rationale": "Portbasierte VLAN-Zuordnung und Trunks erfordern VLAN-fähige, konfigurierbare Switchports.", "correct": false},
+            {"text": "Nur nach der höchsten beworbenen Portdatenrate entscheiden.", "rationale": "Datenrate ersetzt weder VLAN-, RSTP- noch Sicherungs- und Diagnosefunktionen.", "correct": false},
+            {"text": "Das Wort Smart im Produktnamen reicht als Funktionsnachweis.", "rationale": "Herstellerbezeichnungen sind nicht einheitlich; entscheidend sind die konkret dokumentierten Funktionen.", "correct": false}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Aktualität",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **IT-Berufe Fachstufe – Lernfelder 6–9 (2022):** Managed-/Unmanaged-Fragestellung und typische konfigurierbare Switchfunktionen.\n\nFür Store-and-Forward und Cut-Through fehlt im lokalen Bestand ein direkter Textbeleg. Die Darstellung bleibt daher bis zur Fachprüfung `CURATED_DRAFT`. Produkteigenschaften, adaptive Modi und Managementklassen müssen immer am aktuellen Datenblatt geprüft werden."
+        }
+      ]
+    }
+  ]
+}

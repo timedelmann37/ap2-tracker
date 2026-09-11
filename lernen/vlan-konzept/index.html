@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Geräte nach Funktion und Schutzbedarf segmentieren, VLANs mit eigenen IP-Netzen planen und notwendige Verbindungen ausdrücklich kontrollieren.">
+<title>Ein belastbares VLAN-Konzept entwerfen – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=hybrid-1">
+<script defer src="/assets/ap2-space.js?v=hybrid-1"></script>
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="vlan-konzept" data-progress-id="ga2-5__3" data-content-revision="2026-09-11.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-5">Block N5 · Switching und VLANs</a><span class="sep">›</span>
+    <span class="here">Ein belastbares VLAN-Konzept entwerfen</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">Ein belastbares VLAN-Konzept entwerfen</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 25 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Ein gutes VLAN-Konzept beginnt nicht mit fortlaufenden VLAN-Nummern, sondern mit Geschäfts- und Schutzanforderungen. Geräte mit ähnlicher Funktion und vergleichbarem Schutzbedarf bilden eine Layer-2-Domäne. Benötigte Verbindungen zwischen diesen Domänen werden anschließend über Routing und Filterregeln ausdrücklich freigegeben. VLANs schaffen Segmentgrenzen, aber noch keine vollständige Sicherheitsrichtlinie.</p>
+<section class="learning-goals" aria-labelledby="vlan-konzept-goals">
+  <h2 id="vlan-konzept-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Geräte anhand von Funktion, Schutzbedarf und erforderlichen Kommunikationsbeziehungen in begründete VLANs mit eigenen IP-Netzen gruppieren</li>
+    <li>aus einem VLAN-Entwurf Accessports, Trunks und kontrollierte Inter-VLAN-Verbindungen ableiten und dokumentieren</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Trennen nach Raum oder Risiko?</h2>
+<section class="quiz" data-quiz="vlan-concept-diagnostic" data-correct="0">
+  <h3>Gäste, interne Arbeitsplätze und Gebäudesensoren befinden sich im selben Raum. Welche VLAN-Aufteilung ist am besten begründet?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Der physische Raum ist weniger aussagekräftig als Aufgaben, Vertrauen und erforderliche Datenflüsse."><span class="m">A</span> Nach Funktion und Schutzbedarf in Gast-, Office- und IoT-VLAN trennen und notwendige Übergänge kontrollieren.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="VLANs ermöglichen gerade logische Trennung auf gemeinsamer physischer Infrastruktur."><span class="m">B</span> Alle Geräte in ein VLAN legen, weil sie denselben Switch verwenden.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Das wäre meist unnötig komplex. Gruppen sollen aus vergleichbarem Schutzbedarf und Kommunikationsprofil entstehen."><span class="m">C</span> Für jedes einzelne Gerät ein VLAN ohne gemeinsame Richtlinie anlegen.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="IP-Adressierung allein erzwingt keine belastbare Layer-2-Trennung oder kontrollierte Inter-VLAN-Kommunikation."><span class="m">D</span> Nur die IP-Adressen ändern; VLAN- und Übergangsregeln sind überflüssig.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">Anforderung vor VLAN-ID</span><p>Zuerst werden <strong>Rollen, Schutzbedarf und erlaubte Datenflüsse</strong> festgelegt. VLAN-Nummern, Subnetze und Portkonfiguration sind daraus abgeleitete Umsetzung.</p></aside><h2 class="sec" id="s2"><span class="num">2</span>Layer-2-Grenzen und kontrollierte Übergänge</h2>
+<p>Jedes VLAN bildet eine eigene Broadcastdomäne. Ein Switch leitet normale Layer-2-Frames nicht direkt zwischen unterschiedlichen VLANs weiter. Sollen Geräte verschiedener VLANs kommunizieren, ist ein Layer-3-Übergang über Router, Layer-3-Switch oder Firewall notwendig. Dort kann eine Zugriffsregel festlegen, welche Quelle welchen Dienst an welchem Ziel erreichen darf.</p>
+<p>Eine sinnvolle Gruppierung vermeidet sowohl ein riesiges Vertrauensnetz als auch unbeherrschbare Kleinst-VLANs. Typische Kriterien sind Funktion, Datenarten, Administrationsrolle, Gerätetyp, Standort und Schutzbedarf. Ein eigenes Management-VLAN schützt Verwaltungszugänge nur dann, wenn Endgerätezuordnung, Trunks, Authentisierung und Layer-3-Regeln ebenfalls korrekt sind.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Segmentierung nach Aufgabe und Schutzbedarf">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-layers" xmlns="http://www.w3.org/2000/svg" width="960" height="612" viewBox="0 0 960 612" role="img" aria-labelledby="diagram-vlan-segmentation-layers-title diagram-vlan-segmentation-layers-desc">
+  <title id="diagram-vlan-segmentation-layers-title">Segmentierung nach Aufgabe und Schutzbedarf</title>
+  <desc id="diagram-vlan-segmentation-layers-desc">Fünf VLAN-Schichten für Management, Office, IoT, Gäste und Server mit jeweils eigenem IPv4-Subnetz und Schutzprofil.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Segmentierung nach Aufgabe und Schutzbedarf</tspan></text>
+  <g><rect class="diagram-row" x="42" y="82" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="82" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="130" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">VLAN 10</tspan></text><text x="194" y="116" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Management · 10.60.10.0/24 · nur verwaltete Adminsysteme</tspan><tspan x="194" dy="25">und Infrastrukturzugänge</tspan></text></g><g><rect class="diagram-row" x="42" y="182" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="182" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="230" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">VLAN 20</tspan></text><text x="194" y="216" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Office · 10.60.20.0/24 · normale Arbeitsplätze und</tspan><tspan x="194" dy="25">freigegebene Geschäftsdienste</tspan></text></g><g><rect class="diagram-row" x="42" y="282" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="282" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="330" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">VLAN 30</tspan></text><text x="194" y="316" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">IoT · 10.60.30.0/24 · Geräte mit engem</tspan><tspan x="194" dy="25">Kommunikationsprofil und erhöhtem Kontrollbedarf</tspan></text></g><g><rect class="diagram-row" x="42" y="382" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="382" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="430" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">VLAN 40</tspan></text><text x="194" y="416" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Gast · 10.60.40.0/24 · ausschließlich Internetzugang,</tspan><tspan x="194" dy="25">keine internen Ziele</tspan></text></g><g><rect class="diagram-row" x="42" y="482" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="482" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="530" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">VLAN 50</tspan></text><text x="194" y="516" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Server · 10.60.50.0/24 · zentrale Dienste; Zugriff nur</tspan><tspan x="194" dy="25">über definierte Inter-VLAN-Regeln</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Gemeinsame Infrastruktur bleibt möglich, während Broadcastdomänen und Vertrauensgrenzen getrennt dokumentiert werden.</figcaption>
+</figure><div class="math-display" role="group" aria-label="Verschiedene VLANs bilden disjunkte Layer-2-Broadcastdomänen"><math display="block" aria-label="Verschiedene VLANs bilden disjunkte Layer-2-Broadcastdomänen"><mrow><msub><mi>V</mi><mi>i</mi></msub><mo>≠</mo><msub><mi>V</mi><mi>j</mi></msub><mo>⇒</mo><msub><mi>B</mi><mi>i</mi></msub><mo>∩</mo><msub><mi>B</mi><mi>j</mi></msub><mo>=</mo><mo>∅</mo></mrow></math><div class="math-legend"><span>Vᵢ und Vⱼ = unterschiedliche VLANs</span><span>Bᵢ und Bⱼ = zugehörige Layer-2-Broadcastdomänen</span><span>Kommunikation zwischen ihnen benötigt einen kontrollierten Layer-3-Übergang</span></div></div><h2 class="sec" id="s3"><span class="num">3</span>Reales Planungsbeispiel</h2>
+<p>Ein mittelständischer Standort benötigt Management, Office, IoT, Gast und Server. Die fünf VLANs aus der Grafik erhalten jeweils ein eigenes /24-Netz. Office darf DNS, HTTPS und ausgewählte Dateidienste im Server-VLAN nutzen. IoT darf nur seinen Broker und Zeitdienst erreichen. Gäste dürfen ausschließlich zum Internet. Nur verwaltete Adminsysteme dürfen aus VLAN 10 auf Switch-, Access-Point- und Servermanagement zugreifen.</p>
+<p>Arbeitsplatz- und IoT-Ports werden als Accessports dem jeweiligen VLAN zugeordnet. Switch-Uplinks und der Link zum Layer-3-Gateway führen ausschließlich die tatsächlich benötigten VLANs getaggt. Eine Sollmatrix dokumentiert pro Verbindung Quelle, Ziel, Dienst, Entscheidung und Begründung. Erst diese Matrix macht aus der Segmentierung ein prüfbares Betriebskonzept.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Vom Bedarf zur prüfbaren Konfiguration">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="758" viewBox="0 0 960 758" role="img" aria-labelledby="diagram-vlan-design-flow-title diagram-vlan-design-flow-desc">
+  <title id="diagram-vlan-design-flow-title">Vom Bedarf zur prüfbaren Konfiguration</title>
+  <desc id="diagram-vlan-design-flow-desc">Sechsstufiger Planungsablauf von Inventar und Schutzbedarf über VLANs, IP-Netze, Ports und Filter bis zu Test und Dokumentation.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Vom Bedarf zur prüfbaren Konfiguration</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Inventar und Rollen</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Geräte, Benutzergruppen, Standorte und Verantwortliche</tspan><tspan x="178" dy="25">erfassen</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Schutzbedarf und Flüsse</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">notwendige Quellen, Ziele und verbotene Beziehungen festhalten</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">VLANs und IP-Netze</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">jede Layer-2-Domäne eindeutig benennen, nummerieren und</tspan><tspan x="178" dy="25">adressieren</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Ports und Trunks</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Endgeräteports sowie benötigte Tagged-Links ableiten</tspan></text><path d="M480 472v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 494 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="512" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="541" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Routing und Filter</tspan></text><text x="178" y="568" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">nur erforderliche Inter-VLAN-Verbindungen am Layer-3-Übergang</tspan><tspan x="178" dy="25">erlauben</tspan></text><path d="M480 580v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 602 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="620" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="649" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Test und Dokumentation</tspan></text><text x="178" y="676" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Sollmatrix gegen reale Erreichbarkeit und Switchkonfiguration</tspan><tspan x="178" dy="25">prüfen</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Die technische Konfiguration folgt dem Kommunikationsbedarf und wird gegen eine dokumentierte Sollmatrix getestet.</figcaption>
+</figure><section class="sequence-practice" data-sequence="vlan-concept-guided-sequence" data-expected="inventory,flows,groups,ids,ports,verify" data-correct-feedback="Richtig. Anforderungen und Sollflüsse führen zur Segmentierung; IDs, Ports und Tests setzen sie anschließend nachweisbar um." data-wrong-feedback="Starte mit Inventar und Kommunikationsbedarf. VLAN-IDs und Portlisten sind erst nach der fachlichen Gruppierung sinnvoll." aria-labelledby="vlan-concept-guided-sequence-title">
+  <div class="lab-heading"><div><h3 id="vlan-concept-guided-sequence-title">VLAN-Konzept in richtiger Reihenfolge planen</h3><p>Bringe die Arbeitsschritte für den neuen Standort in eine belastbare Reihenfolge.</p></div><span class="lab-tag">Geführte Übung</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="ports" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Accessports und die auf Trunks benötigten VLANs ableiten.</span></li>
+    <li data-step="flows" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Erforderliche und verbotene Kommunikationsbeziehungen als Sollmatrix festhalten.</span></li>
+    <li data-step="inventory" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Geräte, Nutzerrollen, Dienste und Verantwortliche inventarisieren.</span></li>
+    <li data-step="groups" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Aus Funktion und Schutzbedarf begründete VLAN-Gruppen bilden.</span></li>
+    <li data-step="verify" tabindex="-1"><span class="step-position" data-step-position>5</span><span>Layer-2-Trennung und erlaubte Layer-3-Verbindungen gegen die Sollmatrix testen.</span></li>
+    <li data-step="ids" tabindex="-1"><span class="step-position" data-step-position>6</span><span>Eindeutige VLAN-IDs, Namen und nicht überlappende IP-Netze dokumentieren.</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Karteikarten und freier Abruf</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="vlan-concept-domain" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche unmittelbare Grenze schafft ein VLAN?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Eine eigene Layer-2-Broadcastdomäne; direkte Frame-Weiterleitung in andere VLANs findet nicht statt.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="vlan-concept-policy" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was wird für Kommunikation zwischen zwei VLANs benötigt?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Ein Layer-3-Übergang und eine explizite Entscheidung, welche Quellen, Ziele und Dienste erlaubt sind.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="vlan-concept-proof" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche Dokumentation verbindet Bedarf und Konfiguration?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Eine Sollmatrix aus Rollen, VLANs, IP-Netzen, Ports, erlaubten Datenflüssen und Begründungen.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Broadcastdomäne“:</span><button type="button" data-card-id="vlan-concept-domain" data-card-rate="known">gewusst</button><button type="button" data-card-id="vlan-concept-domain" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="vlan-concept-domain"></span></div>
+<div class="card-rating"><span>Karte „Übergang“:</span><button type="button" data-card-id="vlan-concept-policy" data-card-rate="known">gewusst</button><button type="button" data-card-id="vlan-concept-policy" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="vlan-concept-policy"></span></div>
+<div class="card-rating"><span>Karte „Nachweis“:</span><button type="button" data-card-id="vlan-concept-proof" data-card-rate="known">gewusst</button><button type="button" data-card-id="vlan-concept-proof" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="vlan-concept-proof"></span></div><section class="recall-practice" data-recall="vlan-concept-recall" data-min-length="140" aria-labelledby="vlan-concept-recall-title">
+  <div class="recall-prompt"><h3 id="vlan-concept-recall-title">Konzept ohne Vorlage erklären</h3><p>Erkläre, wie du aus Geräteinventar, Schutzbedarf und Datenflüssen ein VLAN-Konzept mit IP-Netzen, Ports und kontrollierten Übergängen entwickelst.</p></div>
+  <label class="sr-only" for="vlan-concept-recall-answer">Deine Erklärung</label>
+  <textarea id="vlan-concept-recall-answer" data-recall-input rows="4" placeholder="Zuerst inventarisiere ich …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Ich erfasse Geräte, Rollen, Schutzbedarf und notwendige Datenflüsse. Daraus bilde ich begründete VLAN-Gruppen und vergebe eindeutige Namen, IDs und nicht überlappende IP-Netze. Endgeräteports werden als Access, gemeinsame Links als begrenzte Trunks geplant. Zwischen VLANs erlaube ich nur dokumentierte Layer-3-Verbindungen und teste Konfiguration und Erreichbarkeit gegen die Sollmatrix.</div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Lernziel-Check: Transfer</h2>
+<section class="quiz" data-quiz="vlan-concept-transfer-segmentation" data-correct="0" data-required-objective="segmentation-design">
+  <h3>Ein Standort hat Büro-PCs, frei zugängliche Gäste, Gebäudesensoren und administrative Switchzugänge. Welche Aufteilung ist am besten begründet?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Funktion, Vertrauen und Schutzbedarf führen zu vier nachvollziehbaren Broadcastdomänen."><span class="m">A</span> Separate Office-, Gast-, IoT- und Management-VLANs mit eigenen IP-Netzen und dokumentierten Kommunikationsprofilen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Der gemeinsame Internetzugang beseitigt die unterschiedlichen Vertrauens- und Kommunikationsanforderungen nicht."><span class="m">B</span> Ein gemeinsames VLAN, weil alle Geräte dieselbe Internetleitung verwenden.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Standort kann ein Kriterium sein, bildet hier aber die unterschiedlichen Risiken und erlaubten Flüsse nicht ausreichend ab."><span class="m">C</span> Ein VLAN pro Etage, unabhängig von Gerätetyp und Berechtigung.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Jeder angeschlossene Port und Frame braucht eine definierte VLAN-Zugehörigkeit; die anderen Gruppen bleiben sonst ungeplant."><span class="m">D</span> Nur ein Management-VLAN; Gäste und Sensoren benötigen keine Layer-2-Zuordnung.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="vlan-concept-transfer-policy" data-correct="0" data-required-objective="policy-and-ports">
+  <h3>Gast-VLAN 40 soll nur das Internet erreichen; Switch-Uplink S1–S2 transportiert Office 20 und Gast 40. Welche Umsetzung folgt dem Konzept?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Portrollen, begrenzter Trunk und Inter-VLAN-Policy setzen die Sollbeziehung gemeinsam um."><span class="m">A</span> Gastports als Access VLAN 40, Uplink als Trunk nur für 20 und 40, am Layer-3-Übergang interne Ziele aus VLAN 40 sperren und Internet erlauben.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Ein ungetaggter Frame ist auf derselben Leitung nicht gleichzeitig zwei VLANs eindeutig zuzuordnen."><span class="m">B</span> Gastports und Uplink ungetaggt gleichzeitig in VLAN 20 und 40 betreiben.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="VLAN-Trennung ersetzt keine Routing- oder Firewallregel am Layer-3-Übergang."><span class="m">C</span> Nur VLAN 40 anlegen; dadurch sind alle internen Layer-3-Ziele automatisch durch eine Firewall gesperrt.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Unnötige VLANs vergrößern Fehler- und Angriffsfläche; Allowed-Liste und Dokumentation sollen dem tatsächlichen Bedarf folgen."><span class="m">D</span> Auf dem Uplink vorsorglich alle VLANs erlauben und die Portliste nicht dokumentieren.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Quellen und Einordnung</h2>
+<ul>
+<li><strong>IT-Berufe Fachstufe II – Lernfelder 10–12 (2023):</strong> Schutzbedarfszonen, Zugriffsmatrix, Management-VLAN sowie schrittweise und dokumentierte VLAN-Umsetzung.</li>
+<li><strong>EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):</strong> Broadcastdomäne, Zuordnungskriterien und Tagging zwischen Switches.</li>
+<li><strong>IT-Berufe Fachstufe – Lernfelder 6–9 (2022):</strong> VLAN-Planung für getrennte WLANs und Portzuordnung.</li>
+</ul>
+<p>Alle Szenarien, Adressen und Diagramme sind neu erstellt. VLANs sind nur ein Baustein des Sicherheitskonzepts; private Buchgrafiken werden nicht veröffentlicht.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-5"><span class="d">zurück zu</span><span class="t">Block N5 · Switching und VLANs</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N5 · Switching und VLANs</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Trennen nach Raum oder Risiko?</a></li>
+<li><a href="#s2" data-t="s2">Layer-2-Grenzen und kontrollierte Übergänge</a></li>
+<li><a href="#s3" data-t="s3">Reales Planungsbeispiel</a></li>
+<li><a href="#s4" data-t="s4">Karteikarten und freier Abruf</a></li>
+<li><a href="#s5" data-t="s5">Lernziel-Check: Transfer</a></li>
+<li><a href="#s6" data-t="s6">Quellen und Einordnung</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-5">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

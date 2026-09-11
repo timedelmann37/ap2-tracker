@@ -1,0 +1,397 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "dns-namensraum-zonen",
+    "slug": "dns-namensraum-zonen",
+    "title": "DNS-Namensraum, Zonen und Delegation verstehen",
+    "description": "FQDNs im hierarchischen DNS-Namensraum lesen, Zonen von Domänen unterscheiden und eine Delegation fachlich korrekt zuordnen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-3",
+    "groupLabel": "Block N3 · IPv6, DHCP und DNS",
+    "itemId": "ga2-3__8",
+    "week": "KW 37",
+    "estimatedMinutes": 21,
+    "relevance": "hoch",
+    "sources": ["itlf10-12-2023"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "namespace-interpret",
+      "label": "einen gegebenen FQDN in seine Hierarchieebenen zerlegen und Root, TLD, Domäne sowie Hostlabel korrekt benennen"
+    },
+    {
+      "id": "zone-delegation",
+      "label": "Domäne und Zone unterscheiden und bei einer delegierten Unterdomäne die Zuständigkeit von Eltern- und Kindzone begründet zuordnen"
+    }
+  ],
+  "intro": "DNS ist kein einzelnes Verzeichnis, sondern ein hierarchischer Namensraum mit verteilten Zuständigkeiten. Für Prüfungsfälle musst du deshalb zwei Fragen trennen: Wo liegt ein Name im Baum, und welcher autoritative Server verwaltet die zugehörige Zone?",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "Chunk itlf10-12-2023:page:0016",
+        "use": "Root, Top-Level-Domain, autoritative DNS-Server und Zonendatei als Hierarchie- und Zuständigkeitsgrundlage",
+        "reviewStatus": "OCR gegen Seitenkontext geprüft; zeitabhängige Betreiber- und Serverzahlangaben nicht übernommen"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "Chunks itlf10-12-2023:page:0065 und itlf10-12-2023:page:0066",
+        "use": "Delegation von Unterdomänen an eigene autoritative Server und Trennung von interner Zuständigkeit und rekursiver Auflösung",
+        "reviewStatus": "Szenario fachlich geprüft und mit eigenen Namen, Adressen und Diagrammen neu aufgebaut"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "Chunks itlf10-12-2023:page:0093 und itlf10-12-2023:page:0095",
+        "use": "SOA am Zonenanfang, NS-Einträge und Adressdaten im Kontext einer Delegation",
+        "reviewStatus": "Zonendatei-Kontext geprüft; keine Konfiguration oder Grafik wörtlich übernommen"
+      }
+    ],
+    "notes": [
+      "Der in der Source-Map als direkt markierte Chunk itlf10-12-2023:page:0023 behandelt eine Windows-Domäne und Gruppenrichtlinien, nicht den DNS-Namensraum; er wurde ausgeschlossen.",
+      "Chunk itlf10-12-2023:page:0066 enthält zusätzlich rekursive Auflösung. Diese Einheit nutzt daraus nur die Delegationsgrenze; Rekursion und Caching gehören zum nachfolgenden Kernthema ga2-3__11.",
+      "Eine DNS-Domäne bezeichnet einen Knoten samt Namensunterraum; eine Zone ist der zusammenhängende, autoritativ verwaltete Ausschnitt ohne delegierte Kindzonen.",
+      "Die beiden Diagramme, das Fallbeispiel und alle Antwortoptionen sind eigenständig erstellt; private Buchgrafiken werden nicht veröffentlicht."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "namespace-levels",
+      "type": "layers",
+      "title": "Ein FQDN wird von rechts nach links hierarchisch gelesen",
+      "description": "Der vollständig qualifizierte Name api.lab.firma.example. reicht von der Root über die Top-Level-Domain und delegierbare Domänen bis zum Hostlabel.",
+      "items": [
+        {
+          "label": ".",
+          "detail": "Root: unsichtbare oberste Ebene; der abschließende Punkt kennzeichnet den absoluten Namen"
+        },
+        {
+          "label": "example",
+          "detail": "Top-Level-Domain direkt unter der Root"
+        },
+        {
+          "label": "firma",
+          "detail": "Domänenlabel unter example; zusammen firma.example."
+        },
+        {
+          "label": "lab",
+          "detail": "Unterdomäne, die als eigene Zone delegiert werden kann"
+        },
+        {
+          "label": "api",
+          "detail": "linkes Host- oder Dienstlabel innerhalb der Unterdomäne"
+        }
+      ]
+    },
+    {
+      "id": "delegation-boundary",
+      "type": "topology",
+      "title": "Eine Delegation schneidet eine Kindzone aus der Elternzone",
+      "description": "Die Elternzone firma.example verweist mit einer NS-Delegation auf den autoritativen Server der Kindzone lab.firma.example. Die eigentlichen Hostdaten der Kindzone liegen dort.",
+      "zones": [
+        {
+          "id": "parent-zone",
+          "label": "Zone firma.example.",
+          "x": 210,
+          "y": 80,
+          "width": 270,
+          "height": 330,
+          "kind": "zone-parent"
+        },
+        {
+          "id": "child-zone",
+          "label": "Zone lab.firma.example.",
+          "x": 520,
+          "y": 80,
+          "width": 350,
+          "height": 330,
+          "kind": "zone-child"
+        }
+      ],
+      "nodes": [
+        {
+          "id": "parent-auth",
+          "label": "Elternserver",
+          "detail": "firma.example.",
+          "x": 345,
+          "y": 190,
+          "kind": "authoritative"
+        },
+        {
+          "id": "delegation",
+          "label": "NS-Verweis",
+          "detail": "Zone Cut",
+          "x": 500,
+          "y": 300,
+          "kind": "delegation"
+        },
+        {
+          "id": "child-auth",
+          "label": "Kindserver",
+          "detail": "lab.firma.example.",
+          "x": 690,
+          "y": 190,
+          "kind": "authoritative"
+        },
+        {
+          "id": "api-host",
+          "label": "api.lab",
+          "detail": "Hostdaten",
+          "x": 690,
+          "y": 340,
+          "kind": "host"
+        }
+      ],
+      "edges": [
+        {
+          "from": "parent-auth",
+          "to": "delegation",
+          "label": "delegiert lab",
+          "kind": "referral"
+        },
+        {
+          "from": "delegation",
+          "to": "child-auth",
+          "label": "NS-Ziel",
+          "kind": "referral"
+        },
+        {
+          "from": "child-auth",
+          "to": "api-host",
+          "label": "autoritativ",
+          "kind": "answer"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Was ist nach der Delegation noch in der Elternzone?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "dns-namespace-diagnostic",
+          "diagnostic": true,
+          "question": "Die Unterdomäne lab.firma.example. wurde an einen eigenen autoritativen Server delegiert. Wo liegt danach der A-Record für api.lab.firma.example.?",
+          "options": [
+            {
+              "text": "Nur in der Root-Zone, weil jeder FQDN dort beginnt",
+              "rationale": "Die Root vermittelt nur zur nächsten Hierarchieebene. Sie speichert nicht die Hostdaten jeder untergeordneten Domäne.",
+              "correct": false
+            },
+            {
+              "text": "In der Elternzone firma.example., weil lab darunter geschrieben wird",
+              "rationale": "Durch den Zone Cut werden die autoritativen Hostdaten der Kindzone aus der Elternzone herausgetrennt.",
+              "correct": false
+            },
+            {
+              "text": "In der Kindzone lab.firma.example.; die Elternzone hält den Delegationsverweis",
+              "rationale": "Richtig. Die Elternzone verweist mit NS-Daten auf die Kindzone, deren autoritativer Server den A-Record verwaltet.",
+              "correct": true
+            },
+            {
+              "text": "Ausschließlich im Cache des anfragenden Clients",
+              "rationale": "Ein Cache kann eine Antwort zeitweise speichern, ist aber nicht die autoritative Quelle des Records.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Zwei Leitfragen",
+          "markdown": "**Namensraum:** Wo liegt der Name im Baum? **Zone:** Wer pflegt für diesen zusammenhängenden Ausschnitt die autoritativen Daten?"
+        }
+      ]
+    },
+    {
+      "title": "Den Namensraum lesen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Fully Qualified Domain Name, kurz FQDN, beschreibt den vollständigen Weg eines Namens bis zur Root. Bei **api.lab.firma.example.** ist `api` das linke Host- oder Dienstlabel. Rechts davon folgen die übergeordneten Domänen `lab.firma.example`, `firma.example` und `example`. Der abschließende Punkt steht für die Root und macht den Namen absolut.\n\nDie Schreibrichtung darf nicht mit der Hierarchie verwechselt werden: Gelesen wird die Zuständigkeit von rechts nach links, die Spezialisierung nimmt nach links zu."
+        },
+        {
+          "type": "figure",
+          "diagramId": "namespace-levels",
+          "alt": "Fünf Ebenen des FQDN api.lab.firma.example. von Root und Top-Level-Domain bis zum Hostlabel api.",
+          "caption": "Eigene Lernskizze: Jeder Punkt trennt Labels; der abschließende Punkt bezeichnet die Root."
+        },
+        {
+          "type": "callout",
+          "kind": "warning",
+          "label": "Begriffsfalle",
+          "markdown": "Eine **Top-Level-Domain** ist eine Position im Namensraum. Ein **autoritativer Server** ist dagegen ein Server mit maßgeblichen Daten für eine konkrete Zone. Die Begriffe beschreiben nicht dasselbe."
+        }
+      ]
+    },
+    {
+      "title": "Domäne, Zone und Delegation am Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Die Firma verwaltet die Zone **firma.example.** auf einem Elternserver. Das Laborteam soll `lab.firma.example.` selbst pflegen. Dafür setzt die Elternzone am Namen `lab.firma.example.` einen Delegationspunkt und nennt per NS-Record den autoritativen Kindserver.\n\nDie Elternzone enthält weiterhin Daten oberhalb des Zone Cuts und den Verweis zur Kindzone. Die Kindzone beginnt an ihrem eigenen Apex, enthält dort typischerweise SOA- und NS-Daten und verwaltet darunter beispielsweise `api.lab.firma.example.`. Damit ist die Domäne `firma.example.` als Namensunterraum größer als die gleichnamige Zone: Die delegierte Kindzone gehört zum Domänenbaum, aber nicht mehr zu den autoritativen Hostdaten der Elternzone."
+        },
+        {
+          "type": "figure",
+          "diagramId": "delegation-boundary",
+          "alt": "Zwei markierte DNS-Zonen: Der Elternserver für firma.example verweist über einen NS-Delegationspunkt auf den Kindserver für lab.firma.example, der den Host api.lab autoritativ verwaltet.",
+          "caption": "Eigene Lernskizze: Die Delegation überträgt die Pflege eines Teilbaums, ohne dessen Namen aus dem übergeordneten Namensraum zu entfernen."
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Glue nur bei Bedarf",
+          "markdown": "Liegt der Name des Kind-Namensservers selbst innerhalb der delegierten Kindzone, kann die Elternzone zusätzlich eine **Glue-Adresse** bereitstellen. Sie hilft, den Kindserver überhaupt zu erreichen; sie ersetzt nicht dessen autoritative Zonendaten."
+        }
+      ]
+    },
+    {
+      "title": "Geführte Übung: Zuständigkeit ableiten",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "dns-delegation-workflow",
+          "title": "Analysiere einen unbekannten DNS-Fall in dieser Reihenfolge",
+          "prompt": "Ordne die Schritte für den Fall host.dev.firma.example., wenn dev.firma.example. delegiert ist.",
+          "tag": "Geführte Übung",
+          "steps": [
+            {
+              "id": "locate-cut",
+              "label": "Prüfen, ob auf dem Weg ein delegierter Zonenübergang liegt"
+            },
+            {
+              "id": "split-labels",
+              "label": "Den FQDN an den Punkten trennen und von der Root nach links einordnen"
+            },
+            {
+              "id": "assign-data",
+              "label": "Hostdaten dem autoritativen Server der Kindzone zuordnen"
+            },
+            {
+              "id": "assign-referral",
+              "label": "NS-Delegationsdaten der Elternzone zuordnen"
+            }
+          ],
+          "expected": ["split-labels", "locate-cut", "assign-referral", "assign-data"],
+          "correctFeedback": "Richtig. Erst wird der Name gelesen, dann der Zone Cut gefunden. Die Elternzone vermittelt, die Kindzone beantwortet die Hostfrage autoritativ.",
+          "wrongFeedback": "Beginne mit der Namenshierarchie. Sobald du den Zone Cut gefunden hast, trennst du Delegationsverweis in der Elternzone und eigentliche Hostdaten in der Kindzone."
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Kontrollergebnis:** Für `host.dev.firma.example.` hält die Zone `firma.example.` die Delegation zu `dev.firma.example.`. Den A- oder AAAA-Record des Hosts verwaltet die Zone `dev.firma.example.`. Ein rekursiver Resolver kann diese Server nacheinander befragen, ist aber nicht automatisch selbst autoritativ."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "dns-fqdn-card",
+              "label": "FQDN",
+              "front": "Was zeigt der abschließende Punkt in api.lab.firma.example. an?",
+              "back": "Er bezeichnet die Root und macht deutlich, dass der Name vollständig qualifiziert und nicht relativ zu einer lokalen Suchdomäne ist."
+            },
+            {
+              "id": "dns-zone-card",
+              "label": "Zone",
+              "front": "Warum ist eine DNS-Zone nicht immer identisch mit dem vollständigen Teilbaum einer Domäne?",
+              "back": "Delegierte Kindzonen werden als Zone Cuts aus der autoritativen Verwaltung der Elternzone herausgetrennt, bleiben aber Teil ihres Domänen-Namensraums."
+            },
+            {
+              "id": "dns-delegation-card",
+              "label": "Delegation",
+              "front": "Welche Kernaufgaben haben Eltern- und Kindzone bei einer Delegation?",
+              "back": "Die Elternzone hält den NS-Verweis zur Kindzone; die Kindzone hält ihre eigenen SOA- und NS-Daten sowie die autoritativen Records unterhalb ihres Apex."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "dns-namespace-recall",
+          "title": "Den Baum ohne Vorlage erklären",
+          "prompt": "Erkläre am Namen api.lab.firma.example. den Unterschied zwischen Namensraum, Domäne, Zone, autoritativem Server und Delegation.",
+          "label": "Deine Erklärung",
+          "placeholder": "Der Name besteht aus … Die Zone endet …",
+          "minLength": 110,
+          "model": "Der FQDN besteht von rechts nach links aus Root, der TLD example, der Domäne firma, der Unterdomäne lab und dem Hostlabel api. Die Domäne beschreibt den Namensunterraum. Eine Zone ist der autoritativ verwaltete, zusammenhängende Ausschnitt. Wird lab.firma.example delegiert, hält die Elternzone den NS-Verweis, während der autoritative Kindserver die Zone lab.firma.example samt Hostdaten verwaltet."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check: Prüfungstransfer",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "dns-transfer-namespace",
+          "requiredObjective": "namespace-interpret",
+          "question": "Welche Analyse von db.prod.werk.example. ist korrekt?",
+          "options": [
+            {
+              "text": "db ist die Root, prod die TLD und example das Hostlabel",
+              "rationale": "Die Hierarchie wurde umgedreht. Root und allgemeinere Ebenen stehen rechts, das spezifische Hostlabel links.",
+              "correct": false
+            },
+            {
+              "text": "Der abschließende Punkt ist die Root; example ist die TLD; werk und prod sind darunterliegende Domänenlabels; db ist das linke Hostlabel",
+              "rationale": "Richtig. So wird der absolute Name von der Root zur immer spezifischeren linken Ebene zerlegt.",
+              "correct": true
+            },
+            {
+              "text": "werk.example ist automatisch eine Zone, weil jeder Punkt eine Zonengrenze erzeugt",
+              "rationale": "Punkte trennen Labels, aber nur eine administrative Delegation erzeugt einen Zone Cut.",
+              "correct": false
+            },
+            {
+              "text": "Der Name ist nicht vollständig, weil ein FQDN keine Punkte enthalten darf",
+              "rationale": "Gerade die Punkttrennung bildet die DNS-Hierarchie ab; der letzte Punkt kennzeichnet den absoluten Namen.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "dns-transfer-delegation",
+          "requiredObjective": "zone-delegation",
+          "question": "Die Zone firma.example. delegiert shop.firma.example. an ns1.shop.firma.example. Welche Verteilung ist fachlich richtig?",
+          "options": [
+            {
+              "text": "Die Elternzone hält den NS-Verweis für shop; die Kindzone hält ihre SOA-/NS-Daten und den A-Record für web.shop.firma.example.",
+              "rationale": "Richtig. Der Delegationsverweis liegt an der Zonengrenze, die autoritativen Hostdaten liegen in der Kindzone.",
+              "correct": true
+            },
+            {
+              "text": "Die Root-Zone hält den A-Record für web.shop.firma.example., damit jede Anfrage dort vollständig beantwortet wird.",
+              "rationale": "Die Root delegiert auf oberster Ebene. Sie speichert keine Hostdaten beliebiger untergeordneter Zonen.",
+              "correct": false
+            },
+            {
+              "text": "Die Kindzone darf keine eigenen NS-Daten besitzen, weil der NS-Verweis schon in der Elternzone steht.",
+              "rationale": "Die Kindzone benötigt am eigenen Apex ebenfalls ihre autoritativen NS-Daten. Eltern- und Kindseite haben unterschiedliche Rollen am Zone Cut.",
+              "correct": false
+            },
+            {
+              "text": "Alle Records bleiben ausschließlich in der Elternzone; Delegation ändert nur die Schreibweise des FQDN.",
+              "rationale": "Delegation überträgt administrative und autoritative Zuständigkeit für die Kindzone. Sie ist keine bloße Umbenennung.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Geltungsbereich",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **IT-Berufe Fachstufe II – Lernfelder 10–12 (2023):** Hierarchie autoritativer DNS-Server, Zonen, Delegation und Zonendatei-Kontext.\n\nDie Einheit trennt autoritative Zuständigkeit bewusst von rekursiver oder iterativer Auflösung. Diese Abläufe, Caching, TTL und Reverse Lookup werden im Kernthema ga2-3__11 vertieft. Alle Namen, Szenarien und Diagramme wurden eigenständig erstellt."
+        }
+      ]
+    }
+  ]
+}

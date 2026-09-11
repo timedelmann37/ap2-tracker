@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Die MAC-Adresstabelle eines Switches aus eingehenden Frames fortschreiben und bekannte, unbekannte sowie lokale Ziel-MAC-Adressen korrekt weiterleiten.">
+<title>MAC-Lernen, Fluten und Filtern am Switch – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=hybrid-1">
+<script defer src="/assets/ap2-space.js?v=hybrid-1"></script>
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="switch-mac-tabelle" data-progress-id="ga2-5__0" data-content-revision="2026-09-11.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-5">Block N5 · Switching und VLANs</a><span class="sep">›</span>
+    <span class="here">MAC-Lernen, Fluten und Filtern am Switch</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">MAC-Lernen, Fluten und Filtern am Switch</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 22 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Ein Layer-2-Switch lernt nicht aus der Zieladresse, wo ein Gerät sitzt. Er beobachtet die Quell-MAC-Adresse jedes gültig empfangenen Frames und merkt sich den Eingangsport innerhalb des VLANs. Erst danach entscheidet die Ziel-MAC-Adresse, ob gezielt weitergeleitet, innerhalb des VLANs geflutet oder am Eingangsport gefiltert wird.</p>
+<section class="learning-goals" aria-labelledby="switch-mac-tabelle-goals">
+  <h2 id="switch-mac-tabelle-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>aus Quell-MAC-Adresse, Eingangsport und VLAN den korrekten dynamischen Eintrag der MAC-Adresstabelle ableiten</li>
+    <li>für bekannte und unbekannte Unicast-Ziele sowie Broadcasts die korrekten Ausgangsports oder das Filtern bestimmen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Quelle oder Ziel?</h2>
+<section class="quiz" data-quiz="mac-table-diagnostic" data-correct="0">
+  <h3>Ein Frame mit Quelle AA und Ziel BB trifft in VLAN 20 an Port 3 ein. Welche Information kann der Switch sofort sicher lernen?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Die Quelladresse belegt, von welchem Port und VLAN der Absender gerade erreicht wurde."><span class="m">A</span> MAC AA ist in VLAN 20 über Port 3 erreichbar.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="BB ist nur das Ziel. Der Frame verrät nicht, an welchem Port dieses Ziel angeschlossen ist."><span class="m">B</span> MAC BB ist in VLAN 20 über Port 3 erreichbar.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Aus einem Frame lässt sich nur die konkrete Quelle lernen."><span class="m">C</span> Alle MAC-Adressen des Netzes liegen an Port 3.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Die Lerntabelle ist VLAN-bezogen; außerdem wird nur die Quelle gelernt."><span class="m">D</span> AA und BB werden unabhängig vom VLAN global Port 3 zugeordnet.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">Lernrichtung</span><p><strong>Quelle lernt den Weg hinein. Ziel bestimmt den Weg hinaus.</strong> Der Switch lernt aus der Quell-MAC und entscheidet anschließend anhand der Ziel-MAC.</p></aside><h2 class="sec" id="s2"><span class="num">2</span>MAC-Tabelle als VLAN-bezogene Zuordnung</h2>
+<p>Beim Empfang eines gültigen Frames speichert oder aktualisiert der Switch die Quell-MAC-Adresse zusammen mit VLAN und Eingangsport. Wandert ein Gerät auf einen anderen Port, wird die dynamische Zuordnung beim nächsten Frame angepasst. Bleibt ein Gerät lange still, kann sein Eintrag nach der konfigurierten Aging-Zeit entfernt werden.</p>
+<p>Die Kombination aus VLAN und MAC-Adresse ist wichtig: Dieselbe MAC darf in getrennten VLAN-Kontexten nicht zu einer gemeinsamen Weiterleitungsdomäne führen. Ein Switch lernt außerdem nicht den gesamten Netzpfad, sondern nur den lokalen Port, über den die Quelle erreichbar ist.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Erst lernen, dann weiterleiten">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="650" viewBox="0 0 960 650" role="img" aria-labelledby="diagram-mac-learning-flow-title diagram-mac-learning-flow-desc">
+  <title id="diagram-mac-learning-flow-title">Erst lernen, dann weiterleiten</title>
+  <desc id="diagram-mac-learning-flow-desc">Fünfstufiger Ablauf vom Frame-Empfang über Quell-MAC-Lernen und Zielnachschlag bis zu Ausgangsmenge und Aging.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Erst lernen, dann weiterleiten</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Frame an Port empfangen</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Eingangsport und zugeordnetes VLAN stehen fest</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Quell-MAC lernen</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Zuordnung aus VLAN, Quell-MAC und Eingangsport anlegen oder</tspan><tspan x="178" dy="25">aktualisieren</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Ziel-MAC nachschlagen</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">nur die MAC-Tabelle desselben VLANs verwenden</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Ausgangsmenge bilden</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">gezielt senden, innerhalb des VLANs fluten oder am</tspan><tspan x="178" dy="25">Eingangsport filtern</tspan></text><path d="M480 472v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 494 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="512" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="541" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Aging berücksichtigen</tspan></text><text x="178" y="568" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">veraltete dynamische Einträge verschwinden und müssen neu</tspan><tspan x="178" dy="25">gelernt werden</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Lernen und Weiterleiten sind getrennte Schritte und beide bleiben auf das jeweilige VLAN begrenzt.</figcaption>
+</figure><div class="math-display" role="group" aria-label="Die MAC-Tabelle ordnet der Kombination aus VLAN und Quell-MAC den Eingangsport zu"><math display="block" aria-label="Die MAC-Tabelle ordnet der Kombination aus VLAN und Quell-MAC den Eingangsport zu"><mrow><mi>FDB</mi><mo>(</mo><mi>V</mi><mo>,</mo><msub><mi>MAC</mi><mi>Quelle</mi></msub><mo>)</mo><mo>←</mo><msub><mi>P</mi><mi>ein</mi></msub></mrow></math><div class="math-legend"><span>FDB = Forwarding Database beziehungsweise MAC-Tabelle</span><span>V = VLAN</span><span>Pₑᵢₙ = Eingangsport</span></div></div><h2 class="sec" id="s3"><span class="num">3</span>Durchgearbeitetes Beispiel</h2>
+<p>In VLAN 20 hängen A an Port 1, B an Port 2 und C an Port 3. Die Tabelle ist zunächst leer. A sendet an B: Der Switch lernt <code>VLAN 20, A → Port 1</code>. Da B unbekannt ist, flutet er den Frame an Port 2 und 3. B antwortet: Nun lernt der Switch <code>VLAN 20, B → Port 2</code> und sendet die Antwort gezielt an Port 1.</p>
+<p>Sendet A später an eine MAC, die ebenfalls hinter Port 1 gelernt wurde, filtert der Switch den Frame: Das Ziel befindet sich bereits im Segment des Eingangsports. Ein Broadcast von A wird dagegen weiterhin an Port 2 und 3 geflutet, aber niemals über Ports eines anderen VLANs.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Drei Zielzustände, drei Entscheidungen">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-mac-forwarding-cases-title diagram-mac-forwarding-cases-desc">
+  <title id="diagram-mac-forwarding-cases-title">Drei Zielzustände, drei Entscheidungen</title>
+  <desc id="diagram-mac-forwarding-cases-desc">Vergleich der Weiterleitung für bekannten Unicast, unbekannten Unicast, Broadcast und ein Ziel am Eingangsport.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Drei Zielzustände, drei Entscheidungen</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">bekannter Unicast</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">genau an den</tspan><tspan x="64" dy="30">gelernten Zielport</tspan><tspan x="64" dy="30">im selben VLAN</tspan></text></g><g><rect class="diagram-row" x="265" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="287" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="287" dy="0">unbekannter</tspan><tspan x="287" dy="25">Unicast</tspan></text><text x="287" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="287" dy="0">an alle</tspan><tspan x="287" dy="30">weiterleitenden</tspan><tspan x="287" dy="30">Ports desselben</tspan></text></g><g><rect class="diagram-row" x="488" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="510" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="510" dy="0">Broadcast</tspan></text><text x="510" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="510" dy="0">innerhalb des VLANs</tspan><tspan x="510" dy="30">an alle</tspan><tspan x="510" dy="30">weiterleitenden</tspan></text></g><g><rect class="diagram-row" x="711" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="733" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="733" dy="0">Ziel am</tspan><tspan x="733" dy="25">Eingangsport</tspan></text><text x="733" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="733" dy="0">Frame filtern; eine</tspan><tspan x="733" dy="30">Rücksendung auf</tspan><tspan x="733" dy="30">denselben Port ist</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Flooding ist eine kontrollierte Ausgangsmenge im VLAN, kein Versand über jeden physischen Port.</figcaption>
+</figure><section class="sequence-practice" data-sequence="mac-table-guided-sequence" data-expected="receive,learn,lookup,flood" data-correct-feedback="Richtig. Die Quelle wird vor der Zielentscheidung gelernt; erst der erfolglose Zielnachschlag löst Unknown-Unicast-Flooding aus." data-wrong-feedback="Beginne mit Empfang und VLAN-Zuordnung. Gelernt wird die Quelle, bevor das Ziel nachgeschlagen wird." aria-labelledby="mac-table-guided-sequence-title">
+  <div class="lab-heading"><div><h3 id="mac-table-guided-sequence-title">Einen Frame am Switch simulieren</h3><p>Bringe die Schritte für den ersten Frame von A an B in die richtige Reihenfolge.</p></div><span class="lab-tag">Geführte Übung</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="flood" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Bei unbekanntem B an alle übrigen Ports in VLAN 20 fluten.</span></li>
+    <li data-step="learn" tabindex="-1"><span class="step-position" data-step-position>2</span><span>A zusammen mit VLAN 20 und Port 1 in die MAC-Tabelle eintragen.</span></li>
+    <li data-step="receive" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Frame an Port 1 empfangen und VLAN 20 zuordnen.</span></li>
+    <li data-step="lookup" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Ziel B in der MAC-Tabelle von VLAN 20 nachschlagen.</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Karteikarten und freier Abruf</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="mac-source-learning" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Aus welchem Feld lernt ein Switch einen dynamischen MAC-Eintrag?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Aus der Quell-MAC-Adresse; gespeichert werden zusätzlich VLAN und Eingangsport.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="mac-unknown-unicast" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was geschieht bei einer unbekannten Unicast-Ziel-MAC?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Der Frame wird an alle übrigen weiterleitenden Ports desselben VLANs geflutet.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="mac-filtering" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wann filtert ein Switch einen bekannten Unicast-Frame am Eingangsport?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Wenn die Ziel-MAC im selben VLAN bereits am gleichen Port wie der Eingang gelernt ist.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Quelllernen“:</span><button type="button" data-card-id="mac-source-learning" data-card-rate="known">gewusst</button><button type="button" data-card-id="mac-source-learning" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="mac-source-learning"></span></div>
+<div class="card-rating"><span>Karte „Unknown Unicast“:</span><button type="button" data-card-id="mac-unknown-unicast" data-card-rate="known">gewusst</button><button type="button" data-card-id="mac-unknown-unicast" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="mac-unknown-unicast"></span></div>
+<div class="card-rating"><span>Karte „Filtering“:</span><button type="button" data-card-id="mac-filtering" data-card-rate="known">gewusst</button><button type="button" data-card-id="mac-filtering" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="mac-filtering"></span></div><section class="recall-practice" data-recall="mac-table-recall" data-min-length="120" aria-labelledby="mac-table-recall-title">
+  <div class="recall-prompt"><h3 id="mac-table-recall-title">Switchentscheidung frei erklären</h3><p>Erkläre den vollständigen Ablauf aus Quelllernen, Zielnachschlag, gezielter Weiterleitung, Flooding und Filtering einschließlich der VLAN-Grenze.</p></div>
+  <label class="sr-only" for="mac-table-recall-answer">Deine Erklärung</label>
+  <textarea id="mac-table-recall-answer" data-recall-input rows="4" placeholder="Beim Empfang eines Frames …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Der Switch lernt die Quell-MAC zusammen mit VLAN und Eingangsport. Danach sucht er die Ziel-MAC in derselben VLAN-Tabelle. Ein bekanntes Ziel wird gezielt gesendet. Ein unbekanntes Unicast-Ziel oder Broadcast wird an alle übrigen weiterleitenden Ports dieses VLANs geflutet. Liegt das bekannte Ziel am Eingangsport, wird der Frame gefiltert.</div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Lernziel-Check: Transfer</h2>
+<section class="quiz" data-quiz="mac-table-transfer-learning" data-correct="0" data-required-objective="mac-learning">
+  <h3>Die Tabelle enthält `VLAN 30, DD → Port 4`. Nun trifft ein Frame mit Quelle DD in VLAN 30 an Port 7 ein. Welche Aktualisierung ist richtig?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Der neue Quellframe zeigt, dass DD im VLAN 30 jetzt über Port 7 erreichbar ist."><span class="m">A</span> Den dynamischen Eintrag auf `VLAN 30, DD → Port 7` aktualisieren.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die Quelladresse reicht für die Aktualisierung; ein Ziel-Frame ist nicht nötig."><span class="m">B</span> Den alten Eintrag behalten, bis ein Frame an DD gesendet wurde.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die Weiterleitungszuordnung bleibt VLAN-bezogen und ersetzt den alten dynamischen Port für diese Kombination."><span class="m">C</span> DD zusätzlich global ohne VLAN an Port 7 eintragen.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Gelernt wird weiterhin die Quell-MAC DD, nicht die Zieladresse."><span class="m">D</span> Die Ziel-MAC des Frames statt DD auf Port 7 lernen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="mac-table-transfer-forwarding" data-correct="0" data-required-objective="frame-forwarding">
+  <h3>Ein Frame kommt in VLAN 10 an Port 5 an. Seine Ziel-MAC ist in VLAN 10 ebenfalls für Port 5 gelernt. Was tut der Switch?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Das Ziel liegt aus Sicht der Tabelle bereits hinter dem Eingangsport."><span class="m">A</span> Er filtert den Frame und sendet ihn nicht auf Port 5 zurück.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Das Ziel ist bekannt; außerdem bleibt jede Layer-2-Weiterleitung auf das VLAN begrenzt."><span class="m">B</span> Er flutet ihn über alle Ports aller VLANs.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Eine Rücksendung über den Eingangsport wäre unnötig und wird gefiltert."><span class="m">C</span> Er sendet ihn genau auf Port 5 zurück.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Ein Ziel am Eingangsport ist kein Grund, die gesamte VLAN-Tabelle zu löschen."><span class="m">D</span> Er löscht grundsätzlich alle Einträge für VLAN 10.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Quellen und Einordnung</h2>
+<ul>
+<li><strong>IT-Berufe Fachstufe II – Lernfelder 10–12 (2023):</strong> Source Address Table, Ethernet-MAC-Felder, Broadcast-Flooding und VLAN-begrenzte Weiterleitung als Teilbelege.</li>
+</ul>
+<p>Die vollständige MAC-Lernlogik ist in den gemappten Buchstellen nicht geschlossen dargestellt. Alle Beispiele, Aufgaben und Diagramme sind eigenständig erstellt; sachfremde Hashgrafik und private Buchabbildungen werden nicht veröffentlicht.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-5"><span class="d">zurück zu</span><span class="t">Block N5 · Switching und VLANs</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N5 · Switching und VLANs</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Quelle oder Ziel?</a></li>
+<li><a href="#s2" data-t="s2">MAC-Tabelle als VLAN-bezogene Zuordnung</a></li>
+<li><a href="#s3" data-t="s3">Durchgearbeitetes Beispiel</a></li>
+<li><a href="#s4" data-t="s4">Karteikarten und freier Abruf</a></li>
+<li><a href="#s5" data-t="s5">Lernziel-Check: Transfer</a></li>
+<li><a href="#s6" data-t="s6">Quellen und Einordnung</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-5">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

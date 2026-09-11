@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="DHCP-Relay für entfernte Clientnetze platzieren und Split Scope klar von zustandssynchronisiertem DHCP-Failover unterscheiden.">
+<title>DHCP über Netzgrenzen verfügbar planen – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=hybrid-1">
+<script defer src="/assets/ap2-space.js?v=hybrid-1"></script>
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="dhcp-relay-failover" data-progress-id="ga2-3__7" data-content-revision="2026-09-11.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-3">Block N3 · IPv6, DHCP und DNS</a><span class="sep">›</span>
+    <span class="here">DHCP über Netzgrenzen verfügbar planen</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">DHCP über Netzgrenzen verfügbar planen</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 24 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>DHCP-Relay und DHCP-Redundanz lösen zwei verschiedene Probleme. Ein Relay überbrückt die Routergrenze für Clientanfragen. Redundanz entscheidet dagegen, welcher Server bei Last oder Ausfall gültige Leases vergeben kann. Erst wenn beide Ebenen getrennt geplant sind, ist die Adressvergabe wirklich belastbar.</p>
+<section class="learning-goals" aria-labelledby="dhcp-relay-failover-goals">
+  <h2 id="dhcp-relay-failover-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>einen DHCP-Relay am passenden Routerinterface platzieren und die Auswahl des entfernten Scopes erklären</li>
+    <li>Split Scope und zustandssynchronisiertes DHCP-Failover anhand von Lease-Zustand und Ausfallverhalten unterscheiden</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Welches Problem wird gelöst?</h2>
+<section class="quiz" data-quiz="relay-failover-diagnostic" data-correct="0">
+  <h3>Clients in VLAN 20 erreichen den zentralen DHCP-Server hinter einem Router nicht, während Clients im Servernetz funktionieren. Welche Maßnahme adressiert zuerst genau diese Netzgrenze?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Der Relay-Agent nimmt die lokale Anfrage auf und leitet sie zum zentralen Dienst weiter."><span class="m">A</span> DHCP-Relay am Routerinterface von VLAN 20 konfigurieren</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Eine längere Lease transportiert den initialen Broadcast nicht über den Router."><span class="m">B</span> Nur die Lease-Zeit verdoppeln</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Redundanz ersetzt nicht den fehlenden Pfad aus VLAN 20 zum DHCP-Dienst."><span class="m">C</span> Zwei unabhängige Pools im selben Servernetz anlegen</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Router begrenzen Broadcastdomänen. Relay vermittelt gezielt, statt Broadcasts global weiterzureichen."><span class="m">D</span> Den Client-Broadcast unverändert durch alle Router fluten</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">Zwei Achsen</span><p><strong>Relay = Erreichbarkeit über Subnetzgrenzen. Redundanz = gültige Vergabe bei Last oder Serverausfall.</strong> Ein Netz kann das eine benötigen, ohne dass das andere damit automatisch gelöst ist.</p></aside><h2 class="sec" id="s2"><span class="num">2</span>Relaypfad und Scope-Auswahl</h2>
+<p>Ein unkonfigurierter Client sendet seine erste DHCP-Anfrage lokal. Der Router leitet diesen Broadcast nicht wie normalen Unicastverkehr weiter. Ein Relay-Agent am Interface des Clientnetzes nimmt die Anfrage auf und sendet sie gezielt an einen oder mehrere konfigurierte DHCP-Server.</p>
+<p>Dabei liefert der Relaypfad dem Server Information darüber, aus welchem Clientnetz die Anfrage stammt. Der Server kann dadurch den Scope für genau dieses Subnetz auswählen. Ein erreichbarer Server ohne passenden Scope kann dem Client keine passende Adresse anbieten.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Relay verbindet Clientnetz und zentralen DHCP-Dienst">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-topology" xmlns="http://www.w3.org/2000/svg" width="960" height="560" viewBox="0 0 960 560" role="img" aria-labelledby="diagram-relay-topology-title diagram-relay-topology-desc">
+  <title id="diagram-relay-topology-title">Relay verbindet Clientnetz und zentralen DHCP-Dienst</title>
+  <desc id="diagram-relay-topology-desc">Topologie mit DHCP-Client in VLAN 20, Router mit Relay und zwei DHCP-Servern im Servernetz. Der Client sendet lokal zum Relay, das die Anfrage samt Ursprungsnetz weiterleitet.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Relay verbindet Clientnetz und zentralen DHCP-Dienst</tspan></text>
+  <g class="diagram-zone client-net"><rect x="30" y="55" width="300" height="420" rx="18"/><text x="46" y="82">VLAN 20 · 192.168.20.0/24</text></g><g class="diagram-zone server-net"><rect x="620" y="55" width="310" height="420" rx="18"/><text x="636" y="82">Servernetz · 192.168.10.0/24</text></g><g class="diagram-edge broadcast"><path d="M165 250 L475 250"/><text class="diagram-edge-label" x="320" y="242" text-anchor="middle">lokaler Broadcast</text></g><g class="diagram-edge relay"><path d="M475 250 L775 170"/><text class="diagram-edge-label" x="625" y="202" text-anchor="middle">weitergeleitete Anfrage + Ursprungsnetz</text></g><g class="diagram-edge relay"><path d="M475 250 L775 335"/><text class="diagram-edge-label" x="625" y="284.5" text-anchor="middle">optional zweites Ziel</text></g><g class="diagram-node endpoint" transform="translate(165 250)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="165" y="245" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="165" dy="0">DHCP-Client</tspan></text><text class="diagram-node-detail" x="165" y="269" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="165" dy="0">startet mit lokalem</tspan><tspan x="165" dy="25">Discover</tspan></text><g class="diagram-node router" transform="translate(475 250)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="475" y="245" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="475" dy="0">Router mit Relay</tspan></text><text class="diagram-node-detail" x="475" y="269" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="475" dy="0">Relay am Interface</tspan><tspan x="475" dy="25">von VLAN 20</tspan></text><g class="diagram-node server" transform="translate(775 170)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="775" y="165" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="775" dy="0">DHCP-Server A</tspan></text><text class="diagram-node-detail" x="775" y="189" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="775" dy="0">besitzt Scope für</tspan><tspan x="775" dy="25">192.168.20.0/24</tspan></text><g class="diagram-node server" transform="translate(775 335)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="775" y="330" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="775" dy="0">DHCP-Server B</tspan></text><text class="diagram-node-detail" x="775" y="354" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="775" dy="0">Redundanzpartner je</tspan><tspan x="775" dy="25">nach Modell</tspan></text>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Der Relay-Agent sitzt logisch am Eingang des Clientnetzes und kennt damit dessen Subnetzkontext.</figcaption>
+</figure><section class="quiz" data-quiz="relay-scope-practice" data-correct="0">
+  <h3>Der Server erhält über einen Relay eine Anfrage aus 192.168.30.0/24. Er besitzt nur einen Scope für 192.168.20.0/24. Was ist die stärkste Diagnose?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Erreichbarkeit und Adressangebot sind getrennt zu prüfen."><span class="m">A</span> Der Relaypfad kann funktionieren, aber dem Server fehlt ein passender Scope für das Clientnetz.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Eine Adresse aus dem falschen Subnetz wäre für den Clientpfad unpassend."><span class="m">B</span> Der Server muss eine Adresse aus 192.168.20.0/24 anbieten, weil dies sein einziger Pool ist.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Gerade der Subnetzkontext ermöglicht dem Server die passende Scope-Auswahl."><span class="m">C</span> Ein Relay entfernt grundsätzlich jede Information über das Clientnetz.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Redundanz ersetzt keine korrekte Scope-Konfiguration."><span class="m">D</span> Ein zweiter DHCP-Server erzeugt automatisch den fehlenden Scope.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s3"><span class="num">3</span>Geführte Übung: drei VLANs anbinden</h2>
+<section class="sequence-practice" data-sequence="relay-plan-sequence" data-expected="relay-list-client-nets,relay-create-scopes,relay-configure-targets,relay-test-path" data-correct-feedback="Richtig: Erst Netze und Parameter erfassen, dann Scopes und Relayziele konfigurieren, zuletzt jeden Pfad und Ausfallfall testen." data-wrong-feedback="Ein Relay ohne passenden Scope reicht nicht. Plane Clientnetze → Scopes → Relayziele → Funktions- und Ausfalltest." aria-labelledby="relay-plan-sequence-title">
+  <div class="lab-heading"><div><h3 id="relay-plan-sequence-title">Planungsschritte sortieren</h3><p>Ein zentraler DHCP-Dienst soll Clients in drei gerouteten VLANs versorgen. Bringe die Schritte in eine prüfbare Reihenfolge.</p></div><span class="lab-tag">Übung</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="relay-list-client-nets" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Clientsubnetze, Routerinterfaces und benötigte DHCP-Optionen vollständig erfassen.</span></li>
+    <li data-step="relay-create-scopes" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Für jedes Clientsubnetz einen konfliktfreien Scope auf dem Server anlegen.</span></li>
+    <li data-step="relay-configure-targets" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Relay an jedem relevanten Clientinterface mit den autorisierten Serverzielen konfigurieren.</span></li>
+    <li data-step="relay-test-path" tabindex="-1"><span class="step-position" data-step-position>4</span><span>DORA, Scope-Auswahl, Optionen, Rückweg sowie Verhalten bei Serverausfall je VLAN testen.</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><section class="quiz" data-quiz="relay-path-transfer" data-correct="0" data-required-objective="relay-path">
+  <h3>Wo gehört der Relay-Agent für Clients in VLAN 40 hin und warum?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Dort erreicht die Clientanfrage den Router innerhalb ihrer Broadcastdomäne."><span class="m">A</span> An das geroutete Interface von VLAN 40, damit der lokale Broadcast aufgenommen und mit Subnetzkontext zum Server vermittelt wird.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Der Server liegt bereits am Ziel. Der fehlende Schritt ist die Aufnahme der Anfrage im entfernten Clientnetz."><span class="m">B</span> Nur an die Netzwerkkarte des DHCP-Servers, weil sie die Lease speichert.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Der Ursprungsnetzkontext ist für die Auswahl des passenden Scopes entscheidend."><span class="m">C</span> An einen beliebigen Access-Port eines anderen VLANs, weil DHCP unabhängig vom Ursprungsnetz ist.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Router begrenzen Broadcastdomänen. Ohne Relay oder lokalen Server erreicht die initiale Anfrage den entfernten Dienst nicht regulär."><span class="m">D</span> Nirgends; Router leiten DHCP-Broadcasts standardmäßig in alle Netze weiter.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Split Scope und Failover sauber trennen</h2>
+<p>Beim <strong>Split Scope</strong> erhält Server A beispielsweise einen nicht überlappenden Teil des Pools und Server B den anderen. Beide können Clients erreichen, führen aber keine gemeinsame Lease-Datenbank. Fällt A aus, bleiben nur die noch freien Adressen im Teil von B unmittelbar verfügbar. Reservierungen und Optionen müssen konsistent auf beiden Servern gepflegt werden.</p>
+<p>Bei <strong>zustandssynchronisiertem Failover</strong> tauschen Partner Lease-Informationen aus. Im Active-Passive-Modell vergibt normalerweise ein Server, während der Partner den Zustand übernimmt. In einem lastverteilenden Failover-Modus beantworten beide Server Anfragen nach den Regeln ihrer Implementierung und können bei Ausfall die Zuständigkeit erweitern. Das ist nicht bloß Split Scope: Der gemeinsame Zustand ist das entscheidende Merkmal.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Split Scope ist nicht dasselbe wie Failover">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-redundancy-comparison-title diagram-redundancy-comparison-desc">
+  <title id="diagram-redundancy-comparison-title">Split Scope ist nicht dasselbe wie Failover</title>
+  <desc id="diagram-redundancy-comparison-desc">Vier Vergleichskarten zeigen getrennte Pools und begrenzte Restkapazität bei Split Scope sowie geteilten Lease-Zustand und produktabhängige Übernahme bei Failover.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Split Scope ist nicht dasselbe wie Failover</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">Split Scope ·</tspan><tspan x="64" dy="25">getrennte Pools</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">Server A und B</tspan><tspan x="64" dy="30">vergeben nicht</tspan><tspan x="64" dy="30">überlappende Teile</tspan></text></g><g><rect class="diagram-row" x="265" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="287" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="287" dy="0">Split Scope bei</tspan><tspan x="287" dy="25">Ausfall</tspan></text><text x="287" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="287" dy="0">Der verbleibende</tspan><tspan x="287" dy="30">Server kann zunächst</tspan><tspan x="287" dy="30">nur aus seinem</tspan></text></g><g><rect class="diagram-row" x="488" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="510" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="510" dy="0">Failover ·</tspan><tspan x="510" dy="25">geteilter Zustand</tspan></text><text x="510" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="510" dy="0">Partner</tspan><tspan x="510" dy="30">synchronisieren</tspan><tspan x="510" dy="30">Lease-Informationen</tspan></text></g><g><rect class="diagram-row" x="711" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="733" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="733" dy="0">Failover bei</tspan><tspan x="733" dy="25">Ausfall</tspan></text><text x="733" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="733" dy="0">Die Übernahme folgt</tspan><tspan x="733" dy="30">dem konkreten</tspan><tspan x="733" dy="30">Produktprotokoll,</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Eine Prozentaufteilung allein beweist kein Failover; ausschlaggebend ist der synchronisierte Lease-Zustand.</figcaption>
+</figure><aside class="callout warn"><span class="lbl">Produktgrenzen dokumentieren</span><p>Bei DHCPv4 darfst du keinen herstellerübergreifenden Failover-Verbund voraussetzen. Prüfe unterstützte Partner, Zustände, Timer, Kommunikationspfad und das Verhalten bei Netztrennung anhand der eingesetzten Implementierung.</p></aside><h2 class="sec" id="s5"><span class="num">5</span>Beispiel: Ausfall richtig bewerten</h2>
+<p>Ein /24-Clientnetz nutzt Split Scope: Server A vergibt .50 bis .169, Server B .170 bis .219. Es gibt keinen Zustandsabgleich. Fällt A aus, ist B zwar weiter erreichbar, kann aber nicht einfach freie Adressen aus dem Bereich von A übernehmen. Die verfügbare Neukundenkapazität beschränkt sich auf Bs eigene noch freie Leases.</p>
+<p>In einem kompatiblen Failover-Verbund könnten beide Partner den Lease-Zustand synchronisieren. Ob und wann B nach einem Fehler zusätzliche Zuständigkeit übernimmt, folgt jedoch dem konfigurierten Modus und dessen Timern. „Zweiter Server vorhanden“ ist deshalb noch kein ausreichender Verfügbarkeitsnachweis.</p>
+<section class="quiz" data-quiz="redundancy-model-transfer" data-correct="1" data-required-objective="redundancy-model">
+  <h3>Welche Konfiguration beschreibt eindeutig zustandssynchronisiertes DHCP-Failover und nicht nur Split Scope?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Das sind getrennte, nicht überlappende Pools ohne gemeinsamen Lease-Zustand: Split Scope."><span class="m">A</span> Server A vergibt .50–.149, Server B .150–.220; beide kennen nur ihre eigenen Leases.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Zustandsabgleich und geregelte Übernahme kennzeichnen den Failover-Verbund."><span class="m">B</span> Zwei kompatible Partner verwalten denselben Dienst, replizieren Lease-Zustand und besitzen definierte Rollen und Übernahmebedingungen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Mehrere Schnittstellen ersetzen keinen zweiten DHCP-Partner und keinen replizierten Lease-Zustand."><span class="m">C</span> Ein einzelner Server besitzt zwei Netzwerkkarten, aber nur eine lokale Lease-Datei.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Relay schafft Erreichbarkeit, aber keine Serverredundanz."><span class="m">D</span> Ein Relay sendet jede Anfrage an denselben einzelnen Server.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Karteikarten und freier Abruf</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="relay-purpose" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welches Problem löst ein DHCP-Relay?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Es vermittelt DHCP-Anfragen aus einer entfernten Broadcastdomäne gezielt zu einem zentralen Server und liefert den Kontext des Clientnetzes.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="split-scope-definition" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was kennzeichnet Split Scope?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Zwei Server besitzen getrennte, nicht überlappende Poolanteile und benötigen keinen replizierten Lease-Zustand.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="failover-definition" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welches Merkmal unterscheidet Failover grundlegend von Split Scope?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Die Partner synchronisieren Lease-Zustand und verwenden definierte Rollen beziehungsweise Regeln für Last und Übernahme.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Relay“:</span><button type="button" data-card-id="relay-purpose" data-card-rate="known">gewusst</button><button type="button" data-card-id="relay-purpose" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="relay-purpose"></span></div>
+<div class="card-rating"><span>Karte „Split Scope“:</span><button type="button" data-card-id="split-scope-definition" data-card-rate="known">gewusst</button><button type="button" data-card-id="split-scope-definition" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="split-scope-definition"></span></div>
+<div class="card-rating"><span>Karte „Failover“:</span><button type="button" data-card-id="failover-definition" data-card-rate="known">gewusst</button><button type="button" data-card-id="failover-definition" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="failover-definition"></span></div><section class="recall-practice" data-recall="relay-failover-free-recall" data-min-length="130" aria-labelledby="relay-failover-free-recall-title">
+  <div class="recall-prompt"><h3 id="relay-failover-free-recall-title">Netzplan mündlich prüfen</h3><p>Erkläre den Weg eines DHCP-Discover aus einem entfernten VLAN zum Server. Vergleiche danach das Ausfallverhalten von Split Scope und einem zustandssynchronisierten Failover-Verbund.</p></div>
+  <label class="sr-only" for="relay-failover-free-recall-answer">Deine Erklärung</label>
+  <textarea id="relay-failover-free-recall-answer" data-recall-input rows="4" placeholder="Der Client-Broadcast erreicht …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Der lokale Broadcast erreicht das Routerinterface des Client-VLANs. Der dortige Relay-Agent leitet die Anfrage an konfigurierte Server weiter und liefert den Subnetzkontext, damit der passende Scope gewählt wird. Split Scope nutzt getrennte Pools ohne gemeinsamen Lease-Zustand; beim Ausfall bleibt nur der andere Pool. Failover repliziert Lease-Zustand und übernimmt nach produktabhängigen Rollen und Timern.</div>
+</section><h2 class="sec" id="s7"><span class="num">7</span>Quellen und Einordnung</h2>
+<ul>
+<li><strong>IT-Berufe Fachstufe II – Lernfelder 10–12 (2023), PDF-Seiten 11–12:</strong> DHCP-Relay und Scope-Auswahl über Netzgrenzen.</li>
+<li><strong>Dieselbe Quelle, PDF-Seiten 12–13 und 64:</strong> Redundanzmodelle, Lease-Zustand und Adressvergabeplanung.</li>
+</ul>
+<p>Der falsche IHK-Multicast-Treffer wurde ausgeschlossen. Diagramme, Fälle und Antwortoptionen sind eigenständig erstellt.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-3"><span class="d">zurück zu</span><span class="t">Block N3 · IPv6, DHCP und DNS</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N3 · IPv6, DHCP und DNS</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Welches Problem wird gelöst?</a></li>
+<li><a href="#s2" data-t="s2">Relaypfad und Scope-Auswahl</a></li>
+<li><a href="#s3" data-t="s3">Geführte Übung: drei VLANs anbinden</a></li>
+<li><a href="#s4" data-t="s4">Split Scope und Failover sauber trennen</a></li>
+<li><a href="#s5" data-t="s5">Beispiel: Ausfall richtig bewerten</a></li>
+<li><a href="#s6" data-t="s6">Karteikarten und freier Abruf</a></li>
+<li><a href="#s7" data-t="s7">Quellen und Einordnung</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-3">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

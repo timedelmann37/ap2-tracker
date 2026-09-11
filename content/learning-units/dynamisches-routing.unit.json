@@ -1,0 +1,219 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "dynamisches-routing",
+    "slug": "dynamisches-routing",
+    "title": "Dynamisches Routing und Konvergenz",
+    "description": "Distanzvektor- und Link-State-Verfahren unterscheiden, Konvergenz nach Änderungen erklären und ein passendes Routingverfahren auswählen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-4",
+    "groupLabel": "Block N4 · Routing und NAT",
+    "itemId": "ga2-4__3",
+    "week": "KW 38",
+    "estimatedMinutes": 24,
+    "relevance": "hoch",
+    "sources": ["ihk-bonn", "europa-integratoren-2026"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "routing-models",
+      "label": "Distanzvektor- und Link-State-Verfahren anhand ausgetauschter Information und lokaler Pfadberechnung unterscheiden"
+    },
+    {
+      "id": "routing-selection",
+      "label": "für ein Netzwerkszenario ein dynamisches Routingverfahren anhand von Größe, Änderungen, Konvergenz und Betriebsaufwand begründet auswählen"
+    }
+  ],
+  "intro": "Dynamisches Routing bedeutet, dass Router Erreichbarkeitsinformationen austauschen und daraus Routen ableiten. Distanzvektor und Link-State lösen diese Aufgabe mit unterschiedlichen Wissensmodellen. Entscheidend ist nicht nur, ob ein Pfad gefunden wird, sondern wie zuverlässig und schnell sich alle Router nach einer Änderung wieder auf einen widerspruchsfreien Zustand einigen.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "ihk-bonn",
+        "sourceLocator": "Chunk ihk-bonn:00161, Markdown-Zeilen 2390–2413",
+        "use": "prüfungsnahe Abgrenzung von Routingprotokoll und geroutetem Protokoll sowie Distanzvektor, Link-State, statisch und dynamisch",
+        "reviewStatus": "direkter Themen- und Aufgabenbeleg; der Chunk enthält Fragen, keine belastbaren Musterantworten"
+      },
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunk europa-integratoren-2026:00331, Markdown-Zeilen 3197–3225",
+        "use": "manuelle Routen als statisch, Routingprotokolle als dynamisch und RIPv2 beziehungsweise OSPF als Vergleichsbeispiele",
+        "reviewStatus": "direkte Begriffsquelle; die private Zuordnungsgrafik wurde nicht übernommen"
+      },
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunk europa-integratoren-2026:00840, Markdown-Zeilen 8273–8311",
+        "use": "Lösungskontext mit Routingtabellen und anschließender Gegenüberstellung von RIPv2 und OSPF",
+        "reviewStatus": "nur zur Plausibilisierung des Prüfungskontexts genutzt; OCR-beschädigte Interfaceangaben und Buchgrafik ausgeschlossen"
+      }
+    ],
+    "notes": [
+      "Die Buchchunks nennen die geforderten Kategorien, erklären Konvergenz und die Informationsmodelle aber nicht vollständig. Die fachliche Darstellung ist deshalb eine eigenständige, herstellerneutrale Synthese und bleibt CURATED_DRAFT.",
+      "Die private Grafik europa-integratoren-2026:figure:b4b78d7b5c7d enthält laut OCR eine RIPv2-/OSPF-Zuordnung, deren Aussagen teilweise in unklarer Reihenfolge extrahiert wurden. Sie wird weder veröffentlicht noch als alleiniger Faktenbeleg verwendet.",
+      "Konkrete Update-Timer, administrative Distanzen und herstellerspezifische Kostenreferenzen ändern sich je Implementierung und Konfiguration; die Einheit verwendet bewusst keine festen Werte.",
+      "Distanzvektor und Link-State sind Algorithmenfamilien. Einzelne Protokolle besitzen zusätzliche Mechanismen, die sich nicht vollständig aus der Familie ableiten lassen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "routing-model-comparison",
+      "type": "comparison",
+      "title": "Zwei Wissensmodelle für dynamische Routen",
+      "description": "Distanzvektor verteilt Ziel- und Distanzinformationen, Link-State verteilt Zustände von Verbindungen und berechnet daraus eine Topologiesicht.",
+      "items": [
+        {"label": "Distanzvektor", "detail": "Nachbarn melden erreichbare Ziele, Entfernungswerte und Richtung; der Router kennt nicht zwingend die gesamte Topologie"},
+        {"label": "Link-State", "detail": "Router verteilen Verbindungszustände, halten eine Topologiedatenbank und berechnen lokal kürzeste Pfade"},
+        {"label": "Beispiel RIP", "detail": "Distanzvektor; einfache Hop-basierte Sicht, für kleine und überschaubare Umgebungen"},
+        {"label": "Beispiel OSPF", "detail": "Link-State; hierarchisch planbar und für größere interne Netze geeignet"}
+      ]
+    },
+    {
+      "id": "convergence-flow",
+      "type": "flow",
+      "title": "Konvergenz nach einem Linkausfall",
+      "description": "Vom erkannten Fehler über Informationsaustausch und Neuberechnung bis zu stabilen Tabellen kann vorübergehend ein uneinheitlicher Zustand bestehen.",
+      "items": [
+        {"label": "Link fällt aus", "detail": "ein bisher verwendeter Pfad ist nicht mehr verfügbar"},
+        {"label": "Änderung erkennen", "detail": "angrenzende Router bemerken den neuen Zustand"},
+        {"label": "Information verteilen", "detail": "Routingnachrichten erreichen weitere beteiligte Router"},
+        {"label": "Routen neu bewerten", "detail": "jeder Router aktualisiert seine beste erreichbare Route"},
+        {"label": "stabiler Zustand", "detail": "die relevanten Tabellen stimmen wieder mit der erreichbaren Topologie überein"}
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Was wird dynamisch?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "dynamic-routing-diagnostic",
+          "diagnostic": true,
+          "question": "Welche Aussage beschreibt dynamisches Routing am treffendsten?",
+          "options": [
+            {"text": "Router tauschen Routinginformationen aus und passen daraus gelernte Routen an Änderungen an.", "rationale": "Richtig. Austausch, Berechnung und Aktualisierung machen die Routen dynamisch.", "correct": true},
+            {"text": "Jedes IP-Paket enthält bereits die vollständige Liste aller Router bis zum Ziel.", "rationale": "Normale IP-Weiterleitung arbeitet hop-by-hop; ein Routingprotokoll verteilt Wissen, nicht vollständige Pfadlisten in jedem Nutzpaket.", "correct": false},
+            {"text": "Die Ziel-IP eines Pakets wird nach jedem Router dynamisch neu vergeben.", "rationale": "Die Ziel-IP bleibt beim normalen Routing erhalten; geändert wird die lokale Weiterleitungsentscheidung.", "correct": false},
+            {"text": "Dynamische Routen brauchen niemals eine administrative Konfiguration.", "rationale": "Protokolle, Nachbarschaften, Bereiche, Filter und Metriken müssen geplant und betrieben werden.", "correct": false}
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Protokollrollen",
+          "markdown": "Ein **geroutetes Protokoll** wie IP transportiert Nutzdaten. Ein **Routingprotokoll** tauscht Informationen aus, aus denen Router Weiterleitungswege ableiten."
+        }
+      ]
+    },
+    {
+      "title": "Distanzvektor und Link-State",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Bei einem **Distanzvektorverfahren** erhält ein Router von Nachbarn Aussagen darüber, welche Ziele in welcher Entfernung und Richtung erreichbar sind. Die Einfachheit kann für kleine Netze genügen; ungeeignete oder noch nicht verbreitete Informationen können nach Änderungen jedoch vorübergehend Schleifen oder falsche Wege begünstigen.\n\nBei einem **Link-State-Verfahren** beschreiben Router den Zustand ihrer Verbindungen. Aus den verteilten Informationen entsteht pro Router eine Topologiedatenbank; darauf wird ein Kürzeste-Pfade-Verfahren ausgeführt. Das ermöglicht strukturierte, oft schnellere Neuberechnung in größeren Netzen, verlangt aber mehr Planung, Zustandsspeicher und Rechenarbeit. RIP ist ein verbreitetes Distanzvektorbeispiel, OSPF ein Link-State-Beispiel."
+        },
+        {
+          "type": "figure",
+          "diagramId": "routing-model-comparison",
+          "alt": "Vier Vergleichskarten zu Informationsmodell und Beispielen von Distanzvektor mit RIP sowie Link-State mit OSPF.",
+          "caption": "Eigene Lernskizze: Die Verfahren unterscheiden sich vor allem darin, welches Wissen verteilt wird und wo die Pfadberechnung stattfindet."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Die Kosten eines Pfads sind die Summe der Kosten seiner einzelnen Verbindungen",
+          "mathml": "<math display=\"block\"><mrow><mi>C</mi><mo>(</mo><mi>P</mi><mo>)</mo><mo>=</mo><munder><mo>∑</mo><mrow><mi>e</mi><mo>∈</mo><mi>P</mi></mrow></munder><mi>c</mi><mo>(</mo><mi>e</mi><mo>)</mo></mrow></math>",
+          "legend": ["P = betrachteter Pfad", "e = einzelne Verbindung des Pfads", "c(e) = konfigurierte beziehungsweise abgeleitete Verbindungskosten", "konkrete Kostenbildung ist protokoll- und implementationsabhängig"]
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Ausfallszenario",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Standort A erreicht Standort D normalerweise über A–B–D. Zusätzlich existiert der längere Pfad A–C–D. Fällt B–D aus, erkennt zunächst nur der benachbarte Router den Fehler. Während die Information verteilt und neu berechnet wird, können Router vorübergehend unterschiedliche Ansichten besitzen.\n\nNach erfolgreicher **Konvergenz** verwenden alle beteiligten Router konsistente, zur neuen Topologie passende Routen; A kann dann über C weiterleiten. Die Konvergenzzeit umfasst Fehlererkennung, Verteilung und Neuberechnung. Ein niedriger Protokoll-Overhead allein ist deshalb nicht automatisch wichtiger als eine schnelle, schleifenarme Reaktion auf Ausfälle."
+        },
+        {
+          "type": "figure",
+          "diagramId": "convergence-flow",
+          "alt": "Fünfstufiger zeitlicher Ablauf von einem Linkausfall über Erkennung, Informationsverteilung und Neuberechnung bis zum stabilen Routingzustand.",
+          "caption": "Eigene Lernskizze: Konvergenz ist ein Prozess; zwischen Fehler und Stabilität kann eine vorübergehend inkonsistente Phase liegen."
+        },
+        {
+          "type": "quiz",
+          "id": "dynamic-routing-guided-practice",
+          "question": "Ein wachsendes Firmennetz hat viele redundante Wege und verlangt nach Linkausfällen rasche, konsistente Neuberechnung. Welche Begründung ist am stärksten?",
+          "options": [
+            {"text": "Ein Link-State-Verfahren ist plausibel, weil eine verteilte Topologiesicht und lokale Pfadberechnung die Anforderungen unterstützen.", "rationale": "Richtig. Netzgröße, Redundanz und Konvergenzanforderung sprechen hier für das Link-State-Modell.", "correct": true},
+            {"text": "Ein Distanzvektorverfahren ist zwingend, weil nur dort mehrere Wege existieren dürfen.", "rationale": "Mehrere physische Wege sind nicht auf Distanzvektor beschränkt. Entscheidend sind Informationsmodell und Betriebsanforderungen.", "correct": false},
+            {"text": "Statische Einzelrouten sind automatisch selbstheilend, sobald irgendwo ein Ersatzlink existiert.", "rationale": "Ohne zusätzliche Mechanismen berechnen statische Routen keinen Ersatzpfad aus der Topologie.", "correct": false},
+            {"text": "Das geroutete Protokoll IP ersetzt ein Routingprotokoll vollständig.", "rationale": "IP transportiert und adressiert Pakete, tauscht aber nicht selbständig die für diese dynamische Topologiesicht nötigen Routen aus.", "correct": false}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {"id": "dynamic-distance-vector", "label": "Distanzvektor", "front": "Welches Wissen tauscht ein Distanzvektorverfahren im Grundmodell aus?", "back": "Erreichbare Ziele mit Distanz beziehungsweise Metrik und Richtung über Nachbarn; eine vollständige Topologiesicht ist nicht zwingend."},
+            {"id": "dynamic-link-state", "label": "Link-State", "front": "Was verteilt und berechnet ein Link-State-Verfahren?", "back": "Es verteilt Zustände von Verbindungen, baut daraus eine Topologiedatenbank und berechnet lokal kürzeste Pfade."},
+            {"id": "dynamic-convergence", "label": "Konvergenz", "front": "Wann gilt ein Routingprozess nach einer Änderung als konvergiert?", "back": "Wenn die relevanten Router wieder konsistente, zur erreichbaren Topologie passende Routen besitzen."}
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "dynamic-routing-recall",
+          "title": "Verfahren frei vergleichen",
+          "prompt": "Erkläre Distanzvektor, Link-State und Konvergenz. Begründe anschließend, welche Anforderungen die Wahl eines dynamischen Routingverfahrens bestimmen.",
+          "label": "Deine Erklärung",
+          "placeholder": "Beim Distanzvektorverfahren …",
+          "minLength": 130,
+          "model": "Distanzvektorverfahren erhalten von Nachbarn Ziel-, Richtungs- und Distanzinformationen. Link-State-Verfahren verteilen Verbindungszustände, bilden eine Topologiesicht und berechnen lokal Pfade. Konvergenz ist der Weg vom erkannten Netzwechsel zu wieder konsistenten Tabellen. Für die Auswahl zählen Größe, Redundanz, Änderungshäufigkeit, gewünschte Reaktionszeit und Betriebsaufwand."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check: Transfer",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "dynamic-routing-transfer-models",
+          "requiredObjective": "routing-models",
+          "question": "Welche Zuordnung beschreibt die Informationsmodelle korrekt?",
+          "options": [
+            {"text": "Distanzvektor: Ziele und Distanz über Nachbarn; Link-State: Verbindungszustände, Topologiedatenbank und lokale Pfadberechnung.", "rationale": "Richtig. Die Zuordnung trennt ausgetauschtes Wissen und Berechnungsmodell sauber.", "correct": true},
+            {"text": "Distanzvektor: vollständige Linkdatenbank; Link-State: nur die eigene Default-Route an einen Nachbarn senden.", "rationale": "Die Modelle sind vertauscht und Link-State wird zu stark verkürzt.", "correct": false},
+            {"text": "Distanzvektor und Link-State unterscheiden sich ausschließlich durch IPv4 oder IPv6.", "rationale": "Die Algorithmenfamilien betreffen den Routenaustausch und sind nicht durch eine einzige Adressfamilie definiert.", "correct": false},
+            {"text": "Link-State transportiert Nutzdaten, Distanzvektor ersetzt das geroutete Protokoll IP.", "rationale": "Beide sind Routingmodelle; IP bleibt das geroutete Protokoll für Nutzpakete.", "correct": false}
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "dynamic-routing-transfer-selection",
+          "requiredObjective": "routing-selection",
+          "question": "Ein Campusnetz wächst auf 60 Router, besitzt viele redundante Links und fordert kurze Wiederherstellungszeiten. Welche Entscheidung ist am besten begründet?",
+          "options": [
+            {"text": "Ein hierarchisch geplantes Link-State-Verfahren prüfen, weil Skalierung, Redundanz und Konvergenz wichtiger sind als minimale Protokollkomplexität.", "rationale": "Richtig. Die Begründung leitet die Verfahrenswahl direkt aus den Anforderungen ab.", "correct": true},
+            {"text": "Unabhängig von Topologie und Betrieb immer statische Einzelrouten verwenden.", "rationale": "Bei vielen Routern und Änderungen werden Pflege, Konsistenz und Ausfallreaktion problematisch.", "correct": false},
+            {"text": "Distanzvektor nur deshalb wählen, weil die Zahl 60 größer als 15 ist.", "rationale": "Eine einzelne Zahl ersetzt keine Analyse von Protokoll, Metrik, Skalierung und Design; die Begründung ist fachlich nicht tragfähig.", "correct": false},
+            {"text": "Kein Routingprotokoll einsetzen, weil redundante Links automatisch dieselbe Routingtabelle erzeugen.", "rationale": "Physische Redundanz erzeugt ohne geplante Routinglogik keinen konsistenten Ersatzpfad.", "correct": false}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Aktualität",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **Prüfungsvorbereitung IHK Bonn:** Routingprotokoll versus geroutetes Protokoll sowie Distanzvektor und Link-State als explizite Prüfungsfragen.\n- **EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):** statisch versus dynamisch und RIPv2 beziehungsweise OSPF als Vergleichsrahmen.\n\nKonkrete Protokolltimer und Herstellerpräferenzen sind bewusst ausgeschlossen. Alle Beispiele, Rückmeldungen und Diagramme sind eigenständig erstellt; private Buchgrafiken werden nicht veröffentlicht."
+        }
+      ]
+    }
+  ]
+}

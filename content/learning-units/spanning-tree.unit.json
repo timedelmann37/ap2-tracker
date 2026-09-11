@@ -1,0 +1,208 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "spanning-tree",
+    "slug": "spanning-tree",
+    "title": "Spanning Tree vom Loop zum aktiven Pfad",
+    "description": "Layer-2-Schleifen erklären, die Root Bridge und Pfadkosten bestimmen sowie Portrollen und Zustände von STP, RSTP und MSTP korrekt einordnen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-5",
+    "groupLabel": "Block N5 · Switching und VLANs",
+    "itemId": "ga2-5__5",
+    "week": "KW 39",
+    "estimatedMinutes": 27,
+    "relevance": "hoch",
+    "sources": ["itlf10-12-2023"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {"id": "loop-and-variants", "label": "das Layer-2-Schleifenproblem erklären und STP, RSTP sowie MSTP nach Rolle und Zustandsmodell unterscheiden"},
+    {"id": "tree-calculation", "label": "in einer einfachen redundanten Topologie Root Bridge, Root Ports, Designated Ports und den nicht weiterleitenden Redundanzpfad bestimmen"}
+  ],
+  "intro": "Redundante Switch-Verbindungen verbessern die Verfügbarkeit, erzeugen auf Layer 2 aber physische Schleifen. Ethernet-Frames besitzen kein Hop-Limit. Spanning Tree lässt deshalb nur eine schleifenfreie logische Baumstruktur weiterleiten und hält den übrigen Pfad als Redundanz bereit.",
+  "curation": {
+    "evidence": [
+      {"sourceId": "itlf10-12-2023", "sourceLocator": "Chunks itlf10-12-2023:page:0348, :0349, :0350 und :0352", "use": "Schleifen- und Broadcast-Storm-Ursache, Rootwahl über Bridge ID, additive Pfadkosten, Portrollen sowie Unterschiede der STP-/RSTP-Zustände und MSTP-Grundidee", "reviewStatus": "Text und private Figuren-OCR geprüft; eigene Topologien erstellt"}
+    ],
+    "notes": [
+      "Die gemappte private Layout-Figur itlf10-12-2023:layout:0348:01 ist thematisch stark, wurde aber weder veröffentlicht noch nachgezeichnet; die beiden Diagramme sind eigenständige reduzierte Lernmodelle.",
+      "Die OCR auf Seite 349 enthält eine missverständliche Formulierung zum Designated Bridge. Verwendet wird nur die belastbare Regel: Die Root Bridge hat die kleinste Bridge ID; Root-Pfadkosten werden addiert.",
+      "STP verwendet unter anderem Blocking, Listening, Learning und Forwarding; RSTP fasst nicht weiterleitende Phasen als Discarding zusammen und ergänzt Alternate-/Backup-Rollen. Zustände und Rollen werden nicht protokollübergreifend vermischt.",
+      "RSTP konvergiert typischerweise schneller als klassisches STP, aber keine feste Sekundenangabe ist garantiert. MSTP ordnet VLANs Instanzen zu; es erzeugt nicht automatisch für jedes VLAN einen eigenen Baum."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "spanning-tree-triangle",
+      "type": "topology",
+      "title": "Redundanz ohne Weiterleitungsschleife",
+      "description": "Switch A ist Root. Der direkte Link C–A ist teurer als C–B–A und bleibt als alternativer Pfad nicht weiterleitend.",
+      "nodes": [
+        {"id": "switch-a", "label": "Switch A · Root", "detail": "BID 4096:A", "x": 480, "y": 90, "kind": "switch"},
+        {"id": "switch-b", "label": "Switch B", "detail": "Root-Kosten 4", "x": 230, "y": 410, "kind": "switch"},
+        {"id": "switch-c", "label": "Switch C", "detail": "Root-Kosten 8 über B", "x": 730, "y": 410, "kind": "switch"}
+      ],
+      "edges": [
+        {"from": "switch-a", "to": "switch-b", "label": "Kosten 4 · aktiv", "kind": "active"},
+        {"from": "switch-b", "to": "switch-c", "label": "Kosten 4 · aktiv", "kind": "active"},
+        {"from": "switch-a", "to": "switch-c", "label": "Kosten 10 · alternativ", "kind": "blocked"}
+      ]
+    },
+    {
+      "id": "stp-family",
+      "type": "comparison",
+      "title": "STP-Familie ohne Begriffsvermischung",
+      "description": "Alle Varianten verhindern Layer-2-Schleifen, verwenden aber unterschiedliche Rollen- und Zustandsmodelle.",
+      "items": [
+        {"label": "Klassisches STP", "detail": "Baum aus Root-, Designated- und nicht weiterleitenden Ports; Zustände unter anderem Blocking, Listening, Learning und Forwarding."},
+        {"label": "RSTP", "detail": "Schnellere Übergänge unter passenden Bedingungen; Rollen Root, Designated, Alternate und Backup; Zustände Discarding, Learning und Forwarding."},
+        {"label": "MSTP", "detail": "Ordnet VLANs mehreren Spanning-Tree-Instanzen zu und kann dadurch unterschiedliche aktive Bäume planen."},
+        {"label": "Konvergenz", "detail": "Dauer hängt von Topologie, Linktyp, Timern, Implementierung und korrekter Edge-Erkennung ab; keine pauschale Sekundenzusage."}
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Warum eskaliert ein Loop?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "stp-diagnostic",
+          "diagnostic": true,
+          "question": "Zwei Switches sind versehentlich über zwei normale Layer-2-Pfade verbunden. Warum kann ein Broadcast das Netz stark belasten?",
+          "options": [
+            {"text": "Ethernet-Frames haben kein Hop-Limit; Kopien können in der Schleife wiederholt geflutet werden.", "rationale": "Richtig. Ohne blockierenden logischen Pfad endet die Umlaufbewegung nicht durch ein TTL-Feld.", "correct": true},
+            {"text": "Ein Broadcast wird grundsätzlich nur einmal pro Switch weitergeleitet und dann gelöscht.", "rationale": "Bei einer Schleife kann dieselbe Information über einen anderen Port erneut eintreffen.", "correct": false},
+            {"text": "Nur geroutete IP-Pakete können Schleifen bilden.", "rationale": "Die beschriebene Störung entsteht bereits auf Layer 2.", "correct": false},
+            {"text": "STP erhöht absichtlich die Zahl der Broadcast-Kopien.", "rationale": "STP erzeugt eine schleifenfreie logische Topologie und verhindert genau diese Eskalation.", "correct": false}
+          ]
+        },
+        {"type": "callout", "kind": "warnung", "label": "Fehlerkette", "markdown": "Loop → wiederholtes Flooding → Broadcast-Sturm und MAC-Tabelleninstabilität → Links und Switch-CPU werden belastet."
+        }
+      ]
+    },
+    {
+      "title": "Root und Pfade berechnen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Switches tauschen BPDUs aus. Die Bridge mit der numerisch kleinsten Bridge ID wird Root Bridge. Anschließend vergleicht jeder Nicht-Root-Switch die addierten Pfadkosten zur Root. Der beste Port wird Root Port. Pro Segment liefert der Switch mit dem besseren Root-Pfad den Designated Port. Ein verbleibender redundanter Port leitet keine Nutzdaten weiter und erhält die Schleifenfreiheit.\n\nBei gleichen Werten greifen weitere deterministische Vergleichsfelder. Für Prüfungsaufgaben müssen deren konkrete Vorgaben beachtet werden; diese Einheit hält das Beispiel absichtlich eindeutig."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Die Root Bridge hat die kleinste Bridge ID und Pfadkosten sind die Summe aller Linkkosten",
+          "mathml": "<math display=\"block\"><mtable columnalign=\"right center left\" rowspacing=\"0.5em\"><mtr><mtd><msub><mi>BID</mi><mtext>Root</mtext></msub></mtd><mtd><mo>=</mo></mtd><mtd><munder><mo>min</mo><mi>i</mi></munder><mo>(</mo><msub><mi>BID</mi><mi>i</mi></msub><mo>)</mo></mtd></mtr><mtr><mtd><msub><mi>C</mi><mtext>Pfad</mtext></msub></mtd><mtd><mo>=</mo></mtd><mtd><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><msub><mi>c</mi><mi>i</mi></msub></mtd></mtr></mtable></math>",
+          "legend": ["BID = Bridge ID", "cᵢ = Kosten eines Links im Kandidatenpfad", "Niedrigere Root-Pfadkosten werden bevorzugt"]
+        },
+        {
+          "type": "figure",
+          "diagramId": "spanning-tree-triangle",
+          "alt": "Drei Switches bilden ein Dreieck. A ist Root; A-B und B-C leiten weiter, der teurere direkte Link A-C ist als Redundanzpfad markiert.",
+          "caption": "Eigene Topologie: C erreicht die Root mit Kosten 8 über B statt mit Kosten 10 direkt."
+        }
+      ]
+    },
+    {
+      "title": "Beispiel: das Dreieck auflösen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**Gegeben:** A hat die kleinste Bridge ID. Die Kosten sind A–B = 4, B–C = 4 und A–C = 10. A wird Root. B wählt den Port zu A als Root Port. C vergleicht den direkten Weg mit Kosten 10 gegen den Weg über B mit 4 + 4 = 8 und wählt den Port zu B als Root Port. Auf dem Segment B–C hat B die niedrigeren eigenen Root-Pfadkosten und stellt den Designated Port. Der Port von C zu A bleibt als alternativer, nicht weiterleitender Pfad erhalten.\n\nFällt B–C aus, muss der Baum neu konvergieren und C kann den direkten Pfad zu A nutzen. Die konkrete Umschaltdauer hängt von Variante und Randbedingungen ab."
+        },
+        {
+          "type": "figure",
+          "diagramId": "stp-family",
+          "alt": "Vergleichskarten grenzen klassisches STP, RSTP, MSTP und die von Bedingungen abhängige Konvergenz voneinander ab.",
+          "caption": "Eigene Lernskizze: Rollen und Zustände immer der verwendeten STP-Variante zuordnen."
+        }
+      ]
+    },
+    {
+      "title": "Geführte Root- und Portwahl",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "stp-election-sequence",
+          "title": "Vom BPDU-Vergleich zum blockierten Pfad",
+          "prompt": "Ordne den vereinfachten Entscheidungsweg.",
+          "tag": "Übung",
+          "steps": [
+            {"id": "elect-root", "label": "Die kleinste Bridge ID als Root Bridge bestimmen."},
+            {"id": "sum-costs", "label": "Je Nicht-Root-Switch die vollständigen Kandidatenkosten zur Root addieren."},
+            {"id": "choose-root-port", "label": "Den Port auf dem besten Root-Pfad als Root Port wählen."},
+            {"id": "choose-designated", "label": "Pro Segment den Designated Port anhand des besseren Weges zur Root bestimmen."},
+            {"id": "stop-loop", "label": "Den verbleibenden redundanten Port nicht weiterleiten lassen und die Schleifenfreiheit prüfen."}
+          ],
+          "expected": ["elect-root", "sum-costs", "choose-root-port", "choose-designated", "stop-loop"],
+          "correctFeedback": "Richtig: Rootwahl, Pfadkosten und Portrollen ergeben gemeinsam den schleifenfreien Baum.",
+          "wrongFeedback": "Zuerst Root festlegen, dann Kosten addieren, Root Ports und Designated Ports bestimmen und erst daraus den Redundanzpfad ableiten."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {"id": "root-bridge", "label": "Root Bridge", "front": "Welcher Switch wird Root Bridge?", "back": "Der Switch mit der numerisch kleinsten Bridge ID."},
+            {"id": "root-port", "label": "Root Port", "front": "Was kennzeichnet den Root Port eines Nicht-Root-Switches?", "back": "Er liegt auf dessen bestem Pfad zur Root Bridge; die Pfadkosten werden addiert."},
+            {"id": "rstp-state", "label": "RSTP", "front": "Welche drei Zustände verwendet RSTP?", "back": "Discarding, Learning und Forwarding. Alternate und Backup sind Rollen, keine zusätzlichen Zustände."}
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "stp-free-recall",
+          "title": "Den Spannbaum aus dem Kopf erklären",
+          "prompt": "Erkläre vom physikalischen Loop über Rootwahl und Pfadkosten bis zum nicht weiterleitenden Port. Grenze danach STP, RSTP und MSTP in je einem Satz ab.",
+          "label": "Deine Erklärung",
+          "placeholder": "Ein Layer-2-Loop …",
+          "minLength": 150,
+          "model": "Layer-2-Loops lassen Frames ohne Hop-Limit wiederholt zirkulieren. Der Switch mit der kleinsten Bridge ID wird Root. Nicht-Root-Switches addieren Pfadkosten, wählen Root Ports, und pro Segment wird ein Designated Port bestimmt; ein übriger Redundanzpfad leitet nicht. RSTP verwendet ein schnelleres Rollen-/Zustandsmodell, MSTP ordnet VLANs mehreren Instanzen zu."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "loop-and-variants-transfer",
+          "requiredObjective": "loop-and-variants",
+          "question": "Welche Aussage ist vollständig korrekt?",
+          "options": [
+            {"text": "STP-Varianten verhindern Layer-2-Loops; RSTP nutzt Discarding, Learning und Forwarding, MSTP ordnet VLANs Instanzen zu.", "rationale": "Richtig. Zweck, RSTP-Zustände und MSTP-Grundidee sind sauber getrennt.", "correct": true},
+            {"text": "Ethernet beendet jeden Loop durch ein TTL-Feld; STP ist nur für Routing zuständig.", "rationale": "Ethernet-Frames haben kein solches Hop-Limit; STP arbeitet auf Layer 2.", "correct": false},
+            {"text": "Blocking ist ein RSTP-Zustand zusätzlich zu Discarding.", "rationale": "RSTP fasst die nicht weiterleitenden Zustände im Grundmodell als Discarding zusammen.", "correct": false},
+            {"text": "MSTP garantiert automatisch einen vollständig eigenen Baum je VLAN.", "rationale": "VLANs werden konfigurierten Instanzen zugeordnet; mehrere VLANs können dieselbe Instanz nutzen.", "correct": false}
+          ]
+        },
+        {
+          "type": "sequence",
+          "id": "tree-calculation-transfer",
+          "requiredObjective": "tree-calculation",
+          "title": "Root und Redundanzpfad bestimmen",
+          "prompt": "Bringe die fachlichen Ergebnisse für A–B = 4, B–C = 4 und A–C = 10 bei kleinster BID von A in Reihenfolge.",
+          "tag": "Pflicht",
+          "steps": [
+            {"id": "result-a-root", "label": "A ist Root Bridge."},
+            {"id": "result-b-rp", "label": "B wählt den Port zu A mit Kosten 4 als Root Port."},
+            {"id": "result-c-rp", "label": "C wählt den Weg über B mit Gesamtkosten 8 als Root-Pfad."},
+            {"id": "result-ca-alt", "label": "Der teurere direkte Pfad C–A mit Kosten 10 leitet auf C-Seite nicht weiter."}
+          ],
+          "expected": ["result-a-root", "result-b-rp", "result-c-rp", "result-ca-alt"],
+          "correctFeedback": "Richtig: Die kleinere BID bestimmt die Root, anschließend entscheidet die Summe der Pfadkosten.",
+          "wrongFeedback": "Root zuerst, dann B, danach C mit 4 + 4 statt 10 und schließlich den verbleibenden Redundanzpfad bestimmen."
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {"type": "markdown", "markdown": "- **IT-Berufe – Lernfelder 10–12 (2023), PDF-Seiten 348–352:** Loop-Ursache, BPDUs, Bridge ID, Pfadkosten, Portrollen sowie STP/RSTP/MSTP.\n\nPrivate Buchabbildungen wurden nicht veröffentlicht. Konvergenzzeiten, Kostenwerte und herstellerspezifische Erweiterungen sind nicht als universelle Konstanten dargestellt."}
+      ]
+    }
+  ]
+}

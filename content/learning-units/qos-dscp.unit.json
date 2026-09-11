@@ -1,0 +1,225 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "qos-dscp",
+    "slug": "qos-dscp",
+    "title": "QoS und DSCP ohne falsche Garantien planen",
+    "description": "Verkehr klassifizieren, DSCP als Kennzeichnung einem lokalen Per-Hop-Verhalten zuordnen und Priorisierung unter Engpassbedingungen samt Domänengrenzen beurteilen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-5",
+    "groupLabel": "Block N5 · Switching und VLANs",
+    "itemId": "ga2-5__10",
+    "week": "KW 39",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "sources": ["itlf10-12-2023", "europa-integratoren-2026", "itlf6-9-2022"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "dscp-treatment",
+      "label": "DSCP als sechs Bit breite IP-Kennzeichnung lesen und den Weg von Klassifizierung über Markierung oder Remarking bis zur lokalen Warteschlangenbehandlung erklären"
+    },
+    {
+      "id": "qos-policy",
+      "label": "für einen Engpass eine begründete Priorisierungsregel entwerfen und ihre Grenzen bezüglich Kapazität, Überlast, Vertrauensgrenzen und Ende-zu-Ende-Wirkung beurteilen"
+    }
+  ],
+  "intro": "Quality of Service ordnet Verkehrsklassen bei knappen Ressourcen unterschiedlich. DSCP trägt dazu eine sechs Bit breite Kennzeichnung im IP-Header, doch die Kennzeichnung selbst reserviert keine Bandbreite. Erst die konfigurierte Abbildung auf Warteschlangen, Scheduler, Policer oder Shaper an jedem relevanten Hop erzeugt ein Verhalten. QoS priorisiert vorhandene Kapazität; es erschafft keine neue.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "Chunks itlf10-12-2023:page:0072 und itlf10-12-2023:page:0073",
+        "use": "Echtzeitverkehr, Engpässe, Best-Effort-Abgrenzung und unterschiedliche QoS-Abschnitte auf Kunden- und Providerpfad",
+        "reviewStatus": "Relevanter Text und Figurenkontext geprüft; beschädigte OCR-Passagen wurden nicht rekonstruiert und die private Grafik wurde nicht übernommen"
+      },
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunks europa-integratoren-2026:01077 und europa-integratoren-2026:01085",
+        "use": "VoIP und zeitkritische Kommunikation als QoS-Anwendungsfälle sowie Abgrenzung unzugesicherter Internetpfade von vertraglich vereinbarter Dienstgüte",
+        "reviewStatus": "Als Anwendungskontext verwendet; die pauschale Kopplung an VLANs wird nicht als Ersatz für eine explizite QoS-Policy dargestellt"
+      },
+      {
+        "sourceId": "itlf6-9-2022",
+        "sourceLocator": "Chunk itlf6-9-2022:00212",
+        "use": "Prüfungsnaher Vergleich von Managed-Switch-Funktionen und Einfluss von QoS auf Latenz und Jitter",
+        "reviewStatus": "Nur der lesbare Aufgabenkontext verwendet; MQTT-QoS-Treffer und Produktbilder wurden ausgeschlossen"
+      }
+    ],
+    "notes": [
+      "Die in der Source Map genannte Referenz it-basiswissen-2012:00021 konnte im Batch nicht aufgelöst werden und wurde nicht als Evidenz behauptet.",
+      "Der Figurenkandidat itlf10-12-2023:layout:0073:02 ist thematisch relevant, aber private Quelle und OCR-arm; sein Kunden-/Provider-Gedanke wurde als neue deklarative Topologie modelliert, nicht grafisch kopiert.",
+      "DSCP-Feldbreite, Per-Hop-Behavior und administrative Remarking-Grenzen wurden konservativ gegen RFC 2474 und RFC 3260 geprüft; konkrete Codepoint-Policies bleiben lokal konfigurierbar.",
+      "QoS ist Priorisierung beziehungsweise differenzierte Behandlung. Ohne ausreichende Kapazität, konsistente Hop-Konfiguration und gegebenenfalls vertragliche Zusicherung entsteht keine garantierte Ende-zu-Ende-Bandbreite.",
+      "Diagramme, Verkehrsfall, Zahlen und Antwortoptionen sind eigenständig erstellt; private Buchgrafiken werden nicht veröffentlicht."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "qos-processing-pipeline",
+      "type": "flow",
+      "title": "Vom Paketmerkmal zur tatsächlichen Behandlung",
+      "description": "Eine QoS-Domäne klassifiziert eingehenden Verkehr, vertraut einer Markierung nur nach Policy, setzt oder ändert DSCP und ordnet das Paket einer Warteschlange mit definiertem Scheduler- und Dropverhalten zu.",
+      "items": [
+        {"label": "Klassifizieren", "detail": "Anwendung, Adresse, Protokoll oder vertrauenswürdige Eingangsrolle erkennen"},
+        {"label": "Vertrauen prüfen", "detail": "Endgerätemarkierung übernehmen, verwerfen oder an der Grenze neu bewerten"},
+        {"label": "DSCP setzen", "detail": "sechs Bit markieren eine gewünschte Behandlung innerhalb der Policy"},
+        {"label": "Warteschlange wählen", "detail": "Codepoint wird lokal auf ein Per-Hop-Verhalten abgebildet"},
+        {"label": "Planen und begrenzen", "detail": "Scheduler bedient Klassen; Policing, Shaping oder Drop schützen die Ressourcen"},
+        {"label": "Nächster Hop", "detail": "Markierung reist weiter, die Behandlung muss dort erneut konfiguriert sein"}
+      ]
+    },
+    {
+      "id": "qos-domain-path",
+      "type": "topology",
+      "title": "Jede administrative Grenze kann DSCP neu bewerten",
+      "description": "Ein Telefon und ein Backup-Client senden zum Unternehmensrand. Im eigenen Netz gilt eine bekannte Policy. Der Provider übernimmt, ändert oder ignoriert die Markierung nur nach seinem Vertrag; das Internet verspricht kein identisches Verhalten.",
+      "zones": [
+        {"id": "customer-zone", "label": "Eigene QoS-Domäne", "x": 25, "y": 80, "width": 535, "height": 350, "kind": "zone-customer"},
+        {"id": "provider-zone", "label": "Provider-Domäne", "x": 610, "y": 80, "width": 320, "height": 350, "kind": "zone-provider"}
+      ],
+      "nodes": [
+        {"id": "voice-endpoint", "label": "VoIP-Telefon", "detail": "latenz- und jitterempfindlich", "x": 135, "y": 165, "kind": "phone"},
+        {"id": "backup-client", "label": "Backup-Client", "detail": "durchsatzorientiert", "x": 135, "y": 335, "kind": "client"},
+        {"id": "access-edge", "label": "Policy-Grenze", "detail": "klassifizieren und markieren", "x": 385, "y": 250, "kind": "switch"},
+        {"id": "wan-provider", "label": "Provider Edge", "detail": "SLA/Policy entscheidet", "x": 750, "y": 190, "kind": "router"},
+        {"id": "public-internet", "label": "Internetpfad", "detail": "keine eigene Zusicherung", "x": 750, "y": 345, "kind": "cloud"}
+      ],
+      "edges": [
+        {"from": "voice-endpoint", "to": "access-edge", "label": "Sprache", "kind": "priority"},
+        {"from": "backup-client", "to": "access-edge", "label": "Best Effort", "kind": "default"},
+        {"from": "access-edge", "to": "wan-provider", "label": "vertragliche Klasse?", "kind": "boundary"},
+        {"from": "access-edge", "to": "public-internet", "label": "Markierung ohne Garantie", "kind": "boundary"}
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Markiert heißt nicht reserviert",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "qos-diagnostic",
+          "diagnostic": true,
+          "question": "Ein VoIP-Paket trägt einen hohen DSCP-Wert. Was ist damit allein bewiesen?",
+          "options": [
+            {"text": "Jeder Router garantiert diesem Paket eine feste Bandbreite", "rationale": "DSCP ist eine Kennzeichnung. Behandlung und Zusicherung hängen von der Policy jedes Hops beziehungsweise Vertrags ab.", "correct": false},
+            {"text": "Im IP-Header steht eine Kennzeichnung, die ein konfigurierter Hop auf ein Per-Hop-Verhalten abbilden kann", "rationale": "Richtig. Erst die lokale Policy macht aus dem Codepoint eine konkrete Behandlung.", "correct": true},
+            {"text": "Das Paket kann niemals verworfen werden", "rationale": "Auch priorisierter Verkehr kann bei Überlast, Policing, Fehlern oder fehlender Policy verworfen werden.", "correct": false},
+            {"text": "Die physische Linkrate wurde durch DSCP erhöht", "rationale": "Eine Headermarkierung ändert keine Port- oder Leitungsrate.", "correct": false}
+          ]
+        },
+        {"type": "callout", "kind": "merksatz", "label": "DSCP ist ein Hinweis an die Policy", "markdown": "DSCP benennt eine gewünschte **Per-Hop-Behandlung**. Vertrauen, Queue-Zuordnung und Ressourcenzuteilung werden an jeder administrativen Grenze festgelegt."}
+      ]
+    },
+    {
+      "title": "Klassifizieren, markieren, behandeln",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Das DS-Feld im IPv4- beziehungsweise IPv6-Header enthält sechs Bits für den **Differentiated Services Code Point (DSCP)**. Damit sind 64 Bitmuster möglich. Ein Codepoint ist aber keine weltweit identische Warteschlange: Ein Netzbetreiber bildet ihn innerhalb seiner Domäne auf ein Per-Hop-Verhalten ab.\n\nEine belastbare Policy trennt:\n\n1. **Klassifizierung:** Welcher Verkehr gehört fachlich zu welcher Klasse?\n2. **Trust Boundary:** Darf ein Endgerät selbst markieren, oder setzt der Netzrand die Kennzeichnung neu?\n3. **Marking/Remarking:** Welcher DSCP-Wert wird nach der lokalen Policy getragen?\n4. **Queue/Scheduler:** Welche Warteschlange, Bedienreihenfolge und Mindest-/Maximalanteile gelten am Ausgangsinterface?\n5. **Conditioning:** Policing verwirft oder markiert übermäßigen Verkehr; Shaping puffert und glättet ihn innerhalb einer Zielrate.\n\nUngeprüft alle hohen Markierungen zu vertrauen ermöglicht Missbrauch: Ein Backup könnte sich selbst als Echtzeitverkehr ausgeben und die eigentliche Sprachklasse verdrängen."
+        },
+        {"type": "figure", "diagramId": "qos-processing-pipeline", "alt": "Sechsstufiger QoS-Ablauf von Klassifizierung und Vertrauensprüfung über DSCP-Markierung und Queue-Zuordnung bis Scheduler beziehungsweise Begrenzung und dem nächsten Hop.", "caption": "Eigene Lernskizze: Ein Codepoint wirkt erst durch die konfigurierte Behandlung."}
+      ]
+    },
+    {
+      "title": "Engpassrechnung und durchgearbeitetes Szenario",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Am 100-Mbit/s-WAN-Ausgang fallen gleichzeitig 8 Mbit/s Sprache, 20 Mbit/s interaktive Fachanwendung und 120 Mbit/s Backup an. Die angebotene Last beträgt 148 Mbit/s. Der Engpass ist real; kein Scheduler kann 148 Mbit/s verlustfrei und ohne Verzögerung durch einen 100-Mbit/s-Link schicken.\n\nDie Policy klassifiziert Sprache am vertrauenswürdigen Access-Rand, priorisiert sie am WAN-Ausgang innerhalb eines begrenzten Anteils, gibt der Fachanwendung einen planbaren Anteil und lässt das Backup die Restkapazität nutzen beziehungsweise formt es. Die Begrenzung der Prioritätsklasse verhindert, dass fehlerhaft markierter Verkehr alle anderen Klassen verdrängt. Bei nur 40 Mbit/s Gesamtlast hat die Priorisierung kaum Nutzen, weil kein Queue-Engpass besteht."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Angebotene Last ist acht plus zwanzig plus einhundertzwanzig gleich einhundertachtundvierzig Megabit pro Sekunde; Überlast ist achtundvierzig Megabit pro Sekunde",
+          "mathml": "<math display=\"block\"><mtable columnalign=\"right center left\" rowspacing=\"0.5em\"><mtr><mtd><msub><mi>D</mi><mtext>gesamt</mtext></msub></mtd><mtd><mo>=</mo></mtd><mtd><mn>8</mn><mo>+</mo><mn>20</mn><mo>+</mo><mn>120</mn><mo>=</mo><mn>148</mn><mtext> Mbit/s</mtext></mtd></mtr><mtr><mtd><msub><mi>D</mi><mtext>über</mtext></msub></mtd><mtd><mo>=</mo></mtd><mtd><mn>148</mn><mo>−</mo><mn>100</mn><mo>=</mo><mn>48</mn><mtext> Mbit/s</mtext></mtd></mtr></mtable></math>",
+          "legend": ["D = gleichzeitig angebotene Last", "100 Mbit/s = Engpasskapazität", "QoS verteilt die knappe Kapazität; 48 Mbit/s verschwinden nicht durch Markierung"]
+        },
+        {"type": "figure", "diagramId": "qos-domain-path", "alt": "VoIP-Telefon und Backup-Client führen über eine eigene Policy-Grenze entweder in eine vertraglich definierte Providerklasse oder in einen Internetpfad ohne eigene QoS-Zusicherung.", "caption": "Eigene Lernskizze: Die eigene Policy endet an der Verwaltungsgrenze; dort muss die Behandlung neu vereinbart werden."}
+      ]
+    },
+    {
+      "title": "Geführte Übung: Eine Policy statt einer Wunschliste",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "qos-policy-sequence",
+          "title": "Ordne die QoS-Planung",
+          "prompt": "VoIP leidet während großer Sicherungen unter Jitter. Bringe die Schritte in eine prüfbare Reihenfolge.",
+          "tag": "Geführte Übung",
+          "steps": [
+            {"id": "verify", "label": "Unter Last Queue-Zähler, Drops, Latenz und Jitter messen und Policy anpassen"},
+            {"id": "baseline", "label": "Engpassort, Linkkapazität, gleichzeitige Last und Qualitätsanforderung messen"},
+            {"id": "classify", "label": "Sprache, Fachanwendung und Backup reproduzierbar klassifizieren"},
+            {"id": "boundary", "label": "Trust Boundary sowie Marking oder Remarking festlegen"},
+            {"id": "schedule", "label": "Queues, begrenzte Priorität, Scheduler und Backup-Shaping konfigurieren"}
+          ],
+          "expected": ["baseline", "classify", "boundary", "schedule", "verify"],
+          "correctFeedback": "Richtig. Messbarer Engpass und Klassen stehen vor Markierung und Scheduler; die Wirkung wird unter realistischer Last geprüft.",
+          "wrongFeedback": "Beginne mit dem Engpassbeleg. Eine DSCP-Markierung ohne bekannte Last, Trust Boundary und Queue-Policy ist noch keine Lösung."
+        },
+        {
+          "type": "quiz",
+          "id": "qos-guided-provider",
+          "question": "Das eigene WAN-Gateway priorisiert Sprache korrekt, der anschließende öffentliche Internetpfad hat aber keine Vereinbarung. Welche Erwartung ist belastbar?",
+          "options": [
+            {"text": "Die lokale Verbesserung gilt automatisch und garantiert bis zum Ziel dieselbe Behandlung", "rationale": "Außerhalb der eigenen Domäne kann DSCP anders abgebildet, geändert oder ignoriert werden.", "correct": false},
+            {"text": "Die eigene Warteschlange kann den lokalen Engpass verbessern; für den weiteren Pfad ist ohne Vereinbarung keine identische Behandlung garantiert", "rationale": "Richtig. QoS-Wirkung muss pro administrativer Domäne betrachtet werden.", "correct": true},
+            {"text": "DSCP verdoppelt auf dem Internetpfad die physische Datenrate", "rationale": "Markierung schafft keine zusätzliche Leitungskapazität.", "correct": false},
+            {"text": "QoS ist wirkungslos, sobald irgendwo ein Best-Effort-Abschnitt folgt", "rationale": "Die lokale Engpassbehandlung kann trotzdem nützen; nur die Ende-zu-Ende-Garantie fehlt.", "correct": false}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {"id": "dscp-card", "label": "DSCP", "front": "Was leistet ein DSCP-Wert allein?", "back": "Er kennzeichnet im IP-Header eine gewünschte Behandlung. Erst eine konfigurierte Zuordnung auf ein Per-Hop-Verhalten erzeugt Priorisierung oder andere Queue-Behandlung."},
+            {"id": "trust-card", "label": "Trust Boundary", "front": "Warum werden Endgerätemarkierungen am Netzrand geprüft?", "back": "Ungeprüfte hohe Markierungen können Ressourcen stehlen. Die Domänenpolicy übernimmt, verwirft oder ändert sie anhand vertrauenswürdiger Merkmale."},
+            {"id": "capacity-card", "label": "Kapazitätsgrenze", "front": "Warum garantiert QoS keine zusätzliche Bandbreite?", "back": "Der Scheduler verteilt nur die vorhandene Ausgangskapazität. Bei zu hoher Gesamtlast entstehen weiterhin Wartezeit, Policing oder Drops."}
+          ]
+        },
+        {"type": "recall", "id": "qos-recall", "title": "QoS ohne Vorlage erklären", "prompt": "Erkläre den Weg eines VoIP-Pakets von Klassifizierung und Trust Boundary über DSCP und Queue bis zum Provider. Nenne ausdrücklich, warum daraus keine automatische Bandbreitengarantie entsteht.", "label": "Deine QoS-Erklärung", "placeholder": "Am Access-Rand wird …", "minLength": 170, "model": "Am Access-Rand wird Verkehr anhand einer belastbaren Regel klassifiziert. Die Trust Boundary entscheidet, ob eine Endgerätemarkierung übernommen oder durch einen passenden DSCP ersetzt wird. Jeder konfigurierte Hop bildet den Codepoint auf eine Queue und ein Per-Hop-Verhalten ab; Scheduler und gegebenenfalls Policing oder Shaping steuern die knappe Ressource. An der Providergrenze gilt eine neue Policy. DSCP erhöht keine Linkrate, und ohne konsistente Behandlung sowie vertragliche Zusicherung gibt es keine automatische Ende-zu-Ende-Bandbreitengarantie."}
+      ]
+    },
+    {
+      "title": "Lernziel-Check und Quellenlage",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "dscp-transfer",
+          "requiredObjective": "dscp-treatment",
+          "question": "Welche Beschreibung trifft DSCP und seine Verarbeitung fachlich vollständig?",
+          "options": [
+            {"text": "DSCP ist ein sechs Bit breiter Codepoint im IP-Header; eine lokale Policy klassifiziert, markiert oder ändert ihn und ordnet ihn pro Hop einer Behandlung zu", "rationale": "Richtig. Kennzeichnung, Vertrauensentscheidung und Per-Hop-Abbildung sind getrennt benannt.", "correct": true},
+            {"text": "DSCP ist eine feste physische Leitung, die jedem markierten Paket reservierte Bandbreite gibt", "rationale": "DSCP ist ein Headerfeld, keine Leitung oder automatische Reservierung.", "correct": false},
+            {"text": "DSCP wirkt nur auf Ethernet-MAC-Adressen und ist nicht Teil von IP", "rationale": "Der Codepoint liegt im IPv4- beziehungsweise IPv6-Header.", "correct": false},
+            {"text": "Jeder Codepoint hat in allen Netzen zwingend dieselbe Queue und denselben Scheduler", "rationale": "Die Codepoint-zu-PHB-Abbildung ist innerhalb administrativer Policies konfigurierbar.", "correct": false}
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "qos-policy-transfer",
+          "requiredObjective": "qos-policy",
+          "question": "An einem 200-Mbit/s-Uplink treten nur während paralleler Backups Sprachprobleme auf. Welche Maßnahme ist am belastbarsten?",
+          "options": [
+            {"text": "Alle Pakete maximal markieren; dadurch wächst der Uplink automatisch", "rationale": "Wenn alles Priorität erhält, fehlt Differenzierung; die Kapazität bleibt 200 Mbit/s.", "correct": false},
+            {"text": "Engpass und Last messen, Sprache vertrauenswürdig klassifizieren, eine begrenzte Prioritätsqueue konfigurieren, Backups formen und Wirkung unter Last sowie an Domänengrenzen prüfen", "rationale": "Richtig. Die Maßnahme verbindet Beleg, Policy, Missbrauchsschutz und Ende-zu-Ende-Grenze.", "correct": true},
+            {"text": "Nur am Telefon DSCP setzen und alle Netzkomponenten unverändert lassen", "rationale": "Ohne Trust- und Queue-Policy ist die Markierung nur ein unbehandelter Wert.", "correct": false},
+            {"text": "QoS entfernen, weil jede Priorisierung eine feste Bandbreitengarantie wäre", "rationale": "QoS kann relative Behandlung unter Engpass verbessern, auch ohne absolute Garantie.", "correct": false}
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "Die lokalen Quellen stützen Engpass-, Echtzeit-, Best-Effort- und Domänengrenzen. DSCP selbst ist dort nur unzureichend belegt; die sechs Bit, Per-Hop-Abbildung und Remarking-Logik wurden deshalb standardnah und konservativ formuliert. Konkrete Codepoints, Queue-Gewichte, Scheduler und Provider-SLAs bleiben **plattform- und vertragsspezifisch**; die Einheit ist **CURATED_DRAFT**."
+        }
+      ]
+    }
+  ]
+}

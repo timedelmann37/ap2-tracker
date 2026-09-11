@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Statisches Routing für überschaubare Netze begründet auswählen, fehlende Routen ergänzen und Next Hop sowie Rückweg kontrollieren.">
+<title>Statische Routen planen und prüfen – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=hybrid-1">
+<script defer src="/assets/ap2-space.js?v=hybrid-1"></script>
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="statisches-routing" data-progress-id="ga2-4__2" data-content-revision="2026-09-11.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-4">Block N4 · Routing und NAT</a><span class="sep">›</span>
+    <span class="here">Statische Routen planen und prüfen</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">Statische Routen planen und prüfen</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 23 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Statische Routen werden bewusst von einer Administratorin oder einem Administrator eingetragen. Das macht kleine, stabile Pfade vorhersehbar und erzeugt keinen Austausch von Routinginformationen. Es bedeutet aber auch: Topologieänderungen werden nicht automatisch erkannt, und zu jeder erfolgreichen Kommunikation gehört ein funktionierender Hin- und Rückweg.</p>
+<section class="learning-goals" aria-labelledby="statisches-routing-goals">
+  <h2 id="statisches-routing-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>für ein Netzwerkszenario begründen, ob statische Routen hinsichtlich Größe, Änderungen und Ausfallsicherheit geeignet sind</li>
+    <li>eine fehlende statische Route mit Zielpräfix und erreichbarem Next Hop ergänzen sowie den Rückweg prüfen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Statisch oder nicht?</h2>
+<section class="quiz" data-quiz="static-routing-diagnostic" data-correct="0">
+  <h3>Zwei feste Standorte sind über genau eine stabile Routerverbindung gekoppelt. Die Netze ändern sich selten. Was spricht für statisches Routing?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Kleine, überschaubare und selten veränderte Topologien sind ein typischer Einsatzfall."><span class="m">A</span> Wenige, stabile Routen lassen sich kontrolliert pflegen, ohne ein Routingprotokoll zu betreiben.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Gerade die automatische Pfadentdeckung fehlt; Änderungen müssen administrativ abgebildet werden."><span class="m">B</span> Statische Routen entdecken jeden neuen Alternativpfad automatisch.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die Gegenrichtung benötigt ebenfalls einen passenden Eintrag oder eine andere funktionierende Rückroute."><span class="m">C</span> Eine einzige statische Route garantiert automatisch Hin- und Rückweg.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Sie werden typischerweise gerade für entfernte Netze über einen erreichbaren Next Hop verwendet."><span class="m">D</span> Statische Routen funktionieren nur bei direkt angeschlossenen Zielnetzen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">Manuell bedeutet Verantwortung</span><p>Statisches Routing ist <strong>vorhersehbar</strong>, aber nicht selbstheilend. Jede notwendige Ziel- und Rückroute muss bewusst geplant, dokumentiert und getestet werden.</p></aside><h2 class="sec" id="s2"><span class="num">2</span>Einsatzentscheidung und Grenzen</h2>
+<p>Statische Routen eignen sich besonders für kleine Netze mit wenigen Routern, stabile Stub-Netze mit nur einem Ausgang und gezielte Default-Routen. Vorteile sind geringe Protokollkomplexität, kein Austausch von Routing-Updates und ein bewusst festgelegter Pfad.</p>
+<p>Mit wachsender Topologie steigen jedoch Pflege- und Fehlerrisiko. Eine neue Verbindung oder ein ausgefallener Pfad wird nicht automatisch in allen betroffenen Tabellen verarbeitet. Eine statische Route kann zwar verschwinden, wenn ihr lokales Interface nicht mehr verwendbar ist; daraus entsteht aber nicht automatisch Wissen über eine alternative Ende-zu-Ende-Route.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Wann statische Routen gut passen">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-static-fit-comparison-title diagram-static-fit-comparison-desc">
+  <title id="diagram-static-fit-comparison-title">Wann statische Routen gut passen</title>
+  <desc id="diagram-static-fit-comparison-desc">Vier Karten vergleichen Stärke, passende Einsatzfälle, Pflegegrenzen und Ausfallverhalten statischer Routen.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Wann statische Routen gut passen</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">Stärke</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">vorhersehbarer Pfad,</tspan><tspan x="64" dy="30">kein</tspan><tspan x="64" dy="30">Routingprotokoll-Verkehr,</tspan></text></g><g><rect class="diagram-row" x="265" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="287" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="287" dy="0">passt zu</tspan></text><text x="287" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="287" dy="0">kleinen stabilen</tspan><tspan x="287" dy="30">Netzen, Stub-Netzen,</tspan><tspan x="287" dy="30">gezielten Default-</tspan></text></g><g><rect class="diagram-row" x="488" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="510" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="510" dy="0">Grenze</tspan></text><text x="510" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="510" dy="0">jede Änderung und</tspan><tspan x="510" dy="30">jeder neue</tspan><tspan x="510" dy="30">Zielbereich</tspan></text></g><g><rect class="diagram-row" x="711" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="733" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="733" dy="0">Ausfall</tspan></text><text x="733" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="733" dy="0">ohne zusätzliche</tspan><tspan x="733" dy="30">Mechanismen wird</tspan><tspan x="733" dy="30">kein alternativer</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Die Größe des Netzes allein entscheidet nicht; Änderungshäufigkeit und benötigte Ausfallreaktion gehören dazu.</figcaption>
+</figure><h2 class="sec" id="s3"><span class="num">3</span>Durchgearbeitetes Zwei-Router-Beispiel</h2>
+<p>Router R-A verbindet das LAN <code>192.168.10.0/24</code> mit dem Transitnetz <code>10.0.0.0/30</code> und hat dort <code>10.0.0.1</code>. Router R-B besitzt am Transitlink <code>10.0.0.2</code> und verbindet das LAN <code>192.168.20.0/24</code>.</p>
+<p>R-A benötigt für das entfernte Netz eine Route zu <code>192.168.20.0/24</code> via <code>10.0.0.2</code>. R-B benötigt spiegelbildlich eine Rückroute zu <code>192.168.10.0/24</code> via <code>10.0.0.1</code>. Die Next Hops liegen im direkt verbundenen Transitnetz. Ohne die Rückroute kann das Hinpaket R-B erreichen, die Antwort aber nicht zuverlässig zum Quellnetz zurückkehren.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Eine statische Route vollständig prüfen">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="650" viewBox="0 0 960 650" role="img" aria-labelledby="diagram-static-route-check-flow-title diagram-static-route-check-flow-desc">
+  <title id="diagram-static-route-check-flow-title">Eine statische Route vollständig prüfen</title>
+  <desc id="diagram-static-route-check-flow-desc">Fünfstufige Prüfung einer statischen Route von Zielnetz und Next Hop über lokale Erreichbarkeit und Interface bis zur Rückroute.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Eine statische Route vollständig prüfen</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">entferntes Zielnetz</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">nicht die Hostadresse, sondern Netzadresse plus Präfix</tspan><tspan x="178" dy="25">eintragen</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Next Hop</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Nachbarrouter wählen, der auf dem Weg zum Ziel liegt</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">lokale Erreichbarkeit</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Next Hop muss über ein direkt verbundenes Transitnetz</tspan><tspan x="178" dy="25">erreichbar sein</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Ausgangsinterface</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">muss zum Transitnetz und zum gewählten Nachbarn passen</tspan></text><path d="M480 472v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 494 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="512" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="541" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Rückroute</tspan></text><text x="178" y="568" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Gegenrouter benötigt ebenfalls einen Weg zurück zum Quellnetz</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Ein syntaktisch plausibler Eintrag ist erst mit erreichbarem Next Hop und geprüftem Rückweg vollständig geplant.</figcaption>
+</figure><div class="math-display" role="group" aria-label="Der Next Hop ist lokal erreichbar, wenn bitweises UND aus Next-Hop-Adresse und Transitmaske der direkt verbundenen Transitnetzadresse entspricht"><math display="block" aria-label="Der Next Hop ist lokal erreichbar, wenn bitweises UND aus Next-Hop-Adresse und Transitmaske der direkt verbundenen Transitnetzadresse entspricht"><mrow><mi>H</mi><mo>∧</mo><msub><mi>M</mi><mi>T</mi></msub><mo>=</mo><msub><mi>N</mi><mi>T</mi></msub></mrow></math><div class="math-legend"><span>H = Next-Hop-Adresse</span><span>Mₜ = Maske des lokalen Transitnetzes</span><span>Nₜ = Netzadresse des lokalen Transitnetzes</span></div></div><section class="sequence-practice" data-sequence="static-route-guided-sequence" data-expected="target,next-hop,reachability,return,test" data-correct-feedback="Richtig. Ziel und erreichbarer Nachbar werden zuerst geplant; Rückweg und Test schließen die Konfiguration ab." data-wrong-feedback="Beginne mit dem entfernten Zielnetz. Ein Test ist erst aussagekräftig, nachdem Next-Hop-Erreichbarkeit und Rückroute geprüft wurden." aria-labelledby="static-route-guided-sequence-title">
+  <div class="lab-heading"><div><h3 id="static-route-guided-sequence-title">Fehlende Route ergänzen</h3><p>Bringe die Arbeitsschritte für R-A in eine prüfungstaugliche Reihenfolge.</p></div><span class="lab-tag">Geführte Übung</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="return" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Auf R-B die Rückroute zum Quellnetz kontrollieren.</span></li>
+    <li data-step="target" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Das entfernte Zielnetz 192.168.20.0/24 bestimmen.</span></li>
+    <li data-step="next-hop" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Den Nachbarrouter 10.0.0.2 als Next Hop wählen.</span></li>
+    <li data-step="reachability" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Prüfen, ob 10.0.0.2 im direkt verbundenen Transitnetz liegt.</span></li>
+    <li data-step="test" tabindex="-1"><span class="step-position" data-step-position>5</span><span>Hin- und Rückweg mit passenden Tests und Tabellenkontrolle verifizieren.</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Karteikarten und freier Abruf</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="static-definition" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was macht eine Route statisch?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Sie wird administrativ festgelegt und nicht als Ergebnis eines Routingprotokolls gelernt.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="static-next-hop" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche Grundbedingung muss ein angegebener Next Hop erfüllen?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Er muss vom aktuellen Router über einen lokalen, direkt verbundenen Pfad erreichbar sein.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="static-return" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum reicht eine korrekte Hinroute nicht für erfolgreiche Kommunikation?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Antwortpakete benötigen ebenfalls eine passende Route zurück zum ursprünglichen Quellnetz.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Definition“:</span><button type="button" data-card-id="static-definition" data-card-rate="known">gewusst</button><button type="button" data-card-id="static-definition" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="static-definition"></span></div>
+<div class="card-rating"><span>Karte „Next Hop“:</span><button type="button" data-card-id="static-next-hop" data-card-rate="known">gewusst</button><button type="button" data-card-id="static-next-hop" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="static-next-hop"></span></div>
+<div class="card-rating"><span>Karte „Rückweg“:</span><button type="button" data-card-id="static-return" data-card-rate="known">gewusst</button><button type="button" data-card-id="static-return" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="static-return"></span></div><section class="recall-practice" data-recall="static-routing-recall" data-min-length="120" aria-labelledby="static-routing-recall-title">
+  <div class="recall-prompt"><h3 id="static-routing-recall-title">Planung ohne Vorlage erklären</h3><p>Erkläre, wann statisches Routing geeignet ist und welche vier Kontrollen du beim Ergänzen einer Route bis zum erfolgreichen Ende-zu-Ende-Test durchführst.</p></div>
+  <label class="sr-only" for="static-routing-recall-answer">Deine Erklärung</label>
+  <textarea id="static-routing-recall-answer" data-recall-input rows="4" placeholder="Statisches Routing eignet sich …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Statisches Routing passt zu kleinen, stabilen Netzen und Stub-Szenarien, wenn kontrollierte Pfade wichtiger sind als automatische Anpassung. Ich bestimme das entfernte Zielpräfix, wähle einen unmittelbar erreichbaren Next Hop, prüfe das lokale Ausgangsinterface und ergänze beziehungsweise kontrolliere die Rückroute. Danach teste ich beide Richtungen.</div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Lernziel-Check: Transfer</h2>
+<section class="quiz" data-quiz="static-routing-transfer-fit" data-correct="0" data-required-objective="static-fit">
+  <h3>Welches Szenario ist am ehesten allein mit statischen Routen beherrschbar?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Wenige vorhersehbare Ziele und ein eindeutiger Ausgang begrenzen Pflege und Ausfallvarianten."><span class="m">A</span> Ein kleines Außenstellen-LAN mit genau einem stabilen Uplink und seltenen Netzänderungen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Hier würden manuelle Pflege und konsistente Ausweichpfade schnell unübersichtlich; dynamischer Austausch ist typischerweise geeigneter."><span class="m">B</span> Ein stark wachsendes Campusnetz mit vielen redundanten Routern und täglichen Topologieänderungen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Eine normale statische Route berechnet keinen neuen Pfad aus der Topologie."><span class="m">C</span> Ein WAN, das bei jedem Linkausfall ohne Zusatzmechanismus automatisch den besten Ersatzpfad berechnen soll.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Unbekannte Ziele lassen sich nicht als konkrete statische Routen vorab eintragen."><span class="m">D</span> Ein Netz, dessen Zielpräfixe noch unbekannt sind und automatisch entdeckt werden müssen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="static-routing-transfer-plan" data-correct="0" data-required-objective="static-route-plan">
+  <h3>R-X hat 10.10.0.1/30 am Transitlink zu R-Y mit 10.10.0.2/30. Hinter R-Y liegt 192.168.70.0/24. Welcher Eintrag gehört auf R-X?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Ziel ist das entfernte LAN, der Next Hop der direkt erreichbare Nachbar; der Rückweg bleibt eigener Pflichtschritt."><span class="m">A</span> Ziel 192.168.70.0/24 via 10.10.0.2; anschließend Rückroute auf R-Y prüfen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Zielnetz und Next Hop sind vertauscht. Außerdem benötigt bidirektionale Kommunikation einen Rückweg."><span class="m">B</span> Ziel 10.10.0.2/30 via 192.168.70.0; eine Rückroute ist unnötig.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die Route soll das Netz 192.168.70.0/24 beschreiben; 10.10.0.1 ist zudem die eigene, nicht die Nachbaradresse."><span class="m">C</span> Ziel 192.168.70.42/24 via 10.10.0.1; anschließend nur R-X testen.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Der angegebene Next Hop ist nicht unmittelbar im lokalen Transitnetz erreichbar und die Default-Route wäre unnötig breit."><span class="m">D</span> Ziel 0.0.0.0/0 via 192.168.70.1; der Next Hop darf hinter R-Y liegen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Quellen und Einordnung</h2>
+<ul>
+<li><strong>IT-Berufe Fachstufe – Lernfelder 6–9 (2022):</strong> kleines Zwei-Router-Szenario, manuelle Routenwahl und Routingtabellenübung.</li>
+<li><strong>EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):</strong> Definition statischer Einträge und zusätzliche IPv4-/IPv6-Aufgabenrahmen.</li>
+</ul>
+<p>Alle Adressen, Aufgaben und Diagramme sind eigenständig erstellt. Private Netzpläne, leere Buchtabellen und der sachfremde Betriebssystem-Grafiktreffer werden nicht veröffentlicht.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-4"><span class="d">zurück zu</span><span class="t">Block N4 · Routing und NAT</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N4 · Routing und NAT</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Statisch oder nicht?</a></li>
+<li><a href="#s2" data-t="s2">Einsatzentscheidung und Grenzen</a></li>
+<li><a href="#s3" data-t="s3">Durchgearbeitetes Zwei-Router-Beispiel</a></li>
+<li><a href="#s4" data-t="s4">Karteikarten und freier Abruf</a></li>
+<li><a href="#s5" data-t="s5">Lernziel-Check: Transfer</a></li>
+<li><a href="#s6" data-t="s6">Quellen und Einordnung</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-4">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

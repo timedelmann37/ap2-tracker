@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Router-on-a-Stick und Layer-3-Switch anhand des Paketwegs, der Gateway-Rolle, Kapazität, Ausfallsicherheit und Sicherheitskontrollen vergleichen.">
+<title>Inter-VLAN-Routing passend entwerfen – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=hybrid-1">
+<script defer src="/assets/ap2-space.js?v=hybrid-1"></script>
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="inter-vlan-routing" data-progress-id="ga2-4__9" data-content-revision="2026-09-11.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-4">Block N4 · Routing und NAT</a><span class="sep">›</span>
+    <span class="here">Inter-VLAN-Routing passend entwerfen</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">Inter-VLAN-Routing passend entwerfen</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 22 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>VLANs trennen Layer-2-Broadcastdomänen. Sobald ein Client aus VLAN 10 einen Server in VLAN 20 erreicht, braucht der Verkehr eine Layer-3-Entscheidung und je VLAN ein Default Gateway. Router-on-a-Stick und Layer-3-Switch erfüllen diese Aufgabe auf unterschiedlichen Wegen; die richtige Wahl folgt aus dem Verkehrs- und Sicherheitsprofil, nicht aus einem pauschalen Produkturteil.</p>
+<section class="learning-goals" aria-labelledby="inter-vlan-routing-goals">
+  <h2 id="inter-vlan-routing-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>den Paketweg zwischen zwei VLANs bei Router-on-a-Stick und bei Routing über Switch Virtual Interfaces vollständig beschreiben</li>
+    <li>zwischen Router-on-a-Stick und Layer-3-Switch anhand von Verkehrsmenge, Portkapazität, Redundanz, Betriebsaufwand und Sicherheitsanforderung begründet entscheiden</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Warum reicht ein VLAN-Tag nicht?</h2>
+<section class="quiz" data-quiz="inter-vlan-diagnostic" data-correct="1">
+  <h3>Ein Client in VLAN 10 sendet an einen Server in VLAN 20. Welche Funktion wird zwingend benötigt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="VLANs sollen gerade getrennte Broadcastdomänen bilden. Zusammenlegen würde die gewünschte Trennung aufheben."><span class="m">A</span> Nur ein größerer Layer-2-Broadcastbereich</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Der Zielhost liegt aus Sicht des Clients in einem anderen IP-Netz, daher sendet der Client zum Default Gateway."><span class="m">B</span> Eine Layer-3-Weiterleitung über ein Gateway für beide VLAN-Netze</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="DNS löst Namen auf, entscheidet aber nicht über die Weiterleitung zwischen IP-Netzen."><span class="m">C</span> Ein DNS-Alias zwischen den VLAN-Nummern</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Ein Access-Port gehört üblicherweise genau einem VLAN. Er ersetzt kein Routing zwischen getrennten Netzen."><span class="m">D</span> Ausschließlich ein untagged Port zwischen den VLANs</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">VLAN trennt, Routing verbindet</span><p>Der Client entscheidet mit IP-Adresse und Präfix, dass das Ziel <strong>nicht lokal</strong> ist, und sendet an sein Default Gateway. Erst dort wird zwischen den VLAN-Netzen geroutet.</p></aside><h2 class="sec" id="s2"><span class="num">2</span>Router-on-a-Stick: ein Trunk, mehrere Subinterfaces</h2>
+<p>Beim Router-on-a-Stick verbindet ein einzelner physischer Routerport den Router mit einem Layer-2-Switch. Der Link ist ein 802.1Q-Trunk. Auf dem Router existiert je VLAN ein logisches Subinterface, etwa <code>10.20.10.1/24</code> für VLAN 10 und <code>10.20.20.1/24</code> für VLAN 20. Diese Adressen sind die Default Gateways der Endgeräte.</p>
+<p>Ein Paket vom Client zum Server läuft erst über den Access-Port in VLAN 10, dann getaggt über den Trunk zum Router. Der Router entfernt die alte Layer-2-Hülle, entscheidet anhand der Ziel-IP und sendet das Paket über sein VLAN-20-Subinterface wieder getaggt über denselben physischen Link. Der Switch liefert es am Server-Access-Port aus.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Router-on-a-Stick führt beide Richtungen über einen Trunk">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-topology" xmlns="http://www.w3.org/2000/svg" width="960" height="560" viewBox="0 0 960 560" role="img" aria-labelledby="diagram-router-on-stick-path-title diagram-router-on-stick-path-desc">
+  <title id="diagram-router-on-stick-path-title">Router-on-a-Stick führt beide Richtungen über einen Trunk</title>
+  <desc id="diagram-router-on-stick-path-desc">Client in VLAN 10 und Server in VLAN 20 sind mit einem Layer-2-Switch verbunden. Ein einzelner 802.1Q-Trunk führt zu einem Router mit je einem Subinterface pro VLAN.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Router-on-a-Stick führt beide Richtungen über einen Trunk</tspan></text>
+  <g class="diagram-zone zone-vlan10"><rect x="30" y="85" width="255" height="175" rx="18"/><text x="46" y="112">VLAN 10 · Clients</text></g><g class="diagram-zone zone-vlan20"><rect x="30" y="315" width="255" height="175" rx="18"/><text x="46" y="342">VLAN 20 · Server</text></g><g class="diagram-zone zone-switching"><rect x="340" y="85" width="250" height="405" rx="18"/><text x="356" y="112">Layer 2</text></g><g class="diagram-zone zone-routing"><rect x="650" y="85" width="275" height="405" rx="18"/><text x="666" y="112">Layer 3</text></g><g class="diagram-edge access"><path d="M155 175 L465 290"/><text class="diagram-edge-label" x="310" y="224.5" text-anchor="middle">Access VLAN 10</text></g><g class="diagram-edge access"><path d="M155 405 L465 290"/><text class="diagram-edge-label" x="310" y="339.5" text-anchor="middle">Access VLAN 20</text></g><g class="diagram-edge trunk"><path d="M465 290 L785 290"/><text class="diagram-edge-label" x="625" y="282" text-anchor="middle">802.1Q-Trunk</text></g><g class="diagram-node client" transform="translate(155 175)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="155" y="170" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="155" dy="0">Client VLAN 10</tspan></text><text class="diagram-node-detail" x="155" y="194" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="155" dy="0">10.20.10.20</tspan></text><g class="diagram-node server" transform="translate(155 405)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="155" y="400" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="155" dy="0">Server VLAN 20</tspan></text><text class="diagram-node-detail" x="155" y="424" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="155" dy="0">10.20.20.50</tspan></text><g class="diagram-node switch" transform="translate(465 290)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="465" y="285" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="465" dy="0">L2-Switch</tspan></text><text class="diagram-node-detail" x="465" y="309" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="465" dy="0">Access + Trunk</tspan></text><g class="diagram-node router" transform="translate(785 290)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="785" y="285" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="785" dy="0">Router</tspan></text><text class="diagram-node-detail" x="785" y="309" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="785" dy="0">Subinterfaces</tspan><tspan x="785" dy="25">.10/.20</tspan></text>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Beide Richtungen des Inter-VLAN-Verkehrs teilen sich den Trunk und den Routerport.</figcaption>
+</figure><aside class="callout warn"><span class="lbl">Kapazitäts- und Ausfallpunkt</span><p>Der gemeinsame Trunk und Routerpfad tragen den gesamten Inter-VLAN-Verkehr dieser Konstruktion. Ob das genügt, hängt von realer Last, Linkrate, Routerleistung und Redundanz ab.</p></aside><h2 class="sec" id="s3"><span class="num">3</span>Layer-3-Switch: Gateways als SVIs im LAN-Core</h2>
+<p>Ein routingfähiger Switch stellt für jedes VLAN ein Switch Virtual Interface, kurz SVI, bereit. Im Beispiel verwenden VLAN 10 <code>10.20.10.1/24</code> und VLAN 20 <code>10.20.20.1/24</code> als Gateways. Der Switch trifft die Layer-3-Entscheidung intern und leitet den Verkehr direkt in das Ziel-VLAN weiter. Bei geeigneter Hardware geschieht das oft mit hoher interner Weiterleitungsleistung.</p>
+<p>Der Vorteil ist kein Freibrief: Inter-VLAN-Zugriffe brauchen weiterhin eine dokumentierte Policy. ACLs können Netze, Protokolle und Ports begrenzen. Für zustandsbehaftete Kontrolle, Anwendungsschutz oder zentrale Protokollierung kann ein separater Firewallpfad erforderlich bleiben. Der Uplink zur Firewall oder zum WAN-Router ist eine andere Verkehrsbeziehung als das lokale Inter-VLAN-Routing.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Beim Layer-3-Switch liegen die VLAN-Gateways auf SVIs">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-topology" xmlns="http://www.w3.org/2000/svg" width="960" height="560" viewBox="0 0 960 560" role="img" aria-labelledby="diagram-layer3-switch-path-title diagram-layer3-switch-path-desc">
+  <title id="diagram-layer3-switch-path-title">Beim Layer-3-Switch liegen die VLAN-Gateways auf SVIs</title>
+  <desc id="diagram-layer3-switch-path-desc">Client-VLAN und Server-VLAN enden an einem Layer-3-Switch mit je einem SVI als Gateway. Ein separater gerouteter Uplink führt zur Firewall für WAN- und Sicherheitsaufgaben.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Beim Layer-3-Switch liegen die VLAN-Gateways auf SVIs</tspan></text>
+  <g class="diagram-zone zone-vlan10"><rect x="30" y="85" width="255" height="175" rx="18"/><text x="46" y="112">VLAN 10 · Clients</text></g><g class="diagram-zone zone-vlan20"><rect x="30" y="315" width="255" height="175" rx="18"/><text x="46" y="342">VLAN 20 · Server</text></g><g class="diagram-zone zone-core"><rect x="350" y="85" width="260" height="405" rx="18"/><text x="366" y="112">LAN-Core</text></g><g class="diagram-zone zone-edge"><rect x="675" y="85" width="250" height="405" rx="18"/><text x="691" y="112">WAN-/Security-Übergang</text></g><g class="diagram-edge access"><path d="M155 175 L480 290"/><text class="diagram-edge-label" x="317.5" y="224.5" text-anchor="middle">VLAN 10</text></g><g class="diagram-edge access"><path d="M155 405 L480 290"/><text class="diagram-edge-label" x="317.5" y="339.5" text-anchor="middle">VLAN 20</text></g><g class="diagram-edge routed"><path d="M480 290 L800 290"/><text class="diagram-edge-label" x="640" y="282" text-anchor="middle">gerouteter Uplink</text></g><g class="diagram-node client" transform="translate(155 175)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="155" y="170" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="155" dy="0">Client VLAN 10</tspan></text><text class="diagram-node-detail" x="155" y="194" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="155" dy="0">GW 10.20.10.1</tspan></text><g class="diagram-node server" transform="translate(155 405)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="155" y="400" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="155" dy="0">Server VLAN 20</tspan></text><text class="diagram-node-detail" x="155" y="424" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="155" dy="0">GW 10.20.20.1</tspan></text><g class="diagram-node layer3-switch" transform="translate(480 290)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="480" y="285" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="480" dy="0">L3-Switch</tspan></text><text class="diagram-node-detail" x="480" y="309" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="480" dy="0">SVI 10 + SVI 20</tspan></text><g class="diagram-node firewall" transform="translate(800 290)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="800" y="285" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="800" dy="0">Firewall/Router</tspan></text><text class="diagram-node-detail" x="800" y="309" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="800" dy="0">WAN + Security</tspan></text>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Das lokale Routing bleibt im LAN-Core; der Security- und WAN-Übergang ist separat.</figcaption>
+</figure><h2 class="sec" id="s4"><span class="num">4</span>Beispiel: Architektur begründet auswählen</h2>
+<p><strong>Kleine Außenstelle:</strong> Zwei VLANs, geringe lokale Datenmenge, vorhandene Firewall mit VLAN-Subinterfaces und keine zusätzlichen Verfügbarkeitsanforderungen. Router-on-a-Stick kann hier wirtschaftlich und gut kontrollierbar sein, wenn Trunk- und Firewallkapazität nachweislich reichen.</p>
+<p><strong>Zentraler Standort:</strong> Mehrere Client-, Server- und Infrastruktur-VLANs übertragen regelmäßig große Datenmengen untereinander. Ein Layer-3-Switch mit SVIs reduziert den Umweg über einen einzelnen externen Routerlink. Redundante Core-Komponenten und Gateways müssen jedoch geplant werden; sensible Verkehrsbeziehungen können weiterhin über eine Firewall geführt oder mit geeigneten ACLs begrenzt werden.</p>
+<p>Die Begründung nennt deshalb nicht nur Geschwindigkeit, sondern auch vorhandene Geräte, Spitzenlast, Ausfallwirkung, Redundanz, Policy-Tiefe und Betriebswissen.</p>
+<section class="quiz" data-quiz="inter-vlan-example-choice" data-correct="1">
+  <h3>Ein Backupserver in VLAN 20 überträgt nachts große Datenmengen zu mehreren Systemen in VLAN 10, 30 und 40. Ein einzelner 1-Gbit/s-Routertrunk ist bereits ausgelastet. Welche Schlussfolgerung ist am stärksten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Das beseitigt die Segmentierung und löst die Sicherheits- und Broadcastanforderung nicht sauber."><span class="m">A</span> VLANs entfernen, damit kein Routing mehr nötig ist</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Die Engstelle wird adressiert, ohne daraus abzuleiten, dass Policy und Ausfallsicherheit automatisch gelöst seien."><span class="m">B</span> Inter-VLAN-Routing im leistungsfähigen Layer-3-Core prüfen und Sicherheitsregeln sowie Redundanz separat planen</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Namensauflösung ändert weder Linkrate noch den Layer-3-Paketpfad."><span class="m">C</span> Mehr DNS-Records anlegen, damit der Trunk schneller wird</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Die gemessene Engstelle liegt am gemeinsamen Trunk. Sicherheitsregeln pauschal zu entfernen wäre unbegründet und riskant."><span class="m">D</span> Alle ACLs löschen, weil Filterregeln grundsätzlich die einzige Ursache für Auslastung sind</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Geführte Übung: Entscheidung vorbereiten</h2>
+<section class="sequence-practice" data-sequence="inter-vlan-decision-sequence" data-expected="traffic-matrix,gateway-path,capacity,policy,choose" data-correct-feedback="Richtig. Erst Bedarf und Paketweg, dann Kapazität und Kontrollen; die Architekturentscheidung folgt aus diesen Belegen." data-wrong-feedback="Starte nicht mit dem Gerätenamen. Erfasse zuerst Verkehrsbeziehungen und zeichne, wo die Gateways liegen und welchen Link jedes Paket zweimal benutzt." aria-labelledby="inter-vlan-decision-sequence-title">
+  <div class="lab-heading"><div><h3 id="inter-vlan-decision-sequence-title">Ordne den Architekturvergleich</h3><p>Bringe die Schritte für eine nachvollziehbare Entscheidung in Reihenfolge.</p></div><span class="lab-tag">Geführte Übung</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="choose" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Architektur auswählen und verbleibende Risiken dokumentieren</span></li>
+    <li data-step="traffic-matrix" tabindex="-1"><span class="step-position" data-step-position>2</span><span>VLAN-Netze, Kommunikationsbeziehungen und Lastspitzen erfassen</span></li>
+    <li data-step="gateway-path" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Gateway-Position und vollständigen Hin-/Rückweg für beide Varianten zeichnen</span></li>
+    <li data-step="policy" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Benötigte ACL-, Firewall- und Protokollierungsfunktionen festlegen</span></li>
+    <li data-step="capacity" tabindex="-1"><span class="step-position" data-step-position>5</span><span>Port-, Gerätekapazität, Engstellen und Ausfallpunkte vergleichen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><p><strong>Prüfungssatz:</strong> Router-on-a-Stick ist nicht grundsätzlich schlecht und ein Layer-3-Switch nicht automatisch sicher. Entscheidend ist, ob Paketpfad, Kapazität, Redundanz und benötigte Kontrolltiefe zur konkreten Umgebung passen.</p>
+<h2 class="sec" id="s6"><span class="num">6</span>Karteikarten und freier Abruf</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="inter-vlan-roas-card" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche Rollen haben Trunk und Router-Subinterfaces beim Router-on-a-Stick?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Der 802.1Q-Trunk transportiert mehrere VLANs über einen physischen Link. Je VLAN stellt ein Router-Subinterface das Layer-3-Gateway bereit.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="inter-vlan-svi-card" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was ist ein SVI im Inter-VLAN-Routing?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Ein Switch Virtual Interface ist die logische Layer-3-Schnittstelle eines VLANs auf einem routingfähigen Switch und dient den Hosts dieses VLANs typischerweise als Gateway.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="inter-vlan-policy-card" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum ist ein Layer-3-Switch mit ACL nicht automatisch eine vollständige Firewall?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>ACLs können Adressen, Protokolle und Ports filtern. Zustandsführung, Anwendungskontrolle, Bedrohungsschutz und umfassende Protokollierung hängen von den konkreten Geräten und Funktionen ab.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Router-on-a-Stick“:</span><button type="button" data-card-id="inter-vlan-roas-card" data-card-rate="known">gewusst</button><button type="button" data-card-id="inter-vlan-roas-card" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="inter-vlan-roas-card"></span></div>
+<div class="card-rating"><span>Karte „SVI“:</span><button type="button" data-card-id="inter-vlan-svi-card" data-card-rate="known">gewusst</button><button type="button" data-card-id="inter-vlan-svi-card" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="inter-vlan-svi-card"></span></div>
+<div class="card-rating"><span>Karte „Policy-Grenze“:</span><button type="button" data-card-id="inter-vlan-policy-card" data-card-rate="known">gewusst</button><button type="button" data-card-id="inter-vlan-policy-card" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="inter-vlan-policy-card"></span></div><section class="recall-practice" data-recall="inter-vlan-core-recall" data-min-length="150" aria-labelledby="inter-vlan-core-recall-title">
+  <div class="recall-prompt"><h3 id="inter-vlan-core-recall-title">Beide Wege ohne Vorlage erklären</h3><p>Beschreibe den Paketweg von VLAN 10 nach VLAN 20 bei Router-on-a-Stick und Layer-3-Switch. Begründe danach mit mindestens vier Kriterien, wann du welche Variante prüfen würdest.</p></div>
+  <label class="sr-only" for="inter-vlan-core-recall-answer">Dein Architekturvergleich</label>
+  <textarea id="inter-vlan-core-recall-answer" data-recall-input rows="4" placeholder="Beim Router-on-a-Stick … Beim Layer-3-Switch …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Beim Router-on-a-Stick sendet der Client zum Subinterface-Gateway; der Frame läuft über einen 802.1Q-Trunk zum Router und geroutet über denselben Link ins Ziel-VLAN zurück. Beim Layer-3-Switch liegen die Gateways als SVIs im Switch, der lokal zwischen den VLANs routet. Für die Wahl prüfe ich Verkehrsmenge und Spitzenlast, Link- und Gerätekapazität, Ausfallpunkte und Redundanz, Betriebsaufwand sowie benötigte ACL-, Firewall- und Loggingfunktionen.</div>
+</section><h2 class="sec" id="s7"><span class="num">7</span>Lernziel-Check: Prüfungstransfer</h2>
+<section class="quiz" data-quiz="inter-vlan-transfer-path" data-correct="1" data-required-objective="inter-vlan-path">
+  <h3>Welche Beschreibung eines Pakets von VLAN 10 zu VLAN 20 beim Router-on-a-Stick ist vollständig?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Unterschiedliche IP-Netze werden nicht direkt auf Layer 2 zugestellt. Der Client sendet an die MAC-Adresse seines Default Gateways."><span class="m">A</span> Der Client sendet direkt an die MAC-Adresse des Zielservers, weil beide an demselben Switch hängen</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Die Beschreibung enthält lokale Gatewayentscheidung, Trunk, Subinterfaces, Routing und Rückführung ins Ziel-VLAN."><span class="m">B</span> Der Client sendet zum Gateway; VLAN 10 läuft getaggt über den Trunk zum Subinterface, der Router routet und sendet VLAN 20 getaggt über denselben Link zum Switch zurück</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="DNS-Namen spielen für die eigentliche Layer-3-Weiterleitung zwischen den VLAN-Netzen keine Rolle."><span class="m">C</span> Der Switch ändert nur den DNS-Namen von VLAN 10 in VLAN 20</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Router begrenzen Layer-2-Broadcastdomänen. Inter-VLAN-Routing leitet gezielte Layer-3-Pakete weiter, nicht pauschal alle Broadcasts."><span class="m">D</span> Der Router kopiert den Broadcast aus VLAN 10 unverändert in jedes andere VLAN</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="inter-vlan-transfer-choice" data-correct="1" data-required-objective="architecture-choice">
+  <h3>Ein Standort hat acht VLANs mit hohem internem Ost-West-Verkehr, redundante Core-Switches und eine separate Firewall für besonders sensible Übergänge. Welche Begründung ist am stärksten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Routingfähige Switches können Inter-VLAN-Routing über SVIs übernehmen. Die Aussage ignoriert die vorhandene Core-Architektur."><span class="m">A</span> Router-on-a-Stick ist zwingend, weil nur ein externer Router VLANs routen kann</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Die Entscheidung verbindet Last, Redundanz und erforderliche Kontrolltiefe, ohne ACL und Firewall gleichzusetzen."><span class="m">B</span> SVIs auf dem redundanten Layer-3-Core sind plausibel; Kapazität und Ausfallkonzept passen, während sensible Beziehungen weiterhin explizite Firewallpfade oder geeignete Policies erhalten</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Das hebt die gewünschte Segmentierung auf und vergrößert die Broadcast- und Fehlerdomäne."><span class="m">C</span> Alle VLANs sollten zu einem Netz zusammengelegt werden, damit der Core nicht routen muss</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Namen entscheiden nicht über Eignung. Relevant sind Verkehrsprofil, Kapazität, Redundanz, Betrieb und Sicherheit."><span class="m">D</span> Die Wahl hängt ausschließlich von der Anzahl der VLAN-Namen ab</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s8"><span class="num">8</span>Quellen und Geltungsbereich</h2>
+<ul>
+<li><strong>EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):</strong> Layer-3-Switch als zentraler Router, Inter-VLAN-Routing und VLAN-Trunk-Kontext.</li>
+<li><strong>IT-Berufe Grundstufe – Lernfelder 6–9 (2022):</strong> ergänzende Übungen zu tagged/untagged Ports und getrennten Firewallbeziehungen.</li>
+</ul>
+<p>Die Einheit bleibt herstellerneutral. Konkrete SVI-, Subinterface-, First-Hop-Redundanz- und ACL-Syntax hängt von der Plattform ab. Diagramme und Fallbeispiele sind eigenständig erstellt.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-4"><span class="d">zurück zu</span><span class="t">Block N4 · Routing und NAT</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N4 · Routing und NAT</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Warum reicht ein VLAN-Tag nicht?</a></li>
+<li><a href="#s2" data-t="s2">Router-on-a-Stick: ein Trunk, mehrere Subinterfaces</a></li>
+<li><a href="#s3" data-t="s3">Layer-3-Switch: Gateways als SVIs im LAN-Core</a></li>
+<li><a href="#s4" data-t="s4">Beispiel: Architektur begründet auswählen</a></li>
+<li><a href="#s5" data-t="s5">Geführte Übung: Entscheidung vorbereiten</a></li>
+<li><a href="#s6" data-t="s6">Karteikarten und freier Abruf</a></li>
+<li><a href="#s7" data-t="s7">Lernziel-Check: Prüfungstransfer</a></li>
+<li><a href="#s8" data-t="s8">Quellen und Geltungsbereich</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-4">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

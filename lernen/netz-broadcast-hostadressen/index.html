@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Aus IPv4-Adresse und Präfix Netzadresse, Broadcastadresse sowie erste und letzte nutzbare Hostadresse schrittweise bestimmen.">
+<title>IPv4-Netzgrenzen sicher berechnen – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=hybrid-1">
+<script defer src="/assets/ap2-space.js?v=hybrid-1"></script>
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="netz-broadcast-hostadressen" data-progress-id="ga2-2__2" data-content-revision="2026-09-11.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-2">Block N2 · IPv4 und Subnetting</a><span class="sep">›</span>
+    <span class="here">IPv4-Netzgrenzen sicher berechnen</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">IPv4-Netzgrenzen sicher berechnen</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 24 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Bei Subnetting-Aufgaben genügt es nicht, vier Adressen auswendig zu kennen. Du brauchst ein wiederholbares Verfahren: Maske und Blockgröße bestimmen, das passende Intervall finden und erst danach Netz, Broadcast und Hostbereich benennen.</p>
+<section class="learning-goals" aria-labelledby="netz-broadcast-hostadressen-goals">
+  <h2 id="netz-broadcast-hostadressen-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>aus einer beliebigen IPv4-Adresse und einem Präfix Netz- und Broadcastadresse fehlerfrei herleiten</li>
+    <li>erste und letzte nutzbare Hostadresse bestimmen und Grenzadressen korrekt einordnen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Welche Grenze gehört zum Netz?</h2>
+<section class="quiz" data-quiz="ipv4-boundary-diagnostic" data-correct="1">
+  <h3>Die Adresse 192.168.10.70 liegt in einem /26-Subnetz. Welche Netzadresse vermutest du?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Ein /26 teilt das letzte Oktett in 64er-Blöcke. 70 liegt nicht im Block 0 bis 63."><span class="m">A</span> 192.168.10.0</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Der zweite 64er-Block reicht von 64 bis 127."><span class="m">B</span> 192.168.10.64</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="70 ist die gegebene Hostadresse. Für die Netzadresse müssen alle Hostbits 0 sein."><span class="m">C</span> 192.168.10.70</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="128 ist bereits die Netzadresse des folgenden /26-Blocks."><span class="m">D</span> 192.168.10.128</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">Vier feste Rollen</span><p>In einem klassischen IPv4-Subnetz gilt: <strong>Netzadresse – erster Host – letzter Host – Broadcastadresse</strong>. Die beiden äußeren Adressen werden nicht an normale Endgeräte vergeben.</p></aside><h2 class="sec" id="s2"><span class="num">2</span>Das bitgenaue Verfahren</h2>
+<p>Die Subnetzmaske trennt Netz- und Hostbits. Für die Netzadresse bleiben die Netzbits erhalten und alle Hostbits werden 0. Für die Broadcastadresse bleiben die Netzbits erhalten und alle Hostbits werden 1. Bitweise lässt sich das ohne Raten ausdrücken:</p>
+<div class="math-display" role="group" aria-label="Netzadresse gleich IP-Adresse UND Maske; Broadcastadresse gleich Netzadresse ODER invertierte Maske"><math display="block" aria-label="Netzadresse gleich IP-Adresse UND Maske; Broadcastadresse gleich Netzadresse ODER invertierte Maske"><mtable columnalign="right center left" rowspacing="0.5em"><mtr><mtd><mi>N</mi></mtd><mtd><mo>=</mo></mtd><mtd><mi>IP</mi><mo>∧</mo><mi>M</mi></mtd></mtr><mtr><mtd><mi>B</mi></mtd><mtd><mo>=</mo></mtd><mtd><mi>N</mi><mo>∨</mo><mo>¬</mo><mi>M</mi></mtd></mtr><mtr><mtd><msub><mi>H</mi><mtext>erste</mtext></msub></mtd><mtd><mo>=</mo></mtd><mtd><mi>N</mi><mo>+</mo><mn>1</mn></mtd></mtr><mtr><mtd><msub><mi>H</mi><mtext>letzte</mtext></msub></mtd><mtd><mo>=</mo></mtd><mtd><mi>B</mi><mo>−</mo><mn>1</mn></mtd></mtr></mtable></math><div class="math-legend"><span>N = Netzadresse</span><span>B = Broadcastadresse</span><span>M = Subnetzmaske</span></div></div><figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Vom Präfix zu den vier Grenzadressen">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="650" viewBox="0 0 960 650" role="img" aria-labelledby="diagram-boundary-workflow-title diagram-boundary-workflow-desc">
+  <title id="diagram-boundary-workflow-title">Vom Präfix zu den vier Grenzadressen</title>
+  <desc id="diagram-boundary-workflow-desc">Fünfstufiger Rechenweg von Präfix und Maske über Blockgröße und Adressintervall bis zu Netz, Broadcast und Hostbereich.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Vom Präfix zu den vier Grenzadressen</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">1 · Präfix in Maske übersetzen</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">/27 ergibt im relevanten Oktett 224 und damit 5 Hostbits.</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">2 · Blockgröße bilden</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">256 minus 224 ergibt eine Schrittweite von 32 Adressen.</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">3 · Enthaltenen Block finden</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">141 liegt zwischen den Grenzen 128 und 159.</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">4 · Netz und Broadcast setzen</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Unterste Adresse 128 ist das Netz, oberste Adresse 159 der</tspan><tspan x="178" dy="25">Broadcast.</tspan></text><path d="M480 472v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 494 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="512" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="541" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">5 · Hostbereich ableiten</tspan></text><text x="178" y="568" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Erster Host ist 129, letzter Host ist 158.</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Derselbe Ablauf funktioniert auch dann, wenn die gegebene IPv4-Adresse mitten im Subnetz liegt.</figcaption>
+</figure><h2 class="sec" id="s3"><span class="num">3</span>Durchgerechnet: 192.168.77.141/27</h2>
+<p>Das Präfix /27 entspricht 255.255.255.224. Im letzten Oktett beträgt die Blockgröße 256 − 224 = 32. Die Blockgrenzen lauten 0, 32, 64, 96, 128, 160, 192 und 224. Der Wert 141 liegt daher im Block 128 bis 159.</p>
+<p>Die binäre Probe betrachtet nur das Oktett, in dem die Grenze verläuft. Das UND mit der Maske setzt die fünf Hostbits auf 0; für den Broadcast werden diese fünf Bits auf 1 gesetzt.</p>
+<div class="math-display" role="group" aria-label="Binäre Berechnung des letzten Oktetts von Netz und Broadcast für die Adresse 141 mit Präfix 27"><math display="block" aria-label="Binäre Berechnung des letzten Oktetts von Netz und Broadcast für die Adresse 141 mit Präfix 27"><mtable columnalign="right center left" rowspacing="0.5em"><mtr><mtd><msub><mn>10001101</mn><mn>2</mn></msub></mtd><mtd><mo>∧</mo></mtd><mtd><msub><mn>11100000</mn><mn>2</mn></msub><mo>=</mo><msub><mn>10000000</mn><mn>2</mn></msub><mo>=</mo><mn>128</mn></mtd></mtr><mtr><mtd><msub><mn>10000000</mn><mn>2</mn></msub></mtd><mtd><mo>∨</mo></mtd><mtd><msub><mn>00011111</mn><mn>2</mn></msub><mo>=</mo><msub><mn>10011111</mn><mn>2</mn></msub><mo>=</mo><mn>159</mn></mtd></mtr></mtable></math><div class="math-legend"><span>141 = gegebenes Oktett</span><span>224 = Maskenoktett</span><span>31 = invertierte Maske im Oktett</span></div></div><figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Vier Rollen im Beispiel 192.168.77.141/27">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-address-roles-title diagram-address-roles-desc">
+  <title id="diagram-address-roles-title">Vier Rollen im Beispiel 192.168.77.141/27</title>
+  <desc id="diagram-address-roles-desc">Vier Karten zeigen Netzadresse 192.168.77.128, ersten Host .129, letzten Host .158 und Broadcast .159.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Vier Rollen im Beispiel 192.168.77.141/27</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">Netz ·</tspan><tspan x="64" dy="25">192.168.77.128</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">Alle fünf Hostbits</tspan><tspan x="64" dy="30">sind 0; diese</tspan><tspan x="64" dy="30">Adresse bezeichnet</tspan></text></g><g><rect class="diagram-row" x="265" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="287" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="287" dy="0">Erster Host ·</tspan><tspan x="287" dy="25">192.168.77.129</tspan></text><text x="287" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="287" dy="0">Direkt nach der</tspan><tspan x="287" dy="30">Netzadresse beginnt</tspan><tspan x="287" dy="30">der nutzbare</tspan></text></g><g><rect class="diagram-row" x="488" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="510" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="510" dy="0">Letzter Host ·</tspan><tspan x="510" dy="25">192.168.77.158</tspan></text><text x="510" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="510" dy="0">Direkt vor der</tspan><tspan x="510" dy="30">Broadcastadresse</tspan><tspan x="510" dy="30">endet der nutzbare</tspan></text></g><g><rect class="diagram-row" x="711" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="733" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="733" dy="0">Broadcast ·</tspan><tspan x="733" dy="25">192.168.77.159</tspan></text><text x="733" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="733" dy="0">Alle fünf Hostbits</tspan><tspan x="733" dy="30">sind 1; die Adresse</tspan><tspan x="733" dy="30">steht für alle Hosts</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Erst den gesamten Block festlegen, dann die beiden Hostgrenzen um genau eins nach innen verschieben.</figcaption>
+</figure><section class="numeric-practice transfer-number" data-numeric-practice="network-octet-practice" data-expected="160" data-tolerance="0" data-correct-feedback="Richtig: /28 ergibt 16er-Blöcke; 174 liegt im Bereich 160 bis 175." data-wrong-feedback="Bilde zuerst 256 − 240 = 16 und suche das größte Vielfache von 16, das nicht größer als 174 ist.">
+  <h3>Zwischenübung: Netzgrenze finden</h3>
+  <p>Die Adresse 172.16.5.174 hat das Präfix /28. Welchen Wert hat das letzte Oktett der Netzadresse?</p>
+  <label for="network-octet-practice-answer">Letztes Oktett der Netzadresse</label>
+  <div class="answer-row"><input id="network-octet-practice-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="z. B. 160"><button type="button" class="lbtn" data-numeric-check>Antwort prüfen</button></div><p>  <template data-numeric-feedback-for="174">174 ist die gegebene Hostadresse. Eine Netzadresse liegt auf einer Blockgrenze.</template>
+  <template data-numeric-feedback-for="175">175 ist die Broadcastadresse des Blocks 160 bis 175.</template>
+  <template data-numeric-feedback-for="176">176 ist bereits die Netzadresse des nächsten /28-Blocks.</template>
+  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p></p>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Typische Fehler gezielt erkennen</h2>
+<p><strong>Fehler 1: Präfix als Anzahl der Hosts lesen.</strong> /27 bedeutet 27 Netzbits und 5 Hostbits, nicht 27 Hosts. <strong>Fehler 2: Den nächsten Block als Broadcast verwenden.</strong> Die nächste Netzadresse liegt genau eins hinter dem Broadcast. <strong>Fehler 3: Netz und Broadcast als Endgeräte zählen.</strong> Bei den hier betrachteten klassischen Subnetzen beginnt und endet der nutzbare Bereich jeweils eine Adresse innerhalb der Grenzen.</p>
+<p>Prüfe dein Ergebnis rückwärts: Die gegebene IP muss zwischen Netz und Broadcast liegen. Netz und Broadcast müssen außerdem zur Blockgröße passen.</p>
+<section class="quiz" data-quiz="boundary-error-practice" data-correct="1">
+  <h3>Für 10.20.30.200/26 notiert jemand das Netz 10.20.30.192 und den Broadcast 10.20.30.256. Welche Diagnose ist richtig?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Ein IPv4-Oktett reicht nur von 0 bis 255. Außerdem muss der Broadcast noch im selben 64er-Block liegen."><span class="m">A</span> Beide Angaben sind korrekt; IPv4-Oktette dürfen bis 256 reichen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Der Block 192 bis 255 endet bei 255; 256 wäre als Oktett ungültig und entspricht mit Übertrag bereits der folgenden Adresse."><span class="m">B</span> Das Netz ist korrekt; 256 bezeichnet rechnerisch die nächste Blockgrenze, der Broadcast ist daher 255.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die gegebene Hostadresse ist nicht automatisch die Netzadresse. /26 setzt die Blockgrenze auf 192."><span class="m">C</span> Der Broadcast ist korrekt; die Netzadresse muss 10.20.30.200 lauten.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Dieser Block enthält die Adresse 200 nicht. 200 liegt im folgenden Bereich 192 bis 255."><span class="m">D</span> Das Netz muss 10.20.30.128 und der Broadcast 10.20.30.191 sein.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout warn"><span class="lbl">Sonderfälle</span><p>Die Regeln <strong>erster Host = Netz + 1</strong>, <strong>letzter Host = Broadcast − 1</strong> und <strong>2 hoch Hostbits minus 2</strong> gelten für klassische IPv4-Subnetze. /31 kann auf Punkt-zu-Punkt-Verbindungen beide Adressen nutzen; /32 bezeichnet genau eine Adresse.</p></aside><h2 class="sec" id="s5"><span class="num">5</span>Karteikarten und freier Abruf</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="boundary-network-rule" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wie entsteht die Netzadresse aus IP-Adresse und Subnetzmaske?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Durch bitweises UND. Dadurch werden alle Hostbits der IP-Adresse auf 0 gesetzt.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="boundary-broadcast-rule" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wie leitest du die Broadcastadresse aus der Netzadresse ab?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Setze alle Hostbits auf 1; gleichwertig: Netzadresse ODER invertierte Maske.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="boundary-host-range" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wie lauten in einem klassischen Subnetz die erste und letzte nutzbare Adresse?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Erste nutzbare Adresse = Netz + 1; letzte nutzbare Adresse = Broadcast − 1.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Netzadresse“:</span><button type="button" data-card-id="boundary-network-rule" data-card-rate="known">gewusst</button><button type="button" data-card-id="boundary-network-rule" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="boundary-network-rule"></span></div>
+<div class="card-rating"><span>Karte „Broadcastadresse“:</span><button type="button" data-card-id="boundary-broadcast-rule" data-card-rate="known">gewusst</button><button type="button" data-card-id="boundary-broadcast-rule" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="boundary-broadcast-rule"></span></div>
+<div class="card-rating"><span>Karte „Hostbereich“:</span><button type="button" data-card-id="boundary-host-range" data-card-rate="known">gewusst</button><button type="button" data-card-id="boundary-host-range" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="boundary-host-range"></span></div><section class="recall-practice" data-recall="boundary-free-recall" data-min-length="100" aria-labelledby="boundary-free-recall-title">
+  <div class="recall-prompt"><h3 id="boundary-free-recall-title">Rechenweg ohne Vorlage</h3><p>Beschreibe für eine beliebige IPv4-Adresse mit Präfix deinen vollständigen Weg zu Netz, Broadcast, erstem und letztem Host. Nenne mindestens zwei Plausibilitätsprüfungen.</p></div>
+  <label class="sr-only" for="boundary-free-recall-answer">Dein Rechenweg</label>
+  <textarea id="boundary-free-recall-answer" data-recall-input rows="4" placeholder="Ich beginne mit …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Präfix in Maske übersetzen, im Grenzoktett die Blockgröße 256 minus Maskenwert berechnen und das Intervall finden, das die IP enthält. Untere Grenze ist das Netz, obere Grenze beziehungsweise nächste Netzgrenze minus 1 der Broadcast. Erster Host ist Netz plus 1, letzter Host Broadcast minus 1. Zur Kontrolle muss die IP im Intervall liegen und beide Grenzen müssen zur Blockgröße passen.</div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Lernziel-Check: zwei prüfungsnahe Nachweise</h2>
+<section class="numeric-practice transfer-number" data-numeric-practice="broadcast-octet-transfer" data-required-objective="network-broadcast" data-expected="175" data-tolerance="0" data-correct-feedback="Richtig: /28 ergibt 16er-Blöcke. 173 liegt im Block 160 bis 175; dessen obere Grenze ist der Broadcast." data-wrong-feedback="Bestimme mit 256 − 240 die Blockgröße 16. Suche dann das Intervall, das 173 enthält, und nimm dessen obere Grenze.">
+  <h3>Broadcast aus einer beliebigen Hostadresse</h3>
+  <p>Die Adresse 10.24.6.173 hat das Präfix /28. Welchen Wert hat das letzte Oktett der Broadcastadresse?</p>
+  <label for="broadcast-octet-transfer-answer">Letztes Oktett der Broadcastadresse</label>
+  <div class="answer-row"><input id="broadcast-octet-transfer-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Ergebnis"><button type="button" class="lbtn primary" data-numeric-check>Antwort prüfen</button></div>
+  <template data-numeric-correct><span>Richtig: /28 ergibt 16er-Blöcke. 173 liegt im Block 160 bis 175; dessen obere Grenze ist der Broadcast.</span><div class="math-display compact" role="group" aria-label="Blockgröße 16; 173 liegt zwischen 160 und 175; Broadcast ist 175"><math display="block" aria-label="Blockgröße 16; 173 liegt zwischen 160 und 175; Broadcast ist 175"><mrow><mn>256</mn><mo>−</mo><mn>240</mn><mo>=</mo><mn>16</mn><mo>;</mo><mn>160</mn><mo>≤</mo><mn>173</mn><mo>≤</mo><mn>175</mn><mo>⇒</mo><mi>B</mi><mo>=</mo><mn>175</mn></mrow></math><div class="math-legend"><span>/28 = 255.255.255.240</span><span>Block 160–175</span></div></div></template>
+  <template data-numeric-feedback-for="160">160 ist die Netzadresse, also die untere Grenze des Blocks. Gesucht ist die obere Grenze.</template>
+  <template data-numeric-feedback-for="174">174 ist eine nutzbare Hostadresse direkt vor dem Broadcast.</template>
+  <template data-numeric-feedback-for="176">176 ist die nächste Netzadresse. Der Broadcast des vorherigen Blocks liegt genau eins darunter.</template>
+  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p>
+</section><section class="quiz" data-quiz="host-boundaries-transfer" data-correct="1" data-required-objective="host-boundaries">
+  <h3>Welcher nutzbare Hostbereich gehört zum Subnetz 192.0.2.64/26?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Das ist der gesamte Adressblock einschließlich Netzadresse .64 und Broadcastadresse .127."><span class="m">A</span> 192.0.2.64 bis 192.0.2.127</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Der Hostbereich liegt jeweils eine Adresse innerhalb der Grenzen .64 und .127."><span class="m">B</span> 192.0.2.65 bis 192.0.2.126</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Hier wurden an beiden Seiten je zwei Adressen entfernt. Reserviert sind in diesem klassischen Subnetz nur Netz und Broadcast."><span class="m">C</span> 192.0.2.66 bis 192.0.2.125</button>
+  <button class="opt" type="button" data-answer="3" data-rationale=".127 ist der Broadcast des /26-Blocks und keine normale Hostadresse."><span class="m">D</span> 192.0.2.65 bis 192.0.2.127</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><p><strong>Prüfungstipp:</strong> Schreibe immer das Präfix oder die Maske dazu und halte die Reihenfolge Netz – erster Host – letzter Host – Broadcast ein. So lassen sich Folgefehler in Tabellen leichter erkennen.</p>
+<h2 class="sec" id="s7"><span class="num">7</span>Quellen und Einordnung</h2>
+<ul>
+<li><strong>EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):</strong> Rechenverfahren und prüfungsnahe Tabellenaufgaben zu Netz-, Broadcast- und Hostgrenzen.</li>
+</ul>
+<p>Text, Aufgaben, Fehlfeedback und Diagramme wurden eigenständig erstellt. Private Buchgrafiken und OCR-Rohtext werden nicht veröffentlicht.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-2"><span class="d">zurück zu</span><span class="t">Block N2 · IPv4 und Subnetting</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N2 · IPv4 und Subnetting</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Welche Grenze gehört zum Netz?</a></li>
+<li><a href="#s2" data-t="s2">Das bitgenaue Verfahren</a></li>
+<li><a href="#s3" data-t="s3">Durchgerechnet: 192.168.77.141/27</a></li>
+<li><a href="#s4" data-t="s4">Typische Fehler gezielt erkennen</a></li>
+<li><a href="#s5" data-t="s5">Karteikarten und freier Abruf</a></li>
+<li><a href="#s6" data-t="s6">Lernziel-Check: zwei prüfungsnahe Nachweise</a></li>
+<li><a href="#s7" data-t="s7">Quellen und Einordnung</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-2">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

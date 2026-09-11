@@ -1,0 +1,226 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "vlan-access-trunk",
+    "slug": "vlan-access-trunk",
+    "title": "Access, Trunk, Native und Voice VLAN",
+    "description": "Switchports herstellerneutral als Access oder 802.1Q-Trunk planen und Native- sowie Voice-VLAN-Sonderfälle sicher einordnen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-5",
+    "groupLabel": "Block N5 · Switching und VLANs",
+    "itemId": "ga2-5__2",
+    "week": "KW 39",
+    "estimatedMinutes": 24,
+    "relevance": "hoch",
+    "sources": ["europa-integratoren-2026", "itlf10-12-2023"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "access-trunk-flow",
+      "label": "für Access- und Trunkports die VLAN-Zuordnung eingehender sowie die Tag-Behandlung ausgehender Ethernet-Frames bestimmen"
+    },
+    {
+      "id": "native-voice-plan",
+      "label": "Native- und Voice-VLAN-Konfigurationen mit konsistenten Portrollen, erlaubten VLANs und sicheren Annahmen planen"
+    }
+  ],
+  "intro": "Access und Trunk beschreiben nicht den Gerätetyp am Kabel, sondern die VLAN-Behandlung eines Switchports. Ein Accessport verbindet typischerweise ein nicht taggendes Endgerät mit genau einem Daten-VLAN. Ein Trunk transportiert mehrere VLANs mit 802.1Q-Tags. Native- und Voice-VLANs sind Zusatzkonzepte, deren Verhalten explizit und auf beiden Seiten konsistent geplant werden muss.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunk europa-integratoren-2026:01078, Markdown-Zeilen 10205–10218",
+        "use": "Tagged beziehungsweise Trunk für mehrere am Access Point zugeordnete VLANs und Untagged beziehungsweise Access für einfache Endgeräte",
+        "reviewStatus": "direkter, fachlich passender Lösungsbeleg; Terminologie herstellerneutral eingeordnet"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "OCR-Chunk itlf10-12-2023:page:0181, PDF-Seite 181",
+        "use": "Access-, Trunk- und Hybrid-Port mit ungetaggten und 802.1Q-getaggten VLANs sowie typische Anschlussfälle",
+        "reviewStatus": "direkter Hauptbeleg; herstellerabhängige Hybrid-Bezeichnung nicht als universelle Portklasse gelehrt"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "OCR-Chunks itlf10-12-2023:page:0363 und :page:0364, PDF-Seiten 363–364",
+        "use": "Accessports für einzelne Endsystem-VLANs, Trunks für mehrere VLANs, PVID, Tagged-/Untagged-Mitgliedschaft und Eingangsfilter",
+        "reviewStatus": "fachlich relevanter Praxisbeleg; RouterOS-Befehle und produktspezifische Syntax nicht übernommen"
+      }
+    ],
+    "notes": [
+      "Die Figuren itlf10-12-2023:layout:0181:01 und europa-integratoren-2026:figure:564d8cc1e7d5 sind thematisch passend, bleiben aber private Quellen. Beide Lernbilder wurden deklarativ und mit neuer Topologie erstellt.",
+      "Native VLAN ist kein herstellerübergreifend einheitlicher Portmodus. Gemeint ist hier ausschließlich ein auf einem Trunk ausdrücklich ungetaggt behandeltes VLAN; PVID-, Ingress- und Egress-Verhalten müssen am konkreten System geprüft werden.",
+      "Ein Voice VLAN ist keine automatische Eigenschaft jedes Accessports. Das Telefon muss die Zuordnung erhalten und 802.1Q-Tags unterstützen; Mechanismen wie LLDP-MED oder herstellerspezifische Signalisierung sind gesondert zu prüfen.",
+      "Voice VLAN garantiert weder QoS noch Sicherheit. Priorisierung, Authentisierung, Filterung und erlaubte Verkehrsbeziehungen bleiben eigene Konfigurationen.",
+      "Agentisch erstellt; deshalb CURATED_DRAFT bis zur Prüfung an den tatsächlich eingesetzten Switchplattformen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "access-trunk-comparison",
+      "type": "comparison",
+      "title": "Portrolle und Framezustand",
+      "description": "Access und Trunk unterscheiden sich durch Zahl der transportierten VLANs sowie Ein- und Ausgangsbehandlung der Tags.",
+      "items": [
+        {"label": "Access Eingang", "detail": "ungetaggter Frame erhält intern das konfigurierte Daten-VLAN beziehungsweise die PVID"},
+        {"label": "Access Ausgang", "detail": "Frame des einen Daten-VLANs wird typischerweise ohne 802.1Q-Tag zum Endgerät gesendet"},
+        {"label": "Trunk Eingang", "detail": "getaggte Frames werden nur für ausdrücklich erlaubte VLAN-IDs angenommen"},
+        {"label": "Trunk Ausgang", "detail": "mehrere erlaubte VLANs werden normalerweise jeweils mit 802.1Q-Tag übertragen"}
+      ]
+    },
+    {
+      "id": "voice-data-flow",
+      "type": "flow",
+      "title": "Telefon und PC an einem Switchport",
+      "description": "Eine geplante Sonderkonfiguration kann ungetaggte PC-Daten und getaggte Sprachframes desselben physischen Anschlusses trennen.",
+      "items": [
+        {"label": "PC sendet ungetaggt", "detail": "das Telefon reicht Datenframes transparent zum Switch weiter"},
+        {"label": "Daten-VLAN zuordnen", "detail": "der Switch klassifiziert ungetaggten Eingang beispielsweise als VLAN 20"},
+        {"label": "Telefon taggt Sprache", "detail": "Sprachframes tragen nach korrekter Signalisierung beispielsweise VLAN-ID 30"},
+        {"label": "Voice VLAN prüfen", "detail": "der Switch akzeptiert das erlaubte getaggte VLAN 30 am Anschluss"},
+        {"label": "getrennt weiterleiten", "detail": "Daten- und Sprachverkehr bleiben getrennte Layer-2-Domänen mit eigenen Richtlinien"}
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Ein oder mehrere VLANs?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "vlan-port-diagnostic",
+          "diagnostic": true,
+          "question": "Zwei Switches sollen VLAN 10, 20 und 30 über eine gemeinsame Leitung austauschen. Welche Portrolle ist passend?",
+          "options": [
+            {"text": "Ein Trunk mit den ausdrücklich erlaubten VLANs 10, 20 und 30 auf beiden Seiten.", "rationale": "Richtig. Tags halten mehrere VLANs auf derselben Leitung unterscheidbar; die Allowed-Listen müssen zusammenpassen.", "correct": true},
+            {"text": "Ein Accessport in VLAN 10, der automatisch auch alle anderen VLANs transportiert.", "rationale": "Ein normaler Accessport führt ein Daten-VLAN ungetaggt und kann die drei VLANs nicht unterscheidbar übertragen.", "correct": false},
+            {"text": "Ein beliebiger unkonfigurierter Port, weil VLAN-IDs in IP-Adressen stehen.", "rationale": "802.1Q-VLAN-IDs sind Layer-2-Informationen und nicht Bestandteil einer IP-Adresse.", "correct": false},
+            {"text": "Drei Native VLANs gleichzeitig auf demselben Trunk.", "rationale": "Ein ungetaggter Frame trägt keine VLAN-ID. Mehrere ungetaggte VLANs wären auf derselben Leitung nicht unterscheidbar.", "correct": false}
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Tag-Regel",
+          "markdown": "**Ein ungetaggter Frame verrät kein VLAN.** Der Eingangsport muss ihn genau einem VLAN zuordnen. Mehrere VLANs bleiben auf einer Leitung nur durch Tags unterscheidbar."
+        }
+      ]
+    },
+    {
+      "title": "Access und Trunk herstellerneutral",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein **Accessport** ist typischerweise Mitglied genau eines ungetaggten Daten-VLANs. Ein ungetaggter Eingangsframe wird anhand der Portkonfiguration intern diesem VLAN zugeordnet. Beim Ausgang entfernt beziehungsweise setzt der Switch für das Endgerät keinen 802.1Q-Tag. Unerwartet getaggte Eingänge sollten nicht stillschweigend als normale Access-Daten akzeptiert werden.\n\nEin **Trunk** transportiert mehrere VLANs. Getaggte Frames tragen ihre VLAN-ID im 802.1Q-Header; eine Allowed-Liste begrenzt, welche VLANs den Link nutzen dürfen. Beide Linkseiten müssen VLANs, Tagging und gegebenenfalls ungetaggte Behandlung konsistent konfigurieren. Das Wort Trunk ist verbreitet, doch manche Systeme sprechen nur von Tagged- und Untagged-Mitgliedschaft."
+        },
+        {
+          "type": "figure",
+          "diagramId": "access-trunk-comparison",
+          "alt": "Vier Karten vergleichen ungetaggten Access-Eingang und -Ausgang mit getaggtem Trunk-Eingang und -Ausgang.",
+          "caption": "Eigene Lernskizze: Die interne VLAN-Zugehörigkeit bleibt erhalten, auch wenn ein Tag am Accessausgang nicht auf dem Kabel steht."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Das interne Eingangs-VLAN ist bei einem getaggten Frame die VLAN-ID des Tags und bei einem ungetaggten Frame die Port-VLAN-ID",
+          "mathml": "<math display=\"block\"><mrow><msub><mi>V</mi><mi>ein</mi></msub><mo>=</mo><mfenced open=\"{\" close=\"\"><mtable><mtr><mtd><msub><mi>VID</mi><mi>Tag</mi></msub></mtd><mtd><mtext>wenn Tag erlaubt</mtext></mtd></mtr><mtr><mtd><mi>PVID</mi><mo>(</mo><msub><mi>P</mi><mi>ein</mi></msub><mo>)</mo></mtd><mtd><mtext>wenn Frame ungetaggt</mtext></mtd></mtr></mtable></mfenced></mrow></math>",
+          "legend": ["VID = VLAN Identifier im 802.1Q-Tag", "PVID = Port-VLAN-ID für ungetaggten Eingang", "nicht erlaubte Tags werden verworfen statt umgedeutet"]
+        }
+      ]
+    },
+    {
+      "title": "Reales Beispiel mit Voice VLAN",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "In einem Büro nutzt der PC das Daten-VLAN 20 und das IP-Telefon das Voice VLAN 30. Der PC ist am Telefon angeschlossen. Nach ausdrücklich geprüfter Telefon- und Switchkonfiguration reicht das Telefon PC-Frames ungetaggt weiter, taggt seine eigenen Sprachframes mit VLAN 30 und erhält diese Zuordnung beispielsweise per LLDP-MED. Der Switch klassifiziert ungetaggten Eingang als VLAN 20 und akzeptiert am selben Anschluss getaggtes VLAN 30.\n\nDer Uplink zum nächsten Switch ist ein Trunk, auf dem VLAN 20 und 30 getaggt erlaubt sind. Ein Native VLAN wird nicht benötigt. Falls ein Betriebskonzept dennoch ein ungetaggtes Native VLAN vorsieht, müssen beide Seiten exakt übereinstimmen; unerwarteter ungetaggter Verkehr sollte verworfen und das Native VLAN nicht als normales Benutzer-VLAN genutzt werden."
+        },
+        {
+          "type": "figure",
+          "diagramId": "voice-data-flow",
+          "alt": "Ablauf eines kombinierten Telefon-PC-Anschlusses mit ungetaggtem Daten-VLAN 20 und getaggtem Voice VLAN 30.",
+          "caption": "Eigene Lernskizze: Die Sonderkonfiguration funktioniert nur, wenn Telefon, Switch und Signalisierung dasselbe Verhalten unterstützen."
+        },
+        {
+          "type": "sequence",
+          "id": "vlan-port-guided-sequence",
+          "title": "Einen Trunk sicher in Betrieb nehmen",
+          "prompt": "Bringe die Schritte für den Uplink zwischen zwei Switches in eine kontrollierbare Reihenfolge.",
+          "tag": "Geführte Übung",
+          "steps": [
+            {"id": "verify", "label": "Mit getaggten Testframes und Portzählern prüfen, ob nur die geplanten VLANs passieren."},
+            {"id": "need", "label": "Die tatsächlich benötigten VLANs 20 und 30 ermitteln."},
+            {"id": "allow", "label": "Auf beiden Seiten dieselbe Allowed-Liste für VLAN 20 und 30 setzen."},
+            {"id": "untagged", "label": "Entscheiden, dass kein Benutzer-Native-VLAN ungetaggt transportiert wird."},
+            {"id": "role", "label": "Beide verbundenen Ports als 802.1Q-Trunk beziehungsweise Tagged-Link konfigurieren."}
+          ],
+          "expected": ["need", "role", "allow", "untagged", "verify"],
+          "correctFeedback": "Richtig. Bedarf und Portrolle kommen vor Allowed-Liste und Native-Entscheidung; der Test schließt die Inbetriebnahme ab.",
+          "wrongFeedback": "Beginne mit den benötigten VLANs. Konfiguriere beide Linkenden konsistent und prüfe erst danach den tatsächlichen Framefluss."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {"id": "vlan-access-card", "label": "Access", "front": "Wie wird ein ungetaggter Frame am normalen Accessport einem VLAN zugeordnet?", "back": "Über das am Eingangsport konfigurierte Daten-VLAN beziehungsweise die PVID."},
+            {"id": "vlan-trunk-card", "label": "Trunk", "front": "Welche zwei Bedingungen braucht ein sicherer Trunk?", "back": "Konsistentes 802.1Q-Tagging an beiden Enden und eine auf benötigte VLANs begrenzte Allowed-Liste."},
+            {"id": "vlan-voice-card", "label": "Voice VLAN", "front": "Welche Annahme darf bei einem Voice VLAN nicht stillschweigend gemacht werden?", "back": "Dass jedes Telefon automatisch taggt oder die VLAN-Zuordnung kennt; Geräteunterstützung und Signalisierung müssen geprüft werden."}
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "vlan-port-recall",
+          "title": "Portverhalten frei erklären",
+          "prompt": "Erkläre Access, Trunk, Allowed-Liste, Native VLAN und Voice VLAN einschließlich der Tag-Behandlung am Ein- und Ausgang.",
+          "label": "Deine Erklärung",
+          "placeholder": "Ein Accessport …",
+          "minLength": 135,
+          "model": "Ein Accessport ordnet ungetaggten Eingang über seine PVID einem Daten-VLAN zu und sendet dieses VLAN zum Endgerät typischerweise ungetaggt. Ein Trunk transportiert mehrere erlaubte VLANs getaggt. Ein Native VLAN ist ein ausdrücklich ungetaggt behandeltes Trunk-VLAN und muss an beiden Enden übereinstimmen. Ein Voice VLAN setzt ein kompatibles Telefon und eine geprüfte Signalisierung voraus."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check: Transfer",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "vlan-port-transfer-flow",
+          "requiredObjective": "access-trunk-flow",
+          "question": "Ein ungetaggter Frame trifft an einem Accessport mit PVID 40 ein und soll über einen Trunk hinausgehen, auf dem VLAN 40 erlaubt ist. Welche Verarbeitung ist korrekt?",
+          "options": [
+            {"text": "Intern VLAN 40 zuordnen und am Trunkausgang mit VLAN-ID 40 taggen.", "rationale": "Richtig. Die PVID klassifiziert den ungetaggten Eingang; der Trunk hält VLAN 40 per Tag unterscheidbar.", "correct": true},
+            {"text": "Den Frame VLAN 0 zuordnen und am Trunk ungetaggt in alle VLANs kopieren.", "rationale": "Ein ungetaggter Frame wird genau einer PVID zugeordnet, nicht allen VLANs.", "correct": false},
+            {"text": "Die IP-Adresse ändern, weil ein VLAN-Tag nur auf Schicht 3 existiert.", "rationale": "802.1Q-Tagging ist eine Layer-2-Funktion und verändert nicht automatisch die IP-Adresse.", "correct": false},
+            {"text": "Den Frame grundsätzlich verwerfen, weil Accessports niemals ungetaggte Frames annehmen.", "rationale": "Gerade ungetaggte Endgeräteframes sind der typische Accessport-Eingang und werden per PVID klassifiziert.", "correct": false}
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "vlan-port-transfer-voice",
+          "requiredObjective": "native-voice-plan",
+          "question": "PC und IP-Telefon teilen einen Anschluss. PC-Daten sollen VLAN 20, Sprache VLAN 30 nutzen. Welche Planung ist konservativ korrekt?",
+          "options": [
+            {"text": "Ungetaggte PC-Daten als VLAN 20 klassifizieren, getaggtes VLAN 30 nur nach geprüfter Telefonunterstützung erlauben und beide VLANs am Uplink getaggt führen.", "rationale": "Richtig. Die Zuordnung ist explizit, geräteabhängige Voice-Funktion geprüft und am Trunk eindeutig.", "correct": true},
+            {"text": "VLAN 20 und 30 beide ungetaggt senden, damit das Kabel sie automatisch unterscheidet.", "rationale": "Ohne Tag kann ein Frame auf derselben Leitung nicht zwischen zwei VLAN-IDs unterscheiden.", "correct": false},
+            {"text": "Jedes Telefon taggt ab Werk immer VLAN 30; Prüfung und Signalisierung sind unnötig.", "rationale": "Voice-VLAN-Verhalten ist geräte- und konfigurationsabhängig und muss verifiziert werden.", "correct": false},
+            {"text": "Voice VLAN ersetzt QoS, Authentisierung und Firewallregeln vollständig.", "rationale": "Die VLAN-Trennung allein garantiert weder Priorisierung noch Identität oder erlaubte Layer-3-Verbindungen.", "correct": false}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Aktualität",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):** Tagged/Trunk für mehrere VLANs und Untagged/Access für typische Endgeräte.\n- **IT-Berufe Fachstufe II – Lernfelder 10–12 (2023):** Access-, Trunk- und Hybrid-Fälle, PVID sowie Tagged-/Untagged-Mitgliedschaft.\n\nNative- und Voice-Verhalten bleibt implementationsabhängig und muss am aktuellen Datenblatt geprüft werden. Alle Diagramme und Beispiele sind neu erstellt; private Buchgrafiken werden nicht veröffentlicht."
+        }
+      ]
+    }
+  ]
+}

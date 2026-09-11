@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Zulässige Quell-MAC-Adressen und Höchstzahlen pro Access-Port ableiten, Verstöße auswerten und die Grenzen einer reinen MAC-Bindung erklären.">
+<title>Port Security als begrenzte Zugangskontrolle planen – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=hybrid-1">
+<script defer src="/assets/ap2-space.js?v=hybrid-1"></script>
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="port-security" data-progress-id="ga2-5__8" data-content-revision="2026-09-11.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-5">Block N5 · Switching und VLANs</a><span class="sep">›</span>
+    <span class="here">Port Security als begrenzte Zugangskontrolle planen</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">Port Security als begrenzte Zugangskontrolle planen</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 22 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Port Security begrenzt, welche Quell-MAC-Adressen ein Switch an einem ausgewählten Layer-2-Port als zulässig behandelt. Das erschwert den spontanen Gerätetausch an einem Access-Port, ersetzt aber weder eine Identitätsprüfung noch VLAN-, Firewall- oder Endgeräteschutz. Eine gute Lösung beginnt beim Anschlussfall und endet mit überprüfbaren Betriebs- und Wiederherstellungsregeln.</p>
+<section class="learning-goals" aria-labelledby="port-security-goals">
+  <h2 id="port-security-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>aus einem Arbeitsplatzszenario den geschützten Access-Port, zulässige Quell-MAC-Adressen, Höchstzahl und gewünschte Verstoßreaktion ableiten</li>
+    <li>Wirksamkeit und Grenzen einer MAC-basierten Portbindung beurteilen und passende ergänzende Zugangskontrollen begründen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Was schützt die Regel wirklich?</h2>
+<section class="quiz" data-quiz="port-security-diagnostic" data-correct="1">
+  <h3>Port 7 lässt nur die MAC-Adresse des Firmen-PCs zu. Welche Aussage ist allein dadurch gerechtfertigt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Eine MAC-Adresse bezeichnet eine Schnittstelle, nicht zuverlässig die menschliche Identität; sie kann außerdem nachgeahmt werden."><span class="m">A</span> Der Benutzer am PC ist zweifelsfrei authentisiert</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Die Regel begrenzt die am Port akzeptierten Quell-MAC-Adressen."><span class="m">B</span> Rahmen mit anderen Quell-MAC-Adressen können an diesem Port gemäß Regel als Verstoß behandelt werden</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Port Security bewertet keine Prozesse, Dateien oder Patchstände des Endgeräts."><span class="m">C</span> Der PC ist automatisch frei von Schadsoftware</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Die Konfiguration und ihr Zustand müssen je betroffenem Port geprüft werden."><span class="m">D</span> Alle übrigen Switchports sind ebenfalls geschützt</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">Schutzumfang</span><p>Port Security ist eine <strong>lokale Layer-2-Zulassungsregel am Eingangsport</strong>. Sie ist kein Beweis für Benutzeridentität, Gerätezustand oder erlaubte Anwendungen.</p></aside><h2 class="sec" id="s2"><span class="num">2</span>Vom Anschlussfall zur Portregel</h2>
+<p>Leite die Regel aus dem realen Anschluss ab:</p>
+<ol>
+<li><strong>Portrolle:</strong> Ein fester Arbeitsplatz-Access-Port ist ein typischer Kandidat. Ein Uplink, Trunk, Access Point oder Virtualisierungshost kann viele legitime Quell-MAC-Adressen führen und braucht eine andere Bewertung.</li>
+<li><strong>Erlaubte Quellen:</strong> Dokumentiere die erwarteten Geräte. Bei einem IP-Telefon mit dahinter angeschlossenem PC können zwei Quell-MAC-Adressen legitim sein.</li>
+<li><strong>Höchstzahl:</strong> Setze sie nicht pauschal auf eins, sondern passend zum Sollbild und ohne unnötige Reserve.</li>
+<li><strong>Erwerb und Lebenszyklus:</strong> Lege fest, ob Adressen administrativ eingetragen oder kontrolliert gelernt werden, wann sie altern und wie ein Gerätetausch freigegeben wird.</li>
+<li><strong>Reaktion und Betrieb:</strong> Definiere, was bei einem Verstoß geschieht, wie er gemeldet wird und wer den Port nach Prüfung wieder freigibt.</li>
+</ol>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Die Regel gehört an den definierten Access-Port">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-topology" xmlns="http://www.w3.org/2000/svg" width="960" height="560" viewBox="0 0 960 560" role="img" aria-labelledby="diagram-secured-access-port-title diagram-secured-access-port-desc">
+  <title id="diagram-secured-access-port-title">Die Regel gehört an den definierten Access-Port</title>
+  <desc id="diagram-secured-access-port-desc">Arbeitsplatz mit erlaubtem IP-Telefon und PC, einem unbekannten Gerät sowie Port 7 mit Höchstzahl zwei; getrennt davon der Uplink mit vielen Quell-MAC-Adressen.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Die Regel gehört an den definierten Access-Port</tspan></text>
+  <g class="diagram-zone zone-access"><rect x="25" y="85" width="275" height="335" rx="18"/><text x="41" y="112">Arbeitsplatz</text></g><g class="diagram-zone zone-switch"><rect x="350" y="85" width="270" height="335" rx="18"/><text x="366" y="112">Access-Switch</text></g><g class="diagram-zone zone-uplink"><rect x="670" y="85" width="260" height="335" rx="18"/><text x="686" y="112">Verteilnetz</text></g><g class="diagram-edge allowed"><path d="M150 165 L485 245"/><text class="diagram-edge-label" x="317.5" y="197" text-anchor="middle">zulässig</text></g><g class="diagram-edge allowed"><path d="M150 285 L485 245"/><text class="diagram-edge-label" x="317.5" y="257" text-anchor="middle">zulässig</text></g><g class="diagram-edge blocked"><path d="M150 380 L485 245"/><text class="diagram-edge-label" x="317.5" y="304.5" text-anchor="middle">Verstoß</text></g><g class="diagram-edge trunk"><path d="M485 245 L800 245"/><text class="diagram-edge-label" x="642.5" y="237" text-anchor="middle">Weiterleitung</text></g><g class="diagram-node phone" transform="translate(150 165)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="150" y="160" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="150" dy="0">IP-Telefon</tspan></text><text class="diagram-node-detail" x="150" y="184" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="150" dy="0">MAC …:10</tspan></text><g class="diagram-node client" transform="translate(150 285)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="150" y="280" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="150" dy="0">Arbeitsplatz-PC</tspan></text><text class="diagram-node-detail" x="150" y="304" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="150" dy="0">MAC …:20</tspan></text><g class="diagram-node warning" transform="translate(150 380)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="150" y="375" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="150" dy="0">Unbekanntes Gerät</tspan></text><text class="diagram-node-detail" x="150" y="399" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="150" dy="0">MAC …:99</tspan></text><g class="diagram-node switch" transform="translate(485 245)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="485" y="240" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="485" dy="0">Port 7</tspan></text><text class="diagram-node-detail" x="485" y="264" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="485" dy="0">maximal 2 · …:10 und</tspan><tspan x="485" dy="25">…:20</tspan></text><g class="diagram-node router" transform="translate(800 245)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="800" y="240" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="800" dy="0">Uplink</tspan></text><text class="diagram-node-detail" x="800" y="264" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="800" dy="0">führt viele</tspan><tspan x="800" dy="25">Quell-MACs</tspan></text>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Die Höchstzahl folgt dem Anschlussfall; ein Uplink ist kein Arbeitsplatzport.</figcaption>
+</figure><aside class="callout warn"><span class="lbl">MAC-Adresse ist kein Geheimnis</span><p>Eine beobachtbare MAC-Adresse kann nachgebildet werden. Die Bindung bremst einfache, nicht autorisierte Gerätetausche, ist aber keine kryptografische Authentisierung.</p></aside><h2 class="sec" id="s3"><span class="num">3</span>Durchgearbeitetes Beispiel</h2>
+<p>An Port 7 hängen ein verwaltetes IP-Telefon und dahinter genau ein Firmen-PC. Die Sollregel lautet herstellerneutral: Port 7 als Access-Port schützen, höchstens zwei sichere Quell-MAC-Adressen zulassen, Telefon und PC kontrolliert eintragen oder lernen und bei einer dritten beziehungsweise unbekannten Adresse die vereinbarte Verstoßreaktion melden.</p>
+<p>Nach dem Rollout wird nicht nur ein erfolgreicher Ping geprüft. Die Abnahme kontrolliert die Liste sicherer Adressen, den Zähler, den operativen Portzustand und die Meldung bei einem Testverstoß. Ein späterer PC-Tausch folgt einem dokumentierten Freigabeprozess; sonst kann eine alte Bindung den neuen legitimen Rechner blockieren.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Jeder neue Quell-MAC-Eindruck durchläuft dieselbe Entscheidung">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="650" viewBox="0 0 960 650" role="img" aria-labelledby="diagram-port-security-decision-title diagram-port-security-decision-desc">
+  <title id="diagram-port-security-decision-title">Jeder neue Quell-MAC-Eindruck durchläuft dieselbe Entscheidung</title>
+  <desc id="diagram-port-security-decision-desc">Fünfstufiger Entscheidungsweg vom empfangenen Ethernet-Rahmen über Adress- und Höchstzahlprüfung zur Weiterleitung oder Verstoßreaktion und abschließenden Kontrolle.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Jeder neue Quell-MAC-Eindruck durchläuft dieselbe</tspan><tspan x="42" dy="25">Entscheidung</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Rahmen empfangen</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Quell-MAC am konkret geschützten Eingangsport beobachten</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Adresse prüfen</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">bereits als sicher zugelassen oder nach Regel lernbar?</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Höchstzahl prüfen</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">würde eine weitere sichere Adresse das Portlimit</tspan><tspan x="178" dy="25">überschreiten?</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Entscheiden</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">zulässig weiterleiten oder Verstoßreaktion auslösen</tspan></text><path d="M480 472v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 494 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="512" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="541" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Belegen</tspan></text><text x="178" y="568" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">sichere Adressen, Zähler, Logs und operativen Portzustand</tspan><tspan x="178" dy="25">kontrollieren</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Konfiguration, Laufzeitzustand und Nachweis gehören zusammen.</figcaption>
+</figure><section class="quiz" data-quiz="port-uplink-practice" data-correct="0">
+  <h3>Warum wäre dieselbe Höchstzahl von zwei sicheren MAC-Adressen auf dem Uplink zum Verteilnetz meist ungeeignet?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Eine Arbeitsplatzgrenze würde legitimen Verkehr hinter dem Uplink als Verstoß behandeln."><span class="m">A</span> Weil über einen Uplink legitimerweise viele Endgeräte-Quelladressen sichtbar werden können</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Uplinks übertragen gerade Ethernet-Verkehr zwischen Netzkomponenten."><span class="m">B</span> Weil Uplinks grundsätzlich keine Ethernet-Rahmen übertragen</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="MAC-Adressen gehören zur Sicherungsschicht, also Layer 2."><span class="m">C</span> Weil MAC-Adressen nur auf Layer 3 vorkommen</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Die Funktion begrenzt Quell-MAC-Adressen; sie ersetzt oder löscht keine VLAN-Planung."><span class="m">D</span> Weil Port Security automatisch jedes VLAN löscht</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Geführte Übung: Regel aus dem Sollbild ableiten</h2>
+<section class="sequence-practice" data-sequence="port-security-planning-sequence" data-expected="inventory,lifecycle,configure,test,monitor" data-correct-feedback="Richtig. Erst das Sollbild, dann Lebenszyklus und Regel; anschließend werden Zulassung, Verstoß und Nachweis kontrolliert getestet." data-wrong-feedback="Beginne nicht mit der Konfiguration. Erfasse Portrolle und erwartete Geräte, kläre dann den Betriebsprozess und teste erst danach." aria-labelledby="port-security-planning-sequence-title">
+  <div class="lab-heading"><div><h3 id="port-security-planning-sequence-title">Ordne die Planungsschritte</h3><p>Ein fester Besprechungsraum erhält ein Konferenztelefon und einen Mini-PC an einem Access-Port. Bringe die Schritte in eine belastbare Reihenfolge.</p></div><span class="lab-tag">Geführte Übung</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="monitor" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Sichere Adressen, Verstoßzähler, Logs und Portzustand prüfen</span></li>
+    <li data-step="inventory" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Portrolle und genau zwei erwartete Endgeräte erfassen</span></li>
+    <li data-step="lifecycle" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Gerätetausch, Alterung, Meldung und Wiederfreigabe festlegen</span></li>
+    <li data-step="configure" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Adressverfahren, Höchstzahl zwei und Verstoßreaktion konfigurieren</span></li>
+    <li data-step="test" tabindex="-1"><span class="step-position" data-step-position>5</span><span>Beide Sollgeräte und anschließend kontrolliert ein drittes Gerät testen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Karteikarten und freier Abruf</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="port-source-card" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche Adresse bewertet Port Security bei einem eingehenden Ethernet-Rahmen?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Die Quell-MAC-Adresse am konkret geschützten Eingangsport.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="port-limit-card" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum ist maximal eine MAC-Adresse nicht immer richtig?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Ein legitimer Anschluss kann mehrere Quellen führen, etwa IP-Telefon und PC. Die Höchstzahl folgt dem dokumentierten Sollbild.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="port-boundary-card" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche zentrale Sicherheitsgrenze hat eine MAC-Bindung?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Eine MAC-Adresse ist keine kryptografische Identität und kann nachgeahmt werden; stärkere Zugangskontrollen wie 802.1X können nötig sein.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Prüfmerkmal“:</span><button type="button" data-card-id="port-source-card" data-card-rate="known">gewusst</button><button type="button" data-card-id="port-source-card" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="port-source-card"></span></div>
+<div class="card-rating"><span>Karte „Höchstzahl“:</span><button type="button" data-card-id="port-limit-card" data-card-rate="known">gewusst</button><button type="button" data-card-id="port-limit-card" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="port-limit-card"></span></div>
+<div class="card-rating"><span>Karte „Grenze“:</span><button type="button" data-card-id="port-boundary-card" data-card-rate="known">gewusst</button><button type="button" data-card-id="port-boundary-card" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="port-boundary-card"></span></div><section class="recall-practice" data-recall="port-security-recall" data-min-length="150" aria-labelledby="port-security-recall-title">
+  <div class="recall-prompt"><h3 id="port-security-recall-title">Eine Portregel ohne Vorlage begründen</h3><p>Entwirf für einen Access-Port mit IP-Telefon und PC eine Port-Security-Regel. Nenne Portrolle, erlaubte Quellen, Höchstzahl, Reaktion, Nachweis und mindestens zwei Grenzen.</p></div>
+  <label class="sr-only" for="port-security-recall-answer">Deine Begründung</label>
+  <textarea id="port-security-recall-answer" data-recall-input rows="4" placeholder="Der Port ist … Zulässig sind …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Der feste Access-Port soll genau Telefon und PC führen, daher werden deren Quell-MAC-Adressen kontrolliert zugelassen und die Höchstzahl wird auf zwei gesetzt. Eine unbekannte dritte Adresse löst die vereinbarte Verstoßreaktion und Meldung aus. Nachgewiesen werden sichere Adressliste, Zähler, Log und Portzustand. Die Regel authentisiert keinen Benutzer, erkennt keinen Schadcode und eine MAC-Adresse kann nachgeahmt werden; je Schutzbedarf ergänzen 802.1X, Segmentierung und Endgerätekontrollen die Maßnahme.</div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Lernziel-Check und Quellenlage</h2>
+<section class="quiz" data-quiz="port-policy-transfer" data-correct="0" data-required-objective="port-policy">
+  <h3>An einem festen Access-Port hängen ein Drucker und ein Kartenleser. Es dürfen keine weiteren Geräte angeschlossen werden. Welche herstellerneutrale Regel passt am besten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Die Regel bildet Sollgeräte, Limit, Reaktion und Betrieb vollständig ab."><span class="m">A</span> Zwei erwartete Quell-MAC-Adressen zulassen, Höchstzahl zwei setzen und eine überwachte Verstoßreaktion samt Gerätetauschprozess definieren</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Damit wird der unerwünschte dritte Anschluss nicht begrenzt."><span class="m">B</span> Eine beliebige Adresse zulassen und die Höchstzahl unbegrenzt lassen</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die Anforderung betrifft den konkreten Arbeitsplatzport; ein Uplink führt typischerweise viele Quellen."><span class="m">C</span> Den Uplink des Switches auf maximal zwei MAC-Adressen begrenzen</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Ein Transportport ist nicht die MAC-basierte Zugangsbeschränkung am Switchport."><span class="m">D</span> Nur den TCP-Zielport des Druckers filtern</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="port-boundary-transfer" data-correct="1" data-required-objective="security-boundary">
+  <h3>Ein Bereich verlangt nachvollziehbare Benutzeridentitäten statt nur bekannte Netzwerkkarten. Welche Bewertung ist richtig?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="MAC-Adressen sind beobachtbar und können nachgebildet werden; sie belegen keine Benutzeridentität."><span class="m">A</span> Die MAC-Bindung allein genügt, weil MAC-Adressen nicht kopierbar sind</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Beide Maßnahmen haben unterschiedliche Beweisstärken und können kombiniert werden."><span class="m">B</span> Port Security kann einfache Gerätetausche begrenzen; für Identität ist eine stärkere Zugangskontrolle wie 802.1X mit geeigneter Authentisierung zu prüfen</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="VLAN-Größe liefert keine Identitätsprüfung."><span class="m">C</span> Ein größeres VLAN authentisiert automatisch jeden Benutzer</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Eine Lebenszykluseinstellung macht aus einer MAC-Adresse keine belastbare Benutzeridentität."><span class="m">D</span> Nur die MAC-Alterungszeit muss auf null gesetzt werden</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><p>Die lokalen Buchtreffer belegen MAC-/Port-Zuordnung, VLAN-Kontext und 802.1X als identitätsbasierte Zugangskontrolle, enthalten aber keine belastbare, herstellerneutrale Definition von Port-Security-Kommandos oder Violation-Modi. Diese Einheit bleibt deshalb <strong>CURATED_DRAFT</strong>. Vor einer Gerätekonfiguration sind Syntax, Lern- und Alterungsverhalten, Meldungen sowie Recovery in der Dokumentation der eingesetzten Plattform zu prüfen.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-5"><span class="d">zurück zu</span><span class="t">Block N5 · Switching und VLANs</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N5 · Switching und VLANs</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Was schützt die Regel wirklich?</a></li>
+<li><a href="#s2" data-t="s2">Vom Anschlussfall zur Portregel</a></li>
+<li><a href="#s3" data-t="s3">Durchgearbeitetes Beispiel</a></li>
+<li><a href="#s4" data-t="s4">Geführte Übung: Regel aus dem Sollbild ableiten</a></li>
+<li><a href="#s5" data-t="s5">Karteikarten und freier Abruf</a></li>
+<li><a href="#s6" data-t="s6">Lernziel-Check und Quellenlage</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-5">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

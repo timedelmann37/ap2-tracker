@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="DNSSEC als prüfbare Vertrauenskette erklären und interne von externen DNS-Sichten trennen, ohne Verschlüsselung oder Zugriffsschutz vorzutäuschen.">
+<title>DNSSEC und Split-Horizon richtig einordnen – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=hybrid-1">
+<script defer src="/assets/ap2-space.js?v=hybrid-1"></script>
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="dnssec-split-horizon" data-progress-id="ga2-3__12" data-content-revision="2026-09-11.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-3">Block N3 · IPv6, DHCP und DNS</a><span class="sep">›</span>
+    <span class="here">DNSSEC und Split-Horizon richtig einordnen</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">DNSSEC und Split-Horizon richtig einordnen</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: mittel</span>
+        <span class="pill">≈ 24 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>DNSSEC und Split-Horizon lösen zwei verschiedene Probleme. DNSSEC hilft einem validierenden Resolver zu prüfen, ob DNS-Daten authentisch und unverändert sind. Split-Horizon liefert abhängig vom anfragenden Netz unterschiedliche, bewusst gepflegte DNS-Sichten. Keines von beiden ersetzt das andere, und DNSSEC verschlüsselt weder den Namen noch die Antwort.</p>
+<section class="learning-goals" aria-labelledby="dnssec-split-horizon-goals">
+  <h2 id="dnssec-split-horizon-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>DNSSEC als Signatur- und Vertrauenskette erklären und klar von Transportverschlüsselung abgrenzen</li>
+    <li>interne und externe DNS-Sichten für ein Szenario sicher trennen und typische Fehlkonfigurationen erkennen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Was schützt DNSSEC?</h2>
+<section class="quiz" data-quiz="dnssec-split-diagnostic" data-correct="1">
+  <h3>Welche Aussage über DNSSEC ist korrekt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="DNSSEC signiert DNS-Daten. Vertraulichkeit auf dem Transportweg ist eine andere Schutzaufgabe."><span class="m">A</span> DNSSEC verschlüsselt jede DNS-Anfrage und verbirgt den abgefragten Namen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Ein validierender Resolver prüft die Signatur über eine Vertrauenskette."><span class="m">B</span> DNSSEC ermöglicht die Prüfung von Herkunft und Unverändertheit signierter DNS-Daten.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Eine validierte Adresse beweist nicht die Identität oder Verschlüsselung des späteren Anwendungsdienstes."><span class="m">C</span> DNSSEC ersetzt TLS auf der aufgerufenen Webseite.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="DNSSEC ist kein Verfügbarkeitsmechanismus. Redundanz und DDoS-Schutz müssen separat geplant werden."><span class="m">D</span> DNSSEC verhindert jeden Ausfall eines autoritativen Servers.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">Schutzversprechen</span><p>DNSSEC prüft <strong>signierte DNS-Daten</strong>. Es verschlüsselt die Abfrage nicht und bewertet den späteren Dienst nicht automatisch als sicher.</p></aside><h2 class="sec" id="s2"><span class="num">2</span>Die Chain of Trust</h2>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: DNSSEC-Vertrauen von oben nach unten">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="542" viewBox="0 0 960 542" role="img" aria-labelledby="diagram-dnssec-chain-title diagram-dnssec-chain-desc">
+  <title id="diagram-dnssec-chain-title">DNSSEC-Vertrauen von oben nach unten</title>
+  <desc id="diagram-dnssec-chain-desc">Vierstufige DNSSEC-Vertrauenskette vom Trust Anchor über DS und DNSKEY zum validierten Zonendatensatz.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">DNSSEC-Vertrauen von oben nach unten</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">1 · Vertrauensanker</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">der validierende Resolver vertraut einem bekannten</tspan><tspan x="178" dy="25">öffentlichen Schlüssel der Root-Zone</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">2 · DS in der Elternzone</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">verknüpft die Delegation kryptografisch mit dem Schlüssel der</tspan><tspan x="178" dy="25">Kindzone</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">3 · DNSKEY der Zielzone</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">ermöglicht die Prüfung der Signatur über den Zonendaten</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">4 · Validiertes Ergebnis</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Antwort ist authentisch und unverändert oder die Validierung</tspan><tspan x="178" dy="25">schlägt fehl</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Jede Delegationsstufe verbindet den bekannten Elternschlüssel mit dem Schlüssel der Kindzone.</figcaption>
+</figure><p>Die Zielzone signiert ihre Resource Records und veröffentlicht passende DNSKEY-Daten. Die Elternzone enthält mit einem <strong>DS-Record</strong> einen kryptografischen Verweis auf den Schlüssel der Kindzone. Ein validierender Resolver beginnt bei einem bekannten <strong>Trust Anchor</strong>, prüft die Kette und akzeptiert die Antwort nur als sicher validiert, wenn alle benötigten Signaturen und Delegationen zusammenpassen. Fehlt eine Delegationskette, kann eine Zone bewusst unsigniert sein; eine gebrochene erwartete Kette ist dagegen ein Validierungsfehler.</p>
+<section class="sequence-practice" data-sequence="dnssec-chain-practice" data-expected="anchor,ds,child,record" data-correct-feedback="Richtig. Das Vertrauen wird von einer bekannten Stelle bis zum konkreten Zonendatensatz fortgeführt." data-wrong-feedback="Beginne beim Vertrauensanker. Der Datensatz der Zielzone kann erst nach Prüfung des Zonenschlüssels validiert werden." aria-labelledby="dnssec-chain-practice-title">
+  <div class="lab-heading"><div><h3 id="dnssec-chain-practice-title">Validierung ordnen</h3><p>Bringe die stark vereinfachten Prüfschritte in die richtige Reihenfolge.</p></div><span class="lab-tag">Übung</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="record" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Signatur des angefragten Zonendatensatzes mit dem geprüften Zonenschlüssel validieren.</span></li>
+    <li data-step="anchor" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Beim lokal bekannten Trust Anchor beginnen.</span></li>
+    <li data-step="child" tabindex="-1"><span class="step-position" data-step-position>3</span><span>DNSKEY der Kindzone gegen die Delegationsinformation prüfen.</span></li>
+    <li data-step="ds" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Signierte DS-Information der Elternzone entlang der Delegation prüfen.</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s3"><span class="num">3</span>Split-Horizon als Sichtentrennung</h2>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Ein Name, zwei kontrollierte Sichten">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-split-horizon-views-title diagram-split-horizon-views-desc">
+  <title id="diagram-split-horizon-views-title">Ein Name, zwei kontrollierte Sichten</title>
+  <desc id="diagram-split-horizon-views-desc">Vergleich einer internen DNS-Sicht mit privaten Zielen und einer externen Sicht mit ausschließlich öffentlichen Zielen sowie den zugehörigen Risiken.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Ein Name, zwei kontrollierte Sichten</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">Interne Sicht</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">portal.example.test</tspan><tspan x="64" dy="30">→ 10.20.0.25;</tspan><tspan x="64" dy="30">interne Service- und</tspan></text></g><g><rect class="diagram-row" x="265" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="287" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="287" dy="0">Externe Sicht</tspan></text><text x="287" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="287" dy="0">portal.example.test</tspan><tspan x="287" dy="30">→ 203.0.113.25; nur</tspan><tspan x="287" dy="30">veröffentlichte</tspan></text></g><g><rect class="diagram-row" x="488" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="510" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="510" dy="0">Trennregel</tspan></text><text x="510" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="510" dy="0">Antwort hängt an der</tspan><tspan x="510" dy="30">vorgesehenen</tspan><tspan x="510" dy="30">Resolver-/Zonensicht,</tspan></text></g><g><rect class="diagram-row" x="711" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="733" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="733" dy="0">Betriebsrisiko</tspan></text><text x="733" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="733" dy="0">inkonsistente</tspan><tspan x="733" dy="30">Datensätze, falsche</tspan><tspan x="733" dy="30">Weiterleitung oder</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Gleiche Namen dürfen je Sicht unterschiedliche Ziele besitzen, wenn Zuständigkeit und Betrieb bewusst getrennt sind.</figcaption>
+</figure><p>Bei <strong>Split-Horizon DNS</strong> existieren getrennte interne und externe Antworten. Interne Resolver können private Adressen und interne Servicenamen liefern; öffentliche autoritative Server veröffentlichen nur die externe Sicht. Die Trennung reduziert unnötige Informationspreisgabe und erlaubt passende interne Ziele. Sie ist aber kein Zugriffsmechanismus: Eine nicht veröffentlichte Adresse ersetzt weder Firewallregeln noch Authentisierung. Beide Sichten müssen gemeinsam geändert und überwacht werden, damit Namen, Mailrouting und Zertifikatsanforderungen nicht auseinanderlaufen.</p>
+<section class="quiz" data-quiz="split-horizon-practice" data-correct="0">
+  <h3>Was ist die wichtigste Sicherheitsregel für eine externe DNS-Sicht?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Interne Ziele und Verwaltungsnamen gehören nicht versehentlich in die öffentliche Zone."><span class="m">A</span> Sie darf nur ausdrücklich öffentlich vorgesehene Namen und Daten enthalten.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Gerade die Trennung interner und externer Daten ist der Zweck der getrennten Sicht."><span class="m">B</span> Sie muss alle privaten IP-Adressen veröffentlichen, damit Split-Horizon funktioniert.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="DNS-Sichtbarkeit ist keine belastbare Zugriffssteuerung. Adressen können auch ohne DNS-Namen erreicht werden."><span class="m">C</span> Sie ersetzt die Firewall, weil unbekannte Namen nicht erreichbar sind.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Dann wäre keine geteilte Sicht vorhanden. Konsistenz ist nur für bewusst gemeinsame Daten erforderlich."><span class="m">D</span> Sie muss für interne und externe Clients immer identisch antworten.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Karteikarten und freier Abruf</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="dnssec-split-ds" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche Rolle hat ein DS-Record bei DNSSEC?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Er liegt in der Elternzone und verbindet deren Vertrauenskette kryptografisch mit einem Schlüssel der delegierten Kindzone.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="dnssec-split-limit" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was schützt DNSSEC ausdrücklich nicht?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Es bietet keine Vertraulichkeit der DNS-Abfrage, keinen Zugriffsschutz für den Dienst und keine Verfügbarkeitsgarantie.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="dnssec-split-view" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was trennt Split-Horizon DNS?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Bewusst unterschiedliche interne und externe DNS-Sichten, beispielsweise private und öffentliche Zieladressen desselben Namens.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „DS-Record“:</span><button type="button" data-card-id="dnssec-split-ds" data-card-rate="known">gewusst</button><button type="button" data-card-id="dnssec-split-ds" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="dnssec-split-ds"></span></div>
+<div class="card-rating"><span>Karte „Grenze“:</span><button type="button" data-card-id="dnssec-split-limit" data-card-rate="known">gewusst</button><button type="button" data-card-id="dnssec-split-limit" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="dnssec-split-limit"></span></div>
+<div class="card-rating"><span>Karte „Split-Horizon“:</span><button type="button" data-card-id="dnssec-split-view" data-card-rate="known">gewusst</button><button type="button" data-card-id="dnssec-split-view" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="dnssec-split-view"></span></div><section class="recall-practice" data-recall="dnssec-split-core-recall" data-min-length="130" aria-labelledby="dnssec-split-core-recall-title">
+  <div class="recall-prompt"><h3 id="dnssec-split-core-recall-title">Zwei Konzepte trennen</h3><p>Erkläre DNSSEC und Split-Horizon jeweils in zwei Sätzen. Nenne danach für beide ein Problem, das sie nicht lösen.</p></div>
+  <label class="sr-only" for="dnssec-split-core-recall-answer">Deine Abgrenzung</label>
+  <textarea id="dnssec-split-core-recall-answer" data-recall-input rows="4" placeholder="DNSSEC … Split-Horizon …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> DNSSEC erlaubt einem validierenden Resolver, signierte DNS-Daten über eine Chain of Trust auf Herkunft und Unverändertheit zu prüfen. Es verschlüsselt die Abfrage und den späteren Anwendungsverkehr nicht. Split-Horizon liefert internen und externen Anfragern bewusst getrennte DNS-Sichten. Es ersetzt keine Firewall, Authentisierung oder Autorisierung.</div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Lernziel-Check: Transfer</h2>
+<section class="quiz" data-quiz="dnssec-transfer-trust" data-correct="0" data-required-objective="dnssec-trust">
+  <h3>Ein Resolver meldet eine erfolgreich validierte DNSSEC-Antwort für shop.example. Was darf daraus geschlossen werden?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Genau diese Aussage trägt die erfolgreiche DNSSEC-Validierung."><span class="m">A</span> Die DNS-Daten wurden entlang der Vertrauenskette authentifiziert und nicht unbemerkt verändert.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="DNSSEC sagt nichts über TLS oder den Schutz des anschließenden Anwendungsverkehrs aus."><span class="m">B</span> Jede Verbindung zum Shop ist automatisch Ende-zu-Ende verschlüsselt.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="DNSSEC bewertet weder Inhalte noch Betreibervertrauen."><span class="m">C</span> Der Shop ist frei von Schadsoftware und rechtlich vertrauenswürdig.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Authentizität und Integrität sind keine Verfügbarkeitsgarantie."><span class="m">D</span> Der DNS-Server kann nicht ausfallen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="split-horizon-transfer-design" data-correct="0" data-required-objective="split-horizon-design">
+  <h3>Intern soll files.example.test auf 10.20.4.10 zeigen; extern darf dieser Dienst nicht veröffentlicht werden. Welche Lösung ist am stärksten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. DNS-Sicht und tatsächlicher Zugriffsschutz werden getrennt und passend umgesetzt."><span class="m">A</span> Den internen Record in der internen Sicht pflegen, extern keinen Record veröffentlichen und den Zugriff zusätzlich per Netz- und Dienstregeln schützen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Private Adressen sind nicht im öffentlichen Internet routbar, ihre Veröffentlichung kann aber interne Struktur verraten und ist kein Schutzkonzept."><span class="m">B</span> Die private Adresse öffentlich veröffentlichen; private Adressen sind automatisch geheim.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein fehlender öffentlicher Name verhindert keinen direkten oder internen Zugriff und ersetzt keine Sicherheitskontrolle."><span class="m">C</span> Nur den Namen verbergen; dann sind Firewall und Authentisierung unnötig.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Getrennte Sichten können jeweils passend signiert und betrieben werden. Die Umsetzung erfordert Planung, ist aber nicht grundsätzlich ausgeschlossen."><span class="m">D</span> DNSSEC deaktivieren, weil es mit getrennten Sichten grundsätzlich unvereinbar ist.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Quellen und Aktualität</h2>
+<ul>
+<li><strong>IT-Berufe Fachstufe II – Lernfelder 10–12 (2023):</strong> DNSSEC-Chain-of-Trust mit DS und DNSKEY, Abgrenzung zu verschlüsseltem DNS-Transport sowie interne Delegations- und Forwarderbeispiele.</li>
+</ul>
+<p>Split-Horizon wird durch die Direktbelege nur teilweise abgedeckt; die Einheit bleibt deshalb im Kurationsentwurf. Konkrete Signaturalgorithmen, Schlüsselwechsel und Resolverkonfigurationen gehören in eine spätere vertiefte Betriebslektion. Diagramme und Szenarien wurden neu erstellt.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-3"><span class="d">zurück zu</span><span class="t">Block N3 · IPv6, DHCP und DNS</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N3 · IPv6, DHCP und DNS</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Was schützt DNSSEC?</a></li>
+<li><a href="#s2" data-t="s2">Die Chain of Trust</a></li>
+<li><a href="#s3" data-t="s3">Split-Horizon als Sichtentrennung</a></li>
+<li><a href="#s4" data-t="s4">Karteikarten und freier Abruf</a></li>
+<li><a href="#s5" data-t="s5">Lernziel-Check: Transfer</a></li>
+<li><a href="#s6" data-t="s6">Quellen und Aktualität</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-3">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

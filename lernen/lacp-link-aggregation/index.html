@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Link Aggregation als logische Verbindung erklären, Kapazität und Ausfallverhalten berechnen sowie den Unterschied zwischen Gesamtbündel und einzelnem Flow anwenden.">
+<title>LACP-Bündel realistisch dimensionieren – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=hybrid-1">
+<script defer src="/assets/ap2-space.js?v=hybrid-1"></script>
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="lacp-link-aggregation" data-progress-id="ga2-5__7" data-content-revision="2026-09-11.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-5">Block N5 · Switching und VLANs</a><span class="sep">›</span>
+    <span class="here">LACP-Bündel realistisch dimensionieren</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">LACP-Bündel realistisch dimensionieren</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 25 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Link Aggregation fasst mehrere physische Ethernet-Verbindungen zu einer logischen Verbindung zusammen. LACP handelt die Mitgliedschaft dynamisch aus und kann ausgefallene Links aus dem Bündel entfernen. Die Summe der Linkraten ist eine Obergrenze für mehrere passend verteilte Flows, nicht automatisch die Datenrate eines einzelnen Flows.</p>
+<section class="learning-goals" aria-labelledby="lacp-link-aggregation-goals">
+  <h2 id="lacp-link-aggregation-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>für ein LACP-Bündel die theoretische Gesamtkapazität und Restkapazität berechnen sowie die Bandbreitengrenze eines einzelnen Flows erklären</li>
+    <li>geeignete LACP-Partner- und Mitgliedsparameter auswählen und das Verhalten bei Aushandlung oder Linkausfall begründen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Was bedeutet 4 × 1 Gbit/s?</h2>
+<section class="quiz" data-quiz="lacp-diagnostic" data-correct="0">
+  <h3>Vier 1-Gbit/s-Links bilden ein LACP-Bündel. Welche Aussage ist am belastbarsten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Bündelkapazität und Einzel-Flow-Grenze sind zwei verschiedene Größen."><span class="m">A</span> Mehrere Flows können zusammen bis zu 4 Gbit/s erreichen; ein einzelner Flow bleibt bei üblichem Hashing meist auf 1 Gbit/s begrenzt.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Flowbasiertes Hashing hält einen Flow normalerweise auf einem Mitgliedslink."><span class="m">B</span> Jeder einzelne TCP-Flow erreicht garantiert 4 Gbit/s.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ende-zu-Ende-Flaschenhälse und Verkehrsverteilung bleiben bestehen."><span class="m">C</span> LACP vervierfacht automatisch die Datenrate jedes Endgeräts im Netz.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Mehrere unabhängige Flows können auf mehrere aktive Mitglieder verteilt werden."><span class="m">D</span> LACP dient nur der Redundanz und kann nie aggregierte Kapazität bereitstellen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">Prüfungsfalle</span><p><strong>n × r</strong> ist die theoretische Kapazitätsobergrenze des Bündels. Sie ist keine Garantie für <strong>einen</strong> Flow und keine Ende-zu-Ende-Zusage.</p></aside><h2 class="sec" id="s2"><span class="num">2</span>Kapazität und Ausfall berechnen</h2>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Vier Leitungen, eine logische Verbindung">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-topology" xmlns="http://www.w3.org/2000/svg" width="960" height="560" viewBox="0 0 960 560" role="img" aria-labelledby="diagram-lacp-four-link-bundle-title diagram-lacp-four-link-bundle-desc">
+  <title id="diagram-lacp-four-link-bundle-title">Vier Leitungen, eine logische Verbindung</title>
+  <desc id="diagram-lacp-four-link-bundle-desc">Zwei Switches sind über vier aktive physische 1-Gbit/s-Mitgliedslinks zu einer logischen LACP-Verbindung verbunden.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Vier Leitungen, eine logische Verbindung</tspan></text>
+  <g class="diagram-edge active"><path d="M180 280 L780 280"/><text class="diagram-edge-label" x="480" y="272" text-anchor="middle">Mitglied 1 · 1 Gbit/s</text></g><g class="diagram-edge active"><path d="M180 280 L780 280"/><text class="diagram-edge-label" x="480" y="272" text-anchor="middle">Mitglied 2 · 1 Gbit/s</text></g><g class="diagram-edge active"><path d="M180 280 L780 280"/><text class="diagram-edge-label" x="480" y="272" text-anchor="middle">Mitglied 3 · 1 Gbit/s</text></g><g class="diagram-edge active"><path d="M180 280 L780 280"/><text class="diagram-edge-label" x="480" y="272" text-anchor="middle">Mitglied 4 · 1 Gbit/s</text></g><g class="diagram-node switch" transform="translate(180 280)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="180" y="275" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="180" dy="0">Switch A</tspan></text><text class="diagram-node-detail" x="180" y="299" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="180" dy="0">LACP aktiv</tspan></text><g class="diagram-node switch" transform="translate(780 280)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="780" y="275" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="780" dy="0">Switch B</tspan></text><text class="diagram-node-detail" x="780" y="299" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="780" dy="0">LACP passiv</tspan></text>
+</svg>
+  </div>
+  <figcaption>Eigene Topologie: Mindestens eine Seite initiiert aktiv; hier ist A aktiv und B passiv.</figcaption>
+</figure><div class="math-display" role="group" aria-label="Maximale Bündelkapazität ist Zahl aktiver Links mal Linkrate, nach einem Linkausfall ein Link weniger, und ein einzelner Flow ist höchstens so schnell wie ein Mitgliedslink"><math display="block" aria-label="Maximale Bündelkapazität ist Zahl aktiver Links mal Linkrate, nach einem Linkausfall ein Link weniger, und ein einzelner Flow ist höchstens so schnell wie ein Mitgliedslink"><mtable columnalign="right center left" rowspacing="0.45em"><mtr><mtd><msub><mi>C</mi><mtext>Bündel,max</mtext></msub></mtd><mtd><mo>=</mo></mtd><mtd><msub><mi>n</mi><mtext>aktiv</mtext></msub><mo>·</mo><mi>r</mi></mtd></mtr><mtr><mtd><msub><mi>C</mi><mtext>nach Ausfall</mtext></msub></mtd><mtd><mo>=</mo></mtd><mtd><mo>(</mo><msub><mi>n</mi><mtext>aktiv</mtext></msub><mo>−</mo><mn>1</mn><mo>)</mo><mo>·</mo><mi>r</mi></mtd></mtr><mtr><mtd><msub><mi>C</mi><mtext>Einzelflow</mtext></msub></mtd><mtd><mo>≤</mo></mtd><mtd><mi>r</mi></mtd></mtr></mtable></math><div class="math-legend"><span>naktiv = aktive kompatible Mitglieder</span><span>r = Rate eines Mitgliedslinks</span><span>Einzelflow-Grenze gilt für übliche flowbasierte Verteilung; Plattform prüfen</span></div></div><p><strong>Beispiel:</strong> Vier aktive Mitglieder mit je 1 Gbit/s ergeben eine theoretische Bündelobergrenze von 4 Gbit/s. Fällt ein Mitglied aus und bleibt das Bündel gemäß Mindestlink-Konfiguration betriebsbereit, sind es 3 Gbit/s. Ein einzelner großer Datenstrom erreicht bei üblichem Flow-Hashing trotzdem höchstens die Rate eines Mitgliedslinks. Mehrere unabhängige Flows können dagegen auf verschiedene Mitglieder verteilt werden.</p>
+<h2 class="sec" id="s3"><span class="num">3</span>Aushandlung und Mitgliedschaft</h2>
+<p>LACP tauscht Kontrollinformationen zwischen zwei Partnern aus und entscheidet, welche kompatiblen Ports in das logische Bündel aufgenommen werden. Ein aktiver Partner initiiert; ein passiver Partner antwortet. Aktiv/aktiv und aktiv/passiv können aushandeln, passiv/passiv startet das dynamische LACP-Bündel nicht.</p>
+<p>Mitgliedslinks müssen auf beiden Seiten zum selben logischen Bündel passen. Geschwindigkeit und Duplex sind grundlegende Kriterien; VLAN-Zulassung, MTU, System-/Portprioritäten und eine Mindestzahl aktiver Links sind plattformspezifisch zu prüfen. Bleiben erwartete LACPDUs oder der physische Link aus, kann das Mitglied aus der Weiterleitung genommen werden. Das Bündel arbeitet nur weiter, wenn seine Betriebsbedingungen erfüllt bleiben.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Gesamtbündel ist nicht Einzel-Flow">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-lacp-capacity-cases-title diagram-lacp-capacity-cases-desc">
+  <title id="diagram-lacp-capacity-cases-title">Gesamtbündel ist nicht Einzel-Flow</title>
+  <desc id="diagram-lacp-capacity-cases-desc">Vier Vergleichskarten zeigen viele Flows bis 4 Gbit/s, einen einzelnen Flow bis 1 Gbit/s, den Ausfall eines Mitglieds mit 3 Gbit/s Restobergrenze und mögliche Hash-Unwucht.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Gesamtbündel ist nicht Einzel-Flow</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">Viele unabhängige</tspan><tspan x="64" dy="25">Flows</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">Bei guter</tspan><tspan x="64" dy="30">Hash-Verteilung</tspan><tspan x="64" dy="30">können vier</tspan></text></g><g><rect class="diagram-row" x="265" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="287" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="287" dy="0">Ein einzelner Flow</tspan></text><text x="287" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="287" dy="0">Bei üblicher</tspan><tspan x="287" dy="30">flowbasierter</tspan><tspan x="287" dy="30">Verteilung bleibt er</tspan></text></g><g><rect class="diagram-row" x="488" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="510" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="510" dy="0">Ein Mitglied fällt</tspan><tspan x="510" dy="25">aus</tspan></text><text x="510" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="510" dy="0">LACP entfernt den</tspan><tspan x="510" dy="30">ausgefallenen Link;</tspan><tspan x="510" dy="30">mit drei</tspan></text></g><g><rect class="diagram-row" x="711" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="733" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="733" dy="0">Ungleiches Hashing</tspan></text><text x="733" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="733" dy="0">Mehrere Flows können</tspan><tspan x="733" dy="30">zufällig denselben</tspan><tspan x="733" dy="30">Mitgliedslink</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Rechenwert, Verkehrsprofil und Betriebszustand gemeinsam betrachten.</figcaption>
+</figure><h2 class="sec" id="s4"><span class="num">4</span>Geführte Ausfallanalyse</h2>
+<section class="sequence-practice" data-sequence="lacp-failure-sequence" data-expected="detect-member,remove-member,check-minimum,recalculate-capacity,verify-flows" data-correct-feedback="Richtig: Mitgliedschaft, Betriebsbedingung, Rechenwert und realer Verkehr werden getrennt geprüft." data-wrong-feedback="Zuerst Zustand erkennen, Mitglied entfernen, Mindestbedingungen prüfen, Kapazität berechnen und reale Flows testen." aria-labelledby="lacp-failure-sequence-title">
+  <div class="lab-heading"><div><h3 id="lacp-failure-sequence-title">Ein Mitglied liefert keine Kontrollinformationen mehr</h3><p>Ordne den vereinfachten Analyseweg.</p></div><span class="lab-tag">Übung</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="detect-member" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Physik- und LACP-Status des betroffenen Mitglieds erkennen.</span></li>
+    <li data-step="remove-member" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Den nicht mehr geeigneten Link aus der aktiven Weiterleitungsmenge nehmen.</span></li>
+    <li data-step="check-minimum" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Prüfen, ob Mindestzahl und Partnerbedingungen des Bündels noch erfüllt sind.</span></li>
+    <li data-step="recalculate-capacity" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Restobergrenze aus verbleibenden aktiven Mitgliedern neu berechnen.</span></li>
+    <li data-step="verify-flows" tabindex="-1"><span class="step-position" data-step-position>5</span><span>Verteilung mehrerer Flows und Ende-zu-Ende-Durchsatz messen statt nur die angezeigte Linkrate abzulesen.</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Karteikarten und freier Abruf</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="lacp-purpose" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was macht LACP?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Es handelt geeignete physische Mitglieder einer dynamischen Link Aggregation aus und überwacht ihre Mitgliedschaft.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="single-flow" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum erreicht ein einzelner Flow meist nicht die Summe aller Linkraten?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Übliche Hash-Verteilung hält einen Flow zur Reihenfolgeerhaltung auf einem Mitgliedslink.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="active-passive" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche LACP-Moduskombination startet sicher eine Aushandlung?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Aktiv/aktiv oder aktiv/passiv; mindestens eine Seite muss initiieren.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „LACP“:</span><button type="button" data-card-id="lacp-purpose" data-card-rate="known">gewusst</button><button type="button" data-card-id="lacp-purpose" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="lacp-purpose"></span></div>
+<div class="card-rating"><span>Karte „Einzelflow“:</span><button type="button" data-card-id="single-flow" data-card-rate="known">gewusst</button><button type="button" data-card-id="single-flow" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="single-flow"></span></div>
+<div class="card-rating"><span>Karte „Modi“:</span><button type="button" data-card-id="active-passive" data-card-rate="known">gewusst</button><button type="button" data-card-id="active-passive" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="active-passive"></span></div><section class="recall-practice" data-recall="lacp-free-recall" data-min-length="130" aria-labelledby="lacp-free-recall-title">
+  <div class="recall-prompt"><h3 id="lacp-free-recall-title">Bündel ohne Werbeversprechen erklären</h3><p>Erkläre für 4 × 1 Gbit/s die Obergrenze, die Einzel-Flow-Grenze, das Ergebnis nach einem Linkausfall und die notwendige aktiv/passiv-Bedingung.</p></div>
+  <label class="sr-only" for="lacp-free-recall-answer">Deine Erklärung</label>
+  <textarea id="lacp-free-recall-answer" data-recall-input rows="4" placeholder="Die Obergrenze …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Vier aktive 1-Gbit/s-Mitglieder liefern für mehrere gut verteilte Flows höchstens 4 Gbit/s. Ein einzelner Flow bleibt bei üblichem Hashing bei höchstens 1 Gbit/s. Nach Ausfall eines Mitglieds beträgt die Restobergrenze 3 Gbit/s, sofern Mindestbedingungen erfüllt sind. Für dynamisches LACP muss mindestens eine Seite aktiv initiieren.</div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Lernziel-Check</h2>
+<section class="quiz" data-quiz="capacity-and-flow-transfer" data-correct="0" data-required-objective="capacity-and-flow">
+  <h3>Ein Bündel enthält vier aktive 1-Gbit/s-Links. Einer fällt aus. Welche Aussage ist vollständig richtig?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. 3 × 1 Gbit/s ist die Bündelobergrenze, nicht die Rate eines einzelnen Flows."><span class="m">A</span> Die Restobergrenze beträgt 3 Gbit/s für mehrere verteilbare Flows; ein einzelner Flow bleibt bei üblichem Hashing höchstens bei 1 Gbit/s.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Ein einzelner Flow wird normalerweise nicht über mehrere Mitglieder aufgeteilt."><span class="m">B</span> Jeder einzelne Flow erreicht nach dem Ausfall garantiert 3 Gbit/s.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="LACP entfernt das ausgefallene Mitglied, erzeugt aber keine zusätzliche physische Kapazität."><span class="m">C</span> Die Restobergrenze bleibt 4 Gbit/s, weil LACP ausgefallene Kabel logisch ersetzt.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Es kann mit verbleibenden Mitgliedern weiterarbeiten, sofern die Betriebsbedingungen erfüllt sind."><span class="m">D</span> Das gesamte Bündel muss unabhängig von Mindestlink-Regeln immer vollständig ausfallen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="bundle-operation-transfer" data-correct="0" data-required-objective="bundle-operation">
+  <h3>Welche Konfiguration und Fehlerreaktion passt zu einem dynamischen LACP-Bündel?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Aushandlung, Kompatibilität und Ausfallbetrieb sind vollständig berücksichtigt."><span class="m">A</span> Mindestens ein Partner ist aktiv; Mitgliedsparameter passen; ein ausgefallener Link wird entfernt und Mindestbedingungen werden geprüft.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Passiv/passiv initiiert nicht, und inkompatible Mitglieder werden nicht magisch angeglichen."><span class="m">B</span> Beide Partner sind passiv; unterschiedliche Geschwindigkeiten werden automatisch zu einem einzelnen schnelleren Link verschmolzen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Typisch ist eine flowbasierte Hash-Verteilung; per-Paket-Round-Robin ist keine universelle LACP-Eigenschaft."><span class="m">C</span> LACP verteilt jedes Paket eines Flows abwechselnd, unabhängig von Reihenfolge und Plattform.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Das logische Bündel muss auf beiden Partnern kompatibel konfiguriert sein."><span class="m">D</span> VLAN-, MTU- und Mindestlink-Konfigurationen müssen nur auf einer Seite stimmen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s7"><span class="num">7</span>Quellen und Einordnung</h2>
+<ul>
+<li><strong>IT-Berufe – Lernfelder 10–12 (2023), PDF-Seiten 353–354:</strong> Link Aggregation, LACP, aktiv/passiv, Mitgliedsparameter und Verteilungsverfahren.</li>
+<li><strong>PDF-Seiten 359–360:</strong> plattformspezifische Beispiele für die Differenz zwischen angezeigter Summenrate und realem Durchsatz.</li>
+</ul>
+<p>Private Grafiken und Konfigurationsbefehle wurden nicht veröffentlicht. Lastverteilung, Mindestlinks und Reaktionszeiten müssen gegen die eingesetzte Plattform geprüft werden.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-5"><span class="d">zurück zu</span><span class="t">Block N5 · Switching und VLANs</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N5 · Switching und VLANs</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Was bedeutet 4 × 1 Gbit/s?</a></li>
+<li><a href="#s2" data-t="s2">Kapazität und Ausfall berechnen</a></li>
+<li><a href="#s3" data-t="s3">Aushandlung und Mitgliedschaft</a></li>
+<li><a href="#s4" data-t="s4">Geführte Ausfallanalyse</a></li>
+<li><a href="#s5" data-t="s5">Karteikarten und freier Abruf</a></li>
+<li><a href="#s6" data-t="s6">Lernziel-Check</a></li>
+<li><a href="#s7" data-t="s7">Quellen und Einordnung</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-5">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

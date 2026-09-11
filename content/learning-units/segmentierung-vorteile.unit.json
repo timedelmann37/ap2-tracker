@@ -1,0 +1,245 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "segmentierung-vorteile",
+    "slug": "segmentierung-vorteile",
+    "title": "Netze sinnvoll segmentieren",
+    "description": "Broadcast-Grenzen, Sicherheitszonen, Verwaltbarkeit und QoS als getrennte Wirkungen einer Segmentierung beurteilen und für ein Firmenszenario priorisieren.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-5",
+    "groupLabel": "Block N5 · Switching und VLANs",
+    "itemId": "ga2-5__4",
+    "week": "KW 39",
+    "estimatedMinutes": 22,
+    "relevance": "hoch",
+    "sources": ["itlf10-12-2023", "europa-integratoren-2026"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "effects-and-limits",
+      "label": "die Wirkungen und Grenzen von Segmentierung auf Broadcasts, Sicherheit, Verwaltbarkeit und Priorisierung erklären"
+    },
+    {
+      "id": "segment-design",
+      "label": "für ein Firmenszenario Segmente, Übergangsregeln und QoS-Maßnahmen begründet priorisieren"
+    }
+  ],
+  "intro": "Ein VLAN bildet eine eigene Broadcast-Domäne. Das verkleinert den Bereich, in dem ein Layer-2-Broadcast verteilt wird. Sicherheit und Priorisierung entstehen dadurch aber nicht automatisch: Zwischen Segmenten braucht es kontrollierte Layer-3-Übergänge, und zeitkritischer Verkehr braucht eine explizite QoS-Regel.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "Chunk itlf10-12-2023:page:0179",
+        "use": "VLAN als abgeschlossene Broadcast-Domäne sowie Abwägung von Sicherheit, Administrationsaufwand und Flexibilität verschiedener Zuordnungskriterien",
+        "reviewStatus": "Text geprüft; Aussagen konservativ neu formuliert"
+      },
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunk europa-integratoren-2026:00340",
+        "use": "Prüfungsnaher Kontext zu IEEE 802.1Q, portbasierter VLAN-Zuordnung und VLANs über mehrere Switches",
+        "reviewStatus": "Aufgabenliste geprüft; nur eindeutig richtige Kernaussagen genutzt"
+      }
+    ],
+    "notes": [
+      "Der gemappte Chunk itlf10-12-2023:page:0189 behandelt Proxy-Caching, Filterung und Datenratenbegrenzung, nicht VLAN-Segmentierung; er wurde als Fehltreffer ausgeschlossen.",
+      "Die gemappte private Figur ihk-bonn:figure:363f54b73a0f zeigt eine Firewall-/DMZ-Architektur. Sie ist höchstens ein indirekter Sicherheitszonen-Kontext und wurde weder als VLAN-Beleg noch als Vorlage verwendet.",
+      "Segmentierung ist keine vollständige Sicherheitsmaßnahme: Erst Routing-, Firewall- oder ACL-Regeln kontrollieren Verkehr zwischen Segmenten. Ebenso garantiert ein VLAN allein keine Bandbreite oder Priorität; dafür ist QoS erforderlich.",
+      "Die private Aufgabenliste europa-integratoren-2026:00340 enthält richtige und falsche Antwortoptionen. Nicht markierte Aussagen wurden nicht pauschal als Fakten übernommen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "segment-benefits-conditions",
+      "type": "comparison",
+      "title": "Vier Ziele, vier unterschiedliche Hebel",
+      "description": "VLANs schaffen Grenzen; Richtlinien und QoS bestimmen, was an diesen Grenzen geschieht.",
+      "items": [
+        {
+          "label": "Broadcast-Reduktion",
+          "detail": "Ein Layer-2-Broadcast bleibt in seinem VLAN. Je kleiner das Segment, desto weniger lokale Empfänger müssen ihn verarbeiten."
+        },
+        {
+          "label": "Sicherheit",
+          "detail": "Getrennte Segmente schaffen Kontrollpunkte. Schutz entsteht erst durch erlaubende und sperrende Regeln am Layer-3-Übergang."
+        },
+        {
+          "label": "Verwaltbarkeit",
+          "detail": "Abteilungen, Geräteklassen oder Vertrauensstufen lassen sich getrennt adressieren, überwachen und ändern. Zu viele Segmente erhöhen jedoch Aufwand."
+        },
+        {
+          "label": "Priorisierung",
+          "detail": "Ein VLAN kann Verkehr klassifizierbar machen. Eine QoS-Richtlinie muss Priorität, Queue oder Bandbreitenanteil ausdrücklich festlegen."
+        }
+      ]
+    },
+    {
+      "id": "office-segmentation",
+      "type": "topology",
+      "title": "Segmentierter Bürostandort",
+      "description": "Endgeräte bleiben in ihren Broadcast-Domänen; kontrollierter Verkehr durchläuft das Layer-3-Gateway.",
+      "zones": [
+        {"id": "zone-office", "label": "VLAN 10 · Büro", "x": 40, "y": 55, "width": 255, "height": 330, "kind": "trusted"},
+        {"id": "zone-voice", "label": "VLAN 20 · Sprache", "x": 350, "y": 55, "width": 255, "height": 330, "kind": "voice"},
+        {"id": "zone-guest", "label": "VLAN 30 · Gäste", "x": 665, "y": 55, "width": 255, "height": 330, "kind": "guest"}
+      ],
+      "nodes": [
+        {"id": "office-pc", "label": "Büro-PC", "detail": "interne Dienste", "x": 165, "y": 170, "kind": "endpoint"},
+        {"id": "voice-phone", "label": "IP-Telefon", "detail": "QoS-Klasse Sprache", "x": 475, "y": 170, "kind": "endpoint"},
+        {"id": "guest-client", "label": "Gastgerät", "detail": "nur Internet", "x": 790, "y": 170, "kind": "endpoint"},
+        {"id": "l3-policy", "label": "L3-Gateway", "detail": "ACL/Firewall und QoS", "x": 475, "y": 465, "kind": "router"}
+      ],
+      "edges": [
+        {"from": "office-pc", "to": "l3-policy", "label": "geroutet", "kind": "trunk"},
+        {"from": "voice-phone", "to": "l3-policy", "label": "markiert/geroutet", "kind": "active"},
+        {"from": "guest-client", "to": "l3-policy", "label": "streng begrenzt", "kind": "blocked"}
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Welche Aussage trägt?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "segmentation-diagnostic",
+          "diagnostic": true,
+          "question": "Ein Unternehmen trennt Büro, VoIP und Gäste in drei VLANs. Welche Wirkung ist ohne weitere Konfiguration sicher?",
+          "options": [
+            {"text": "Broadcasts bleiben jeweils in der eigenen Broadcast-Domäne", "rationale": "Richtig. Das ist die unmittelbare Layer-2-Wirkung der VLAN-Trennung.", "correct": true},
+            {"text": "VoIP erhält automatisch immer Vorrang", "rationale": "Ein eigenes VLAN ist noch keine QoS-Regel.", "correct": false},
+            {"text": "Gäste können garantiert keine internen Systeme erreichen", "rationale": "Das entscheidet die Policy am gerouteten Übergang.", "correct": false},
+            {"text": "Jedes VLAN bekommt automatisch ein verschlüsseltes Netz", "rationale": "VLAN-Tagging ist keine Verschlüsselung.", "correct": false}
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Grenze vor Wirkung",
+          "markdown": "Das VLAN zieht die **Broadcast-Grenze**. ACL/Firewall erzeugen **Zugriffsschutz**; QoS erzeugt **Priorisierung**."
+        }
+      ]
+    },
+    {
+      "title": "Wirkungen sauber trennen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Switch flutet Broadcasts nur innerhalb des zugehörigen VLANs. Damit wird aus einer großen Broadcast-Domäne eine Menge kleinerer Fehler- und Verwaltungsbereiche. Geräte eines anderen VLANs sind erst über Routing erreichbar. Dieser Übergang ist der passende Ort für ACLs, Firewallregeln, Protokollierung und gegebenenfalls QoS.\n\nDie Grenze allein entscheidet aber weder, welcher Verkehr erlaubt ist, noch ob Sprache bevorzugt wird. Auch der Verwaltungsaufwand zählt: Für jedes Segment werden Adressplan, DHCP-Bereich, Gateway, Trunks, Regeln und Dokumentation benötigt. Segmentiere deshalb nach einem nachvollziehbaren Zweck statt nach jedem einzelnen Gerät."
+        },
+        {
+          "type": "figure",
+          "diagramId": "segment-benefits-conditions",
+          "alt": "Vier Karten ordnen Broadcast-Reduktion, Sicherheit, Verwaltbarkeit und Priorisierung den jeweils nötigen Maßnahmen zu.",
+          "caption": "Eigene Lernskizze: Nur die Broadcast-Begrenzung folgt direkt aus der VLAN-Trennung."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Bei gleichmäßiger Aufteilung ist die Zahl der Hosts je Segment gleich der Gesamtzahl der Hosts geteilt durch die Zahl der Segmente",
+          "mathml": "<math display=\"block\"><msub><mi>N</mi><mtext>Segment</mtext></msub><mo>=</mo><mfrac><msub><mi>N</mi><mtext>gesamt</mtext></msub><mi>k</mi></mfrac><mo>=</mo><mfrac><mn>120</mn><mn>4</mn></mfrac><mo>=</mo><mn>30</mn></math>",
+          "legend": ["Ngesamt = 120 Hosts", "k = 4 gleich große VLANs", "30 Hosts je Broadcast-Domäne; reale Broadcastlast hängt vom Verkehr ab"]
+        }
+      ]
+    },
+    {
+      "title": "Beispiel: Büro, Sprache und Gäste",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "office-segmentation",
+          "alt": "Drei Zonen für Büro, Sprache und Gäste sind mit einem Layer-3-Gateway verbunden, das ACLs, Firewallregeln und QoS anwendet.",
+          "caption": "Eigene Topologie: Der kontrollierte Übergang ist fachlich wichtiger als nur drei VLAN-Nummern."
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Szenario:** 120 Endgeräte teilen sich zunächst ein Netz. Vier funktionsbezogene VLANs reduzieren bei gleichmäßiger Verteilung den Empfängerkreis eines lokalen Broadcasts von 119 anderen Hosts auf höchstens 29 andere Hosts. Das ist eine vereinfachte Obergrenze für den Empfängerkreis, keine Vorhersage der gesamten Netzlast.\n\nFür Gäste lautet die Policy: nur Internet und notwendige Infrastrukturdienste. Für VoIP wird zusätzlich eine QoS-Klasse mit messbarem Ziel definiert. Bürogeräte erreichen nur die benötigten Serverports. Damit sind Broadcast-Grenze, Zugriffsschutz und Priorisierung einzeln prüfbar."
+        }
+      ]
+    },
+    {
+      "title": "Geführte Planung",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "segmentation-planning-sequence",
+          "title": "Vom Schutzziel zur VLAN-Konfiguration",
+          "prompt": "Bringe die Planungsschritte in eine belastbare Reihenfolge.",
+          "tag": "Übung",
+          "steps": [
+            {"id": "identify-groups", "label": "Geräte nach Funktion, Vertrauensstufe und Kommunikationsbedarf gruppieren."},
+            {"id": "define-boundaries", "label": "Pro Gruppe Broadcast-Domäne, IP-Netz, Gateway und Zuordnung festlegen."},
+            {"id": "define-policy", "label": "Erlaubte Übergänge und Sperren zwischen den Segmenten definieren."},
+            {"id": "add-qos", "label": "Für messbar zeitkritischen Verkehr eigene QoS-Klassifizierung und Behandlung ergänzen."},
+            {"id": "verify", "label": "Broadcast-Reichweite, erlaubte Verbindungen, Sperren und Priorisierung testen und dokumentieren."}
+          ],
+          "expected": ["identify-groups", "define-boundaries", "define-policy", "add-qos", "verify"],
+          "correctFeedback": "Richtig: Zweck und Policy kommen vor VLAN-Nummer und Abnahmetest.",
+          "wrongFeedback": "Beginne beim Kommunikations- und Schutzbedarf. VLANs, Regeln, QoS und Tests folgen daraus."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {"id": "vlan-broadcast", "label": "Broadcast", "front": "Welche unmittelbare Grenze erzeugt ein VLAN?", "back": "Eine eigene Layer-2-Broadcast-Domäne."},
+            {"id": "security-boundary", "label": "Sicherheit", "front": "Warum ist VLAN-Trennung allein noch kein Zugriffsschutz?", "back": "Erlaubte und verbotene Übergänge werden erst durch Routing-, ACL- oder Firewallregeln durchgesetzt."},
+            {"id": "qos-boundary", "label": "Priorisierung", "front": "Garantiert ein eigenes Voice-VLAN Sprachqualität?", "back": "Nein. Es erleichtert die Klassifikation; eine QoS-Policy muss die bevorzugte Behandlung ausdrücklich konfigurieren."}
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "segmentation-free-recall",
+          "title": "Vier Nutzenversprechen prüfen",
+          "prompt": "Erkläre für Broadcast-Reduktion, Sicherheit, Verwaltbarkeit und Priorisierung jeweils die Wirkung der Segmentierung und mindestens eine notwendige Zusatzmaßnahme oder Grenze.",
+          "label": "Deine Begründung",
+          "placeholder": "Broadcasts … Sicherheit …",
+          "minLength": 120,
+          "model": "Ein VLAN begrenzt Layer-2-Broadcasts. Sicherheit entsteht durch kontrollierte Layer-3-Übergänge mit ACLs oder Firewallregeln. Verwaltbarkeit steigt durch nachvollziehbare Gruppen, kann bei zu vielen Segmenten aber leiden. Priorisierung braucht zusätzlich eine QoS-Klassifizierung und Behandlung."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "effects-and-limits-transfer",
+          "requiredObjective": "effects-and-limits",
+          "question": "Welche Aussage beschreibt Segmentierung vollständig und ohne Sicherheitsversprechen?",
+          "options": [
+            {"text": "VLANs begrenzen Broadcasts; Zugriffsschutz braucht Regeln am Übergang und Priorisierung eine QoS-Policy.", "rationale": "Richtig. Die drei Wirkmechanismen werden sauber getrennt.", "correct": true},
+            {"text": "VLANs verschlüsseln Broadcasts und reservieren automatisch Bandbreite.", "rationale": "Weder Verschlüsselung noch Bandbreitenreservierung folgen automatisch aus einem VLAN.", "correct": false},
+            {"text": "VLANs verhindern jeden Angriff innerhalb desselben Segments.", "rationale": "Innerhalb eines VLANs besteht weiterhin ein gemeinsamer Layer-2-Bereich.", "correct": false},
+            {"text": "VLANs ersetzen Routing, Firewall und QoS vollständig.", "rationale": "Gerade diese zusätzlichen Funktionen kontrollieren Übergänge und Behandlung.", "correct": false}
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "segment-design-transfer",
+          "requiredObjective": "segment-design",
+          "question": "Welche Planung für Büro, VoIP und Gäste ist am belastbarsten?",
+          "options": [
+            {"text": "Funktionsbezogene VLANs, dokumentierte IP-Netze und Gateways, minimale ACL/Firewall-Freigaben sowie eine geprüfte QoS-Regel für VoIP", "rationale": "Richtig. Die Maßnahmen sind zweckgebunden und einzeln testbar.", "correct": true},
+            {"text": "Drei VLAN-Namen anlegen und davon ausgehen, dass Gäste gesperrt und Sprache priorisiert sind", "rationale": "Namen und VLAN-Grenzen definieren weder Zugriffsregeln noch QoS.", "correct": false},
+            {"text": "Jedes Gerät in ein eigenes VLAN setzen, ohne Dokumentation oder Policy", "rationale": "Das maximiert Verwaltungsaufwand, ohne den Kommunikationsbedarf zu erklären.", "correct": false},
+            {"text": "Alle Geräte im selben VLAN lassen und nur verschiedene IP-Hintergründe im Inventar verwenden", "rationale": "Eine Dokumentationsfarbe erzeugt keine Broadcast- oder Policy-Grenze.", "correct": false}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **IT-Berufe – Lernfelder 10–12 (2023), PDF-Seite 179:** VLAN als Broadcast-Domäne und Abwägung von Zuordnung, Sicherheit, Aufwand und Flexibilität.\n- **EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026), Chunk 00340:** prüfungsnaher VLAN-/802.1Q-Kontext.\n\nDie private DMZ-Grafik und Buchabbildungen wurden nicht veröffentlicht. QoS und Inter-VLAN-Schutz sind bewusst als zusätzliche Maßnahmen formuliert."
+        }
+      ]
+    }
+  ]
+}

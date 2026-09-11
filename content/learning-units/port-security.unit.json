@@ -1,0 +1,220 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "port-security",
+    "slug": "port-security",
+    "title": "Port Security als begrenzte Zugangskontrolle planen",
+    "description": "Zulässige Quell-MAC-Adressen und Höchstzahlen pro Access-Port ableiten, Verstöße auswerten und die Grenzen einer reinen MAC-Bindung erklären.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-5",
+    "groupLabel": "Block N5 · Switching und VLANs",
+    "itemId": "ga2-5__8",
+    "week": "KW 39",
+    "estimatedMinutes": 22,
+    "relevance": "hoch",
+    "sources": ["itlf10-12-2023", "europa-integratoren-2026"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "port-policy",
+      "label": "aus einem Arbeitsplatzszenario den geschützten Access-Port, zulässige Quell-MAC-Adressen, Höchstzahl und gewünschte Verstoßreaktion ableiten"
+    },
+    {
+      "id": "security-boundary",
+      "label": "Wirksamkeit und Grenzen einer MAC-basierten Portbindung beurteilen und passende ergänzende Zugangskontrollen begründen"
+    }
+  ],
+  "intro": "Port Security begrenzt, welche Quell-MAC-Adressen ein Switch an einem ausgewählten Layer-2-Port als zulässig behandelt. Das erschwert den spontanen Gerätetausch an einem Access-Port, ersetzt aber weder eine Identitätsprüfung noch VLAN-, Firewall- oder Endgeräteschutz. Eine gute Lösung beginnt beim Anschlussfall und endet mit überprüfbaren Betriebs- und Wiederherstellungsregeln.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "Chunks itlf10-12-2023:page:0179 und itlf10-12-2023:page:0180",
+        "use": "MAC- und portbasierte Zuordnung am Switch sowie deren Verwaltungsaufwand als Abgrenzung zur Port-Security-Regel",
+        "reviewStatus": "Die Seiten behandeln VLAN-Zugehörigkeit, nicht Port Security; nur der belastbare Layer-2- und Administrationskontext wurde verwendet"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "Chunk itlf10-12-2023:page:0217",
+        "use": "IEEE 802.1X mit RADIUS als stärkere, identitätsbasierte Alternative zur reinen MAC-Bindung",
+        "reviewStatus": "Rollen- und Portfreigabekontext geprüft; keine Gleichsetzung von 802.1X und Port Security vorgenommen"
+      },
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunks europa-integratoren-2026:00856 und europa-integratoren-2026:00857",
+        "use": "Access-/Trunk- und dynamische VLAN-Zuordnung als Kontext für die Auswahl geeigneter Ports",
+        "reviewStatus": "Nur zur Abgrenzung genutzt; MAC-basierte VLAN-Zuordnung ist keine Port-Security-Funktion"
+      }
+    ],
+    "notes": [
+      "Der Batch-Kandidat ihk-bonn:00164 behandelt Transportports und Stateful Inspection; er ist ein Fehltreffer für Switch-Port-Security.",
+      "Die Batch-Kandidaten itlf10-12-2023:page:0230 und europa-integratoren-2026:01078 behandeln VLAN-Konfiguration, nicht die Bindung sicherer MAC-Adressen an einen Access-Port.",
+      "Der Figurenkandidat ihk-bonn:figure:7fd7d77f60eb zeigt ESP/IPsec und wurde als vollständiger Fehltreffer ausgeschlossen.",
+      "Port-Security-Syntax, Lernverfahren, Alterung, Verstoßreaktion und Wiederherstellung sind hersteller-, Plattform- und versionsabhängig und müssen vor der Umsetzung in der Gerätedokumentation geprüft werden.",
+      "Alle Topologien, Fälle, MAC-Adressen und Antwortoptionen sind eigenständig erstellt; private Buchgrafiken werden nicht veröffentlicht."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "secured-access-port",
+      "type": "topology",
+      "title": "Die Regel gehört an den definierten Access-Port",
+      "description": "Ein Arbeitsplatz mit Telefon und PC verwendet zwei erlaubte Quell-MAC-Adressen am Access-Port. Ein unbekanntes Ersatzgerät löst die konfigurierte Reaktion aus. Der Uplink wird nicht mit derselben Endgeräte-Höchstzahl behandelt.",
+      "zones": [
+        {"id": "desk-zone", "label": "Arbeitsplatz", "x": 25, "y": 85, "width": 275, "height": 335, "kind": "zone-access"},
+        {"id": "switch-zone", "label": "Access-Switch", "x": 350, "y": 85, "width": 270, "height": 335, "kind": "zone-switch"},
+        {"id": "network-zone", "label": "Verteilnetz", "x": 670, "y": 85, "width": 260, "height": 335, "kind": "zone-uplink"}
+      ],
+      "nodes": [
+        {"id": "phone", "label": "IP-Telefon", "detail": "MAC …:10", "x": 150, "y": 165, "kind": "phone"},
+        {"id": "workstation", "label": "Arbeitsplatz-PC", "detail": "MAC …:20", "x": 150, "y": 285, "kind": "client"},
+        {"id": "unknown-device", "label": "Unbekanntes Gerät", "detail": "MAC …:99", "x": 150, "y": 380, "kind": "warning"},
+        {"id": "access-port", "label": "Port 7", "detail": "maximal 2 · …:10 und …:20", "x": 485, "y": 245, "kind": "switch"},
+        {"id": "uplink", "label": "Uplink", "detail": "führt viele Quell-MACs", "x": 800, "y": 245, "kind": "router"}
+      ],
+      "edges": [
+        {"from": "phone", "to": "access-port", "label": "zulässig", "kind": "allowed"},
+        {"from": "workstation", "to": "access-port", "label": "zulässig", "kind": "allowed"},
+        {"from": "unknown-device", "to": "access-port", "label": "Verstoß", "kind": "blocked"},
+        {"from": "access-port", "to": "uplink", "label": "Weiterleitung", "kind": "trunk"}
+      ]
+    },
+    {
+      "id": "port-security-decision",
+      "type": "flow",
+      "title": "Jeder neue Quell-MAC-Eindruck durchläuft dieselbe Entscheidung",
+      "description": "Der Switch betrachtet Portzustand, Quell-MAC und konfigurierte Höchstzahl. Nur bei einer zulässigen beziehungsweise sicher gelernten Adresse wird weitergeleitet; andernfalls folgt die plattformspezifisch konfigurierte Reaktion.",
+      "items": [
+        {"label": "Rahmen empfangen", "detail": "Quell-MAC am konkret geschützten Eingangsport beobachten"},
+        {"label": "Adresse prüfen", "detail": "bereits als sicher zugelassen oder nach Regel lernbar?"},
+        {"label": "Höchstzahl prüfen", "detail": "würde eine weitere sichere Adresse das Portlimit überschreiten?"},
+        {"label": "Entscheiden", "detail": "zulässig weiterleiten oder Verstoßreaktion auslösen"},
+        {"label": "Belegen", "detail": "sichere Adressen, Zähler, Logs und operativen Portzustand kontrollieren"}
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Was schützt die Regel wirklich?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "port-security-diagnostic",
+          "diagnostic": true,
+          "question": "Port 7 lässt nur die MAC-Adresse des Firmen-PCs zu. Welche Aussage ist allein dadurch gerechtfertigt?",
+          "options": [
+            {"text": "Der Benutzer am PC ist zweifelsfrei authentisiert", "rationale": "Eine MAC-Adresse bezeichnet eine Schnittstelle, nicht zuverlässig die menschliche Identität; sie kann außerdem nachgeahmt werden.", "correct": false},
+            {"text": "Rahmen mit anderen Quell-MAC-Adressen können an diesem Port gemäß Regel als Verstoß behandelt werden", "rationale": "Richtig. Die Regel begrenzt die am Port akzeptierten Quell-MAC-Adressen.", "correct": true},
+            {"text": "Der PC ist automatisch frei von Schadsoftware", "rationale": "Port Security bewertet keine Prozesse, Dateien oder Patchstände des Endgeräts.", "correct": false},
+            {"text": "Alle übrigen Switchports sind ebenfalls geschützt", "rationale": "Die Konfiguration und ihr Zustand müssen je betroffenem Port geprüft werden.", "correct": false}
+          ]
+        },
+        {"type": "callout", "kind": "merksatz", "label": "Schutzumfang", "markdown": "Port Security ist eine **lokale Layer-2-Zulassungsregel am Eingangsport**. Sie ist kein Beweis für Benutzeridentität, Gerätezustand oder erlaubte Anwendungen."}
+      ]
+    },
+    {
+      "title": "Vom Anschlussfall zur Portregel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Leite die Regel aus dem realen Anschluss ab:\n\n1. **Portrolle:** Ein fester Arbeitsplatz-Access-Port ist ein typischer Kandidat. Ein Uplink, Trunk, Access Point oder Virtualisierungshost kann viele legitime Quell-MAC-Adressen führen und braucht eine andere Bewertung.\n2. **Erlaubte Quellen:** Dokumentiere die erwarteten Geräte. Bei einem IP-Telefon mit dahinter angeschlossenem PC können zwei Quell-MAC-Adressen legitim sein.\n3. **Höchstzahl:** Setze sie nicht pauschal auf eins, sondern passend zum Sollbild und ohne unnötige Reserve.\n4. **Erwerb und Lebenszyklus:** Lege fest, ob Adressen administrativ eingetragen oder kontrolliert gelernt werden, wann sie altern und wie ein Gerätetausch freigegeben wird.\n5. **Reaktion und Betrieb:** Definiere, was bei einem Verstoß geschieht, wie er gemeldet wird und wer den Port nach Prüfung wieder freigibt."
+        },
+        {"type": "figure", "diagramId": "secured-access-port", "alt": "Arbeitsplatz mit erlaubtem IP-Telefon und PC, einem unbekannten Gerät sowie Port 7 mit Höchstzahl zwei; getrennt davon der Uplink mit vielen Quell-MAC-Adressen.", "caption": "Eigene Lernskizze: Die Höchstzahl folgt dem Anschlussfall; ein Uplink ist kein Arbeitsplatzport."},
+        {"type": "callout", "kind": "warning", "label": "MAC-Adresse ist kein Geheimnis", "markdown": "Eine beobachtbare MAC-Adresse kann nachgebildet werden. Die Bindung bremst einfache, nicht autorisierte Gerätetausche, ist aber keine kryptografische Authentisierung."}
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "An Port 7 hängen ein verwaltetes IP-Telefon und dahinter genau ein Firmen-PC. Die Sollregel lautet herstellerneutral: Port 7 als Access-Port schützen, höchstens zwei sichere Quell-MAC-Adressen zulassen, Telefon und PC kontrolliert eintragen oder lernen und bei einer dritten beziehungsweise unbekannten Adresse die vereinbarte Verstoßreaktion melden.\n\nNach dem Rollout wird nicht nur ein erfolgreicher Ping geprüft. Die Abnahme kontrolliert die Liste sicherer Adressen, den Zähler, den operativen Portzustand und die Meldung bei einem Testverstoß. Ein späterer PC-Tausch folgt einem dokumentierten Freigabeprozess; sonst kann eine alte Bindung den neuen legitimen Rechner blockieren."
+        },
+        {"type": "figure", "diagramId": "port-security-decision", "alt": "Fünfstufiger Entscheidungsweg vom empfangenen Ethernet-Rahmen über Adress- und Höchstzahlprüfung zur Weiterleitung oder Verstoßreaktion und abschließenden Kontrolle.", "caption": "Eigene Lernskizze: Konfiguration, Laufzeitzustand und Nachweis gehören zusammen."},
+        {
+          "type": "quiz",
+          "id": "port-uplink-practice",
+          "question": "Warum wäre dieselbe Höchstzahl von zwei sicheren MAC-Adressen auf dem Uplink zum Verteilnetz meist ungeeignet?",
+          "options": [
+            {"text": "Weil über einen Uplink legitimerweise viele Endgeräte-Quelladressen sichtbar werden können", "rationale": "Richtig. Eine Arbeitsplatzgrenze würde legitimen Verkehr hinter dem Uplink als Verstoß behandeln.", "correct": true},
+            {"text": "Weil Uplinks grundsätzlich keine Ethernet-Rahmen übertragen", "rationale": "Uplinks übertragen gerade Ethernet-Verkehr zwischen Netzkomponenten.", "correct": false},
+            {"text": "Weil MAC-Adressen nur auf Layer 3 vorkommen", "rationale": "MAC-Adressen gehören zur Sicherungsschicht, also Layer 2.", "correct": false},
+            {"text": "Weil Port Security automatisch jedes VLAN löscht", "rationale": "Die Funktion begrenzt Quell-MAC-Adressen; sie ersetzt oder löscht keine VLAN-Planung.", "correct": false}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Geführte Übung: Regel aus dem Sollbild ableiten",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "port-security-planning-sequence",
+          "title": "Ordne die Planungsschritte",
+          "prompt": "Ein fester Besprechungsraum erhält ein Konferenztelefon und einen Mini-PC an einem Access-Port. Bringe die Schritte in eine belastbare Reihenfolge.",
+          "tag": "Geführte Übung",
+          "steps": [
+            {"id": "monitor", "label": "Sichere Adressen, Verstoßzähler, Logs und Portzustand prüfen"},
+            {"id": "inventory", "label": "Portrolle und genau zwei erwartete Endgeräte erfassen"},
+            {"id": "lifecycle", "label": "Gerätetausch, Alterung, Meldung und Wiederfreigabe festlegen"},
+            {"id": "configure", "label": "Adressverfahren, Höchstzahl zwei und Verstoßreaktion konfigurieren"},
+            {"id": "test", "label": "Beide Sollgeräte und anschließend kontrolliert ein drittes Gerät testen"}
+          ],
+          "expected": ["inventory", "lifecycle", "configure", "test", "monitor"],
+          "correctFeedback": "Richtig. Erst das Sollbild, dann Lebenszyklus und Regel; anschließend werden Zulassung, Verstoß und Nachweis kontrolliert getestet.",
+          "wrongFeedback": "Beginne nicht mit der Konfiguration. Erfasse Portrolle und erwartete Geräte, kläre dann den Betriebsprozess und teste erst danach."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {"id": "port-source-card", "label": "Prüfmerkmal", "front": "Welche Adresse bewertet Port Security bei einem eingehenden Ethernet-Rahmen?", "back": "Die Quell-MAC-Adresse am konkret geschützten Eingangsport."},
+            {"id": "port-limit-card", "label": "Höchstzahl", "front": "Warum ist maximal eine MAC-Adresse nicht immer richtig?", "back": "Ein legitimer Anschluss kann mehrere Quellen führen, etwa IP-Telefon und PC. Die Höchstzahl folgt dem dokumentierten Sollbild."},
+            {"id": "port-boundary-card", "label": "Grenze", "front": "Welche zentrale Sicherheitsgrenze hat eine MAC-Bindung?", "back": "Eine MAC-Adresse ist keine kryptografische Identität und kann nachgeahmt werden; stärkere Zugangskontrollen wie 802.1X können nötig sein."}
+          ]
+        },
+        {"type": "recall", "id": "port-security-recall", "title": "Eine Portregel ohne Vorlage begründen", "prompt": "Entwirf für einen Access-Port mit IP-Telefon und PC eine Port-Security-Regel. Nenne Portrolle, erlaubte Quellen, Höchstzahl, Reaktion, Nachweis und mindestens zwei Grenzen.", "label": "Deine Begründung", "placeholder": "Der Port ist … Zulässig sind …", "minLength": 150, "model": "Der feste Access-Port soll genau Telefon und PC führen, daher werden deren Quell-MAC-Adressen kontrolliert zugelassen und die Höchstzahl wird auf zwei gesetzt. Eine unbekannte dritte Adresse löst die vereinbarte Verstoßreaktion und Meldung aus. Nachgewiesen werden sichere Adressliste, Zähler, Log und Portzustand. Die Regel authentisiert keinen Benutzer, erkennt keinen Schadcode und eine MAC-Adresse kann nachgeahmt werden; je Schutzbedarf ergänzen 802.1X, Segmentierung und Endgerätekontrollen die Maßnahme."}
+      ]
+    },
+    {
+      "title": "Lernziel-Check und Quellenlage",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "port-policy-transfer",
+          "requiredObjective": "port-policy",
+          "question": "An einem festen Access-Port hängen ein Drucker und ein Kartenleser. Es dürfen keine weiteren Geräte angeschlossen werden. Welche herstellerneutrale Regel passt am besten?",
+          "options": [
+            {"text": "Zwei erwartete Quell-MAC-Adressen zulassen, Höchstzahl zwei setzen und eine überwachte Verstoßreaktion samt Gerätetauschprozess definieren", "rationale": "Richtig. Die Regel bildet Sollgeräte, Limit, Reaktion und Betrieb vollständig ab.", "correct": true},
+            {"text": "Eine beliebige Adresse zulassen und die Höchstzahl unbegrenzt lassen", "rationale": "Damit wird der unerwünschte dritte Anschluss nicht begrenzt.", "correct": false},
+            {"text": "Den Uplink des Switches auf maximal zwei MAC-Adressen begrenzen", "rationale": "Die Anforderung betrifft den konkreten Arbeitsplatzport; ein Uplink führt typischerweise viele Quellen.", "correct": false},
+            {"text": "Nur den TCP-Zielport des Druckers filtern", "rationale": "Ein Transportport ist nicht die MAC-basierte Zugangsbeschränkung am Switchport.", "correct": false}
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "port-boundary-transfer",
+          "requiredObjective": "security-boundary",
+          "question": "Ein Bereich verlangt nachvollziehbare Benutzeridentitäten statt nur bekannte Netzwerkkarten. Welche Bewertung ist richtig?",
+          "options": [
+            {"text": "Die MAC-Bindung allein genügt, weil MAC-Adressen nicht kopierbar sind", "rationale": "MAC-Adressen sind beobachtbar und können nachgebildet werden; sie belegen keine Benutzeridentität.", "correct": false},
+            {"text": "Port Security kann einfache Gerätetausche begrenzen; für Identität ist eine stärkere Zugangskontrolle wie 802.1X mit geeigneter Authentisierung zu prüfen", "rationale": "Richtig. Beide Maßnahmen haben unterschiedliche Beweisstärken und können kombiniert werden.", "correct": true},
+            {"text": "Ein größeres VLAN authentisiert automatisch jeden Benutzer", "rationale": "VLAN-Größe liefert keine Identitätsprüfung.", "correct": false},
+            {"text": "Nur die MAC-Alterungszeit muss auf null gesetzt werden", "rationale": "Eine Lebenszykluseinstellung macht aus einer MAC-Adresse keine belastbare Benutzeridentität.", "correct": false}
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "Die lokalen Buchtreffer belegen MAC-/Port-Zuordnung, VLAN-Kontext und 802.1X als identitätsbasierte Zugangskontrolle, enthalten aber keine belastbare, herstellerneutrale Definition von Port-Security-Kommandos oder Violation-Modi. Diese Einheit bleibt deshalb **CURATED_DRAFT**. Vor einer Gerätekonfiguration sind Syntax, Lern- und Alterungsverhalten, Meldungen sowie Recovery in der Dokumentation der eingesetzten Plattform zu prüfen."
+        }
+      ]
+    }
+  ]
+}

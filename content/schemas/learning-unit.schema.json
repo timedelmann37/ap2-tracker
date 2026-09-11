@@ -69,10 +69,10 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "type", "title", "items"],
+        "required": ["id", "type", "title"],
         "properties": {
           "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
-          "type": { "enum": ["layers", "flow", "comparison"] },
+          "type": { "enum": ["layers", "flow", "comparison", "topology"] },
           "title": { "type": "string" },
           "description": { "type": "string" },
           "items": {
@@ -87,8 +87,64 @@
               },
               "additionalProperties": false
             }
+          },
+          "nodes": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "object",
+              "required": ["id", "label", "x", "y"],
+              "properties": {
+                "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+                "label": { "type": "string" },
+                "detail": { "type": "string" },
+                "x": { "type": "number" },
+                "y": { "type": "number" },
+                "kind": { "type": "string", "pattern": "^[a-z0-9-]+$" }
+              },
+              "additionalProperties": false
+            }
+          },
+          "edges": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["from", "to"],
+              "properties": {
+                "from": { "type": "string" },
+                "to": { "type": "string" },
+                "label": { "type": "string" },
+                "kind": { "type": "string", "pattern": "^[a-z0-9-]+$" }
+              },
+              "additionalProperties": false
+            }
+          },
+          "zones": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "label", "x", "y", "width", "height"],
+              "properties": {
+                "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+                "label": { "type": "string" },
+                "x": { "type": "number" },
+                "y": { "type": "number" },
+                "width": { "type": "number", "exclusiveMinimum": 0 },
+                "height": { "type": "number", "exclusiveMinimum": 0 },
+                "kind": { "type": "string", "pattern": "^[a-z0-9-]+$" }
+              },
+              "additionalProperties": false
+            }
           }
         },
+        "allOf": [
+          {
+            "if": { "properties": { "type": { "const": "topology" } }, "required": ["type"] },
+            "then": { "required": ["nodes", "edges"] },
+            "else": { "required": ["items"] }
+          }
+        ],
         "additionalProperties": false
       }
     },

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Rekursive und iterative DNS-Auflösung unterscheiden, Forwarder einordnen sowie Cache, TTL und Reverse Lookup korrekt erklären.">
+<title>DNS-Auflösung und Caching nachvollziehen – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=hybrid-1">
+<script defer src="/assets/ap2-space.js?v=hybrid-1"></script>
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="dns-aufloesung-caching" data-progress-id="ga2-3__11" data-content-revision="2026-09-11.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-3">Block N3 · IPv6, DHCP und DNS</a><span class="sep">›</span>
+    <span class="here">DNS-Auflösung und Caching nachvollziehen</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">DNS-Auflösung und Caching nachvollziehen</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 24 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Der Client fragt normalerweise nicht selbst Root-, TLD- und autoritative Server ab. Sein Stub-Resolver übergibt die Aufgabe an einen rekursiven Resolver. Dieser liefert entweder eine gecachte Antwort oder verfolgt die Delegationen der DNS-Hierarchie. Wer diese Rollen trennt, kann Auflösungsfehler gezielt lokalisieren und versteht, warum eine DNS-Änderung nicht überall sofort sichtbar wird.</p>
+<section class="learning-goals" aria-labelledby="dns-aufloesung-caching-goals">
+  <h2 id="dns-aufloesung-caching-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Stub-Resolver, rekursiven Resolver, Forwarder und autoritative Server in einer Namensauflösung korrekt zuordnen</li>
+    <li>Caching und TTL bewerten sowie Forward Lookup und Reverse Lookup voneinander unterscheiden</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Wer erledigt die Arbeit?</h2>
+<section class="quiz" data-quiz="dns-resolution-diagnostic" data-correct="1">
+  <h3>Ein Notebook fragt seinen konfigurierten DNS-Server nach www.example.org. Welche Rolle übernimmt dieser Server typischerweise für den Client?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Der konfigurierte Server kann die Anfrage rekursiv auflösen, ohne für die Zielzone autoritativ zu sein."><span class="m">A</span> Er ist zwingend der autoritative Server für example.org.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Der Client erwartet eine fertige Antwort oder einen Fehler, nicht nur den nächsten Delegationshinweis."><span class="m">B</span> Er arbeitet als rekursiver Resolver oder leitet an einen solchen Forwarder weiter.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="DNS löst Namen auf. Die Weiterleitung von IP-Paketen bleibt Aufgabe des Routings."><span class="m">C</span> Er ersetzt die IP-Routingtabelle des Notebooks.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Ein normaler Namensaufruf ist ein Forward Lookup. Reverse Lookup startet mit einer IP-Adresse."><span class="m">D</span> Er führt immer einen Reverse Lookup aus.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">Zwei Gesprächsarten</span><p>Der Client bittet <strong>rekursiv um das Endergebnis</strong>. Der Resolver folgt bei Bedarf <strong>iterativ den Verweisen</strong> der DNS-Hierarchie.</p></aside><h2 class="sec" id="s2"><span class="num">2</span>Rollen in der Auflösung</h2>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Wer fragt wen?">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-topology" xmlns="http://www.w3.org/2000/svg" width="960" height="500" viewBox="0 0 960 500" role="img" aria-labelledby="diagram-resolution-path-title diagram-resolution-path-desc">
+  <title id="diagram-resolution-path-title">Wer fragt wen?</title>
+  <desc id="diagram-resolution-path-desc">Ein Stub-Resolver fragt einen rekursiven Resolver; dieser folgt Verweisen von Root über TLD zum autoritativen Server und liefert die Antwort zurück.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Wer fragt wen?</tspan></text>
+  <g class="diagram-zone collision"><rect x="24" y="82" width="250" height="350" rx="18"/><text x="40" y="109">Clientseite</text></g><g class="diagram-zone broadcast"><rect x="310" y="82" width="250" height="350" rx="18"/><text x="326" y="109">Rekursive Auflösung</text></g><g class="diagram-zone collision"><rect x="596" y="82" width="340" height="350" rx="18"/><text x="612" y="109">Autoritative Hierarchie</text></g><g class="diagram-edge "><path d="M150 250 L435 250"/><text class="diagram-edge-label" x="292.5" y="242" text-anchor="middle">rekursiv</text></g><g class="diagram-edge "><path d="M435 250 L690 145"/><text class="diagram-edge-label" x="562.5" y="189.5" text-anchor="middle">iterativ</text></g><g class="diagram-edge "><path d="M690 145 L840 250"/><text class="diagram-edge-label" x="765" y="189.5" text-anchor="middle">Delegation</text></g><g class="diagram-edge "><path d="M840 250 L690 355"/><text class="diagram-edge-label" x="765" y="294.5" text-anchor="middle">Delegation</text></g><g class="diagram-edge "><path d="M690 355 L435 250"/><text class="diagram-edge-label" x="562.5" y="294.5" text-anchor="middle">Antwort</text></g><g class="diagram-node client" transform="translate(150 250)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="150" y="245" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="150" dy="0">Stub-Resolver</tspan></text><text class="diagram-node-detail" x="150" y="269" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="150" dy="0">fragt rekursiv</tspan></text><g class="diagram-node router" transform="translate(435 250)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="435" y="245" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="435" dy="0">Resolver</tspan></text><text class="diagram-node-detail" x="435" y="269" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="435" dy="0">rekursiv + Cache</tspan></text><g class="diagram-node server" transform="translate(690 145)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="690" y="140" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="690" dy="0">Root</tspan></text><text class="diagram-node-detail" x="690" y="164" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="690" dy="0">Verweis zur TLD</tspan></text><g class="diagram-node server" transform="translate(840 250)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="840" y="245" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="840" dy="0">TLD</tspan></text><text class="diagram-node-detail" x="840" y="269" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="840" dy="0">Verweis zur Zone</tspan></text><g class="diagram-node server" transform="translate(690 355)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="690" y="350" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="690" dy="0">Autoritativ</tspan></text><text class="diagram-node-detail" x="690" y="374" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="690" dy="0">liefert Datensatz</tspan></text>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Rekursion beschreibt die zugesagte Gesamtleistung gegenüber dem Client, Iteration den schrittweisen Weg durch die Hierarchie.</figcaption>
+</figure><p>Ein <strong>Stub-Resolver</strong> im Endgerät besitzt nur begrenzte Auflösungslogik und fragt den eingestellten DNS-Dienst. Ein <strong>rekursiver Resolver</strong> übernimmt die vollständige Auflösung und betreibt einen Cache. Ein <strong>Forwarder</strong> ist ein festgelegter nächster DNS-Server, an den ein Server nicht lokal beantwortbare Anfragen weitergibt. <strong>Autoritative Server</strong> liefern verbindliche Daten für ihre Zonen; Root- und TLD-Server liefern dabei meist Delegationsinformationen statt der gesuchten Hostadresse.</p>
+<section class="sequence-practice" data-sequence="dns-resolution-practice-sequence" data-expected="stub,delegations,authority,cache" data-correct-feedback="Richtig. Der Client spricht mit seinem Resolver; nur dieser verfolgt hier die Delegationskette." data-wrong-feedback="Beginne beim Stub-Resolver. Caching ist erst möglich, nachdem der autoritative Datensatz ermittelt wurde." aria-labelledby="dns-resolution-practice-sequence-title">
+  <div class="lab-heading"><div><h3 id="dns-resolution-practice-sequence-title">Cache-Miss durchspielen</h3><p>Ordne den vereinfachten Ablauf einer noch nicht gecachten Auflösung.</p></div><span class="lab-tag">Übung</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="authority" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Der zuständige autoritative Server liefert den angefragten Datensatz.</span></li>
+    <li data-step="stub" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Der Stub-Resolver sendet die Anfrage an seinen rekursiven Resolver.</span></li>
+    <li data-step="cache" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Der Resolver speichert die Antwort mit TTL und liefert sie zurück.</span></li>
+    <li data-step="delegations" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Der Resolver folgt den Verweisen von Root und TLD zur Zielzone.</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s3"><span class="num">3</span>Cache, TTL und Änderungen</h2>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Cache-Hit oder Hierarchie?">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="542" viewBox="0 0 960 542" role="img" aria-labelledby="diagram-cache-decision-title diagram-cache-decision-desc">
+  <title id="diagram-cache-decision-title">Cache-Hit oder Hierarchie?</title>
+  <desc id="diagram-cache-decision-desc">Vier Schritte von der DNS-Anfrage über Cacheprüfung und Neuauflösung bis zum Speichern mit TTL.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Cache-Hit oder Hierarchie?</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">1 · Anfrage normalisieren</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Name, Recordtyp und gewünschte Klasse bestimmen</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">2 · Cache prüfen</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">passender Eintrag vorhanden und TTL noch nicht abgelaufen?</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">3 · Bei Miss auflösen</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Delegationen bis zum zuständigen autoritativen Server</tspan><tspan x="178" dy="25">verfolgen</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">4 · Antwort cachen</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Datensatz mit verbleibender TTL speichern und an den Client</tspan><tspan x="178" dy="25">liefern</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Ein gültiger Cache-Hit verkürzt den Weg, ein abgelaufener Eintrag erzwingt eine neue Auflösung.</figcaption>
+</figure><p>Die <strong>TTL</strong> eines Resource Records gibt an, wie lange ein Cache diesen Datensatz verwenden darf. Ein hoher Wert reduziert Abfragen, kann geplante Änderungen aber länger sichtbar verzögern. Ein niedriger Wert erhöht die Abfragelast, ermöglicht nach Ablauf bestehender Cacheeinträge jedoch schnellere Aktualisierung. Vor einer geplanten Umstellung wird die TTL deshalb rechtzeitig gesenkt und danach wieder auf einen passenden Betriebswert erhöht. Bereits gecachte Restlaufzeiten verschwinden dadurch nicht rückwirkend.</p>
+<section class="quiz" data-quiz="dns-ttl-practice" data-correct="0">
+  <h3>Ein A-Record wurde geändert, ein Resolver besitzt aber noch den alten Datensatz mit 900 Sekunden Rest-TTL. Was ist die beste Erklärung?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Die spätere Zonenänderung löscht bereits vorhandene fremde Caches nicht automatisch."><span class="m">A</span> Der Resolver darf den alten Wert bis zum Ablauf seiner Rest-TTL weiterverwenden.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Autoritative Daten können sofort geändert sein, während gültige Cacheeinträge noch bestehen."><span class="m">B</span> DNS liefert grundsätzlich sofort weltweit nur noch den neuen Wert.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Beide heißen TTL, haben aber verschiedene Kontexte. Hier geht es um die Cachegültigkeit des DNS-Datensatzes."><span class="m">C</span> TTL ist die Paketlebensdauer im IP-Header und beendet den DNS-Cache nicht.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Die lokale Clientadresse hat mit der Gültigkeit eines gecachten DNS-Records nichts zu tun."><span class="m">D</span> Der Client muss seine IPv4-Adresse wechseln.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Forward und Reverse Lookup</h2>
+<p>Beim <strong>Forward Lookup</strong> startet die Frage mit einem Namen und sucht beispielsweise über A oder AAAA eine Adresse. Beim <strong>Reverse Lookup</strong> startet sie mit einer IP-Adresse und fragt einen PTR-Record in der umgekehrten Namensstruktur ab. Ein PTR-Record wird in der zuständigen Reverse-Zone gepflegt; er entsteht nicht automatisch aus einem A- oder AAAA-Record. Reverse DNS ersetzt außerdem keine Identitäts- oder Vertrauensprüfung.</p>
+<aside class="callout warn"><span class="lbl">Richtung benennen</span><p>Name → Adresse ist Forward Lookup. Adresse → Name ist Reverse Lookup. Die Rückrichtung ist ein <strong>eigener DNS-Datensatz</strong>, keine automatische Umkehrfunktion.</p></aside><h2 class="sec" id="s5"><span class="num">5</span>Karteikarten und freier Abruf</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="dns-resolution-recursive" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was verspricht ein rekursiver Resolver dem Client?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Er liefert die vollständige Antwort oder einen abschließenden Fehler und übernimmt dafür nötige weitere DNS-Abfragen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="dns-resolution-forwarder" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche Aufgabe hat ein DNS-Forwarder?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Er ist ein festgelegter nächster DNS-Server, an den nicht lokal beantwortbare Anfragen weitergeleitet werden.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="dns-resolution-reverse" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welcher Recordtyp wird für die Auflösung von IP-Adresse zu Name verwendet?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Ein PTR-Record in der passenden Reverse-DNS-Zone.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Rekursiv“:</span><button type="button" data-card-id="dns-resolution-recursive" data-card-rate="known">gewusst</button><button type="button" data-card-id="dns-resolution-recursive" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="dns-resolution-recursive"></span></div>
+<div class="card-rating"><span>Karte „Forwarder“:</span><button type="button" data-card-id="dns-resolution-forwarder" data-card-rate="known">gewusst</button><button type="button" data-card-id="dns-resolution-forwarder" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="dns-resolution-forwarder"></span></div>
+<div class="card-rating"><span>Karte „Reverse Lookup“:</span><button type="button" data-card-id="dns-resolution-reverse" data-card-rate="known">gewusst</button><button type="button" data-card-id="dns-resolution-reverse" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="dns-resolution-reverse"></span></div><section class="recall-practice" data-recall="dns-resolution-core-recall" data-min-length="140" aria-labelledby="dns-resolution-core-recall-title">
+  <div class="recall-prompt"><h3 id="dns-resolution-core-recall-title">Eine Auflösung erzählen</h3><p>Erkläre den Weg einer ungecachten Namensauflösung vom Browser bis zur Antwort. Verwende Stub-Resolver, Recursive Resolver, Root, TLD, autoritativ, Cache und TTL.</p></div>
+  <label class="sr-only" for="dns-resolution-core-recall-answer">Deine Erklärung</label>
+  <textarea id="dns-resolution-core-recall-answer" data-recall-input rows="4" placeholder="Der Browser übergibt …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Der Browser übergibt den Namen an den Stub-Resolver des Betriebssystems. Dieser fragt seinen konfigurierten rekursiven Resolver. Bei einem Cache-Miss folgt der Resolver iterativ den Verweisen von Root und TLD zum autoritativen Server der Zielzone. Den erhaltenen Datensatz speichert er höchstens entsprechend der TTL und liefert ihn an den Client zurück.</div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Lernziel-Check: Transfer</h2>
+<section class="quiz" data-quiz="dns-resolution-transfer-roles" data-correct="0" data-required-objective="resolution-roles">
+  <h3>Ein interner DNS-Server ist für firma.intern autoritativ. Externe Namen sendet er an 10.0.0.53, der die vollständige Auflösung übernimmt. Welche Rolle hat 10.0.0.53 gegenüber dem internen Server?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Der interne Server leitet externe Fragen dorthin weiter, und 10.0.0.53 liefert das Endergebnis."><span class="m">A</span> Forwarder und rekursiver Resolver</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die interne Zone ist bereits auf dem ersten Server autoritativ; 10.0.0.53 wird für andere Namen als Forwarder genutzt."><span class="m">B</span> Root-Server der Zone firma.intern</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein DHCP-Relay transportiert DHCP-Nachrichten über Subnetzgrenzen und ist keine DNS-Rolle."><span class="m">C</span> DHCP-Relay</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="PTR ist ein Datensatztyp und kein Server in der Auflösungskette."><span class="m">D</span> PTR-Record</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="dns-resolution-transfer-cache" data-correct="1" data-required-objective="cache-reverse">
+  <h3>Welche Aussage zu einer geplanten Servermigration ist fachlich korrekt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Bereits gecachte Einträge behalten ihre damalige Restlaufzeit. Die TTL muss rechtzeitig vorher gesenkt werden."><span class="m">A</span> Eine kurz vor dem Wechsel gesenkte TTL löscht alle bereits länger gecachten Antworten sofort.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Richtung, Datensatz und Cachegültigkeit sind sauber getrennt."><span class="m">B</span> Für Adresse zu Name wird ein PTR-Record in der Reverse-Zone benötigt; seine TTL steuert die Cachegültigkeit dieses Records.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Forward- und Reverse-Datensätze werden getrennt gepflegt und können unterschiedliche Zuständigkeiten besitzen."><span class="m">C</span> Ein A-Record erzeugt automatisch überall den passenden PTR-Record.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Das beschreibt die IP-Paket-TTL. Die DNS-TTL betrifft hier die Cachezeit eines Resource Records."><span class="m">D</span> TTL gibt an, wie viele Router ein DNS-Paket durchlaufen darf.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s7"><span class="num">7</span>Quellen und Aktualität</h2>
+<ul>
+<li><strong>IT-Berufe Fachstufe II – Lernfelder 10–12 (2023):</strong> Resolverrollen, DNS-Hierarchie, Cache, Forwarder, Forward-/Reverse-Lookup und ein autoritativer Server ohne Rekursion.</li>
+</ul>
+<p>Die Rollen und Grundprinzipien sind stabil. Konkrete TTL-Werte, Resolverarchitekturen und Transportverfahren hängen von Zone und Betriebskonzept ab. Text, Aufgaben und Diagramme sind eigenständig erstellt; private Buchgrafiken bleiben unveröffentlicht.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-3"><span class="d">zurück zu</span><span class="t">Block N3 · IPv6, DHCP und DNS</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N3 · IPv6, DHCP und DNS</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Wer erledigt die Arbeit?</a></li>
+<li><a href="#s2" data-t="s2">Rollen in der Auflösung</a></li>
+<li><a href="#s3" data-t="s3">Cache, TTL und Änderungen</a></li>
+<li><a href="#s4" data-t="s4">Forward und Reverse Lookup</a></li>
+<li><a href="#s5" data-t="s5">Karteikarten und freier Abruf</a></li>
+<li><a href="#s6" data-t="s6">Lernziel-Check: Transfer</a></li>
+<li><a href="#s7" data-t="s7">Quellen und Aktualität</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-3">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

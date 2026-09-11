@@ -1,0 +1,334 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "dns-recordtypen",
+    "slug": "dns-recordtypen",
+    "title": "DNS-Recordtypen passend auswählen und prüfen",
+    "description": "A, AAAA, CNAME, MX, PTR, NS, SOA, SRV und TXT anhand ihrer RDATA-Rolle auswählen und typische Zonendateifehler erkennen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-3",
+    "groupLabel": "Block N3 · IPv6, DHCP und DNS",
+    "itemId": "ga2-3__9",
+    "week": "KW 37",
+    "estimatedMinutes": 24,
+    "relevance": "hoch",
+    "sources": ["itlf10-12-2023"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "record-select",
+      "label": "für eine konkrete DNS-Anforderung den passenden Recordtyp aus A, AAAA, CNAME, MX, PTR, NS, SOA, SRV und TXT auswählen"
+    },
+    {
+      "id": "record-evaluate",
+      "label": "einen kleinen Zonendatei-Ausschnitt lesen und semantische Fehler bei Alias-, Mail- und Zielnamen begründet korrigieren"
+    }
+  ],
+  "intro": "Ein DNS-Record ist keine freie Schlüssel-Wert-Zeile. Der Typ legt fest, wie die RDATA gelesen wird: als Adresse, Zielname, Mailroute, Zonenmetadaten, Dienstbeschreibung oder Text. Wer zuerst die Anforderung und dann die Rolle des Zielwerts prüft, kann Recordtypen sicher auswählen und Fehler in Zonendateien erklären.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "Chunks itlf10-12-2023:page:0093 und itlf10-12-2023:page:0094",
+        "use": "Zonendatei-Aufbau sowie Rollen von SOA, NS, A und AAAA",
+        "reviewStatus": "OCR und Konfigurationskontext geprüft; Beispielwerte nicht übernommen"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "Chunk itlf10-12-2023:page:0025",
+        "use": "MX-Abfrage zur Ermittlung des zuständigen Mailservers",
+        "reviewStatus": "Die verkürzte Buchaussage wurde fachlich präzisiert: MX verweist auf einen Hostnamen, dessen A-/AAAA-Daten anschließend aufgelöst werden"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "Chunks itlf10-12-2023:page:0071 und itlf10-12-2023:page:0095",
+        "use": "PTR im Reverse-Namensraum sowie NS-Delegation mit erreichbaren Namensserverzielen",
+        "reviewStatus": "Rollen getrennt geprüft; E-Mail-Annahmeversprechen und private Grafiken nicht übernommen"
+      }
+    ],
+    "notes": [
+      "Die Source-Map-Refs itlf10-12-2023:page:0103 und page:0104 behandeln VoIP-Clients; page:0120 behandelt sed und SSH. Sie sind für DNS-Recordtypen sachfremd und wurden ausgeschlossen.",
+      "Der gemappte Chunk page:0094 belegt A und AAAA, aber nicht die vollständige Liste. Die ergänzenden Rollen von CNAME, MX, PTR, NS, SOA, SRV und TXT wurden deshalb als standardstabile DNS-Grundlagen fachlich kuratiert; der Status bleibt CURATED_DRAFT.",
+      "Ein MX-Record enthält keine IP-Adresse als Zielwert, sondern Priorität und Mailserver-Hostname. Die Adresse folgt aus A oder AAAA des Zielhosts.",
+      "Diagramme, Zonendatei, Übungen und Antwortoptionen sind eigenständig erstellt; private Buchgrafiken werden nicht veröffentlicht."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "record-role-map",
+      "type": "layers",
+      "title": "Recordtypen nach der Rolle ihrer RDATA ordnen",
+      "description": "A und AAAA liefern Adressen, CNAME und PTR verweisen auf Namen, MX und SRV beschreiben Dienstziele, NS und SOA steuern Zonen und TXT trägt anwendungsspezifische Textdaten.",
+      "items": [
+        {
+          "label": "A / AAAA",
+          "detail": "Name zu IPv4- beziehungsweise IPv6-Adresse"
+        },
+        {
+          "label": "CNAME / PTR",
+          "detail": "Alias zu kanonischem Namen beziehungsweise Reverse-Name zu Zielnamen"
+        },
+        {
+          "label": "MX / SRV",
+          "detail": "Mailroute beziehungsweise Dienstziel mit Auswahlparametern"
+        },
+        {
+          "label": "NS / SOA",
+          "detail": "autoritative Nameserver beziehungsweise Verwaltungsdaten am Zonenapex"
+        },
+        {
+          "label": "TXT",
+          "detail": "Textstrings; ihre Bedeutung legt die jeweilige Anwendung oder Spezifikation fest"
+        }
+      ]
+    },
+    {
+      "id": "mx-resolution-chain",
+      "type": "flow",
+      "title": "MX liefert einen Namen, erst A oder AAAA liefert die Adresse",
+      "description": "Für Mail an firma.example wird zuerst MX abgefragt. Der niedrigere Präferenzwert bestimmt den bevorzugten Mailserver; dessen Hostname wird anschließend per A oder AAAA in eine Adresse aufgelöst.",
+      "items": [
+        {
+          "label": "Empfängerdomäne",
+          "detail": "Nachricht soll an eine Adresse unter firma.example zugestellt werden"
+        },
+        {
+          "label": "MX-Abfrage",
+          "detail": "firma.example. MX 10 mail.firma.example."
+        },
+        {
+          "label": "A-/AAAA-Abfrage",
+          "detail": "mail.firma.example. wird in eine erreichbare IP-Adresse aufgelöst"
+        },
+        {
+          "label": "Verbindungsziel",
+          "detail": "Der sendende Mailserver verbindet sich mit der ermittelten Adresse"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Was steht wirklich im MX-Record?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "dns-records-diagnostic",
+          "diagnostic": true,
+          "question": "Welche RDATA gehört fachlich in einen MX-Record für firma.example.?",
+          "options": [
+            {
+              "text": "nur die IPv4-Adresse 192.0.2.25",
+              "rationale": "Ein MX-Record verweist nicht direkt auf eine IP-Adresse. Er nennt Präferenz und Hostnamen des Mailservers.",
+              "correct": false
+            },
+            {
+              "text": "10 mail.firma.example.",
+              "rationale": "Richtig. 10 ist der Präferenzwert, mail.firma.example. der Zielhostname, der anschließend per A oder AAAA aufgelöst wird.",
+              "correct": true
+            },
+            {
+              "text": "v=spf1 -all",
+              "rationale": "Das ist der Inhalt einer SPF-Policy in einem TXT-Record, kein Mailserverziel.",
+              "correct": false
+            },
+            {
+              "text": "hostmaster.firma.example. als einziger Wert",
+              "rationale": "Eine administrative Kontaktangabe ist Teil der SOA-RDATA. Sie ersetzt keinen MX-Zielhost.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Record-Leseregel",
+          "markdown": "Lies eine Zeile als **Owner · TTL · Klasse · Typ · RDATA**. Entscheidend für die Auswahl ist: Welche Art von Information erwartet die RDATA dieses Typs?"
+        }
+      ]
+    },
+    {
+      "title": "Die neun Recordrollen trennen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "| Typ | RDATA-Rolle | Typischer Einsatz |\n| --- | --- | --- |\n| A | IPv4-Adresse | `www.firma.example.` zu einer IPv4-Adresse auflösen |\n| AAAA | IPv6-Adresse | denselben Namen zu einer IPv6-Adresse auflösen |\n| CNAME | kanonischer Zielname | einen Alias wie `shop` auf einen anderen Namen verweisen lassen |\n| MX | Präferenz und Mailserver-Hostname | Mailserver für eine Empfängerdomäne auswählen; kleinere Präferenz zuerst |\n| PTR | Zielname | eine Adresse im Reverse-Namensraum einem Namen zuordnen |\n| NS | Nameserver-Hostname | autoritative Server einer Zone nennen oder eine Kindzone delegieren |\n| SOA | Zonenverwaltungsdaten | Zonenapex, primäre Quelle, Kontakt, Serial und Zeitparameter beschreiben |\n| SRV | Priorität, Gewicht, Port und Zielhost | Instanz eines benannten Dienstes auffindbar machen |\n| TXT | ein oder mehrere Textstrings | anwendungsspezifische Nachweise oder Policies veröffentlichen, etwa SPF |"
+        },
+        {
+          "type": "figure",
+          "diagramId": "record-role-map",
+          "alt": "Fünf Gruppen von DNS-Recordtypen: Adressen, Namensverweise, Dienstziele, Zonensteuerung und Textdaten.",
+          "caption": "Eigene Lernskizze: Der Typ bestimmt, ob die RDATA als Adresse, Name, Dienstbeschreibung, Zonenmetadaten oder Text gelesen wird."
+        },
+        {
+          "type": "callout",
+          "kind": "warning",
+          "label": "CNAME ist kein Zusatzfeld",
+          "markdown": "Ein Name mit CNAME ist ein Alias und soll an diesem Owner nicht gleichzeitig weitere normale Daten wie A oder MX tragen. Lege benötigte Adressdaten am kanonischen Zielnamen ab."
+        }
+      ]
+    },
+    {
+      "title": "Beispiel: Eine kleine Zone lesen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Der folgende selbst erstellte Ausschnitt nutzt ausschließlich Dokumentationsadressen. Voll qualifizierte Zielnamen enden mit einem Punkt.\n\n```text\nfirma.example. 3600 IN SOA ns1.firma.example. hostmaster.firma.example. 2026091101 3600 900 1209600 300\nfirma.example. 3600 IN NS ns1.firma.example.\nns1.firma.example. 3600 IN A 192.0.2.53\nwww.firma.example. 3600 IN A 192.0.2.80\nwww.firma.example. 3600 IN AAAA 2001:db8::80\nshop.firma.example. 3600 IN CNAME www.firma.example.\nfirma.example. 3600 IN MX 10 mail.firma.example.\nmail.firma.example. 3600 IN A 192.0.2.25\n_sip._tcp.firma.example. 3600 IN SRV 10 20 5061 sip.firma.example.\nsip.firma.example. 3600 IN A 192.0.2.60\n_service-info.firma.example. 3600 IN TXT \"environment=training\"\n```\n\nDie SOA- und NS-Zeilen beschreiben die Zone. `www` ist dual angebunden. `shop` ist nur ein Alias. MX und SRV nennen jeweils einen Zielhost; dessen Adresse steht in einem eigenen A- oder AAAA-Record. Ein PTR für `192.0.2.80` läge dagegen im Reverse-Namensraum, beispielsweise unter `80.2.0.192.in-addr.arpa.`."
+        },
+        {
+          "type": "figure",
+          "diagramId": "mx-resolution-chain",
+          "alt": "Vierstufiger Ablauf von Empfängerdomäne über MX-Zielhostname und dessen A- oder AAAA-Auflösung bis zur IP-Verbindung.",
+          "caption": "Eigene Lernskizze: MX wählt einen Mailservernamen aus; die Adressauflösung ist ein separater Schritt."
+        }
+      ]
+    },
+    {
+      "title": "Geführte Übung: Drei Zeilen reparieren",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Kollege schlägt für eine Zone diese Zeilen vor:\n\n```text\nportal.firma.example. IN CNAME web.firma.example.\nportal.firma.example. IN A 192.0.2.90\nfirma.example. IN MX 10 192.0.2.25\n```\n\nPrüfe nacheinander: **Welche RDATA erwartet der Typ?** Darf derselbe Owner neben CNAME weitere normale Records tragen? Ist das Ziel selbst wieder auflösbar?"
+        },
+        {
+          "type": "quiz",
+          "id": "dns-records-guided-fix",
+          "question": "Welche Korrektur löst beide semantischen Probleme?",
+          "options": [
+            {
+              "text": "CNAME und A bei portal beibehalten; beim MX nur IN entfernen",
+              "rationale": "Die Klasse IN ist nicht das Problem. Ein CNAME-Owner soll keine parallelen normalen Daten tragen, und MX erwartet weiterhin einen Hostnamen.",
+              "correct": false
+            },
+            {
+              "text": "Den A-Record bei portal entfernen; MX auf mail.firma.example. zeigen lassen und für mail einen A- oder AAAA-Record anlegen",
+              "rationale": "Richtig. portal bleibt reiner Alias, und der MX-Zielhostname wird in einem getrennten Schritt zu einer Adresse aufgelöst.",
+              "correct": true
+            },
+            {
+              "text": "Den CNAME-Zielwert durch 192.0.2.90 ersetzen und den MX unverändert lassen",
+              "rationale": "CNAME erwartet einen kanonischen Namen, keine IP-Adresse. Auch der MX-Zielwert bleibt in dieser Form falsch.",
+              "correct": false
+            },
+            {
+              "text": "Beide Zeilen in TXT umwandeln, weil TXT beliebige Inhalte erlaubt",
+              "rationale": "TXT macht die Daten nicht für Alias- oder Mailrouting-Abfragen nutzbar. Der Recordtyp muss zur gewünschten DNS-Funktion passen.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "dns-address-alias-card",
+              "label": "Adresse oder Alias",
+              "front": "Wann verwendest du A, AAAA und CNAME?",
+              "back": "A liefert eine IPv4-Adresse, AAAA eine IPv6-Adresse. CNAME macht den Owner zum Alias eines kanonischen DNS-Namens; die Adresse liegt am Zielnamen."
+            },
+            {
+              "id": "dns-zone-records-card",
+              "label": "Zonenrecords",
+              "front": "Wie unterscheiden sich NS und SOA?",
+              "back": "NS nennt autoritative Nameserver oder bildet eine Delegation. SOA markiert den Zonenapex und enthält Verwaltungsdaten wie primäre Quelle, Kontakt, Serial und Zeitparameter."
+            },
+            {
+              "id": "dns-service-records-card",
+              "label": "Dienst und Mail",
+              "front": "Welche Felder liefern MX und SRV vor dem eigentlichen Adress-Lookup?",
+              "back": "MX liefert Präferenz und Mailserver-Hostname. SRV liefert Priorität, Gewicht, Port und Zielhost. Beide Zielhosts benötigen anschließend eine Adressauflösung."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "dns-records-recall",
+          "title": "Neun Typen ohne Tabelle abrufen",
+          "prompt": "Nenne für A, AAAA, CNAME, MX, PTR, NS, SOA, SRV und TXT jeweils die Art der RDATA und einen typischen Einsatz. Erkläre zusätzlich die zweistufige MX-Auflösung.",
+          "label": "Deine Record-Übersicht",
+          "placeholder": "A liefert … AAAA liefert …",
+          "minLength": 150,
+          "model": "A und AAAA liefern IPv4- und IPv6-Adressen. CNAME verweist einen Alias auf einen kanonischen Namen. MX nennt Präferenz und Mailserver-Hostname; dessen Adresse folgt per A oder AAAA. PTR verweist im Reverse-Namensraum auf einen Namen. NS nennt autoritative Server, SOA Zonenverwaltungsdaten. SRV nennt Priorität, Gewicht, Port und Zielhost. TXT transportiert anwendungsspezifische Textstrings."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check: Prüfungstransfer",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "dns-records-transfer-select",
+          "requiredObjective": "record-select",
+          "question": "Ein Client soll den TCP-Dienst _sip._tcp.firma.example. mit priorisiertem Zielhost und Port finden. Welcher Recordtyp passt?",
+          "options": [
+            {
+              "text": "SRV, weil dessen RDATA Priorität, Gewicht, Port und Zielhost beschreibt",
+              "rationale": "Richtig. SRV ist für die Auffindbarkeit eines benannten Dienstes mit diesen Auswahl- und Verbindungsdaten vorgesehen.",
+              "correct": true
+            },
+            {
+              "text": "AAAA, weil jeder Dienst zwingend nur eine IPv6-Adresse enthält",
+              "rationale": "AAAA liefert nur eine IPv6-Adresse zu einem Namen. Dienstname, Priorität und Port werden damit nicht beschrieben.",
+              "correct": false
+            },
+            {
+              "text": "SOA, weil jeder Dienst eine eigene Zone eröffnet",
+              "rationale": "SOA beschreibt Verwaltungsdaten einer DNS-Zone, nicht das Verbindungsziel eines Dienstes.",
+              "correct": false
+            },
+            {
+              "text": "PTR, weil ein Dienst immer rückwärts aufgelöst wird",
+              "rationale": "PTR ordnet im Reverse-Namensraum einer Adresse einen Namen zu. Es enthält keine Dienstpriorität oder Portangabe.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "dns-records-transfer-evaluate",
+          "requiredObjective": "record-evaluate",
+          "question": "Welche Zonendatei-Kombination ist semantisch stimmig?",
+          "options": [
+            {
+              "text": "app CNAME web.firma.example. und app A 192.0.2.70 am selben Owner",
+              "rationale": "Ein CNAME-Owner soll keine parallelen normalen Daten tragen. Die Adresse gehört an den kanonischen Zielnamen.",
+              "correct": false
+            },
+            {
+              "text": "firma.example. MX 10 mail.firma.example. und mail.firma.example. A 192.0.2.25",
+              "rationale": "Richtig. MX nennt Präferenz und Zielhostname; der getrennte A-Record macht diesen Host erreichbar.",
+              "correct": true
+            },
+            {
+              "text": "firma.example. MX 192.0.2.25 und mail.firma.example. TXT 10",
+              "rationale": "MX benötigt Präferenz und Hostnamen. Eine IP als MX-Ziel und eine ausgelagerte Präferenz im TXT-Record erfüllen die Semantik nicht.",
+              "correct": false
+            },
+            {
+              "text": "www.firma.example. AAAA 192.0.2.80 und www.firma.example. A 2001:db8::80",
+              "rationale": "Die Adressfamilien sind vertauscht: A enthält IPv4, AAAA enthält IPv6.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Geltungsbereich",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **IT-Berufe Fachstufe II – Lernfelder 10–12 (2023):** Zonendatei mit SOA, NS, A und AAAA sowie Kontexte für MX, PTR und Delegation.\n\nDie Einheit erklärt die stabile Kernsemantik der Recordtypen. Konkrete Provider-Vorgaben, dynamische Updates, DNSSEC-Signaturrecords und vollständige BIND-Syntax liegen außerhalb dieses Kernthemas. Beispiele und Diagramme sind eigenständig erstellt."
+        }
+      ]
+    }
+  ]
+}

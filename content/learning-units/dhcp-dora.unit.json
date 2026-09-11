@@ -1,0 +1,330 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "dhcp-dora",
+    "slug": "dhcp-dora",
+    "title": "DHCP-DORA lesen und sicher erklären",
+    "description": "Discover, Offer, Request und Acknowledge in die richtige Reihenfolge bringen und Broadcast- beziehungsweise Unicast-Beobachtungen fachlich einordnen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-3",
+    "groupLabel": "Block N3 · IPv6, DHCP und DNS",
+    "itemId": "ga2-3__5",
+    "week": "KW 37",
+    "estimatedMinutes": 18,
+    "relevance": "hoch",
+    "sources": ["itlf10-12-2023"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "dora-sequence",
+      "label": "die vier DORA-Nachrichten ordnen und den Zweck jeder Nachricht aus Client- und Serversicht erklären"
+    },
+    {
+      "id": "packet-behavior",
+      "label": "Broadcast- und Unicast-Verhalten eines DHCP-Mitschnitts ohne unzulässige Verallgemeinerung begründen"
+    }
+  ],
+  "intro": "DORA ist keine bloße Buchstabenfolge. Die vier Nachrichten lösen nacheinander vier Probleme: Server finden, Konfiguration anbieten, ein Angebot auswählen und die Lease bestätigen. Wer zusätzlich den Zustand des Clients betrachtet, kann auch Paketziele im Mitschnitt sinnvoll erklären.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seite 74, Chunk itlf10-12-2023:page:0074",
+        "use": "Explizite DORA-Reihenfolge Discover, Offer, Request und Acknowledge im DHCP-/PXE-Kontext",
+        "reviewStatus": "DORA-Ablauf geprüft; themenfremder VoIP- und PXE-Folgeinhalt nicht übernommen"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seite 75, Chunk itlf10-12-2023:page:0075",
+        "use": "Ein konkreter Wireshark-Mitschnitt mit Broadcastzielen für die vier beobachteten DORA-Nachrichten",
+        "reviewStatus": "als Einzelfall eingeordnet; OCR-beschädigte Quelladressen und PXE-Folgeschritte ausgeschlossen"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seite 11, Chunk itlf10-12-2023:page:0011",
+        "use": "Abgrenzung des späteren Renewals per direktem Request vom initialen DORA-Ablauf",
+        "reviewStatus": "nur die belegte Unicast-/Broadcast-Unterscheidung der Lease-Verlängerung genutzt"
+      }
+    ],
+    "notes": [
+      "Der Source-Map-Treffer itlf10-12-2023:page:0008 ist lediglich eine Kapitelübersicht mit dem Stichwort DORA und fachlich zu schwach; er wurde ausgeschlossen.",
+      "Die auf PDF-Seite 75 sichtbaren Broadcastziele beschreiben einen konkreten Mitschnitt. Offer und Acknowledge können abhängig von Clientzustand, Flags, Relay und Implementierung auch anders zugestellt werden; die Einheit macht daraus keine starre Regel.",
+      "Die private Layoutgrafik itlf10-12-2023:layout:0075:01@p75 wird nicht veröffentlicht; beide Diagramme sind eigenständig erstellt."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "dora-flow",
+      "type": "flow",
+      "title": "DORA als vier Entscheidungen",
+      "description": "Der Client startet ohne gültige Lease und endet mit bestätigter Konfiguration.",
+      "items": [
+        {
+          "label": "Discover · Wer kann mich konfigurieren?",
+          "detail": "Der Client sucht erreichbare DHCP-Server, zunächst ohne nutzbare eigene Konfiguration."
+        },
+        {
+          "label": "Offer · Das kann ich anbieten",
+          "detail": "Ein Server schlägt eine Adresse, Lease und weitere Parameter vor."
+        },
+        {
+          "label": "Request · Dieses Angebot wähle ich",
+          "detail": "Der Client fordert die ausgewählte Konfiguration an und macht seine Wahl sichtbar."
+        },
+        {
+          "label": "Acknowledge · Die Lease gilt",
+          "detail": "Der ausgewählte Server bestätigt die Zuweisung und die übermittelten Parameter."
+        }
+      ]
+    },
+    {
+      "id": "dora-observation",
+      "type": "comparison",
+      "title": "Paketbeobachtung und fachliche Aussage trennen",
+      "description": "Die Zieladresse im Mitschnitt hängt nicht nur vom Nachrichtennamen ab, sondern auch von Phase, Flags und Netzaufbau.",
+      "items": [
+        {
+          "label": "Discover · typischer Start als Broadcast",
+          "detail": "Der Client kennt den Server noch nicht und besitzt zu Beginn häufig keine verwendbare IP-Konfiguration."
+        },
+        {
+          "label": "Initialer Request · typischerweise Broadcast",
+          "detail": "Bei der Auswahl eines Offers können auch andere anbietende Server die Entscheidung erkennen."
+        },
+        {
+          "label": "Offer und ACK · Zustellung variabel",
+          "detail": "Broadcast oder Unicast hängt unter anderem von Clientzustand, Broadcast-Flag und Relaypfad ab."
+        },
+        {
+          "label": "Renewal · nicht erneut vollständiges DORA",
+          "detail": "Ein Client versucht die Verlängerung zunächst direkt beim bisherigen Server per Request."
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Wer entscheidet wann?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "dora-diagnostic",
+          "diagnostic": true,
+          "question": "Welche DHCP-Nachricht zeigt im initialen Ablauf, welches Angebot der Client anfordert?",
+          "options": [
+            {
+              "text": "Discover",
+              "rationale": "Discover sucht zunächst nach verfügbaren Servern; ein konkretes Angebot ist noch nicht ausgewählt.",
+              "correct": false
+            },
+            {
+              "text": "Offer",
+              "rationale": "Offer stammt vom Server und schlägt eine Konfiguration vor. Die Auswahl trifft anschließend der Client.",
+              "correct": false
+            },
+            {
+              "text": "Request",
+              "rationale": "Richtig. Mit Request fordert der Client das ausgewählte Angebot an.",
+              "correct": true
+            },
+            {
+              "text": "Acknowledge",
+              "rationale": "Acknowledge bestätigt die Anforderung erst im letzten Schritt.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "DORA als Dialog",
+          "markdown": "Client **entdeckt**, Server **bietet**, Client **fordert**, Server **bestätigt**. Damit bleiben Richtung und Zweck zusammen im Gedächtnis."
+        }
+      ]
+    },
+    {
+      "title": "Die vier Nachrichten verstehen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**Discover:** Der noch unkonfigurierte Client sucht einen DHCP-Server. **Offer:** Ein Server bietet eine noch zu bestätigende Konfiguration an. **Request:** Der Client fordert ein ausgewähltes Angebot an. **Acknowledge:** Der ausgewählte Server bestätigt Lease und Optionen; erst jetzt übernimmt der Client die Konfiguration regulär.\n\nMehrere Server dürfen auf ein Discover antworten. Deshalb ist Offer noch keine endgültige Zuweisung. Der initiale Request ist außerdem nicht mit einem späteren Renewal-Request gleichzusetzen: Beim Renewal kennt der Client seine Adresse und den bisherigen Server bereits."
+        },
+        {
+          "type": "figure",
+          "diagramId": "dora-flow",
+          "alt": "Vierstufiger Ablauf von DHCP Discover über Offer und Request bis Acknowledge, jeweils mit der Entscheidung von Client oder Server.",
+          "caption": "Eigene Lernskizze: Jede Nachricht beantwortet genau eine offene Frage des Vergabeprozesses."
+        }
+      ]
+    },
+    {
+      "title": "Geführte Übung: Ablauf rekonstruieren",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "dora-sequence-transfer",
+          "requiredObjective": "dora-sequence",
+          "title": "Vier Nachrichten richtig ordnen",
+          "prompt": "Ein neuer Client startet ohne Lease. Bringe Nachrichten und Zweck in die richtige zeitliche Reihenfolge.",
+          "tag": "Pflichtnachweis",
+          "steps": [
+            {
+              "id": "dora-discover",
+              "label": "Discover: Der Client sucht erreichbare DHCP-Server."
+            },
+            {
+              "id": "dora-offer",
+              "label": "Offer: Ein Server schlägt Konfiguration und Lease vor."
+            },
+            {
+              "id": "dora-request",
+              "label": "Request: Der Client fordert das ausgewählte Angebot an."
+            },
+            {
+              "id": "dora-ack",
+              "label": "Acknowledge: Der Server bestätigt die Zuweisung."
+            }
+          ],
+          "expected": ["dora-discover", "dora-offer", "dora-request", "dora-ack"],
+          "correctFeedback": "Richtig: Suchen, anbieten, auswählen und bestätigen bilden den initialen DORA-Ablauf.",
+          "wrongFeedback": "Ordne nach den offenen Fragen: Server finden → Angebot erhalten → Angebot anfordern → Lease bestätigen."
+        },
+        {
+          "type": "quiz",
+          "id": "dora-missing-message-practice",
+          "question": "Im Mitschnitt folgen auf Discover zwei Offers. Danach erscheint ein Request des Clients. Warum ist das plausibel?",
+          "options": [
+            {
+              "text": "Der Client fordert damit eines der Angebote an; Offer allein war noch keine endgültige Lease.",
+              "rationale": "Richtig. Der Request dokumentiert die Auswahl, bevor der Server sie bestätigt.",
+              "correct": true
+            },
+            {
+              "text": "Der Client muss beide angebotenen Adressen gleichzeitig verwenden.",
+              "rationale": "Der initiale Ablauf zielt auf eine ausgewählte Konfiguration, nicht auf zwei parallele Leases derselben Schnittstelle.",
+              "correct": false
+            },
+            {
+              "text": "Jedes Offer ist bereits ein Acknowledge.",
+              "rationale": "Offer und Acknowledge haben unterschiedliche Rollen: Vorschlag gegenüber Bestätigung.",
+              "correct": false
+            },
+            {
+              "text": "Request wird ausschließlich von DHCP-Servern gesendet.",
+              "rationale": "Im DORA-Ablauf sendet der Client den Request.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Broadcast und Unicast im Mitschnitt",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein initiales Discover wird typischerweise als lokaler Broadcast gesendet: Der Client kennt noch keinen DHCP-Server und hat häufig noch keine nutzbare Adresse. Der initiale Request wird typischerweise ebenfalls breit sichtbar gesendet, damit anbietende Server die Auswahl erkennen können.\n\nFür Offer und Acknowledge ist die Aussage nicht so starr. Ob eine Antwort als Broadcast oder Unicast erscheint, hängt vom Zustand und den Fähigkeiten des Clients, gesetzten Flags, einem möglichen Relay und der konkreten Implementierung ab. Ein einzelner Mitschnitt, in dem alle vier Nachrichten an 255.255.255.255 gehen, beweist deshalb nicht, dass dies immer so sein muss."
+        },
+        {
+          "type": "figure",
+          "diagramId": "dora-observation",
+          "alt": "Vier Vergleichskarten unterscheiden typischen Broadcast bei Discover und initialem Request, variables Verhalten bei Offer und Acknowledge sowie späteres Unicast-Renewal.",
+          "caption": "Eigene Lernskizze: Nachrichtenzweck ist stabil; die konkrete Zustellung kann vom Zustand abhängen."
+        },
+        {
+          "type": "callout",
+          "kind": "warning",
+          "label": "DORA nicht mit Renewal vermischen",
+          "markdown": "Nach T1 versucht ein Client die bestehende Lease zunächst mit einem **Request direkt an den bisherigen Server** zu verlängern. Das ist kein neuer vollständiger Discover–Offer–Request–Acknowledge-Durchlauf."
+        }
+      ]
+    },
+    {
+      "title": "Beispiel: Mitschnitt fachlich kommentieren",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Capture zeigt Discover, Offer, Request und ACK jeweils mit dem Ziel 255.255.255.255. Eine gute Auswertung lautet: Der Client startete ohne bestätigte Konfiguration; der beobachtete Ablauf verwendete Broadcastzustellung. Discover suchte Server, Offer schlug eine Konfiguration vor, Request wählte sie aus und ACK bestätigte die Lease.\n\nEine zu starke Auswertung wäre: „ACK ist bei DHCP immer Broadcast.“ Das Capture belegt nur diesen Ablauf. Für eine belastbare Diagnose prüfst du zusätzlich Broadcast-Flag, Clientzustand, Relaypfad und Serverkonfiguration."
+        },
+        {
+          "type": "quiz",
+          "id": "packet-behavior-transfer",
+          "requiredObjective": "packet-behavior",
+          "question": "Ein Wireshark-Capture zeigt ein DHCP-Acknowledge als Broadcast. Welche Schlussfolgerung ist fachlich am stärksten?",
+          "options": [
+            {
+              "text": "Acknowledge muss laut DORA ausnahmslos Broadcast sein.",
+              "rationale": "Die DORA-Reihenfolge legt den Zweck fest, aber nicht für jede Situation dieselbe Zustellart.",
+              "correct": false
+            },
+            {
+              "text": "In diesem Ablauf wurde das Acknowledge als Broadcast zugestellt; für die Ursache müssen Clientzustand, Flags und Netzpfad geprüft werden.",
+              "rationale": "Richtig. Das beschreibt die Beobachtung, ohne sie unzulässig zu verallgemeinern.",
+              "correct": true
+            },
+            {
+              "text": "Der Client hatte damit zwingend schon vor Discover eine gültige Lease.",
+              "rationale": "Ein Broadcast-ACK beweist keine zuvor gültige Lease.",
+              "correct": false
+            },
+            {
+              "text": "Der DHCP-Server und der Client müssen im selben Subnetz stehen.",
+              "rationale": "Ein Relay kann DHCP über Subnetzgrenzen vermitteln; die sichtbare Zustellung allein beweist die Topologie nicht.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "dora-four-steps",
+              "label": "Vier Schritte",
+              "front": "Wofür stehen die vier Buchstaben DORA?",
+              "back": "Discover, Offer, Request und Acknowledge."
+            },
+            {
+              "id": "dora-offer-vs-ack",
+              "label": "Offer und ACK",
+              "front": "Warum ist ein Offer noch keine endgültig bestätigte Lease?",
+              "back": "Es ist zunächst ein Servervorschlag. Der Client fordert ein Angebot per Request an; erst Acknowledge bestätigt die Zuweisung."
+            },
+            {
+              "id": "dora-broadcast-caveat",
+              "label": "Zustellart",
+              "front": "Was darfst du aus einem Broadcast-Offer oder -ACK im Mitschnitt schließen?",
+              "back": "Dass diese Nachricht in genau diesem Ablauf als Broadcast zugestellt wurde; nicht, dass dieser Nachrichtentyp immer Broadcast sein muss."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "dora-free-recall",
+          "title": "DORA ohne Kürzel erklären",
+          "prompt": "Erzähle den initialen DHCP-Ablauf als Dialog zwischen Client und Server. Ergänze, welche Broadcast-/Unicast-Aussage du sicher treffen kannst und wo du vorsichtig bleiben musst.",
+          "label": "Deine Erklärung",
+          "placeholder": "Der Client beginnt mit …",
+          "minLength": 110,
+          "model": "Der Client sucht per Discover nach Servern. Ein Server bietet per Offer eine Konfiguration an. Der Client fordert mit Request das ausgewählte Angebot an, der Server bestätigt es mit Acknowledge. Discover und initialer Request sind typischerweise Broadcast. Offer und ACK können je nach Zustand, Flags, Relay und Implementierung als Broadcast oder Unicast zugestellt werden; ein Capture zeigt nur den konkreten Fall."
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **IT-Berufe Fachstufe II – Lernfelder 10–12 (2023), PDF-Seiten 74–75:** DORA-Abfolge und konkreter DHCP-Mitschnitt.\n- **Dieselbe Quelle, PDF-Seite 11:** Abgrenzung des späteren Renewal-Requests.\n\nDie private Mitschnittgrafik wurde nicht übernommen. Ablaufgrafiken, Fragen und Fehlfeedback sind eigenständig erstellt."
+        }
+      ]
+    }
+  ]
+}

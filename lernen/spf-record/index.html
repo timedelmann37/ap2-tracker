@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="SPF als TXT-Policy für MAIL-FROM- und HELO-Identitäten auswerten, typische Syntaxfehler erkennen und Grenzen gegenüber DKIM und DMARC erklären.">
+<title>SPF-Policies lesen, prüfen und sicher planen – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=hybrid-1">
+<script defer src="/assets/ap2-space.js?v=hybrid-1"></script>
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="spf-record" data-progress-id="ga2-3__10" data-content-revision="2026-09-11.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-3">Block N3 · IPv6, DHCP und DNS</a><span class="sep">›</span>
+    <span class="here">SPF-Policies lesen, prüfen und sicher planen</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">SPF-Policies lesen, prüfen und sicher planen</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 25 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>SPF veröffentlicht im DNS, welche sendenden Hosts eine Domäne in der SMTP-Identität MAIL FROM oder HELO verwenden dürfen. Das ist eine Autorisierungsprüfung für den sendenden Host, kein allgemeines Echtheitssiegel für die sichtbare From-Adresse und keine Zustellgarantie. Eine belastbare Lösung beginnt deshalb mit der Syntax und endet mit einer nüchternen Grenzbetrachtung.</p>
+<section class="learning-goals" aria-labelledby="spf-record-goals">
+  <h2 id="spf-record-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>eine SPF-Policy von links nach rechts auswerten und für einen gegebenen sendenden Host das resultierende Pass-, Fail- oder Softfail-Ergebnis begründen</li>
+    <li>aus vollständig genannten Versandwegen eine minimale SPF-Policy ableiten und ihre Grenzen, DNS-Abhängigkeiten sowie das Zusammenspiel mit DKIM und DMARC erklären</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Was beweist ein SPF-Pass?</h2>
+<section class="quiz" data-quiz="spf-diagnostic" data-correct="1">
+  <h3>Was bedeutet ein SPF-Pass fachlich am genauesten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="SPF bewertet eine Senderautorisierung. Inhaltssicherheit und Zustellung hängen von weiteren Prüfungen und lokaler Policy ab."><span class="m">A</span> Die gesamte Nachricht ist garantiert ungefährlich und wird zugestellt</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. SPF bindet die Client-IP an eine SMTP-Identität; es bewertet nicht automatisch die sichtbare From-Adresse."><span class="m">B</span> Der sendende Host ist für die geprüfte MAIL-FROM- oder HELO-Domäne autorisiert</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Eine kryptografische Nachrichtensignatur ist Aufgabe von DKIM, nicht von SPF."><span class="m">C</span> Die sichtbare From-Adresse wurde kryptografisch signiert</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="SPF liefert ein Ergebnis. Wie der Empfänger es behandelt, bestimmt seine lokale und gegebenenfalls DMARC-bezogene Policy."><span class="m">D</span> Der empfangende Server muss die Nachricht zwingend annehmen</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">Präzise Aussage</span><p>SPF prüft: <strong>Darf dieser sendende Host diese SMTP-Domäne verwenden?</strong> Es prüft nicht: <strong>Ist jeder sichtbare Absender und jeder Inhalt echt?</strong></p></aside><h2 class="sec" id="s2"><span class="num">2</span>Syntax und Auswertung</h2>
+<p>Eine SPF-Version-1-Policy steht als Text in <strong>einem DNS-TXT-Record</strong> am Namen der zu prüfenden Domäne. Sie beginnt mit <code>v=spf1</code>. Danach folgen durch Leerzeichen getrennte Mechanismen und gegebenenfalls Modifier. Mechanismen werden von links nach rechts ausgewertet; beim ersten Treffer endet die Auswertung.</p>
+<div class="twrap"><table class="knowledge-table">
+<thead>
+<tr>
+<th>Baustein</th>
+<th>Bedeutung</th>
+<th>DNS-Abfrage während der Auswertung?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ip4:192.0.2.0/24</code></td>
+<td>autorisiert diesen IPv4-Adressbereich</td>
+<td>nein</td>
+</tr>
+<tr>
+<td><code>ip6:2001:db8:1200::/48</code></td>
+<td>autorisiert diesen IPv6-Adressbereich</td>
+<td>nein</td>
+</tr>
+<tr>
+<td><code>a</code></td>
+<td>prüft Adressen des angegebenen oder aktuellen Namens</td>
+<td>ja</td>
+</tr>
+<tr>
+<td><code>mx</code></td>
+<td>prüft Adressen der MX-Ziele</td>
+<td>ja</td>
+</tr>
+<tr>
+<td><code>include:_spf.mailhost.example</code></td>
+<td>übernimmt ein Pass der referenzierten Policy als Treffer</td>
+<td>ja</td>
+</tr>
+<tr>
+<td><code>all</code></td>
+<td>trifft immer und gehört deshalb typischerweise ans Ende</td>
+<td>nein</td>
+</tr>
+</tbody></table></div>
+<p>Der Qualifier steht direkt vor dem Mechanismus. <code>+</code> bedeutet Pass und ist ohne Zeichen der Standard. <code>-</code> bedeutet Fail, <code>~</code> Softfail und <code>?</code> Neutral. Darum ist <code>+all</code> fast immer ein grober Fehler: Jeder Host trifft mit Pass.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: SPF liefert ein Autorisierungsergebnis, keine Zustellentscheidung">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="542" viewBox="0 0 960 542" role="img" aria-labelledby="diagram-spf-evaluation-title diagram-spf-evaluation-desc">
+  <title id="diagram-spf-evaluation-title">SPF liefert ein Autorisierungsergebnis, keine Zustellentscheidung</title>
+  <desc id="diagram-spf-evaluation-desc">Vierstufiger Ablauf von SMTP-Identität und Client-IP über SPF-TXT und links-nach-rechts ausgewertete Mechanismen zum SPF-Ergebnis.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">SPF liefert ein Autorisierungsergebnis, keine</tspan><tspan x="42" dy="25">Zustellentscheidung</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">SMTP-Identität und Client-IP</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">MAIL FROM, ersatzweise oder zusätzlich HELO, plus IP des</tspan><tspan x="178" dy="25">sendenden Hosts</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">SPF-TXT am Ownernamen</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Die Policy beginnt mit v=spf1 und gilt für genau diese</tspan><tspan x="178" dy="25">DNS-Domäne</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Erster passender Mechanismus</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Auswertung von links nach rechts; der Qualifier bestimmt das</tspan><tspan x="178" dy="25">Ergebnis</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">SPF-Ergebnis</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">zum Beispiel Pass, Fail oder Softfail; weitere Mailpolicy</tspan><tspan x="178" dy="25">entscheidet über Behandlung</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Das Ergebnis fließt in weitere Richtlinien ein; es ist noch keine Garantie für Annahme oder Zustellung.</figcaption>
+</figure><aside class="callout warn"><span class="lbl">Owner und Identität</span><p>Frage die Policy für die tatsächlich geprüfte <strong>MAIL-FROM-Domäne</strong> ab, nicht pauschal für den sichtbaren From-Header. Für HELO kann eine eigene SPF-Prüfung stattfinden.</p></aside><h2 class="sec" id="s3"><span class="num">3</span>Durchgearbeitetes Beispiel</h2>
+<p>Für <code>firma.example.</code> seien genau zwei Versandwege bekannt: das eigene Gateway im Dokumentationsnetz <code>192.0.2.0/24</code> und ein externer Dienst mit der Beispielpolicy <code>_spf.mailhost.example.</code>. Eine dazu passende Übungspolicy lautet:</p>
+<pre><code class="language-text">firma.example. IN TXT &quot;v=spf1 ip4:192.0.2.0/24 include:_spf.mailhost.example -all&quot;
+</code></pre>
+<ol>
+<li>Ein Client mit <code>192.0.2.25</code> trifft auf <code>ip4</code> und erhält <strong>Pass</strong>.</li>
+<li>Ein anderer Client kann durch <code>include</code> Pass erhalten, wenn die referenzierte Policy für ihn Pass liefert.</li>
+<li>Jeder bis dahin nicht passende Host trifft auf <code>-all</code> und erhält <strong>Fail</strong>. Das schreibt nicht automatisch eine bestimmte Zustellaktion vor.</li>
+</ol>
+<p>Die Policy ist nur solange betrieblich richtig, wie die tatsächlichen Versandwege dieser Inventarliste entsprechen. Wird ein Newsletter-Dienst ergänzt, muss die Policy geplant geändert werden; ein ungeprüft kopierter Provider-Include ist keine dauerhafte Wahrheit.</p>
+<section class="quiz" data-quiz="spf-example-practice" data-correct="0">
+  <h3>Was geschieht bei der Beispielpolicy mit Client 198.51.100.44, wenn auch die include-Policy für ihn nicht Pass liefert?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Weder ip4 noch include trifft mit Pass; der abschließende Mechanismus all trifft immer und trägt den Fail-Qualifier."><span class="m">A</span> Er erreicht -all und das SPF-Ergebnis ist Fail</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="include autorisiert nicht beliebige externe Hosts. Es trifft nur, wenn die referenzierte SPF-Auswertung Pass ergibt."><span class="m">B</span> Er erhält Pass, weil ein include jeden externen Provider pauschal zulässt</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="SPF wertet Mechanismen von links nach rechts aus. Das Minus vor all erzeugt Fail, nicht Pass."><span class="m">C</span> Die Auswertung beginnt erneut von rechts und trifft zuerst -all als Pass</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="DKIM ist ein getrenntes Verfahren. Eine SPF-Auswertung erzeugt keine Signatur."><span class="m">D</span> Die sichtbare From-Adresse wird automatisch mit DKIM signiert</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Grenzen, Lookup-Budget und Zusammenspiel</h2>
+<p>SPF begrenzt die während einer Auswertung DNS-auslösenden Terms auf <strong>zehn</strong>. Dazu zählen <code>include</code>, <code>a</code>, <code>mx</code>, <code>ptr</code>, <code>exists</code> und der Modifier <code>redirect</code>; auch rekursive Auswertungen fließen in dasselbe Gesamtbudget ein. <code>ip4</code>, <code>ip6</code> und <code>all</code> lösen bei der Auswertung selbst keinen DNS-Lookup aus. Wird das Limit überschritten, entsteht ein <strong>PermError</strong>.</p>
+<p>Das ist kein Zielwert, den man ausreizen sollte. Kurze, nachvollziehbare Policies sind leichter zu betreiben. Vor jeder Änderung gehören alle legitimen Versandwege in eine aktuelle Inventarliste. Danach werden Syntax, DNS-Antworten, Lookup-Budget und ein sicherer Übergang geprüft. Auch ein korrektes SPF-Ergebnis ist nur ein Signal: Weiterleitungssysteme können die SMTP-Identität verändern, und die sichtbare From-Domäne kann abweichen.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: SPF, DKIM und DMARC beantworten verschiedene Fragen">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-mail-auth-boundaries-title diagram-mail-auth-boundaries-desc">
+  <title id="diagram-mail-auth-boundaries-title">SPF, DKIM und DMARC beantworten verschiedene Fragen</title>
+  <desc id="diagram-mail-auth-boundaries-desc">Drei Vergleichskarten: SPF autorisiert sendende Hosts für SMTP-Domänen, DKIM prüft eine Domänensignatur, DMARC verlangt Alignment zur sichtbaren From-Domäne und veröffentlicht Policy.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">SPF, DKIM und DMARC beantworten verschiedene Fragen</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">SPF</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">Darf diese Client-IP die</tspan><tspan x="64" dy="30">MAIL-FROM- oder HELO-Domäne</tspan><tspan x="64" dy="30">verwenden?</tspan></text></g><g><rect class="diagram-row" x="340" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="362" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="362" dy="0">DKIM</tspan></text><text x="362" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="362" dy="0">Verifiziert eine</tspan><tspan x="362" dy="30">DNS-gestützte</tspan><tspan x="362" dy="30">Domänensignatur über</tspan></text></g><g><rect class="diagram-row" x="638" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="660" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="660" dy="0">DMARC</tspan></text><text x="660" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="660" dy="0">Ist SPF oder DKIM</tspan><tspan x="660" dy="30">erfolgreich zur sichtbaren</tspan><tspan x="660" dy="30">From-Domäne ausgerichtet,</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Die Verfahren ergänzen sich, aber keines macht allein jede Nachricht vertrauenswürdig.</figcaption>
+</figure><aside class="callout merk"><span class="lbl">Knapp abgegrenzt</span><p><strong>DKIM</strong> signiert ausgewählte Header und den Body im Namen einer Domäne. <strong>DMARC</strong> verlangt, dass ein erfolgreiches SPF- oder DKIM-Ergebnis zur sichtbaren From-Domäne ausgerichtet ist, und veröffentlicht Policy sowie Reporting.</p></aside><h2 class="sec" id="s5"><span class="num">5</span>Geführte Übung: Eine Policy planen</h2>
+<section class="sequence-practice" data-sequence="spf-planning-sequence" data-expected="inventory,compose,validate,publish,monitor" data-correct-feedback="Richtig. Erst die reale Senderlandschaft erfassen, dann eine kleine Policy entwerfen, technisch prüfen, kontrolliert veröffentlichen und weiter beobachten." data-wrong-feedback="Veröffentliche nicht vor der Inventur. Ein formal richtiger -all-Abschluss kann legitime Versandwege mit Fail bewerten, wenn sie vorher vergessen wurden." aria-labelledby="spf-planning-sequence-title">
+  <div class="lab-heading"><div><h3 id="spf-planning-sequence-title">Bringe die Änderung in eine betriebssichere Reihenfolge</h3><p>Die Firma ergänzt zu ihrem Gateway einen externen Newsletter-Dienst. Ordne die Schritte für die SPF-Änderung.</p></div><span class="lab-tag">Geführte Übung</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="publish" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Die geprüfte Einzelpolicy mit geplantem Übergang veröffentlichen</span></li>
+    <li data-step="inventory" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Alle aktuellen legitimen Versandwege und verwendeten MAIL-FROM-/HELO-Domänen inventarisieren</span></li>
+    <li data-step="monitor" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Ergebnisse und legitime Fehlfälle beobachten und die Inventarliste aktuell halten</span></li>
+    <li data-step="compose" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Mechanismen minimal zusammensetzen und einen bewussten Abschlussqualifier wählen</span></li>
+    <li data-step="validate" tabindex="-1"><span class="step-position" data-step-position>5</span><span>Syntax, genau einen SPF-Record, DNS-Antworten und das DNS-Term-Budget prüfen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><p><strong>Prüfungsargument:</strong> Ein strenger Abschluss wie <code>-all</code> ist nur dann fachlich begründbar, wenn alle legitimen Sender vollständig erfasst sind. <code>~all</code> liefert dagegen Softfail, repariert aber keine unvollständige Inventur. Die Behandlung beider Ergebnisse bleibt Sache des empfangenden Systems und gegebenenfalls der DMARC-Policy.</p>
+<h2 class="sec" id="s6"><span class="num">6</span>Karteikarten und freier Abruf</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="spf-identity-card" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche Identitäten prüft SPF und welche nicht automatisch?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>SPF prüft die MAIL-FROM-Domäne und kann die HELO-Domäne separat prüfen. Der sichtbare From-Header ist nicht automatisch die SPF-Identität.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="spf-qualifier-card" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was bedeuten +, -, ~ und ? vor einem SPF-Mechanismus?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>+ ergibt Pass und ist der Standard ohne Zeichen; - ergibt Fail, ~ Softfail und ? Neutral. Der Qualifier des ersten passenden Mechanismus bestimmt das Ergebnis.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="spf-lookup-card" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche häufigen SPF-Bausteine zählen zum Limit von zehn DNS-auslösenden Terms?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Unter anderem include, a und mx; außerdem ptr, exists und redirect. ip4, ip6 und all lösen bei der Auswertung selbst keinen DNS-Lookup aus.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Geprüfte Identität“:</span><button type="button" data-card-id="spf-identity-card" data-card-rate="known">gewusst</button><button type="button" data-card-id="spf-identity-card" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="spf-identity-card"></span></div>
+<div class="card-rating"><span>Karte „Qualifier“:</span><button type="button" data-card-id="spf-qualifier-card" data-card-rate="known">gewusst</button><button type="button" data-card-id="spf-qualifier-card" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="spf-qualifier-card"></span></div>
+<div class="card-rating"><span>Karte „DNS-Term-Limit“:</span><button type="button" data-card-id="spf-lookup-card" data-card-rate="known">gewusst</button><button type="button" data-card-id="spf-lookup-card" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="spf-lookup-card"></span></div><section class="recall-practice" data-recall="spf-core-recall" data-min-length="150" aria-labelledby="spf-core-recall-title">
+  <div class="recall-prompt"><h3 id="spf-core-recall-title">Eine SPF-Policy ohne Vorlage erklären</h3><p>Erkläre die Policy v=spf1 ip4:192.0.2.0/24 include:_spf.mailhost.example -all von links nach rechts. Nenne die geprüfte Identität, das Lookup-Risiko und die Grenze gegenüber sichtbarem From, DKIM und DMARC.</p></div>
+  <label class="sr-only" for="spf-core-recall-answer">Deine SPF-Erklärung</label>
+  <textarea id="spf-core-recall-answer" data-recall-input rows="4" placeholder="SPF verwendet … Der erste Mechanismus …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> SPF vergleicht die Client-IP mit einer Policy für die MAIL-FROM- oder HELO-Domäne. Die Beispielpolicy autorisiert zuerst das direkte IPv4-Netz, danach Hosts, die in der referenzierten include-Policy Pass erhalten; alle übrigen treffen auf -all und erhalten Fail. include zählt zum DNS-Term-Budget. SPF authentifiziert nicht automatisch das sichtbare From. DKIM prüft eine Domänensignatur, DMARC die Ausrichtung eines erfolgreichen SPF- oder DKIM-Ergebnisses zur sichtbaren From-Domäne und eine veröffentlichte Behandlungspolitik.</div>
+</section><h2 class="sec" id="s7"><span class="num">7</span>Lernziel-Check: Prüfungstransfer</h2>
+<section class="quiz" data-quiz="spf-transfer-parse" data-correct="2" data-required-objective="spf-parse">
+  <h3>Gegeben ist v=spf1 ip4:192.0.2.0/24 ~all. Welches Ergebnis erhält Client 198.51.100.8, wenn die Policy für seine MAIL-FROM-Domäne geprüft wird?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="all trifft zwar immer, aber der vorangestellte Tilde-Qualifier bestimmt Softfail statt Pass."><span class="m">A</span> Pass, weil jeder Client am all-Mechanismus trifft</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Der konkrete Abschluss lautet ~all. Ein harter Fail würde durch -all entstehen."><span class="m">B</span> Fail, weil jede nicht passende IP automatisch einen harten Fehler erzeugt</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Richtig. Die Prüfung läuft links nach rechts; 198.51.100.8 liegt nicht im angegebenen /24, also bestimmt ~all das Ergebnis."><span class="m">C</span> Softfail, weil ip4 nicht passt und danach ~all als erster Treffer ausgewertet wird</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="SPF und DKIM sind getrennte Verfahren. Eine SPF-Policy erzeugt kein DKIM-Ergebnis."><span class="m">D</span> DKIM-Pass, weil SPF automatisch eine Signatur nachlädt</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="spf-transfer-plan" data-correct="2" data-required-objective="spf-plan">
+  <h3>Eine Domäne versendet über ein eigenes Gateway und zwei SaaS-Dienste. Welcher Plan ist fachlich am belastbarsten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="+all autorisiert jeden Host und hebt die beabsichtigte Senderbegrenzung praktisch auf."><span class="m">A</span> Sofort v=spf1 +all veröffentlichen, weil damit keine legitime Mail ausfällt</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Nicht aufgeführte Versandwege können auf -all treffen. SPF entdeckt legitime SaaS-Sender nicht automatisch."><span class="m">B</span> Nur die IP des Gateways mit -all veröffentlichen; externe Dienste werden von SPF automatisch erkannt</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Richtig. Dieser Ablauf verbindet vollständige fachliche Anforderungen mit Syntax-, DNS- und Betriebsprüfung, ohne Zustellerfolg zu versprechen."><span class="m">C</span> Versandwege und Identitätsdomänen inventarisieren, minimale direkte und Provider-Mechanismen bilden, Einzelrecord und DNS-Term-Budget prüfen, kontrolliert veröffentlichen und beobachten</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Für denselben Owner sind mehrere SPF-Records nicht erlaubt und führen zu PermError. Die legitimen Wege gehören in eine konsistente Policy."><span class="m">D</span> Drei getrennte TXT-Records mit jeweils v=spf1 veröffentlichen, damit jeder Dienst unabhängig bleibt</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s8"><span class="num">8</span>Quellen und Geltungsbereich</h2>
+<ul>
+<li><strong>IT-Berufe Fachstufe II – Lernfelder 10–12 (2023):</strong> lokale Buchgrundlage für SPF als DNS-gestützte Senderautorisierung und die Abgrenzung zu DKIM und DMARC.</li>
+<li><strong>RFC 7208:</strong> technische Normprüfung für SPF-Identitäten, TXT-Record, Syntax, Auswertungsreihenfolge, Ein-Record-Regel und DNS-Term-Limit.</li>
+<li><strong>RFC 7489:</strong> technische Normprüfung für die Ausrichtung von SPF oder DKIM zur sichtbaren From-Domäne im Rahmen von DMARC.</li>
+</ul>
+<p>Alle Domänen, IP-Adressen, Policies und Diagramme sind eigenständige Dokumentationsbeispiele. Konkrete Provider-Includes dürfen nicht ungeprüft in eine produktive Policy übernommen werden.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-3"><span class="d">zurück zu</span><span class="t">Block N3 · IPv6, DHCP und DNS</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N3 · IPv6, DHCP und DNS</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Was beweist ein SPF-Pass?</a></li>
+<li><a href="#s2" data-t="s2">Syntax und Auswertung</a></li>
+<li><a href="#s3" data-t="s3">Durchgearbeitetes Beispiel</a></li>
+<li><a href="#s4" data-t="s4">Grenzen, Lookup-Budget und Zusammenspiel</a></li>
+<li><a href="#s5" data-t="s5">Geführte Übung: Eine Policy planen</a></li>
+<li><a href="#s6" data-t="s6">Karteikarten und freier Abruf</a></li>
+<li><a href="#s7" data-t="s7">Lernziel-Check: Prüfungstransfer</a></li>
+<li><a href="#s8" data-t="s8">Quellen und Geltungsbereich</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-3">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

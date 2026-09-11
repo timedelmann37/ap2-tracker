@@ -1,0 +1,225 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "binaere-subnetzmasken",
+    "slug": "binaere-subnetzmasken",
+    "title": "Binäre Subnetzmasken schnell lesen",
+    "description": "Oktette mit den acht Zweierpotenzen umrechnen und CIDR-Präfixe sicher zwischen Binär- und Dezimalschreibweise übertragen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-2",
+    "groupLabel": "Block N2 · IPv4 und Subnetting",
+    "itemId": "ga2-2__7",
+    "week": "KW 36",
+    "estimatedMinutes": 20,
+    "relevance": "hoch",
+    "sources": ["europa-integratoren-2026", "ihk-bonn"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "binary-octet-conversion",
+      "label": "ein IPv4-Oktett mit den Gewichten 128 bis 1 sicher zwischen Binär und Dezimal umrechnen"
+    },
+    {
+      "id": "cidr-mask-conversion",
+      "label": "ein CIDR-Präfix in eine gültige dezimale Subnetzmaske übertragen und umgekehrt"
+    }
+  ],
+  "intro": "Subnetting wird schnell, sobald ein Oktett nicht mehr wie acht einzelne Rätsel aussieht. Jede Position besitzt ein festes Gewicht: 128, 64, 32, 16, 8, 4, 2 und 1. Bei einer gültigen Subnetzmaske stehen die Einsen lückenlos links. Deshalb muss man nur die wenigen möglichen Grenzwerte 0, 128, 192, 224, 240, 248, 252, 254 und 255 sicher erkennen.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunk europa-integratoren-2026:01046, Zeilen 9932–10019",
+        "use": "binäre Darstellung von IPv4-Adresse und Subnetzmaske zur Bestimmung des Netz- und Hostanteils",
+        "reviewStatus": "fachlich geprüft und auf eigenständige Übungszahlen übertragen"
+      },
+      {
+        "sourceId": "ihk-bonn",
+        "sourceLocator": "Chunks ihk-bonn:00363 und ihk-bonn:00370, Zeilen 6498–6557 und 6625–6644",
+        "use": "Prüfungsmuster für Binärumrechnung sowie Netzlisten zu einer dezimalen Maske",
+        "reviewStatus": "OCR-Artefakte nicht übernommen; nur der fachliche Aufgabentyp wurde verwendet"
+      }
+    ],
+    "notes": [
+      "Eine gültige klassische IPv4-Subnetzmaske besitzt zusammenhängende Einsen von links und danach nur Nullen; nicht zusammenhängende Masken werden in dieser Einheit als ungültig behandelt.",
+      "Alle Tabellen, Zahlenfolgen und Diagramme sind eigenständig erstellt."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "binary-weights",
+      "type": "layers",
+      "title": "Die acht Gewichte eines Oktetts",
+      "description": "Von links nach rechts halbiert sich das Gewicht jeder Bitposition. Gesetzte Bits werden addiert.",
+      "items": [
+        { "label": "Bit 7–6", "detail": "128 und 64 · zusammen 192" },
+        { "label": "Bit 5–4", "detail": "32 und 16 · mit den ersten beiden zusammen 240" },
+        { "label": "Bit 3–2", "detail": "8 und 4 · fortlaufende Einsen ergeben 248 beziehungsweise 252" },
+        { "label": "Bit 1–0", "detail": "2 und 1 · fortlaufende Einsen ergeben 254 beziehungsweise 255" }
+      ]
+    },
+    {
+      "id": "mask-boundaries",
+      "type": "comparison",
+      "title": "Grenzwerte einer gültigen Maskenposition",
+      "description": "In einem teilweise gesetzten Maskenoktett sind nur neun Dezimalwerte möglich.",
+      "items": [
+        { "label": "0 / 128 / 192", "detail": "00000000 · 10000000 · 11000000" },
+        { "label": "224 / 240 / 248", "detail": "11100000 · 11110000 · 11111000" },
+        { "label": "252 / 254 / 255", "detail": "11111100 · 11111110 · 11111111" }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Eine Maske erkennen",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "binary-mask-diagnostic",
+          "diagnostic": true,
+          "question": "Welches Bitmuster entspricht im letzten Oktett einer gültigen Subnetzmaske?",
+          "options": [
+            { "text": "11110000", "rationale": "Richtig. Die Einsen stehen lückenlos links, danach folgen nur Nullen.", "correct": true },
+            { "text": "11011000", "rationale": "Nach der ersten Null erscheint erneut eine Eins. Das ist keine zusammenhängende Präfixmaske.", "correct": false },
+            { "text": "00111111", "rationale": "Bei einer Subnetzmaske beginnen gesetzte Präfixbits links, nicht rechts.", "correct": false },
+            { "text": "10101010", "rationale": "Wechselnde Bits beschreiben keine gültige zusammenhängende Subnetzmaske.", "correct": false }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Maskenregel",
+          "markdown": "In der Maske kommt der Wechsel **höchstens einmal**: erst Einsen, dann Nullen."
+        }
+      ]
+    },
+    {
+      "title": "Oktette mit Gewichten umrechnen",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "binary-weights",
+          "alt": "Die acht Bitgewichte eines IPv4-Oktetts sind in vier Zweiergruppen von 128 und 64 bis 2 und 1 dargestellt.",
+          "caption": "Eigene Lernskizze: Jedes gesetzte Bit steuert genau sein Positionsgewicht zur Dezimalzahl bei."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Für das Bitmuster 10110100 werden die Gewichte der gesetzten Positionen addiert: 128 + 32 + 16 + 4 = 180. Umgekehrt wird eine Dezimalzahl von links zerlegt: Für 224 passt 128, Rest 96; danach 64, Rest 32; danach 32, Rest 0. Das Ergebnis ist 11100000."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Binär 10110100 entspricht 128 plus 32 plus 16 plus 4 gleich 180",
+          "mathml": "<math display=\"block\"><mrow><msub><mrow><mn>10110100</mn></mrow><mn>2</mn></msub><mo>=</mo><mn>128</mn><mo>+</mo><mn>32</mn><mo>+</mo><mn>16</mn><mo>+</mo><mn>4</mn><mo>=</mo><mn>180</mn></mrow></math>",
+          "legend": ["Nullbits tragen nichts zur Summe bei", "ein Oktett liegt immer zwischen 0 und 255"]
+        },
+        {
+          "type": "numeric",
+          "id": "binary-octet-practice",
+          "title": "Binärmuster auswerten",
+          "prompt": "Welchen Dezimalwert hat das Oktett 11010000?",
+          "label": "Dezimalwert",
+          "placeholder": "0 bis 255",
+          "expected": 208,
+          "tolerance": 0,
+          "correctFeedback": "Richtig. 128 plus 64 plus 16 ergibt 208.",
+          "wrongFeedback": "Lege 128, 64, 32, 16, 8, 4, 2 und 1 unter die Bits und addiere nur die Positionen mit einer Eins.",
+          "misconceptions": [
+            { "value": 192, "feedback": "Du hast nur 128 und 64 addiert; das gesetzte 16er-Bit fehlt." },
+            { "value": 224, "feedback": "224 wäre 11100000. Im gegebenen Muster ist das 32er-Bit null und das 16er-Bit eins." }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "CIDR und Dezimalmaske verbinden",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "mask-boundaries",
+          "alt": "Die neun möglichen Werte eines teilweise gesetzten Maskenoktetts von 0 über 128, 192 und 224 bis 255 mit den zugehörigen Bitmustern.",
+          "caption": "Eigene Lernskizze: Diese neun Werte ersetzen das Auswendiglernen beliebiger Dezimalzahlen."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Das Präfix /27 setzt 24 Bits in den ersten drei Oktetten und noch drei Bits im vierten Oktett. Drei gesetzte Bits ergeben dort 128 + 64 + 32 = 224. Die Maske lautet 255.255.255.224. Umgekehrt zählt man bei 255.255.240.0: 8 + 8 + 4 gesetzte Bits ergeben /20."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Präfix 27 ist 8 plus 8 plus 8 plus 3 gesetzte Bits; letztes Maskenoktett ist 128 plus 64 plus 32 gleich 224",
+          "mathml": "<math display=\"block\"><mrow><mn>27</mn><mo>=</mo><mn>8</mn><mo>+</mo><mn>8</mn><mo>+</mo><mn>8</mn><mo>+</mo><mn>3</mn><mo>;</mo><mspace width=\"0.5em\"/><mn>128</mn><mo>+</mo><mn>64</mn><mo>+</mo><mn>32</mn><mo>=</mo><mn>224</mn></mrow></math>",
+          "legend": ["/27 = 27 zusammenhängende Einsbits", "Maske 255.255.255.224"]
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            { "id": "binary-mask-weights", "label": "Bitgewichte", "front": "Wie lauten die acht Bitgewichte eines Oktetts?", "back": "128, 64, 32, 16, 8, 4, 2 und 1." },
+            { "id": "binary-mask-values", "label": "Maskenwerte", "front": "Welche Dezimalwerte kann ein teilweise gesetztes Maskenoktett annehmen?", "back": "0, 128, 192, 224, 240, 248, 252, 254 oder 255." },
+            { "id": "binary-mask-cidr", "label": "CIDR", "front": "Was zählt die Zahl hinter dem Schrägstrich?", "back": "Die Anzahl der von links zusammenhängend gesetzten Netzbits in der 32-Bit-Subnetzmaske." }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "binary-mask-core-recall",
+          "title": "Ohne Tabelle herleiten",
+          "prompt": "Leite die Maske zu /21 her und erkläre dabei, warum das dritte Oktett 248 lautet.",
+          "label": "Deine Herleitung",
+          "placeholder": "Die ersten 16 Bits …",
+          "minLength": 90,
+          "model": "Die ersten zwei Oktette enthalten 16 gesetzte Bits und ergeben jeweils 255. Für /21 fehlen noch fünf Einsbits im dritten Oktett. Ihre Gewichte 128, 64, 32, 16 und 8 ergeben 248. Danach folgen nur Nullen. Die Maske lautet deshalb 255.255.248.0."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check: Transfer",
+      "blocks": [
+        {
+          "type": "numeric",
+          "id": "binary-mask-transfer-octet",
+          "requiredObjective": "binary-octet-conversion",
+          "title": "Grenzoktett berechnen",
+          "prompt": "Welchen Dezimalwert besitzt das Bitmuster 11100000?",
+          "label": "Dezimalwert",
+          "placeholder": "Zahl",
+          "expected": 224,
+          "tolerance": 0,
+          "correctFeedback": "Richtig. 128 plus 64 plus 32 ergibt 224.",
+          "wrongFeedback": "Addiere die drei gesetzten Gewichte von links: 128, 64 und 32.",
+          "misconceptions": [
+            { "value": 192, "feedback": "192 enthält nur zwei gesetzte Bits: 11000000." },
+            { "value": 240, "feedback": "240 enthält vier gesetzte Bits: 11110000." }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "binary-mask-transfer-cidr",
+          "requiredObjective": "cidr-mask-conversion",
+          "question": "Welches CIDR-Präfix gehört zur Maske 255.255.255.240?",
+          "options": [
+            { "text": "/24", "rationale": "Damit würden nur die drei vollständigen 255-Oktette gezählt; im letzten Oktett sind aber vier weitere Bits gesetzt.", "correct": false },
+            { "text": "/26", "rationale": "/26 besitzt im letzten Oktett zwei Einsbits und damit den Wert 192.", "correct": false },
+            { "text": "/28", "rationale": "Richtig. Drei volle Oktette liefern 24 Bits, und 240 entspricht vier weiteren Einsbits.", "correct": true },
+            { "text": "/30", "rationale": "/30 hätte im letzten Oktett sechs Einsbits und damit den Wert 252.", "correct": false }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Aktualität",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):** Binärdarstellung von IPv4-Adresse, Maske, Netz- und Hostanteil.\n- **Prüfungsvorbereitung IHK Bonn:** prüfungsnahe Umrechnung zwischen Dezimal- und Binärschreibweise.\n\nDie Umrechnungsregeln sind stabil. OCR-Fehler und unvollständige Lösungstabellen der privaten Quellen wurden nicht übernommen. Sämtliche Beispiele und Grafiken wurden eigenständig erstellt."
+        }
+      ]
+    }
+  ]
+}

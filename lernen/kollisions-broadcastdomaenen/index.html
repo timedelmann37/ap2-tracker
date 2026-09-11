@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Hub-, Switch-, VLAN- und Layer-3-Grenzen unterscheiden und Domänen in Netzplänen mit ausdrücklich genannten Prüfungsannahmen korrekt bestimmen.">
+<title>Kollisions- und Broadcastdomänen sicher zählen – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=hybrid-1">
+<script defer src="/assets/ap2-space.js?v=hybrid-1"></script>
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="kollisions-broadcastdomaenen" data-progress-id="ga2-1__13" data-content-revision="2026-09-11.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-1">Block N1 · Grundlagen, Medien und Verkabelung</a><span class="sep">›</span>
+    <span class="here">Kollisions- und Broadcastdomänen sicher zählen</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">Kollisions- und Broadcastdomänen sicher zählen</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 24 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Zwei Geräte können am selben Switch hängen und trotzdem in unterschiedlichen Kollisionsdomänen liegen. Umgekehrt können Rechner an verschiedenen Switches derselben Broadcastdomäne angehören. Entscheidend ist deshalb nicht die Anzahl der Kästen im Netzplan, sondern welche Layer-1-, Layer-2- und Layer-3-Grenzen zwischen den Endgeräten wirken.</p>
+<section class="learning-goals" aria-labelledby="kollisions-broadcastdomaenen-goals">
+  <h2 id="kollisions-broadcastdomaenen-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>in einer Hub-, Switch- und Routertopologie Kollisionsdomänen unter den genannten Prüfungsannahmen zählen und jede Grenze begründen</li>
+    <li>Broadcastdomänen anhand von VLAN- und Layer-3-Grenzen zählen und physische von logischen Netzgrenzen unterscheiden</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Welche Grenze zählt?</h2>
+<section class="quiz" data-quiz="domains-diagnostic" data-correct="0">
+  <h3>Zwei Hosts sind über verschiedene Access-Ports desselben Switches verbunden und liegen im selben VLAN. Welche Aussage passt zum üblichen Prüfungsmodell?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Jeder Switchport bildet im Prüfungsmodell eine eigene Kollisionsdomäne; ohne VLAN- oder Layer-3-Grenze bleibt die Broadcastdomäne gemeinsam."><span class="m">A</span> Sie liegen in getrennten Kollisionsdomänen, aber in derselben Broadcastdomäne.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die Zahl der Switches entscheidet nicht allein. Verschiedene Switchports trennen Kollisionsdomänen."><span class="m">B</span> Sie teilen Kollisions- und Broadcastdomäne, weil nur ein Switch vorhanden ist.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein Layer-2-Switch leitet Broadcasts innerhalb desselben VLANs an die übrigen zugehörigen Ports weiter."><span class="m">C</span> Sie liegen automatisch in zwei Broadcastdomänen, weil jeder Switchport Broadcasts stoppt.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Reale Full-Duplex-Links kollidieren praktisch nicht. Prüfungsaufgaben zählen dennoch jeden Switchport als getrenntes Segment beziehungsweise eigene Kollisionsdomäne."><span class="m">D</span> Es existiert gar keine logische Kollisionsdomäne mehr, deshalb kann man keine Grenze einzeichnen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout warn"><span class="lbl">Modell offenlegen</span><p>Frage bei jeder Aufgabe zuerst: Wird ein <strong>vereinfachtes Prüfungsmodell</strong> oder ein realer Full-Duplex-Betrieb beschrieben? Die Zählregel erklärt Segmentgrenzen, nicht die heutige Kollisionshäufigkeit.</p></aside><h2 class="sec" id="s2"><span class="num">2</span>Kollisionsdomänen: Ports statt Geräte zählen</h2>
+<p>Ein <strong>Hub</strong> arbeitet auf Layer 1 und wiederholt eintreffende Signale an seine anderen Ports. Alle daran angeschlossenen Stationen einschließlich des Uplinks teilen im vereinfachten Halbduplex-Modell ein gemeinsames Segment. Ein <strong>Switch</strong> wertet Layer-2-Informationen aus und trennt die Segmente an seinen Ports. Ein Routeranschluss ist deshalb nicht allein wegen des Routerkastens doppelt zu zählen: Die Leitung zwischen Switchport und Routerinterface bildet genau ein Segment.</p>
+<div class="twrap"><table class="knowledge-table">
+<thead>
+<tr>
+<th>Element im Netzplan</th>
+<th>Wirkung im Prüfungsmodell</th>
+<th>typische Fehlannahme</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Hub mit mehreren Ports</td>
+<td>ein gemeinsames Segment</td>
+<td>jeden Hubport einzeln zählen</td>
+</tr>
+<tr>
+<td>belegter Switchport</td>
+<td>eigenes Punkt-zu-Punkt-Segment oder Grenze zum Hubsegment</td>
+<td>den ganzen Switch als ein Segment zählen</td>
+</tr>
+<tr>
+<td>Routerinterface am Switch</td>
+<td>Link ist eine Kollisionsdomäne; das Interface setzt zusätzlich eine Layer-3-Grenze für Broadcasts</td>
+<td>auf derselben Leitung zwei Kollisionsdomänen zählen</td>
+</tr>
+</tbody></table></div>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Drei Kollisionsdomänen im Prüfungsmodell">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-topology" xmlns="http://www.w3.org/2000/svg" width="960" height="560" viewBox="0 0 960 560" role="img" aria-labelledby="diagram-collision-domain-map-title diagram-collision-domain-map-desc">
+  <title id="diagram-collision-domain-map-title">Drei Kollisionsdomänen im Prüfungsmodell</title>
+  <desc id="diagram-collision-domain-map-desc">Netzplan mit PC A und PC B an einem Hub, dem Hub an Switch S1 sowie PC C und Router R1 an eigenen Switchports. Die Flächen C1, C2 und C3 markieren genau drei Kollisionsdomänen.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Drei Kollisionsdomänen im Prüfungsmodell</tspan></text>
+  <g class="diagram-zone collision"><rect x="38" y="88" width="500" height="350" rx="18"/><text x="54" y="115">C1 · gemeinsames Hubsegment</text></g><g class="diagram-zone collision"><rect x="548" y="88" width="374" height="145" rx="18"/><text x="564" y="115">C2 · eigener Switchport</text></g><g class="diagram-zone collision"><rect x="548" y="315" width="374" height="145" rx="18"/><text x="564" y="342">C3 · eigener Switchport</text></g><g class="diagram-edge "><path d="M125 185 L340 268"/></g><g class="diagram-edge "><path d="M125 350 L340 268"/></g><g class="diagram-edge "><path d="M340 268 L590 268"/></g><g class="diagram-edge "><path d="M590 268 L820 162"/></g><g class="diagram-edge "><path d="M590 268 L820 390"/></g><g class="diagram-node endpoint" transform="translate(125 185)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="125" y="180" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="125" dy="0">PC A</tspan></text><g class="diagram-node endpoint" transform="translate(125 350)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="125" y="345" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="125" dy="0">PC B</tspan></text><g class="diagram-node hub" transform="translate(340 268)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="340" y="263" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="340" dy="0">Hub H1</tspan></text><text class="diagram-node-detail" x="340" y="287" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="340" dy="0">Layer 1</tspan></text><g class="diagram-node switch" transform="translate(590 268)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="590" y="263" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="590" dy="0">Switch S1</tspan></text><text class="diagram-node-detail" x="590" y="287" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="590" dy="0">Layer 2</tspan></text><g class="diagram-node endpoint" transform="translate(820 162)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="820" y="157" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="820" dy="0">PC C</tspan></text><g class="diagram-node router" transform="translate(820 390)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="820" y="385" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="820" dy="0">Router R1</tspan></text><text class="diagram-node-detail" x="820" y="409" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="820" dy="0">Layer 3</tspan></text>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Hubports bleiben gemeinsam; jeder weitere belegte Switchport begrenzt ein eigenes Segment.</figcaption>
+</figure><section class="quiz" data-quiz="collision-hub-practice" data-correct="0">
+  <h3>Am Hub H1 aus der Grafik kommt ein weiterer PC D hinzu. Wie verändert sich die Zahl der Kollisionsdomänen?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. PC D erweitert das bestehende gemeinsame Hubsegment C1, erzeugt aber keine neue Switchportgrenze."><span class="m">A</span> Sie bleibt bei 3.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Ein zusätzlicher Hubport ist keine eigene Kollisionsdomäne. Erst ein eigener Switchport würde im Prüfungsmodell ein weiteres Segment bilden."><span class="m">B</span> Sie steigt auf 4.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Das zusätzliche Endgerät hebt keine vorhandene Segmentgrenze auf."><span class="m">C</span> Sie sinkt auf 2.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s3"><span class="num">3</span>Broadcastdomänen: VLAN und Layer 3</h2>
+<p>Ein Layer-2-Broadcast wird innerhalb seines <strong>VLANs</strong> verteilt. Er kann dabei über mehrere Switches und einen Trunk laufen. Deshalb ist ein Trunk weder automatisch eine neue Broadcastdomäne noch verbindet er verschiedene VLANs zu einer gemeinsamen Domäne. Erst ein Layer-3-Gerät routet gezielt zwischen den Netzen; normale Layer-2-Broadcasts werden dabei nicht einfach in die andere Domäne weitergereicht.</p>
+<p>Die physische Anzahl der Switches ist somit kein Zähler. Entscheidend sind die logischen VLAN-Zugehörigkeiten und die vorhandenen Layer-3-Interfaces. Zwei VLANs ergeben in der gezeigten Situation zwei Broadcastdomänen, auch wenn beide dieselben physischen Switches und dieselbe Trunkleitung verwenden.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Zwei VLANs bleiben über den Trunk getrennt">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-topology" xmlns="http://www.w3.org/2000/svg" width="960" height="560" viewBox="0 0 960 560" role="img" aria-labelledby="diagram-broadcast-domain-map-title diagram-broadcast-domain-map-desc">
+  <title id="diagram-broadcast-domain-map-title">Zwei VLANs bleiben über den Trunk getrennt</title>
+  <desc id="diagram-broadcast-domain-map-desc">Logische Darstellung zweier VLANs über zwei Switches. Oben bildet VLAN 10 die Broadcastdomäne B1, unten bildet VLAN 20 die Broadcastdomäne B2. Ein Trunk transportiert beide getrennt; ein Layer-3-Gateway verbindet sie nur durch Routing.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Zwei VLANs bleiben über den Trunk getrennt</tspan></text>
+  <g class="diagram-zone broadcast"><rect x="42" y="82" width="876" height="178" rx="18"/><text x="58" y="109">B1 · VLAN 10</text></g><g class="diagram-zone broadcast"><rect x="42" y="292" width="876" height="178" rx="18"/><text x="58" y="319">B2 · VLAN 20</text></g><g class="diagram-edge "><path d="M135 180 L365 180"/></g><g class="diagram-edge trunk"><path d="M365 180 L595 180"/><text class="diagram-edge-label" x="480" y="172" text-anchor="middle">Trunk · VLAN 10</text></g><g class="diagram-edge "><path d="M595 180 L825 180"/></g><g class="diagram-edge "><path d="M135 390 L365 390"/></g><g class="diagram-edge trunk"><path d="M365 390 L595 390"/><text class="diagram-edge-label" x="480" y="382" text-anchor="middle">Trunk · VLAN 20</text></g><g class="diagram-edge "><path d="M595 390 L825 390"/></g><g class="diagram-edge trunk"><path d="M365 180 L480 520"/></g><g class="diagram-edge trunk"><path d="M365 390 L480 520"/></g><g class="diagram-node endpoint" transform="translate(135 180)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="135" y="175" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="135" dy="0">Host A</tspan></text><text class="diagram-node-detail" x="135" y="199" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="135" dy="0">VLAN 10</tspan></text><g class="diagram-node switch" transform="translate(365 180)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="365" y="175" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="365" dy="0">Switch 1</tspan></text><text class="diagram-node-detail" x="365" y="199" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="365" dy="0">VLAN 10</tspan></text><g class="diagram-node switch" transform="translate(595 180)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="595" y="175" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="595" dy="0">Switch 2</tspan></text><text class="diagram-node-detail" x="595" y="199" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="595" dy="0">VLAN 10</tspan></text><g class="diagram-node endpoint" transform="translate(825 180)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="825" y="175" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="825" dy="0">Host B</tspan></text><text class="diagram-node-detail" x="825" y="199" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="825" dy="0">VLAN 10</tspan></text><g class="diagram-node endpoint" transform="translate(135 390)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="135" y="385" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="135" dy="0">Host C</tspan></text><text class="diagram-node-detail" x="135" y="409" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="135" dy="0">VLAN 20</tspan></text><g class="diagram-node switch" transform="translate(365 390)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="365" y="385" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="365" dy="0">Switch 1</tspan></text><text class="diagram-node-detail" x="365" y="409" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="365" dy="0">VLAN 20</tspan></text><g class="diagram-node switch" transform="translate(595 390)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="595" y="385" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="595" dy="0">Switch 2</tspan></text><text class="diagram-node-detail" x="595" y="409" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="595" dy="0">VLAN 20</tspan></text><g class="diagram-node endpoint" transform="translate(825 390)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="825" y="385" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="825" dy="0">Host D</tspan></text><text class="diagram-node-detail" x="825" y="409" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="825" dy="0">VLAN 20</tspan></text><g class="diagram-node router" transform="translate(480 520)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="480" y="515" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="480" dy="0">L3-Gateway</tspan></text><text class="diagram-node-detail" x="480" y="539" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="480" dy="0">routet zwischen</tspan><tspan x="480" dy="25">B1/B2</tspan></text>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Die Switches sind zur besseren Lesbarkeit je VLAN logisch wiederholt dargestellt; physisch sind es dieselben Geräte.</figcaption>
+</figure><aside class="callout merk"><span class="lbl">Zählregel</span><p><strong>Kollision:</strong> Hubsegment und einzelne Switchlinks betrachten. <strong>Broadcast:</strong> VLANs und Layer-3-Grenzen betrachten. Die Zahl gezeichneter Geräte ist bei beiden Fragen nur ein Hinweis.</p></aside><h2 class="sec" id="s4"><span class="num">4</span>Karteikarten und freier Abruf</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="domains-hub-card" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wie zählen mehrere Endgeräte an einem Hub?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Im vereinfachten Prüfungsmodell teilen alle Hubports einschließlich des Uplinks eine Kollisionsdomäne.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="domains-switch-card" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was trennt ein belegter Switchport?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Er grenzt im Prüfungsmodell eine eigene Kollisionsdomäne ab. Innerhalb desselben VLANs trennt er aber keine Broadcastdomäne.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="domains-trunk-card" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Ist ein Trunk eine zusätzliche Broadcastdomäne?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Nein. Er transportiert mehrere VLANs logisch getrennt; jedes VLAN bleibt seine eigene Broadcastdomäne.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Hubsegment“:</span><button type="button" data-card-id="domains-hub-card" data-card-rate="known">gewusst</button><button type="button" data-card-id="domains-hub-card" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="domains-hub-card"></span></div>
+<div class="card-rating"><span>Karte „Switchport“:</span><button type="button" data-card-id="domains-switch-card" data-card-rate="known">gewusst</button><button type="button" data-card-id="domains-switch-card" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="domains-switch-card"></span></div>
+<div class="card-rating"><span>Karte „Trunk“:</span><button type="button" data-card-id="domains-trunk-card" data-card-rate="known">gewusst</button><button type="button" data-card-id="domains-trunk-card" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="domains-trunk-card"></span></div><section class="recall-practice" data-recall="domains-core-recall" data-min-length="90" aria-labelledby="domains-core-recall-title">
+  <div class="recall-prompt"><h3 id="domains-core-recall-title">Beide Grenzen aus dem Kopf erklären</h3><p>Erkläre ohne Nachschlagen, warum zwei Hosts an verschiedenen Switchports im selben VLAN getrennte Kollisionsdomänen, aber eine gemeinsame Broadcastdomäne haben können.</p></div>
+  <label class="sr-only" for="domains-core-recall-answer">Deine Begründung</label>
+  <textarea id="domains-core-recall-answer" data-recall-input rows="4" placeholder="Der Switch trennt an seinen Ports … Das VLAN bestimmt dagegen …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Im Prüfungsmodell begrenzt jeder belegte Switchport ein eigenes Ethernet-Segment und damit eine Kollisionsdomäne. Der Switch leitet Layer-2-Broadcasts jedoch an die übrigen Ports desselben VLANs weiter. Solange keine VLAN- oder Layer-3-Grenze dazwischenliegt, gehören beide Hosts deshalb derselben Broadcastdomäne an.</div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Lernziel-Check: Domänen begründen</h2>
+<section class="quiz" data-quiz="collision-count-transfer" data-correct="1" data-required-objective="collision-boundaries">
+  <h3>Wie viele Kollisionsdomänen zeigt die Grafik mit Hub H1, Switch S1, PC C und Router R1 im angegebenen Prüfungsmodell?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Damit würdest du den ganzen Switch als gemeinsames Segment behandeln. Seine belegten Ports trennen jedoch die Bereiche C1, C2 und C3."><span class="m">A</span> 1</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig: C1 ist das gesamte Hubsegment einschließlich Uplink, C2 der Link zu PC C und C3 der Link zum Router."><span class="m">B</span> 3</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Damit würdest du vermutlich einzelne Hubports getrennt zählen. Alle Ports von H1 gehören hier gemeinsam zu C1."><span class="m">C</span> 4</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Die Zahl der Endgeräte oder Leitungen kann nicht ungeprüft übernommen werden. Mehrere Leitungen innerhalb des Hubsegments bleiben eine Domäne."><span class="m">D</span> 5</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="broadcast-count-transfer" data-correct="1" data-required-objective="broadcast-boundaries">
+  <h3>Wie viele Broadcastdomänen zeigt die logische VLAN-Grafik?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Ein Trunk transportiert VLAN 10 und VLAN 20 mit getrennter Kennzeichnung. Er verschmilzt ihre Broadcastdomänen nicht."><span class="m">A</span> 1, weil der Trunk beide VLANs transportiert</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Die VLAN-Zugehörigkeit bestimmt die beiden Broadcastdomänen; das Layer-3-Gateway routet zwischen ihnen."><span class="m">B</span> 2, nämlich B1 für VLAN 10 und B2 für VLAN 20</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Der Trunk ist ein Übertragungsweg für bestehende VLANs, keine zusätzliche Broadcastdomäne."><span class="m">C</span> 3, weil der Trunk selbst eine weitere Broadcastdomäne bildet</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Die Anzahl der Switches wird nicht mit der Anzahl der VLANs multipliziert. Ein VLAN kann sich über mehrere Switches erstrecken."><span class="m">D</span> 4, weil zwei VLANs über zwei Switches laufen</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section>
+      <div class="pager">
+        <a href="/netzwerke/#ga2-1"><span class="d">zurück zu</span><span class="t">Block N1 · Grundlagen, Medien und Verkabelung</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N1 · Grundlagen, Medien und Verkabelung</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Welche Grenze zählt?</a></li>
+<li><a href="#s2" data-t="s2">Kollisionsdomänen: Ports statt Geräte zählen</a></li>
+<li><a href="#s3" data-t="s3">Broadcastdomänen: VLAN und Layer 3</a></li>
+<li><a href="#s4" data-t="s4">Karteikarten und freier Abruf</a></li>
+<li><a href="#s5" data-t="s5">Lernziel-Check: Domänen begründen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-1">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

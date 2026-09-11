@@ -1,0 +1,337 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "nat-pat",
+    "slug": "nat-pat",
+    "title": "NAT- und PAT-Zuordnungen nachvollziehen",
+    "description": "SNAT, DNAT und PAT anhand ihrer Übersetzungsrichtung unterscheiden, eine Socket-Zuordnungstabelle vervollständigen und Grenzen bewerten.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-4",
+    "groupLabel": "Block N4 · Routing und NAT",
+    "itemId": "ga2-4__7",
+    "week": "KW 38",
+    "estimatedMinutes": 23,
+    "relevance": "hoch",
+    "sources": ["itlf10-12-2023", "itlf6-9-2022"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "pat-mapping",
+      "label": "für parallele Verbindungen eindeutige interne und externe Socket-Zuordnungen bilden und den Rückweg erklären"
+    },
+    {
+      "id": "nat-selection-limits",
+      "label": "SNAT, PAT und DNAT nach Übersetzungsrichtung auswählen und ihre Betriebs- und Sicherheitsgrenzen begründen"
+    }
+  ],
+  "intro": "NAT verändert Adressinformationen, PAT beziehungsweise NAPT zusätzlich Portinformationen. Damit können mehrere interne Verbindungen eine öffentliche IPv4-Adresse teilen. Entscheidend ist eine eindeutige Zustandstabelle: Nur sie erlaubt dem Router, Antwortpakete wieder genau dem richtigen internen Socket zuzuordnen.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seite 191, Chunk itlf10-12-2023:page:0191",
+        "use": "Zwei interne Clients mit identischem Quellport, eindeutige externe Portabbildung, NAT-Tabelle und SNAT-Richtung",
+        "reviewStatus": "Tabelle und Nachrichtenfolge geprüft; Beispieladressen und Aufgabenfall vollständig neu aufgebaut"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seite 192, Chunk itlf10-12-2023:page:0192",
+        "use": "DNAT-Portweiterleitung, manuelle Zuordnung für eingehenden Verkehr und Grenzen der Adress-/Portumschreibung",
+        "reviewStatus": "fachlicher Kern geprüft; OCR-beschädigte Passagen nicht übernommen und IPv6-NAT nicht vertieft"
+      },
+      {
+        "sourceId": "itlf6-9-2022",
+        "sourceLocator": "Chunk itlf6-9-2022:00252",
+        "use": "Prüfungsfrage zur NAT-Funktion und zur fehlenden Sichtbarkeit interner Geräte im typischen Internetzugang",
+        "reviewStatus": "nur als ergänzender Prüfungskontext verwendet"
+      }
+    ],
+    "notes": [
+      "Die Batch-Treffer europa-integratoren-2026:00143 und :00633 behandeln DSGVO-Begriffe, nicht NAT. Die vorgeschlagene EUROPA-Figur 17c4153f3053 zeigt RAID-Inhalte. Diese Fehltreffer wurden ausgeschlossen.",
+      "Im Sprachgebrauch wird NAT oft als Oberbegriff verwendet, obwohl das gezeigte Many-to-One-Verfahren zusätzlich Ports umsetzt und präziser PAT beziehungsweise NAPT heißt.",
+      "Portbereiche, Timeouts, Mappingverhalten, Hairpinning und Protokollhilfen sind implementations- und konfigurationsabhängig. Die Einheit formuliert dafür keine universellen Zahlenwerte.",
+      "NAT ist keine Firewallregel. Eine Zustandsabbildung kann eingehende Zuordnung begrenzen, ersetzt aber keine explizite Zugriffskontrolle und keine Sicherheitsprüfung."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "pat-round-trip",
+      "type": "flow",
+      "title": "PAT hält Hin- und Rückweg zusammen",
+      "description": "Der Router verändert den Quell-Socket ausgehend und benutzt dieselbe Zustandstabellenzeile umgekehrt für die Antwort.",
+      "items": [
+        {
+          "label": "Intern · 10.0.0.11:50001",
+          "detail": "Client A startet eine TCP-Verbindung zum Webserver."
+        },
+        {
+          "label": "PAT-Tabelle · 203.0.113.9:50001",
+          "detail": "Der Router ordnet dem internen Socket einen eindeutigen externen Socket zu."
+        },
+        {
+          "label": "Extern · 198.51.100.20:443",
+          "detail": "Der Server sieht als Gegenstelle den öffentlichen Socket des Routers."
+        },
+        {
+          "label": "Antwort · Tabellenlookup",
+          "detail": "Ziel 203.0.113.9:50001 wird wieder auf 10.0.0.11:50001 abgebildet."
+        }
+      ]
+    },
+    {
+      "id": "nat-forms",
+      "type": "comparison",
+      "title": "Übersetzungsformen nach Richtung",
+      "description": "Welche Felder geändert werden, entscheidet über Zweck und notwendige Zustandseinträge.",
+      "items": [
+        {
+          "label": "SNAT · Quelle ändern",
+          "detail": "Typisch ausgehend: Eine interne Quelladresse wird am Übergang durch eine externe Adresse ersetzt."
+        },
+        {
+          "label": "PAT/NAPT · Quelle und Port ändern",
+          "detail": "Viele interne Sockets teilen eine öffentliche Adresse durch eindeutige externe Ports."
+        },
+        {
+          "label": "DNAT · Ziel ändern",
+          "detail": "Typisch eingehend: Eine öffentliche Zieladresse beziehungsweise Portweiterleitung wird einem internen Server zugeordnet."
+        },
+        {
+          "label": "Firewall · Zugriff erlauben oder sperren",
+          "detail": "Filterregeln entscheiden über Berechtigung; Übersetzung allein ist keine Sicherheitsrichtlinie."
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Warum muss der Port wechseln?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "nat-pat-diagnostic",
+          "diagnostic": true,
+          "question": "Zwei interne Clients verwenden gleichzeitig TCP-Quellport 50001 und dieselbe öffentliche IPv4-Adresse. Warum ändert PAT für mindestens eine Verbindung den externen Port?",
+          "options": [
+            {
+              "text": "Damit die externen Socket-Zuordnungen gleichzeitig eindeutig bleiben",
+              "rationale": "Richtig. Die Rückantwort muss genau einer internen Verbindung zugeordnet werden können.",
+              "correct": true
+            },
+            {
+              "text": "Weil TCP-Port 50001 im privaten Netz grundsätzlich verboten ist",
+              "rationale": "Der Port kann intern verwendet werden; problematisch ist nur die externe Kollision bei gleicher öffentlicher Adresse.",
+              "correct": false
+            },
+            {
+              "text": "Damit beide Clients dieselbe private IP-Adresse erhalten",
+              "rationale": "Die Clients behalten unterschiedliche interne Adressen. PAT bildet ihre Sockets nach außen ab.",
+              "correct": false
+            },
+            {
+              "text": "Weil NAT jedes Paket automatisch verschlüsselt",
+              "rationale": "NAT/PAT ist Übersetzung, keine Verschlüsselung."
+              ,"correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Eindeutigkeit",
+          "markdown": "Der vollständige äußere Verbindungsschlüssel aus **Quell-IP, Quellport, Ziel-IP, Zielport und Transportprotokoll** muss eindeutig bleiben. Gehen zwei Verbindungen zum selben Ziel, muss PAT daher mindestens ihre äußeren Quell-Sockets unterscheiden."
+        }
+      ]
+    },
+    {
+      "title": "PAT-Tabelle schrittweise lesen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Client A 10.0.0.11:50001 und Client B 10.0.0.12:50001 verbinden sich per TCP mit 198.51.100.20:443. Der Router besitzt öffentlich 203.0.113.9. Für A kann er extern 203.0.113.9:50001 verwenden. Für B wäre derselbe externe Socket im selben Kontext nicht eindeutig; der Router wählt zum Beispiel 203.0.113.9:50002.\n\nDie Zustandstabelle speichert beide Abbildungen. Antwortpakete an :50001 gehen zu A, Antworten an :50002 zu B. Welche externen Ports eine konkrete Implementierung auswählt und wann Einträge verfallen, ist konfigurationsabhängig."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Für verschiedene gleichzeitig aktive Verbindungen müssen die vollständigen äußeren Fünf-Tupel verschieden sein",
+          "mathml": "<math display=\"block\"><mtable columnalign=\"right center left\" rowspacing=\"0.5em\"><mtr><mtd><msub><mi>T</mi><mi>i</mi></msub></mtd><mtd><mo>=</mo></mtd><mtd><mo>(</mo><msub><mi>IP</mi><mi>s</mi></msub><mo>,</mo><msub><mi>P</mi><mi>s</mi></msub><mo>,</mo><msub><mi>IP</mi><mi>d</mi></msub><mo>,</mo><msub><mi>P</mi><mi>d</mi></msub><mo>,</mo><mi>Protokoll</mi><mo>)</mo></mtd></mtr><mtr><mtd><mi>i</mi><mo>≠</mo><mi>j</mi></mtd><mtd><mo>⇒</mo></mtd><mtd><msub><mi>T</mi><mi>i</mi></msub><mo>≠</mo><msub><mi>T</mi><mi>j</mi></msub></mtd></mtr></mtable></math>",
+          "legend": ["T = äußeres Fünf-Tupel", "s = Quelle", "d = Ziel"]
+        },
+        {
+          "type": "figure",
+          "diagramId": "pat-round-trip",
+          "alt": "Vierstufiger PAT-Ablauf vom internen Socket über einen öffentlichen Socket zum Webserver und per Tabellenlookup zurück.",
+          "caption": "Eigene Lernskizze: Ohne den gespeicherten Zustand wäre die Rückantwort nicht eindeutig zustellbar."
+        }
+      ]
+    },
+    {
+      "title": "Geführte Interaktion: Mapping aufbauen",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "pat-mapping-transfer",
+          "requiredObjective": "pat-mapping",
+          "title": "Zweite PAT-Verbindung eintragen",
+          "prompt": "Client A belegt bereits 203.0.113.9:50001/TCP. Client B startet intern ebenfalls mit Port 50001. Bringe die Schritte in die richtige Reihenfolge.",
+          "tag": "Pflichtnachweis",
+          "steps": [
+            {
+              "id": "pat-read-internal-tuple",
+              "label": "Internen Socket, Zielsocket und Transportprotokoll von Client B erfassen."
+            },
+            {
+              "id": "pat-check-external-key",
+              "label": "Prüfen, ob der gewünschte externe Socket 203.0.113.9:50001/TCP bereits aktiv belegt ist."
+            },
+            {
+              "id": "pat-allocate-port",
+              "label": "Einen freien externen Port, zum Beispiel 50002/TCP, zuordnen und in der Tabelle speichern."
+            },
+            {
+              "id": "pat-reverse-lookup",
+              "label": "Beim Rückpaket externes Ziel 203.0.113.9:50002/TCP auf den internen Socket von Client B zurückbilden."
+            }
+          ],
+          "expected": ["pat-read-internal-tuple", "pat-check-external-key", "pat-allocate-port", "pat-reverse-lookup"],
+          "correctFeedback": "Richtig: Verbindung erfassen, externe Kollision erkennen, freien Port speichern und den Rückweg über dieselbe Tabellenzeile auflösen.",
+          "wrongFeedback": "Beginne mit dem vollständigen Verbindungskontext. Erst nach Kollisionsprüfung darf ein externer Socket eingetragen und später rückwärts verwendet werden."
+        },
+        {
+          "type": "quiz",
+          "id": "pat-return-practice",
+          "question": "Die Tabelle enthält 10.0.0.12:50001/TCP ↔ 203.0.113.9:50002/TCP. Wohin wird ein passendes Antwortpaket an 203.0.113.9:50002 weitergeleitet?",
+          "options": [
+            {
+              "text": "an 10.0.0.12:50001/TCP",
+              "rationale": "Richtig. Der externe Zielsocket wird über die gespeicherte Zuordnung auf den internen Socket zurückgebildet.",
+              "correct": true
+            },
+            {
+              "text": "an jeden Host im privaten Netz",
+              "rationale": "PAT nutzt einen konkreten Zustandseintrag und keinen Broadcast an alle internen Hosts.",
+              "correct": false
+            },
+            {
+              "text": "an 10.0.0.12:50002/TCP",
+              "rationale": "Der externe Port wurde geändert; der interne Clientport bleibt laut Tabelle 50001.",
+              "correct": false
+            },
+            {
+              "text": "zwingend zurück an den externen Webserver",
+              "rationale": "Das Paket ist bereits die Antwort; sein Ziel ist der öffentliche Socket des NAT-Routers und wird intern zurückübersetzt.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "SNAT, PAT und DNAT auswählen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**SNAT** ersetzt typischerweise beim ausgehenden Verkehr die Quelladresse. **PAT/NAPT** unterscheidet zusätzlich Verbindungen über Ports und ermöglicht dadurch Many-to-One-Nutzung einer öffentlichen Adresse. **DNAT** verändert beim eingehenden Verkehr die Zieladresse; eine Portweiterleitung ist ein manuell geplanter DNAT-Fall, damit ein interner Dienst von außen erreichbar wird.\n\nEine Portweiterleitung muss mit Firewallregel, Dienstbindung und minimaler Freigabe abgestimmt werden. Umgekehrt ist fehlende Portweiterleitung kein umfassender Schutzbeweis. NAT ändert Header und Zustand, während eine Firewall Zugriffe nach einer Sicherheitsrichtlinie erlaubt oder verwirft."
+        },
+        {
+          "type": "figure",
+          "diagramId": "nat-forms",
+          "alt": "Vier Vergleichskarten unterscheiden SNAT als Quellübersetzung, PAT als zusätzliche Portübersetzung, DNAT als Zielübersetzung und die separate Rolle einer Firewall.",
+          "caption": "Eigene Lernskizze: Übersetzungsrichtung und Zugriffserlaubnis sind getrennte Entwurfsentscheidungen."
+        },
+        {
+          "type": "quiz",
+          "id": "nat-selection-limits-transfer",
+          "requiredObjective": "nat-selection-limits",
+          "question": "Ein interner HTTPS-Server soll unter einer öffentlichen Adresse erreichbar sein. Welche Planung ist fachlich vollständig?",
+          "options": [
+            {
+              "text": "DNAT/Portweiterleitung für den Zielport, dazu eine passende Firewallfreigabe und Prüfung von Dienst, Rückweg und Protokollverträglichkeit",
+              "rationale": "Richtig. Übersetzung, Zugriffskontrolle und Rückweg werden als getrennte Anforderungen geplant.",
+              "correct": true
+            },
+            {
+              "text": "Nur SNAT konfigurieren; dadurch werden eingehende Ziele automatisch einem Server zugeordnet.",
+              "rationale": "SNAT verändert typischerweise die Quelle ausgehender Verbindungen und definiert keine gezielte eingehende Serverzuordnung.",
+              "correct": false
+            },
+            {
+              "text": "PAT aktivieren und daraus ableiten, dass jede eingehende Verbindung sicher erlaubt ist.",
+              "rationale": "PAT ist keine Zugriffserlaubnis; eine Firewallrichtlinie bleibt notwendig.",
+              "correct": false
+            },
+            {
+              "text": "Die private Serveradresse unverändert im öffentlichen Internet routen, weil NAT private Bereiche global sichtbar macht.",
+              "rationale": "Private IPv4-Adressen werden im öffentlichen Internet nicht allein durch ihre Existenz global geroutet.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Grenzen im Betrieb",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "NAT/PAT spart öffentliche IPv4-Adressen, erzeugt aber zustandsbehaftete Abhängigkeiten. Tabellenkapazität und verfügbare externe Sockets sind endlich; Neustart oder Ablauf eines Eintrags kann Verbindungen trennen. Protokolle, die Adressen oder Ports in ihren Nutzdaten tragen oder Header kryptografisch schützen, können zusätzliche Verfahren benötigen oder scheitern.\n\nDie ursprüngliche Ende-zu-Ende-Adressierbarkeit wird verändert. Eingehende Dienste benötigen explizite Zuordnungen. Logging und Fehlersuche müssen Zeit, Protokoll sowie interne und externe Sockets gemeinsam erfassen. Diese Grenzen sind ein wichtiger Grund, NAT nicht mit Sicherheit oder universeller Konnektivität gleichzusetzen."
+        },
+        {
+          "type": "callout",
+          "kind": "warning",
+          "label": "Zeit- und Produktabhängigkeit",
+          "markdown": "Portwahl, Mappingtyp, Timeout, Hairpinning und Application-Level-Gateways unterscheiden sich. Plane und teste diese Eigenschaften mit der tatsächlich eingesetzten NAT-/Firewall-Plattform."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "nat-snat-dnat",
+              "label": "SNAT und DNAT",
+              "front": "Welche Headerrichtung unterscheidet SNAT und DNAT?",
+              "back": "SNAT ersetzt die Quelladresse, DNAT die Zieladresse. Eine Portweiterleitung ist ein typischer DNAT-Fall."
+            },
+            {
+              "id": "nat-pat-socket",
+              "label": "PAT-Schlüssel",
+              "front": "Warum benötigt PAT neben der öffentlichen IP auch Ports und Protokoll?",
+              "back": "Damit das äußere Fünf-Tupel jeder aktiven Verbindung eindeutig bleibt und Antworten dem richtigen internen Socket zugeordnet werden."
+            },
+            {
+              "id": "nat-not-firewall",
+              "label": "NAT und Firewall",
+              "front": "Warum ist NAT kein Ersatz für eine Firewall?",
+              "back": "NAT übersetzt Adressen und Ports. Eine Firewall setzt eine Zugriffspolitik durch; Berechtigung muss separat definiert werden."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "nat-pat-free-recall",
+          "title": "Eine Verbindung vorwärts und rückwärts erklären",
+          "prompt": "Erkläre eine PAT-Verbindung vom privaten Client zum Webserver und zurück. Grenze anschließend SNAT, DNAT und Firewall voneinander ab und nenne zwei Betriebsgrenzen.",
+          "label": "Deine Erklärung",
+          "placeholder": "Ausgehend wird …",
+          "minLength": 140,
+          "model": "PAT ersetzt ausgehend privaten Quell-Socket durch einen eindeutigen öffentlichen Socket und speichert die Zuordnung. Die Antwort wird über diesen Zustand auf den internen Socket zurückgebildet. SNAT ändert die Quelle, DNAT das Ziel; eine Portweiterleitung ist DNAT. Die Firewall entscheidet separat über Zugriff. Grenzen sind unter anderem endliche Zustandstabellen, Timeouts und Protokolle mit eingebetteten oder geschützten Adressinformationen."
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **IT-Berufe Fachstufe II – Lernfelder 10–12 (2023), PDF-Seiten 191–192:** Socket-Mapping, SNAT, DNAT, Portweiterleitung und Grenzen.\n- **IT-Berufe – Lernfelder 6–9 (2022):** ergänzender prüfungsnaher NAT-Kontext.\n\nDie falschen EUROPA-DSGVO- und RAID-Treffer wurden ausgeschlossen. Alle Tabellen, Fälle und Diagramme sind eigenständig erstellt."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,231 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "jumbo-frames-oversubscription",
+    "slug": "jumbo-frames-oversubscription",
+    "title": "Jumbo Frames und Oversubscription getrennt bewerten",
+    "description": "Wirksame Path-MTU über alle beteiligten Komponenten bestimmen, Jumbo-Frame-Risiken prüfen und Access-zu-Uplink-Oversubscription samt gleichzeitiger Last berechnen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-5",
+    "groupLabel": "Block N5 · Switching und VLANs",
+    "itemId": "ga2-5__11",
+    "week": "KW 39",
+    "estimatedMinutes": 27,
+    "relevance": "hoch",
+    "sources": ["itlf10-12-2023", "itlf6-9-2022"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "path-mtu",
+      "label": "für einen Ende-zu-Ende-Pfad die kleinste wirksame MTU bestimmen und einen Jumbo-Frame-Fehler von Endpunkt bis Ziel systematisch eingrenzen"
+    },
+    {
+      "id": "oversubscription-load",
+      "label": "Access-zu-Uplink-Oversubscription und gleichzeitige Auslastung berechnen sowie deren Kapazitätswirkung klar von der Rahmengröße trennen"
+    }
+  ],
+  "intro": "Jumbo Frames und Oversubscription werden oft gemeinsam erwähnt, lösen aber verschiedene Fragen. MTU begrenzt die Größe eines IP-Pakets beziehungsweise Rahmens, den ein Pfadabschnitt tragen kann. Oversubscription vergleicht angebotene Zugangskapazität oder reale Gleichzeitlast mit der Uplink-Kapazität. Größere Frames können den Aufwand pro Nutzdatenmenge senken, machen einen überlasteten Uplink aber nicht schneller.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "Chunks itlf10-12-2023:page:0232, itlf10-12-2023:page:0358 und itlf10-12-2023:page:0359",
+        "use": "Sichtbare MTU-1500-Konfiguration auf VLAN-, Bonding- und Switchschnittstellen sowie Link-Aggregation als Pfadkomponente",
+        "reviewStatus": "Konfigurationsausgaben geprüft; sie belegen MTU-Werte, erklären aber weder Jumbo Frames noch Path MTU vollständig"
+      },
+      {
+        "sourceId": "itlf6-9-2022",
+        "sourceLocator": "Chunk itlf6-9-2022:00212",
+        "use": "Managed-Switch-Vergleich mit 24 Gigabit-Accessports und unterschiedlichen Gigabit-/SFP+-Uplinks als Ausgangspunkt für Kapazitätsdimensionierung",
+        "reviewStatus": "Nur die lesbaren Port- und Uplinkangaben genutzt; Produktnamen, Preise und private Abbildungen wurden nicht übernommen"
+      }
+    ],
+    "notes": [
+      "Der Batch-Kandidat itlf10-12-2023:page:0375 behandelt VLAN, RSTP, Link Aggregation und Projektdokumentation, aber keine Jumbo-Frame- oder Oversubscription-Erklärung; er wurde als Fehltreffer ausgeschlossen.",
+      "Der Batch-Kandidat europa-integratoren-2026:00499 behandelt die Hochverfügbarkeit eines WLAN-Controllers und ist ein vollständiger Fehltreffer.",
+      "Der Figurenkandidat itlf6-9-2022:figure:5ec546e09748 gehört zu Sketch, Wireframes und Mockups; er wurde als vollständiger Fehltreffer ausgeschlossen.",
+      "Ersatzstellen itlf10-12-2023:page:0232 sowie :page:0358/:page:0359 zeigen reale MTU-Werte; itlf6-9-2022:00212 liefert einen verwertbaren Access-/Uplink-Vergleich. Die weitergehende Path-MTU-Logik wurde konservativ gegen RFC 8200 und RFC 8201 geprüft.",
+      "Jumbo Frame bezeichnet keine herstellerübergreifend exakt einheitliche Größe. Zulässige Layer-2-Rahmengröße, IP-MTU, VLAN-/Tunnel-Overhead und Konfigurationsbereich müssen je Gerät, Interface und Betriebssystem geprüft werden.",
+      "Diagramme, Topologie, Zahlen und Antwortoptionen sind eigenständig erstellt; private Buchgrafiken werden nicht veröffentlicht."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "end-to-end-mtu-path",
+      "type": "topology",
+      "title": "Die kleinste MTU im Pfad setzt die Grenze",
+      "description": "Storage-Host und Server sind auf 9000 Byte eingestellt, doch der Firewallpfad unterstützt nur 1500 Byte. Die wirksame Path MTU ist deshalb 1500 Byte; eine große lokale Konfiguration an den Endpunkten reicht nicht.",
+      "zones": [
+        {"id": "source-zone", "label": "Quellseite", "x": 25, "y": 80, "width": 285, "height": 350, "kind": "zone-source"},
+        {"id": "transit-zone", "label": "Transit", "x": 350, "y": 80, "width": 280, "height": 350, "kind": "zone-transit"},
+        {"id": "target-zone", "label": "Zielseite", "x": 670, "y": 80, "width": 260, "height": 350, "kind": "zone-target"}
+      ],
+      "nodes": [
+        {"id": "storage-host", "label": "Storage-Host", "detail": "IP-MTU 9000", "x": 120, "y": 170, "kind": "server"},
+        {"id": "virtual-switch", "label": "vSwitch/NIC", "detail": "MTU 9000 geprüft", "x": 220, "y": 330, "kind": "switch"},
+        {"id": "access-switch", "label": "Access/LAG", "detail": "MTU 9000 geprüft", "x": 440, "y": 170, "kind": "switch"},
+        {"id": "firewall-link", "label": "Firewallpfad", "detail": "MTU 1500 · Engstelle", "x": 540, "y": 330, "kind": "warning"},
+        {"id": "storage-target", "label": "Storage-Ziel", "detail": "IP-MTU 9000", "x": 800, "y": 250, "kind": "server"}
+      ],
+      "edges": [
+        {"from": "storage-host", "to": "virtual-switch", "label": "9000", "kind": "jumbo"},
+        {"from": "virtual-switch", "to": "access-switch", "label": "9000", "kind": "jumbo"},
+        {"from": "access-switch", "to": "firewall-link", "label": "nur 1500", "kind": "blocked"},
+        {"from": "firewall-link", "to": "storage-target", "label": "Path MTU 1500", "kind": "default"}
+      ]
+    },
+    {
+      "id": "uplink-capacity-model",
+      "type": "flow",
+      "title": "Portkapazität und reale Gleichzeitlast sind zwei verschiedene Quoten",
+      "description": "48 Gigabit-Accessports teilen sich einen 10-Gigabit-Uplink. Das Portverhältnis beschreibt die maximale Überbuchung; die gemessene beziehungsweise geplante Gleichzeitlast entscheidet, ob aktuell ein Engpass entsteht.",
+      "items": [
+        {"label": "48 × 1 Gbit/s Access", "detail": "48 Gbit/s theoretische Summe aller Zugangsport-Raten"},
+        {"label": "Portverhältnis", "detail": "48 Gbit/s ÷ 10 Gbit/s = 4,8 : 1 Oversubscription"},
+        {"label": "16 × 0,8 Gbit/s aktiv", "detail": "12,8 Gbit/s gleichzeitige angebotene Last im Szenario"},
+        {"label": "10-Gbit/s-Uplink", "detail": "128 Prozent Nachfrage; mindestens 2,8 Gbit/s müssen warten, geformt oder verworfen werden"},
+        {"label": "Kapazitätsentscheidung", "detail": "Nutzungsprofil messen, Uplink erhöhen, Last verteilen oder Anwendung zeitlich steuern"}
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Zwei Engpässe auseinanderhalten",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "jumbo-oversub-diagnostic",
+          "diagnostic": true,
+          "question": "Ein Switch hat 48 Gigabit-Accessports und einen 10-Gigabit-Uplink. Nach Aktivierung von 9000-Byte-MTU bleibt der Uplink bei gleichzeitigen Backups überlastet. Warum?",
+          "options": [
+            {"text": "Jumbo Frames erhöhen die physische Uplinkrate automatisch auf 48 Gbit/s", "rationale": "Rahmengröße ändert nicht die ausgehandelte Linkrate.", "correct": false},
+            {"text": "MTU und Uplink-Kapazität sind getrennt; größere Frames beseitigen keine Nachfrage oberhalb von 10 Gbit/s", "rationale": "Richtig. Effizienz pro Nutzdatenmenge und verfügbare Bitrate sind verschiedene Größen.", "correct": true},
+            {"text": "Oversubscription beschreibt ausschließlich die Anzahl der VLANs", "rationale": "Oversubscription vergleicht aggregierte Zugangskapazität mit der Engpasskapazität.", "correct": false},
+            {"text": "Eine MTU von 9000 garantiert verlustfreie Übertragung auf jedem Pfad", "rationale": "Alle Pfadkomponenten müssen die Größe unterstützen; Kapazitätsüberlast bleibt möglich.", "correct": false}
+          ]
+        },
+        {"type": "callout", "kind": "merksatz", "label": "Zwei getrennte Fragen", "markdown": "**MTU:** Wie groß darf ein Paket auf dem Pfad sein? **Oversubscription:** Wie viel gleichzeitige Datenrate konkurriert um den Uplink? Eine Antwort ersetzt die andere nicht."}
+      ]
+    },
+    {
+      "title": "Jumbo Frames als Ende-zu-Ende-Eigenschaft",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Bei Ethernet wird im Alltag häufig eine IP-MTU von 1500 Byte verwendet. **Jumbo Frame** ist kein Name für eine überall exakt gleiche Größe; Werte um 9000 Byte sind verbreitet, aber der unterstützte Bereich und die Zählweise unterscheiden sich. Prüfe daher IP-MTU und maximal zulässige Layer-2-Rahmengröße getrennt.\n\nDie wirksame Path MTU entspricht der kleinsten Link-MTU des betrachteten IP-Pfads. Für einen Storagepfad gehören mindestens Host-NIC, Treiber, vSwitch oder Hypervisor, Accessport, VLAN-Trunk, LAG, Layer-3-Schnittstelle, Firewall und Ziel-NIC in die Checkliste. Tunnel oder zusätzliche Tags benötigen eigenen Overhead und können die nutzbare IP-MTU weiter begrenzen.\n\nIst ein IPv6-Paket für den nächsten Link zu groß, verwirft der Router es und sendet grundsätzlich ICMPv6 Packet Too Big; fragmentieren darf nur die Quelle. Gestörte Path-MTU-Erkennung kann deshalb zu Verbindungen führen, bei denen kleine Pakete funktionieren, große Übertragungen aber hängen oder abbrechen."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Die Path MTU ist das Minimum aller Link-MTUs; Minimum aus neuntausend, neuntausend, eintausendfünfhundert und neuntausend ist eintausendfünfhundert Byte",
+          "mathml": "<math display=\"block\"><mrow><msub><mi>MTU</mi><mtext>Pfad</mtext></msub><mo>=</mo><mi>min</mi><mo>(</mo><msub><mi>MTU</mi><mn>1</mn></msub><mo>,</mo><mo>…</mo><mo>,</mo><msub><mi>MTU</mi><mi>n</mi></msub><mo>)</mo><mo>=</mo><mi>min</mi><mo>(</mo><mn>9000</mn><mo>,</mo><mn>9000</mn><mo>,</mo><mn>1500</mn><mo>,</mo><mn>9000</mn><mo>)</mo><mo>=</mo><mn>1500</mn><mtext> Byte</mtext></mrow></math>",
+          "legend": ["Path MTU = kleinste Link-MTU des IP-Pfads", "Jumbo an beiden Endpunkten reicht nicht", "Layer-2-Maximalrahmen und Overhead zusätzlich plattformspezifisch prüfen"]
+        },
+        {"type": "figure", "diagramId": "end-to-end-mtu-path", "alt": "Storage-Host, vSwitch, Access-Switch und Storage-Ziel unterstützen 9000 Byte, doch ein Firewallpfad unterstützt nur 1500 Byte und bestimmt damit die Path MTU.", "caption": "Eigene Lernskizze: Die kleinste Pfadkomponente entscheidet, nicht der größte Endpunktwert."}
+      ]
+    },
+    {
+      "title": "Oversubscription und Gleichzeitlast berechnen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Das **Oversubscription-Verhältnis** vergleicht die Summe der nominalen Accessraten mit der Uplinkrate. 48 Ports mit je 1 Gbit/s an einem 10-Gbit/s-Uplink ergeben 4,8 : 1. Das ist ein Worst-Case-Portverhältnis, keine Behauptung, dass ständig 48 Gbit/s anliegen.\n\nFür die Betriebslast zählt die **gleichzeitige Nachfrage**. Senden im Beispiel 16 Systeme jeweils 0,8 Gbit/s, entstehen 12,8 Gbit/s Nachfrage und damit 128 Prozent Auslastungsanforderung am 10-Gbit/s-Uplink. Kurzzeitige Bursts können Puffer nutzen; dauerhaft kann der Link die überschüssigen 2,8 Gbit/s nicht übertragen. Telemetrie, Anwendungsmuster, Redundanz und Wachstum entscheiden über die Dimensionierung."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Oversubscription ist Summe der Accessraten geteilt durch Uplinkrate, achtundvierzig mal ein geteilt durch zehn ergibt vier Komma acht zu eins; Lastgrad ist sechzehn mal null Komma acht geteilt durch zehn ergibt eins Komma achtundzwanzig oder einhundertachtundzwanzig Prozent",
+          "mathml": "<math display=\"block\"><mtable columnalign=\"right center left\" rowspacing=\"0.5em\"><mtr><mtd><msub><mi>R</mi><mtext>over</mtext></msub></mtd><mtd><mo>=</mo></mtd><mtd><mfrac><mrow><mo>∑</mo><msub><mi>C</mi><mtext>Access</mtext></msub></mrow><msub><mi>C</mi><mtext>Uplink</mtext></msub></mfrac><mo>=</mo><mfrac><mrow><mn>48</mn><mo>·</mo><mn>1</mn></mrow><mn>10</mn></mfrac><mo>=</mo><mn>4,8</mn><mo>:</mo><mn>1</mn></mtd></mtr><mtr><mtd><mi>U</mi></mtd><mtd><mo>=</mo></mtd><mtd><mfrac><mrow><mn>16</mn><mo>·</mo><mn>0,8</mn></mrow><mn>10</mn></mfrac><mo>=</mo><mn>1,28</mn><mo>=</mo><mn>128</mn><mo>%</mo></mtd></mtr></mtable></math>",
+          "legend": ["C = nominale Port- beziehungsweise Uplinkkapazität", "R_over = theoretisches Portverhältnis", "U = gleichzeitige Nachfrage geteilt durch Uplinkkapazität"]
+        },
+        {"type": "figure", "diagramId": "uplink-capacity-model", "alt": "Rechenweg von 48 Gigabit-Accessports über ein Oversubscription-Verhältnis von 4,8 zu 1 und eine gleichzeitige Last von 12,8 Gbit/s zu 128 Prozent Nachfrage am 10-Gigabit-Uplink.", "caption": "Eigene Lernskizze: Portverhältnis plant den Worst Case; Gleichzeitlast beschreibt das konkrete Szenario."},
+        {
+          "type": "numeric",
+          "id": "oversub-guided-ratio",
+          "title": "Portverhältnis berechnen",
+          "prompt": "24 Accessports mit je 1 Gbit/s teilen sich einen 12-Gbit/s-Uplink. Wie groß ist das Oversubscription-Verhältnis als Zahl vor ': 1'?",
+          "label": "Verhältnis",
+          "placeholder": "z. B. 2",
+          "expected": 2,
+          "tolerance": 0,
+          "correctFeedback": "Richtig. 24 Gbit/s nominale Accesssumme geteilt durch 12 Gbit/s Uplink ergeben 2 : 1.",
+          "wrongFeedback": "Addiere zuerst die 24 Accessraten und teile die Summe durch die Uplinkrate.",
+          "correctMath": {"ariaLabel": "Vierundzwanzig mal ein geteilt durch zwölf ergibt zwei zu eins", "mathml": "<math display=\"block\"><mrow><mfrac><mrow><mn>24</mn><mo>·</mo><mn>1</mn></mrow><mn>12</mn></mfrac><mo>=</mo><mn>2</mn><mo>:</mo><mn>1</mn></mrow></math>", "legend": ["24 Gbit/s Accesssumme", "12 Gbit/s Uplink"]}
+        }
+      ]
+    },
+    {
+      "title": "Geführte Fehlersuche und Transfer",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "jumbo-troubleshooting-sequence",
+          "title": "Große Übertragungen scheitern, kleine Pings funktionieren",
+          "prompt": "Bringe die MTU-Fehlersuche in eine belastbare Reihenfolge.",
+          "tag": "Geführte Übung",
+          "steps": [
+            {"id": "measure", "label": "Mit geeigneten Paketgrößen und ohne verdeckte Fragmentannahmen die größte funktionierende Größe eingrenzen"},
+            {"id": "define-path", "label": "Quelle, Ziel, VLANs, L3-Übergänge, Tunnel und tatsächlichen Hin-/Rückweg erfassen"},
+            {"id": "inspect", "label": "MTU und maximale Rahmengröße an NIC, vSwitch, Ports, Trunks, LAG, Router und Firewall prüfen"},
+            {"id": "correct", "label": "Die kleinste abweichende Stelle oder die Endpunktgröße gezielt korrigieren"},
+            {"id": "observe", "label": "Drops, Fehlerzähler und ICMP Packet Too Big beziehungsweise Fragment-needed-Meldungen sichern"}
+          ],
+          "expected": ["define-path", "measure", "observe", "inspect", "correct"],
+          "correctFeedback": "Richtig. Der reale Pfad und eine reproduzierbare Größengrenze führen zu Belegen und erst danach zur gezielten Korrektur.",
+          "wrongFeedback": "Nicht blind alle Geräte auf 9000 setzen. Erfasse zuerst den tatsächlichen Pfad und die funktionierende Größengrenze."
+        },
+        {"type": "callout", "kind": "warning", "label": "Jumbo ist kein Kapazitätsupgrade", "markdown": "Weniger Frames pro Nutzdatenmenge können Protokoll- und CPU-Aufwand senken. Die Linkrate bleibt jedoch gleich. Ein dauerhaft überbuchter Uplink braucht Kapazitäts-, Last- oder Architekturmaßnahmen, nicht nur eine größere MTU."}
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {"id": "path-mtu-card", "label": "Path MTU", "front": "Welche Komponente bestimmt die Path MTU?", "back": "Die kleinste Link-MTU auf dem tatsächlich genutzten IP-Pfad. Endpunkte mit 9000 Byte reichen nicht, wenn ein Zwischenabschnitt nur 1500 trägt."},
+            {"id": "jumbo-card", "label": "Jumbo Frame", "front": "Warum ist 9000 Byte kein universeller Standardwert?", "back": "Jumbo bezeichnet größere als übliche Frames, doch Maximalgröße, Zählweise, VLAN-/Tunnel-Overhead und Konfiguration unterscheiden sich je Plattform."},
+            {"id": "oversub-card", "label": "Oversubscription", "front": "Was unterscheidet Portverhältnis und reale Auslastung?", "back": "Das Portverhältnis nutzt nominale Accesssummen als Worst Case. Reale Auslastung nutzt die zeitgleich angebotene Last und muss gemessen oder plausibel modelliert werden."}
+          ]
+        },
+        {"type": "recall", "id": "jumbo-oversub-recall", "title": "Beide Modelle ohne Vorlage trennen", "prompt": "Erkläre einem Kunden, warum Jumbo Frames Ende zu Ende geprüft werden müssen und warum sie eine 4,8:1-Oversubscription nicht beseitigen. Nenne Formeln, Belege und mindestens eine sinnvolle Maßnahme je Problem.", "label": "Deine Erklärung", "placeholder": "Die Path MTU ist … Das Portverhältnis ist …", "minLength": 190, "model": "Die Path MTU ist das Minimum aller Link-MTUs des realen Pfads. Deshalb werden Host-NIC, vSwitch, Switchports, Trunks, LAG, Router, Firewall, Tunnel und Ziel geprüft; die kleinste Stelle wird korrigiert oder die Endpunkt-MTU passend reduziert. Oversubscription ist die Summe nominaler Accessraten geteilt durch die Uplinkrate, hier 48/10 = 4,8:1. Ob ein Engpass entsteht, zeigt die gleichzeitige Nachfrage. Jumbo kann Frame- und CPU-Overhead senken, erhöht aber nicht die 10-Gbit/s-Linkrate; helfen können mehr Uplinkkapazität, Lastverteilung oder zeitliche Steuerung."}
+      ]
+    },
+    {
+      "title": "Lernziel-Check und Quellenlage",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "path-mtu-transfer",
+          "requiredObjective": "path-mtu",
+          "question": "Host, vSwitch, Access-Switch und Ziel sind auf MTU 9000 gesetzt. Die geroutete Firewallstrecke unterstützt 1500. Kleine Tests funktionieren, große IPv6-Übertragungen nicht. Welche Diagnose ist am besten?",
+          "options": [
+            {"text": "Die Path MTU beträgt 9000, weil beide Endpunkte diesen Wert haben", "rationale": "Die kleinste Link-MTU des Pfads setzt die Grenze; Zwischenkomponenten zählen mit.", "correct": false},
+            {"text": "Die Path MTU beträgt 1500; Packet-Too-Big-Signale, Drops und alle Pfadkomponenten sind zu prüfen, statt nur Endpunkte größer zu konfigurieren", "rationale": "Richtig. Das benennt Grenze, Beleg und systematische Diagnose.", "correct": true},
+            {"text": "Der 10-Gbit/s-Uplink muss wegen der MTU automatisch auf 1 Gbit/s zurückfallen", "rationale": "Rahmengröße und ausgehandelte Linkrate sind getrennte Eigenschaften.", "correct": false},
+            {"text": "IPv6-Router fragmentieren das Paket unterwegs in jedem Fall", "rationale": "IPv6-Router fragmentieren weitergeleitete Pakete nicht; die Quelle muss auf Path-MTU-Information reagieren.", "correct": false}
+          ]
+        },
+        {
+          "type": "numeric",
+          "id": "oversub-transfer",
+          "requiredObjective": "oversubscription-load",
+          "title": "Oversubscription übertragen",
+          "prompt": "32 Accessports mit je 2,5 Gbit/s teilen sich einen 20-Gbit/s-Uplink. Wie groß ist das theoretische Oversubscription-Verhältnis als Zahl vor ': 1'?",
+          "label": "Verhältnis",
+          "placeholder": "z. B. 4",
+          "expected": 4,
+          "tolerance": 0,
+          "correctFeedback": "Richtig. 32 mal 2,5 Gbit/s ergeben 80 Gbit/s Accesssumme; 80 geteilt durch 20 ergibt 4 : 1.",
+          "wrongFeedback": "Multipliziere Portzahl und Accessrate und teile die Summe durch die Uplinkrate. Die MTU spielt in dieser Kapazitätsquote keine Rolle.",
+          "correctMath": {"ariaLabel": "Zweiunddreißig mal zwei Komma fünf geteilt durch zwanzig ergibt vier zu eins", "mathml": "<math display=\"block\"><mrow><mfrac><mrow><mn>32</mn><mo>·</mo><mn>2,5</mn></mrow><mn>20</mn></mfrac><mo>=</mo><mfrac><mn>80</mn><mn>20</mn></mfrac><mo>=</mo><mn>4</mn><mo>:</mo><mn>1</mn></mrow></math>", "legend": ["80 Gbit/s nominale Accesssumme", "20 Gbit/s Uplink", "MTU ist nicht Teil dieser Formel"]}
+        },
+        {
+          "type": "markdown",
+          "markdown": "Die Batch-Quellen liefern nur einzelne MTU-Ausgaben und einen Access-/Uplink-Produktvergleich; die ursprünglich vorgeschlagenen Jumbo-Fundstellen und die Figur waren Fehltreffer. Deshalb bleibt die Einheit **CURATED_DRAFT**. Vor Umsetzung müssen Gerätehandbücher, unterstützte L2-Rahmengrößen, IP-MTU, Tunneloverhead und reale Lastmessungen ergänzt werden."
+        }
+      ]
+    }
+  ]
+}

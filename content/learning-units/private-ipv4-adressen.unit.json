@@ -1,0 +1,400 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "private-ipv4-adressen",
+    "slug": "private-ipv4-adressen",
+    "title": "Private und besondere IPv4-Adressen unterscheiden",
+    "description": "RFC-1918-Adressen sicher erkennen und sie von IPv4-Link-Local, Loopback, Multicast und öffentlich nutzbaren Adressen abgrenzen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-2",
+    "groupLabel": "Block N2 · IPv4-Adressierung und Subnetting",
+    "itemId": "ga2-2__1",
+    "week": "KW 36",
+    "estimatedMinutes": 18,
+    "relevance": "hoch",
+    "sources": ["itlf6-9-2022", "europa-integratoren-2026"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "address-classification",
+      "label": "eine gegebene IPv4-Adresse korrekt als RFC-1918-privat, Link-Local, Loopback, Multicast oder nicht abschließend klassifiziert einordnen"
+    },
+    {
+      "id": "scenario-selection",
+      "label": "für ein Netzwerkszenario einen geeigneten Adressbereich auswählen und dessen Reichweite sowie Routingfolgen begründen"
+    }
+  ],
+  "intro": "Nicht öffentlich bedeutet nicht automatisch privat. Neben den drei privaten RFC-1918-Blöcken existieren weitere besondere Bereiche mit ganz anderen Aufgaben, zum Beispiel Loopback und IPv4-Link-Local.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf6-9-2022",
+        "sourceLocator": "Chunk itlf6-9-2022:00209, Markdown-Zeilen 5762–5790",
+        "use": "Tabelle zu privaten IPv4-Bereichen, Loopback, Multicast, APIPA und öffentlichen Adressen",
+        "reviewStatus": "Adressbereiche geprüft; pauschale Restkategorie öffentlich wegen weiterer Sonderbereiche fachlich eingeschränkt"
+      },
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunk europa-integratoren-2026:00494, Markdown-Zeilen 5085–5180",
+        "use": "prüfungsnahes Planungsszenario innerhalb des privaten Netzes 172.22.0.0/16",
+        "reviewStatus": "Szenarioprinzip verwendet; Originalwerte nicht als Aufgabe kopiert"
+      },
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunk europa-integratoren-2026:01046, Markdown-Zeilen 9932–10019",
+        "use": "ausgearbeitete private Subnetzplanung und sichere Einordnung von 172.22.0.0/16",
+        "reviewStatus": "Adressplan fachlich geprüft und nur als Evidenz verwendet"
+      }
+    ],
+    "notes": [
+      "Die Aussage, alle übrigen IPv4-Adressen seien öffentlich, ist zu grob: Dokumentations-, Shared-, Multicast- und weitere Sonderbereiche müssen zusätzlich ausgeschlossen werden.",
+      "Private RFC-1918-Adressen können innerhalb von Organisationen und über private WAN- oder VPN-Verbindungen geroutet werden; sie werden lediglich nicht als globale Unicast-Präfixe im öffentlichen Internet weitergeleitet.",
+      "NAT ist ein verbreiteter Weg für ausgehenden Internetzugang privater Clients, aber keine Eigenschaft der privaten Adresse selbst und kein Ersatz für eine Firewall.",
+      "Gemäß Lernmodul-Vertrag bleibt die agentisch erstellte Einheit bis zur menschlichen Fach- und Verständlichkeitsprüfung CURATED_DRAFT."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "private-address-blocks",
+      "type": "comparison",
+      "title": "Drei private Blöcke, drei Präfixgrenzen",
+      "description": "RFC 1918 reserviert genau drei nicht zusammenhängende IPv4-Bereiche für private Netze.",
+      "items": [
+        {
+          "label": "10.0.0.0/8",
+          "detail": "alle Adressen mit erstem Oktett 10"
+        },
+        {
+          "label": "172.16.0.0/12",
+          "detail": "nur 172.16.0.0 bis 172.31.255.255; 172.15 und 172.32 gehören nicht dazu"
+        },
+        {
+          "label": "192.168.0.0/16",
+          "detail": "alle Adressen mit den ersten beiden Oktetten 192.168"
+        }
+      ]
+    },
+    {
+      "id": "address-classifier",
+      "type": "flow",
+      "title": "Adressklassifikation ohne Restekiste",
+      "description": "Besondere Bereiche werden gezielt geprüft; nur außerhalb bekannter Sonderbereiche kommt eine global nutzbare Adresse infrage.",
+      "items": [
+        {
+          "label": "127.0.0.0/8?",
+          "detail": "Loopback; Kommunikation bleibt im eigenen Host"
+        },
+        {
+          "label": "169.254.0.0/16?",
+          "detail": "IPv4-Link-Local; bleibt auf dem lokalen Link und weist häufig auf fehlgeschlagenes DHCP hin"
+        },
+        {
+          "label": "RFC-1918-Block?",
+          "detail": "private Adresse für interne Netze; nicht global im öffentlichen Internet geroutet"
+        },
+        {
+          "label": "224.0.0.0/4?",
+          "detail": "Multicast; adressiert eine Empfängergruppe statt eines einzelnen Hosts"
+        },
+        {
+          "label": "Kein bekannter Sonderbereich?",
+          "detail": "kann öffentlich nutzbar sein, muss aber vor Verwendung gegen weitere Reservierungen geprüft werden"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Liegt 172 immer privat?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "private-ipv4-diagnostic",
+          "diagnostic": true,
+          "question": "Wie ist die Adresse 172.32.0.1 einzuordnen?",
+          "options": [
+            {
+              "text": "Sie ist privat, weil jede Adresse mit 172 beginnt.",
+              "rationale": "Der private /12-Block umfasst nur den Bereich von 172.16 bis 172.31 im zweiten Oktett.",
+              "correct": false
+            },
+            {
+              "text": "Sie liegt außerhalb des privaten 172.16.0.0/12-Blocks.",
+              "rationale": "Richtig. Das zweite Oktett 32 liegt bereits hinter der privaten Obergrenze 31.",
+              "correct": true
+            },
+            {
+              "text": "Sie ist Loopback, weil das zweite Oktett größer als 31 ist.",
+              "rationale": "Loopback wird durch das Präfix 127.0.0.0/8 bestimmt, nicht durch das zweite Oktett einer 172-Adresse.",
+              "correct": false
+            },
+            {
+              "text": "Sie ist APIPA, weil sie nicht im privaten Bereich liegt.",
+              "rationale": "IPv4-Link-Local beziehungsweise APIPA verwendet 169.254.0.0/16. Nicht privat bedeutet nicht automatisch APIPA.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Grenzen statt Anfangsziffern",
+          "markdown": "Private Adressen erkennst du an vollständigen **Präfixen**, nicht an einer groben Aussage wie „beginnt mit 172“."
+        }
+      ]
+    },
+    {
+      "title": "Die drei privaten IPv4-Bereiche",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "RFC 1918 reserviert drei Blöcke für private Netze: `10.0.0.0/8`, `172.16.0.0/12` und `192.168.0.0/16`. Diese Präfixe dürfen intern strukturiert und auch zwischen eigenen Standorten geroutet werden. Sie werden jedoch nicht als globale Unicast-Netze durch das öffentliche Internet transportiert.\n\nBesonders fehleranfällig ist der mittlere Block. Privat ist nicht das gesamte 172er-Netz, sondern nur der Bereich von 172.16.0.0 bis 172.31.255.255. Adressen wie 172.15.4.2 oder 172.32.0.1 liegen außerhalb davon.\n\nFür den Internetzugang verwendet ein internes Netz häufig eine Adressübersetzung am Übergang. NAT macht aus einer privaten Adresse aber keine öffentlich zugewiesene Adresse und ersetzt keine Sicherheitsregel."
+        },
+        {
+          "type": "figure",
+          "diagramId": "private-address-blocks",
+          "alt": "Vergleich der drei privaten IPv4-Blöcke 10.0.0.0/8, 172.16.0.0/12 und 192.168.0.0/16 mit ihren Grenzen.",
+          "caption": "Eigene Lernskizze: Der 172er-Block endet bereits bei einem zweiten Oktett von 31."
+        },
+        {
+          "type": "quiz",
+          "id": "private-range-practice",
+          "question": "Welche Adresse gehört zum privaten 172.16.0.0/12-Block?",
+          "options": [
+            {
+              "text": "172.15.255.254",
+              "rationale": "Das zweite Oktett 15 liegt knapp unter der privaten Untergrenze 16.",
+              "correct": false
+            },
+            {
+              "text": "172.23.44.8",
+              "rationale": "Richtig. Das zweite Oktett 23 liegt innerhalb des privaten Bereichs 16 bis 31.",
+              "correct": true
+            },
+            {
+              "text": "172.32.0.5",
+              "rationale": "Das zweite Oktett 32 liegt bereits über der privaten Obergrenze 31.",
+              "correct": false
+            },
+            {
+              "text": "169.254.23.8",
+              "rationale": "Diese Adresse liegt im IPv4-Link-Local-Bereich und nicht in 172.16.0.0/12.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Private, Link-Local und Loopback sauber trennen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Drei häufig verwechselte Kategorien erfüllen verschiedene Aufgaben.\n\n| Kategorie | Bereich | Gültigkeit und typischer Einsatz |\n| --- | --- | --- |\n| privat nach RFC 1918 | 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16 | interne Netze; innerhalb einer Organisation routingfähig, nicht global im öffentlichen Internet |\n| IPv4-Link-Local, oft APIPA genannt | 169.254.0.0/16 | nur lokaler Link; bei Clients häufig ein Hinweis, dass keine DHCP-Zuweisung gelang |\n| Loopback | 127.0.0.0/8 | eigener Host; zum Test lokaler Netzwerkfunktionen |\n| Multicast | 224.0.0.0/4 | Empfängergruppe statt einzelner Host |\n\nEine Adresse außerhalb dieser Blöcke ist nicht automatisch öffentlich nutzbar. IPv4 enthält weitere reservierte Bereiche, etwa für Dokumentation oder besondere Übertragungsarten. In einer realen Planung wird deshalb eine aktuelle Adressregistrierung geprüft."
+        },
+        {
+          "type": "figure",
+          "diagramId": "address-classifier",
+          "alt": "Prüffolge für Loopback, IPv4-Link-Local, private RFC-1918-Bereiche, Multicast und weitere Sonderbereiche.",
+          "caption": "Eigene Lernskizze: Nicht privat ist nur ein Zwischenergebnis, noch kein Beweis für öffentliche Nutzbarkeit."
+        },
+        {
+          "type": "callout",
+          "kind": "warning",
+          "label": "Diagnosehinweis",
+          "markdown": "Eine Adresse aus `169.254.0.0/16` ist kein Ersatz für einen geplanten privaten Adressbereich. Prüfe bei unerwarteter Vergabe zuerst DHCP, VLAN, Verkabelung und Erreichbarkeit des DHCP-Servers."
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Szenario: Client ohne DHCP-Adresse",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Notebook soll im internen Netz `10.40.0.0/16` per DHCP konfiguriert werden. Stattdessen zeigt es `169.254.34.8/16` und erreicht weder das Standardgateway noch interne Server.\n\nDie Adresse ist nicht RFC-1918-privat, sondern IPv4-Link-Local. Sie ermöglicht höchstens Kommunikation auf demselben lokalen Link mit passend konfigurierten Nachbarn. Der Befund spricht dafür, dass die automatische Zuweisung keine verwertbare DHCP-Antwort erhalten hat. Eine manuelle NAT-Regel behebt diese Ursache nicht; zuerst werden Anschluss, VLAN-Zuordnung, DHCP-Relay und DHCP-Dienst geprüft."
+        },
+        {
+          "type": "quiz",
+          "id": "private-scenario-practice",
+          "question": "Welche erste fachliche Schlussfolgerung passt zu 169.254.34.8/16 am Notebook?",
+          "options": [
+            {
+              "text": "Das Notebook besitzt erfolgreich eine private DHCP-Adresse aus 10.40.0.0/16.",
+              "rationale": "Die angezeigte Adresse liegt nicht im geplanten 10.40.0.0/16-Netz und bestätigt daher keine erfolgreiche Zuweisung.",
+              "correct": false
+            },
+            {
+              "text": "Das Notebook verwendet IPv4-Link-Local; der DHCP-Pfad sollte geprüft werden.",
+              "rationale": "Richtig. Der Bereich 169.254.0.0/16 und das Fehlerbild weisen auf eine fehlende reguläre Konfiguration hin.",
+              "correct": true
+            },
+            {
+              "text": "Das Notebook testet ausschließlich seine Loopback-Schnittstelle.",
+              "rationale": "Loopback liegt in 127.0.0.0/8. 169.254.34.8 gehört zum Link-Local-Bereich.",
+              "correct": false
+            },
+            {
+              "text": "Die Adresse ist eine öffentliche Multicast-Adresse.",
+              "rationale": "Multicast beginnt bei 224.0.0.0/4. Die vorliegende Adresse ist weder Multicast noch global öffentlich.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Geführte Übung: Adressen klassifizieren",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "private-classifier-sequence",
+          "title": "Prüfreihenfolge statt Bauchgefühl",
+          "prompt": "Bringe die Schritte für die belastbare Einordnung einer IPv4-Adresse in eine sinnvolle Reihenfolge.",
+          "tag": "Übung",
+          "steps": [
+            {
+              "id": "public",
+              "label": "Erst nach Ausschluss besonderer Bereiche die öffentliche Nutzbarkeit anhand aktueller Zuweisungen prüfen."
+            },
+            {
+              "id": "special",
+              "label": "Loopback, Link-Local und Multicast als besondere Präfixe prüfen."
+            },
+            {
+              "id": "prefix",
+              "label": "Adresse gegen vollständige Präfixgrenzen statt nur gegen das erste Oktett vergleichen."
+            },
+            {
+              "id": "private",
+              "label": "Die drei RFC-1918-Blöcke gezielt prüfen."
+            }
+          ],
+          "expected": ["prefix", "private", "special", "public"],
+          "correctFeedback": "Richtig. Präfixe werden exakt geprüft; öffentlich bleibt erst nach dem Ausschluss weiterer Sonderbereiche als mögliche Kategorie übrig.",
+          "wrongFeedback": "Beginne mit einer exakten Präfixprüfung. Die Kategorie öffentlich darf nicht pauschal als Restekiste verwendet werden."
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Vier Prüfungsanker",
+          "markdown": "Merke dir die Präfixe **10/8**, **172.16/12**, **192.168/16** und zusätzlich die klar getrennten Sonderrollen **127/8** sowie **169.254/16**."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "private-three-ranges",
+              "label": "RFC 1918",
+              "front": "Welche drei IPv4-Präfixe sind privat?",
+              "back": "10.0.0.0/8, 172.16.0.0/12 und 192.168.0.0/16."
+            },
+            {
+              "id": "private-apipa",
+              "label": "Link-Local",
+              "front": "Welche Bedeutung hat eine unerwartete Adresse aus 169.254.0.0/16?",
+              "back": "Sie ist IPv4-Link-Local und weist bei automatisch konfigurierten Clients häufig auf einen fehlgeschlagenen DHCP-Pfad hin."
+            },
+            {
+              "id": "private-loopback",
+              "label": "Loopback",
+              "front": "Welcher Bereich ist für IPv4-Loopback reserviert?",
+              "back": "Der gesamte Bereich 127.0.0.0/8; 127.0.0.1 ist nur die bekannteste einzelne Adresse daraus."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "private-ipv4-recall",
+          "title": "Ohne Nachschlagen erklären",
+          "prompt": "Nenne die drei privaten IPv4-Blöcke und grenze sie anhand von Zweck und Reichweite gegen Link-Local und Loopback ab.",
+          "label": "Deine Erklärung",
+          "placeholder": "Privat sind … Link-Local bedeutet …",
+          "minLength": 100,
+          "model": "Privat sind 10.0.0.0/8, 172.16.0.0/12 und 192.168.0.0/16. Sie können intern geroutet werden, aber nicht als globale Unicast-Netze im öffentlichen Internet. 169.254.0.0/16 ist IPv4-Link-Local und bleibt am lokalen Link. 127.0.0.0/8 ist Loopback und bleibt vollständig im eigenen Host."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check: Transfer",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "private-transfer-classification",
+          "requiredObjective": "address-classification",
+          "question": "Wie ist die Adresse 172.31.250.9 fachlich einzuordnen?",
+          "options": [
+            {
+              "text": "privat nach RFC 1918",
+              "rationale": "Richtig. Das zweite Oktett 31 liegt noch innerhalb des privaten Blocks 172.16.0.0/12.",
+              "correct": true
+            },
+            {
+              "text": "IPv4-Link-Local beziehungsweise APIPA",
+              "rationale": "Link-Local verwendet 169.254.0.0/16 und nicht einen Teil des 172er-Bereichs.",
+              "correct": false
+            },
+            {
+              "text": "Loopback",
+              "rationale": "Loopback wird durch 127.0.0.0/8 abgedeckt.",
+              "correct": false
+            },
+            {
+              "text": "außerhalb des privaten Blocks, weil nur 172.16 privat ist",
+              "rationale": "172.16 ist der Beginn, nicht der einzige private Wert. Der /12-Bereich reicht bis einschließlich 172.31.255.255.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "private-transfer-scenario",
+          "requiredObjective": "scenario-selection",
+          "question": "Eine Organisation plant ein internes Kameranetz für mehrere VLANs und Standorte. Die Geräte sollen keine direkt öffentlich erreichbaren Adressen benötigen. Welche Entscheidung ist am besten begründet?",
+          "options": [
+            {
+              "text": "Einen ausreichend großen RFC-1918-Bereich wählen, intern subnetten und nötigen externen Verkehr kontrolliert am Übergang behandeln.",
+              "rationale": "Richtig. Private Adressen eignen sich für interne, auch standortübergreifend geroutete Netze; externe Kommunikation wird gezielt am Übergang geregelt.",
+              "correct": true
+            },
+            {
+              "text": "Für alle Kameras 127.0.0.0/8 verwenden, weil Loopback besonders sicher ist.",
+              "rationale": "Loopback bleibt im jeweiligen Gerät und kann keine Kommunikation zwischen Kameras, Switches und Servern tragen.",
+              "correct": false
+            },
+            {
+              "text": "169.254.0.0/16 fest als standortübergreifendes Routingnetz planen.",
+              "rationale": "IPv4-Link-Local ist auf den lokalen Link begrenzt und für eine geplante, geroutete Standortstruktur ungeeignet.",
+              "correct": false
+            },
+            {
+              "text": "Eine beliebige Adresse außerhalb der drei Privatbereiche wählen, weil sie damit automatisch frei und öffentlich nutzbar ist.",
+              "rationale": "Außerhalb von RFC 1918 existieren weitere reservierte oder bereits zugewiesene Bereiche. Adressen dürfen nicht beliebig gewählt werden.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Prüfungsformulierung:** Nenne den exakten Präfixbereich und beschreibe seine Reichweite. „Nicht öffentlich“ und „privat“ sind keine austauschbaren Begriffe."
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **IT-Berufe Grundstufe – Lernfelder 6–9 (2022):** Übersicht zu privaten IPv4-Adressen, Loopback, Multicast und APIPA beziehungsweise Link-Local.\n- **EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):** Planung mehrerer Subnetze innerhalb des privaten Bereichs 172.22.0.0/16.\n\nDie pauschale Quellenformulierung „alle weiteren Adressen sind öffentlich“ wurde bewusst nicht übernommen, da IPv4 weitere besondere und reservierte Bereiche besitzt. Text, Fälle und Diagramme wurden vollständig neu erstellt."
+        }
+      ]
+    }
+  ]
+}

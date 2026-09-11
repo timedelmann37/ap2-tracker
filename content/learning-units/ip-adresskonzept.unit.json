@@ -1,0 +1,248 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "ip-adresskonzept",
+    "slug": "ip-adresskonzept",
+    "title": "Ein belastbares IPv4-Adresskonzept entwerfen",
+    "description": "Anforderungen für Standorte und VLANs in einen dokumentierten, erweiterbaren IPv4-Adressplan mit VLSM, Reserven und klaren Vergaberegeln übersetzen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-2",
+    "groupLabel": "Block N2 · IPv4 und Subnetting",
+    "itemId": "ga2-2__6",
+    "week": "KW 36",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "sources": ["europa-integratoren-2026"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "address-plan-design",
+      "label": "aus Gerätebedarf, Segmenten und Wachstumsreserve passende Subnetzgrößen und Netzadressen ableiten"
+    },
+    {
+      "id": "address-plan-documentation",
+      "label": "einen IPv4-Adressplan mit Vergaberegeln, Reserven und vollständigen Netzgrenzen nachvollziehbar dokumentieren"
+    }
+  ],
+  "intro": "Ein Adresskonzept ist mehr als eine ausgefüllte Subnetztabelle. Es verbindet den fachlichen Bedarf mit einer wiederholbaren Vergabelogik: Welche Systeme gehören zusammen, wie viel Wachstum ist realistisch, welche Adressen bleiben für Gateways und Infrastruktur reserviert und wie erkennt eine andere Person später noch die Struktur? Erst diese Entscheidungen machen aus korrektem Subnetting einen betreibbaren Plan.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunk europa-integratoren-2026:01046, Zeilen 9932–10019",
+        "use": "vollständiges Prüfungsmuster zur VLSM-Planung mehrerer Benutzergruppen mit privaten Adressen, direkt angrenzenden Netzen und dokumentierten Netzgrenzen",
+        "reviewStatus": "fachlich geprüft; Organisation, Zahlen und Lösungsszenario vollständig neu erstellt"
+      }
+    ],
+    "notes": [
+      "Die Source-Map-Verweise itlf10-12-2023:page:0168 und page:0188 behandeln Schutzbedarf beziehungsweise Firewallregeln und wurden als Fehltreffer ausgeschlossen.",
+      "Die Source-Map-Stelle europa-integratoren-2026:00341 behandelt VLAN-Tagging; sie eignet sich nur als Segmentierungskontext, nicht als direkter Beleg für den Adressplan.",
+      "Ein allgemeingültiger Reserveprozentsatz existiert nicht. Die Einheit nutzt 25 Prozent ausschließlich als explizite Szenarioanforderung."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "address-plan-map",
+      "type": "topology",
+      "title": "Adressräume folgen den betrieblichen Segmenten",
+      "description": "Vier logisch getrennte VLANs erhalten eigene Subnetze; ein Router beziehungsweise Layer-3-Switch verbindet sie kontrolliert.",
+      "height": 520,
+      "zones": [
+        { "id": "users-zone", "label": "Benutzernetze", "x": 28, "y": 82, "width": 432, "height": 380, "kind": "broadcast" },
+        { "id": "service-zone", "label": "Betriebsnetze", "x": 500, "y": 82, "width": 432, "height": 380, "kind": "collision" }
+      ],
+      "nodes": [
+        { "id": "routing", "label": "L3-Gateway", "detail": "Vergaberegel: erste Hostadresse", "x": 480, "y": 255, "kind": "router" },
+        { "id": "office", "label": "Office", "detail": "10.20.0.0/26", "x": 230, "y": 165, "kind": "client" },
+        { "id": "voice", "label": "VoIP", "detail": "10.20.0.64/27", "x": 230, "y": 350, "kind": "client" },
+        { "id": "guest", "label": "Gast", "detail": "10.20.0.128/25", "x": 730, "y": 165, "kind": "client" },
+        { "id": "manage", "label": "Management", "detail": "10.20.1.0/28", "x": 730, "y": 350, "kind": "server" }
+      ],
+      "edges": [
+        { "from": "routing", "to": "office", "label": "VLAN 10" },
+        { "from": "routing", "to": "voice", "label": "VLAN 20" },
+        { "from": "routing", "to": "guest", "label": "VLAN 30" },
+        { "from": "routing", "to": "manage", "label": "VLAN 99" }
+      ]
+    },
+    {
+      "id": "address-plan-decisions",
+      "type": "flow",
+      "title": "Vom Bedarf zum prüfbaren Adressplan",
+      "description": "Ein belastbarer Plan entsteht aus Bedarf, Reserve, VLSM-Zuweisung und vollständiger Dokumentation.",
+      "items": [
+        { "label": "1 · Segmente und Geräte erfassen", "detail": "Standorte, VLANs, Infrastruktur, DHCP und statische Systeme trennen" },
+        { "label": "2 · Wachstum begründen", "detail": "Reserve pro Segment aus einer benannten Annahme ableiten" },
+        { "label": "3 · VLSM groß nach klein", "detail": "kleinstes ausreichendes Präfix wählen und Blockgrenzen einhalten" },
+        { "label": "4 · Betrieb dokumentieren", "detail": "Netz, Maske, Hosts, Broadcast, Gateway, Vergabe und freie Bereiche festhalten" }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Erst Bedarf oder erst Adressen?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "address-plan-diagnostic",
+          "diagnostic": true,
+          "question": "Was ist der fachlich stärkste erste Schritt für ein neues IPv4-Adresskonzept?",
+          "options": [
+            { "text": "Für jedes Gerät sofort eine beliebige freie Adresse eintragen.", "rationale": "Einzeladressen ohne Segment- und Wachstumskonzept erzeugen später Überschneidungen und schwer erkennbare Regeln.", "correct": false },
+            { "text": "Segmente, aktuelle Teilnehmer, Infrastrukturbedarf und begründetes Wachstum erfassen.", "rationale": "Richtig. Erst aus diesem Bedarf lassen sich Netzgrößen und eine nachvollziehbare Vergabelogik ableiten.", "correct": true },
+            { "text": "Für jedes Segment grundsätzlich ein /24 reservieren.", "rationale": "Das ist einfach, aber weder bedarfsgerecht noch in kleineren Ausgangsräumen immer möglich.", "correct": false },
+            { "text": "Zuerst die Broadcastadressen zufällig verteilen.", "rationale": "Broadcastadressen folgen aus Netzadresse und Präfix; sie sind keine frei wählbaren Startwerte.", "correct": false }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Planungslogik",
+          "markdown": "**Bedarf → Reserve → Präfix → Lage → Dokumentation.** Die Adresse ist Ergebnis einer Entscheidung, nicht ihr Ausgangspunkt."
+        }
+      ]
+    },
+    {
+      "title": "Kapazität aus Anforderungen ableiten",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Für jedes Segment werden Endgeräte, Infrastrukturadressen und eine ausdrücklich begründete Reserve addiert. Beispiel: Ein Office-Netz startet mit 40 Teilnehmern; der Auftrag verlangt 25 Prozent Wachstumsreserve. Damit müssen mindestens 50 Teilnehmeradressen planbar sein. Ein /27 bietet nur 30 klassisch nutzbare Hostadressen, ein /26 bietet 62 und ist deshalb das kleinste ausreichende Präfix."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Geplanter Bedarf ist aufgerundet 40 mal 1 plus 0 Komma 25 gleich 50 Hosts; zwei hoch 6 minus 2 gleich 62 nutzbare Adressen; Präfix ist 32 minus 6 gleich 26",
+          "mathml": "<math display=\"block\"><mrow><msub><mi>H</mi><mtext>Plan</mtext></msub><mo>=</mo><mo>⌈</mo><mn>40</mn><mo>·</mo><mrow><mo>(</mo><mn>1</mn><mo>+</mo><mn>0,25</mn><mo>)</mo></mrow><mo>⌉</mo><mo>=</mo><mn>50</mn><mo>;</mo><mspace width=\"0.5em\"/><msup><mn>2</mn><mn>6</mn></msup><mo>−</mo><mn>2</mn><mo>=</mo><mn>62</mn><mo>;</mo><mspace width=\"0.5em\"/><mn>32</mn><mo>−</mo><mn>6</mn><mo>=</mo><mn>26</mn></mrow></math>",
+          "legend": ["40 aktuelle Teilnehmer", "25 Prozent explizite Planungsreserve", "sechs Hostbits ergeben ein /26-Netz mit 62 klassisch nutzbaren Hostadressen"]
+        },
+        {
+          "type": "numeric",
+          "id": "address-plan-sizing-practice",
+          "title": "Kleinste Netzgröße bestimmen",
+          "prompt": "Ein Segment benötigt einschließlich Gateway und Reserve 27 nutzbare Hostadressen. Wie viele Hostbits werden mindestens benötigt?",
+          "label": "Anzahl Hostbits",
+          "placeholder": "z. B. 5",
+          "expected": 5,
+          "tolerance": 0,
+          "correctFeedback": "Richtig. Zwei hoch fünf minus zwei ergibt 30 nutzbare Hostadressen; das reicht für 27.",
+          "wrongFeedback": "Prüfe die kleinste ganze Zahl h, für die zwei hoch h minus zwei mindestens 27 ergibt.",
+          "misconceptions": [
+            { "value": 4, "feedback": "Vier Hostbits liefern nur 14 klassisch nutzbare Hostadressen." },
+            { "value": 6, "feedback": "Sechs Hostbits würden funktionieren, sind aber nicht die kleinste bedarfsgerechte Größe." }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Ein Plan braucht Regeln und freie Flächen",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "address-plan-map",
+          "alt": "Vier VLAN-Subnetze für Office, VoIP, Gäste und Management sind über ein Layer-3-Gateway verbunden und mit Netzadresse sowie Präfix beschriftet.",
+          "caption": "Eigene Lernskizze: Segmentname, VLAN, Subnetz und Gatewayregel bilden zusammen eine lesbare Betriebsstruktur."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Dokumentiere pro Segment mindestens Zweck, VLAN beziehungsweise Standort, Netzadresse, Präfix und Dezimalmaske, erste und letzte Hostadresse, Broadcastadresse, Gatewayregel, DHCP-Bereich, statische Reserven und die verantwortliche Stelle. Freie Adressblöcke werden nicht als namenlose Lücken belassen, sondern als Reserve mit Zweck oder Ausbauannahme markiert. Überschneidungen werden vor der Freigabe systematisch geprüft."
+        },
+        {
+          "type": "figure",
+          "diagramId": "address-plan-decisions",
+          "alt": "Vier Schritte vom Erfassen der Segmente über Reserve und VLSM-Zuweisung bis zur Betriebsdokumentation.",
+          "caption": "Eigene Lernskizze: Die Dokumentation gehört zum Entwurf und wird nicht erst nachträglich ergänzt."
+        }
+      ]
+    },
+    {
+      "title": "Geführte Planung",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "address-plan-practice-sequence",
+          "title": "Adressplanung in belastbarer Reihenfolge",
+          "prompt": "Sortiere die Arbeitsschritte so, dass Größen, Lage und Dokumentation nachvollziehbar aufeinander aufbauen.",
+          "tag": "Übung",
+          "steps": [
+            { "id": "document", "label": "Netzgrenzen, Gateway, Vergabebereiche und Restreserve dokumentieren." },
+            { "id": "requirements", "label": "Segmente, Teilnehmer, Infrastruktur und Wachstumsannahmen erfassen." },
+            { "id": "allocate", "label": "Subnetze groß nach klein an gültigen Blockgrenzen zuweisen." },
+            { "id": "size", "label": "Für jedes Segment das kleinste ausreichende Präfix berechnen." }
+          ],
+          "expected": ["requirements", "size", "allocate", "document"],
+          "correctFeedback": "Richtig. So bleibt jede Adressentscheidung auf eine konkrete Anforderung zurückführbar.",
+          "wrongFeedback": "Die Planung beginnt bei den Anforderungen. Dokumentiert wird erst, nachdem Präfixe und Blocklagen geprüft wurden."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            { "id": "address-plan-input", "label": "Eingaben", "front": "Welche Angaben stehen vor der Subnetzberechnung?", "back": "Segmente beziehungsweise Standorte, aktuelle Teilnehmer, Infrastrukturadressen, Wachstumsannahmen und besondere Vergaberegeln." },
+            { "id": "address-plan-record", "label": "Dokumentation", "front": "Welche fünf Netzgrenzen gehören mindestens in die Subnetztabelle?", "back": "Netzadresse, Präfix beziehungsweise Maske, erste Hostadresse, letzte Hostadresse und Broadcastadresse." },
+            { "id": "address-plan-reserve", "label": "Reserve", "front": "Warum sollte Reserve nicht nur als unbenutzte Lücke erscheinen?", "back": "Eine benannte Reserve macht Annahme, Lage und späteren Verwendungszweck nachvollziehbar und verhindert versehentliche Doppelvergabe." }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "address-plan-core-recall",
+          "title": "Konzept verteidigen",
+          "prompt": "Erkläre einem Prüfer, welche Entscheidungen zwischen der Geräteliste und einer freigegebenen IPv4-Subnetztabelle liegen.",
+          "label": "Deine Begründung",
+          "placeholder": "Aus der Geräteliste leite ich …",
+          "minLength": 130,
+          "model": "Ich gruppiere Systeme nach Standort, Funktion und Sicherheitsgrenze, ergänze Infrastruktur und eine begründete Wachstumsreserve und berechne daraus das kleinste ausreichende Präfix. Anschließend vergebe ich die Netze mit VLSM groß nach klein an gültigen Blockgrenzen. Für jedes Segment dokumentiere ich Netz, Maske, Hosts, Broadcast, Gateway, DHCP und statische Bereiche sowie bewusst freie Reserven und prüfe Überschneidungen."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check: Transfer",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "address-plan-transfer-design",
+          "requiredObjective": "address-plan-design",
+          "question": "Ein Produktionsnetz benötigt einschließlich expliziter Reserve 55 Hostadressen. Welches Präfix ist das kleinste klassisch ausreichende?",
+          "options": [
+            { "text": "/27 mit 30 nutzbaren Adressen", "rationale": "30 nutzbare Adressen reichen nicht für 55 Teilnehmer.", "correct": false },
+            { "text": "/26 mit 62 nutzbaren Adressen", "rationale": "Richtig. /26 ist das kleinste Präfix, das mindestens 55 klassisch nutzbare Hostadressen bereitstellt.", "correct": true },
+            { "text": "/25 mit 126 nutzbaren Adressen", "rationale": "/25 würde reichen, ist aber nicht die kleinste bedarfsgerechte Größe.", "correct": false },
+            { "text": "/28 mit 16 Adressen insgesamt", "rationale": "Ein /28 besitzt nur 16 Adressen insgesamt und ist deutlich zu klein.", "correct": false }
+          ]
+        },
+        {
+          "type": "sequence",
+          "id": "address-plan-transfer-documentation",
+          "requiredObjective": "address-plan-documentation",
+          "title": "Prüfungssichere Dokumentation",
+          "prompt": "Ordne die Kontrollen, bevor der Plan an den Betrieb übergeben wird.",
+          "tag": "Transfer",
+          "steps": [
+            { "id": "rules", "label": "Gateway-, DHCP- und statische Vergaberegeln ergänzen." },
+            { "id": "boundaries", "label": "Für jedes Segment Netz, erste/letzte Hostadresse und Broadcast eintragen." },
+            { "id": "overlap", "label": "Alle Bereiche auf Überschneidungen und gültige Blockgrenzen prüfen." },
+            { "id": "reserve", "label": "Verbleibende Blöcke mit einer begründeten Reservekennzeichnung festhalten." }
+          ],
+          "expected": ["boundaries", "rules", "overlap", "reserve"],
+          "correctFeedback": "Richtig. Der Plan beschreibt erst die Netze, ergänzt die Betriebsregeln, prüft Konflikte und kennzeichnet den verbleibenden Raum.",
+          "wrongFeedback": "Beginne mit vollständigen Netzgrenzen. Erst dann lassen sich Vergaberegeln und Überschneidungen zuverlässig kontrollieren."
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Aktualität",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):** mehrstufige IPv4-Planungsaufgabe mit privaten Adressen, VLSM und vollständig dokumentierten Netzgrenzen.\n\nDie Subnetzrechnung ist stabil; Reserven, Gatewaykonventionen und Vergabebereiche sind organisationsspezifische Entscheidungen. Die Einheit macht solche Annahmen deshalb sichtbar. Szenario, Texte und Diagramme wurden vollständig neu erstellt."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="IPv6-Adressen als acht Hextets lesen, nach RFC 5952 eindeutig kürzen und komprimierte Schreibweisen sicher expandieren.">
+<title>IPv6-Adressen fehlerfrei kürzen und expandieren – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=hybrid-1">
+<script defer src="/assets/ap2-space.js?v=hybrid-1"></script>
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="ipv6-schreibweise" data-progress-id="ga2-3__0" data-content-revision="2026-09-11.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-3">Block N3 · IPv6 und automatische Adresskonfiguration</a><span class="sep">›</span>
+    <span class="here">IPv6-Adressen fehlerfrei kürzen und expandieren</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">IPv6-Adressen fehlerfrei kürzen und expandieren</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 20 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>IPv6-Kürzung entfernt nur Schreibarbeit, niemals Information. Sicher wird sie, wenn du zuerst acht Gruppen zählst, führende Nullen und ganze Nullgruppen getrennt behandelst und den Doppelpunkt-Operator höchstens einmal verwendest.</p>
+<section class="learning-goals" aria-labelledby="ipv6-schreibweise-goals">
+  <h2 id="ipv6-schreibweise-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>eine vollständige IPv6-Adresse nach den RFC-5952-Regeln eindeutig und kanonisch kürzen</li>
+    <li>eine komprimierte IPv6-Adresse auf genau acht Hextets expandieren und mehrdeutige Schreibweisen erkennen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Wie viele Gruppen fehlen?</h2>
+<section class="quiz" data-quiz="ipv6-writing-diagnostic" data-correct="2">
+  <h3>Wie viele vollständige Null-Hextets ersetzt `::` in `2001:db8:42::7`?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Dann ergäben drei Gruppen links, zwei Nullgruppen und eine Gruppe rechts zusammen nur sechs statt acht Hextets."><span class="m">A</span> zwei</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Drei Nullgruppen ergäben insgesamt sieben Hextets. IPv6 benötigt genau acht."><span class="m">B</span> drei</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Richtig. Drei sichtbare Gruppen links plus vier Nullgruppen plus eine Gruppe rechts ergeben acht."><span class="m">C</span> vier</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Die bereits sichtbaren Gruppen bleiben erhalten. `::` ergänzt nur die fehlende Anzahl bis acht."><span class="m">D</span> acht</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">Expansionsregel</span><p>Zähle alle sichtbaren Hextets links und rechts von <code>::</code>. Der Operator ergänzt <strong>genau so viele Nullgruppen, bis acht Gruppen erreicht sind</strong>.</p></aside><h2 class="sec" id="s2"><span class="num">2</span>Grundaufbau und erlaubte Kürzungen</h2>
+<p>Eine IPv6-Adresse besitzt acht Gruppen mit je vier Hexadezimalstellen. Eine Gruppe wird Hextet genannt und repräsentiert 16 Bit. Hexadezimalstellen reichen von 0 bis 9 und a bis f. Großbuchstaben sind lesbar, RFC 5952 verlangt für eine kanonische Darstellung jedoch Kleinbuchstaben.</p>
+<p>Es gibt zwei getrennte Kürzungen:</p>
+<ol>
+<li>Innerhalb jedes Hextets werden führende Nullen entfernt. Aus <code>00a0</code> wird <code>a0</code>, aus <code>0000</code> wird <code>0</code>. Eine Null am Ende eines Werts darf nicht verschwinden: <code>0a00</code> wird <code>a00</code>, nicht <code>a</code>.</li>
+<li>Eine zusammenhängende Folge aus mindestens zwei vollständigen Null-Hextets wird durch <code>::</code> ersetzt. Nur die längste Folge wird gewählt; bei Gleichstand die linke. <code>::</code> darf höchstens einmal vorkommen, sonst wäre die Expansion mehrdeutig.</li>
+</ol>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Acht Hextets ergeben 128 Bit">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-layers" xmlns="http://www.w3.org/2000/svg" width="960" height="512" viewBox="0 0 960 512" role="img" aria-labelledby="diagram-ipv6-anatomy-title diagram-ipv6-anatomy-desc">
+  <title id="diagram-ipv6-anatomy-title">Acht Hextets ergeben 128 Bit</title>
+  <desc id="diagram-ipv6-anatomy-desc">IPv6-Adresse als acht Hextets, gruppiert in vier Abschnitte zu jeweils 32 Bit.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Acht Hextets ergeben 128 Bit</tspan></text>
+  <g><rect class="diagram-row" x="42" y="82" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="82" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="130" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Hextet 1–2</tspan></text><text x="194" y="116" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">32 Bit; häufig Teil eines globalen Routingpräfixes</tspan></text></g><g><rect class="diagram-row" x="42" y="182" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="182" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="230" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Hextet 3–4</tspan></text><text x="194" y="216" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">weitere 32 Bit; bei einem /64-Präfix endet hier der</tspan><tspan x="194" dy="25">Netzanteil</tspan></text></g><g><rect class="diagram-row" x="42" y="282" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="282" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="330" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Hextet 5–6</tspan></text><text x="194" y="316" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">32 Bit des unteren Adressteils</tspan></text></g><g><rect class="diagram-row" x="42" y="382" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="382" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="430" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Hextet 7–8</tspan></text><text x="194" y="416" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">letzte 32 Bit; zusammen besitzen alle acht Gruppen 128 Bit</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Vier Hexadezimalstellen entsprechen 16 Bit; acht Hextets ergeben 128 Bit.</figcaption>
+</figure><div class="math-display" role="group" aria-label="Acht Hextets mal 16 Bit je Hextet ergeben 128 Bit"><math display="block" aria-label="Acht Hextets mal 16 Bit je Hextet ergeben 128 Bit"><mrow><mn>8</mn><mtext> Hextets</mtext><mo>·</mo><mn>16</mn><mtext> Bit</mtext><mo>=</mo><mn>128</mn><mtext> Bit</mtext></mrow></math><div class="math-legend"><span>vier Hexadezimalstellen je Hextet</span><span>acht Hextets je IPv6-Adresse</span></div></div><h2 class="sec" id="s3"><span class="num">3</span>Durchgearbeitetes Beispiel mit Gleichstand</h2>
+<p>Gegeben ist <code>2001:0DB8:0000:0000:00A0:0000:0000:0007</code>. Zuerst werden Buchstaben kleingeschrieben und führende Nullen je Hextet entfernt: <code>2001:db8:0:0:a0:0:0:7</code>.</p>
+<p>Es gibt zwei gleich lange Folgen aus jeweils zwei Null-Hextets. Für die kanonische Form wird die linke Folge ersetzt. Die rechte Folge bleibt als <code>0:0</code> sichtbar. Das eindeutige Ergebnis lautet <code>2001:db8::a0:0:0:7</code>. Eine zweite Verwendung von <code>::</code> wäre unzulässig.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Kanonisch kürzen, ohne Information zu verlieren">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="650" viewBox="0 0 960 650" role="img" aria-labelledby="diagram-compression-flow-title diagram-compression-flow-desc">
+  <title id="diagram-compression-flow-title">Kanonisch kürzen, ohne Information zu verlieren</title>
+  <desc id="diagram-compression-flow-desc">Fünfstufiger Ablauf vom Prüfen der acht Gruppen über Kleinbuchstaben und führende Nullen bis zur einmaligen Kompression der längsten Nullfolge.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Kanonisch kürzen, ohne Information zu verlieren</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Acht Gruppen prüfen</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Ausgangsadresse muss acht Hextets mit je höchstens vier</tspan><tspan x="178" dy="25">Hexadezimalstellen enthalten</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Kleinbuchstaben verwenden</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">A bis F werden für die kanonische Schreibweise zu a bis f</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Führende Nullen streichen</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">00a0 wird a0; ein vollständiges 0000-Hextet wird zunächst 0</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Längste Nullfolge suchen</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">bei Gleichstand wird die linke Folge gewählt; eine einzelne</tspan><tspan x="178" dy="25">Nullgruppe bleibt kanonisch als 0 stehen</tspan></text><path d="M480 472v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 494 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="512" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="541" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Doppelpunkt einmal einsetzen</tspan></text><text x="178" y="568" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">die gewählte Folge wird genau einmal durch :: ersetzt</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Die Regeln werden in einer festen Reihenfolge angewendet; dadurch bleibt das Ergebnis reproduzierbar.</figcaption>
+</figure><section class="quiz" data-quiz="ipv6-writing-practice" data-correct="0">
+  <h3>Warum bleibt im Ergebnis `2001:db8::a0:0:0:7` die zweite Nullfolge sichtbar?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. So bleibt die gekürzte Adresse eindeutig und kanonisch."><span class="m">A</span> Weil `::` pro Adresse nur einmal verwendet werden darf und bei Gleichstand die linke längste Folge gewinnt.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Auch spätere Nullfolgen können grundsätzlich gekürzt werden. Hier verhindert die bereits verwendete Doppelpunktkompression eine zweite Anwendung."><span class="m">B</span> Weil Nullgruppen nach einem Wert a0 niemals gekürzt werden dürfen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="IPv6 kann beliebig viele Null-Hextets enthalten. Beschränkt ist nur der einmalige Einsatz von `::`."><span class="m">C</span> Weil eine IPv6-Adresse höchstens zwei Nullgruppen enthalten darf.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Groß- oder Kleinschreibung hat keinen Einfluss auf die Zahl erlaubter Doppelpunktkompressionen."><span class="m">D</span> Weil Großbuchstaben eine zweite Kompression blockieren.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Geführte Übung: Sicher expandieren</h2>
+<section class="sequence-practice" data-sequence="ipv6-expansion-sequence" data-expected="count,insert,pad,verify" data-correct-feedback="Richtig. Zuerst wird die Zahl fehlender Gruppen bestimmt, erst danach werden alle Gruppen auf vier Stellen aufgefüllt." data-wrong-feedback="Zähle vor dem Auffüllen die sichtbaren Gruppen. `::` ersetzt die Differenz zu insgesamt acht Hextets." aria-labelledby="ipv6-expansion-sequence-title">
+  <div class="lab-heading"><div><h3 id="ipv6-expansion-sequence-title">Von der Kurzform zu acht Hextets</h3><p>Bringe die Schritte zum Expandieren von `fd12:3456::a:9` in die richtige Reihenfolge.</p></div><span class="lab-tag">Übung</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="pad" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Jedes Hextet auf vier Hexadezimalstellen mit führenden Nullen auffüllen.</span></li>
+    <li data-step="count" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Die sichtbaren Hextets links und rechts von `::` zählen.</span></li>
+    <li data-step="insert" tabindex="-1"><span class="step-position" data-step-position>3</span><span>So viele `0000`-Hextets einsetzen, bis insgesamt acht Gruppen vorhanden sind.</span></li>
+    <li data-step="verify" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Acht Gruppen und genau sieben einfache Trenndoppelpunkte in der Vollform prüfen.</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><aside class="callout warn"><span class="lbl">Ungültige Form</span><p>Eine Adresse wie <code>2001::db8::1</code> ist mehrdeutig, weil zwei Doppelpunktoperatoren unabhängig viele Nullgruppen ersetzen könnten.</p></aside><h2 class="sec" id="s5"><span class="num">5</span>Karteikarten und freier Abruf</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="ipv6-hextets" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wie viele Hextets und Bit besitzt eine IPv6-Adresse?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Acht Hextets mit je 16 Bit, insgesamt 128 Bit.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="ipv6-double-colon" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wie oft darf `::` in einer IPv6-Adresse vorkommen?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Höchstens einmal; beim Expandieren ergänzt es die fehlenden Null-Hextets bis insgesamt acht Gruppen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="ipv6-rfc5952-tie" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche Nullfolge wird bei zwei gleich langen Folgen kanonisch komprimiert?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Die linke der gleich langen längsten Folgen.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Aufbau“:</span><button type="button" data-card-id="ipv6-hextets" data-card-rate="known">gewusst</button><button type="button" data-card-id="ipv6-hextets" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ipv6-hextets"></span></div>
+<div class="card-rating"><span>Karte „Doppelpunkt“:</span><button type="button" data-card-id="ipv6-double-colon" data-card-rate="known">gewusst</button><button type="button" data-card-id="ipv6-double-colon" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ipv6-double-colon"></span></div>
+<div class="card-rating"><span>Karte „Gleichstand“:</span><button type="button" data-card-id="ipv6-rfc5952-tie" data-card-rate="known">gewusst</button><button type="button" data-card-id="ipv6-rfc5952-tie" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ipv6-rfc5952-tie"></span></div><section class="recall-practice" data-recall="ipv6-writing-recall" data-min-length="110" aria-labelledby="ipv6-writing-recall-title">
+  <div class="recall-prompt"><h3 id="ipv6-writing-recall-title">Ohne Nachschlagen erklären</h3><p>Erkläre die vollständige RFC-5952-Kürzung einschließlich führender Nullen, längster Nullfolge, Gleichstand und einmaliger Verwendung von `::`.</p></div>
+  <label class="sr-only" for="ipv6-writing-recall-answer">Deine Erklärung</label>
+  <textarea id="ipv6-writing-recall-answer" data-recall-input rows="4" placeholder="Zuerst werden …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Eine IPv6-Adresse hat acht Hextets. Buchstaben werden kleingeschrieben und führende Nullen je Hextet entfernt. Danach wird die längste Folge aus mindestens zwei vollständigen Null-Hextets einmal durch :: ersetzt. Bei gleich langen Folgen gewinnt die linke. :: darf nur einmal vorkommen, damit sich die fehlenden Gruppen eindeutig bis auf acht ergänzen lassen.</div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Lernziel-Check: Transfer</h2>
+<section class="quiz" data-quiz="ipv6-transfer-compress" data-correct="0" data-required-objective="canonical-compression">
+  <h3>Welche Form ist die kanonische Kürzung von `2001:0DB8:0000:0000:00A0:0000:0000:0007`?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Führende Nullen entfallen; bei den gleich langen Nullfolgen wird die linke komprimiert."><span class="m">A</span> 2001:db8::a0:0:0:7</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Diese Form ist syntaktisch expandierbar, komprimiert bei Gleichstand aber die rechte statt der von RFC 5952 geforderten linken Nullfolge."><span class="m">B</span> 2001:db8:0:0:a0::7</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="`::` kommt zweimal vor und macht die Zahl der jeweils ausgelassenen Gruppen mehrdeutig."><span class="m">C</span> 2001:db8::a::7</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Die Struktur stimmt, aber die kanonische RFC-5952-Darstellung verwendet Kleinbuchstaben."><span class="m">D</span> 2001:DB8::A0:0:0:7</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="ipv6-transfer-expand" data-correct="0" data-required-objective="safe-expansion">
+  <h3>Welche Vollform gehört zu `2001:db8:42::7`?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Vier Null-Hextets ergänzen die vier sichtbaren Gruppen auf insgesamt acht."><span class="m">A</span> 2001:0db8:0042:0000:0000:0000:0000:0007</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Diese Form besitzt nur sieben Hextets; eine Nullgruppe fehlt."><span class="m">B</span> 2001:0db8:0042:0000:0000:0000:0007</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Diese Form besitzt neun Hextets und wäre länger als eine IPv6-Adresse."><span class="m">C</span> 2001:0db8:0042:0000:0000:0000:0000:0000:0007</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Die sichtbare Gruppe 7 steht rechts von `::` und muss deshalb das letzte Hextet bleiben."><span class="m">D</span> 2001:0db8:0042:0007:0000:0000:0000:0000</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><p><strong>Prüfungsformulierung:</strong> Markiere beim Expandieren zuerst die sichtbaren Gruppen. Setze die fehlenden Null-Hextets in die Position von <code>::</code> ein und prüfe abschließend die Gesamtzahl acht.</p>
+<h2 class="sec" id="s7"><span class="num">7</span>Quellen und Einordnung</h2>
+<ul>
+<li><strong>IT-Berufe Grundstufe – Lernfelder 6–9 (2022):</strong> direkte RFC-5952-Regeln und Übungsmuster zum Kürzen und Expandieren.</li>
+<li><strong>EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):</strong> ergänzende IPv6-Schreibweisen im Netzkontext.</li>
+<li><strong>IT-Berufe Fachstufe II – Lernfelder 10–12 (2023):</strong> Präfixschreibweisen als Kontextbeleg.</li>
+</ul>
+<p>Alle Aufgaben und Diagramme sind neu erstellt. Private Buchabbildungen sowie OCR-Rohtext werden nicht veröffentlicht.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-3"><span class="d">zurück zu</span><span class="t">Block N3 · IPv6 und automatische Adresskonfiguration</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N3 · IPv6 und automatische Adresskonfiguration</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Wie viele Gruppen fehlen?</a></li>
+<li><a href="#s2" data-t="s2">Grundaufbau und erlaubte Kürzungen</a></li>
+<li><a href="#s3" data-t="s3">Durchgearbeitetes Beispiel mit Gleichstand</a></li>
+<li><a href="#s4" data-t="s4">Geführte Übung: Sicher expandieren</a></li>
+<li><a href="#s5" data-t="s5">Karteikarten und freier Abruf</a></li>
+<li><a href="#s6" data-t="s6">Lernziel-Check: Transfer</a></li>
+<li><a href="#s7" data-t="s7">Quellen und Einordnung</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-3">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

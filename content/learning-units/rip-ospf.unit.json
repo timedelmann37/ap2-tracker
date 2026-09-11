@@ -1,0 +1,352 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "rip-ospf",
+    "slug": "rip-ospf",
+    "title": "RIP und OSPF im Netzplan unterscheiden",
+    "description": "RIPv2 und OSPF nach Arbeitsweise, Metrik und Einsatzgrenzen vergleichen sowie OSPF-Kosten, Areas und DR/BDR grundlegend einordnen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-4",
+    "groupLabel": "Block N4 · Routing und NAT",
+    "itemId": "ga2-4__4",
+    "week": "KW 38",
+    "estimatedMinutes": 24,
+    "relevance": "hoch",
+    "sources": ["europa-integratoren-2026", "itlf6-9-2022"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "protocol-comparison",
+      "label": "RIPv2 und OSPF anhand von Informationsmodell, Metrik, Konvergenz und Einsatzgrenze begründet unterscheiden"
+    },
+    {
+      "id": "ospf-structure",
+      "label": "einen einfachen OSPF-Plan mit Areas, additiven Pfadkosten und der Rolle von DR und BDR erklären"
+    }
+  ],
+  "intro": "RIP und OSPF verteilen beide Routen dynamisch, betrachten ein Netz aber unterschiedlich. RIP bewertet den Weg über Routerzählung. OSPF baut eine Link-State-Sicht auf und addiert Interfacekosten. Areas strukturieren diese Sicht; DR und BDR reduzieren auf geeigneten Mehrfachzugriffsnetzen den Austausch zwischen vielen OSPF-Routern.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunks europa-integratoren-2026:00331 und :00840 sowie private Figuren-OCR b4b78d7b5c7d/b6b216a055bc",
+        "use": "Prüfungsnaher Vergleich von RIPv2 als Distance-Vector mit Hop-Metrik und 15-Hop-Grenze gegenüber OSPF als Link-State-Protokoll",
+        "reviewStatus": "Aufgaben- und Lösungsabbildung geprüft; private Grafik nicht übernommen"
+      },
+      {
+        "sourceId": "itlf6-9-2022",
+        "sourceLocator": "Chunk itlf6-9-2022:00250",
+        "use": "Routingtabellen-Aufgabenformat mit einer expliziten Metrik-Spalte in Hops",
+        "reviewStatus": "nur als begrenzter didaktischer Beleg für Hop-Metrik genutzt; das Chunk nennt kein Routingprotokoll"
+      }
+    ],
+    "notes": [
+      "Der gemappte Verweis it-basiswissen-2012:00198 ist eine Wirtschaftlichkeitsaufgabe zum Webshop und damit ein Fehltreffer; er wurde ausgeschlossen.",
+      "Die Batch-Chunks europa-integratoren-2026:00331 und :00840 verweisen den eigentlichen Protokollvergleich in eine private Abbildung. Deren OCR belegt Distance Vector, Link State, Hop Count und 15-Hop-Grenze; Areas, Kostenformel und DR/BDR werden dort nicht belastbar erklärt und bleiben bis zur technischen Review CURATED_DRAFT.",
+      "OSPF-Kosten und Referenzbandbreite sind konfigurations- beziehungsweise herstellerspezifisch. Portabel ist: Pfadkosten werden aus den OSPF-Interfacekosten addiert und der kleinere Gesamtwert wird bevorzugt.",
+      "DR und BDR werden nur für passende OSPF-Mehrfachzugriffssegmente erklärt, nicht als Rollen jedes Punkt-zu-Punkt-Links."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "rip-ospf-comparison",
+      "type": "comparison",
+      "title": "Zwei verschiedene Sichten auf Routing",
+      "description": "Die Metriken dürfen nicht protokollübergreifend als dieselbe Zahl interpretiert werden.",
+      "items": [
+        {
+          "label": "RIPv2 · Distance Vector",
+          "detail": "Router lernen Ziel und Entfernung über Nachbarn; die Metrik zählt Routerübergänge."
+        },
+        {
+          "label": "RIPv2 · klare Skalierungsgrenze",
+          "detail": "1 bis 15 Hops sind erreichbar; 16 steht für unerreichbar."
+        },
+        {
+          "label": "OSPF · Link State",
+          "detail": "Router beschreiben Links und berechnen aus einer gemeinsamen Topologiesicht kürzeste Kostenpfade."
+        },
+        {
+          "label": "OSPF · additive Kosten",
+          "detail": "Die konfigurierten Interfacekosten entlang eines Pfades werden addiert; niedriger ist besser."
+        }
+      ]
+    },
+    {
+      "id": "ospf-building-blocks",
+      "type": "layers",
+      "title": "OSPF vom Netzdesign bis zur Route",
+      "description": "Area-Struktur, Nachbarschaften und Kosten erfüllen unterschiedliche Aufgaben.",
+      "items": [
+        {
+          "label": "Area-Design",
+          "detail": "Area 0 bildet den Backbone; Area Border Router verbinden weitere Areas logisch mit ihm."
+        },
+        {
+          "label": "Nachbarschaft im Segment",
+          "detail": "Auf geeigneten Mehrfachzugriffsnetzen bündeln DR und BDR den Austausch; Punkt-zu-Punkt braucht diese Rollen nicht."
+        },
+        {
+          "label": "Link-State-Datenbank",
+          "detail": "Router einer Area erhalten eine konsistente Sicht der für die Berechnung nötigen Linkinformationen."
+        },
+        {
+          "label": "Pfadberechnung",
+          "detail": "Für jeden Kandidatenpfad werden die ausgehenden Interfacekosten summiert."
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Welche Metrik passt?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "rip-ospf-diagnostic",
+          "diagnostic": true,
+          "question": "Pfad A hat zwei langsame Routerübergänge, Pfad B drei schnelle. Welches Protokoll bevorzugt allein aufgrund seiner Standardmetrik sicher Pfad A?",
+          "options": [
+            {
+              "text": "RIPv2, weil nur die kleinere Hop-Anzahl zählt",
+              "rationale": "Richtig. RIPv2 bewertet die Zahl der Routerübergänge, nicht deren Bandbreite.",
+              "correct": true
+            },
+            {
+              "text": "OSPF, weil weniger Geräte immer geringere OSPF-Kosten bedeuten",
+              "rationale": "OSPF addiert konfigurierte Interfacekosten. Zwei langsame Links können teurer sein als drei schnelle.",
+              "correct": false
+            },
+            {
+              "text": "Beide, weil Hop Count und OSPF-Kosten identisch sind",
+              "rationale": "Die Protokolle verwenden unterschiedliche Metriken.",
+              "correct": false
+            },
+            {
+              "text": "Keines, weil dynamische Protokolle keine Metriken verwenden",
+              "rationale": "Beide Protokolle bewerten Kandidatenpfade, nur nach verschiedenen Regeln.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Kernunterschied",
+          "markdown": "RIP fragt: **Wie viele Router liegen dazwischen?** OSPF fragt: **Welche Summe haben die konfigurierten Linkkosten?**"
+        }
+      ]
+    },
+    {
+      "title": "RIP und OSPF vergleichen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "RIPv2 ist ein Distance-Vector-Protokoll. Router teilen Nachbarn mit, welche Ziele sie mit welcher Entfernung kennen. Die Hop-Zahl ist leicht nachvollziehbar, bildet aber weder Bandbreite noch Auslastung ab. Ab 16 Hops gilt ein Ziel als unerreichbar; damit ist die Skalierung bewusst begrenzt.\n\nOSPF ist ein Link-State-Protokoll. Router beschreiben ihre Links, gleichen innerhalb der vorgesehenen Struktur Zustandsinformationen ab und berechnen daraus Pfade. Änderungen können zielgerichteter verarbeitet werden als bei einem reinen Distanzvektor. Wie schnell ein konkretes Netz konvergiert, hängt dennoch von Topologie, Timern, Implementierung und Konfiguration ab."
+        },
+        {
+          "type": "figure",
+          "diagramId": "rip-ospf-comparison",
+          "alt": "Vergleichskarten zeigen RIPv2 als Distance Vector mit Hop Count und 15-Hop-Grenze sowie OSPF als Link State mit additiven Interfacekosten.",
+          "caption": "Eigene Lernskizze: Ein kleinerer Zahlenwert ist nur innerhalb der jeweiligen Metrik sinnvoll."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "RIP-Metrik ist die Summe der Hops und höchstens fünfzehn erreichbar; OSPF-Pfadkosten sind die Summe der Interfacekosten",
+          "mathml": "<math display=\"block\"><mtable columnalign=\"right center left\" rowspacing=\"0.5em\"><mtr><mtd><msub><mi>M</mi><mtext>RIP</mtext></msub></mtd><mtd><mo>=</mo></mtd><mtd><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mn>1</mn><mo>=</mo><mi>n</mi><mo>;</mo><mi>n</mi><mo>≤</mo><mn>15</mn></mtd></mtr><mtr><mtd><msub><mi>C</mi><mtext>OSPF-Pfad</mtext></msub></mtd><mtd><mo>=</mo></mtd><mtd><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><msub><mi>c</mi><mi>i</mi></msub></mtd></mtr></mtable></math>",
+          "legend": ["n = Zahl der Hops", "cᵢ = konfigurierte OSPF-Kosten eines ausgehenden Interfaces"]
+        }
+      ]
+    },
+    {
+      "title": "OSPF-Struktur verstehen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Areas begrenzen und strukturieren die Link-State-Sicht. Area 0 ist der Backbone; ein Area Border Router verbindet eine weitere Area mit dem Backbone. Das ist eine Designregel, kein zusätzlicher Hop-Count.\n\nAuf einem gemeinsamen Broadcastsegment könnten viele Router untereinander zahlreiche Adjazenzen aufbauen. Dort werden ein Designated Router und ein Backup Designated Router gewählt, um den Austausch zu ordnen. Der BDR ist der vorgesehene Ersatz für den DR. Auf einem Punkt-zu-Punkt-Link zwischen genau zwei Routern ist diese Wahl nicht nötig."
+        },
+        {
+          "type": "figure",
+          "diagramId": "ospf-building-blocks",
+          "alt": "Vier Schichten ordnen OSPF-Area-Design, DR/BDR-Nachbarschaft, Link-State-Datenbank und additive Pfadberechnung.",
+          "caption": "Eigene Lernskizze: Area, DR/BDR und Metrik lösen drei verschiedene Strukturprobleme."
+        }
+        ,{
+          "type": "quiz",
+          "id": "ospf-role-practice",
+          "question": "Wo ist die Rolle eines DR und BDR im Grundprinzip relevant?",
+          "options": [
+            {
+              "text": "Auf einem gemeinsamen OSPF-Mehrfachzugriffssegment mit mehreren Routern",
+              "rationale": "Richtig. Dort reduziert die Rollenbildung den vollständigen Austausch zwischen jedem Routerpaar.",
+              "correct": true
+            },
+            {
+              "text": "Zwingend auf jedem einzelnen Punkt-zu-Punkt-Link",
+              "rationale": "Zwischen genau zwei Routern ist keine zentrale Rollenbildung für viele Nachbarn nötig.",
+              "correct": false
+            },
+            {
+              "text": "Nur in RIPv2, weil dort Hops gezählt werden",
+              "rationale": "DR und BDR sind OSPF-Rollen, keine RIP-Rollen.",
+              "correct": false
+            },
+            {
+              "text": "Ausschließlich am Internetübergang eines autonomen Systems",
+              "rationale": "Die Rolle hängt vom OSPF-Netztyp und den Nachbarschaften ab, nicht vom Internetübergang."
+              ,"correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Geführte Pfadauswahl",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "ospf-cost-sequence",
+          "title": "OSPF-Kosten schrittweise vergleichen",
+          "prompt": "Bringe den Rechenweg für zwei OSPF-Kandidatenpfade in die richtige Reihenfolge.",
+          "tag": "Übung",
+          "steps": [
+            {
+              "id": "ospf-list-paths",
+              "label": "Für das Ziel alle tatsächlich angebotenen Kandidatenpfade festhalten."
+            },
+            {
+              "id": "ospf-read-costs",
+              "label": "Je Pfad die konfigurierten ausgehenden Interfacekosten ablesen."
+            },
+            {
+              "id": "ospf-sum-costs",
+              "label": "Kosten je Pfad addieren, zum Beispiel 10 + 5 = 15 und 8 + 20 = 28."
+            },
+            {
+              "id": "ospf-choose-low",
+              "label": "Den Pfad mit dem kleineren Gesamtwert wählen und Konfiguration plausibilisieren."
+            }
+          ],
+          "expected": ["ospf-list-paths", "ospf-read-costs", "ospf-sum-costs", "ospf-choose-low"],
+          "correctFeedback": "Richtig: OSPF vergleicht die Summe der Kosten entlang jedes Kandidatenpfades.",
+          "wrongFeedback": "Nicht Hops und Kosten vermischen: Kandidaten → Interfacekosten → Summe → kleineren Gesamtwert wählen."
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Beispiel:** Pfad A führt über Interfaces mit Kosten 10 und 5, also Gesamtkosten 15. Pfad B hat Kosten 8 und 20, also 28. OSPF bevorzugt Pfad A, obwohl beide Pfade gleich viele Routerübergänge besitzen. Eine herstellerspezifische Formel zur automatischen Erzeugung der Einzelkosten ist dafür nicht nötig; maßgeblich sind die wirksamen Interfacekosten."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "rip-hop-limit",
+              "label": "RIP-Grenze",
+              "front": "Welche Bedeutung haben 15 und 16 bei RIPv2?",
+              "back": "Bis 15 Hops gilt ein Ziel als erreichbar; 16 steht für unerreichbar."
+            },
+            {
+              "id": "ospf-path-cost",
+              "label": "OSPF-Kosten",
+              "front": "Wie entsteht die OSPF-Metrik eines Pfades?",
+              "back": "Die wirksamen Kosten der ausgehenden Interfaces entlang des Pfades werden addiert; niedriger ist besser."
+            },
+            {
+              "id": "ospf-dr-bdr",
+              "label": "DR und BDR",
+              "front": "Warum gibt es DR und BDR?",
+              "back": "Sie ordnen auf geeigneten Mehrfachzugriffssegmenten den Link-State-Austausch vieler OSPF-Router; der BDR dient als vorgesehener Ersatz."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "rip-ospf-free-recall",
+          "title": "Protokolle ohne Tabelle vergleichen",
+          "prompt": "Vergleiche RIPv2 und OSPF nach Informationsmodell, Metrik und Grenze. Erkläre anschließend Area 0 sowie DR und BDR mit je einem passenden Einsatzort.",
+          "label": "Dein Vergleich",
+          "placeholder": "RIPv2 … OSPF …",
+          "minLength": 130,
+          "model": "RIPv2 ist Distance Vector und zählt Hops; 15 sind erreichbar, 16 bedeutet unerreichbar. OSPF ist Link State und addiert konfigurierte Interfacekosten. Area 0 bildet den Backbone, weitere Areas werden über ABRs angebunden. DR und BDR strukturieren den Austausch auf geeigneten Mehrfachzugriffssegmenten, nicht auf jedem Punkt-zu-Punkt-Link."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "protocol-comparison-transfer",
+          "requiredObjective": "protocol-comparison",
+          "question": "Welche Zuordnung ist vollständig korrekt?",
+          "options": [
+            {
+              "text": "RIPv2: Distance Vector und Hop Count; OSPF: Link State und additive Interfacekosten",
+              "rationale": "Richtig. Damit sind Informationsmodell und Metrik beider Protokolle korrekt verbunden.",
+              "correct": true
+            },
+            {
+              "text": "RIPv2: Link State und Bandbreitenkosten; OSPF: Distance Vector und maximal 15 Hops",
+              "rationale": "Die Eigenschaften wurden vertauscht.",
+              "correct": false
+            },
+            {
+              "text": "RIPv2 und OSPF verwenden beide ausschließlich die Zahl der Hops",
+              "rationale": "OSPF arbeitet mit addierten Interfacekosten, nicht mit reinem Hop Count.",
+              "correct": false
+            },
+            {
+              "text": "OSPF kennt keine Topologieänderungen und konvergiert deshalb nie",
+              "rationale": "Link-State-Austausch und Neuberechnung dienen gerade der Reaktion auf Topologieänderungen.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "ospf-structure-transfer",
+          "requiredObjective": "ospf-structure",
+          "question": "Ein OSPF-Router in Area 10 erreicht ein Ziel über Pfad A mit Kosten 10 + 5 und Pfad B mit 7 + 12. Im lokalen Ethernetsegment gibt es fünf OSPF-Router. Welche Aussage passt?",
+          "options": [
+            {
+              "text": "Pfad A kostet 15 und wird gegenüber 19 bevorzugt; DR/BDR können den Austausch im gemeinsamen Segment strukturieren; Area 10 benötigt eine logische Backbone-Anbindung.",
+              "rationale": "Richtig. Kosten, Mehrfachzugriffsrolle und Area-Struktur werden getrennt korrekt angewendet.",
+              "correct": true
+            },
+            {
+              "text": "Pfad B gewinnt, weil 7 die kleinste einzelne Interfacekosten ist; DR/BDR zählen als zusätzliche Hops.",
+              "rationale": "OSPF vergleicht die Gesamtsumme. DR und BDR sind Nachbarschaftsrollen, keine zusätzlichen Hops.",
+              "correct": false
+            },
+            {
+              "text": "Beide Pfade kosten zwei, weil nur Router gezählt werden; Area 0 ist für OSPF verboten.",
+              "rationale": "Das wäre eine Hop-Logik. OSPF addiert Kosten, und Area 0 ist der Backbone.",
+              "correct": false
+            },
+            {
+              "text": "Auf jedem Punkt-zu-Punkt-Link müssen zusätzlich DR und BDR gewählt werden.",
+              "rationale": "DR/BDR sind nicht für jeden Punkt-zu-Punkt-Link erforderlich."
+              ,"correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):** prüfungsnaher RIPv2-/OSPF-Vergleich in privater Aufgabenabbildung.\n- **IT-Berufe – Lernfelder 6–9 (2022):** ergänzendes Routingtabellen-Format mit Hop-Metrik.\n\nDie private Buchgrafik wurde nicht veröffentlicht. Areas, Kosten und DR/BDR sind konservativ formuliert und benötigen vor Publikationsfreigabe noch eine technische Review."
+        }
+      ]
+    }
+  ]
+}

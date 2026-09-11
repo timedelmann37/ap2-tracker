@@ -1,0 +1,483 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "routing-fehlersuche",
+    "slug": "routing-fehlersuche",
+    "title": "Routingfehler über Hin- und Rückweg eingrenzen",
+    "description": "Routingstörungen anhand von Endpunktkonfiguration, Präfixentscheidung, Routingtabellen, Paketspuren und getrennten Hin- und Rückwegen systematisch diagnostizieren.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-4",
+    "groupLabel": "Block N4 · Routing und NAT",
+    "itemId": "ga2-4__10",
+    "week": "KW 38",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "sources": ["europa-integratoren-2026", "ihk-bonn", "it-basiswissen-2012"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "diagnostic-workflow",
+      "label": "eine Routingstörung mit Endpunktdaten, lokaler Gatewayprüfung, Route je Hop und beobachtbaren Paketen systematisch eingrenzen"
+    },
+    {
+      "id": "path-faults",
+      "label": "falsche Präfixmaske, fehlende Rückroute und problematische asymmetrische Pfade anhand konkreter Beobachtungen unterscheiden und gezielt beheben"
+    }
+  ],
+  "intro": "Eine erfolgreiche Hinroute beweist noch keine funktionierende Verbindung. Jede Anfrage braucht einen Weg zum Ziel und jede Antwort einen eigenen Weg zurück. Gute Routingdiagnose verfolgt deshalb ein konkretes Paket mit Quell- und Zieladresse, prüft an jedem Hop die Entscheidung und betrachtet Filter, NAT und Zustandsführung getrennt von der reinen Route.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunk europa-integratoren-2026:00840",
+        "use": "mehrere direkt angeschlossene und entfernte Netze, Next Hops und Default Route als Grundlage für eine hopweise Routenprüfung",
+        "reviewStatus": "Tabellenkontext geprüft; eigenes Störungsszenario und neue Adressen verwendet"
+      },
+      {
+        "sourceId": "ihk-bonn",
+        "sourceLocator": "Chunk ihk-bonn:00161",
+        "use": "bidirektionale Kommunikation zwischen Filiale und Zentrale sowie statische Routeneinträge auf beiden Routern",
+        "reviewStatus": "Als Grundlage für die getrennte Prüfung beider Richtungen verwendet; Buchgrafik nicht übernommen"
+      },
+      {
+        "sourceId": "it-basiswissen-2012",
+        "sourceLocator": "Chunk it-basiswissen-2012:00175",
+        "use": "systematische Eingrenzung von Netzwerkfehlern mit IP-Konfiguration, Gateway, ping, tracert und dokumentierten Prüfroutinen",
+        "reviewStatus": "Diagnoseprinzip geprüft und um explizite Hin-/Rückweg- sowie Zustandsanalyse erweitert"
+      }
+    ],
+    "notes": [
+      "Der Batch-Kandidat ihk-bonn:00218 behandelt Adress-/Gatewayplanung und anschließend Firewallregeln. Er enthält keinen konkreten Routingfehler und wurde nicht als direkte Diagnoseevidenz verwendet.",
+      "Der Batch-Kandidat itlf6-9-2022:00228 ist ein allgemeiner Sicherheits-Kompetenzcheck und erwähnt tracert nur in einer Befehlsliste; er ist für Rückroute, Maske und asymmetrisches Routing ein Fehltreffer.",
+      "Die in der Source-Map genannte Referenz it-basiswissen-2012:00016 ist im aktuellen lokalen Compendium nicht auflösbar. Der thematisch passende Chunk it-basiswissen-2012:00175 wurde stattdessen geprüft.",
+      "Der Batch-Figurenkandidat europa-integratoren-2026:figure:0ebfb9cacde5 zeigt eine konkrete IPv6-Routingtabelle, aber keinen Diagnosefall mit fehlender Rückroute oder asymmetrischem Pfad; er wurde nicht veröffentlicht.",
+      "Asymmetrisches Routing ist nicht automatisch fehlerhaft. Es wird problematisch, wenn ein beteiligtes System symmetrische Zustände, passende Policies, Quellprüfung oder einen bestimmten NAT-Pfad voraussetzt.",
+      "Die beiden Diagramme, Störungsfälle und Antwortoptionen sind eigenständig erstellt; private Buchgrafiken werden nicht veröffentlicht."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "missing-return-route",
+      "type": "topology",
+      "title": "Die Anfrage kommt an, die Antwort nimmt den falschen Ausgang",
+      "description": "Router A kennt das Servernetz über Router B. Router B kennt jedoch das Clientnetz nicht und sendet die Antwort über seine Default Route zum ISP. Die fehlende Rückroute unterbricht die Verbindung trotz erfolgreicher Hinroute.",
+      "zones": [
+        {
+          "id": "source-site",
+          "label": "Standort A",
+          "x": 25,
+          "y": 90,
+          "width": 345,
+          "height": 360,
+          "kind": "zone-source"
+        },
+        {
+          "id": "target-site",
+          "label": "Standort B",
+          "x": 430,
+          "y": 90,
+          "width": 505,
+          "height": 220,
+          "kind": "zone-target"
+        },
+        {
+          "id": "wrong-exit",
+          "label": "Falscher Rückweg",
+          "x": 680,
+          "y": 345,
+          "width": 255,
+          "height": 105,
+          "kind": "zone-error"
+        }
+      ],
+      "nodes": [
+        {
+          "id": "route-client",
+          "label": "Client A",
+          "detail": "10.10.10.20/24",
+          "x": 120,
+          "y": 220,
+          "kind": "client"
+        },
+        {
+          "id": "route-a",
+          "label": "Router A",
+          "detail": "Hinroute vorhanden",
+          "x": 315,
+          "y": 220,
+          "kind": "router"
+        },
+        {
+          "id": "route-b",
+          "label": "Router B",
+          "detail": "Rückroute fehlt",
+          "x": 555,
+          "y": 220,
+          "kind": "router"
+        },
+        {
+          "id": "route-server",
+          "label": "Server B",
+          "detail": "10.20.20.50/24",
+          "x": 815,
+          "y": 220,
+          "kind": "server"
+        },
+        {
+          "id": "route-isp",
+          "label": "ISP-Next-Hop",
+          "detail": "Default Route",
+          "x": 815,
+          "y": 395,
+          "kind": "internet"
+        }
+      ],
+      "edges": [
+        {
+          "from": "route-client",
+          "to": "route-a",
+          "label": "Gateway",
+          "kind": "forward"
+        },
+        {
+          "from": "route-a",
+          "to": "route-b",
+          "label": "Hinweg korrekt",
+          "kind": "forward"
+        },
+        {
+          "from": "route-b",
+          "to": "route-server",
+          "label": "Anfrage + Antwort",
+          "kind": "local"
+        },
+        {
+          "from": "route-b",
+          "to": "route-isp",
+          "label": "Antwort fehlgeleitet",
+          "kind": "error"
+        }
+      ]
+    },
+    {
+      "id": "routing-diagnostic-loop",
+      "type": "flow",
+      "title": "Routingdiagnose folgt dem Paket in beiden Richtungen",
+      "description": "Von der exakten Verbindung und Endpunktkonfiguration geht die Prüfung über lokale Zustellung und Forwarding bis zum Ziel. Danach wird derselbe Ablauf mit vertauschter Quelle und Ziel für den Rückweg wiederholt und mit Logs oder Paketspuren belegt.",
+      "items": [
+        {
+          "label": "Verbindung festlegen",
+          "detail": "Quelle, Ziel, Protokoll und Port statt nur pauschal das Netz prüfen"
+        },
+        {
+          "label": "Quellhost prüfen",
+          "detail": "Link, IP, Präfix, Gateway und Entscheidung lokal oder entfernt"
+        },
+        {
+          "label": "Hinweg je Hop",
+          "detail": "passende Route, längstes Präfix, Next Hop, Interface und Filter/NAT"
+        },
+        {
+          "label": "Zielhost prüfen",
+          "detail": "Ankunft, Dienst, lokales Firewallverhalten und Antworterzeugung"
+        },
+        {
+          "label": "Rückweg separat",
+          "detail": "Quelle und Ziel vertauschen; Route, Gateway, Filter und NAT erneut prüfen"
+        },
+      {
+        "label": "Beleg vergleichen",
+        "detail": "Routen, Logs und Mitschnitte zeigen die erste Abweichung"
+      }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Anfrage angekommen, trotzdem keine Verbindung",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "routing-diagnostic",
+          "diagnostic": true,
+          "question": "Ein Mitschnitt am Server zeigt die Anfrage des Clients. Am Client kommt keine Antwort an. Was ist als Nächstes am aussagekräftigsten?",
+          "options": [
+            {
+              "text": "Die Hinroute ungeprüft erneut konfigurieren",
+              "rationale": "Die Anfrage ist bereits am Ziel angekommen. Der nächste Erkenntnisgewinn liegt bei Antworterzeugung und Rückweg.",
+              "correct": false
+            },
+            {
+              "text": "Prüfen, ob der Server antwortet und welche Route jeder Rückweg-Hop zur Clientquelle wählt",
+              "rationale": "Richtig. Die Beobachtung belegt den Hinweg, nicht aber die Antwort und ihre Rückroute.",
+              "correct": true
+            },
+            {
+              "text": "DNS neu konfigurieren, obwohl mit IP-Adressen getestet wurde",
+              "rationale": "Bei einem bereits adressbasiert beobachteten Paket ist Namensauflösung nicht die naheliegende Ursache.",
+              "correct": false
+            },
+            {
+              "text": "Nur das Netzwerkkabel des Clients austauschen",
+              "rationale": "Der Server hat eine Anfrage dieses Clients gesehen. Das schließt nicht alle lokalen Fehler aus, macht aber eine reine Kabelhypothese ohne Rückwegprüfung schwach.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Richtungsbeweis",
+          "markdown": "Jede Beobachtung gilt zunächst nur für die **beobachtete Richtung**. Anfrage am Server beweist den Hinweg; Antwort am Server beweist noch nicht ihre Ankunft beim Client."
+        }
+      ]
+    },
+    {
+      "title": "Eine reproduzierbare Diagnosekette",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Beginne mit genau einer Verbindung: Quell-IP, Ziel-IP, Protokoll und gegebenenfalls Port. Dokumentiere Sollweg und erwartete Gateways. Prüfe dann in dieser Reihenfolge:\n\n1. **Quellhost:** Linkstatus, eigene IP, Präfix, Default Gateway und lokale Routen.\n2. **Lokale Entscheidung:** Hält der Host das Ziel wegen seiner Maske für lokal oder sendet er zum Gateway?\n3. **Hinweg:** Auf jedem Router die tatsächlich passende Route, Next Hop, Ausgangsschnittstelle sowie Filter- und NAT-Entscheidung prüfen.\n4. **Ziel:** Kommt die Anfrage an, lauscht der Dienst, und erzeugt das Ziel eine Antwort?\n5. **Rückweg:** Mit vertauschter Quelle und Ziel dieselben Fragen erneut stellen.\n6. **Belegen:** Routingtabellen, Neighbor-/ARP-Zustand, Logs, zielgerichtete Traces und Paketmitschnitte vergleichen.\n\n`ping` und `traceroute` oder `tracert` liefern Hinweise, aber keinen Alleinbeweis: ICMP kann gefiltert sein, und Traces können unvollständig oder asymmetrisch erscheinen. Teste zusätzlich den tatsächlich betroffenen Dienst."
+        },
+        {
+          "type": "figure",
+          "diagramId": "routing-diagnostic-loop",
+          "alt": "Sechsstufiger Diagnoseablauf von exakter Verbindung und Quellhost über Hinweg und Zielhost zum separat geprüften Rückweg und dem Vergleich von Routen, Logs und Paketspuren.",
+          "caption": "Eigene Lernskizze: Nach dem Ziel beginnt keine Vermutung, sondern dieselbe Routenprüfung in Gegenrichtung."
+        }
+      ]
+    },
+    {
+      "title": "Beispiel: Die fehlende Rückroute",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Client A `10.10.10.20/24` nutzt Router A `10.10.10.1`. Server B `10.20.20.50/24` nutzt Router B `10.20.20.1`. Die Router sind über `10.255.0.0/30` verbunden.\n\nRouter A besitzt die Route `10.20.20.0/24 via 10.255.0.2`. Die Anfrage erreicht daher den Server. Router B besitzt aber keine Route zu `10.10.10.0/24`; seine Default Route zeigt zum ISP. Der Server erzeugt eine Antwort und sendet sie an Router B, doch Router B leitet sie falsch zum ISP.\n\nDie gezielte Korrektur ist eine Route zu `10.10.10.0/24 via 10.255.0.1` auf Router B oder eine gleichwertig gelernte Route. Eine zusätzliche Hinroute auf Router A behebt diesen konkreten Fehler nicht. Danach werden Rückroute, Filter und tatsächliche Pakete erneut geprüft."
+        },
+        {
+          "type": "figure",
+          "diagramId": "missing-return-route",
+          "alt": "Client A erreicht über Router A und Router B den Server B. Router B hat keine Rückroute zum Clientnetz und sendet die Antwort fälschlich über seine Default Route zum ISP.",
+          "caption": "Eigene Lernskizze: Der erste abweichende Hop liegt auf dem Rückweg bei Router B."
+        },
+        {
+          "type": "quiz",
+          "id": "routing-return-practice",
+          "question": "Welche einzelne Beobachtung belegt in diesem Fall am direktesten die fehlende Rückroute?",
+          "options": [
+            {
+              "text": "Router A hat eine spezifische Route zum Servernetz",
+              "rationale": "Das erklärt den funktionierenden Hinweg, belegt aber noch nicht die Entscheidung von Router B für die Antwort.",
+              "correct": false
+            },
+            {
+              "text": "Die Routingtabelle von Router B wählt für 10.10.10.20 nur die Default Route zum ISP",
+              "rationale": "Richtig. Damit ist der erste falsche Routenentscheid für die konkrete Rückzieladresse sichtbar.",
+              "correct": true
+            },
+            {
+              "text": "Der Server besitzt einen DNS-Namen",
+              "rationale": "Ein DNS-Name sagt nichts darüber aus, welchen Next Hop Router B für das Clientnetz wählt.",
+              "correct": false
+            },
+            {
+              "text": "Der Client kann sein eigenes Loopback-Interface pingen",
+              "rationale": "Das prüft nur den lokalen IP-Stack des Clients und nicht die Rückroute am entfernten Router.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Drei Fehlerbilder unterscheiden",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "| Fehlerbild | Typische Beobachtung | Gezielte Prüfung | Geeignete Korrektur |\n| --- | --- | --- | --- |\n| falsches Präfix am Host | Ein tatsächlich entferntes Ziel wird für lokal gehalten; der Host sucht es direkt per Neighbor Discovery oder ARP statt das Gateway zu nutzen | IP und Präfix mit Sollnetz vergleichen; lokale Routenentscheidung ansehen | korrekten Präfix konfigurieren, nicht pauschal eine Routerroute ergänzen |\n| fehlende Rückroute | Anfrage erreicht das Ziel, Antwort verlässt Zielnetz aber über falschen oder keinen Next Hop | Route zur ursprünglichen Quell-IP auf Zielhost und jedem Rückweg-Router prüfen | spezifische oder dynamisch gelernte Rückroute ergänzen |\n| asymmetrischer Pfad | Hin- und Rückweg nutzen unterschiedliche Übergänge; ein zustandsbehaftetes Gerät sieht nur eine Richtung | Traces, Routingentscheidungen und Zustands-/Firewalllogs beider Richtungen vergleichen | Routing oder Policy so anpassen, dass alle beteiligten Systeme den Pfad unterstützen |\n\nAsymmetrie allein ist kein Beweis für einen Fehler. Sie wird erst relevant, wenn Stateful Firewalling, NAT, Quellvalidierung, unterschiedliche MTU oder betriebliche Beobachtbarkeit einen konsistenten Pfad verlangen."
+        },
+        {
+          "type": "callout",
+          "kind": "warning",
+          "label": "Nicht am Symptom reparieren",
+          "markdown": "Eine zusätzliche Default Route kann einen falschen Präfix am Host nicht korrigieren. Eine neue Hinroute löst keine fehlende Rückroute. Benenne zuerst den **ersten abweichenden Entscheid** und ändere genau dort."
+        }
+      ]
+    },
+    {
+      "title": "Geführte Übung: Den ersten Fehler finden",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "routing-diagnostic-sequence",
+          "title": "Ordne die Beweisschritte",
+          "prompt": "Ein Client meldet, ein entfernter HTTPS-Dienst sei nicht erreichbar. Bringe die ersten Prüfschritte in eine belastbare Reihenfolge.",
+          "tag": "Geführte Übung",
+          "steps": [
+            {
+              "id": "return",
+              "label": "Nach nachgewiesener Zielankunft den Rückweg zur ursprünglichen Quell-IP separat verfolgen"
+            },
+            {
+              "id": "define-flow",
+              "label": "Quell-IP, Ziel-IP, TCP-Port und erwarteten Sollweg festhalten"
+            },
+            {
+              "id": "source-config",
+              "label": "Link, Adresse, Präfix, Gateway und lokale Routenentscheidung am Client prüfen"
+            },
+            {
+              "id": "forward-hops",
+              "label": "Route, Next Hop, Filter und NAT des Hinwegs Hop für Hop prüfen"
+            },
+            {
+              "id": "target",
+              "label": "Am Ziel Eingang der Anfrage, lokalen Filter, Dienst und Antworterzeugung prüfen"
+            }
+          ],
+          "expected": ["define-flow", "source-config", "forward-hops", "target", "return"],
+          "correctFeedback": "Richtig. Die Diagnose folgt einer genau definierten Verbindung bis zum Ziel und beginnt dort mit vertauschten Endpunkten für den Rückweg.",
+          "wrongFeedback": "Definiere zuerst die konkrete Verbindung. Ohne Quelle, Ziel und Port sind Traces und Logs schwer vergleichbar; der Rückweg folgt erst nach dem Nachweis am Ziel."
+        },
+        {
+          "type": "quiz",
+          "id": "routing-mask-practice",
+          "question": "Client 10.10.10.20 soll über Gateway 10.10.10.1 das Ziel 10.10.20.50 erreichen. Statt /24 ist /16 konfiguriert, und der Client sendet ARP-Anfragen für 10.10.20.50. Was ist die beste Diagnose?",
+          "options": [
+            {
+              "text": "Der Client hält das entfernte Ziel wegen des zu breiten Präfixes fälschlich für lokal",
+              "rationale": "Richtig. Mit /16 wirkt 10.10.20.50 lokal; der Client versucht direkte Layer-2-Auflösung statt zum Gateway zu senden.",
+              "correct": true
+            },
+            {
+              "text": "Am Ziel fehlt zwingend eine Rückroute, weil jede ARP-Anfrage vom Ziel beantwortet wird",
+              "rationale": "Die Störung tritt bereits bei der lokalen Zielklassifikation des Clients auf. Der Router erhält das Paket noch nicht.",
+              "correct": false
+            },
+            {
+              "text": "DNS liefert eine falsche IPv6-Adresse",
+              "rationale": "Im Fall wird direkt mit IPv4-Adressen gearbeitet; die ARP-Beobachtung erklärt sich aus dem falschen Präfix.",
+              "correct": false
+            },
+            {
+              "text": "Asymmetrisches Routing ist bewiesen, obwohl kein Router passiert wurde",
+              "rationale": "Asymmetrie beschreibt unterschiedliche Wege in zwei Richtungen. Hier scheitert schon die lokale Entscheidung vor dem Gateway.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "routing-direction-card",
+              "label": "Zwei Richtungen",
+              "front": "Warum beweist eine am Ziel sichtbare Anfrage noch keine funktionierende Verbindung?",
+              "back": "Das Ziel muss eine Antwort erzeugen, und diese braucht eine eigene passende Route, Filterentscheidung und gegebenenfalls NAT-/Firewall-Zuordnung zurück zur Quelle."
+            },
+            {
+              "id": "routing-mask-card",
+              "label": "Falsche Maske",
+              "front": "Wie kann ein zu breites Präfix eine entfernte Verbindung verhindern?",
+              "back": "Der Host hält das entfernte Ziel fälschlich für lokal und versucht direkte ARP- oder Neighbor-Auflösung, statt das Paket an sein Default Gateway zu senden."
+            },
+            {
+              "id": "routing-asymmetry-card",
+              "label": "Asymmetrie",
+              "front": "Wann wird ein unterschiedlicher Hin- und Rückweg problematisch?",
+              "back": "Wenn ein beteiligtes System beide Richtungen für Zustand, NAT, Policy, Quellvalidierung, MTU oder verlässliche Beobachtung zusammenführen muss. Asymmetrie allein ist nicht automatisch ein Fehler."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "routing-troubleshooting-recall",
+          "title": "Eine Routingstörung ohne Checkliste untersuchen",
+          "prompt": "Beschreibe eine vollständige Diagnose vom Quellhost bis zum Ziel und zurück. Erkläre, wie du falsche Maske, fehlende Rückroute und problematische Asymmetrie jeweils belegst.",
+          "label": "Deine Diagnosekette",
+          "placeholder": "Zuerst definiere ich … Am Quellhost …",
+          "minLength": 170,
+          "model": "Ich definiere Quelle, Ziel, Protokoll und Port. Am Quellhost prüfe ich Link, IP, Präfix, Gateway und die Entscheidung lokal oder entfernt. Dann verfolge ich die passende Route, den Next Hop sowie Filter und NAT je Hinweg-Hop bis zum Ziel und prüfe Dienst und Antwort. Mit vertauschten Endpunkten prüfe ich den Rückweg. Ein falsches Präfix zeigt sich an einer falschen lokalen Zustellung, eine fehlende Rückroute an der Route zur Quell-IP und problematische Asymmetrie durch unterschiedliche Pfade plus Zustands- oder Policyfehler."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check: Prüfungstransfer",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "routing-transfer-workflow",
+          "requiredObjective": "diagnostic-workflow",
+          "question": "Welche Vorgehensweise liefert bei einer unbekannten Routingstörung die stärkste Beweiskette?",
+          "options": [
+            {
+              "text": "Mehrere Routen gleichzeitig ändern und anschließend nur ping ausführen",
+              "rationale": "Mehrere Änderungen zerstören die Zuordnung zwischen Ursache und Wirkung; ping allein bildet den betroffenen Dienst nicht vollständig ab.",
+              "correct": false
+            },
+            {
+              "text": "Eine konkrete Verbindung definieren, Endpunktentscheidung prüfen, Hinweg je Hop verfolgen, Zielbeobachtung sichern und den Rückweg mit vertauschten Endpunkten wiederholen",
+              "rationale": "Richtig. Diese Reihenfolge trennt lokale Konfiguration, Routing, Filter/NAT, Zielverhalten und beide Richtungen mit überprüfbaren Beobachtungen.",
+              "correct": true
+            },
+            {
+              "text": "Sofort DNS neu starten, auch wenn der Fehler mit Ziel-IP reproduzierbar ist",
+              "rationale": "Ein adressbasiert reproduzierbarer Routingfehler benötigt zuerst eine IP-Pfadprüfung, nicht eine unbelegte DNS-Änderung.",
+              "correct": false
+            },
+            {
+              "text": "Nur die Default Route des Quellrouters ansehen und daraus beide Richtungen ableiten",
+              "rationale": "Jeder Hop und besonders der Rückweg kann eine andere Routingtabelle und spezifischere Route verwenden.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "routing-transfer-fault",
+          "requiredObjective": "path-faults",
+          "question": "Ein TCP-SYN erreicht den Server über Firewall A. Der Server antwortet, aber die Antwort läuft wegen einer gleichwertigen Route über Firewall B, die keinen Verbindungszustand kennt und verwirft. Welche Diagnose und Maßnahme passen?",
+          "options": [
+            {
+              "text": "Falsches Hostpräfix; am Client muss /16 statt /24 gesetzt werden",
+              "rationale": "Der Hinweg und die Antworterzeugung funktionieren. Das Problem entsteht erst durch den abweichenden zustandsbehafteten Rückweg.",
+              "correct": false
+            },
+            {
+              "text": "Problematische Asymmetrie; Routing oder Firewallzustand so gestalten, dass beide Richtungen konsistent verarbeitet werden",
+              "rationale": "Richtig. Nicht die Asymmetrie als solche, sondern die fehlende Zustandskenntnis von Firewall B verursacht den Abbruch.",
+              "correct": true
+            },
+            {
+              "text": "Fehlende DNS-Zone; ein PTR-Record zwingt die Antwort über Firewall A",
+              "rationale": "DNS-Records steuern nicht den Routerpfad einer bereits adressierten TCP-Antwort.",
+              "correct": false
+            },
+            {
+              "text": "Fehlende Hinroute; Router vor Firewall A muss eine zweite Default Route erhalten",
+              "rationale": "Der SYN erreicht den Server bereits über Firewall A. Eine zusätzliche Default Route kann die Asymmetrie sogar verstärken.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Geltungsbereich",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):** Netzplan und Routingtabellen mit lokalen, entfernten und Default-Routen.\n- **Prüfungsvorbereitung IHK Bonn:** bidirektionales Standort-Szenario und statische Routen auf beiden Routern.\n- **IT-Basiswissen (2012):** systematische Netzwerkdiagnose mit Endpunktdaten, Gateway, ping, tracert und dokumentierten Prüfroutinen.\n\nDie Einheit bleibt protokoll- und herstellerneutral. Konkrete Kommandos, ECMP-Verhalten, Policy-Based Routing, dynamische Routingprotokolle und Firewall-Cluster müssen an der eingesetzten Plattform geprüft werden."
+        }
+      ]
+    }
+  ]
+}

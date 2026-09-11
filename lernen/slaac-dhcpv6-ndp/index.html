@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="IPv6-Autokonfiguration mit DAD, Router Solicitation und Router Advertisement erklären sowie SLAAC und DHCPv6 passend kombinieren.">
+<title>SLAAC, DHCPv6 und NDP im Ablauf unterscheiden – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=hybrid-1">
+<script defer src="/assets/ap2-space.js?v=hybrid-1"></script>
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="slaac-dhcpv6-ndp" data-progress-id="ga2-3__3" data-content-revision="2026-09-11.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-3">Block N3 · IPv6 und automatische Adresskonfiguration</a><span class="sep">›</span>
+    <span class="here">SLAAC, DHCPv6 und NDP im Ablauf unterscheiden</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">SLAAC, DHCPv6 und NDP im Ablauf unterscheiden</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 24 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>IPv6-Konfiguration ist kein einzelner DHCP-Ablauf. NDP schafft Nachbarschafts- und Routerwissen, Router Advertisements liefern Präfix- und Standardrouterinformationen, SLAAC kann daraus Adressen bilden und DHCPv6 ergänzt je nach Betriebsart Optionen oder eine verwaltete Adresse.</p>
+<section class="learning-goals" aria-labelledby="slaac-dhcpv6-ndp-goals">
+  <h2 id="slaac-dhcpv6-ndp-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>den SLAAC-Ablauf mit Link-Local-Adresse, DAD, Router Solicitation und Router Advertisement in korrekter Reihenfolge erklären</li>
+    <li>SLAAC, stateless DHCPv6 und stateful DHCPv6 anhand von Adressquelle, Zusatzoptionen und Router Advertisement passend auswählen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Woher kommt der Standardrouter?</h2>
+<section class="quiz" data-quiz="slaac-diagnostic" data-correct="0">
+  <h3>Ein IPv6-Client bezieht seine Adresse stateful per DHCPv6. Woher lernt er im gewöhnlichen LAN seinen Standardrouter?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Die Default-Route entsteht aus dem RA und dessen Router-Lifetime, nicht aus einer DHCPv6-Gatewayoption."><span class="m">A</span> aus dem Router Advertisement</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="DHCPv6 stellt im normalen Modell keine Standardrouteroption wie DHCPv4 bereit."><span class="m">B</span> aus einer DHCPv6-Option für das Standardgateway</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="DAD prüft nur, ob eine tentative Adresse bereits verwendet wird; es bestimmt keinen Router."><span class="m">C</span> aus Duplicate Address Detection</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Die eigene Hardwarekennung liefert keine Information über den erreichbaren Standardrouter."><span class="m">D</span> aus der MAC-Adresse des Clients</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">RA bleibt wichtig</span><p>Auch bei <strong>stateful DHCPv6</strong> bleibt das Router Advertisement für den Standardrouter und weitere Linkinformationen erforderlich.</p></aside><h2 class="sec" id="s2"><span class="num">2</span>NDP und SLAAC Schritt für Schritt</h2>
+<p>Neighbor Discovery Protocol verwendet ICMPv6-Nachrichten. Für die Autokonfiguration sind besonders wichtig:</p>
+<ul>
+<li><strong>Neighbor Solicitation und Neighbor Advertisement:</strong> Nachbarschaftsauflösung und Duplicate Address Detection.</li>
+<li><strong>Router Solicitation:</strong> Ein Host bittet Router um eine zeitnahe Ankündigung.</li>
+<li><strong>Router Advertisement:</strong> Ein Router kündigt Präfixe, seine Routerrolle, Linkparameter und Flags an.</li>
+</ul>
+<p>Nach Aktivierung des Interfaces bildet der Host zunächst eine Link-Local-Adresse und prüft sie mit DAD. Danach sendet er eine Router Solicitation oder wartet auf ein Router Advertisement. Enthält die Prefix Information Option ein geeignetes /64 und das Autonomous-Flag, kann der Host daraus per SLAAC eine Adresse bilden. Die Interface-ID kann stabil opak oder temporär sein; Modified EUI-64 ist keine SLAAC-Pflicht. Auch die neue Adresse wird vor regulärer Nutzung mit DAD geprüft.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Vom Interface zur nutzbaren IPv6-Adresse">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="650" viewBox="0 0 960 650" role="img" aria-labelledby="diagram-slaac-flow-title diagram-slaac-flow-desc">
+  <title id="diagram-slaac-flow-title">Vom Interface zur nutzbaren IPv6-Adresse</title>
+  <desc id="diagram-slaac-flow-desc">Fünfstufiger SLAAC-Ablauf von der Link-Local-Adresse über DAD, Router Solicitation und Router Advertisement bis zur geprüften Global-Unicast-Adresse.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Vom Interface zur nutzbaren IPv6-Adresse</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Link-Local-Adresse bilden</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">der Host erzeugt eine Adresse für den direkt angeschlossenen</tspan><tspan x="178" dy="25">Link</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">DAD ausführen</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Neighbor Solicitation prüft, ob die tentative Adresse bereits</tspan><tspan x="178" dy="25">verwendet wird</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Router Solicitation senden</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">der Host fordert ein Router Advertisement an oder wartet auf</tspan><tspan x="178" dy="25">eine periodische Ankündigung</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Router Advertisement auswerten</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Präfix, Autonomous-Flag, Router-Lifetime und mögliche</tspan><tspan x="178" dy="25">Zusatzoptionen steuern die Konfiguration</tspan></text><path d="M480 472v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 494 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="512" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="541" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Global-Unicast-Adresse bilden und prüfen</tspan></text><text x="178" y="568" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">bei geeignetem /64-Präfix erzeugt der Host eine IID nach</tspan><tspan x="178" dy="25">seiner Strategie und führt erneut DAD aus</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: DAD ist eine Prüfung, RA eine Routerinformation und SLAAC die lokale Adressbildung des Hosts.</figcaption>
+</figure><section class="quiz" data-quiz="slaac-flow-practice" data-correct="0">
+  <h3>Welche Nachricht fordert ein Host aktiv an, wenn er nicht bis zum nächsten periodischen Router Advertisement warten möchte?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Eine RS veranlasst Router dazu, zeitnah mit einem RA zu antworten."><span class="m">A</span> Router Solicitation</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Eine NA beantwortet typischerweise eine Neighbor Solicitation und kündigt keinen Routerpräfixsatz an."><span class="m">B</span> Neighbor Advertisement</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Eine Reply gehört zum DHCPv6-Austausch und fordert kein Router Advertisement an."><span class="m">C</span> DHCPv6 Reply</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="IPv6 besitzt keinen Broadcast-Adressmodus; NDP verwendet ICMPv6 und Multicastmechanismen."><span class="m">D</span> IPv6 Broadcast</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s3"><span class="num">3</span>Durchgearbeitetes Beispiel: SLAAC plus stateless DHCPv6</h2>
+<p>Ein Unternehmens-LAN soll Clientadressen ohne zentrale Leaseverwaltung bilden. DNS-Server und Suchdomäne sollen jedoch aus einer zentralen DHCPv6-Konfiguration kommen.</p>
+<p>Der Router kündigt das /64-Präfix mit gesetztem Autonomous-Flag an. Das Managed-Flag bleibt aus, weil DHCPv6 keine Adresse vergeben soll. Das Other-Configuration-Flag wird gesetzt und weist den Client auf weitere DHCPv6-Optionen hin. Der Client bildet seine Adresse per SLAAC, lernt den Standardrouter aus dem RA und fragt DNS- sowie Domäneninformationen stateless beim DHCPv6-Server ab.</p>
+<p>Alternativ könnte der Router DNS-Informationen selbst per RDNSS/DNSSL ankündigen. Die gewählte Variante ist daher eine Betriebsentscheidung und muss mit den Clients abgestimmt werden.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Drei typische Konfigurationsmodelle">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-ipv6-config-modes-title diagram-ipv6-config-modes-desc">
+  <title id="diagram-ipv6-config-modes-title">Drei typische Konfigurationsmodelle</title>
+  <desc id="diagram-ipv6-config-modes-desc">Vergleich von SLAAC mit Router-Advertisement-Optionen, SLAAC plus stateless DHCPv6 und stateful DHCPv6 plus Router Advertisement.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Drei typische Konfigurationsmodelle</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">SLAAC mit</tspan><tspan x="64" dy="25">RA-Optionen</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">Adresse aus</tspan><tspan x="64" dy="30">angekündigtem /64;</tspan><tspan x="64" dy="30">Default Router aus</tspan></text></g><g><rect class="diagram-row" x="265" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="287" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="287" dy="0">SLAAC plus</tspan><tspan x="287" dy="25">stateless DHCPv6</tspan></text><text x="287" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="287" dy="0">Adresse per SLAAC;</tspan><tspan x="287" dy="30">weitere Angaben wie</tspan><tspan x="287" dy="30">DNS oder</tspan></text></g><g><rect class="diagram-row" x="488" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="510" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="510" dy="0">Stateful DHCPv6</tspan><tspan x="510" dy="25">plus RA</tspan></text><text x="510" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="510" dy="0">verwaltete Adresse</tspan><tspan x="510" dy="30">über DHCPv6 nach</tspan><tspan x="510" dy="30">M-Flag; Default</tspan></text></g><g><rect class="diagram-row" x="711" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="733" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="733" dy="0">NDP als Grundlage</tspan></text><text x="733" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="733" dy="0">RS, RA, NS und NA</tspan><tspan x="733" dy="30">ermöglichen Router-</tspan><tspan x="733" dy="30">und Nachbarerkennung</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Adressquelle, Zusatzoptionen und Standardrouter können aus unterschiedlichen Protokollteilen stammen.</figcaption>
+</figure><section class="quiz" data-quiz="dhcpv6-mode-practice" data-correct="0">
+  <h3>Welche Zuordnung passt zu diesem Unternehmens-LAN?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Genau diese Aufgabenverteilung erfüllt die beschriebene Richtlinie."><span class="m">A</span> Adresse per SLAAC, Standardrouter per RA, Zusatzoptionen per stateless DHCPv6</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="DHCPv6 liefert den Standardrouter nicht; DAD ist zudem ein NDP-Verfahren des Hosts."><span class="m">B</span> Adresse, Standardrouter und DAD ausschließlich per DHCPv6</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Das widerspricht der Vorgabe, Clientadressen ohne zentrale DHCPv6-Leasevergabe zu bilden."><span class="m">C</span> Adresse per stateful DHCPv6, obwohl das Managed-Flag aus ist und keine Leaseverwaltung gewünscht wird</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Ein geeignetes /64-Präfix mit Autonomous-Flag ist gerade der reguläre SLAAC-Fall."><span class="m">D</span> Adresse per Link-Local, weil ein /64-Präfix nicht mit SLAAC verwendet werden kann</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Geführte Übung: Nachrichten und Aufgaben trennen</h2>
+<section class="sequence-practice" data-sequence="slaac-guided-sequence" data-expected="ll,dad,rs,ra,gua" data-correct-feedback="Richtig. Lokale Kommunikationsfähigkeit und DAD kommen vor der Routeranfrage; die globale Adresse folgt aus dem RA." data-wrong-feedback="Beginne mit einer tentativen Link-Local-Adresse und ihrer DAD-Prüfung. Erst danach kann der Host regulär Routerinformationen anfordern und auswerten." aria-labelledby="slaac-guided-sequence-title">
+  <div class="lab-heading"><div><h3 id="slaac-guided-sequence-title">Erster Start im IPv6-LAN</h3><p>Bringe die Schritte eines vereinfachten Clientstarts in die richtige Reihenfolge.</p></div><span class="lab-tag">Übung</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="ra" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Router Advertisement mit Präfix, Flags und Router-Lifetime auswerten.</span></li>
+    <li data-step="ll" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Tentative Link-Local-Adresse bilden.</span></li>
+    <li data-step="gua" tabindex="-1"><span class="step-position" data-step-position>3</span><span>SLAAC-Adresse bilden und ebenfalls mit DAD prüfen.</span></li>
+    <li data-step="dad" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Link-Local-Adresse mit Duplicate Address Detection prüfen.</span></li>
+    <li data-step="rs" tabindex="-1"><span class="step-position" data-step-position>5</span><span>Router Solicitation senden.</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><aside class="callout warn"><span class="lbl">Flags sind Hinweise, keine Gatewayoption</span><p>M weist auf verwaltete Adressvergabe per DHCPv6 hin, O auf weitere DHCPv6-Konfiguration. Der Standardrouter bleibt unabhängig davon eine Information aus dem RA.</p></aside><h2 class="sec" id="s5"><span class="num">5</span>Karteikarten und freier Abruf</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="slaac-rs-ra" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche Rollen haben Router Solicitation und Router Advertisement?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Der Host fordert mit RS Routerinformationen an; der Router liefert mit RA Präfixe, Flags, Router-Lifetime und mögliche Zusatzoptionen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="slaac-dad" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wozu dient Duplicate Address Detection?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Der Host prüft per NDP, ob eine tentative IPv6-Adresse auf dem Link bereits verwendet wird.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="dhcpv6-gateway" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Liefert stateful DHCPv6 den Standardrouter?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Im gewöhnlichen IPv6-LAN nein. Der Standardrouter wird aus einem Router Advertisement gelernt.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „RS und RA“:</span><button type="button" data-card-id="slaac-rs-ra" data-card-rate="known">gewusst</button><button type="button" data-card-id="slaac-rs-ra" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="slaac-rs-ra"></span></div>
+<div class="card-rating"><span>Karte „DAD“:</span><button type="button" data-card-id="slaac-dad" data-card-rate="known">gewusst</button><button type="button" data-card-id="slaac-dad" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="slaac-dad"></span></div>
+<div class="card-rating"><span>Karte „Standardrouter“:</span><button type="button" data-card-id="dhcpv6-gateway" data-card-rate="known">gewusst</button><button type="button" data-card-id="dhcpv6-gateway" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="dhcpv6-gateway"></span></div><section class="recall-practice" data-recall="slaac-dhcpv6-recall" data-min-length="140" aria-labelledby="slaac-dhcpv6-recall-title">
+  <div class="recall-prompt"><h3 id="slaac-dhcpv6-recall-title">Ohne Nachschlagen erklären</h3><p>Erkläre einen vollständigen SLAAC-Start und grenze anschließend SLAAC-only, stateless DHCPv6 und stateful DHCPv6 ab. Nenne ausdrücklich die Quelle des Standardrouters.</p></div>
+  <label class="sr-only" for="slaac-dhcpv6-recall-answer">Deine Erklärung</label>
+  <textarea id="slaac-dhcpv6-recall-answer" data-recall-input rows="4" placeholder="Der Host bildet zuerst …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Der Host bildet eine Link-Local-Adresse, prüft sie mit DAD, sendet RS und wertet ein RA aus. Bei geeignetem /64 und Autonomous-Flag bildet er eine SLAAC-Adresse und prüft auch diese. SLAAC-only kann DNS per RA erhalten. Stateless DHCPv6 ergänzt Optionen, vergibt aber keine Adresse. Stateful DHCPv6 verwaltet die Adresse. In allen üblichen Fällen kommt der Standardrouter aus dem RA.</div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Lernziel-Check: Transfer</h2>
+<section class="sequence-practice" data-sequence="slaac-transfer-flow" data-expected="linklocal,local-dad,solicit,advert,global-dad" data-correct-feedback="Richtig. Der Host sichert zuerst die lokale Adresse ab, entdeckt dann den Router und bildet anschließend die globale Adresse." data-wrong-feedback="Die Link-Local-Adresse und ihre DAD-Prüfung müssen vor der Routerkommunikation liegen. Die Global-Unicast-Adresse folgt erst aus dem RA." data-required-objective="slaac-ndp-flow" aria-labelledby="slaac-transfer-flow-title">
+  <div class="lab-heading"><div><h3 id="slaac-transfer-flow-title">Neuer Client am SLAAC-LAN</h3><p>Ordne die Ereignisse vom Aktivieren des Interfaces bis zur nutzbaren Global-Unicast-Adresse.</p></div><span class="lab-tag">Pflichtnachweis</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="global-dad" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Global-Unicast-Adresse bilden und per DAD prüfen.</span></li>
+    <li data-step="linklocal" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Tentative Link-Local-Adresse bilden.</span></li>
+    <li data-step="solicit" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Router Solicitation senden.</span></li>
+    <li data-step="local-dad" tabindex="-1"><span class="step-position" data-step-position>4</span><span>DAD für die Link-Local-Adresse durchführen.</span></li>
+    <li data-step="advert" tabindex="-1"><span class="step-position" data-step-position>5</span><span>Router Advertisement mit /64-Präfix und Router-Lifetime empfangen.</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><section class="quiz" data-quiz="dhcpv6-transfer-mode" data-correct="0" data-required-objective="configuration-modes">
+  <h3>Ein Netz verlangt zentral vergebene Clientadressen mit Leasezustand. Der Standardrouter soll korrekt gelernt werden. Welche Kombination passt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. DHCPv6 verwaltet die Adresse, während das RA weiterhin die Routerrolle bekannt macht."><span class="m">A</span> RA mit Managed-Hinweis plus stateful DHCPv6; Standardrouter aus dem RA</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die normale DHCPv6-Konfiguration liefert keine Standardrouteroption. Ohne RA fehlt diese zentrale Routerinformation."><span class="m">B</span> Nur stateful DHCPv6; Standardrouter aus einer DHCPv6-Gatewayoption</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Link-Local und DAD schaffen lokale Eindeutigkeit, aber keine verwaltete globale Adresse und keine Default-Route."><span class="m">C</span> Nur Link-Local und DAD; beide ersetzen eine globale Adresse und den Standardrouter</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Das O-Flag weist auf weitere Optionen hin. Für verwaltete Adressvergabe ist der stateful Modus mit Managed-Hinweis vorgesehen."><span class="m">D</span> SLAAC plus Other-Configuration-Flag; DHCPv6 verwaltet dadurch automatisch die Adresse</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><p><strong>Prüfungsformulierung:</strong> Schreibe zu jeder Information ihre Quelle: Adresse per SLAAC oder DHCPv6, Standardrouter per RA, Zusatzoptionen per RA oder DHCPv6 und Eindeutigkeitsprüfung per NDP/DAD.</p>
+<h2 class="sec" id="s7"><span class="num">7</span>Quellen und Einordnung</h2>
+<ul>
+<li><strong>IT-Berufe Fachstufe II – Lernfelder 10–12 (2023):</strong> SLAAC-Ablauf mit Link-Local, DAD, RS, RA und Global Unicast.</li>
+<li><strong>EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):</strong> stateless und stateful DHCPv6 sowie Managed-/Other-Kontext.</li>
+<li><strong>Prüfungsvorbereitung IHK Bonn:</strong> ergänzender SLAAC-Prüfungsimpuls.</li>
+</ul>
+<p>Der veraltete RFC-3315-Verweis und MAC-fixierte Vereinfachungen wurden nicht fortgeschrieben. Die Prozesse und Diagramme sind vollständig neu erstellt.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-3"><span class="d">zurück zu</span><span class="t">Block N3 · IPv6 und automatische Adresskonfiguration</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N3 · IPv6 und automatische Adresskonfiguration</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Woher kommt der Standardrouter?</a></li>
+<li><a href="#s2" data-t="s2">NDP und SLAAC Schritt für Schritt</a></li>
+<li><a href="#s3" data-t="s3">Durchgearbeitetes Beispiel: SLAAC plus stateless DHCPv6</a></li>
+<li><a href="#s4" data-t="s4">Geführte Übung: Nachrichten und Aufgaben trennen</a></li>
+<li><a href="#s5" data-t="s5">Karteikarten und freier Abruf</a></li>
+<li><a href="#s6" data-t="s6">Lernziel-Check: Transfer</a></li>
+<li><a href="#s7" data-t="s7">Quellen und Einordnung</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-3">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

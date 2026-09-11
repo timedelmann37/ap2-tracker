@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="IPv6-Adressen anhand ihres Präfixes und ihrer Zustellungsart als Global Unicast, ULA, Link-Local, Loopback, Multicast oder Anycast einordnen.">
+<title>IPv6-Adresstypen und Gültigkeitsbereiche erkennen – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=hybrid-1">
+<script defer src="/assets/ap2-space.js?v=hybrid-1"></script>
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="ipv6-adresstypen" data-progress-id="ga2-3__1" data-content-revision="2026-09-11.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-3">Block N3 · IPv6 und automatische Adresskonfiguration</a><span class="sep">›</span>
+    <span class="here">IPv6-Adresstypen und Gültigkeitsbereiche erkennen</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">IPv6-Adresstypen und Gültigkeitsbereiche erkennen</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 20 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Bei IPv6 beschreiben Präfix und Zustellungsart unterschiedliche Dinge: Das Präfix kann den Gültigkeitsbereich eingrenzen, während Unicast, Anycast oder Multicast festlegen, wie viele beziehungsweise welche Empfänger erreicht werden.</p>
+<section class="learning-goals" aria-labelledby="ipv6-adresstypen-goals">
+  <h2 id="ipv6-adresstypen-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>IPv6-Adressen anhand stabiler Präfixe als Global Unicast, ULA, Link-Local, Loopback oder Multicast klassifizieren</li>
+    <li>Unicast, Anycast und Multicast sowie den Gültigkeitsbereich einer Adresse in einem Netzwerkszenario begründet unterscheiden</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Was verrät fe80::?</h2>
+<section class="quiz" data-quiz="ipv6-types-diagnostic" data-correct="0">
+  <h3>Welche Aussage passt zu `fe80::21a:2bff:fe3c:4d5e`?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. fe80::/10 kennzeichnet verbindungslokale Unicast-Adressen."><span class="m">A</span> Die Adresse ist Link-Local und nur auf dem zugehörigen Link gültig.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Global Unicast liegt typischerweise in 2000::/3; globale Erreichbarkeit wäre außerdem nicht allein durch das Präfix garantiert."><span class="m">B</span> Die Adresse ist Global Unicast und muss weltweit erreichbar sein.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Multicast beginnt mit ff00::/8. Link-Local beschreibt einen Gültigkeitsbereich, keinen Gruppenversand."><span class="m">C</span> Die Adresse ist Multicast, weil mehrere Hosts sie verwenden dürfen.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Die IPv6-Loopback-Adresse ist genau ::1/128."><span class="m">D</span> Die Adresse ist Loopback für den eigenen Host.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">Zwei Fragen</span><p>Frage zuerst: <strong>Welches Präfix und welcher Scope?</strong> Frage danach: <strong>Unicast, Anycast oder Multicast?</strong></p></aside><h2 class="sec" id="s2"><span class="num">2</span>Adressbereiche und Reichweite</h2>
+<p><strong>Global Unicast</strong> liegt typischerweise in <code>2000::/3</code>. Die Adresse kann global eindeutig und routebar sein; ob ein konkreter Host erreichbar ist, entscheiden Zuweisung, Routing und Filterregeln.</p>
+<p><strong>Unique Local Addresses</strong> stammen aus <code>fc00::/7</code>. Für lokal lokal erzeugte Präfixe wird praktisch <code>fd00::/8</code> mit einem zufällig gebildeten Global-ID-Anteil verwendet. ULA kann innerhalb einer Organisation oder über Standortverbindungen geroutet werden, ist aber nicht für die globale Internet-Routingtabelle vorgesehen.</p>
+<p><strong>Link-Local</strong> verwendet <code>fe80::/10</code> und bleibt am jeweiligen Link. Router besitzen ebenfalls Link-Local-Adressen; ein Host kann seinen Standardrouter darüber erreichen. Bei mehreren Interfaces ist deshalb häufig zusätzlich eine Zonen- beziehungsweise Interfaceangabe notwendig.</p>
+<p><strong>Loopback</strong> ist genau <code>::1/128</code>; <strong>Unspecified</strong> ist <code>::/128</code> und darf nicht als normale Zieladresse eines Hosts verwendet werden. <strong>Multicast</strong> beginnt mit <code>ff00::/8</code> und trägt seinen Gültigkeitsbereich in der Adresse.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Stabile Präfixanker für die Prüfung">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-ipv6-prefix-families-title diagram-ipv6-prefix-families-desc">
+  <title id="diagram-ipv6-prefix-families-title">Stabile Präfixanker für die Prüfung</title>
+  <desc id="diagram-ipv6-prefix-families-desc">Vergleich von Global Unicast 2000 Doppelpunkt Doppelpunkt Schrägstrich 3, ULA fc00 Doppelpunkt Doppelpunkt Schrägstrich 7, Link-Local fe80 Doppelpunkt Doppelpunkt Schrägstrich 10, Multicast ff00 Doppelpunkt Doppelpunkt Schrägstrich 8 und Loopback Doppelpunkt Doppelpunkt 1.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Stabile Präfixanker für die Prüfung</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="160" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">2000::/3</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">Global Unicast;</tspan><tspan x="64" dy="30">global eindeutiger</tspan><tspan x="64" dy="30">Adressraum,</tspan></text></g><g><rect class="diagram-row" x="220" y="92" width="160" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="242" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="242" dy="0">fc00::/7</tspan></text><text x="242" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="242" dy="0">Unique Local</tspan><tspan x="242" dy="30">Address; für interne</tspan><tspan x="242" dy="30">Kommunikation, nicht</tspan></text></g><g><rect class="diagram-row" x="398" y="92" width="160" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="420" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="420" dy="0">fe80::/10</tspan></text><text x="420" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="420" dy="0">Link-Local Unicast;</tspan><tspan x="420" dy="30">nur auf dem</tspan><tspan x="420" dy="30">jeweiligen Link</tspan></text></g><g><rect class="diagram-row" x="576" y="92" width="160" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="598" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="598" dy="0">ff00::/8</tspan></text><text x="598" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="598" dy="0">Multicast; die</tspan><tspan x="598" dy="30">Adresse enthält</tspan><tspan x="598" dy="30">zusätzlich einen</tspan></text></g><g><rect class="diagram-row" x="754" y="92" width="160" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="776" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="776" dy="0">::1/128</tspan></text><text x="776" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="776" dy="0">Loopback;</tspan><tspan x="776" dy="30">ausschließlich der</tspan><tspan x="776" dy="30">eigene Host</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Präfixe liefern stabile Anker; konkrete Erreichbarkeit bleibt eine Netz- und Routingfrage.</figcaption>
+</figure><aside class="callout warn"><span class="lbl">ULA ist nicht Link-Local</span><p>ULA darf zwischen eigenen Netzen geroutet werden. Link-Local bleibt dagegen auf genau einen Link begrenzt und benötigt bei Mehrdeutigkeit eine Interfacezone.</p></aside><h2 class="sec" id="s3"><span class="num">3</span>Durchgearbeitetes Beispiel: Drei Ziele, drei Reichweiten</h2>
+<p>Ein Server besitzt <code>2001:db8:44::20</code> für ein dokumentiertes Global-Unicast-Beispiel, <code>fd7a:91b2:3000::20</code> für interne Standortkommunikation und <code>fe80::20</code> auf seiner Netzwerkkarte.</p>
+<p>Die erste Adresse veranschaulicht eine global strukturierte Unicast-Adresse; der Dokumentationspräfix <code>2001:db8::/32</code> wird in Beispielen verwendet und nicht produktiv vergeben. Die ULA kann über interne Router zu weiteren eigenen Netzen gelangen. Die Link-Local-Adresse eignet sich für Nachbarschafts- und Routerkommunikation auf dem direkt angeschlossenen Link, darf aber nicht standortübergreifend weitergeleitet werden.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Gleiche Adressform, andere Zustellung">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="542" viewBox="0 0 960 542" role="img" aria-labelledby="diagram-delivery-modes-title diagram-delivery-modes-desc">
+  <title id="diagram-delivery-modes-title">Gleiche Adressform, andere Zustellung</title>
+  <desc id="diagram-delivery-modes-desc">Ablaufvergleich von Zustellung an ein einzelnes Unicast-Interface, eine per Routing gewählte Anycast-Instanz und alle Multicast-Gruppenmitglieder.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Gleiche Adressform, andere Zustellung</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Unicast</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">eine Adresse bezeichnet ein einzelnes Interface; das Paket</tspan><tspan x="178" dy="25">geht genau zu diesem Ziel</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Anycast</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">dieselbe Unicast-Adresse liegt auf mehreren Interfaces;</tspan><tspan x="178" dy="25">Routing wählt eine erreichbare, typischerweise nahe Instanz</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Multicast</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">eine ff00::/8-Adresse bezeichnet eine Gruppe; das Paket geht</tspan><tspan x="178" dy="25">an alle passenden Gruppenmitglieder im angegebenen Scope</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Kein Broadcast</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">IPv6 verwendet keinen Broadcast-Adressmodus; passende Aufgaben</tspan><tspan x="178" dy="25">werden unter anderem mit Multicast gelöst</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Anycast verwendet Unicast-Adressformat; die besondere Wirkung entsteht durch Mehrfachzuweisung und Routing.</figcaption>
+</figure><section class="quiz" data-quiz="ipv6-types-practice" data-correct="0">
+  <h3>Welche Adresse eignet sich im Beispiel für die interne Kommunikation zwischen zwei eigenen Standorten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Die ULA kann innerhalb der eigenen gerouteten Infrastruktur standortübergreifend verwendet werden."><span class="m">A</span> fd7a:91b2:3000::20</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Link-Local wird von Routern nicht über den direkt angeschlossenen Link hinaus weitergeleitet."><span class="m">B</span> fe80::20 ohne Interface- und Linkbezug</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Loopback erreicht nur den eigenen Host und niemals einen entfernten Standort."><span class="m">C</span> ::1</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="ff02::1 ist eine link-lokale Multicast-Gruppenadresse und keine eindeutige Server-Unicast-Adresse."><span class="m">D</span> ff02::1 als dauerhafte Serveradresse</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Geführte Übung: Zustellungsart prüfen</h2>
+<section class="sequence-practice" data-sequence="ipv6-type-check-sequence" data-expected="prefix,scope,delivery,scenario" data-correct-feedback="Richtig. Präfix und Scope werden vor der konkreten Zustellungs- und Szenariobewertung geklärt." data-wrong-feedback="Beginne mit dem Präfix. Ohne den Gültigkeitsbereich kann die Wirkung im Szenario nicht sicher bewertet werden." aria-labelledby="ipv6-type-check-sequence-title">
+  <div class="lab-heading"><div><h3 id="ipv6-type-check-sequence-title">Vom Präfix zur Wirkung</h3><p>Bringe die Prüfschritte in eine sinnvolle Reihenfolge.</p></div><span class="lab-tag">Übung</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="delivery" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Unicast-, Anycast- oder Multicast-Zustellung bestimmen.</span></li>
+    <li data-step="prefix" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Adresse gegen bekannte Präfixe wie fe80::/10, fc00::/7 und ff00::/8 prüfen.</span></li>
+    <li data-step="scope" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Gültigkeitsbereich und erlaubte Weiterleitung bestimmen.</span></li>
+    <li data-step="scenario" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Bewerten, ob Adresstyp und Scope zum geforderten Kommunikationsziel passen.</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><aside class="callout merk"><span class="lbl">Anycast erkennen</span><p>Anycast hat keinen eigenen Anfangswert. Die gleiche <strong>Unicast-Adresse</strong> wird mehreren Interfaces zugewiesen; Routing entscheidet über die erreichte Instanz.</p></aside><h2 class="sec" id="s5"><span class="num">5</span>Karteikarten und freier Abruf</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="ipv6-prefixes" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche Präfixe kennzeichnen ULA, Link-Local und Multicast?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>ULA: fc00::/7, praktisch meist fd00::/8. Link-Local: fe80::/10. Multicast: ff00::/8.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="ipv6-loopback" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wie unterscheiden sich ::1/128 und ::/128?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>::1 ist Loopback zum eigenen Host. :: ist die nicht spezifizierte Adresse und keine normale Zieladresse.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="ipv6-anycast" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum gibt es keinen eigenen Anycast-Präfix?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Anycast verwendet eine Unicast-Adresse auf mehreren Interfaces; die Zustellung zu einer Instanz entsteht durch das Routing.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Präfixanker“:</span><button type="button" data-card-id="ipv6-prefixes" data-card-rate="known">gewusst</button><button type="button" data-card-id="ipv6-prefixes" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ipv6-prefixes"></span></div>
+<div class="card-rating"><span>Karte „Sonderadressen“:</span><button type="button" data-card-id="ipv6-loopback" data-card-rate="known">gewusst</button><button type="button" data-card-id="ipv6-loopback" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ipv6-loopback"></span></div>
+<div class="card-rating"><span>Karte „Anycast“:</span><button type="button" data-card-id="ipv6-anycast" data-card-rate="known">gewusst</button><button type="button" data-card-id="ipv6-anycast" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ipv6-anycast"></span></div><section class="recall-practice" data-recall="ipv6-types-recall" data-min-length="120" aria-labelledby="ipv6-types-recall-title">
+  <div class="recall-prompt"><h3 id="ipv6-types-recall-title">Ohne Nachschlagen erklären</h3><p>Ordne 2000::/3, fc00::/7, fe80::/10, ff00::/8 und ::1/128 ihren Rollen zu und erkläre anschließend Unicast, Anycast und Multicast.</p></div>
+  <label class="sr-only" for="ipv6-types-recall-answer">Deine Erklärung</label>
+  <textarea id="ipv6-types-recall-answer" data-recall-input rows="4" placeholder="2000::/3 …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> 2000::/3 ist Global Unicast, fc00::/7 ULA, fe80::/10 Link-Local, ff00::/8 Multicast und ::1/128 Loopback. Unicast erreicht ein Interface. Anycast verwendet dieselbe Unicast-Adresse auf mehreren Interfaces und erreicht per Routing eine Instanz. Multicast erreicht alle passenden Gruppenmitglieder innerhalb des angegebenen Scope.</div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Lernziel-Check: Transfer</h2>
+<section class="quiz" data-quiz="ipv6-types-transfer-prefix" data-correct="0" data-required-objective="prefix-classification">
+  <h3>Wie ist `fd4c:8a21:9000::15` einzuordnen?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. fd00::/8 liegt im ULA-Bereich fc00::/7."><span class="m">A</span> Unique Local Address für interne Kommunikation</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Link-Local beginnt mit fe80::/10. Der erste Hexadezimalbuchstabe allein reicht nicht zur Klassifikation."><span class="m">B</span> Link-Local, nur weil die Adresse mit f beginnt</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Multicast beginnt mit ff00::/8, nicht mit fd."><span class="m">C</span> Multicast an eine Empfängergruppe</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Die IPv6-Loopback-Adresse ist ausschließlich ::1/128."><span class="m">D</span> Loopback des eigenen Hosts</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="ipv6-types-transfer-delivery" data-correct="0" data-required-objective="delivery-scope">
+  <h3>Drei DNS-Serverstandorte kündigen dieselbe Unicast-Adresse an. Das Routing führt Clients jeweils zu einer erreichbaren, topologisch nahen Instanz. Welche Zustellungsart ist beschrieben?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Eine Unicast-Adresse ist mehreren Interfaces zugewiesen; Routing wählt eine Instanz."><span class="m">A</span> Anycast</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Multicast würde an alle Gruppenmitglieder im Scope zustellen, nicht nur an eine ausgewählte Instanz."><span class="m">B</span> Multicast</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Loopback bleibt im eigenen Host und kann keine entfernten Serverstandorte erreichen."><span class="m">C</span> Loopback</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Link-Local wird nicht zwischen Standorten geroutet und beschreibt außerdem keine Mehrfachzuweisung mit Routenauswahl."><span class="m">D</span> Link-Local Unicast</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><p><strong>Prüfungsformulierung:</strong> Begründe Adresstyp und Zustellung getrennt. Nenne Präfix, Scope und das tatsächlich erreichte Ziel beziehungsweise die Empfängergruppe.</p>
+<h2 class="sec" id="s7"><span class="num">7</span>Quellen und Einordnung</h2>
+<ul>
+<li><strong>IT-Berufe Grundstufe – Lernfelder 6–9 (2022):</strong> Übersicht zentraler IPv6-Präfixe und Gültigkeitsbereiche.</li>
+<li><strong>Prüfungsvorbereitung IHK Bonn:</strong> Unicast, Anycast und Multicast sowie ergänzende, teils historische Adressinformationen.</li>
+<li><strong>EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):</strong> Global-Unicast-Struktur als Prüfungskontext.</li>
+<li><strong>IT-Berufe Fachstufe II – Lernfelder 10–12 (2023):</strong> Link-Local und Global Unicast im Autokonfigurationsablauf.</li>
+</ul>
+<p>Historische oder pauschal veraltete Aussagen wurden nicht übernommen. Alle Diagramme und Fälle sind eigenständig erstellt.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-3"><span class="d">zurück zu</span><span class="t">Block N3 · IPv6 und automatische Adresskonfiguration</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N3 · IPv6 und automatische Adresskonfiguration</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Was verrät fe80::?</a></li>
+<li><a href="#s2" data-t="s2">Adressbereiche und Reichweite</a></li>
+<li><a href="#s3" data-t="s3">Durchgearbeitetes Beispiel: Drei Ziele, drei Reichweiten</a></li>
+<li><a href="#s4" data-t="s4">Geführte Übung: Zustellungsart prüfen</a></li>
+<li><a href="#s5" data-t="s5">Karteikarten und freier Abruf</a></li>
+<li><a href="#s6" data-t="s6">Lernziel-Check: Transfer</a></li>
+<li><a href="#s7" data-t="s7">Quellen und Einordnung</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-3">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

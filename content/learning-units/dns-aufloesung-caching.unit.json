@@ -1,0 +1,193 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "dns-aufloesung-caching",
+    "slug": "dns-aufloesung-caching",
+    "title": "DNS-Auflösung und Caching nachvollziehen",
+    "description": "Rekursive und iterative DNS-Auflösung unterscheiden, Forwarder einordnen sowie Cache, TTL und Reverse Lookup korrekt erklären.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-3",
+    "groupLabel": "Block N3 · IPv6, DHCP und DNS",
+    "itemId": "ga2-3__11",
+    "week": "KW 37",
+    "estimatedMinutes": 24,
+    "relevance": "hoch",
+    "sources": ["itlf10-12-2023"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    { "id": "resolution-roles", "label": "Stub-Resolver, rekursiven Resolver, Forwarder und autoritative Server in einer Namensauflösung korrekt zuordnen" },
+    { "id": "cache-reverse", "label": "Caching und TTL bewerten sowie Forward Lookup und Reverse Lookup voneinander unterscheiden" }
+  ],
+  "intro": "Der Client fragt normalerweise nicht selbst Root-, TLD- und autoritative Server ab. Sein Stub-Resolver übergibt die Aufgabe an einen rekursiven Resolver. Dieser liefert entweder eine gecachte Antwort oder verfolgt die Delegationen der DNS-Hierarchie. Wer diese Rollen trennt, kann Auflösungsfehler gezielt lokalisieren und versteht, warum eine DNS-Änderung nicht überall sofort sichtbar wird.",
+  "curation": {
+    "evidence": [
+      { "sourceId": "itlf10-12-2023", "sourceLocator": "PDF-Seiten 16–17, lokale OCR", "use": "Rollen von Stub- und Recursive Resolver, Forwarder, autoritativen Servern, Cache sowie Forward- und Reverse-Lookup", "reviewStatus": "Seitenkontext geprüft; unzutreffende OCR-Formulierung zur Rekursion in der Bildbeschreibung nicht übernommen" },
+      { "sourceId": "itlf10-12-2023", "sourceLocator": "PDF-Seite 92, lokale OCR", "use": "Abgrenzung eines autoritativen Servers ohne Rekursion von einem dafür vorgesehenen rekursiven Resolver", "reviewStatus": "als Rollenbeispiel verwendet; produktspezifische Konfiguration nicht übernommen" }
+    ],
+    "notes": [
+      "Der Source-Map-Verweis auf PDF-Seite 118 behandelt reguläre Ausdrücke und wurde als Fehltreffer ausgeschlossen.",
+      "TTL ist eine Obergrenze für die Cache-Nutzung eines Datensatzes, keine garantierte weltweite Umschaltzeit.",
+      "Transportdetails und verschlüsselte Resolverprotokolle gehören nicht zum Kernziel dieser Einheit."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "resolution-path",
+      "type": "topology",
+      "title": "Wer fragt wen?",
+      "description": "Der Client stellt eine rekursive Anfrage an seinen Resolver. Dieser folgt bei einem Cache-Miss iterativen Verweisen bis zum autoritativen Server.",
+      "height": 500,
+      "zones": [
+        { "id": "client-zone", "label": "Clientseite", "x": 24, "y": 82, "width": 250, "height": 350, "kind": "collision" },
+        { "id": "resolver-zone", "label": "Rekursive Auflösung", "x": 310, "y": 82, "width": 250, "height": 350, "kind": "broadcast" },
+        { "id": "authority-zone", "label": "Autoritative Hierarchie", "x": 596, "y": 82, "width": 340, "height": 350, "kind": "collision" }
+      ],
+      "nodes": [
+        { "id": "stub", "label": "Stub-Resolver", "detail": "fragt rekursiv", "x": 150, "y": 250, "kind": "client" },
+        { "id": "recursive", "label": "Resolver", "detail": "rekursiv + Cache", "x": 435, "y": 250, "kind": "router" },
+        { "id": "root", "label": "Root", "detail": "Verweis zur TLD", "x": 690, "y": 145, "kind": "server" },
+        { "id": "tld", "label": "TLD", "detail": "Verweis zur Zone", "x": 840, "y": 250, "kind": "server" },
+        { "id": "authoritative", "label": "Autoritativ", "detail": "liefert Datensatz", "x": 690, "y": 355, "kind": "server" }
+      ],
+      "edges": [
+        { "from": "stub", "to": "recursive", "label": "rekursiv" },
+        { "from": "recursive", "to": "root", "label": "iterativ" },
+        { "from": "root", "to": "tld", "label": "Delegation" },
+        { "from": "tld", "to": "authoritative", "label": "Delegation" },
+        { "from": "authoritative", "to": "recursive", "label": "Antwort" }
+      ]
+    },
+    {
+      "id": "cache-decision",
+      "type": "flow",
+      "title": "Cache-Hit oder Hierarchie?",
+      "description": "Der Resolver prüft einen gültigen Cacheeintrag, löst bei Bedarf neu auf und speichert die Antwort nur bis zum Ablauf ihrer TTL.",
+      "items": [
+        { "label": "1 · Anfrage normalisieren", "detail": "Name, Recordtyp und gewünschte Klasse bestimmen" },
+        { "label": "2 · Cache prüfen", "detail": "passender Eintrag vorhanden und TTL noch nicht abgelaufen?" },
+        { "label": "3 · Bei Miss auflösen", "detail": "Delegationen bis zum zuständigen autoritativen Server verfolgen" },
+        { "label": "4 · Antwort cachen", "detail": "Datensatz mit verbleibender TTL speichern und an den Client liefern" }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Wer erledigt die Arbeit?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "dns-resolution-diagnostic",
+          "diagnostic": true,
+          "question": "Ein Notebook fragt seinen konfigurierten DNS-Server nach www.example.org. Welche Rolle übernimmt dieser Server typischerweise für den Client?",
+          "options": [
+            { "text": "Er ist zwingend der autoritative Server für example.org.", "rationale": "Der konfigurierte Server kann die Anfrage rekursiv auflösen, ohne für die Zielzone autoritativ zu sein.", "correct": false },
+            { "text": "Er arbeitet als rekursiver Resolver oder leitet an einen solchen Forwarder weiter.", "rationale": "Richtig. Der Client erwartet eine fertige Antwort oder einen Fehler, nicht nur den nächsten Delegationshinweis.", "correct": true },
+            { "text": "Er ersetzt die IP-Routingtabelle des Notebooks.", "rationale": "DNS löst Namen auf. Die Weiterleitung von IP-Paketen bleibt Aufgabe des Routings.", "correct": false },
+            { "text": "Er führt immer einen Reverse Lookup aus.", "rationale": "Ein normaler Namensaufruf ist ein Forward Lookup. Reverse Lookup startet mit einer IP-Adresse.", "correct": false }
+          ]
+        },
+        { "type": "callout", "kind": "merksatz", "label": "Zwei Gesprächsarten", "markdown": "Der Client bittet **rekursiv um das Endergebnis**. Der Resolver folgt bei Bedarf **iterativ den Verweisen** der DNS-Hierarchie." }
+      ]
+    },
+    {
+      "title": "Rollen in der Auflösung",
+      "blocks": [
+        { "type": "figure", "diagramId": "resolution-path", "alt": "Ein Stub-Resolver fragt einen rekursiven Resolver; dieser folgt Verweisen von Root über TLD zum autoritativen Server und liefert die Antwort zurück.", "caption": "Eigene Lernskizze: Rekursion beschreibt die zugesagte Gesamtleistung gegenüber dem Client, Iteration den schrittweisen Weg durch die Hierarchie." },
+        { "type": "markdown", "markdown": "Ein **Stub-Resolver** im Endgerät besitzt nur begrenzte Auflösungslogik und fragt den eingestellten DNS-Dienst. Ein **rekursiver Resolver** übernimmt die vollständige Auflösung und betreibt einen Cache. Ein **Forwarder** ist ein festgelegter nächster DNS-Server, an den ein Server nicht lokal beantwortbare Anfragen weitergibt. **Autoritative Server** liefern verbindliche Daten für ihre Zonen; Root- und TLD-Server liefern dabei meist Delegationsinformationen statt der gesuchten Hostadresse." },
+        {
+          "type": "sequence",
+          "id": "dns-resolution-practice-sequence",
+          "title": "Cache-Miss durchspielen",
+          "prompt": "Ordne den vereinfachten Ablauf einer noch nicht gecachten Auflösung.",
+          "tag": "Übung",
+          "steps": [
+            { "id": "authority", "label": "Der zuständige autoritative Server liefert den angefragten Datensatz." },
+            { "id": "stub", "label": "Der Stub-Resolver sendet die Anfrage an seinen rekursiven Resolver." },
+            { "id": "cache", "label": "Der Resolver speichert die Antwort mit TTL und liefert sie zurück." },
+            { "id": "delegations", "label": "Der Resolver folgt den Verweisen von Root und TLD zur Zielzone." }
+          ],
+          "expected": ["stub", "delegations", "authority", "cache"],
+          "correctFeedback": "Richtig. Der Client spricht mit seinem Resolver; nur dieser verfolgt hier die Delegationskette.",
+          "wrongFeedback": "Beginne beim Stub-Resolver. Caching ist erst möglich, nachdem der autoritative Datensatz ermittelt wurde."
+        }
+      ]
+    },
+    {
+      "title": "Cache, TTL und Änderungen",
+      "blocks": [
+        { "type": "figure", "diagramId": "cache-decision", "alt": "Vier Schritte von der DNS-Anfrage über Cacheprüfung und Neuauflösung bis zum Speichern mit TTL.", "caption": "Eigene Lernskizze: Ein gültiger Cache-Hit verkürzt den Weg, ein abgelaufener Eintrag erzwingt eine neue Auflösung." },
+        { "type": "markdown", "markdown": "Die **TTL** eines Resource Records gibt an, wie lange ein Cache diesen Datensatz verwenden darf. Ein hoher Wert reduziert Abfragen, kann geplante Änderungen aber länger sichtbar verzögern. Ein niedriger Wert erhöht die Abfragelast, ermöglicht nach Ablauf bestehender Cacheeinträge jedoch schnellere Aktualisierung. Vor einer geplanten Umstellung wird die TTL deshalb rechtzeitig gesenkt und danach wieder auf einen passenden Betriebswert erhöht. Bereits gecachte Restlaufzeiten verschwinden dadurch nicht rückwirkend." },
+        {
+          "type": "quiz",
+          "id": "dns-ttl-practice",
+          "question": "Ein A-Record wurde geändert, ein Resolver besitzt aber noch den alten Datensatz mit 900 Sekunden Rest-TTL. Was ist die beste Erklärung?",
+          "options": [
+            { "text": "Der Resolver darf den alten Wert bis zum Ablauf seiner Rest-TTL weiterverwenden.", "rationale": "Richtig. Die spätere Zonenänderung löscht bereits vorhandene fremde Caches nicht automatisch.", "correct": true },
+            { "text": "DNS liefert grundsätzlich sofort weltweit nur noch den neuen Wert.", "rationale": "Autoritative Daten können sofort geändert sein, während gültige Cacheeinträge noch bestehen.", "correct": false },
+            { "text": "TTL ist die Paketlebensdauer im IP-Header und beendet den DNS-Cache nicht.", "rationale": "Beide heißen TTL, haben aber verschiedene Kontexte. Hier geht es um die Cachegültigkeit des DNS-Datensatzes.", "correct": false },
+            { "text": "Der Client muss seine IPv4-Adresse wechseln.", "rationale": "Die lokale Clientadresse hat mit der Gültigkeit eines gecachten DNS-Records nichts zu tun.", "correct": false }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Forward und Reverse Lookup",
+      "blocks": [
+        { "type": "markdown", "markdown": "Beim **Forward Lookup** startet die Frage mit einem Namen und sucht beispielsweise über A oder AAAA eine Adresse. Beim **Reverse Lookup** startet sie mit einer IP-Adresse und fragt einen PTR-Record in der umgekehrten Namensstruktur ab. Ein PTR-Record wird in der zuständigen Reverse-Zone gepflegt; er entsteht nicht automatisch aus einem A- oder AAAA-Record. Reverse DNS ersetzt außerdem keine Identitäts- oder Vertrauensprüfung." },
+        { "type": "callout", "kind": "warning", "label": "Richtung benennen", "markdown": "Name → Adresse ist Forward Lookup. Adresse → Name ist Reverse Lookup. Die Rückrichtung ist ein **eigener DNS-Datensatz**, keine automatische Umkehrfunktion." }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            { "id": "dns-resolution-recursive", "label": "Rekursiv", "front": "Was verspricht ein rekursiver Resolver dem Client?", "back": "Er liefert die vollständige Antwort oder einen abschließenden Fehler und übernimmt dafür nötige weitere DNS-Abfragen." },
+            { "id": "dns-resolution-forwarder", "label": "Forwarder", "front": "Welche Aufgabe hat ein DNS-Forwarder?", "back": "Er ist ein festgelegter nächster DNS-Server, an den nicht lokal beantwortbare Anfragen weitergeleitet werden." },
+            { "id": "dns-resolution-reverse", "label": "Reverse Lookup", "front": "Welcher Recordtyp wird für die Auflösung von IP-Adresse zu Name verwendet?", "back": "Ein PTR-Record in der passenden Reverse-DNS-Zone." }
+          ]
+        },
+        { "type": "recall", "id": "dns-resolution-core-recall", "title": "Eine Auflösung erzählen", "prompt": "Erkläre den Weg einer ungecachten Namensauflösung vom Browser bis zur Antwort. Verwende Stub-Resolver, Recursive Resolver, Root, TLD, autoritativ, Cache und TTL.", "label": "Deine Erklärung", "placeholder": "Der Browser übergibt …", "minLength": 140, "model": "Der Browser übergibt den Namen an den Stub-Resolver des Betriebssystems. Dieser fragt seinen konfigurierten rekursiven Resolver. Bei einem Cache-Miss folgt der Resolver iterativ den Verweisen von Root und TLD zum autoritativen Server der Zielzone. Den erhaltenen Datensatz speichert er höchstens entsprechend der TTL und liefert ihn an den Client zurück." }
+      ]
+    },
+    {
+      "title": "Lernziel-Check: Transfer",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "dns-resolution-transfer-roles",
+          "requiredObjective": "resolution-roles",
+          "question": "Ein interner DNS-Server ist für firma.intern autoritativ. Externe Namen sendet er an 10.0.0.53, der die vollständige Auflösung übernimmt. Welche Rolle hat 10.0.0.53 gegenüber dem internen Server?",
+          "options": [
+            { "text": "Forwarder und rekursiver Resolver", "rationale": "Richtig. Der interne Server leitet externe Fragen dorthin weiter, und 10.0.0.53 liefert das Endergebnis.", "correct": true },
+            { "text": "Root-Server der Zone firma.intern", "rationale": "Die interne Zone ist bereits auf dem ersten Server autoritativ; 10.0.0.53 wird für andere Namen als Forwarder genutzt.", "correct": false },
+            { "text": "DHCP-Relay", "rationale": "Ein DHCP-Relay transportiert DHCP-Nachrichten über Subnetzgrenzen und ist keine DNS-Rolle.", "correct": false },
+            { "text": "PTR-Record", "rationale": "PTR ist ein Datensatztyp und kein Server in der Auflösungskette.", "correct": false }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "dns-resolution-transfer-cache",
+          "requiredObjective": "cache-reverse",
+          "question": "Welche Aussage zu einer geplanten Servermigration ist fachlich korrekt?",
+          "options": [
+            { "text": "Eine kurz vor dem Wechsel gesenkte TTL löscht alle bereits länger gecachten Antworten sofort.", "rationale": "Bereits gecachte Einträge behalten ihre damalige Restlaufzeit. Die TTL muss rechtzeitig vorher gesenkt werden.", "correct": false },
+            { "text": "Für Adresse zu Name wird ein PTR-Record in der Reverse-Zone benötigt; seine TTL steuert die Cachegültigkeit dieses Records.", "rationale": "Richtig. Richtung, Datensatz und Cachegültigkeit sind sauber getrennt.", "correct": true },
+            { "text": "Ein A-Record erzeugt automatisch überall den passenden PTR-Record.", "rationale": "Forward- und Reverse-Datensätze werden getrennt gepflegt und können unterschiedliche Zuständigkeiten besitzen.", "correct": false },
+            { "text": "TTL gibt an, wie viele Router ein DNS-Paket durchlaufen darf.", "rationale": "Das beschreibt die IP-Paket-TTL. Die DNS-TTL betrifft hier die Cachezeit eines Resource Records.", "correct": false }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Aktualität",
+      "blocks": [
+        { "type": "markdown", "markdown": "- **IT-Berufe Fachstufe II – Lernfelder 10–12 (2023):** Resolverrollen, DNS-Hierarchie, Cache, Forwarder, Forward-/Reverse-Lookup und ein autoritativer Server ohne Rekursion.\n\nDie Rollen und Grundprinzipien sind stabil. Konkrete TTL-Werte, Resolverarchitekturen und Transportverfahren hängen von Zone und Betriebskonzept ab. Text, Aufgaben und Diagramme sind eigenständig erstellt; private Buchgrafiken bleiben unveröffentlicht." }
+      ]
+    }
+  ]
+}

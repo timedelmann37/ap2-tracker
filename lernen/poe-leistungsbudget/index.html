@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="PSE und PD unterscheiden, PoE-Typen zuordnen und ein Switchbudget mit Portgrenzen und 20 Prozent Reserve berechnen.">
+<title>PoE-Standard und Leistungsbudget sicher planen – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=hybrid-1">
+<script defer src="/assets/ap2-space.js?v=hybrid-1"></script>
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="poe-leistungsbudget" data-progress-id="ga2-1__10" data-content-revision="2026-09-11.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-1">Block N1 · Grundlagen, Medien und Verkabelung</a><span class="sep">›</span>
+    <span class="here">PoE-Standard und Leistungsbudget sicher planen</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">PoE-Standard und Leistungsbudget sicher planen</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 22 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Ein PoE-Switch kann genügend Gesamtleistung besitzen und ein Gerät trotzdem nicht versorgen, wenn der einzelne Port den benötigten PoE-Typ nicht unterstützt. Eine belastbare Planung passiert deshalb in zwei Schritten: erst jeden Port prüfen, dann alle Leistungen gegen das reservierte Gesamtbudget rechnen.</p>
+<section class="learning-goals" aria-labelledby="poe-leistungsbudget-goals">
+  <h2 id="poe-leistungsbudget-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>PSE und PD unterscheiden und einen Gerätebedarf dem ausreichenden IEEE-PoE-Typ zuordnen</li>
+    <li>ein PoE-Gesamtbudget mit Einzelportgrenze und 20 Prozent Planungsreserve berechnen und bewerten</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Wer liefert die Leistung?</h2>
+<section class="quiz" data-quiz="poe-diagnostic" data-correct="1">
+  <h3>Welche Aussage beschreibt PSE und PD korrekt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Die Rollen sind vertauscht. Das Power Sourcing Equipment stellt Leistung bereit, das Powered Device nimmt sie auf."><span class="m">A</span> Das PD speist Leistung in den Switch ein; das PSE nimmt sie auf.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Ein PoE-Switch kann PSE sein, während etwa Access Point, Kamera oder Telefon das PD ist."><span class="m">B</span> Das PSE speist Leistung ein; das PD ist das versorgte Endgerät.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Powerline überträgt Daten über die Strominstallation. PoE versorgt dagegen ein Netzwerkgerät über die Ethernetverkabelung."><span class="m">C</span> PSE und PD bezeichnen zwei Powerline-Adapter im Stromnetz.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Das Kabel transportiert die Leistung. PD bezeichnet das aktive, über PoE versorgte Gerät."><span class="m">D</span> Nur das Netzwerkkabel ist ein PD; aktive Geräte besitzen keine PoE-Rolle.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">Rollen merken</span><p><strong>PSE gibt</strong>, <strong>PD nimmt</strong>. Das ist auch der Schlüssel, um die unterschiedlichen Wattangaben eines Standards richtig zu lesen.</p></aside><h2 class="sec" id="s2"><span class="num">2</span>PoE-Typen und Bezugsseiten</h2>
+<p>PoE nutzt die Ethernetverkabelung gleichzeitig für Daten und Gleichspannungsversorgung. Vor der Versorgung erkennt ein standardkonformes PSE ein geeignetes PD und handelt beziehungsweise klassifiziert die benötigte Leistung. Passive, nicht standardisierte Einspeisungen dürfen damit nicht gleichgesetzt werden.</p>
+<div class="twrap"><table class="knowledge-table">
+<thead>
+<tr>
+<th>IEEE-Variante</th>
+<th align="right">Typ</th>
+<th align="right">maximale PSE-Abgabe</th>
+<th align="right">am PD verfügbar</th>
+<th>Planungsbedeutung</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>802.3af</td>
+<td align="right">1</td>
+<td align="right">15,4 W</td>
+<td align="right">12,95 W</td>
+<td>genügt für sparsame Endgeräte</td>
+</tr>
+<tr>
+<td>802.3at</td>
+<td align="right">2</td>
+<td align="right">30 W</td>
+<td align="right">25,5 W</td>
+<td>häufig als PoE+ bezeichnet</td>
+</tr>
+<tr>
+<td>802.3bt</td>
+<td align="right">3</td>
+<td align="right">bis 60 W</td>
+<td align="right">bis 51 W</td>
+<td>höhere Leistung über bis zu vier Aderpaare</td>
+</tr>
+<tr>
+<td>802.3bt</td>
+<td align="right">4</td>
+<td align="right">bis 90 W</td>
+<td align="right">rund 71,3 W</td>
+<td>höchste Leistung dieser Übersicht</td>
+</tr>
+</tbody></table></div>
+<p>Die niedrigeren Werte am PD berücksichtigen die zulässigen Verluste der Leitung. Prüfe deshalb, ob ein Gerät seinen Bedarf als <strong>PD-Eingangsleistung</strong> nennt oder ob ein PSE-Wert angegeben ist.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Vom PSE-Port bis zum versorgten Gerät">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="542" viewBox="0 0 960 542" role="img" aria-labelledby="diagram-poe-power-path-title diagram-poe-power-path-desc">
+  <title id="diagram-poe-power-path-title">Vom PSE-Port bis zum versorgten Gerät</title>
+  <desc id="diagram-poe-power-path-desc">Ablauf vom erkennenden und einspeisenden PSE-Port über die Ethernetleitung mit Verlusten bis zum versorgten Powered Device.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Vom PSE-Port bis zum versorgten Gerät</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">PSE erkennt und klassifiziert</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">der PoE-Switch oder Injektor prüft ein kompatibles Powered</tspan><tspan x="178" dy="25">Device und bestimmt die Versorgung</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">PSE stellt Portleistung bereit</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">die zulässige Obergrenze hängt vom unterstützten IEEE-Typ und</tspan><tspan x="178" dy="25">der Portkonfiguration ab</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Ethernetleitung transportiert Daten und Energie</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Kabel und Steckverbindungen verursachen Verluste; PoE ist</tspan><tspan x="178" dy="25">nicht mit Powerline zu verwechseln</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">PD erhält garantierte Eingangsleistung</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Access Point, Kamera oder Telefon muss mit diesem verfügbaren</tspan><tspan x="178" dy="25">Wert auskommen</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: PSE-Abgabe und garantierte PD-Leistung liegen auf unterschiedlichen Seiten der Leitung.</figcaption>
+</figure><section class="quiz" data-quiz="poe-type-practice" data-correct="1">
+  <h3>Ein Gerät benötigt garantiert 22 W am PD. Welcher kleinste Typ der Tabelle reicht aus?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Type 1 stellt am PD höchstens 12,95 W bereit und unterschreitet den Bedarf."><span class="m">A</span> Type 1 nach 802.3af</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Bis zu 25,5 W am PD decken den Bedarf von 22 W ab."><span class="m">B</span> Type 2 nach 802.3at</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Type 2 reicht bereits aus. Die 15,4 W sind zudem die PSE-Abgabe von Type 1, nicht die allgemeine Schwelle für Type 4."><span class="m">C</span> Type 4 ist zwingend, weil jedes Gerät über 15,4 W vier Aderpaare benötigt.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="PoE Type 2 und höhere Typen können diesen Bedarf decken. Powerline ist eine andere Technik."><span class="m">D</span> Kein PoE-Typ, weil 22 W nur über Powerline möglich sind.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s3"><span class="num">3</span>Durchgerechnetes Szenario mit 20 Prozent Reserve</h2>
+<p>Ein PoE+-Switch besitzt laut Datenblatt ein Gesamtbudget von 240 W. Für Erweiterungen und Lastspitzen sollen 20 Prozent frei bleiben. Dauerhaft verplant werden deshalb nur 80 Prozent des Budgets.</p>
+<p>Vier Kameras benötigen jeweils 8 W. Zusätzlich sind sechs Access Points mit jeweils 18 W vorgesehen. Zuerst wird für jedes Gerät geprüft, ob der einzelne Port den erforderlichen Typ unterstützt. Danach folgt die Summe: Kameras benötigen 32 W, Access Points 108 W, insgesamt also 140 W. Dieser Wert liegt unter dem nutzbaren Budget von 192 W; es verbleiben innerhalb der Planungsgrenze 52 W.</p>
+<div class="math-display" role="group" aria-label="Nutzbares PoE-Budget ist Switchbudget mal eins minus Reserve; 240 Watt mal 0 Komma 8 ergibt 192 Watt"><math display="block" aria-label="Nutzbares PoE-Budget ist Switchbudget mal eins minus Reserve; 240 Watt mal 0 Komma 8 ergibt 192 Watt"><mrow><msub><mi>P</mi><mtext>nutzbar</mtext></msub><mo>=</mo><msub><mi>P</mi><mtext>Switch</mtext></msub><mo>·</mo><mrow><mo>(</mo><mn>1</mn><mo>−</mo><mi>r</mi><mo>)</mo></mrow><mo>=</mo><mn>240</mn><mtext> W</mtext><mo>·</mo><mn>0,8</mn><mo>=</mo><mn>192</mn><mtext> W</mtext></mrow></math><div class="math-legend"><span>P Switch = 240 W Gesamtbudget</span><span>r = 0,20 Reserveanteil</span><span>P nutzbar = 192 W für die geplante Dauerlast</span></div></div><div class="math-display" role="group" aria-label="Vier mal 8 Watt plus sechs mal 18 Watt ergibt 140 Watt; 192 Watt minus 140 Watt ergibt 52 Watt Rest innerhalb des Planungsbudgets"><math display="block" aria-label="Vier mal 8 Watt plus sechs mal 18 Watt ergibt 140 Watt; 192 Watt minus 140 Watt ergibt 52 Watt Rest innerhalb des Planungsbudgets"><mrow><msub><mi>P</mi><mtext>Bedarf</mtext></msub><mo>=</mo><mn>4</mn><mo>·</mo><mn>8</mn><mtext> W</mtext><mo>+</mo><mn>6</mn><mo>·</mo><mn>18</mn><mtext> W</mtext><mo>=</mo><mn>140</mn><mtext> W</mtext><mo>;</mo><mspace width="0.5em"/><msub><mi>P</mi><mtext>frei</mtext></msub><mo>=</mo><mn>192</mn><mtext> W</mtext><mo>−</mo><mn>140</mn><mtext> W</mtext><mo>=</mo><mn>52</mn><mtext> W</mtext></mrow></math><div class="math-legend"><span>32 W für vier Kameras</span><span>108 W für sechs Access Points</span><span>52 W verbleiben innerhalb der Grenze mit Reserve</span></div></div><figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Zwei unabhängige Prüfungen">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-poe-budget-gates-title diagram-poe-budget-gates-desc">
+  <title id="diagram-poe-budget-gates-title">Zwei unabhängige Prüfungen</title>
+  <desc id="diagram-poe-budget-gates-desc">Vergleich der Einzelportprüfung mit der Gesamtbudgetprüfung einschließlich 20 Prozent Planungsreserve.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Zwei unabhängige Prüfungen</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">Tor 1 · Einzelport</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">Unterstützt der Port</tspan><tspan x="64" dy="30">den für das PD</tspan><tspan x="64" dy="30">nötigen Typ und</tspan></text></g><g><rect class="diagram-row" x="265" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="287" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="287" dy="0">Tor 2 ·</tspan><tspan x="287" dy="25">Gesamtbudget</tspan></text><text x="287" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="287" dy="0">Bleibt die Summe</tspan><tspan x="287" dy="30">aller geplanten</tspan><tspan x="287" dy="30">Geräte innerhalb des</tspan></text></g><g><rect class="diagram-row" x="488" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="510" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="510" dy="0">20 Prozent Reserve</tspan></text><text x="510" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="510" dy="0">nur 80 Prozent des</tspan><tspan x="510" dy="30">angegebenen</tspan><tspan x="510" dy="30">Gesamtbudgets werden</tspan></text></g><g><rect class="diagram-row" x="711" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="733" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="733" dy="0">Datenblattkontrolle</tspan></text><text x="733" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="733" dy="0">Netzteilbestückung,</tspan><tspan x="733" dy="30">redundanter Betrieb</tspan><tspan x="733" dy="30">und</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Auch ein rechnerisch freies Gesamtbudget heilt keinen zu schwachen Einzelport.</figcaption>
+</figure><h2 class="sec" id="s4"><span class="num">4</span>Geführte Übung: Rechenweg und Grenzen</h2>
+<section class="sequence-practice" data-sequence="poe-budget-sequence" data-expected="ports,reserve,sum,compare" data-correct-feedback="Richtig. Erst müssen alle Einzelports geeignet sein; anschließend werden Reserve, Summe und Ergebnis berechnet." data-wrong-feedback="Beginne mit der technischen Eignung jedes Ports. Ein Gesamtbudget darf erst danach als verfügbare Planungsgrenze verwendet werden." aria-labelledby="poe-budget-sequence-title">
+  <div class="lab-heading"><div><h3 id="poe-budget-sequence-title">PoE-Planung in vier Schritten</h3><p>Bringe die Prüfschritte in die richtige Reihenfolge.</p></div><span class="lab-tag">Übung</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="sum" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Leistungsbedarf aller geplanten PDs addieren.</span></li>
+    <li data-step="reserve" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Aus dem Gesamtbudget nach Abzug von 20 Prozent Reserve das nutzbare Budget bestimmen.</span></li>
+    <li data-step="ports" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Für jedes PD den benötigten Typ und die Leistungsgrenze des einzelnen Ports prüfen.</span></li>
+    <li data-step="compare" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Gesamtbedarf mit dem nutzbaren Budget vergleichen und Rest oder Fehlbetrag ausweisen.</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><section class="quiz" data-quiz="poe-budget-practice" data-correct="1">
+  <h3>Ein Switch hat noch 60 W im Gesamtbudget frei. Ein einzelner Port liefert am PD aber höchstens 12,95 W. Kann dieser Port ein PD mit 20 W Bedarf versorgen?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Das freie Gesamtbudget genügt zwar insgesamt, aber die Grenze des konkreten Ports wird überschritten."><span class="m">A</span> Ja, weil das Gesamtbudget größer als 20 W ist.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Portgrenze und Gesamtbudget sind zwei getrennte Bedingungen, die beide erfüllt sein müssen."><span class="m">B</span> Nein, der einzelne Port erfüllt den Gerätebedarf nicht.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die Leistung zweier Ports darf nicht ohne ausdrücklich unterstützte Technik zu einem PD zusammengeführt werden."><span class="m">C</span> Ja, sobald zwei Ports mit einem normalen Patchkabel zusammengeschaltet werden.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Höhere PoE-Typen können mehr bereitstellen. Nur der beschriebene Port ist hier zu schwach."><span class="m">D</span> Nein, weil PoE niemals mehr als 12,95 W am PD liefern kann.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Karteikarten und freier Abruf</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="poe-pse-pd" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche Rollen bezeichnen PSE und PD?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Das Power Sourcing Equipment speist Leistung ein. Das Powered Device ist das versorgte Endgerät.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="poe-two-gates" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche zwei Leistungsgrenzen müssen in einer PoE-Planung erfüllt sein?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Jeder einzelne Port muss den Gerätebedarf decken und die Summe aller Geräte muss innerhalb des nutzbaren Gesamtbudgets bleiben.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="poe-reserve" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wie wird bei 20 Prozent Reserve das planbare Budget berechnet?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Gesamtbudget mal 0,8. Von 240 W werden beispielsweise höchstens 192 W fest verplant.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „PSE und PD“:</span><button type="button" data-card-id="poe-pse-pd" data-card-rate="known">gewusst</button><button type="button" data-card-id="poe-pse-pd" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="poe-pse-pd"></span></div>
+<div class="card-rating"><span>Karte „Zwei Grenzen“:</span><button type="button" data-card-id="poe-two-gates" data-card-rate="known">gewusst</button><button type="button" data-card-id="poe-two-gates" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="poe-two-gates"></span></div>
+<div class="card-rating"><span>Karte „20 Prozent Reserve“:</span><button type="button" data-card-id="poe-reserve" data-card-rate="known">gewusst</button><button type="button" data-card-id="poe-reserve" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="poe-reserve"></span></div><section class="recall-practice" data-recall="poe-core-recall" data-min-length="100" aria-labelledby="poe-core-recall-title">
+  <div class="recall-prompt"><h3 id="poe-core-recall-title">Ohne Nachschlagen erklären</h3><p>Erkläre den vollständigen Prüfweg für einen neuen PoE-Access-Point: von PSE und PD über den erforderlichen Typ bis zur Budgetrechnung mit Reserve.</p></div>
+  <label class="sr-only" for="poe-core-recall-answer">Deine Erklärung</label>
+  <textarea id="poe-core-recall-answer" data-recall-input rows="4" placeholder="Der Switch ist … Der Access Point ist …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Der Switch beziehungsweise Injektor ist das PSE, der Access Point das PD. Zuerst wird der PD-Bedarf mit der garantierten Leistung des konkreten Porttyps verglichen. Danach werden 20 Prozent Reserve vom Gesamtbudget abgezogen, alle geplanten PD-Leistungen auf derselben Bezugsseite addiert und die Summe mit dem nutzbaren Budget verglichen.</div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Lernziel-Check: Transfer</h2>
+<section class="quiz" data-quiz="poe-transfer-type" data-correct="1" data-required-objective="poe-roles-types">
+  <h3>Eine Netzwerkkamera fordert laut Datenblatt 22 W am PD. Welcher kleinste Porttyp aus der Übersicht erfüllt diese Anforderung?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="12,95 W liegen unter dem geforderten Gerätebedarf von 22 W."><span class="m">A</span> 802.3af Type 1 mit maximal 12,95 W am PD</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Type 2 ist der kleinste aufgeführte Typ, dessen garantierte PD-Leistung 22 W abdeckt."><span class="m">B</span> 802.3at Type 2 mit maximal 25,5 W am PD</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Type 3 würde den Bedarf zwar übertreffen, ist aber nicht der kleinste ausreichende Typ. Kameras benötigen nicht pauschal Type 3."><span class="m">C</span> 802.3bt Type 3, weil jede Kamera zwingend vier Aderpaare benötigt</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Type 2 und höhere Typen können 22 W am PD bereitstellen, sofern Gerät und Port kompatibel sind."><span class="m">D</span> Keinen PoE-Port; 22 W müssen grundsätzlich über ein separates Netzteil bereitgestellt werden</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="numeric-practice transfer-number" data-numeric-practice="poe-transfer-budget" data-required-objective="poe-budget" data-expected="8" data-correct-feedback="Richtig. Nach Reserve und Kameras bleiben 160 W. Darin passen acht vollständige Access Points zu je 18 W." data-wrong-feedback="Berechne zuerst 80 Prozent von 240 W, ziehe anschließend die vier Kameras ab und teile den Rest ganzzahlig durch 18 W.">
+  <h3>Maximale Zahl zusätzlicher Access Points</h3>
+  <p>Ein Switch besitzt 240 W PoE-Gesamtbudget. 20 Prozent bleiben als Reserve frei. Vier Kameras mit je 8 W sind bereits eingeplant. Wie viele zusätzliche Access Points mit je 18 W dürfen maximal geplant werden? Alle Einzelports unterstützen den benötigten Typ.</p>
+  <label for="poe-transfer-budget-answer">Maximale Anzahl Access Points</label>
+  <div class="answer-row"><input id="poe-transfer-budget-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Anzahl"><button type="button" class="lbtn primary" data-numeric-check>Antwort prüfen</button></div>
+  <template data-numeric-correct><span>Richtig. Nach Reserve und Kameras bleiben 160 W. Darin passen acht vollständige Access Points zu je 18 W.</span><div class="math-display compact" role="group" aria-label="240 Watt mal 0 Komma 8 minus vier mal 8 Watt ergibt 160 Watt; 160 Watt geteilt durch 18 Watt wird abgerundet zu 8 Access Points"><math display="block" aria-label="240 Watt mal 0 Komma 8 minus vier mal 8 Watt ergibt 160 Watt; 160 Watt geteilt durch 18 Watt wird abgerundet zu 8 Access Points"><mrow><mfrac><mrow><mn>240</mn><mtext> W</mtext><mo>·</mo><mn>0,8</mn><mo>−</mo><mn>4</mn><mo>·</mo><mn>8</mn><mtext> W</mtext></mrow><mrow><mn>18</mn><mtext> W je AP</mtext></mrow></mfrac><mo>=</mo><mfrac><mrow><mn>160</mn><mtext> W</mtext></mrow><mrow><mn>18</mn><mtext> W je AP</mtext></mrow></mfrac><mo>≈</mo><mn>8,88</mn><mo>⇒</mo><mn>8</mn><mtext> APs</mtext></mrow></math><div class="math-legend"><span>192 W nutzbares Budget nach 20 Prozent Reserve</span><span>32 W für vier Kameras</span><span>160 W verbleiben für Access Points</span><span>Nur vollständige Geräte zählen: auf acht abrunden</span></div></div></template>
+  <template data-numeric-feedback-for="11">Du hast vermutlich die 20-Prozent-Reserve berücksichtigt, aber die bereits eingeplanten Kameras nicht abgezogen.</template>
+  <template data-numeric-feedback-for="9">160 durch 18 ergibt etwa 8,88. Aufrunden würde das nutzbare Budget überschreiten; deshalb sind höchstens acht APs möglich.</template>
+  <template data-numeric-feedback-for="13">Du hast wahrscheinlich mit dem vollständigen 240-W-Budget gerechnet. Die geforderten 20 Prozent Reserve und die Kameras müssen vorher abgezogen werden.</template>
+  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p>
+</section><p><strong>Prüfungsformulierung:</strong> Weise erst die Eignung jedes Ports nach. Rechne danach mit einem einheitlichen Leistungsbezug und nenne Reserve, Gesamtbedarf sowie verbleibenden Spielraum.</p>
+<h2 class="sec" id="s7"><span class="num">7</span>Quellen und Einordnung</h2>
+<ul>
+<li><strong>EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):</strong> PSE, PD und Leistungsgrenzen von PoE Type 1 und Type 4.</li>
+<li><strong>IT-Berufe Grundstufe – Lernfelder 6–9 (2022):</strong> Switch-Datenblatt mit PoE+-Gesamtbudget und PoE-versorgte Access Points.</li>
+<li><strong>IT-Berufe Fachstufe II – Lernfelder 10–12 (2023):</strong> PoE-Telefone als Verkabelungs- und Versorgungsszenario.</li>
+<li><strong>Prüfungsvorbereitung IHK Bonn:</strong> Begriffliche Abgrenzung von PoE und Powerline.</li>
+</ul>
+<p>Die Standardübersicht und alle Rechenfälle wurden eigenständig didaktisch aufbereitet. Für reale Beschaffungen sind aktuelle Herstellerdaten zu Portgrenzen, Netzteilbestückung und tatsächlich verfügbarem Budget maßgeblich.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-1"><span class="d">zurück zu</span><span class="t">Block N1 · Grundlagen, Medien und Verkabelung</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N1 · Grundlagen, Medien und Verkabelung</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Wer liefert die Leistung?</a></li>
+<li><a href="#s2" data-t="s2">PoE-Typen und Bezugsseiten</a></li>
+<li><a href="#s3" data-t="s3">Durchgerechnetes Szenario mit 20 Prozent Reserve</a></li>
+<li><a href="#s4" data-t="s4">Geführte Übung: Rechenweg und Grenzen</a></li>
+<li><a href="#s5" data-t="s5">Karteikarten und freier Abruf</a></li>
+<li><a href="#s6" data-t="s6">Lernziel-Check: Transfer</a></li>
+<li><a href="#s7" data-t="s7">Quellen und Einordnung</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-1">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

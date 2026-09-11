@@ -1,0 +1,368 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "spf-record",
+    "slug": "spf-record",
+    "title": "SPF-Policies lesen, prüfen und sicher planen",
+    "description": "SPF als TXT-Policy für MAIL-FROM- und HELO-Identitäten auswerten, typische Syntaxfehler erkennen und Grenzen gegenüber DKIM und DMARC erklären.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-3",
+    "groupLabel": "Block N3 · IPv6, DHCP und DNS",
+    "itemId": "ga2-3__10",
+    "week": "KW 37",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "sources": ["itlf10-12-2023"],
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "spf-parse",
+      "label": "eine SPF-Policy von links nach rechts auswerten und für einen gegebenen sendenden Host das resultierende Pass-, Fail- oder Softfail-Ergebnis begründen"
+    },
+    {
+      "id": "spf-plan",
+      "label": "aus vollständig genannten Versandwegen eine minimale SPF-Policy ableiten und ihre Grenzen, DNS-Abhängigkeiten sowie das Zusammenspiel mit DKIM und DMARC erklären"
+    }
+  ],
+  "intro": "SPF veröffentlicht im DNS, welche sendenden Hosts eine Domäne in der SMTP-Identität MAIL FROM oder HELO verwenden dürfen. Das ist eine Autorisierungsprüfung für den sendenden Host, kein allgemeines Echtheitssiegel für die sichtbare From-Adresse und keine Zustellgarantie. Eine belastbare Lösung beginnt deshalb mit der Syntax und endet mit einer nüchternen Grenzbetrachtung.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "Chunk itlf10-12-2023:page:0027",
+        "use": "SPF als DNS-gestützte Prüfung autorisierter Sender sowie knappe Abgrenzung zu DKIM und DMARC",
+        "reviewStatus": "OCR gegen Seitenkontext geprüft; die vereinfachte Gleichsetzung mit der sichtbaren Absenderadresse wurde nicht übernommen"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "Chunk itlf10-12-2023:page:0071",
+        "use": "SPF als Berechtigung eines Mailservers zur Nutzung eines Domain-Anteils und betrieblicher Zusammenhang mit DKIM",
+        "reviewStatus": "Nur die stabile Grundfunktion verwendet; Annahme durch Provider und konkrete Betriebswerte nicht als garantiert dargestellt"
+      }
+    ],
+    "notes": [
+      "Die Source-Map-Refs ihk-bonn:00234 und it-basiswissen-2012:00086 behandeln Datenschutz beziehungsweise Elektrotechnik und sind für SPF vollständig sachfremd; sie wurden ausgeschlossen.",
+      "Die lokalen Buchchunks erklären die Grundidee, aber keine belastbare SPF-Syntax. Syntax, MAIL-FROM-/HELO-Identitäten, Ein-Record-Regel, Links-nach-rechts-Auswertung und das Limit von zehn DNS-auslösenden Terms wurden deshalb gegen RFC 7208 geprüft.",
+      "Die Abgrenzung zum sichtbaren From-Header und die Rolle von Alignment bei DMARC wurden gegen RFC 7489 geprüft. SPF allein authentifiziert den sichtbaren From-Header nicht.",
+      "Provider-Includes, Versandwege und DNS-Antworten sind betrieblich veränderlich. Vor einer Veröffentlichung müssen sie aktuell inventarisiert und nach Änderungen erneut geprüft werden.",
+      "Diagramme, Policies, Übungen und Antwortoptionen sind eigenständig erstellt; private Buchgrafiken werden nicht veröffentlicht."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "spf-evaluation",
+      "type": "flow",
+      "title": "SPF liefert ein Autorisierungsergebnis, keine Zustellentscheidung",
+      "description": "Der empfangende Mailserver nimmt Client-IP und MAIL-FROM- oder HELO-Domäne, liest genau deren SPF-TXT-Policy, prüft Mechanismen von links nach rechts und erzeugt ein Ergebnis für die nachgelagerte Richtlinie.",
+      "items": [
+        {
+          "label": "SMTP-Identität und Client-IP",
+          "detail": "MAIL FROM, ersatzweise oder zusätzlich HELO, plus IP des sendenden Hosts"
+        },
+        {
+          "label": "SPF-TXT am Ownernamen",
+          "detail": "Die Policy beginnt mit v=spf1 und gilt für genau diese DNS-Domäne"
+        },
+        {
+          "label": "Erster passender Mechanismus",
+          "detail": "Auswertung von links nach rechts; der Qualifier bestimmt das Ergebnis"
+        },
+        {
+          "label": "SPF-Ergebnis",
+          "detail": "zum Beispiel Pass, Fail oder Softfail; weitere Mailpolicy entscheidet über Behandlung"
+        }
+      ]
+    },
+    {
+      "id": "mail-auth-boundaries",
+      "type": "comparison",
+      "title": "SPF, DKIM und DMARC beantworten verschiedene Fragen",
+      "description": "SPF autorisiert einen sendenden Host für eine SMTP-Domäne. DKIM prüft eine Domänensignatur über Nachrichtenteile. DMARC verlangt Alignment zur sichtbaren From-Domäne und veröffentlicht Behandlung sowie Reporting.",
+      "items": [
+        {
+          "label": "SPF",
+          "detail": "Darf diese Client-IP die MAIL-FROM- oder HELO-Domäne verwenden?"
+        },
+        {
+          "label": "DKIM",
+          "detail": "Verifiziert eine DNS-gestützte Domänensignatur über ausgewählte Header und Body."
+        },
+        {
+          "label": "DMARC",
+          "detail": "Ist SPF oder DKIM erfolgreich zur sichtbaren From-Domäne ausgerichtet, und welche Policy gilt?"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Was beweist ein SPF-Pass?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "spf-diagnostic",
+          "diagnostic": true,
+          "question": "Was bedeutet ein SPF-Pass fachlich am genauesten?",
+          "options": [
+            {
+              "text": "Die gesamte Nachricht ist garantiert ungefährlich und wird zugestellt",
+              "rationale": "SPF bewertet eine Senderautorisierung. Inhaltssicherheit und Zustellung hängen von weiteren Prüfungen und lokaler Policy ab.",
+              "correct": false
+            },
+            {
+              "text": "Der sendende Host ist für die geprüfte MAIL-FROM- oder HELO-Domäne autorisiert",
+              "rationale": "Richtig. SPF bindet die Client-IP an eine SMTP-Identität; es bewertet nicht automatisch die sichtbare From-Adresse.",
+              "correct": true
+            },
+            {
+              "text": "Die sichtbare From-Adresse wurde kryptografisch signiert",
+              "rationale": "Eine kryptografische Nachrichtensignatur ist Aufgabe von DKIM, nicht von SPF.",
+              "correct": false
+            },
+            {
+              "text": "Der empfangende Server muss die Nachricht zwingend annehmen",
+              "rationale": "SPF liefert ein Ergebnis. Wie der Empfänger es behandelt, bestimmt seine lokale und gegebenenfalls DMARC-bezogene Policy.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Präzise Aussage",
+          "markdown": "SPF prüft: **Darf dieser sendende Host diese SMTP-Domäne verwenden?** Es prüft nicht: **Ist jeder sichtbare Absender und jeder Inhalt echt?**"
+        }
+      ]
+    },
+    {
+      "title": "Syntax und Auswertung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Eine SPF-Version-1-Policy steht als Text in **einem DNS-TXT-Record** am Namen der zu prüfenden Domäne. Sie beginnt mit `v=spf1`. Danach folgen durch Leerzeichen getrennte Mechanismen und gegebenenfalls Modifier. Mechanismen werden von links nach rechts ausgewertet; beim ersten Treffer endet die Auswertung.\n\n| Baustein | Bedeutung | DNS-Abfrage während der Auswertung? |\n| --- | --- | --- |\n| `ip4:192.0.2.0/24` | autorisiert diesen IPv4-Adressbereich | nein |\n| `ip6:2001:db8:1200::/48` | autorisiert diesen IPv6-Adressbereich | nein |\n| `a` | prüft Adressen des angegebenen oder aktuellen Namens | ja |\n| `mx` | prüft Adressen der MX-Ziele | ja |\n| `include:_spf.mailhost.example` | übernimmt ein Pass der referenzierten Policy als Treffer | ja |\n| `all` | trifft immer und gehört deshalb typischerweise ans Ende | nein |\n\nDer Qualifier steht direkt vor dem Mechanismus. `+` bedeutet Pass und ist ohne Zeichen der Standard. `-` bedeutet Fail, `~` Softfail und `?` Neutral. Darum ist `+all` fast immer ein grober Fehler: Jeder Host trifft mit Pass."
+        },
+        {
+          "type": "figure",
+          "diagramId": "spf-evaluation",
+          "alt": "Vierstufiger Ablauf von SMTP-Identität und Client-IP über SPF-TXT und links-nach-rechts ausgewertete Mechanismen zum SPF-Ergebnis.",
+          "caption": "Eigene Lernskizze: Das Ergebnis fließt in weitere Richtlinien ein; es ist noch keine Garantie für Annahme oder Zustellung."
+        },
+        {
+          "type": "callout",
+          "kind": "warning",
+          "label": "Owner und Identität",
+          "markdown": "Frage die Policy für die tatsächlich geprüfte **MAIL-FROM-Domäne** ab, nicht pauschal für den sichtbaren From-Header. Für HELO kann eine eigene SPF-Prüfung stattfinden."
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Für `firma.example.` seien genau zwei Versandwege bekannt: das eigene Gateway im Dokumentationsnetz `192.0.2.0/24` und ein externer Dienst mit der Beispielpolicy `_spf.mailhost.example.`. Eine dazu passende Übungspolicy lautet:\n\n```text\nfirma.example. IN TXT \"v=spf1 ip4:192.0.2.0/24 include:_spf.mailhost.example -all\"\n```\n\n1. Ein Client mit `192.0.2.25` trifft auf `ip4` und erhält **Pass**.\n2. Ein anderer Client kann durch `include` Pass erhalten, wenn die referenzierte Policy für ihn Pass liefert.\n3. Jeder bis dahin nicht passende Host trifft auf `-all` und erhält **Fail**. Das schreibt nicht automatisch eine bestimmte Zustellaktion vor.\n\nDie Policy ist nur solange betrieblich richtig, wie die tatsächlichen Versandwege dieser Inventarliste entsprechen. Wird ein Newsletter-Dienst ergänzt, muss die Policy geplant geändert werden; ein ungeprüft kopierter Provider-Include ist keine dauerhafte Wahrheit."
+        },
+        {
+          "type": "quiz",
+          "id": "spf-example-practice",
+          "question": "Was geschieht bei der Beispielpolicy mit Client 198.51.100.44, wenn auch die include-Policy für ihn nicht Pass liefert?",
+          "options": [
+            {
+              "text": "Er erreicht -all und das SPF-Ergebnis ist Fail",
+              "rationale": "Richtig. Weder ip4 noch include trifft mit Pass; der abschließende Mechanismus all trifft immer und trägt den Fail-Qualifier.",
+              "correct": true
+            },
+            {
+              "text": "Er erhält Pass, weil ein include jeden externen Provider pauschal zulässt",
+              "rationale": "include autorisiert nicht beliebige externe Hosts. Es trifft nur, wenn die referenzierte SPF-Auswertung Pass ergibt.",
+              "correct": false
+            },
+            {
+              "text": "Die Auswertung beginnt erneut von rechts und trifft zuerst -all als Pass",
+              "rationale": "SPF wertet Mechanismen von links nach rechts aus. Das Minus vor all erzeugt Fail, nicht Pass.",
+              "correct": false
+            },
+            {
+              "text": "Die sichtbare From-Adresse wird automatisch mit DKIM signiert",
+              "rationale": "DKIM ist ein getrenntes Verfahren. Eine SPF-Auswertung erzeugt keine Signatur.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Grenzen, Lookup-Budget und Zusammenspiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "SPF begrenzt die während einer Auswertung DNS-auslösenden Terms auf **zehn**. Dazu zählen `include`, `a`, `mx`, `ptr`, `exists` und der Modifier `redirect`; auch rekursive Auswertungen fließen in dasselbe Gesamtbudget ein. `ip4`, `ip6` und `all` lösen bei der Auswertung selbst keinen DNS-Lookup aus. Wird das Limit überschritten, entsteht ein **PermError**.\n\nDas ist kein Zielwert, den man ausreizen sollte. Kurze, nachvollziehbare Policies sind leichter zu betreiben. Vor jeder Änderung gehören alle legitimen Versandwege in eine aktuelle Inventarliste. Danach werden Syntax, DNS-Antworten, Lookup-Budget und ein sicherer Übergang geprüft. Auch ein korrektes SPF-Ergebnis ist nur ein Signal: Weiterleitungssysteme können die SMTP-Identität verändern, und die sichtbare From-Domäne kann abweichen."
+        },
+        {
+          "type": "figure",
+          "diagramId": "mail-auth-boundaries",
+          "alt": "Drei Vergleichskarten: SPF autorisiert sendende Hosts für SMTP-Domänen, DKIM prüft eine Domänensignatur, DMARC verlangt Alignment zur sichtbaren From-Domäne und veröffentlicht Policy.",
+          "caption": "Eigene Lernskizze: Die Verfahren ergänzen sich, aber keines macht allein jede Nachricht vertrauenswürdig."
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Knapp abgegrenzt",
+          "markdown": "**DKIM** signiert ausgewählte Header und den Body im Namen einer Domäne. **DMARC** verlangt, dass ein erfolgreiches SPF- oder DKIM-Ergebnis zur sichtbaren From-Domäne ausgerichtet ist, und veröffentlicht Policy sowie Reporting."
+        }
+      ]
+    },
+    {
+      "title": "Geführte Übung: Eine Policy planen",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "spf-planning-sequence",
+          "title": "Bringe die Änderung in eine betriebssichere Reihenfolge",
+          "prompt": "Die Firma ergänzt zu ihrem Gateway einen externen Newsletter-Dienst. Ordne die Schritte für die SPF-Änderung.",
+          "tag": "Geführte Übung",
+          "steps": [
+            {
+              "id": "publish",
+              "label": "Die geprüfte Einzelpolicy mit geplantem Übergang veröffentlichen"
+            },
+            {
+              "id": "inventory",
+              "label": "Alle aktuellen legitimen Versandwege und verwendeten MAIL-FROM-/HELO-Domänen inventarisieren"
+            },
+            {
+              "id": "monitor",
+              "label": "Ergebnisse und legitime Fehlfälle beobachten und die Inventarliste aktuell halten"
+            },
+            {
+              "id": "compose",
+              "label": "Mechanismen minimal zusammensetzen und einen bewussten Abschlussqualifier wählen"
+            },
+            {
+              "id": "validate",
+              "label": "Syntax, genau einen SPF-Record, DNS-Antworten und das DNS-Term-Budget prüfen"
+            }
+          ],
+          "expected": ["inventory", "compose", "validate", "publish", "monitor"],
+          "correctFeedback": "Richtig. Erst die reale Senderlandschaft erfassen, dann eine kleine Policy entwerfen, technisch prüfen, kontrolliert veröffentlichen und weiter beobachten.",
+          "wrongFeedback": "Veröffentliche nicht vor der Inventur. Ein formal richtiger -all-Abschluss kann legitime Versandwege mit Fail bewerten, wenn sie vorher vergessen wurden."
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Prüfungsargument:** Ein strenger Abschluss wie `-all` ist nur dann fachlich begründbar, wenn alle legitimen Sender vollständig erfasst sind. `~all` liefert dagegen Softfail, repariert aber keine unvollständige Inventur. Die Behandlung beider Ergebnisse bleibt Sache des empfangenden Systems und gegebenenfalls der DMARC-Policy."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "spf-identity-card",
+              "label": "Geprüfte Identität",
+              "front": "Welche Identitäten prüft SPF und welche nicht automatisch?",
+              "back": "SPF prüft die MAIL-FROM-Domäne und kann die HELO-Domäne separat prüfen. Der sichtbare From-Header ist nicht automatisch die SPF-Identität."
+            },
+            {
+              "id": "spf-qualifier-card",
+              "label": "Qualifier",
+              "front": "Was bedeuten +, -, ~ und ? vor einem SPF-Mechanismus?",
+              "back": "+ ergibt Pass und ist der Standard ohne Zeichen; - ergibt Fail, ~ Softfail und ? Neutral. Der Qualifier des ersten passenden Mechanismus bestimmt das Ergebnis."
+            },
+            {
+              "id": "spf-lookup-card",
+              "label": "DNS-Term-Limit",
+              "front": "Welche häufigen SPF-Bausteine zählen zum Limit von zehn DNS-auslösenden Terms?",
+              "back": "Unter anderem include, a und mx; außerdem ptr, exists und redirect. ip4, ip6 und all lösen bei der Auswertung selbst keinen DNS-Lookup aus."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "spf-core-recall",
+          "title": "Eine SPF-Policy ohne Vorlage erklären",
+          "prompt": "Erkläre die Policy v=spf1 ip4:192.0.2.0/24 include:_spf.mailhost.example -all von links nach rechts. Nenne die geprüfte Identität, das Lookup-Risiko und die Grenze gegenüber sichtbarem From, DKIM und DMARC.",
+          "label": "Deine SPF-Erklärung",
+          "placeholder": "SPF verwendet … Der erste Mechanismus …",
+          "minLength": 150,
+          "model": "SPF vergleicht die Client-IP mit einer Policy für die MAIL-FROM- oder HELO-Domäne. Die Beispielpolicy autorisiert zuerst das direkte IPv4-Netz, danach Hosts, die in der referenzierten include-Policy Pass erhalten; alle übrigen treffen auf -all und erhalten Fail. include zählt zum DNS-Term-Budget. SPF authentifiziert nicht automatisch das sichtbare From. DKIM prüft eine Domänensignatur, DMARC die Ausrichtung eines erfolgreichen SPF- oder DKIM-Ergebnisses zur sichtbaren From-Domäne und eine veröffentlichte Behandlungspolitik."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check: Prüfungstransfer",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "spf-transfer-parse",
+          "requiredObjective": "spf-parse",
+          "question": "Gegeben ist v=spf1 ip4:192.0.2.0/24 ~all. Welches Ergebnis erhält Client 198.51.100.8, wenn die Policy für seine MAIL-FROM-Domäne geprüft wird?",
+          "options": [
+            {
+              "text": "Pass, weil jeder Client am all-Mechanismus trifft",
+              "rationale": "all trifft zwar immer, aber der vorangestellte Tilde-Qualifier bestimmt Softfail statt Pass.",
+              "correct": false
+            },
+            {
+              "text": "Fail, weil jede nicht passende IP automatisch einen harten Fehler erzeugt",
+              "rationale": "Der konkrete Abschluss lautet ~all. Ein harter Fail würde durch -all entstehen.",
+              "correct": false
+            },
+            {
+              "text": "Softfail, weil ip4 nicht passt und danach ~all als erster Treffer ausgewertet wird",
+              "rationale": "Richtig. Die Prüfung läuft links nach rechts; 198.51.100.8 liegt nicht im angegebenen /24, also bestimmt ~all das Ergebnis.",
+              "correct": true
+            },
+            {
+              "text": "DKIM-Pass, weil SPF automatisch eine Signatur nachlädt",
+              "rationale": "SPF und DKIM sind getrennte Verfahren. Eine SPF-Policy erzeugt kein DKIM-Ergebnis.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "spf-transfer-plan",
+          "requiredObjective": "spf-plan",
+          "question": "Eine Domäne versendet über ein eigenes Gateway und zwei SaaS-Dienste. Welcher Plan ist fachlich am belastbarsten?",
+          "options": [
+            {
+              "text": "Sofort v=spf1 +all veröffentlichen, weil damit keine legitime Mail ausfällt",
+              "rationale": "+all autorisiert jeden Host und hebt die beabsichtigte Senderbegrenzung praktisch auf.",
+              "correct": false
+            },
+            {
+              "text": "Nur die IP des Gateways mit -all veröffentlichen; externe Dienste werden von SPF automatisch erkannt",
+              "rationale": "Nicht aufgeführte Versandwege können auf -all treffen. SPF entdeckt legitime SaaS-Sender nicht automatisch.",
+              "correct": false
+            },
+            {
+              "text": "Versandwege und Identitätsdomänen inventarisieren, minimale direkte und Provider-Mechanismen bilden, Einzelrecord und DNS-Term-Budget prüfen, kontrolliert veröffentlichen und beobachten",
+              "rationale": "Richtig. Dieser Ablauf verbindet vollständige fachliche Anforderungen mit Syntax-, DNS- und Betriebsprüfung, ohne Zustellerfolg zu versprechen.",
+              "correct": true
+            },
+            {
+              "text": "Drei getrennte TXT-Records mit jeweils v=spf1 veröffentlichen, damit jeder Dienst unabhängig bleibt",
+              "rationale": "Für denselben Owner sind mehrere SPF-Records nicht erlaubt und führen zu PermError. Die legitimen Wege gehören in eine konsistente Policy.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Geltungsbereich",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **IT-Berufe Fachstufe II – Lernfelder 10–12 (2023):** lokale Buchgrundlage für SPF als DNS-gestützte Senderautorisierung und die Abgrenzung zu DKIM und DMARC.\n- **RFC 7208:** technische Normprüfung für SPF-Identitäten, TXT-Record, Syntax, Auswertungsreihenfolge, Ein-Record-Regel und DNS-Term-Limit.\n- **RFC 7489:** technische Normprüfung für die Ausrichtung von SPF oder DKIM zur sichtbaren From-Domäne im Rahmen von DMARC.\n\nAlle Domänen, IP-Adressen, Policies und Diagramme sind eigenständige Dokumentationsbeispiele. Konkrete Provider-Includes dürfen nicht ungeprüft in eine produktive Policy übernommen werden."
+        }
+      ]
+    }
+  ]
+}

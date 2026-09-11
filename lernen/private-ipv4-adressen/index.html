@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="RFC-1918-Adressen sicher erkennen und sie von IPv4-Link-Local, Loopback, Multicast und öffentlich nutzbaren Adressen abgrenzen.">
+<title>Private und besondere IPv4-Adressen unterscheiden – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=hybrid-1">
+<script defer src="/assets/ap2-space.js?v=hybrid-1"></script>
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="private-ipv4-adressen" data-progress-id="ga2-2__1" data-content-revision="2026-09-11.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-2">Block N2 · IPv4-Adressierung und Subnetting</a><span class="sep">›</span>
+    <span class="here">Private und besondere IPv4-Adressen unterscheiden</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">Private und besondere IPv4-Adressen unterscheiden</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 18 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Nicht öffentlich bedeutet nicht automatisch privat. Neben den drei privaten RFC-1918-Blöcken existieren weitere besondere Bereiche mit ganz anderen Aufgaben, zum Beispiel Loopback und IPv4-Link-Local.</p>
+<section class="learning-goals" aria-labelledby="private-ipv4-adressen-goals">
+  <h2 id="private-ipv4-adressen-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>eine gegebene IPv4-Adresse korrekt als RFC-1918-privat, Link-Local, Loopback, Multicast oder nicht abschließend klassifiziert einordnen</li>
+    <li>für ein Netzwerkszenario einen geeigneten Adressbereich auswählen und dessen Reichweite sowie Routingfolgen begründen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Liegt 172 immer privat?</h2>
+<section class="quiz" data-quiz="private-ipv4-diagnostic" data-correct="1">
+  <h3>Wie ist die Adresse 172.32.0.1 einzuordnen?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Der private /12-Block umfasst nur den Bereich von 172.16 bis 172.31 im zweiten Oktett."><span class="m">A</span> Sie ist privat, weil jede Adresse mit 172 beginnt.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Das zweite Oktett 32 liegt bereits hinter der privaten Obergrenze 31."><span class="m">B</span> Sie liegt außerhalb des privaten 172.16.0.0/12-Blocks.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Loopback wird durch das Präfix 127.0.0.0/8 bestimmt, nicht durch das zweite Oktett einer 172-Adresse."><span class="m">C</span> Sie ist Loopback, weil das zweite Oktett größer als 31 ist.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="IPv4-Link-Local beziehungsweise APIPA verwendet 169.254.0.0/16. Nicht privat bedeutet nicht automatisch APIPA."><span class="m">D</span> Sie ist APIPA, weil sie nicht im privaten Bereich liegt.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">Grenzen statt Anfangsziffern</span><p>Private Adressen erkennst du an vollständigen <strong>Präfixen</strong>, nicht an einer groben Aussage wie „beginnt mit 172“.</p></aside><h2 class="sec" id="s2"><span class="num">2</span>Die drei privaten IPv4-Bereiche</h2>
+<p>RFC 1918 reserviert drei Blöcke für private Netze: <code>10.0.0.0/8</code>, <code>172.16.0.0/12</code> und <code>192.168.0.0/16</code>. Diese Präfixe dürfen intern strukturiert und auch zwischen eigenen Standorten geroutet werden. Sie werden jedoch nicht als globale Unicast-Netze durch das öffentliche Internet transportiert.</p>
+<p>Besonders fehleranfällig ist der mittlere Block. Privat ist nicht das gesamte 172er-Netz, sondern nur der Bereich von 172.16.0.0 bis 172.31.255.255. Adressen wie 172.15.4.2 oder 172.32.0.1 liegen außerhalb davon.</p>
+<p>Für den Internetzugang verwendet ein internes Netz häufig eine Adressübersetzung am Übergang. NAT macht aus einer privaten Adresse aber keine öffentlich zugewiesene Adresse und ersetzt keine Sicherheitsregel.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Drei private Blöcke, drei Präfixgrenzen">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-private-address-blocks-title diagram-private-address-blocks-desc">
+  <title id="diagram-private-address-blocks-title">Drei private Blöcke, drei Präfixgrenzen</title>
+  <desc id="diagram-private-address-blocks-desc">Vergleich der drei privaten IPv4-Blöcke 10.0.0.0/8, 172.16.0.0/12 und 192.168.0.0/16 mit ihren Grenzen.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Drei private Blöcke, drei Präfixgrenzen</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">10.0.0.0/8</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">alle Adressen mit erstem</tspan><tspan x="64" dy="30">Oktett 10</tspan></text></g><g><rect class="diagram-row" x="340" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="362" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="362" dy="0">172.16.0.0/12</tspan></text><text x="362" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="362" dy="0">nur 172.16.0.0 bis</tspan><tspan x="362" dy="30">172.31.255.255; 172.15 und</tspan><tspan x="362" dy="30">172.32 gehören nicht dazu</tspan></text></g><g><rect class="diagram-row" x="638" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="660" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="660" dy="0">192.168.0.0/16</tspan></text><text x="660" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="660" dy="0">alle Adressen mit den ersten</tspan><tspan x="660" dy="30">beiden Oktetten 192.168</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Der 172er-Block endet bereits bei einem zweiten Oktett von 31.</figcaption>
+</figure><section class="quiz" data-quiz="private-range-practice" data-correct="1">
+  <h3>Welche Adresse gehört zum privaten 172.16.0.0/12-Block?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Das zweite Oktett 15 liegt knapp unter der privaten Untergrenze 16."><span class="m">A</span> 172.15.255.254</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Das zweite Oktett 23 liegt innerhalb des privaten Bereichs 16 bis 31."><span class="m">B</span> 172.23.44.8</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Das zweite Oktett 32 liegt bereits über der privaten Obergrenze 31."><span class="m">C</span> 172.32.0.5</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Diese Adresse liegt im IPv4-Link-Local-Bereich und nicht in 172.16.0.0/12."><span class="m">D</span> 169.254.23.8</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s3"><span class="num">3</span>Private, Link-Local und Loopback sauber trennen</h2>
+<p>Drei häufig verwechselte Kategorien erfüllen verschiedene Aufgaben.</p>
+<div class="twrap"><table class="knowledge-table">
+<thead>
+<tr>
+<th>Kategorie</th>
+<th>Bereich</th>
+<th>Gültigkeit und typischer Einsatz</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>privat nach RFC 1918</td>
+<td>10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16</td>
+<td>interne Netze; innerhalb einer Organisation routingfähig, nicht global im öffentlichen Internet</td>
+</tr>
+<tr>
+<td>IPv4-Link-Local, oft APIPA genannt</td>
+<td>169.254.0.0/16</td>
+<td>nur lokaler Link; bei Clients häufig ein Hinweis, dass keine DHCP-Zuweisung gelang</td>
+</tr>
+<tr>
+<td>Loopback</td>
+<td>127.0.0.0/8</td>
+<td>eigener Host; zum Test lokaler Netzwerkfunktionen</td>
+</tr>
+<tr>
+<td>Multicast</td>
+<td>224.0.0.0/4</td>
+<td>Empfängergruppe statt einzelner Host</td>
+</tr>
+</tbody></table></div>
+<p>Eine Adresse außerhalb dieser Blöcke ist nicht automatisch öffentlich nutzbar. IPv4 enthält weitere reservierte Bereiche, etwa für Dokumentation oder besondere Übertragungsarten. In einer realen Planung wird deshalb eine aktuelle Adressregistrierung geprüft.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Adressklassifikation ohne Restekiste">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="650" viewBox="0 0 960 650" role="img" aria-labelledby="diagram-address-classifier-title diagram-address-classifier-desc">
+  <title id="diagram-address-classifier-title">Adressklassifikation ohne Restekiste</title>
+  <desc id="diagram-address-classifier-desc">Prüffolge für Loopback, IPv4-Link-Local, private RFC-1918-Bereiche, Multicast und weitere Sonderbereiche.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Adressklassifikation ohne Restekiste</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">127.0.0.0/8?</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Loopback; Kommunikation bleibt im eigenen Host</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">169.254.0.0/16?</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">IPv4-Link-Local; bleibt auf dem lokalen Link und weist häufig</tspan><tspan x="178" dy="25">auf fehlgeschlagenes DHCP hin</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">RFC-1918-Block?</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">private Adresse für interne Netze; nicht global im</tspan><tspan x="178" dy="25">öffentlichen Internet geroutet</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">224.0.0.0/4?</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Multicast; adressiert eine Empfängergruppe statt eines</tspan><tspan x="178" dy="25">einzelnen Hosts</tspan></text><path d="M480 472v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 494 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="512" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="541" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Kein bekannter Sonderbereich?</tspan></text><text x="178" y="568" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">kann öffentlich nutzbar sein, muss aber vor Verwendung gegen</tspan><tspan x="178" dy="25">weitere Reservierungen geprüft werden</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernskizze: Nicht privat ist nur ein Zwischenergebnis, noch kein Beweis für öffentliche Nutzbarkeit.</figcaption>
+</figure><aside class="callout warn"><span class="lbl">Diagnosehinweis</span><p>Eine Adresse aus <code>169.254.0.0/16</code> ist kein Ersatz für einen geplanten privaten Adressbereich. Prüfe bei unerwarteter Vergabe zuerst DHCP, VLAN, Verkabelung und Erreichbarkeit des DHCP-Servers.</p></aside><h2 class="sec" id="s4"><span class="num">4</span>Durchgearbeitetes Szenario: Client ohne DHCP-Adresse</h2>
+<p>Ein Notebook soll im internen Netz <code>10.40.0.0/16</code> per DHCP konfiguriert werden. Stattdessen zeigt es <code>169.254.34.8/16</code> und erreicht weder das Standardgateway noch interne Server.</p>
+<p>Die Adresse ist nicht RFC-1918-privat, sondern IPv4-Link-Local. Sie ermöglicht höchstens Kommunikation auf demselben lokalen Link mit passend konfigurierten Nachbarn. Der Befund spricht dafür, dass die automatische Zuweisung keine verwertbare DHCP-Antwort erhalten hat. Eine manuelle NAT-Regel behebt diese Ursache nicht; zuerst werden Anschluss, VLAN-Zuordnung, DHCP-Relay und DHCP-Dienst geprüft.</p>
+<section class="quiz" data-quiz="private-scenario-practice" data-correct="1">
+  <h3>Welche erste fachliche Schlussfolgerung passt zu 169.254.34.8/16 am Notebook?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Die angezeigte Adresse liegt nicht im geplanten 10.40.0.0/16-Netz und bestätigt daher keine erfolgreiche Zuweisung."><span class="m">A</span> Das Notebook besitzt erfolgreich eine private DHCP-Adresse aus 10.40.0.0/16.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Der Bereich 169.254.0.0/16 und das Fehlerbild weisen auf eine fehlende reguläre Konfiguration hin."><span class="m">B</span> Das Notebook verwendet IPv4-Link-Local; der DHCP-Pfad sollte geprüft werden.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Loopback liegt in 127.0.0.0/8. 169.254.34.8 gehört zum Link-Local-Bereich."><span class="m">C</span> Das Notebook testet ausschließlich seine Loopback-Schnittstelle.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Multicast beginnt bei 224.0.0.0/4. Die vorliegende Adresse ist weder Multicast noch global öffentlich."><span class="m">D</span> Die Adresse ist eine öffentliche Multicast-Adresse.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Geführte Übung: Adressen klassifizieren</h2>
+<section class="sequence-practice" data-sequence="private-classifier-sequence" data-expected="prefix,private,special,public" data-correct-feedback="Richtig. Präfixe werden exakt geprüft; öffentlich bleibt erst nach dem Ausschluss weiterer Sonderbereiche als mögliche Kategorie übrig." data-wrong-feedback="Beginne mit einer exakten Präfixprüfung. Die Kategorie öffentlich darf nicht pauschal als Restekiste verwendet werden." aria-labelledby="private-classifier-sequence-title">
+  <div class="lab-heading"><div><h3 id="private-classifier-sequence-title">Prüfreihenfolge statt Bauchgefühl</h3><p>Bringe die Schritte für die belastbare Einordnung einer IPv4-Adresse in eine sinnvolle Reihenfolge.</p></div><span class="lab-tag">Übung</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="public" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Erst nach Ausschluss besonderer Bereiche die öffentliche Nutzbarkeit anhand aktueller Zuweisungen prüfen.</span></li>
+    <li data-step="special" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Loopback, Link-Local und Multicast als besondere Präfixe prüfen.</span></li>
+    <li data-step="prefix" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Adresse gegen vollständige Präfixgrenzen statt nur gegen das erste Oktett vergleichen.</span></li>
+    <li data-step="private" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Die drei RFC-1918-Blöcke gezielt prüfen.</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><aside class="callout merk"><span class="lbl">Vier Prüfungsanker</span><p>Merke dir die Präfixe <strong>10/8</strong>, <strong>172.16/12</strong>, <strong>192.168/16</strong> und zusätzlich die klar getrennten Sonderrollen <strong>127/8</strong> sowie <strong>169.254/16</strong>.</p></aside><h2 class="sec" id="s6"><span class="num">6</span>Karteikarten und freier Abruf</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="private-three-ranges" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche drei IPv4-Präfixe sind privat?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>10.0.0.0/8, 172.16.0.0/12 und 192.168.0.0/16.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="private-apipa" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche Bedeutung hat eine unerwartete Adresse aus 169.254.0.0/16?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Sie ist IPv4-Link-Local und weist bei automatisch konfigurierten Clients häufig auf einen fehlgeschlagenen DHCP-Pfad hin.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="private-loopback" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welcher Bereich ist für IPv4-Loopback reserviert?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Der gesamte Bereich 127.0.0.0/8; 127.0.0.1 ist nur die bekannteste einzelne Adresse daraus.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „RFC 1918“:</span><button type="button" data-card-id="private-three-ranges" data-card-rate="known">gewusst</button><button type="button" data-card-id="private-three-ranges" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="private-three-ranges"></span></div>
+<div class="card-rating"><span>Karte „Link-Local“:</span><button type="button" data-card-id="private-apipa" data-card-rate="known">gewusst</button><button type="button" data-card-id="private-apipa" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="private-apipa"></span></div>
+<div class="card-rating"><span>Karte „Loopback“:</span><button type="button" data-card-id="private-loopback" data-card-rate="known">gewusst</button><button type="button" data-card-id="private-loopback" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="private-loopback"></span></div><section class="recall-practice" data-recall="private-ipv4-recall" data-min-length="100" aria-labelledby="private-ipv4-recall-title">
+  <div class="recall-prompt"><h3 id="private-ipv4-recall-title">Ohne Nachschlagen erklären</h3><p>Nenne die drei privaten IPv4-Blöcke und grenze sie anhand von Zweck und Reichweite gegen Link-Local und Loopback ab.</p></div>
+  <label class="sr-only" for="private-ipv4-recall-answer">Deine Erklärung</label>
+  <textarea id="private-ipv4-recall-answer" data-recall-input rows="4" placeholder="Privat sind … Link-Local bedeutet …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Privat sind 10.0.0.0/8, 172.16.0.0/12 und 192.168.0.0/16. Sie können intern geroutet werden, aber nicht als globale Unicast-Netze im öffentlichen Internet. 169.254.0.0/16 ist IPv4-Link-Local und bleibt am lokalen Link. 127.0.0.0/8 ist Loopback und bleibt vollständig im eigenen Host.</div>
+</section><h2 class="sec" id="s7"><span class="num">7</span>Lernziel-Check: Transfer</h2>
+<section class="quiz" data-quiz="private-transfer-classification" data-correct="0" data-required-objective="address-classification">
+  <h3>Wie ist die Adresse 172.31.250.9 fachlich einzuordnen?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Das zweite Oktett 31 liegt noch innerhalb des privaten Blocks 172.16.0.0/12."><span class="m">A</span> privat nach RFC 1918</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Link-Local verwendet 169.254.0.0/16 und nicht einen Teil des 172er-Bereichs."><span class="m">B</span> IPv4-Link-Local beziehungsweise APIPA</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Loopback wird durch 127.0.0.0/8 abgedeckt."><span class="m">C</span> Loopback</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="172.16 ist der Beginn, nicht der einzige private Wert. Der /12-Bereich reicht bis einschließlich 172.31.255.255."><span class="m">D</span> außerhalb des privaten Blocks, weil nur 172.16 privat ist</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="private-transfer-scenario" data-correct="0" data-required-objective="scenario-selection">
+  <h3>Eine Organisation plant ein internes Kameranetz für mehrere VLANs und Standorte. Die Geräte sollen keine direkt öffentlich erreichbaren Adressen benötigen. Welche Entscheidung ist am besten begründet?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Private Adressen eignen sich für interne, auch standortübergreifend geroutete Netze; externe Kommunikation wird gezielt am Übergang geregelt."><span class="m">A</span> Einen ausreichend großen RFC-1918-Bereich wählen, intern subnetten und nötigen externen Verkehr kontrolliert am Übergang behandeln.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Loopback bleibt im jeweiligen Gerät und kann keine Kommunikation zwischen Kameras, Switches und Servern tragen."><span class="m">B</span> Für alle Kameras 127.0.0.0/8 verwenden, weil Loopback besonders sicher ist.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="IPv4-Link-Local ist auf den lokalen Link begrenzt und für eine geplante, geroutete Standortstruktur ungeeignet."><span class="m">C</span> 169.254.0.0/16 fest als standortübergreifendes Routingnetz planen.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Außerhalb von RFC 1918 existieren weitere reservierte oder bereits zugewiesene Bereiche. Adressen dürfen nicht beliebig gewählt werden."><span class="m">D</span> Eine beliebige Adresse außerhalb der drei Privatbereiche wählen, weil sie damit automatisch frei und öffentlich nutzbar ist.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><p><strong>Prüfungsformulierung:</strong> Nenne den exakten Präfixbereich und beschreibe seine Reichweite. „Nicht öffentlich“ und „privat“ sind keine austauschbaren Begriffe.</p>
+<h2 class="sec" id="s8"><span class="num">8</span>Quellen und Einordnung</h2>
+<ul>
+<li><strong>IT-Berufe Grundstufe – Lernfelder 6–9 (2022):</strong> Übersicht zu privaten IPv4-Adressen, Loopback, Multicast und APIPA beziehungsweise Link-Local.</li>
+<li><strong>EUROPA Prüfungsvorbereitung Teil 2 – Integratoren, 4. Auflage (2026):</strong> Planung mehrerer Subnetze innerhalb des privaten Bereichs 172.22.0.0/16.</li>
+</ul>
+<p>Die pauschale Quellenformulierung „alle weiteren Adressen sind öffentlich“ wurde bewusst nicht übernommen, da IPv4 weitere besondere und reservierte Bereiche besitzt. Text, Fälle und Diagramme wurden vollständig neu erstellt.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-2"><span class="d">zurück zu</span><span class="t">Block N2 · IPv4-Adressierung und Subnetting</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N2 · IPv4-Adressierung und Subnetting</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Liegt 172 immer privat?</a></li>
+<li><a href="#s2" data-t="s2">Die drei privaten IPv4-Bereiche</a></li>
+<li><a href="#s3" data-t="s3">Private, Link-Local und Loopback sauber trennen</a></li>
+<li><a href="#s4" data-t="s4">Durchgearbeitetes Szenario: Client ohne DHCP-Adresse</a></li>
+<li><a href="#s5" data-t="s5">Geführte Übung: Adressen klassifizieren</a></li>
+<li><a href="#s6" data-t="s6">Karteikarten und freier Abruf</a></li>
+<li><a href="#s7" data-t="s7">Lernziel-Check: Transfer</a></li>
+<li><a href="#s8" data-t="s8">Quellen und Einordnung</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-2">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

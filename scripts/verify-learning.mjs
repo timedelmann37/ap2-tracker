@@ -40,8 +40,11 @@ const compactSources = (await readdir(path.join(repoRoot, 'content', 'learning-u
 const compactSourceBySlug = new Map();
 for (const file of compactSources) {
   const raw = await readFile(path.join(repoRoot, 'content', 'learning-units', file), 'utf8');
-  compactSourceBySlug.set(JSON.parse(raw).meta.slug, { file, raw });
+  const spec = JSON.parse(raw);
+  compactSourceBySlug.set(spec.meta.slug, { file, raw, spec });
 }
+
+const areaClassByDomain = { GA1: 'area-ga1', GA2: 'area-ga2', WiSo: 'area-wiso' };
 
 check(sourceCatalog.sources.length === 5, 'fünf bereitgestellte Buchquellen werden im Quellenkatalog geführt');
 check(sourceIds.size === sourceCatalog.sources.length, 'Quellen-IDs sind eindeutig');
@@ -72,6 +75,9 @@ for (const topic of manifest.topics) {
   check(await exists(pagePath), `generierte Lernseite /lernen/${topic.slug}/ existiert`);
   if (!await exists(pagePath)) continue;
   const page = await readFile(pagePath, 'utf8');
+  const areaClass = areaClassByDomain[topic.domain];
+  const bodyClasses = (page.match(/<body class="([^"]*)"/)?.[1] || '').split(/\s+/).filter(Boolean);
+  check(Boolean(areaClass) && bodyClasses.includes(areaClass) && bodyClasses.includes('learning-page'), `${topic.slug}: Lernseite trägt die korrekte Bereichsklasse ${areaClass || topic.domain}`);
   check(page.includes(`data-progress-id="${topic.itemId}"`), `${topic.slug}: kanonischer Fortschritts-Schlüssel ist eingebettet`);
   check(page.includes(`data-content-revision="${topic.contentRevision}"`), `${topic.slug}: Inhaltsrevision ist eingebettet`);
   check(['CURATED_DRAFT', 'DIDACTICALLY_REVIEWED', 'PUBLICATION_READY'].includes(topic.contentStatus), `${topic.slug}: Kurationsstatus ist im Manifest`);
@@ -79,7 +85,7 @@ for (const topic of manifest.topics) {
   check(page.includes('/assets/ap2-learning.js'), `${topic.slug}: gemeinsame Interaktionslogik ist eingebunden`);
   check(page.includes('data-quiz='), `${topic.slug}: Selbsttest ist vorhanden`);
   check(page.includes('data-flashcard='), `${topic.slug}: Karteikarten sind vorhanden`);
-  check(page.includes('class="learning-figure"') || page.includes('<math') || page.includes('data-failure-simulator='), `${topic.slug}: fachliche Visualisierung lockert die Einheit auf`);
+  check(page.includes('class="learning-figure') || page.includes('<math') || page.includes('data-failure-simulator='), `${topic.slug}: fachliche Visualisierung lockert die Einheit auf`);
   check(page.includes('data-required-objective='), `${topic.slug}: Abschluss ist an Lernziel-Checks gebunden`);
   for (const objectiveId of topic.learningObjectives) {
     const occurrences = page.match(new RegExp(`data-required-objective="${objectiveId}"`, 'g')) || [];
@@ -98,6 +104,15 @@ for (const topic of manifest.topics) {
       check(createHash('sha256').update(source.raw).digest('hex') === topic.contentHash, `${topic.slug}: Hash stammt aus der kompakten Quelle`);
       const curation = JSON.parse(await readFile(path.join(repoRoot, 'content', 'curation', `${topic.slug}.json`), 'utf8'));
       check(curation.generatedFrom === `content/learning-units/${source.file}`, `${topic.slug}: Kurationsartefakt nennt seine kompakte Quelle`);
+      const diagramIds = source.spec.sections
+        .flatMap(section => section.blocks)
+        .filter(block => block.type === 'figure' && block.diagramId)
+        .map(block => block.diagramId);
+      check((page.match(/<svg class="learning-diagram/g) || []).length === diagramIds.length, `${topic.slug}: deklarative Diagramme sind vollständig inline gerendert`);
+      for (const diagramId of diagramIds) {
+        const labelledBy = `aria-labelledby="diagram-${diagramId}-title diagram-${diagramId}-desc"`;
+        check(page.includes(labelledBy) && page.includes(`id="diagram-${diagramId}-title"`) && page.includes(`id="diagram-${diagramId}-desc"`), `${topic.slug}: Inline-Diagramm ${diagramId} ist eindeutig beschriftet`);
+      }
     }
   }
 }
@@ -116,6 +131,67 @@ check(raidPage.includes('data-raid-lab=') && raidPage.includes('data-failure-sim
 check(raidPage.includes('data-recall=') && raidPage.includes('data-numeric-practice="raid-transfer-capacity"'), 'RAID-Pilot kombiniert freien Abruf und echte Zahleneingabe');
 check((raidPage.match(/<math/g) || []).length >= 8, 'RAID-Formeln werden visuell und semantisch gesetzt');
 check(manifest.topics.some(topic => topic.slug === 'raid-operations' && topic.itemId === 'ga1-3__5'), 'RAID-Betrieb ist als eigenes kanonisches Kernthema verdrahtet');
+
+const ipv4BlockTopics = manifest.topics
+  .filter(topic => topic.groupId === 'ga2-2')
+  .sort((left, right) => left.itemId.localeCompare(right.itemId));
+check(ipv4BlockTopics.length === 8, 'IPv4- und Subnetting-Block ist mit allen acht Kernthemen vollständig umgesetzt');
+check(
+  JSON.stringify(ipv4BlockTopics.map(topic => topic.itemId)) === JSON.stringify(Array.from({ length: 8 }, (_, index) => `ga2-2__${index}`)),
+  'IPv4-Block ist lückenlos mit den kanonischen Fortschritts-Schlüsseln verdrahtet'
+);
+for (const topic of ipv4BlockTopics) {
+  const page = await readFile(path.join(repoRoot, 'lernen', topic.slug, 'index.html'), 'utf8');
+  if (topic.slug !== 'private-ipv4-adressen') {
+    check((page.match(/<math/g) || []).length >= 1, `${topic.slug}: Rechenregeln sind als semantische Mathematik gesetzt`);
+  }
+  check((page.match(/<svg class="learning-diagram/g) || []).length === 2, `${topic.slug}: zwei eigenständige Erklärgrafiken sind eingebettet`);
+}
+
+const ipv6DhcpDnsTopics = manifest.topics
+  .filter(topic => topic.groupId === 'ga2-3')
+  .sort((left, right) => Number(left.itemId.split('__')[1]) - Number(right.itemId.split('__')[1]));
+check(ipv6DhcpDnsTopics.length === 14, 'IPv6-, DHCP- und DNS-Block ist mit allen 14 Kernthemen vollständig umgesetzt');
+check(
+  JSON.stringify(ipv6DhcpDnsTopics.map(topic => topic.itemId)) === JSON.stringify(Array.from({ length: 14 }, (_, index) => `ga2-3__${index}`)),
+  'IPv6-, DHCP- und DNS-Block ist lückenlos mit den kanonischen Fortschritts-Schlüsseln verdrahtet'
+);
+for (const topic of ipv6DhcpDnsTopics) {
+  const page = await readFile(path.join(repoRoot, 'lernen', topic.slug, 'index.html'), 'utf8');
+  check((page.match(/<svg class="learning-diagram/g) || []).length === 2, `${topic.slug}: zwei eigenständige Erklärgrafiken sind eingebettet`);
+}
+
+const routingNatTopics = manifest.topics
+  .filter(topic => topic.groupId === 'ga2-4')
+  .sort((left, right) => Number(left.itemId.split('__')[1]) - Number(right.itemId.split('__')[1]));
+check(routingNatTopics.length === 11, 'Routing- und NAT-Block ist mit allen elf Kernthemen vollständig umgesetzt');
+check(
+  JSON.stringify(routingNatTopics.map(topic => topic.itemId)) === JSON.stringify(Array.from({ length: 11 }, (_, index) => `ga2-4__${index}`)),
+  'Routing- und NAT-Block ist lückenlos mit den kanonischen Fortschritts-Schlüsseln verdrahtet'
+);
+for (const topic of routingNatTopics) {
+  const page = await readFile(path.join(repoRoot, 'lernen', topic.slug, 'index.html'), 'utf8');
+  if (Number(topic.itemId.split('__')[1]) <= 7) {
+    check((page.match(/<math/g) || []).length >= 1, `${topic.slug}: Auswahl- oder Rechenregel ist als semantische Mathematik gesetzt`);
+  }
+  check((page.match(/<svg class="learning-diagram/g) || []).length === 2, `${topic.slug}: zwei eigenständige Erklärgrafiken sind eingebettet`);
+}
+
+const switchingVlanTopics = manifest.topics
+  .filter(topic => topic.groupId === 'ga2-5')
+  .sort((left, right) => Number(left.itemId.split('__')[1]) - Number(right.itemId.split('__')[1]));
+check(switchingVlanTopics.length === 12, 'Switching- und VLAN-Block ist mit allen zwölf Kernthemen vollständig umgesetzt');
+check(
+  JSON.stringify(switchingVlanTopics.map(topic => topic.itemId)) === JSON.stringify(Array.from({ length: 12 }, (_, index) => `ga2-5__${index}`)),
+  'Switching- und VLAN-Block ist lückenlos mit den kanonischen Fortschritts-Schlüsseln verdrahtet'
+);
+for (const topic of switchingVlanTopics) {
+  const page = await readFile(path.join(repoRoot, 'lernen', topic.slug, 'index.html'), 'utf8');
+  if (!['ga2-5__8', 'ga2-5__9'].includes(topic.itemId)) {
+    check((page.match(/<math/g) || []).length >= 1, `${topic.slug}: Auswahl- oder Rechenregel ist als semantische Mathematik gesetzt`);
+  }
+  check((page.match(/<svg class="learning-diagram/g) || []).length === 2, `${topic.slug}: zwei eigenständige Erklärgrafiken sind eingebettet`);
+}
 
 const backupPage = await readFile(path.join(repoRoot, 'lernen', 'backup-methods', 'index.html'), 'utf8');
 check(backupPage.includes('data-sequence="incremental-restore"') && backupPage.includes('data-expected="verify,full,increments,validate"'), 'Backup-Einheit trainiert die Restore-Reihenfolge interaktiv');
