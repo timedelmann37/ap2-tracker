@@ -76,6 +76,31 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "contentHash": "6964d7172518d6cac08e4c25744586b951e678116d65c08fa54c1628eb898849"
   },
   {
+    "id": "storage-media",
+    "slug": "ssd-vs-hdd-vs-nvme-iops-latenz",
+    "title": "SSD, HDD und NVMe passend auswählen",
+    "description": "Speicher anhand von Zugriffsmuster, Latenz, IOPS, Kapazität und Endurance vergleichen und eine belastbare Auswahl treffen.",
+    "domain": "GA1",
+    "groupId": "ga1-3",
+    "groupLabel": "Block 3 · Speicherlösungen",
+    "itemId": "ga1-3__6",
+    "week": "KW 37",
+    "estimatedMinutes": 27,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "media-selection",
+      "endurance-planning"
+    ],
+    "sources": [
+      "ihk-bonn",
+      "itlf6-9-2022",
+      "itlf10-12-2023"
+    ],
+    "contentHash": "c558d53975f2b4b8ddf02e6d91089951713b32d2a3ecb1ed9df5f4e7d5e8e5f6"
+  },
+  {
     "id": "backup-methods",
     "slug": "backup-methods",
     "title": "Sicherungsarten auswählen und Restore-Ketten beherrschen",
@@ -99,5 +124,79 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
       "itlf10-12-2023"
     ],
     "contentHash": "aec3078290f11d33d85ae68721f35d60f62483472389f47a3a214c862fd416b5"
+  },
+  {
+    "id": "backup-window",
+    "slug": "backup-window",
+    "title": "Backup-Fenster mit Datenrate und Engpass berechnen",
+    "description": "Datenmenge und Übertragungsrate sicher umrechnen, den realen Engpass erkennen und beurteilen, ob eine Sicherung in das verfügbare Zeitfenster passt.",
+    "domain": "GA1",
+    "groupId": "ga1-4",
+    "groupLabel": "Block 4 · Backup, Recovery und Notfallvorsorge",
+    "itemId": "ga1-4__5",
+    "week": "KW 38",
+    "estimatedMinutes": 20,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "rate-conversion",
+      "window-decision"
+    ],
+    "sources": [
+      "ihk-bonn",
+      "europa-integratoren-2026"
+    ],
+    "contentHash": "812fafb375f63f3393e95d54e65b28786c57b9cbdd131f52c95dafeed504941d"
+  },
+  {
+    "id": "osi-model",
+    "slug": "osi-model",
+    "title": "Das OSI-Schichtenmodell sicher anwenden",
+    "description": "Die sieben OSI-Schichten ordnen, ihre Aufgaben unterscheiden und Geräte sowie Protokolle anhand der tatsächlich ausgewerteten Information einordnen.",
+    "domain": "GA2",
+    "groupId": "ga2-1",
+    "groupLabel": "Block N1 · Grundlagen, Medien und Verkabelung",
+    "itemId": "ga2-1__0",
+    "week": "KW 35",
+    "estimatedMinutes": 22,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "layer-order",
+      "layer-classification"
+    ],
+    "sources": [
+      "europa-integratoren-2026",
+      "itlf10-12-2023",
+      "ihk-bonn"
+    ],
+    "contentHash": "b1ca959ebaee6a5b490c9dcb353c62a4e350803ae142958ffe45bbb3341583a3"
+  },
+  {
+    "id": "company-goals",
+    "slug": "company-goals",
+    "title": "Unternehmensziele und Zielkonflikte sicher abwägen",
+    "description": "Ökonomische, ökologische und soziale Unternehmensziele unterscheiden, ihre Wechselwirkungen analysieren und Zielkonflikte in betrieblichen Fällen begründet lösen.",
+    "domain": "WiSo",
+    "groupId": "wiso-6",
+    "groupLabel": "W6 · Betrieb, Organisation und Rechtsformen",
+    "itemId": "wiso-6__2",
+    "week": "KW 40",
+    "estimatedMinutes": 22,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-11.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "classify-goals",
+      "resolve-conflicts"
+    ],
+    "sources": [
+      "europa-integratoren-2026",
+      "it-basiswissen-2012",
+      "itlf10-12-2023"
+    ],
+    "contentHash": "23bdc02f641fdd26e9a4651a612a397c4e68435d45f13e812994b88b6d658593"
   }
 ]);
