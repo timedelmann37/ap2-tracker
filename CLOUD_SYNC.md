@@ -79,7 +79,8 @@ Im Dashboard: **Project Settings** → **API**. Dort stehen:
 - **Project URL** (z. B. `https://xxxxxxxxxxxx.supabase.co`)
 - **anon public** Key (langer String unter „Project API keys")
 
-Diese beiden Werte müssen in **allen fünf** Bereichsseiten eingetragen
+Diese beiden Werte müssen in **allen fünf** Hauptseiten und im gemeinsamen
+Lernseiten-Skript eingetragen
 werden, jeweils im `<script>`-Block bei folgenden zwei Zeilen:
 
 ```js
@@ -93,6 +94,7 @@ Betroffene Dateien:
 - `konzeption-administration/index.html`
 - `netzwerke/index.html`
 - `sowi/index.html`
+- `assets/ap2-learning.js` (gilt für alle generierten Lernseiten)
 
 Der **anon public**-Key ist bewusst dazu gedacht, öffentlich im
 Client-Code zu stehen (er erlaubt für sich genommen nichts — die
@@ -114,6 +116,11 @@ Nach dem Eintragen der Zugangsdaten und dem Deployen:
    werden. Beim ersten Login mit vorhandenem lokalem *und* Cloud-Fortschritt
    fragt der Tracker per Dialog, ob der Cloud-Stand übernehmen oder
    zusammengeführt werden soll.
+
+Auf Lernseiten werden Haken und Wiederholungsmarker über denselben Cloud-Stand
+synchronisiert. Karteikarten und Antworten aus Selbsttests bleiben bewusst
+lokal auf dem jeweiligen Gerät; sie gehören nicht zum kanonischen
+Prüfungsfortschritt.
 
 ## Hinweis zur geplanten Website-weiten Passwortsperre
 

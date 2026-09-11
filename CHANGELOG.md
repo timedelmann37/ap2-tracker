@@ -7,6 +7,33 @@ direkt auf der Seite sichtbar - ein Klick auf die Versionsnummer im Hub (in
 der Fußzeile) zeigt dieselbe Liste als Änderungsprotokoll. Gepflegt wird das
 Changelog ausschließlich im Hub, nicht mehr in den einzelnen Bereichen.
 
+## [3.10.0] - 2026-09-11
+
+### Hinzugefügt
+
+- Eine Markdown-Pipeline erzeugt echte Lernseiten mit Erklärungen, Tabellen,
+  Aufgaben, Karteikarten und Selbsttests. Die ersten Einheiten behandeln RAID
+  sowie DAS, NAS und SAN.
+- Fünf private Buchquellen sind lokal katalogisiert und durchsuchbar. Für den
+  413-seitigen PDF-Scan gibt es eine lokale, fortsetzbare OCR-Pipeline.
+
+### Geändert
+
+- Der Lernbereich ergänzt die vorhandene Hierarchie aus Bereich, Themengruppe
+  und Kernthema, statt einen zweiten Wochenplan zu führen. Generierte Inhalte
+  verlinken automatisch mit ihrem kanonischen Kernthema.
+- Der Lernfortschritt verwendet denselben lokalen und optionalen Cloud-Stand
+  wie der Tracker; Karteikarten und Quizantworten bleiben gerätebezogen lokal.
+- Netlify veröffentlicht nur noch das erzeugte `dist`-Verzeichnis. Private
+  Quellen, Content-Dateien und Build-Skripte sind damit keine Deploy-Artefakte.
+
+### Behoben
+
+- Wissenssuchen mit einem nicht vorhandenen Zusatzbegriff liefern jetzt noch
+  gewichtete Teiltreffer, statt alle fachlich passenden Ergebnisse zu verwerfen.
+- Lernpfad-Gruppen sind per Tastatur bedienbar; vergangene offene Inhalte werden
+  als Rückstand eingeordnet, und der redundante Wochenplan-Tab wurde entfernt.
+
 ## [3.9.3] - 2026-09-10
 
 ### Behoben

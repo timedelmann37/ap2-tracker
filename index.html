@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AP2 Vorbereitung - Winterprüfung 2026/27</title>
 <script src="/assets/ap2-theme.js?v=3.9.3"></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
 <script src="/assets/ap2-navigation.js?v=3.9.3" defer></script>
 <link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
@@ -743,7 +744,7 @@
   .search-hit-sub{ font-size: 11.5px; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .search-results mark{ background: var(--highlight, var(--brand-tint)); color: inherit; border-radius: 2px; padding: 0 1px; }
 </style>
-<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.9.3">
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.0">
 </head>
 <body class="hub-page">
 
@@ -1764,8 +1765,23 @@ renderCountdown();
 setInterval(renderCountdown, 60000);
 
 
-const APP_VERSION = '3.9.3';
+const APP_VERSION = '3.10.0';
 const CHANGELOG = [
+  { version:'3.10.0', date:'2026-09-11', groups:[
+    { label:'Hinzugefügt', items:[
+      'Echte Lernseiten aus Markdown mit Erklärungen, Tabellen, Aufgaben, Karteikarten und Selbsttests. Die ersten Einheiten behandeln RAID sowie DAS, NAS und SAN.',
+      'Fünf private Buchquellen sind lokal katalogisiert und durchsuchbar. Für den 413-seitigen PDF-Scan gibt es eine lokale, fortsetzbare OCR-Pipeline.'
+    ]},
+    { label:'Geändert', items:[
+      'Der Lernbereich ergänzt Bereich, Themengruppe und Kernthema, statt einen zweiten Wochenplan zu führen. Generierte Inhalte verlinken automatisch mit ihrem kanonischen Kernthema.',
+      'Lernfortschritt verwendet denselben lokalen und optionalen Cloud-Stand wie der Tracker; Karteikarten und Quizantworten bleiben gerätebezogen lokal.',
+      'Netlify veröffentlicht nur noch das erzeugte dist-Verzeichnis. Private Quellen, Content-Dateien und Build-Skripte sind keine Deploy-Artefakte.'
+    ]},
+    { label:'Behoben', items:[
+      'Die Wissenssuche liefert gewichtete Teiltreffer, wenn ein Zusatzbegriff fehlt.',
+      'Lernpfad-Gruppen sind per Tastatur bedienbar, Rückstände werden korrekt eingeordnet und der redundante Wochenplan-Tab ist entfernt.'
+    ]}
+  ]},
   { version:'3.9.3', date:'2026-09-10', groups:[
     { label:'Behoben', items:[
       'Das Bereichsmenü öffnet auf dem Desktop jetzt auch beim Darüberfahren. Eine kurze Schließverzögerung hält es offen, während der Zeiger ins Menü wechselt. Klick-, Tastatur- und Mobilbedienung bleiben erhalten.'
@@ -2098,8 +2114,14 @@ async function pullStateFromCloud(){
       'OK = Cloud-Stand übernimmt (aktueller lokaler Stand auf diesem Gerät wird ersetzt)\n' +
       'Abbrechen = lokaler und Cloud-Stand werden zusammengeführt'
     );
-    if (replace) Object.keys(state).forEach(k => delete state[k]);
-    Object.assign(state, cloudState);
+    if (replace) {
+      Object.keys(state).forEach(k => delete state[k]);
+      Object.assign(state, cloudState);
+    } else {
+      const merged = window.AP2_mergeProgress ? window.AP2_mergeProgress(state, cloudState) : { ...state, ...cloudState };
+      Object.keys(state).forEach(k => delete state[k]);
+      Object.assign(state, merged);
+    }
   } else if (cloudKeys > 0) {
     Object.assign(state, cloudState);
   }

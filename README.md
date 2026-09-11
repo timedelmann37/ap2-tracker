@@ -4,10 +4,10 @@ Tools zur Vorbereitung auf den schriftlichen Teil der Abschlussprüfung
 (Fachinformatiker Systemintegration, AP2 – GA1, GA2, WiSo), verlinkt über
 ein gemeinsames Hauptmenü.
 
-Der aktuelle Bestand ist buildlos: kein Server, jede Seite ein in sich
-geschlossenes HTML/CSS/JS. Das ist der Ist-Zustand, keine Vorgabe — ein
-Build-Schritt, ein Framework (React o. Ä.), TypeScript oder Tailwind sind
-für neue Arbeit erlaubt (siehe [`CLAUDE.md`](./CLAUDE.md)).
+Die bestehenden Tracker-Seiten bleiben statisches HTML/CSS/JS. Lerninhalte
+werden dagegen aus kuratierten Markdown-Dateien als statische Seiten gebaut.
+So bleibt der Bestand ohne Framework lauffähig, während neue Lerneinheiten
+nicht als kopierte HTML-Einzelseiten gepflegt werden müssen.
 
 ## Struktur
 
@@ -17,11 +17,20 @@ für neue Arbeit erlaubt (siehe [`CLAUDE.md`](./CLAUDE.md)).
 /konzeption-administration/    GA1: Konzeption und Administration von IT-Systemen
 /netzwerke/                    GA2: Analyse und Entwicklung von Netzwerken
 /sowi/                         Wirtschafts- und Sozialkunde
+/lernpfad/                     Einstieg in die verfügbaren Lerninhalte
+/lernen/<slug>/                Generierte Lerneinheiten
 /simulation/                   Prüfungssimulation (im Aufbau)
 assets/ap2-reference-ui.css    Gemeinsame visuelle Ebene der fünf Hauptseiten
+assets/ap2-learning.css        Gemeinsame Darstellung aller Lerneinheiten
+assets/ap2-learning.js         Karteikarten, Quiz und synchroner Fortschritt
 assets/ap2-theme.js            Gemeinsame persistente Hell-/Dunkel-Steuerung
 assets/ap2-navigation.js       Gemeinsames Themenmenü mit Tastaturbedienung und kurzer Animation
 assets/fonts/                  Lokale Referenz-Schriften; Herkunft/Lizenzen in SOURCES.md
+content/learning/              Kuratierte Lerninhalte als Markdown
+content/sources.json           Quellenkatalog mit Rolle und Aktualität
+knowledge-base/                Dokumentation der lokalen, privaten Buchdatenbank
+scripts/build-learning.mjs     Markdown-zu-HTML-Build
+scripts/knowledge/             Import und Volltextsuche der privaten Buchdaten
 docs/UI_REDESIGN_REFERENCE_LOCK.md  Referenzen, Quellenrollen und Designgrenzen
 netlify.toml                   Deployment-Konfiguration
 CONTRIBUTING.md                Anforderungen für alle, die an /simulation/ arbeiten
@@ -77,6 +86,18 @@ Fortschritt wird lokal im Browser gespeichert (`localStorage`, Schlüssel
 Themenbereichs-Seiten und im Hub-Dashboard**, damit Haken sich überall
 konsistent zusammenzählen.
 
+## Lerninhalte und Wissensbasis
+
+Die Lernseite ist die Vertiefung eines vorhandenen Kernthemas, keine zweite
+Stoffstruktur. Ein Link am Kernthema öffnet Erklärungen, Tabellen,
+Rechenaufgaben, Karteikarten und Selbsttests. „Gelernt" und „Zur Wiederholung"
+schreiben denselben Fortschritts-Schlüssel wie die Checkbox im Themenbereich.
+
+Die vollständig importierten Fachbücher und Grafiken liegen ausschließlich in
+`knowledge-base/local/`. Dieser Ordner ist von Git ausgeschlossen. Details zum
+Import, zur lokalen Volltextsuche und zur Trennung zwischen Rohquelle und
+veröffentlichbarem Lerninhalt stehen in [`knowledge-base/README.md`](./knowledge-base/README.md).
+
 ## Prüfungssimulation (`/simulation/`)
 
 Im Aufbau. Anforderungen und Spielregeln für die Mitarbeit stehen in
@@ -84,10 +105,13 @@ Im Aufbau. Anforderungen und Spielregeln für die Mitarbeit stehen in
 
 ## Lokal öffnen
 
-Jede `index.html` lässt sich direkt im Browser öffnen – kein Server, kein
-Build, keine Abhängigkeiten. Für Links zwischen den Bereichen (root-relative
-Pfade wie `/netzwerke/`) empfiehlt sich testweise ein lokaler Server, z. B.
-`npx serve` oder `python3 -m http.server` im Repo-Root.
+Nach dem Checkout einmal `npm install` ausführen. `npm run build` erzeugt die
+Lernseiten aus `content/learning/*.md` und kopiert ausschließlich die
+öffentlichen Laufzeitdateien nach `dist/`. `npm test` prüft Build, Deploy-
+Allowlist und Lernstruktur. `npm run test:browser` startet selbst einen lokalen
+Server gegen `dist/` und prüft Navigation, Theme, Links, Karten, Quiz und
+Fortschritt; falls Chromium lokal noch fehlt, einmal `npx playwright install
+chromium` ausführen.
 
 ## Deployment (Netlify)
 
@@ -98,16 +122,15 @@ erreichbare Seite ergibt:
   `index.html` von der "Publish directory" aus), `uebersicht/`,
   `konzeption-administration/`, `netzwerke/`, `sowi/` und `simulation/`
   liegen als eigene Ordner daneben.
-- `netlify.toml` pinnt `publish = "."`. Es gibt bewusst **keinen**
+- `netlify.toml` führt `npm run build` aus und pinnt `publish = "dist"`. Es gibt bewusst **keinen**
   Catch-all-Rewrite mehr — mit mehreren echten Seiten würde der jede Anfrage
   auf die Startseite umbiegen. Nur echte 404s fallen auf die Startseite
   zurück (`status = 404`, damit der Statuscode korrekt bleibt).
 - `/tracker/` (die frühere Adresse des zusammengefassten Trackers) leitet
   per 301 auf `/` weiter, für alte Lesezeichen/Links.
 
-Auf Netlify reicht es, das Repo als Site zu verbinden – Build-Command ist
-leer, Publish-Verzeichnis ist das Repo-Root. Kein manuelles Konfigurieren im
-Dashboard nötig, alles steckt in `netlify.toml`. Für Pull Requests baut
+Auf Netlify reicht es, das Repo als Site zu verbinden – Build-Command und
+Publish-Verzeichnis stecken in `netlify.toml`. Für Pull Requests baut
 Netlify automatisch Deploy-Previews, darüber lässt sich ein neuer Bereich
 vor dem Merge live testen.
 

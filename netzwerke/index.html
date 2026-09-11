@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Netzwerke - AP2 Winterprüfung 2026/27</title>
 <script src="/assets/ap2-theme.js?v=3.9.3"></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="/assets/ap2-learning-catalog.js?v=3.10.0"></script>
 <script src="/assets/ap2-navigation.js?v=3.9.3" defer></script>
 <link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
@@ -877,7 +879,7 @@
   .search-hit-sub{ font-size: 11.5px; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .search-results mark{ background: var(--highlight, var(--brand-tint)); color: inherit; border-radius: 2px; padding: 0 1px; }
 </style>
-<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.9.3">
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.0">
 </head>
 <body class="area-page area-ga2">
 
@@ -1245,6 +1247,9 @@ const DATA = [
 ]}
 ];
 const PAGE_CAT = 'ga2';
+const LEARNING_LINKS = Object.fromEntries(
+  (window.AP2_LEARNING_TOPICS || []).map(topic => [topic.itemId, '/lernen/' + topic.slug + '/'])
+);
 
 // ---------------------------------------------------------------
 // Empfohlener Wochentag je Bereich (siehe Wochenrhythmus-Karte oben)
@@ -1298,6 +1303,7 @@ function isMarked(itemId){ return !!state['mark__' + itemId]; }
 function toggleMark(itemId){
   const key = 'mark__' + itemId;
   state[key] = !state[key];
+  state['ts__' + itemId] = Date.now();
   saveState();
   updateAll();
 }
@@ -1423,7 +1429,7 @@ function applySearch(raw){
   document.querySelectorAll('.card-title[data-title]').forEach(el => {
     el.innerHTML = highlightHtml(el.dataset.title, searchQuery);
   });
-  document.querySelectorAll('.items li label[data-text]').forEach(label => {
+  document.querySelectorAll('.items li [data-text]').forEach(label => {
     label.innerHTML = highlightHtml(label.dataset.text, searchQuery);
   });
   const clearBtn = document.getElementById('clearSearch');
@@ -1693,6 +1699,7 @@ function render(){
         const cb = document.createElement('input');
         cb.type = 'checkbox';
         cb.id = id;
+        cb.setAttribute('aria-label', 'Fortschritt für „' + it + '“ ändern');
         if (state[id]) { cb.checked = true; li.classList.add('checked'); }
         cb.addEventListener('change', () => {
           const wasChecked = !!state[id];
@@ -1707,8 +1714,15 @@ function render(){
           saveState();
           updateAll();
         });
-        const label = document.createElement('label');
-        label.setAttribute('for', id);
+        const learningHref = LEARNING_LINKS[id];
+        const label = document.createElement(learningHref ? 'a' : 'label');
+        if (learningHref) {
+          label.href = learningHref;
+          label.className = 'learning-link';
+          label.setAttribute('aria-label', 'Lerninhalt öffnen: ' + it);
+        } else {
+          label.setAttribute('for', id);
+        }
         label.textContent = it;
         label.dataset.text = it;
         const markBtn = document.createElement('button');
@@ -2642,8 +2656,14 @@ async function pullStateFromCloud(){
       'OK = Cloud-Stand übernimmt (aktueller lokaler Stand auf diesem Gerät wird ersetzt)\n' +
       'Abbrechen = lokaler und Cloud-Stand werden zusammengeführt'
     );
-    if (replace) Object.keys(state).forEach(k => delete state[k]);
-    Object.assign(state, cloudState);
+    if (replace) {
+      Object.keys(state).forEach(k => delete state[k]);
+      Object.assign(state, cloudState);
+    } else {
+      const merged = window.AP2_mergeProgress ? window.AP2_mergeProgress(state, cloudState) : { ...state, ...cloudState };
+      Object.keys(state).forEach(k => delete state[k]);
+      Object.assign(state, merged);
+    }
   } else if (cloudKeys > 0) {
     Object.assign(state, cloudState);
   }
