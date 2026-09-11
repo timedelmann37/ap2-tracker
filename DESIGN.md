@@ -106,7 +106,8 @@ Seite. Native Controls erhalten dasselbe `color-scheme`.
   Statuschips dürfen kleiner sein. Keine übergroßen CTA-Pillen.
 - Outline-Symbole nutzen `currentColor`, 16 px Grundgröße, 1.75 px Strich.
   Kleine neutrale Symbolflächen zeigen Kontext, nicht Dekoration.
-- Unter 820 px bleiben die fünf mobilen Ziele in der Bottom-Navigation.
+- Bis 940 px bleiben die fünf kompakten Ziele in der Bottom-Navigation, damit
+  die Hauptnavigation niemals gequetscht oder zweizeilig dargestellt wird.
   Konto und Theme bleiben mit mindestens 44 px hohen Zielen im Kopf.
 
 ## Einfache Interaktion

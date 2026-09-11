@@ -63,7 +63,7 @@ try {
   for (const colorScheme of ['light', 'dark']) {
     const context = await browser.newContext({ colorScheme, reducedMotion: 'reduce' });
     const page = await context.newPage();
-    for (const width of [360, 768, 1024, 1440]) {
+    for (const width of [360, 768, 940, 941, 1024, 1440]) {
       await page.setViewportSize({ width, height: 1000 });
       for (const route of routes) {
         await page.goto(base + route);
@@ -72,16 +72,37 @@ try {
           overflow: document.documentElement.scrollWidth > innerWidth,
           title: getComputedStyle(document.querySelector('h1')).fontFamily,
           fontReady: document.fonts.check('600 32px "Inter Display"') && document.fonts.check('400 14px Inter'),
+          nav: (() => {
+            const topnav = document.querySelector('.topnav');
+            const links = document.querySelector('.topnav-links');
+            const search = document.querySelector('.topnav-search');
+            const controls = document.querySelector('.topnav-right');
+            const visibleItems = [...links.children].filter(item => getComputedStyle(item).display !== 'none');
+            return {
+              height: topnav.getBoundingClientRect().height,
+              linksDisplay: getComputedStyle(links).display,
+              itemRows: new Set(visibleItems.map(item => Math.round(item.getBoundingClientRect().top))).size,
+              controlGap: controls.getBoundingClientRect().left - search.getBoundingClientRect().right,
+              bottomDisplay: getComputedStyle(document.querySelector('.bottomnav')).display
+            };
+          })(),
           status: [...document.querySelectorAll('.overview-line')].map(el => ({
             size: parseFloat(getComputedStyle(el).fontSize), family: getComputedStyle(el).fontFamily
           }))
         }));
         assert(!state.overflow, `${route} ${width} ${colorScheme}: horizontal overflow`);
+        if (width > 940) {
+          assert(state.nav.linksDisplay === 'flex' && state.nav.itemRows === 1 && state.nav.height <= 72 && state.nav.controlGap >= 8,
+            `${route} ${width} ${colorScheme}: desktop navigation must stay on one 72px row`);
+        } else {
+          assert(state.nav.linksDisplay === 'none' && state.nav.bottomDisplay !== 'none',
+            `${route} ${width} ${colorScheme}: compact navigation must replace crowded desktop links`);
+        }
         assert(state.title.includes('Inter Display') && state.fontReady, `${route}: heading fonts not ready`);
         assert(state.status.every(s => s.size >= 14 && !s.family.includes('Mono')), `${route}: status readability`);
       }
     }
     await context.close();
-    console.log(`PASS: ${colorScheme} — five pages at 360/768/1024/1440px, font loading and status sizing`);
+    console.log(`PASS: ${colorScheme} — five pages at 360/768/940/941/1024/1440px, navigation, fonts and status sizing`);
   }
 } finally { await browser.close(); }
