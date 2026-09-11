@@ -19,6 +19,8 @@ def read_json(path: Path) -> dict:
 
 
 def read_jsonl(path: Path) -> list[dict]:
+    if not path.exists():
+        return []
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
@@ -42,12 +44,25 @@ def verify_source(source_id: str, require_figure_ocr: bool) -> dict:
     if not manifest_path.is_file():
         fail(f"Manifest fehlt: {manifest_path}")
     manifest = read_json(manifest_path)
+    raw_root = source_root / "raw"
+    for item in manifest.get("files", []):
+        relative_path = item.get("path")
+        if not relative_path or not item.get("sha256"):
+            fail(f"{source_id}: unvollständiger Rohdatei-Nachweis")
+        raw_path = (raw_root / relative_path).resolve()
+        if raw_root.resolve() not in raw_path.parents:
+            fail(f"{source_id}: Rohdateipfad verlässt die private Quelle")
+        if not raw_path.is_file() or sha256_file(raw_path) != item["sha256"]:
+            fail(f"{source_id}: Rohdatei fehlt oder Hash stimmt nicht ({relative_path})")
     pdfs = [item for item in manifest.get("representations", []) if item.get("kind", "").startswith("pdf")]
     if not pdfs:
         fail(f"{source_id}: keine PDF-Repräsentation angehängt")
     for pdf in pdfs:
         pdf_path = source_root / pdf["localPath"]
-        pages_path = source_root / pdf["pagesIndex"]
+        pages_index = pdf.get("pagesIndex")
+        if not pages_index:
+            fail(f"{source_id}: Seitenindex ist in {pdf.get('id')} nicht deklariert")
+        pages_path = source_root / pages_index
         if not pdf_path.is_file() or not pages_path.is_file():
             fail(f"{source_id}: PDF oder Seitenindex fehlt ({pdf.get('id')})")
         if sha256_file(pdf_path) != pdf.get("sha256"):
@@ -87,11 +102,71 @@ def verify_source(source_id: str, require_figure_ocr: bool) -> dict:
         page_number = figure.get("pageNumber")
         if page_number is not None and not 1 <= int(page_number) <= pdf_page_count:
             fail(f"{source_id}: ungültiger Seitenbezug bei {figure.get('figureId')}")
+        if page_number is not None and figure.get("pageReferenceStatus") != "matched":
+            fail(f"{source_id}: Grafik ist trotz Seitenzahl nicht als zugeordnet markiert")
         image_path = source_root / figure["assetPath"]
         if not image_path.is_file():
             fail(f"{source_id}: Grafikdatei fehlt bei {figure.get('figureId')}")
+        if sha256_file(image_path) != figure.get("sha256"):
+            fail(f"{source_id}: Grafik-Hash stimmt nicht bei {figure.get('figureId')}")
         if require_figure_ocr and figure.get("ocrStatus") not in {"completed", "empty"}:
             fail(f"{source_id}: Grafik-OCR fehlt bei {figure.get('figureId')}")
+
+    if manifest.get("primaryPdf"):
+        pages = read_jsonl(source_root / "pages.jsonl")
+        completed_ocr = [page for page in pages if page.get("ocrStatus") in {"completed", "empty"}]
+        if len(completed_ocr) != pdf_page_count:
+            fail(f"{source_id}: Vollseiten-OCR ist unvollständig ({len(completed_ocr)}/{pdf_page_count})")
+        layout = next(
+            (item for item in manifest.get("representations", []) if item.get("kind") == "visual-candidates"),
+            None,
+        )
+        if not layout or int(layout.get("pages", 0)) != pdf_page_count:
+            fail(f"{source_id}: Layoutanalyse ist unvollständig")
+        if layout.get("extractionStatus") != "machine-cataloged-needs-review":
+            fail(f"{source_id}: Layoutanalyse hat keinen kuratierbaren Status")
+    else:
+        markdown_path = raw_root / manifest.get("primaryMarkdown", "")
+        if not markdown_path.is_file():
+            fail(f"{source_id}: maßgeblicher Markdown-Export fehlt")
+        markdown = next(
+            (item for item in manifest.get("representations", []) if item.get("id") == "markdown-export"),
+            None,
+        )
+        if not markdown or markdown.get("extractionStatus") != "ocr-ready":
+            fail(f"{source_id}: Markdown-/Surya-Repräsentation ist nicht OCR-bereit")
+
+    chunks = read_jsonl(source_root / "chunks.jsonl")
+    if not chunks or any(item.get("sourceId") != source_id for item in chunks):
+        fail(f"{source_id}: Volltextindex fehlt oder enthält fremde Quellen")
+    tables_path = source_root / "tables.jsonl"
+    if not tables_path.is_file():
+        fail(f"{source_id}: Tabellenindex fehlt")
+    tables = read_jsonl(tables_path)
+    stats = manifest.get("stats", {})
+    if int(stats.get("chunks", -1)) != len(chunks):
+        fail(f"{source_id}: Chunk-Zahl widerspricht dem Manifest")
+    if int(stats.get("tables", -1)) != len(tables):
+        fail(f"{source_id}: Tabellenzahl widerspricht dem Manifest")
+
+    readiness_path = source_root / "readiness.json"
+    if not readiness_path.is_file():
+        fail(f"{source_id}: Readiness-Report fehlt")
+    readiness = read_json(readiness_path)
+    if readiness.get("technicalStatus") != "READY_FOR_CURATION":
+        fail(f"{source_id}: Quelle ist nicht bereit für Kuratierung")
+    if readiness.get("publicationStatus") != "NOT_READY":
+        fail(f"{source_id}: private Quellen dürfen nicht als veröffentlichungsbereit markiert sein")
+    indexes = readiness.get("capabilities", {}).get("indexes", {})
+    expected_indexes = {
+        "chunks": (source_root / "chunks.jsonl", len(chunks)),
+        "tables": (tables_path, len(tables)),
+        "figures": (figures_path, len(figures)),
+    }
+    for name, (path, count) in expected_indexes.items():
+        declared = indexes.get(name, {})
+        if int(declared.get("count", -1)) != count or declared.get("sha256") != sha256_file(path):
+            fail(f"{source_id}: {name}-Index stimmt nicht mit dem Readiness-Report überein")
     return {
         "sourceId": source_id,
         "pdfPages": sum(int(pdf.get("pages", 0)) for pdf in pdfs),
@@ -104,7 +179,7 @@ def verify_source(source_id: str, require_figure_ocr: bool) -> dict:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Prüft PDF- und Grafikkataloge der privaten Wissensbasis.")
     parser.add_argument("--source-id", action="append", dest="source_ids", help="Quellen-ID; mehrfach möglich")
-    parser.add_argument("--all", action="store_true", help="Alle Quellen mit Markdown- und PDF-Repräsentation prüfen")
+    parser.add_argument("--all", action="store_true", help="Alle Quellen mit PDF-Repräsentation prüfen")
     parser.add_argument("--require-figure-ocr", action="store_true", help="Lokale OCR für jedes Bild verlangen")
     return parser.parse_args()
 
@@ -118,12 +193,11 @@ def main() -> None:
         for source_id in known:
             manifest_path = LOCAL_ROOT / source_id / "manifest.json"
             if not manifest_path.is_file():
-                continue
+                fail(f"Registrierte Quelle fehlt in der privaten Wissensbasis: {source_id}")
             manifest = read_json(manifest_path)
-            if manifest.get("primaryMarkdown") and any(
-                item.get("kind", "").startswith("pdf") for item in manifest.get("representations", [])
-            ):
-                source_ids.append(source_id)
+            if not any(item.get("kind", "").startswith("pdf") for item in manifest.get("representations", [])):
+                fail(f"Registrierte Quelle besitzt keine PDF-Repräsentation: {source_id}")
+            source_ids.append(source_id)
     if not source_ids:
         fail("Mindestens --source-id ID oder --all angeben.")
     for source_id in source_ids:
@@ -137,7 +211,17 @@ def main() -> None:
     global_catalog = LOCAL_ROOT / "figures-catalog.json"
     if not global_catalog.is_file():
         fail("Globaler Grafikkatalog fehlt.")
-    print(f"Kompendium gültig: {len(source_ids)} Quelle(n)")
+    global_source_ids = {item.get("sourceId") for item in read_json(global_catalog).get("sources", [])}
+    if args.all and global_source_ids != set(known):
+        fail("Globaler Grafikkatalog enthält nicht exakt alle registrierten Quellen.")
+    readiness = LOCAL_ROOT / "readiness.json"
+    readiness_report = read_json(readiness) if readiness.is_file() else {}
+    readiness_source_ids = {item.get("sourceId") for item in readiness_report.get("sources", [])}
+    if readiness_report.get("technicalStatus") != "READY_FOR_CURATION":
+        fail("Globaler Readiness-Report fehlt oder ist nicht bereit für Kuratierung.")
+    if args.all and readiness_source_ids != set(known):
+        fail("Globaler Readiness-Report enthält nicht exakt alle registrierten Quellen.")
+    print(f"Kompendium gültig und bereit für Kuratierung: {len(source_ids)} Quelle(n)")
 
 
 if __name__ == "__main__":

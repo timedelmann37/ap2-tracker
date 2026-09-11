@@ -15,6 +15,29 @@ liefert Material für ein Kernthema, und die Lernseite vermittelt und prüft es.
 
 ## Import
 
+Sind die fünf Quellen bereits importiert, bringt ein einzelner, fortsetzbarer
+Befehl alle privaten Repräsentationen auf den Kuratierungsstand und schreibt
+pro Quelle sowie global einen `readiness.json`-Report:
+
+```powershell
+npm run knowledge:prepare
+npm run knowledge:verify-compendium -- --all --require-figure-ocr
+```
+
+`READY_FOR_CURATION` bedeutet: Original-PDF, lückenloser Seitenbezug,
+durchsuchbarer OCR-/Exporttext, Tabellen beziehungsweise Tabellenkandidaten,
+Grafikkandidaten und Herkunftsdaten liegen vor. Es bedeutet ausdrücklich
+nicht, dass Originalgrafiken veröffentlicht werden dürfen oder bereits
+didaktisch geprüfte Lerneinheiten existieren. Der Veröffentlichungsstatus
+bleibt deshalb `NOT_READY`.
+
+Bei den vier Surya-/Markdown-Exporten ist der physische PDF-Seitenindex
+lückenlos, einzelne Text-Chunks besitzen jedoch keine durchgängige direkte
+Seitennummer. Ihr Report kennzeichnet `textToPdfPage` deshalb ehrlich als
+`partial`; Überschrift, Markdown-Zeilen und seitenbezogene Grafiken dienen bei
+der Kuratierung zur manuellen Auflösung. Die PDF-only-Quelle besitzt dagegen
+eine direkte Seitenzuordnung für jeden OCR-Chunk.
+
 ```powershell
 npm run knowledge:import -- `
   --source 'europa-integratoren-2026=C:\Pfad\zum\EUROPA-Ordner' `
@@ -76,8 +99,10 @@ Der Lauf schreibt jede fertige Seite atomar nach `ocr/text/`, aktualisiert
 `pages.jsonl` und `chunks.jsonl` und kann nach einem Abbruch mit demselben
 Befehl fortgesetzt werden. `tables.jsonl` enthält die strukturiert erkannten
 Markdown-Tabellen der vier Textexporte. Tabellen in reinen PDF-Scans werden
-nicht automatisch als verlässliche Zellstruktur behauptet; ihr OCR-Seitentext
-ist durchsuchbar und muss vor einer Übernahme kuratiert werden.
+nicht automatisch als verlässliche Zellstruktur behauptet. Die Layoutanalyse
+schneidet solche Bereiche als private `table-candidate`-Objekte mit Seite und
+Bounding-Box aus; ihr OCR-Text ist durchsuchbar, die Zellstruktur muss vor
+einer Übernahme fachlich geprüft werden.
 
 ## Grafikkatalog
 
@@ -89,6 +114,7 @@ Prüfsumme, Dublettenstatus und einer Prüfentscheidung:
 ```powershell
 npm run knowledge:catalog-figures -- --all
 npm run knowledge:catalog-figures -- --all --ocr
+npm run knowledge:extract-layout -- --source-id itlf10-12-2023 --pages all
 npm run knowledge:verify-compendium -- --all
 ```
 
@@ -120,3 +146,7 @@ npm run build:learning
 Grafiken aus den Büchern werden nicht automatisch veröffentlicht. Für jede
 Abbildung muss separat entschieden werden, ob sie zitiert, neu gezeichnet oder
 mit geklärten Nutzungsrechten übernommen wird.
+
+Der verbindliche Übergang von der privaten Quellenbasis zur Lernseite ist in
+[`docs/KNOWLEDGE_TO_LEARNING_CONTRACT.md`](../docs/KNOWLEDGE_TO_LEARNING_CONTRACT.md)
+beschrieben.
