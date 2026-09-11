@@ -14,9 +14,9 @@
   function readTheme() {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      return STATES.includes(saved) ? saved : 'system';
+      return STATES.includes(saved) ? saved : 'dark';
     } catch {
-      return 'system';
+      return 'dark';
     }
   }
 

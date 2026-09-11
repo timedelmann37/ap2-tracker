@@ -7,16 +7,16 @@ Merge-Konflikte zu bescheren.
 
 ## Kurzfassung
 
-- Du arbeitest ausschließlich in `/simulation/`. Alles darin gehört dir —
-  Struktur, Styling, Technik, alles frei.
+- Du arbeitest ausschließlich in `/simulation/`. Die Bedienstruktur richtet
+  sich nach der Prüfungssimulation; die Gestaltung folgt `DESIGN.md`.
 - Die anderen Ordner (`/uebersicht/`, `/konzeption-administration/`,
   `/netzwerke/`, `/sowi/`), die root `index.html`, `netlify.toml`,
   `README.md` und dieses Dokument fasst du nicht an, außer wir sprechen es
   ab.
 - Einstiegspunkt ist `/simulation/index.html` — dort landet, wer auf der
   Startseite auf "Prüfungssimulation" klickt.
-- Reiner statischer Code, kein Build-Step. Was du in `/simulation/`
-  eincheckst, ist exakt das, was live auf Netlify liegt.
+- Die statische Ausgabe wird über den gemeinsamen Build veröffentlicht.
+  Befehle und Deployment-Konfiguration stehen in `package.json` und `netlify.toml`.
 
 ## Warum diese Struktur
 
@@ -44,13 +44,10 @@ an.
 
 ## Technische Leitplanken
 
-**Rein statisch, kein Build-Schritt.** Netlify deployed die Dateien 1:1 so,
-wie sie im Repo liegen — kein `npm run build`, kein Bundler, der vorher noch
-etwas erzeugen müsste. Wenn du mit einem Framework arbeiten willst, das
-selbst einen Build braucht (Vite, Webpack, …), checke bitte nur das fertig
-gebaute Ergebnis ein, nicht den Build-Prozess selbst — sonst müssten wir die
-Netlify-Konfiguration gemeinsam anfassen, und genau das wollen wir vermeiden.
-Am einfachsten bleibt reines HTML/CSS/JS, so wie der Tracker es macht.
+**Gemeinsamer Build.** Netlify veröffentlicht die statische Build-Ausgabe.
+Frameworks und eigene Build-Schritte sind erlaubt, wenn sie in den gemeinsamen
+Build integriert werden und die bestehenden Seiten lauffähig bleiben.
+Änderungen an gemeinsam genutzter Konfiguration mit der anderen Arbeit abstimmen.
 
 **Pfade root-relativ, nicht mit `../` verkettet.** Die Seite läuft direkt auf
 der Domain-Wurzel (kein GitHub-Pages-Unterordner), deshalb sind Pfade wie
@@ -73,15 +70,13 @@ damit sich nichts überschreibt.
 überlassen — im Platzhalter (`/simulation/index.html`, den du komplett
 ersetzt) siehst du ein Minimalbeispiel.
 
-**Design ist frei.** Es gibt keine Pflicht, den Look der anderen Bereiche zu
-übernehmen. Falls dir am visuellen Zusammenhang zum Hub liegt: Die anderen
-Bereiche nutzen ein dunkles Farbschema (echtes Schwarz `#000` als Grund,
-Blau/Orange/Grün als Akzentfarben aus der JetBrains-Rider-Palette, IBM Plex
-Sans/Mono als Schrift) — du findest die kompletten Farb- und
-Typografie-Tokens als CSS-Variablen ganz oben im `<style>`-Block von
-`/index.html` oder z. B. `/netzwerke/index.html`, falls du sie als
-Ausgangspunkt kopieren willst. Eine völlig eigene Optik ist genauso in
-Ordnung.
+**Gemeinsame Gestaltung.** Vor UI-Arbeit [DESIGN.md](./DESIGN.md) lesen und die
+dortige Erweiterungs- und Prüfroutine anwenden. Auch neue Simulationsinhalte
+übernehmen die gemeinsamen Farben, Schriften, Glasflächen und Laser-Akzente.
+Die Simulation behält ihre eigene Bedienstruktur. Gemeinsame Tokens und
+Theme-Steuerung einbinden; komponentenspezifische Ergänzungen dürfen im
+Simulationsordner bleiben. Die bisherigen Regeln zu frei wählbarer Optik sind
+durch die gemeinsame Designvorgabe abgelöst.
 
 **Versionsnummer/Changelog sind nicht dein Bereich.** Nur der Hub (`/`)
 zeigt in der Fußzeile eine anklickbare Versionsnummer mit

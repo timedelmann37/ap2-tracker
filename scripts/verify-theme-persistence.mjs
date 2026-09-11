@@ -60,7 +60,7 @@ try {
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(baseUrl);
-    assert((await colors(page)).theme === os, 'Initial theme must follow the OS');
+    assert((await colors(page)).theme === 'dark', 'Initial theme must use Deep Space');
 
     // The previously broken path: dark OS, no saved choice, one real click.
     for (let n = 0; n < 4; n++) await assertToggle(page, n === 3);
@@ -80,8 +80,8 @@ try {
     const expected = await assertToggle(other);
     await page.waitForFunction(theme => document.documentElement.dataset.theme === theme, expected);
 
-    // Automatic mode still follows the system until the first explicit choice.
-    await page.evaluate(key => localStorage.removeItem(key), storageKey);
+    // A stored legacy system preference still follows the OS.
+    await page.evaluate(key => localStorage.setItem(key, 'system'), storageKey);
     await page.reload();
     const changedOs = os === 'light' ? 'dark' : 'light';
     await page.emulateMedia({ colorScheme: changedOs });

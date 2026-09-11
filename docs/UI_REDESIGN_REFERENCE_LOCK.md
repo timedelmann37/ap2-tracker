@@ -1,5 +1,10 @@
 # UI Reference Lock — Programa surfaces, current Attio typography and navigation
 
+> Historisch, seit 2026-09-11 abgelöst. Für neue Arbeit gelten
+> [DESIGN.md](../DESIGN.md) und der
+> [Deep-Space-Referenz-Lock](DEEP_SPACE_REFERENCE_LOCK.md).
+> Die folgenden Vorgaben dokumentieren die frühere Gestaltung.
+
 Stand: 2026-09-10. The user explicitly chose the current Attio fonts (not Gilroy
 from the older screenshot), navigation motion, readable status text and plain German.
 Programa's existing colors and surfaces remain; this is not another layout redesign.

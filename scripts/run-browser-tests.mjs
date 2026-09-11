@@ -39,6 +39,7 @@ try {
   await import('./verify-navigation.mjs');
   await import('./verify-theme-persistence.mjs');
   await import('./verify-learning-browser.mjs');
+  await import('./verify-space-browser.mjs');
 } finally {
   await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
 }

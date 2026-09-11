@@ -51,11 +51,10 @@ Supabase, abgesichert allein über Row Level Security. Anmeldung ist optional
 und passwortlos. Das ist eine Haltung (minimale Infrastruktur, sofort lokal
 lauffähig) und bleibt sie.
 
-Der aktuelle Bestand ist zusätzlich buildlos — jede Seite ein in sich
-geschlossenes HTML/CSS/JS. Das ist der Ist-Zustand, **keine dauerhafte
-Vorgabe**: ein Build-Schritt, ein Framework (React o. Ä.), TypeScript,
-Tailwind oder eine Komponentenbibliothek dürfen eingeführt werden, wo sie
-sich lohnen; der Netlify-Build wird dann entsprechend eingerichtet.
+Der Bestand nutzt statisches HTML/CSS/JS mit gemeinsamen Assets und einem Build
+für die Markdown-Lernseiten sowie das Publish-Verzeichnis. Framework, TypeScript,
+Tailwind oder eine Komponentenbibliothek dürfen eingesetzt werden, wo sie sich
+lohnen; Build und Netlify-Konfiguration werden entsprechend gepflegt.
 
 ## Operating Context
 
@@ -81,23 +80,21 @@ sich lohnen; der Netlify-Build wird dann entsprechend eingerichtet.
 - **Nebenbei**: vier kleine Lern-Minispiele hinter dem 🕹️-Button
   (Paket-Fang, Port-Sprint, Subnetting-Blitz, Fachbegriff-Rush).
 - **Mitarbeit** am Repo läuft zu zweit über Feature-Branches und Pull Requests
-  (`CONTRIBUTING.md`); Deploy-Previews auf Netlify ersetzen automatisierte
-  Tests.
+  (`CONTRIBUTING.md`); Deploy-Previews auf Netlify ergänzen die lokalen
+  Build- und Browserprüfungen.
 
 ## Capabilities and Constraints
 
-- Ist-Zustand: buildlos, jede Seite ein in sich geschlossenes HTML/CSS/JS, im
-  Browser direkt öffenbar. Deployment über Netlify (`publish = "."`, aktuell
-  kein Build-Command), jeder Push auf `main` ergibt eine erreichbare Seite.
-  Ein Build-Schritt / Framework / TypeScript / Tailwind ist für neue Arbeit
-  erlaubt (siehe `CLAUDE.md`); dann Netlify-Build entsprechend konfigurieren
-  und bestehende statische Seiten lauffähig halten, bis migriert.
+- Deployment: statische Ausgabe über Netlify. Die aktuellen Build-Befehle und
+  das Publish-Verzeichnis stehen in `package.json` und `netlify.toml`.
+  Bestehende Seiten bleiben bei technischen Umstellungen lauffähig, bis sie
+  migriert sind.
 - Stoffdaten stecken in der `DATA`-Konstante am Anfang des jeweiligen
   `<script>`-Blocks der Themenseite.
 - Fortschritt: `localStorage`, Schlüssel `ap2-tracker-state-v1` — **derselbe
   Schlüssel** auf allen drei Themenbereichs-Seiten und im Hub-Dashboard, damit
-  Haken überall konsistent zusammenzählen. Kein Server, kein Sync zwischen
-  Geräten/Browsern; Export/Import-JSON umfasst alle drei Bereiche.
+  Haken überall konsistent zusammenzählen. Ohne optionalen Cloud-Sync bleibt der
+  Stand im jeweiligen Browser; Export/Import-JSON umfasst alle drei Bereiche.
 - Optionaler Cloud-Sync (`CLOUD_SYNC.md`): Supabase-Projekt, Tabelle
   `public.progress` (eine Zeile pro Nutzer, kompletter Zustand als `jsonb`),
   RLS als einzige Sicherheitsschranke, passwortloser Magic-Link-Login. Client
@@ -112,9 +109,8 @@ sich lohnen; der Netlify-Build wird dann entsprechend eingerichtet.
 - Deep-Link-Schema `/<bereich>/#<id>&first` öffnet Block und scrollt zum ersten
   offenen Kernthema.
 - HTML und Verhalten der gemeinsamen Shell bleiben derzeit zwischen den Seiten
-  kopiert. Die aktuelle Gestaltung wird jedoch bewusst über
-  `assets/ap2-reference-ui.css` geteilt, damit die fünf Hauptseiten visuell
-  konsistent bleiben, ohne die bestehende statische Architektur zu brechen.
+  kopiert. Die Gestaltung wird über gemeinsame Assets geteilt. Zuständigkeiten
+  und Einbindung für neue Seiten stehen in `DESIGN.md`.
 - Changelog wird ausschließlich im Hub gepflegt (`APP_VERSION` + `CHANGELOG`
   in `index.html`, plus `CHANGELOG.md`); die anderen Seiten haben keinen
   Versions-Button.
@@ -123,7 +119,9 @@ sich lohnen; der Netlify-Build wird dann entsprechend eingerichtet.
 - Light- und Dark-Theme werden unterstützt (`prefers-color-scheme` +
   expliziter `data-theme`-Toggle). Eine explizite Wahl wird unter
   `ap2-theme-v1` gespeichert und gilt auf allen fünf Hauptseiten. Jeder Klick
-  invertiert direkt den sichtbaren Modus; ohne Wahl gilt die Systemeinstellung.
+  invertiert direkt den sichtbaren Modus; ohne Wahl gilt jetzt Dark. Ein alter
+  expliziter Systemwert folgt weiterhin dem Betriebssystem. Lernseiten und
+  Einzeltools nutzen dieselbe Theme-Steuerung.
 - Die Hauptseiten laden Inter Display und Inter lokal, einschließlich aller
   Status- und Planangaben. Herkunft und OFL-Lizenz stehen in
   `assets/fonts/SOURCES.md`. Externe Laufzeit-Abhängigkeit bleibt — nur wenn
@@ -136,11 +134,9 @@ sich lohnen; der Netlify-Build wird dann entsprechend eingerichtet.
   _Avoid_-Listen: „Bereich", „Themengruppe", „Kernthema", „der Plan",
   „aktuell geplant", „Rückstand", „Wiederholungsmarkierung". Nicht: Kategorie,
   Block, Item, überfällig, Flag usw.
-- Aktuelle Bildsprache (2026-09-10): weiße und warme neutrale Flächen nach
-  Programa, Inter/Inter Display und kurze Menübewegungen nach der heutigen
-  Attio-Website. Dunkle Primäraktionen, feine Rahmen und flache Schatten;
-  blasses Gelb für die nächste Aktion, Grün für Fortschritt/Erfolg. Details stehen in
-  `DESIGN.md` und `docs/UI_REDESIGN_REFERENCE_LOCK.md`.
+- Verbindliche Gestaltung: Deep Space nach Doppler, Astro und n8n. Neue Inhalte
+  und Oberflächen führen diese Gestaltung fort. Farben, Glas, Laser-Akzente,
+  Bewegung, Komponenten und die Prüfroutine stehen zentral in `DESIGN.md`.
 - Ton: sachlich, knapp, deutschsprachig; kein Gamification-Overkill, aber die
   Minispiele und eine 100-%-Feier sind erwünschte kleine Auflockerungen.
 

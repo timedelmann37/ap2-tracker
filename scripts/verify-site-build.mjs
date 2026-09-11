@@ -45,6 +45,9 @@ expected.add('assets/ap2-learning-catalog.js');
 expected.add('assets/ap2-learning.css');
 expected.add('assets/ap2-learning.js');
 expected.add('assets/ap2-progress-merge.js');
+expected.add('assets/ap2-space-tokens.css');
+expected.add('assets/ap2-space.css');
+expected.add('assets/ap2-space.js');
 const learningManifest = JSON.parse(await readFile(path.join(repoRoot, 'content', 'learning-manifest.json'), 'utf8'));
 for (const topic of learningManifest.topics) {
   const pagePath = `lernen/${topic.slug}/index.html`;

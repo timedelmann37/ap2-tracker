@@ -9,6 +9,10 @@ werden dagegen aus kuratierten Markdown-Dateien als statische Seiten gebaut.
 So bleibt der Bestand ohne Framework lauffähig, während neue Lerneinheiten
 nicht als kopierte HTML-Einzelseiten gepflegt werden müssen.
 
+Neue Seiten, Komponenten und UI-Texte führen die Gestaltung aus
+[`DESIGN.md`](./DESIGN.md) fort. Dort stehen die gemeinsamen Dateien,
+Gestaltungsregeln und die Prüfroutine für Erweiterungen.
+
 ## Struktur
 
 ```
@@ -21,6 +25,9 @@ nicht als kopierte HTML-Einzelseiten gepflegt werden müssen.
 /lernen/<slug>/                Generierte Lerneinheiten
 /simulation/                   Prüfungssimulation (im Aufbau)
 assets/ap2-reference-ui.css    Gemeinsame visuelle Ebene der fünf Hauptseiten
+assets/ap2-space-tokens.css    Gemeinsame Farben, Schriften und Grundtokens
+assets/ap2-space.css           Deep-Space-Layouts, Glas und Laser-Akzente
+assets/ap2-space.js            Atmosphäre, Bewegungspause und Fortschrittsfeedback
 assets/ap2-learning.css        Gemeinsame Darstellung aller Lerneinheiten
 assets/ap2-learning.js         Karteikarten, Quiz und synchroner Fortschritt
 assets/ap2-theme.js            Gemeinsame persistente Hell-/Dunkel-Steuerung
@@ -31,7 +38,9 @@ content/sources.json           Quellenkatalog mit Rolle und Aktualität
 knowledge-base/                Dokumentation der lokalen, privaten Buchdatenbank
 scripts/build-learning.mjs     Markdown-zu-HTML-Build
 scripts/knowledge/             Import und Volltextsuche der privaten Buchdaten
-docs/UI_REDESIGN_REFERENCE_LOCK.md  Referenzen, Quellenrollen und Designgrenzen
+DESIGN.md                     Verbindliche Gestaltung und Regeln für Erweiterungen
+docs/DEEP_SPACE_REFERENCE_LOCK.md   Aktuelle Referenzen und Quellenrollen
+docs/REFERO_COMPONENT_NOTES.md     Übernommene Refero-Komponenten und Anpassungen
 netlify.toml                   Deployment-Konfiguration
 CONTRIBUTING.md                Anforderungen für alle, die an /simulation/ arbeiten
 scripts/verify-theme-persistence.mjs  Browser-Test für sofortigen Theme-Wechsel und Persistenz

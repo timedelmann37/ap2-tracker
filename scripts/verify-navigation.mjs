@@ -71,7 +71,7 @@ try {
         const state = await page.evaluate(() => ({
           overflow: document.documentElement.scrollWidth > innerWidth,
           title: getComputedStyle(document.querySelector('h1')).fontFamily,
-          fontReady: document.fonts.check('600 32px "Inter Display"') && document.fonts.check('400 14px Inter'),
+          fontReady: document.fonts.check(`${getComputedStyle(document.querySelector('h1')).fontWeight} 32px "Inter Display"`) && document.fonts.check('400 14px Inter'),
           nav: (() => {
             const topnav = document.querySelector('.topnav');
             const links = document.querySelector('.topnav-links');

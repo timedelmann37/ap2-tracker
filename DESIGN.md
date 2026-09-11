@@ -1,141 +1,154 @@
----
-name: AP2-Tracker
-description: Ruhige Lernoberfläche mit klarer Typografie und gut lesbaren Arbeitsflächen.
-colors:
-  canvas: "#ffffff"
-  surface: "#ffffff"
-  surface-muted: "#f7f6f2"
-  border: "#e8e6e0"
-  ink: "#25241f"
-  text-secondary: "#67645d"
-  text-muted: "#757169"
-  next-action: "#fbffc2"
-  progress-green: "#16794c"
-typography:
-  display: "'Inter Display', 'Inter', system-ui, sans-serif"
-  ui: "'Inter', system-ui, sans-serif"
-  metadata: "'Inter', system-ui, sans-serif"
-rounded:
-  controls: "6px"
-  cards: "8px"
-  panels: "12px"
-implementation:
-  visual-layer: "assets/ap2-reference-ui.css"
-  theme: "assets/ap2-theme.js"
-  navigation: "assets/ap2-navigation.js"
-  reference-lock: "docs/UI_REDESIGN_REFERENCE_LOCK.md"
----
+# AP2-Tracker — Deep Space
 
-# Design System: AP2-Tracker
+Stand: 2026-09-11. Umsetzung auf `codex/deep-space-ui`.
 
-Stand: 2026-09-10.
+Dieses Dokument ist die verbindliche Designvorgabe für neue Inhalte, Seiten und
+Komponenten. Das bestehende Deep-Space-Design wird fortgeführt. Frühere Vorgaben
+zu Programa, dem flachen Kontrollpult oder frei wählbarer Optik sind historisch.
+Die folgenden Regeln beschreiben die Absicht; die verlinkten gemeinsamen Assets
+enthalten die jeweils gültigen Implementierungswerte. `.impeccable/design.json`
+ist eine abgeleitete Übersicht und keine zusätzliche Designautorität.
 
-## Richtung: Klarheit zum Lernen
+## Referenzen
 
-Die vom Nutzer ausgewählte Programa-Referenz ersetzt die frühere
-AssetWise-/Lovable-Gestaltung. Weißer Grund, warme neutrale Arbeitsflächen,
-feine Kanten und flache weiche Schatten bleiben bestehen. Auf ausdrücklichen
-Wunsch ergänzen die Schriften der heutigen Attio-Website diese Flächen:
-Inter Display für Titel und Inter für sämtliche Bedien- und Statustexte.
+Die vom Nutzer gelieferten Refero-Referenzen ersetzen die bisherige Gestaltung.
+Doppler bestimmt dunkle violette Flächen, Glasnavigation und präzise Kanten.
+Astro liefert das blau-violette Nebellicht und die zweigeteilte Wochenanzeige.
+n8n liefert die feinen elektrischen Verbindungsbahnen. Entscheidungen und
+Quellenrollen stehen im [Referenz-Lock](docs/DEEP_SPACE_REFERENCE_LOCK.md).
 
-Die Startseite beantwortet zuerst „Was ist jetzt dran?“ und führt zu
-„Diese Woche“. Übersicht und Bereiche folgen weiterhin der Hierarchie
-`Bereich > Themengruppe > Kernthema`. Inhalte, Datenmodell, Links und
-optionaler Cloud-Sync ändern sich durch die Gestaltung nicht.
-`/simulation/` bleibt außerhalb dieser Runde.
-
-Die verbindliche Referenz mit Quellenrollen steht in
-[UI_REDESIGN_REFERENCE_LOCK.md](docs/UI_REDESIGN_REFERENCE_LOCK.md).
-Die älteren Inline-Styles bleiben als Fallback erhalten; die gemeinsame
-Datei `assets/ap2-reference-ui.css` trägt die aktuelle Gestaltung.
+Die anschließend über Refero abgerufenen HTML/CSS-Komponenten ergänzen die
+Gestaltung: Dopplers Glas-Zweitbuttons, Astros zweigeteiltes Info-Badge und
+n8ns Statistikfelder mit inneren Lichtkanten. Herkunft, Codewerte und Anpassungen
+stehen in [REFERO_COMPONENT_NOTES.md](docs/REFERO_COMPONENT_NOTES.md).
 
 ## Farbe und Material
 
-- Canvas und Arbeitsflächen: Weiß `#ffffff`.
-- Abgesetzte Gruppen: warmes Off-White `#f7f6f2`; Tracks `#eeece6`.
-- Text: `#25241f`; Beschreibungen `#67645d`; Metadaten `#757169`.
-- Kanten: `#e8e6e0`, stärker `#d2cfc7`.
-- Hauptaktion: `#2b2a26` mit weißem Text.
-- Nächste Lernaktion/heute: blasses Gelb `#fbffc2` mit dunklem Text.
-- Grün `#16794c` bedeutet Fortschritt/Erfolg; Ocker und Rot bleiben
-  Warnung und Fehler. Bereichsfarben sind kleine Orientierungssignale.
-- Kleine Schatten besitzen 1–3 px Versatz. Arbeitsflächen erhalten
-  einen sehr schwachen, 10 px versetzten Schatten mit 30 px Unschärfe.
-- Kein vollflächiges Punktraster, keine äußere App-Umrahmung, keine
-  Browser-Fensterpunkte und keine dekorativen Produktbilder.
+| Rolle | Wert |
+|---|---|
+| Canvas | `#080b19` |
+| Arbeitsfläche | `#1c1624` |
+| Führende Karte | `#241e2e` |
+| Tracks | `#342c40` |
+| Text / Beschreibung / Metadaten | `#f1f0ec` / `#c8c1d2` / `#a69bb5` |
+| Orientierung | Lavendel `#b997ff` |
+| Führender Weiterlernen-Button | Signalgrün `#00f575`, fast schwarzer Text |
+| Erledigt / Rückstand / Fehler | `#65d9a0` / `#edbd72` / `#ff958f` |
+| Laser: Kern / Violett / Cyan | `#f7f0ff` / `#a447ff` / `#38dfff` |
 
-### Dunkelmodus
+Hairlines: helle Linien mit 12% Deckkraft, Glaskanten mit 23%. Große Verläufe
+bleiben hinter dem Inhalt; Glas lässt sie durchscheinen. Lesetext bleibt
+einfarbig, Karten erhalten nur die vorhandenen feinen Lichtreflexe. Nur die führende
+Lernaktion erhält Signalgrün, weitere Aktionen bleiben neutral. Zustand wird
+durch Text und Indikatoren ergänzt.
 
-Canvas `#191917`, Surface `#22221f`, Surface muted `#292925`,
-Ink `#f2f0e8`, Beschreibung `#c4c0b5`, Metadaten `#a39f94`.
-Gelb wird zu `#e5eaa1`, Grün zu `#52c98b`; Rahmen bleiben leise.
+## Typografie und Struktur
 
-Ohne gespeicherte Wahl gilt die Systemeinstellung. Jeder Klick invertiert
-den **tatsächlich sichtbaren** Modus und speichert die explizite Wahl unter
-`ap2-theme-v1`. Kein dritter „System“-Zwischenschritt.
-Das früh geladene Modul setzt den Modus vor dem Rendern. Tabs synchronisieren
-sich über das Storage-Ereignis; zurückgeholte Seiten lesen die Wahl erneut.
-Bei gesperrtem Speicher funktioniert der Wechsel zumindest auf der aktuellen
-Seite. Native Controls erhalten dasselbe `color-scheme`.
+Lokale Inter / Inter Display, Produkttexte 14–16px, Hub-Titel responsiv 54–94px,
+Überschriften 500/600. Zahlen nutzen dieselben Familien, bei wechselnden Werten
+tabellarische Ziffern. Seiteninhalte bis 1240px, Hub inklusive Außenabständen bis
+1440px. Bis 940px kompakte Navigation. Radien und Abstände aus der jeweils
+passenden bestehenden Komponente übernehmen; Grundtokens: 8/12/16/20px,
+Statistikfelder 24px, kompakte Statistikzeilen 18px. Pillen gehören zur
+Wochenanzeige und zu Badges, Kreise zum Countdown und zur Bewegungssteuerung.
 
-## Typografie
+Der Hub führt mit einer großen linken Textspalte und dem echten Countdown;
+rechts stehen ein führender Lernbereich und zwei verbundene Nebenflächen.
+Unter 760px stehen diese untereinander. Bereiche zeigen Titel und Fortschritt
+nebeneinander und Themengruppen in zwei Spalten; geöffnete Gruppen nutzen die
+volle Breite. Übersicht zeigt getrennte versetzte Glasflächen. Lernpfad und generierte Lernseiten
+nutzen die gemeinsame CSS-Schicht. Simulation und älterer Einzeltracker
+übernehmen die Tokens und Theme-Steuerung bei eigenen Bedienlayouts.
 
-- **Inter Display, 500/600:** Titel; Haupttitel 44–64 px, Bereichstitel
-  36–56 px am Desktop, mobil 34–46 px; Zeilenhöhe um 1.08.
-- **Inter, 400/500/600:** Navigation, Beschreibung, Buttons, Themengruppen,
-  Kernthemen und große Fortschrittswerte. 13–17 px für normalen Produkttext.
-- **Inter, 400/500:** Statusangaben 14 px mit 1.6-facher Zeilenhöhe,
-  Beschreibungen und Kernthemen 15 px; kompakte Planlabels mindestens 13 px.
-  Keine Monospace-Schrift. Statusangaben umbrechen einzeln auf kleinen Displays.
-- Beide Familien werden lokal geladen; `ss03` folgt der Attio-Referenz.
-  Herkunft und Nutzungshinweise
-  stehen in [assets/fonts/SOURCES.md](assets/fonts/SOURCES.md).
-- Lange Titel umbrechen; große Titel nutzen `text-wrap: balance`.
+## Bewegung und Theme
 
-## Layout und Komponenten
+Globaler Hintergrund ist der gewählte Hybrid aus Polarlicht und Sonnenfinsternis:
+türkise und violette Lichtbänder bewegen sich über 16 Sekunden hinter einem
+violetten Lichtring. Der Ring schwebt über 14 Sekunden um 34px nach oben, wächst
+um 8% und wird leicht dunkler. Beide Bewegungen laufen sanft hin und zurück.
+Der Hintergrund liegt viewport-fixiert hinter Glasflächen mit 30–48% Tönung
+und 24px Backdrop-Blur. Im Hellmodus sind Polarlicht und Ring deutlich schwächer;
+die Ringmitte bleibt hell. Die gleichen zwei Ebenen gelten auf allen Seiten,
+einschließlich Lernseiten, Simulation und Einzeltracker. Countdown-Kontur,
+Glasspiegelung und kurze Hover-Bewegungen ergänzen den Hintergrund. Inhalte bleiben
+sofort bedienbar. Kein Scroll-Lock. Der Pause-Knopf speichert die Wahl unter
+`ap2-motion-paused`; unsichtbare Tabs pausieren ebenfalls.
 
-- Durchgehender Seitengrund; Desktop-Navigation 72 px hoch, ohne Außenrahmen.
-- Inhaltskorridor maximal 1160 px, seitlicher Abstand mobil 20 px.
-- Einstieg mit klarem Seitentitel, Prüfungs-Countdown und einer Hauptaktion.
-- Der Wochenfokus ist eine echte Arbeitsfläche: kompakter Kalenderkopf,
-  heute relevante Themengruppe, zwei weitere Bereiche.
-- Übersicht: zusammenhängende Fortschritts-/Aktivitätsfläche und Zeitplan.
-- Bereich: Titel, Fortschritt, Wochenhinweis, Suche, Werkzeuge,
-  Themengruppen und abhakbare Kernthemen.
-- Controls haben 6 px Radius, Karten 8 px, große Flächen 12 px.
-  Statuschips dürfen kleiner sein. Keine übergroßen CTA-Pillen.
-- Outline-Symbole nutzen `currentColor`, 16 px Grundgröße, 1.75 px Strich.
-  Kleine neutrale Symbolflächen zeigen Kontext, nicht Dekoration.
-- Bis 940 px bleiben die fünf kompakten Ziele in der Bottom-Navigation, damit
-  die Hauptnavigation niemals gequetscht oder zweizeilig dargestellt wird.
-  Konto und Theme bleiben mit mindestens 44 px hohen Zielen im Kopf.
+Fortschrittsbalken tragen eine 2,8s Lichtspur innerhalb der wirklich erledigten
+Breite. Eine helle Kante steht am tatsächlichen Prozentwert. Änderungen gleiten
+in 850ms vor oder zurück; Zuwachs leuchtet kurz auf. 0% bleibt leer. Reduced
+Motion entfernt Sweep, Atmosphäre, Impuls und Breitenübergang vollständig.
 
-## Einfache Interaktion
+Akzente haben auf Nutzerwunsch Laser-Charakter: schmaler weißer Kern, gesättigte
+violette/cyanfarbene Kante und Lichtschein außerhalb der Kontur. Das gilt für
+Fortschrittsstrahlen, Verbindungslinien, Countdown-Kontur und Statuspunkte.
+Der Schein des Balkens bleibt außerhalb der Schiene sichtbar; bei 0% entsteht
+kein Licht. Lesetext bleibt ohne Leuchteffekt, der Hellmodus reduziert den Schein.
 
-- Navigation: 50 ms Hover-Einstieg, 300 ms Ausstieg, `cubic-bezier(.2,0,0,1)`.
-- Themenmenü per Hover oder Klick: 150 ms Opazität und 4 px vertikale Bewegung,
-  `cubic-bezier(.65,0,.35,1)`. Pfeiltasten, Escape und Außenklick unterstützt.
-- Theme-Wechsel und Seitenwechsel zeigen direkt den neuen Zustand.
-- Keine gestaffelten Einblendungen; Inhalte sind sofort sichtbar.
-- Suchtreffer, aufklappbare Themen und Lernstatus behalten ihre Funktionen.
-- Keine Scroll-Sperren, Parallax oder erzwungenen Scrollstationen.
-- Reduced Motion entfernt Übergänge und Animationen.
-- Fokus: 2 px Ring mit Abstand. Zustand wird nie nur über Farbe vermittelt.
-- Theme-Wechsel unterdrücken Farbtransitionen auch in der Navigation.
+Ohne gespeicherte Wahl gilt Dark. `ap2-theme-v1` bleibt erhalten; explizites
+Light/Dark hat Vorrang. Ein alter expliziter Systemwert folgt weiter dem OS.
+Der Toggle invertiert unmittelbar, auch bei blockiertem Storage. Der Hellmodus
+verwendet kühle Flächen `#f7f5fb` / Weiß und dunkle violette Tinte.
 
-## Sprache
+## Implementierung und Prüfung
 
-Kurze, konkrete Sätze beschreiben Lernstand und Bedienung. Keine Werbeversprechen,
-Metaphern oder technischen Ersatzbegriffe wie „Fortschrittsbild“. Fachinhalte,
-Prüfungstermine und die Hierarchie `Bereich > Themengruppe > Kernthema` bleiben
-unverändert. Hinweise erklären Sicherung und Wiederherstellung verständlich.
+### Bestehende Gestaltung erweitern
 
-## Prüfung
+1. Die passende bestehende Seite im Browser ansehen: Hub für den Wocheneinstieg,
+   Bereich für Themengruppen, `/lernen/osi-model/` für Lerneinheiten,
+   Übersicht für Statistik und Plan. Diese Seiten sind die Vergleichsbasis.
+2. Neue Lerninhalte in `content/learning/` pflegen. Änderungen am Seitenrahmen
+   gehören in `scripts/templates/learning-page.html` und die gemeinsamen Assets;
+   generierte `/lernen/*/index.html` über den Build aktualisieren.
+3. Farben aus `ap2-space-tokens.css`, Material und Komponenten aus
+   `ap2-space.css` verwenden. Die Ladefolge der vergleichbaren Seite übernehmen:
+   gemeinsame Basis, gegebenenfalls Lernstil, zuletzt Space-Stil. Neue Varianten
+   dort ergänzen, wo die gemeinsame Komponente definiert ist. Refero-HTML und
+   Tailwind-Beispiele werden in diese Regeln übersetzt; bestehende Quellenrollen
+   stehen in den beiden Referenzdokumenten oben.
+4. Fortschrittsanzeigen an echte erledigte Kernthemen binden und das vorhandene
+   Muster `.track > .fill` wiederverwenden. Prozenttext und Endkante zeigen
+   denselben Wert. Atmosphäre, Pause und Zuwachsfeedback kommen aus
+   `ap2-space.js`, Theme-Verhalten aus `ap2-theme.js`.
+5. Neue Arbeitsflächen übernehmen sichtbare Transparenz, Hintergrundlicht,
+   Glaskanten und gezielte Laserlinien. Lange Lerntexte liegen auf der stärker
+   getönten Lesefläche. Die stärkste Aktion und die wichtigsten Inhalte erhalten
+   Vorrang in Größe und Position; zusätzliche Informationen ordnen sich darunter.
+6. Vor Abschluss die betroffenen Seiten bei 390px und 1440px ansehen; Änderungen
+   an der Navigation zusätzlich bei 940px, 941px und 1024px prüfen. Dark und Light,
+   lange Texte, leere und abgeschlossene Zustände sowie Tastaturfokus kontrollieren.
+   Bei Fortschrittsänderungen Abhaken, Rücknahme, 0%, Teilstand und 100% prüfen;
+   laufende Bewegung, Pause und Reduced Motion im Browser tatsächlich beobachten.
+   Die passenden vorhandenen Prüfungen aus `package.json` ausführen. Statische
+   Checks ersetzen die Sichtprüfung nicht.
 
-`node scripts/verify-theme-persistence.mjs` prüft den früher fehlerhaften
-ersten Klick, beide Systemmodi, wiederholte Wechsel, Tastatur, alle fünf Seiten,
-Reload, Tab-Synchronisierung und gesperrten Speicher.
-`node scripts/verify-navigation.mjs` prüft Menübedienung, Unterbrechungen,
-Tastatur, mobile Umschaltung und reduzierte Bewegung.
-Visuelle Browserprüfung bleibt zusätzlich für Desktop/Mobil und beide Modi
-erforderlich; Suche, Themenaufklappen und Fortschritt werden separat geprüft.
+Die Erweiterung ist fertig, wenn sie zur Vergleichsseite passt, Texte ohne
+Überlauf lesbar sind und die betroffenen Interaktionen in beiden Themes
+funktionieren. Neue gemeinsame Designentscheidungen zuerst hier nachführen und
+die abgeleitete JSON-Übersicht bei Änderungen ihrer Angaben mitziehen.
+
+### Sprache
+
+UI-Texte sind kurz, konkret und deutsch. Handlungen direkt benennen:
+„Weiterlernen“, „Fortschritt exportieren“, „3 von 12 Kernthemen erledigt“.
+Erklärungen sagen, was zu tun ist oder was sich geändert hat. Neue Lerntexte
+erklären Fachbegriffe mit passenden Beispielen; keine Werbesätze, künstlichen
+Motivationssprüche oder Weltraum-Metaphern für normale Bedienhandlungen.
+Begriffe und Hierarchie bleiben `Bereich > Themengruppe > Kernthema`.
+
+### Gemeinsame Dateien und vorhandene Prüfungen
+
+- Tokens: `assets/ap2-space-tokens.css`.
+- Gemeinsame Grundstruktur: `assets/ap2-reference-ui.css`.
+- Glas, neue Layouts und Lichtstrahlen: `assets/ap2-space.css`.
+- Atmosphäre, Pause und Fortschrittsfeedback: `assets/ap2-space.js`.
+- Theme: `assets/ap2-theme.js`; Navigation: `assets/ap2-navigation.js`.
+- Build kopiert die neuen Tokens explizit in das Publish-Verzeichnis.
+- Browserprüfungen: Navigation, Tastatur, 360–1440px, Theme-Persistenz und
+  Lerninteraktionen. Schriftprüfung nutzt das tatsächliche Titelgewicht.
+- `scripts/verify-space-browser.mjs`: echtes Abhaken, bewegte Lichtspur,
+  Pause, Rückgängigmachen, Persistenz und Reduced Motion.
+- Visuelle Kontrolle: Hub, Übersicht, Bereiche, Lernpfad, Lernseite,
+  Simulation und Einzeltracker, ergänzend Hellmodus und Reduced Motion.
+
+Inhalte, Fortschritt und Cloud-Sync werden durch die Gestaltung nicht migriert.

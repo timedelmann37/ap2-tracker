@@ -34,7 +34,10 @@ const generatedFiles = new Set([
   'assets/ap2-learning-catalog.js',
   'assets/ap2-learning.css',
   'assets/ap2-learning.js',
-  'assets/ap2-progress-merge.js'
+  'assets/ap2-progress-merge.js',
+  'assets/ap2-space-tokens.css',
+  'assets/ap2-space.css',
+  'assets/ap2-space.js'
 ]);
 const learningManifest = JSON.parse(await readFile(path.join(repoRoot, 'content', 'learning-manifest.json'), 'utf8'));
 for (const topic of learningManifest.topics) {
