@@ -2,7 +2,7 @@ import {createServer} from 'node:http';
 import {readFile} from 'node:fs/promises';
 import {chromium} from 'playwright';
 import assert from 'node:assert/strict';
-const server=createServer(async(req,res)=>{try {const p=new URL(req.url,'http://localhost').pathname;const f='.'+(p.endsWith('/')?p+'index.html':p);const b=await readFile(f);res.setHeader('Content-Type',f.endsWith('.css')?'text/css':f.endsWith('.js')?'text/javascript':'text/html');res.end(b);}catch{res.statusCode=404;res.end();}});
+const server=createServer(async(req,res)=>{try {const p=new URL(req.url,'http://localhost').pathname;const f='.'+(p.endsWith('/')?p+'index.html':p);const b=await readFile(f);res.setHeader('Content-Type',f.endsWith('.css')?'text/css':f.endsWith('.js')?'text/javascript':f.endsWith('.svg')?'image/svg+xml':f.endsWith('.png')?'image/png':'text/html');res.end(b);}catch{res.statusCode=404;res.end();}});
 await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const browser=await chromium.launch({headless:true});
 try {
@@ -11,6 +11,7 @@ await page.route(/supabase-js/,route=>route.fulfill({contentType:'text/javascrip
 for(const route of ['/','/uebersicht/','/netzwerke/','/konzeption-administration/','/sowi/']){
  await page.goto('http://127.0.0.1:'+server.address().port+route);
  await page.waitForFunction(()=>document.querySelector('#accountBtnLabel').textContent==='Angemeldet');
+ await page.locator('.brand-mark img').evaluate(img => { if (!img.complete || !img.naturalWidth) throw new Error('Logo failed to load'); });
  await page.waitForFunction(()=>document.querySelector('#accountSyncStatus').textContent==='Fortschritt gespeichert');
  for(const width of [390,940,941,1024,1440]) {
   await page.setViewportSize({width,height:900});

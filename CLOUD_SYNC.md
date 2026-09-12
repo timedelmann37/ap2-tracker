@@ -19,6 +19,13 @@ Ohne die Schritte unten läuft die Seite unverändert weiter — der neue
 
 ## 2. Datenbank-Tabelle anlegen
 
+Die ausführbare Einrichtung liegt in [`supabase/progress.sql`](supabase/progress.sql).
+Sie richtet auch die expliziten API-Rechte für angemeldete Nutzer ein.
+Bei `PGRST205` findet die API `public.progress` nicht: zuerst im Table Editor
+Schema und Tabelle prüfen, dann die Einrichtung ausführen, falls sie fehlt.
+Anmeldung und Mailversand allein legen diese Tabelle nicht an.
+
+
 Im Dashboard links auf **SQL Editor** → **New query**, folgendes einfügen und
 mit **Run** ausführen:
 
@@ -33,6 +40,8 @@ create table if not exists public.progress (
 );
 
 alter table public.progress enable row level security;
+grant usage on schema public to authenticated;
+grant select, insert, update on public.progress to authenticated;
 
 create policy "select own progress"
   on public.progress for select
