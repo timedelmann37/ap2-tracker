@@ -1,13 +1,13 @@
 # Cloud-Sync einrichten (Supabase)
 
-Der Tracker speichert den Fortschritt weiterhin sofort lokal (`localStorage`),
-kann ihn zusätzlich aber geräteübergreifend über ein kostenloses
-[Supabase](https://supabase.com)-Projekt sichern. Anmeldung läuft passwortlos
-per Magic Link (Link per E-Mail).
+Der Tracker speichert den Fortschritt geräteübergreifend in einem
+[Supabase](https://supabase.com)-Projekt. Zum Ändern des Fortschritts ist eine
+passwortlose Anmeldung per Magic Link (Link per E-Mail) erforderlich.
+`localStorage` dient nur als technischer Cache für die Oberfläche.
 
-Ohne die Schritte unten läuft die Seite unverändert weiter — der neue
-„Anmelden"-Button in der Navigationsleiste zeigt dann nur den Hinweis
-„Cloud-Sync ist auf dieser Seite noch nicht eingerichtet." an.
+Ohne die Schritte unten bleiben die Inhalte lesbar. Fortschrittsänderungen
+können jedoch nicht gespeichert werden; der „Anmelden"-Button zeigt den
+Hinweis „Cloud-Sync ist auf dieser Seite noch nicht eingerichtet." an.
 
 ## 1. Supabase-Projekt anlegen
 
@@ -121,9 +121,8 @@ Nach dem Eintragen der Zugangsdaten und dem Deployen:
 3. Man landet zurück auf dem Tracker und ist angemeldet — der Button zeigt
    jetzt „Konto" statt „Anmelden".
 4. Ein paar Häkchen setzen, Seite neu laden (oder auf einem anderen Gerät
-   mit derselben E-Mail anmelden) — der Fortschritt sollte übernommen
-   werden. Vorhandener lokaler und Cloud-Fortschritt werden automatisch
-   zusammengeführt; bei demselben Kernthema gewinnt die neuere Änderung.
+   mit derselben E-Mail anmelden) — der Fortschritt sollte übernommen werden.
+   Bei demselben Kernthema gewinnt die neuere Änderung.
 
 Auf Lernseiten werden Haken und Wiederholungsmarker über denselben Cloud-Stand
 synchronisiert. Karteikarten und Antworten aus Selbsttests bleiben bewusst

@@ -7,6 +7,15 @@ direkt auf der Seite sichtbar - ein Klick auf die Versionsnummer im Hub (in
 der Fußzeile) zeigt dieselbe Liste als Änderungsprotokoll. Gepflegt wird das
 Changelog ausschließlich im Hub, nicht mehr in den einzelnen Bereichen.
 
+## [3.10.1] - 2026-09-12
+
+### Geändert
+
+- Fortschrittsänderungen setzen jetzt eine aktive Anmeldung voraus. Ohne Konto
+  öffnet ein Klick auf Haken oder Wiederholungsmarkierung direkt die Anmeldung.
+- Die Hinweise zur rein lokalen Speicherung sowie Datei-Import und -Export
+  wurden aus der Oberfläche entfernt.
+
 ## [3.10.0] - 2026-09-11
 
 ### Hinzugefügt

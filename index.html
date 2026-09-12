@@ -852,7 +852,7 @@
     </div>
     <div class="account-body">
       <div id="accountLoggedOut">
-        <p>Melde dich an, um deinen Fortschritt auf mehreren Geräten zu nutzen. Wir schicken dir einen Anmeldelink per E-Mail. Ein Passwort brauchst du nicht.</p>
+        <p>Melde dich an, um deinen Fortschritt zu speichern. Wir schicken dir einen Anmeldelink per E-Mail. Ein Passwort brauchst du nicht.</p>
         <input type="email" id="accountEmail" class="account-input" placeholder="deine@email.de" autocomplete="email">
         <div class="account-actions">
           <button type="button" id="accountSendLink" class="account-btn primary">Link senden</button>
@@ -1774,8 +1774,14 @@ renderCountdown();
 setInterval(renderCountdown, 60000);
 
 
-const APP_VERSION = '3.10.0';
+const APP_VERSION = '3.10.1';
 const CHANGELOG = [
+  { version:'3.10.1', date:'2026-09-12', groups:[
+    { label:'Geändert', items:[
+      'Fortschrittsänderungen setzen jetzt eine aktive Anmeldung voraus. Ohne Konto öffnet die jeweilige Aktion direkt die Anmeldung.',
+      'Hinweise zur rein lokalen Speicherung sowie Datei-Import und -Export wurden aus der Oberfläche entfernt.'
+    ]}
+  ]},
   { version:'3.10.0', date:'2026-09-11', groups:[
     { label:'Hinzugefügt', items:[
       'Echte Lernseiten aus Markdown mit Erklärungen, Tabellen, Aufgaben, Karteikarten und Selbsttests. Die ersten Einheiten behandeln RAID sowie DAS, NAS und SAN.',
@@ -2127,7 +2133,7 @@ async function pushStateToCloud(){
       else setSyncStatus('Fortschritt gespeichert');
     }
   } catch (error) {
-    if (cloudUser?.id === userId) setSyncStatus('Synchronisierung fehlgeschlagen. Dein Fortschritt bleibt lokal gespeichert.', true);
+    if (cloudUser?.id === userId) setSyncStatus('Synchronisierung fehlgeschlagen. Bitte versuche es erneut.', true);
   } finally {
     cloudSyncing = false;
   }
@@ -2136,7 +2142,7 @@ async function pushStateToCloud(){
 async function pullStateFromCloud(){
   if (!sb || !cloudUser) return;
   const { data, error } = await sb.from('progress').select('state').eq('user_id', cloudUser.id).maybeSingle();
-  if (error) { setSyncStatus('Cloud-Fortschritt konnte nicht geladen werden. Dein lokaler Fortschritt bleibt erhalten.', true); return; }
+  if (error) { setSyncStatus('Cloud-Fortschritt konnte nicht geladen werden. Bitte versuche es erneut.', true); return; }
   const localKeys = Object.keys(state).length;
   const cloudState = (data && data.state) || {};
   const cloudKeys = Object.keys(cloudState).length;
@@ -2187,6 +2193,9 @@ function wireAccountUI(){
 async function initCloudSync(){
   wireAccountUI();
   refreshAccountUI();
+  if (new URLSearchParams(window.location.search).get('konto') === 'anmelden') {
+    openAccountModal();
+  }
   if (!sb) return;
 
   if (typeof saveState === 'function') {

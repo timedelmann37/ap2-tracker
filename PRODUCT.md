@@ -17,10 +17,10 @@ jede:n AP2-Kandidat:in nutzbar, nicht auf eine einzelne Person zugeschnitten.
 Typische Situation: in der Vorbereitungsphase vor einem festen Prüfungstermin
 (aktuell Winterprüfung 2026/27), meist am Desktop in längeren Lernblöcken, mit
 einem wochenweisen Lernplan im Rücken. Die Person kommt über einen Link oder
-ein Lesezeichen. Die Seite funktioniert ohne Anmeldung (Fortschritt lokal);
-wer geräteübergreifend sichern will, legt sich per passwortlosem Magic Link
-(E-Mail) ein Konto an. Die Registrierung ist offen — jede E-Mail-Adresse
-genügt, das Konto dient nur der Zuordnung des eigenen Fortschritts.
+ein Lesezeichen. Inhalte können ohne Anmeldung gelesen werden; zum Ändern und
+Speichern des Fortschritts ist ein Konto per passwortlosem Magic Link (E-Mail)
+erforderlich. Die Registrierung ist offen — jede E-Mail-Adresse genügt, das
+Konto dient nur der Zuordnung des eigenen Fortschritts.
 
 ## Product Purpose
 
@@ -29,8 +29,7 @@ sind — gemessen an einem terminierten Lernplan bis zum Prüfungstag. Die Seite
 beantwortet zwei Fragen: „Was ist laut Plan gerade dran?" und „Wie weit bin ich
 insgesamt und pro Bereich?". Erfolg heißt: die Person weiß jederzeit ohne
 Nachdenken, wo sie im Stoff steht und was als Nächstes zu tun ist, und verliert
-den Fortschritt nicht — abgesichert über Export/Import als JSON und optional
-über geräteübergreifenden Cloud-Sync (Supabase).
+den Fortschritt nicht — er wird geräteübergreifend über Supabase gespeichert.
 
 Der Stoffkatalog selbst ist Teil des Produkts: die Kernthemen je Bereich wurden
 gegen echte, veröffentlichte IHK-Prüfungen abgeglichen (Lückencheck); ergänzte
@@ -45,11 +44,10 @@ Themengruppen („der Plan") plus der feste Wochenrhythmus sind fest eingebaut;
 ein neutrales To-do- oder Flashcard-Produkt hat weder den kuratierten
 AP2-Stoffbaum noch die Plan-Logik (aktuell geplant / Rückstand).
 
-Bewusst backendlos: kein eigener Server. Fortschritt liegt zuerst lokal im
-Browser; der optionale Cloud-Sync spricht direkt (ohne eigenes Backend) mit
-Supabase, abgesichert allein über Row Level Security. Anmeldung ist optional
-und passwortlos. Das ist eine Haltung (minimale Infrastruktur, sofort lokal
-lauffähig) und bleibt sie.
+Bewusst ohne eigenen Server: Der Client spricht direkt mit Supabase,
+abgesichert über Row Level Security. Die Anmeldung ist für Änderungen am
+Fortschritt erforderlich und bleibt passwortlos. `localStorage` dient nur als
+technischer Cache für die Darstellung und Synchronisierung.
 
 Der Bestand nutzt statisches HTML/CSS/JS mit gemeinsamen Assets und einem Build
 für die Markdown-Lernseiten sowie das Publish-Verzeichnis. Framework, TypeScript,
@@ -73,10 +71,9 @@ lohnen; Build und Netlify-Konfiguration werden entsprechend gepflegt.
   `/simulation/` (Prüfungssimulation, im Aufbau).
 - **Wiederkehrende Handlungen**: Kernthema abhaken, zur Wiederholung markieren,
   bereichsübergreifend suchen, aus einem Suchtreffer / Plan-Eintrag per
-  Deep-Link direkt in den passenden Block springen, Fortschritt als JSON
-  exportieren/importieren, sich per Magic Link an-/abmelden (Button in der
-  Navigationsleiste: „Anmelden" ↔ „Konto"). Lokaler und Cloud-Fortschritt
-  werden automatisch anhand der neuesten Kernthema-Änderungen zusammengeführt.
+  Deep-Link direkt in den passenden Block springen und sich per Magic Link
+  an-/abmelden (Button in der Navigationsleiste: „Anmelden" ↔ „Angemeldet").
+  Fortschritt kann nur mit aktiver Sitzung geändert werden.
 - **Nebenbei**: vier kleine Lern-Minispiele hinter dem 🕹️-Button
   (Paket-Fang, Port-Sprint, Subnetting-Blitz, Fachbegriff-Rush).
 - **Mitarbeit** am Repo läuft zu zweit über Feature-Branches und Pull Requests
@@ -91,17 +88,17 @@ lohnen; Build und Netlify-Konfiguration werden entsprechend gepflegt.
   migriert sind.
 - Stoffdaten stecken in der `DATA`-Konstante am Anfang des jeweiligen
   `<script>`-Blocks der Themenseite.
-- Fortschritt: `localStorage`, Schlüssel `ap2-tracker-state-v1` — **derselbe
-  Schlüssel** auf allen drei Themenbereichs-Seiten und im Hub-Dashboard, damit
-  Haken überall konsistent zusammenzählen. Ohne optionalen Cloud-Sync bleibt der
-  Stand im jeweiligen Browser; Export/Import-JSON umfasst alle drei Bereiche.
-- Optionaler Cloud-Sync (`CLOUD_SYNC.md`): Supabase-Projekt, Tabelle
+- Fortschritt: Supabase ist die verbindliche Ablage. Der `localStorage`-Schlüssel
+  `ap2-tracker-state-v1` dient auf den Haupt- und Lernseiten als gemeinsamer
+  technischer Cache, damit die Oberfläche während des Abgleichs konsistent ist.
+  Ohne aktive Sitzung sind Fortschrittsänderungen gesperrt.
+- Cloud-Sync (`CLOUD_SYNC.md`): Supabase-Projekt, Tabelle
   `public.progress` (eine Zeile pro Nutzer, kompletter Zustand als `jsonb`),
   RLS als einzige Sicherheitsschranke, passwortloser Magic-Link-Login. Client
   spricht direkt mit Supabase, kein eigenes Backend. `SUPABASE_URL` /
   `SUPABASE_ANON_KEY` stehen im `<script>`-Block **aller fünf** Seiten
-  (Hub, Übersicht, drei Themenbereiche); ohne Konfiguration zeigt der
-  „Anmelden"-Button nur einen Hinweis und die Seite läuft unverändert lokal.
+  (Hub, Übersicht, drei Themenbereiche). Ohne Konfiguration können Inhalte
+  gelesen, aber keine Fortschrittsänderungen gespeichert werden.
 - Geplant, nicht umgesetzt: website-weite Zugangssperre (Passwortschutz der
   ganzen Seite, da Prüfungsinhalte). Separat vom Cloud-Sync-Setup.
 - Suche: Themenseiten tragen ein kopiertes `SEARCH_DATA`-Literal (aus `DATA`
@@ -157,14 +154,12 @@ lohnen; Build und Netlify-Konfiguration werden entsprechend gepflegt.
 1. **Der Plan ist der Maßstab.** Fortschritt ist immer relativ zur
    Wochen-Terminierung zu lesen — „gerade dran" und „Rückstand" sind
    Erstklasse-Zustände, nicht nur Prozentzahlen.
-2. **Eine Kernthema-Wahrheit, überall konsistent.** Derselbe
-   `localStorage`-Zustand zählt im Hub-Dashboard und auf jeder Themenseite
-   identisch zusammen; keine widersprüchlichen Fortschrittsanzeigen.
-3. **Lokal zuerst, Konto optional.** Die Seite muss ohne Anmeldung voll
-   funktionieren; Fortschritt landet sofort in `localStorage`. Cloud-Sync und
-   Konto sind ein zusätzliches Angebot (passwortlos, offen), kein Zwang und
-   kein eigenes Backend. (Ein Build-Schritt / Framework ist erlaubt — die
-   Buildlosigkeit ist Ist-Zustand, keine Vorgabe.)
+2. **Eine Kernthema-Wahrheit, überall konsistent.** Der Supabase-Stand zählt im
+   Hub-Dashboard und auf jeder Themenseite identisch zusammen; keine
+   widersprüchlichen Fortschrittsanzeigen.
+3. **Fortschritt gehört zum Konto.** Inhalte bleiben ohne Anmeldung lesbar.
+   Abhaken, Wiederholungsmarkierungen und Zurücksetzen setzen eine aktive,
+   passwortlose Sitzung voraus. Es gibt keinen Datei-Import oder -Export.
 4. **Kuratierter Stoff schlägt Vollständigkeitsgefühl.** Kernthemen bilden ab,
    was real geprüft wurde; neue Punkte kommen mit Quellenbeleg, nicht auf
    Verdacht.

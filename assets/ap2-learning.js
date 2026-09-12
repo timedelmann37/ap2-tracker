@@ -13,8 +13,7 @@
   let cloudUser = null;
   let cloudTimer = null;
   let cloudSyncing = false;
-  // Local learning must remain usable when the optional cloud client is unavailable.
-  let cloudReady = true;
+  let cloudReady = false;
 
   function load(key) {
     try {
@@ -27,7 +26,8 @@
   function save(key, value) {
     try {
       localStorage.setItem(key, JSON.stringify(value));
-      if (saveNote) saveNote.textContent = key === TRACKER_KEY ? 'lokal gespeichert' : 'gespeichert';
+      if (saveNote && !cloudUser) saveNote.innerHTML = '<a href="/?konto=anmelden">Anmelden, um Fortschritt zu speichern</a>';
+      else if (saveNote) saveNote.textContent = key === TRACKER_KEY ? 'wird synchronisiert …' : 'gespeichert';
       return true;
     } catch {
       if (saveNote) saveNote.textContent = 'Speichern nicht verfügbar';
@@ -55,7 +55,11 @@
   function setProgressEnabled(enabled) {
     cloudReady = enabled;
     renderMastery();
+    document.getElementById('mark-done')?.toggleAttribute('disabled', !enabled);
     document.getElementById('mark-rep')?.toggleAttribute('disabled', !enabled);
+    if (saveNote && !enabled) {
+      saveNote.innerHTML = '<a href="/?konto=anmelden">Anmelden, um Fortschritt zu speichern</a>';
+    }
   }
 
   function mergeTracker(localState, remoteState) {
@@ -83,6 +87,7 @@
   }
 
   function saveTracker() {
+    if (!cloudUser) return;
     if (save(TRACKER_KEY, tracker)) scheduleCloudPush();
   }
 
@@ -114,6 +119,7 @@
   }
 
   document.getElementById('mark-done')?.addEventListener('click', () => {
+    if (!cloudUser) return;
     if (!masteryState().passed && !tracker[progressId]) return;
     const wasDone = Boolean(tracker[progressId]);
     tracker[progressId] = !wasDone;
@@ -124,6 +130,7 @@
   });
 
   document.getElementById('mark-rep')?.addEventListener('click', () => {
+    if (!cloudUser) return;
     const key = `mark__${progressId}`;
     tracker[key] = !tracker[key];
     tracker[`ts__${progressId}`] = Date.now();
@@ -553,8 +560,8 @@
   renderMastery();
 
   async function initCloudBridge() {
-    if (!cloud || !progressId) return;
     setProgressEnabled(false);
+    if (!cloud || !progressId) return;
     try {
       const { data: sessionData } = await cloud.auth.getSession();
       cloudUser = sessionData?.session?.user || null;
@@ -568,12 +575,13 @@
       }
       cloud.auth.onAuthStateChange((event, session) => {
         cloudUser = event === 'SIGNED_OUT' ? null : session?.user || cloudUser;
+        setProgressEnabled(Boolean(cloudUser));
       });
     } catch (error) {
       console.error('Cloud-Fortschritt konnte nicht geladen werden:', error.message);
-      if (saveNote) saveNote.textContent = 'lokal gespeichert';
+      if (saveNote) saveNote.textContent = 'Cloud-Fortschritt konnte nicht geladen werden';
     } finally {
-      setProgressEnabled(true);
+      setProgressEnabled(Boolean(cloudUser));
     }
   }
 

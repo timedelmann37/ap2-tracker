@@ -31,6 +31,27 @@ for(const route of ['/','/uebersicht/','/netzwerke/','/konzeption-administration
  assert.equal(await page.locator('#accountSyncStatus').textContent(),'Fortschritt gespeichert');
  await page.locator('#accountSignOut').click();
  assert.equal(await page.locator('#accountBtnLabel').textContent(),'Anmelden');
+ if(route!=='/') {
+  assert.equal(await page.locator('#exportProgress').count(),0,route+' export control removed');
+  assert.equal(await page.locator('#importProgressBtn').count(),0,route+' import control removed');
+  assert.equal(await page.locator('#footerNote').count(),0,route+' local-storage notice removed');
+  const checkbox=page.locator('ul.items input[type=checkbox]').first();
+  if(await checkbox.count()) {
+   const before=await page.evaluate(()=>localStorage.getItem('ap2-tracker-state-v1'));
+   await checkbox.evaluate(el=>el.click());
+   assert(await page.locator('#accountOverlay').isVisible(),route+' signed-out progress action opens login');
+   assert.match(await page.locator('#accountStatus').textContent(),/Melde dich an/);
+   assert.equal(await page.evaluate(()=>localStorage.getItem('ap2-tracker-state-v1')),before,route+' signed-out action must not save');
+  }
+ }
  console.log('PASS',route,'session, responsive/themes, save failure/recovery, sign-out');
 }
+
+await page.goto('http://127.0.0.1:'+server.address().port+'/lernen/raid/');
+await page.waitForFunction(()=>!document.querySelector('#mark-rep').disabled);
+await page.evaluate(()=>window.authChanged('SIGNED_OUT',null));
+await page.waitForFunction(()=>document.querySelector('#mark-rep').disabled);
+assert(await page.locator('#mark-done').isDisabled());
+assert.match(await page.locator('#learning-save').textContent(),/Anmelden, um Fortschritt zu speichern/);
+console.log('PASS /lernen/raid/ signed-out progress controls disabled');
 } finally {await browser.close();server.close();}

@@ -1065,10 +1065,6 @@
     </div>
   </details>
 
-  <div class="footer-note" id="footerNote">
-    <b>Hier siehst du deinen gespeicherten Fortschritt.</b> Kernthemen hakst du im jeweiligen Bereich ab. Dort kannst du deinen Fortschritt auch als Datei sichern oder eine Sicherung laden.
-  </div>
-
 </main>
 
 <div class="account-overlay" id="accountOverlay" hidden>
@@ -1079,7 +1075,7 @@
     </div>
     <div class="account-body">
       <div id="accountLoggedOut">
-        <p>Melde dich an, um deinen Fortschritt auf mehreren Geräten zu nutzen. Wir schicken dir einen Anmeldelink per E-Mail. Ein Passwort brauchst du nicht.</p>
+        <p>Melde dich an, um deinen Fortschritt zu speichern. Wir schicken dir einen Anmeldelink per E-Mail. Ein Passwort brauchst du nicht.</p>
         <input type="email" id="accountEmail" class="account-input" placeholder="deine@email.de" autocomplete="email">
         <div class="account-actions">
           <button type="button" id="accountSendLink" class="account-btn primary">Link senden</button>
@@ -1664,6 +1660,7 @@ function setSaveIndicator(ok){
 // ---------------------------------------------------------------
 function isMarked(itemId){ return !!state['mark__' + itemId]; }
 function toggleMark(itemId){
+  if (!requireCloudAccount()) return;
   const key = 'mark__' + itemId;
   state[key] = !state[key];
   state['ts__' + itemId] = Date.now();
@@ -1897,6 +1894,10 @@ function render(){
         cb.id = id;
         if (state[id]) { cb.checked = true; li.classList.add('checked'); }
         cb.addEventListener('change', () => {
+          if (!requireCloudAccount()) {
+            cb.checked = !!state[id];
+            return;
+          }
           state[id] = cb.checked;
           li.classList.toggle('checked', cb.checked);
           saveState();
@@ -2326,6 +2327,14 @@ function closeAccountModal(){
   if (els.overlay) els.overlay.hidden = true;
 }
 
+function requireCloudAccount(){
+  if (cloudUser) return true;
+  openAccountModal();
+  setAccountStatus('Melde dich an, um deinen Fortschritt zu ändern.', 'error');
+  accountEls().email?.focus();
+  return false;
+}
+
 function refreshAccountUI(){
   const els = accountEls();
   if (!els.btn) return;
@@ -2383,7 +2392,7 @@ async function pushStateToCloud(){
       else setSyncStatus('Fortschritt gespeichert');
     }
   } catch (error) {
-    if (cloudUser?.id === userId) setSyncStatus('Synchronisierung fehlgeschlagen. Dein Fortschritt bleibt lokal gespeichert.', true);
+    if (cloudUser?.id === userId) setSyncStatus('Synchronisierung fehlgeschlagen. Bitte versuche es erneut.', true);
   } finally {
     cloudSyncing = false;
   }
@@ -2392,7 +2401,7 @@ async function pushStateToCloud(){
 async function pullStateFromCloud(){
   if (!sb || !cloudUser) return;
   const { data, error } = await sb.from('progress').select('state').eq('user_id', cloudUser.id).maybeSingle();
-  if (error) { setSyncStatus('Cloud-Fortschritt konnte nicht geladen werden. Dein lokaler Fortschritt bleibt erhalten.', true); return; }
+  if (error) { setSyncStatus('Cloud-Fortschritt konnte nicht geladen werden. Bitte versuche es erneut.', true); return; }
   const localKeys = Object.keys(state).length;
   const cloudState = (data && data.state) || {};
   const cloudKeys = Object.keys(cloudState).length;

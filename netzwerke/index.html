@@ -961,9 +961,6 @@
     <div class="btn-row">
       <button class="btn-ghost" id="expandAll" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 9 4-4 4 4M8 15l4 4 4-4"/></svg>Alle aufklappen</button>
       <button class="btn-ghost" id="collapseAll" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 4 4 4-4M8 19l4-4 4 4"/></svg>Alle zuklappen</button>
-      <button class="btn-ghost" id="exportProgress" type="button" title="Fortschritt als Datei sichern"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0 4-4m-4 4-4-4M5 19h14"/></svg>Fortschritt exportieren</button>
-      <button class="btn-ghost" id="importProgressBtn" type="button" title="Fortschritt aus einer Sicherungsdatei laden"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17V6m0 0 4 4m-4-4-4 4M5 20h14"/></svg>Fortschritt importieren</button>
-      <input type="file" id="importProgressFile" accept="application/json,.json" hidden>
       <button class="btn-ghost" id="resetAll" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 9A8 8 0 1 1 4 14M4.5 9V4.5M4.5 9H9"/></svg>Fortschritt zurücksetzen</button>
     </div>
   </div>
@@ -973,10 +970,6 @@
   <div class="no-results" id="noResults">
     Keine Treffer für „<span id="noResultsQuery"></span>“.
     <button type="button" id="noResultsClear">Suche zurücksetzen</button>
-  </div>
-
-  <div class="footer-note" id="footerNote">
-    <b>Dein Fortschritt wird in diesem Browser gespeichert.</b> Wenn du die Browserdaten löschst, geht dieser Stand verloren. Status: <span id="saveState">-</span>. Mit „Fortschritt exportieren“ lädst du eine Sicherung herunter. Mit „Fortschritt importieren“ stellst du sie wieder her – auch auf einem anderen Gerät.
   </div>
 
 </main>
@@ -1078,7 +1071,7 @@
     </div>
     <div class="account-body">
       <div id="accountLoggedOut">
-        <p>Melde dich an, um deinen Fortschritt auf mehreren Geräten zu nutzen. Wir schicken dir einen Anmeldelink per E-Mail. Ein Passwort brauchst du nicht.</p>
+        <p>Melde dich an, um deinen Fortschritt zu speichern. Wir schicken dir einen Anmeldelink per E-Mail. Ein Passwort brauchst du nicht.</p>
         <input type="email" id="accountEmail" class="account-input" placeholder="deine@email.de" autocomplete="email">
         <div class="account-actions">
           <button type="button" id="accountSendLink" class="account-btn primary">Link senden</button>
@@ -1306,6 +1299,7 @@ function setSaveIndicator(ok){
 // ---------------------------------------------------------------
 function isMarked(itemId){ return !!state['mark__' + itemId]; }
 function toggleMark(itemId){
+  if (!requireCloudAccount()) return;
   const key = 'mark__' + itemId;
   state[key] = !state[key];
   state['ts__' + itemId] = Date.now();
@@ -1707,6 +1701,10 @@ function render(){
         cb.setAttribute('aria-label', 'Fortschritt für „' + it + '“ ändern');
         if (state[id]) { cb.checked = true; li.classList.add('checked'); }
         cb.addEventListener('change', () => {
+          if (!requireCloudAccount()) {
+            cb.checked = !!state[id];
+            return;
+          }
           const wasChecked = !!state[id];
           state[id] = cb.checked;
           state['ts__' + id] = Date.now();
@@ -1924,6 +1922,7 @@ document.getElementById('collapseAll').addEventListener('click', () => {
   document.querySelectorAll('details.card').forEach(d => d.open = false);
 });
 document.getElementById('resetAll').addEventListener('click', () => {
+  if (!requireCloudAccount()) return;
   if (!confirm('Wirklich den Fortschritt in diesem Themenbereich zurücksetzen? Das löscht Haken und Markierungen nur hier - andere Bereiche bleiben unberührt.')) return;
   const ids = new Set();
   DATA.forEach(cat => cat.topics.forEach(t => ids.add(t.id)));
@@ -1938,90 +1937,6 @@ document.getElementById('resetAll').addEventListener('click', () => {
   document.querySelectorAll('ul.items li').forEach(li => li.classList.remove('checked'));
   saveState();
   updateAll();
-});
-
-// ---------------------------------------------------------------
-// Fortschritt exportieren / importieren (Backup, falls Browser-Speicher
-// verloren geht - Datei enthält denselben Zustand wie localStorage)
-// ---------------------------------------------------------------
-function refreshAfterStateChange(){
-  render();
-  const q = document.getElementById('searchInput');
-  applySearch(q ? q.value : '');
-}
-
-document.getElementById('exportProgress').addEventListener('click', () => {
-  const payload = {
-    app: 'ap2-tracker',
-    version: 1,
-    exportedAt: new Date().toISOString(),
-    state: state
-  };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const stamp = new Date().toISOString().slice(0, 10);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `ap2-tracker-fortschritt-${stamp}.json`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-});
-
-document.getElementById('importProgressBtn').addEventListener('click', () => {
-  document.getElementById('importProgressFile').click();
-});
-
-document.getElementById('importProgressFile').addEventListener('change', (e) => {
-  const input = e.target;
-  const file = input.files && input.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = () => {
-    let parsed;
-    try {
-      parsed = JSON.parse(String(reader.result));
-    } catch (err) {
-      alert('Diese Datei ist keine gültige Fortschritts-Sicherungsdatei (kein lesbares JSON).');
-      input.value = '';
-      return;
-    }
-
-    let incoming = null;
-    if (parsed && typeof parsed === 'object' && parsed.state && typeof parsed.state === 'object') {
-      incoming = parsed.state;
-    } else if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-      incoming = parsed; // Fallback: rohes state-Objekt ohne Hülle
-    }
-
-    if (!incoming || typeof incoming !== 'object') {
-      alert('Diese Datei enthält keinen erkennbaren Fortschritt.');
-      input.value = '';
-      return;
-    }
-
-    const replace = confirm(
-      'Fortschritt importieren.\n\n' +
-      'OK = importierte Datei übernimmt den aktuellen Stand vollständig (aktueller Stand wird ersetzt)\n' +
-      'Abbrechen = importierte Haken werden mit dem aktuellen Stand zusammengeführt'
-    );
-    if (replace) {
-      Object.keys(state).forEach(k => delete state[k]);
-    }
-    Object.keys(incoming).forEach(k => { state[k] = incoming[k]; });
-
-    saveState();
-    refreshAfterStateChange();
-    alert('Fortschritt wurde importiert.');
-    input.value = '';
-  };
-  reader.onerror = () => {
-    alert('Datei konnte nicht gelesen werden.');
-    input.value = '';
-  };
-  reader.readAsText(file);
 });
 
 // ---------------------------------------------------------------
@@ -2608,6 +2523,14 @@ function closeAccountModal(){
   if (els.overlay) els.overlay.hidden = true;
 }
 
+function requireCloudAccount(){
+  if (cloudUser) return true;
+  openAccountModal();
+  setAccountStatus('Melde dich an, um deinen Fortschritt zu ändern.', 'error');
+  accountEls().email?.focus();
+  return false;
+}
+
 function refreshAccountUI(){
   const els = accountEls();
   if (!els.btn) return;
@@ -2665,7 +2588,7 @@ async function pushStateToCloud(){
       else setSyncStatus('Fortschritt gespeichert');
     }
   } catch (error) {
-    if (cloudUser?.id === userId) setSyncStatus('Synchronisierung fehlgeschlagen. Dein Fortschritt bleibt lokal gespeichert.', true);
+    if (cloudUser?.id === userId) setSyncStatus('Synchronisierung fehlgeschlagen. Bitte versuche es erneut.', true);
   } finally {
     cloudSyncing = false;
   }
@@ -2674,7 +2597,7 @@ async function pushStateToCloud(){
 async function pullStateFromCloud(){
   if (!sb || !cloudUser) return;
   const { data, error } = await sb.from('progress').select('state').eq('user_id', cloudUser.id).maybeSingle();
-  if (error) { setSyncStatus('Cloud-Fortschritt konnte nicht geladen werden. Dein lokaler Fortschritt bleibt erhalten.', true); return; }
+  if (error) { setSyncStatus('Cloud-Fortschritt konnte nicht geladen werden. Bitte versuche es erneut.', true); return; }
   const localKeys = Object.keys(state).length;
   const cloudState = (data && data.state) || {};
   const cloudKeys = Object.keys(cloudState).length;

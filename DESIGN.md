@@ -134,7 +134,7 @@ die abgeleitete JSON-Übersicht bei Änderungen ihrer Angaben mitziehen.
 ### Sprache
 
 UI-Texte sind kurz, konkret und deutsch. Handlungen direkt benennen:
-„Weiterlernen“, „Fortschritt exportieren“, „3 von 12 Kernthemen erledigt“.
+„Weiterlernen“, „Anmelden, um Fortschritt zu speichern“, „3 von 12 Kernthemen erledigt“.
 Erklärungen sagen, was zu tun ist oder was sich geändert hat. Neue Lerntexte
 erklären Fachbegriffe mit passenden Beispielen; keine Werbesätze, künstlichen
 Motivationssprüche oder Weltraum-Metaphern für normale Bedienhandlungen.
@@ -165,6 +165,8 @@ Glasnavigation (Doppler-Referenz) und der semantische Success-Token bleiben
 die Basis. Im Kontofenster stehen „Angemeldet als“ mit E-Mail und ein eigener,
 live aktualisierter Speicherstatus. Anmeldung bedeutet nicht erfolgreiche
 Synchronisierung; Fehler lassen den Anmeldestatus bestehen.
+Ohne aktive Sitzung öffnen Fortschrittsaktionen das Anmeldefenster und ändern
+keinen Stand. Datei-Import und -Export gehören nicht mehr zur Oberfläche.
 
 ### Logo und Favicon
 
