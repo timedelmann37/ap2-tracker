@@ -2397,19 +2397,9 @@ async function pullStateFromCloud(){
   const cloudState = (data && data.state) || {};
   const cloudKeys = Object.keys(cloudState).length;
   if (cloudKeys > 0 && localKeys > 0) {
-    const replace = confirm(
-      'Cloud-Fortschritt gefunden.\n\n' +
-      'OK = Cloud-Stand übernimmt (aktueller lokaler Stand auf diesem Gerät wird ersetzt)\n' +
-      'Abbrechen = lokaler und Cloud-Stand werden zusammengeführt'
-    );
-    if (replace) {
-      Object.keys(state).forEach(k => delete state[k]);
-      Object.assign(state, cloudState);
-    } else {
-      const merged = window.AP2_mergeProgress ? window.AP2_mergeProgress(state, cloudState) : { ...state, ...cloudState };
-      Object.keys(state).forEach(k => delete state[k]);
-      Object.assign(state, merged);
-    }
+    const merged = window.AP2_mergeProgress ? window.AP2_mergeProgress(state, cloudState) : { ...cloudState, ...state };
+    Object.keys(state).forEach(k => delete state[k]);
+    Object.assign(state, merged);
   } else if (cloudKeys > 0) {
     Object.assign(state, cloudState);
   }

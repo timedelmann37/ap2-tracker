@@ -75,8 +75,8 @@ lohnen; Build und Netlify-Konfiguration werden entsprechend gepflegt.
   bereichsübergreifend suchen, aus einem Suchtreffer / Plan-Eintrag per
   Deep-Link direkt in den passenden Block springen, Fortschritt als JSON
   exportieren/importieren, sich per Magic Link an-/abmelden (Button in der
-  Navigationsleiste: „Anmelden" ↔ „Konto"). Beim ersten Login mit lokalem und
-  Cloud-Stand fragt ein Dialog, ob übernehmen oder zusammenführen.
+  Navigationsleiste: „Anmelden" ↔ „Konto"). Lokaler und Cloud-Fortschritt
+  werden automatisch anhand der neuesten Kernthema-Änderungen zusammengeführt.
 - **Nebenbei**: vier kleine Lern-Minispiele hinter dem 🕹️-Button
   (Paket-Fang, Port-Sprint, Subnetting-Blitz, Fachbegriff-Rush).
 - **Mitarbeit** am Repo läuft zu zweit über Feature-Branches und Pull Requests

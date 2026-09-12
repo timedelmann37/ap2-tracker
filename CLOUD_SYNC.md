@@ -122,9 +122,8 @@ Nach dem Eintragen der Zugangsdaten und dem Deployen:
    jetzt „Konto" statt „Anmelden".
 4. Ein paar Häkchen setzen, Seite neu laden (oder auf einem anderen Gerät
    mit derselben E-Mail anmelden) — der Fortschritt sollte übernommen
-   werden. Beim ersten Login mit vorhandenem lokalem *und* Cloud-Fortschritt
-   fragt der Tracker per Dialog, ob der Cloud-Stand übernehmen oder
-   zusammengeführt werden soll.
+   werden. Vorhandener lokaler und Cloud-Fortschritt werden automatisch
+   zusammengeführt; bei demselben Kernthema gewinnt die neuere Änderung.
 
 Auf Lernseiten werden Haken und Wiederholungsmarker über denselben Cloud-Stand
 synchronisiert. Karteikarten und Antworten aus Selbsttests bleiben bewusst
