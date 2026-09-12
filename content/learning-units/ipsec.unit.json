@@ -1,0 +1,342 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "ipsec",
+    "slug": "ipsec",
+    "title": "IPsec mit IKE, AH, ESP und Security Associations verstehen",
+    "description": "IPsec-Bausteine, Tunnel- und Transportmodus sowie den IKEv2-Aufbau so einordnen, dass Schutzversprechen und Fehlersuche nachvollziehbar werden.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__9",
+    "week": "KW 40",
+    "estimatedMinutes": 32,
+    "relevance": "hoch",
+    "sources": [
+      "itlf10-12-2023",
+      "ihk-bonn"
+    ],
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "ipsec-components",
+      "label": "IKEv2, Security Associations, AH und ESP nach Aufgabe und Schutzwirkung korrekt voneinander abgrenzen"
+    },
+    {
+      "id": "ipsec-design",
+      "label": "für eine Standortkopplung Modus, Selektoren, Authentisierung und Prüfweg begründet festlegen"
+    }
+  ],
+  "intro": "IPsec ist kein einzelner Verschlüsselungsschalter. IKE handelt Parameter und Schlüsselzustand aus; SAs beschreiben gerichtete Sicherheitsbeziehungen; ESP schützt typischerweise die Nutzlast. Modus und Selektoren bestimmen, welche Pakete tatsächlich erfasst werden.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seiten 195 bis 202",
+        "use": "AH, ESP, Transport-/Tunnelmodus und IPsec-Konfiguration erklären",
+        "reviewStatus": "Direkte Seiten geprüft; historische oder produktspezifische Details nicht verallgemeinert"
+      },
+      {
+        "sourceId": "ihk-bonn",
+        "sourceLocator": "Chunks ihk-bonn:00279, :00271 und :00275",
+        "use": "IPsec-Komponenten und Tunnelmodus im Prüfungskontext festigen",
+        "reviewStatus": "Aufgaben- und Abbildungskontext geprüft; eigene Diagramme erstellt"
+      }
+    ],
+    "notes": [
+      "AH bietet Integrität und Authentisierung, aber keine Vertraulichkeit; NAT-Kompatibilität ist problematisch. In typischen VPNs wird ESP verwendet.",
+      "SAs sind unidirektional; bidirektionaler Verkehr benötigt passende Sicherheitszustände in beiden Richtungen.",
+      "Aktuelle Algorithmen, Gruppen und Laufzeiten müssen nach geltender Sicherheitsrichtlinie gewählt werden; die Einheit schreibt keine unveränderliche Cipher-Liste fest.",
+      "Private Buchabbildungen wurden nicht veröffentlicht oder nachgezeichnet; beide Diagramme sind eigenständige, reduzierte Lernmodelle.",
+      "Hersteller-, Tarif- und versionsabhängige Werte sind als solche markiert und müssen vor einer realen Umsetzung gegen aktuelle Dokumentation geprüft werden."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "ipsec-components-map",
+      "type": "comparison",
+      "title": "IPsec-Bausteine und Aufgaben",
+      "description": "Die Komponenten werden nach Steuerung und Datenpfad getrennt.",
+      "items": [
+        {
+          "label": "IKEv2",
+          "detail": "Authentisiert Peers, vereinbart Algorithmen und erzeugt beziehungsweise erneuert Schlüsselzustand."
+        },
+        {
+          "label": "Security Association",
+          "detail": "Gerichteter Sicherheitszustand mit SPI, Algorithmen, Schlüsseln, Lebensdauer und Selektoren."
+        },
+        {
+          "label": "ESP",
+          "detail": "Schützt den Datenverkehr; kann Vertraulichkeit sowie Integrität/Authentisierung liefern."
+        },
+        {
+          "label": "AH",
+          "detail": "Integrität und Authentisierung ohne Verschlüsselung; für NAT-Umgebungen unhandlich."
+        }
+      ]
+    },
+    {
+      "id": "ipsec-establishment-flow",
+      "type": "flow",
+      "title": "Vom Peer zum geschützten Paket",
+      "description": "Ein vereinfachter IKEv2-/IPsec-Ablauf.",
+      "items": [
+        {
+          "label": "Erreichbarkeit",
+          "detail": "Peers, UDP-Ports, NAT und Routing funktionieren."
+        },
+        {
+          "label": "IKE-SA",
+          "detail": "Algorithmen, Schlüsselmaterial und gegenseitige Authentisierung werden aufgebaut."
+        },
+        {
+          "label": "Child-SA",
+          "detail": "Selektoren und ESP-Parameter für beide Richtungen werden eingerichtet."
+        },
+        {
+          "label": "Datenverkehr",
+          "detail": "Passende Pakete werden gekapselt, geschützt und übertragen."
+        },
+        {
+          "label": "Rekey/Prüfung",
+          "detail": "Lebensdauer, Zähler, Logs und Erneuerung werden überwacht."
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Wer handelt aus, wer schützt?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "ipsec-diagnostic",
+          "diagnostic": true,
+          "question": "Welche Aufgabe übernimmt IKEv2 bei IPsec?",
+          "options": [
+            {
+              "text": "Peers authentisieren sowie kryptografische Parameter und Schlüsselzustand für Security Associations aushandeln.",
+              "rationale": "Richtig. IKE baut den Steuerzustand auf; ESP schützt anschließend den Datenverkehr.",
+              "correct": true
+            },
+            {
+              "text": "Jeden Anwendungsdatensatz selbst als Webprotokoll darstellen.",
+              "rationale": "IKE ist kein Anwendungsprotokoll.",
+              "correct": false
+            },
+            {
+              "text": "Nur IP-Adressen per DHCP vergeben.",
+              "rationale": "Adressvergabe ist nicht die Kernaufgabe von IKE.",
+              "correct": false
+            },
+            {
+              "text": "Eine MPLS-Leitung physisch schalten.",
+              "rationale": "IKE arbeitet logisch zwischen IPsec-Peers.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "ENTSCHEIDUNGSGRENZE",
+          "markdown": "IKEv2 baut Vertrauen und Schlüsselzustand auf. ESP schützt Pakete. Tunnelmodus kapselt ein inneres IP-Paket. Selektoren entscheiden, welcher Verkehr überhaupt in die SA fällt."
+        }
+      ]
+    },
+    {
+      "title": "Bausteine als zusammenhängenden Ablauf sehen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**IKEv2** authentisiert die Gegenstellen und richtet IKE- sowie Child-SAs ein. Eine **Security Association** ist ein gerichteter Satz aus Parametern, Schlüsseln und Lebensdauer. **ESP** kann Vertraulichkeit, Integrität und Authentisierung bereitstellen; die konkrete Kombination hängt von der ausgehandelten Suite ab. **AH** schützt Integrität und Authentizität von Paketanteilen, verschlüsselt aber nicht.\n\nIm **Transportmodus** bleibt der ursprüngliche IP-Header außen sichtbar. Im **Tunnelmodus** wird das gesamte innere IP-Paket gekapselt und ein neuer äußerer Header ergänzt – typisch für Gateway-zu-Gateway-Kopplung."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Vereinfachte Paketbeziehung im IPsec-Tunnelmodus",
+          "mathml": "<math display=\"block\"><mrow><mtext>äußeres IP</mtext><mo>+</mo><mtext>ESP</mtext><mo>(</mo><mtext>inneres IP</mtext><mo>+</mo><mtext>Nutzlast</mtext><mo>)</mo></mrow></math>",
+          "legend": [
+            "Der äußere Header transportiert das Paket zwischen den VPN-Peers",
+            "Das innere IP-Paket repräsentiert die geschützte Kommunikation"
+          ]
+        },
+        {
+          "type": "figure",
+          "diagramId": "ipsec-components-map",
+          "alt": "Vier Karten erklären IKEv2, Security Association, ESP und AH.",
+          "caption": "Eigene Komponentenkarte: Steuerkanal und Datenpfad nicht vermischen."
+        }
+      ]
+    },
+    {
+      "title": "Beispiel: Tunnel steht, Anwendung nicht erreichbar",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Die IKE-SA ist aktiv, aber nur ein Teilnetz erreicht die Gegenseite. Damit ist Basiserreichbarkeit und Authentisierung wahrscheinlich gegeben; geprüft werden nun Child-SA, lokale und entfernte Traffic Selectors, Routen, NAT-Ausnahmen und Firewallregeln. Stimmen die Selektoren auf beiden Seiten nicht überein, fällt der gewünschte Verkehr trotz „grünem“ IKE-Status nicht in den Tunnel."
+        },
+        {
+          "type": "figure",
+          "diagramId": "ipsec-establishment-flow",
+          "alt": "Ein fünfstufiger Ablauf zeigt Erreichbarkeit, IKE-SA, Child-SA, geschützten Datenverkehr und Erneuerung.",
+          "caption": "Eigener Tunnelablauf: Erst Basiserreichbarkeit, dann IKE, dann Selektoren und ESP prüfen."
+        }
+      ]
+    },
+    {
+      "title": "Geführte IPsec-Fehlersuche",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "ipsec-troubleshooting-sequence",
+          "title": "Einen Tunnel systematisch prüfen",
+          "prompt": "Ordne den Prüfpfad.",
+          "tag": "Übung",
+          "steps": [
+            {
+              "id": "reachability",
+              "label": "IP-Erreichbarkeit, Zeit, UDP/IKE und NAT-Situation der Peers prüfen"
+            },
+            {
+              "id": "ike",
+              "label": "IKE-SA, Peeridentität, Authentisierung und Vorschläge prüfen"
+            },
+            {
+              "id": "child",
+              "label": "Child-SAs, SPIs, Algorithmen und Lebensdauer prüfen"
+            },
+            {
+              "id": "selectors",
+              "label": "Traffic Selectors, Routing, NAT-Ausnahme und Firewall abgleichen"
+            },
+            {
+              "id": "traffic",
+              "label": "Zähler und Paketfluss in beide Richtungen mit Testverkehr verifizieren"
+            }
+          ],
+          "expected": [
+            "reachability",
+            "ike",
+            "child",
+            "selectors",
+            "traffic"
+          ],
+          "correctFeedback": "Richtig: Die Reihenfolge bildet den belastbaren technischen Entscheidungsweg ab.",
+          "wrongFeedback": "Prüfe zuerst Anforderungen und Grenzen, wähle dann die Technik und verifiziere zuletzt die Wirkung."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "ipsec-card-1",
+              "label": "IKEv2",
+              "front": "Was liefert IKEv2 für IPsec?",
+              "back": "Peer-Authentisierung sowie ausgehandelten Schlüssel- und Parameterzustand für IKE- und Child-SAs."
+            },
+            {
+              "id": "ipsec-card-2",
+              "label": "ESP",
+              "front": "Welche Schutzziele kann ESP liefern?",
+              "back": "Je nach Suite Vertraulichkeit sowie Integrität und Authentisierung des geschützten Datenverkehrs."
+            },
+            {
+              "id": "ipsec-card-3",
+              "label": "SA",
+              "front": "Warum gibt es für beide Richtungen getrennte SAs?",
+              "back": "Eine Security Association ist unidirektional und hat eigenen SPI- und Schlüsselzustand."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "ipsec-recall",
+          "title": "IPsec ohne Zauberwort erklären",
+          "prompt": "Erkläre einer Kollegin den Aufbau einer Site-to-Site-Verbindung mit IKEv2, SAs, ESP, Tunnelmodus und Selektoren. Ergänze drei Fehlersuchschritte.",
+          "label": "Deine Erklärung",
+          "placeholder": "Zunächst müssen …",
+          "minLength": 150,
+          "model": "Zuerst müssen sich die Peers über IP erreichen. IKEv2 authentisiert beide Seiten und richtet IKE- sowie Child-SAs ein. Für jede Richtung existiert eigener SA-Zustand. ESP kapselt im Tunnelmodus das innere IP-Paket und schützt es gemäß Suite. Traffic Selectors bestimmen die erfassten Netze. Bei Fehlern prüfe ich Erreichbarkeit/IKE, dann Child-SAs und schließlich Selektoren, Routing, NAT, Firewall und Zähler."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "ipsec-transfer-a",
+          "requiredObjective": "ipsec-components",
+          "question": "Welche Aussage ist vollständig korrekt?",
+          "options": [
+            {
+              "text": "IKEv2 handelt Sicherheitszustand aus; ESP schützt den Datenverkehr; eine SA ist gerichtet und Selektoren grenzen den Verkehr ein.",
+              "rationale": "Richtig. Das trennt Steuerung, Zustand und Datenpfad.",
+              "correct": true
+            },
+            {
+              "text": "AH verschlüsselt die Nutzlast immer stärker als ESP.",
+              "rationale": "AH bietet keine Vertraulichkeit.",
+              "correct": false
+            },
+            {
+              "text": "Eine SA gilt automatisch identisch in beide Richtungen.",
+              "rationale": "SAs sind unidirektional.",
+              "correct": false
+            },
+            {
+              "text": "Ein grüner IKE-Status beweist jede Anwendungsverbindung.",
+              "rationale": "Child-SAs, Selektoren, Routen und Regeln können weiterhin falsch sein.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "ipsec-transfer-b",
+          "requiredObjective": "ipsec-design",
+          "question": "IKE ist aktiv, aber ein neues Subnetz läuft nicht durch den Tunnel. Was prüfst du zuerst fachlich passend?",
+          "options": [
+            {
+              "text": "Child-SA und Traffic Selectors beider Seiten sowie Route, NAT-Ausnahme und Firewall für das neue Subnetz.",
+              "rationale": "Richtig. Der Steuerkanal allein erfasst den neuen Verkehr nicht.",
+              "correct": true
+            },
+            {
+              "text": "Nur das WLAN-Passwort ändern.",
+              "rationale": "Das betrifft die IPsec-Selektoren nicht.",
+              "correct": false
+            },
+            {
+              "text": "AH zusätzlich aktivieren und alle Logs löschen.",
+              "rationale": "Das löst keine fehlende Netzdefinition und vernichtet Diagnoseinformationen.",
+              "correct": false
+            },
+            {
+              "text": "Den Provider wechseln, ohne lokale Konfiguration zu prüfen.",
+              "rationale": "Zuerst wird der eingegrenzte Konfigurationspfad überprüft.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **IT-Berufe Lernfelder 10–12, PDF-Seiten 195–202:** AH, ESP, Modi und IPsec-Konfiguration.\n- **IHK Bonn, Chunks 00279, 00271 und 00275:** IPsec- und Tunnelmodus-Aufgaben.\n- **Normativer Abgleich:** IKEv2 und IPsec-Architektur wurden gegen RFC 7296 beziehungsweise RFC 4301 plausibilisiert.\n\nDie veröffentlichten Erklärgrafiken und Übungsfälle sind eigenständig erstellt. Quellenlücken und technische Grenzen bleiben im Kurationsartefakt sichtbar."
+        }
+      ]
+    }
+  ]
+}

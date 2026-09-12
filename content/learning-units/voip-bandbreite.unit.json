@@ -1,0 +1,328 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "voip-bandbreite",
+    "slug": "voip-bandbreite",
+    "title": "VoIP-Bandbreite mit Paket-Overhead und Reserve dimensionieren",
+    "description": "Codec-Nutzrate, Paketierungsintervall, RTP/UDP/IP- und Layer-2-Overhead, Gesprächszahl und Reserve in eine nachvollziehbare Bandbreitenplanung übersetzen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__14",
+    "week": "KW 40",
+    "estimatedMinutes": 33,
+    "relevance": "hoch",
+    "sources": [
+      "ihk-bonn",
+      "itlf10-12-2023"
+    ],
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "voip-bandwidth-model",
+      "label": "vereinfachte und paketgenaue VoIP-Bandbreitenmodelle unterscheiden und alle Eingangsgrößen mit korrekter Einheit erklären"
+    },
+    {
+      "id": "voip-bandwidth-calculate",
+      "label": "Gesamtbandbreite für gleichzeitige Gespräche einschließlich Overhead und Planungsreserve berechnen und das Ergebnis begründen"
+    }
+  ],
+  "intro": "Ein 64-kbit/s-Codec erzeugt auf der Leitung mehr als 64 kbit/s. Sprachdaten werden in vielen kleinen Paketen übertragen; jeder Frame trägt zusätzliche Header. Die korrekte Rechnung beginnt deshalb bei Einheiten und Paketierungsintervall.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "ihk-bonn",
+        "sourceLocator": "Chunk ihk-bonn:00377",
+        "use": "VoIP-Komponenten und Bandbreitenplanung im Prüfungsszenario verankern",
+        "reviewStatus": "Direkter VoIP-Kontext geprüft; Rechenmodell eigenständig und transparent erstellt"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seite 74",
+        "use": "Planungs- und Kommunikationskontext für IP-basierte Dienste ergänzen",
+        "reviewStatus": "Nur Kontext; kein belastbarer VoIP-Formelbeleg"
+      }
+    ],
+    "notes": [
+      "Die bereitgestellten Quellen liefern keinen geschlossenen, direkt belegten Rechenweg für VoIP-Overhead. Die Formeln sind als kuratiertes technisches Modell mit hoher Prüfpriorität markiert.",
+      "Das prozentuale Overheadmodell ist eine Schätzung. Für eine genaue Planung werden Codec-Payload pro Paket, Paketierungsintervall und RTP/UDP/IP-/Layer-2-Header verwendet.",
+      "VLAN-Tags, Tunneling, Verschlüsselung und Medienzugriff können den tatsächlichen Layer-2-Overhead verändern. Sprachqualität verlangt zusätzlich Latenz-, Jitter- und Verlustziele sowie QoS; Bandbreite allein reicht nicht.",
+      "Private Buchabbildungen wurden nicht veröffentlicht oder nachgezeichnet; beide Diagramme sind eigenständige, reduzierte Lernmodelle.",
+      "Hersteller-, Tarif- und versionsabhängige Werte sind als solche markiert und müssen vor einer realen Umsetzung gegen aktuelle Dokumentation geprüft werden."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "voip-bandwidth-layers",
+      "type": "comparison",
+      "title": "Wo Bandbreite entsteht",
+      "description": "Die Karten trennen Nutzlast, Paketheader, Zusatztunnel und Reserve.",
+      "items": [
+        {
+          "label": "Codec-Payload",
+          "detail": "Komprimierte Sprachdaten pro Zeit oder pro Paket; Ausgangspunkt der Rechnung."
+        },
+        {
+          "label": "RTP / UDP / IP",
+          "detail": "Header je Sprachpaket; häufige kleine Pakete erhöhen ihren relativen Anteil."
+        },
+        {
+          "label": "Layer 2 / Tunnel",
+          "detail": "Ethernet, VLAN, Provider- und VPN-Overhead hängen vom konkreten Pfad ab."
+        },
+        {
+          "label": "Planungsreserve",
+          "detail": "Zusätzlicher Spielraum für Lastschwankung und Betriebsziel; separat ausweisen statt verstecken."
+        }
+      ]
+    },
+    {
+      "id": "voip-sizing-flow",
+      "type": "flow",
+      "title": "Vom Gesprächsprofil zur Abnahme",
+      "description": "Die Rechnung bleibt bis zum Lasttest nachvollziehbar.",
+      "items": [
+        {
+          "label": "Codec",
+          "detail": "Codec, Bitrate und Paketierungsintervall festlegen."
+        },
+        {
+          "label": "Paket",
+          "detail": "Payload- und Headergröße für den tatsächlichen Pfad bestimmen."
+        },
+        {
+          "label": "Gleichzeitigkeit",
+          "detail": "Maximal gleichzeitig aktive Gesprächsrichtungen ansetzen."
+        },
+        {
+          "label": "Reserve/QoS",
+          "detail": "Reserve, Priorisierung und übrigen Echtzeitverkehr einplanen."
+        },
+        {
+          "label": "Test",
+          "detail": "Bandbreite, Jitter, Verlust und Sprachqualität unter Last prüfen."
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Warum 64 nicht gleich 64 bleibt",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "voip-bandbreite-diagnostic",
+          "diagnostic": true,
+          "question": "Warum benötigt ein 64-kbit/s-Codec auf dem WAN typischerweise mehr als 64 kbit/s pro Gesprächsrichtung?",
+          "options": [
+            {
+              "text": "Weil jedes Sprachpaket zusätzliche RTP-, UDP-, IP- und Layer-2-Header trägt.",
+              "rationale": "Richtig. Je kürzer das Paketierungsintervall, desto häufiger fällt dieser Overhead an.",
+              "correct": true
+            },
+            {
+              "text": "Weil der Codec automatisch jedes Paket verdoppelt.",
+              "rationale": "Die Mehrlast entsteht aus Headern und gegebenenfalls Tunneling, nicht aus einer pauschalen Verdopplung.",
+              "correct": false
+            },
+            {
+              "text": "Weil Switches die Sprache als Text speichern.",
+              "rationale": "Das ist kein Teil des Übertragungsmodells.",
+              "correct": false
+            },
+            {
+              "text": "Weil Bandbreite nur in Byte pro Stunde gemessen wird.",
+              "rationale": "Netzraten werden typischerweise in bit/s angegeben.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "ENTSCHEIDUNGSGRENZE",
+          "markdown": "Erst pro Gesprächsrichtung rechnen, dann gleichzeitige Gespräche und Reserve anwenden. Duplex und die Frage „pro Richtung oder Summe beider Richtungen?“ immer ausdrücklich benennen."
+        }
+      ]
+    },
+    {
+      "title": "Zwei Rechenmodelle mit klarer Genauigkeit",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Für eine schnelle Schätzung kann die Codec-Nutzrate mit einem dokumentierten Overheadfaktor multipliziert werden. Das ist nur so gut wie die Annahme.\n\nPaketgenau gilt: Payload-Byte und Header-Byte pro Paket werden mit der Paketrate multipliziert. Die Paketrate ist der Kehrwert des Paketierungsintervalls. Danach folgen gleichzeitige Gespräche und eine begründete Planungsreserve. Alle Werte beziehen sich auf **eine Richtung**, sofern nicht ausdrücklich anders angegeben."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "VoIP-Bandbreite als Schätzung und paketgenaues Modell",
+          "mathml": "<math display=\"block\"><mtable columnalign=\"left\"><mtr><mtd><msub><mi>R</mi><mtext>gesamt</mtext></msub><mo>≈</mo><mi>n</mi><mo>·</mo><msub><mi>R</mi><mtext>Codec</mtext></msub><mo>·</mo><mrow><mo>(</mo><mn>1</mn><mo>+</mo><mi>o</mi><mo>)</mo></mrow><mo>·</mo><mrow><mo>(</mo><mn>1</mn><mo>+</mo><mi>r</mi><mo>)</mo></mrow></mtd></mtr><mtr><mtd><msub><mi>R</mi><mtext>Richtung</mtext></msub><mo>=</mo><mrow><mo>(</mo><msub><mi>B</mi><mtext>Payload</mtext></msub><mo>+</mo><msub><mi>B</mi><mtext>Header</mtext></msub><mo>)</mo></mrow><mo>·</mo><mn>8</mn><mo>·</mo><msub><mi>f</mi><mtext>Pakete</mtext></msub></mtd></mtr></mtable></math>",
+          "legend": [
+            "n = gleichzeitige Gespräche",
+            "o = Overheadanteil als Dezimalzahl",
+            "r = Planungsreserve als Dezimalzahl",
+            "B = Byte pro Paket, f = Pakete pro Sekunde"
+          ]
+        },
+        {
+          "type": "figure",
+          "diagramId": "voip-bandwidth-layers",
+          "alt": "Vier Karten zeigen Codec-Payload, Protokollheader, Layer-2-/Tunneloverhead und Planungsreserve.",
+          "caption": "Eigenes Paketmodell: Der Overhead fällt pro Paket an, nicht nur einmal pro Gespräch."
+        }
+      ]
+    },
+    {
+      "title": "Beispiel: 18 Gespräche mit vereinfachtem Overhead",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Für eine erste Schätzung werden 18 gleichzeitige Gesprächsrichtungen, 64 kbit/s Codec-Nutzrate und 20 % Protokolloverhead angenommen. Ohne zusätzliche Reserve ergibt das **18 · 64 · 1,20 = 1 382,4 kbit/s pro betrachteter Richtung**. Für eine reale Freigabe werden Paketierungsintervall, tatsächlicher Layer-2-/VPN-Overhead, Gesprächsmodell, weiterer Verkehr und Qualitätsmesswerte ergänzt."
+        },
+        {
+          "type": "figure",
+          "diagramId": "voip-sizing-flow",
+          "alt": "Ein Ablauf führt von Codec und Paketmodell über Gleichzeitigkeit und QoS zum Lasttest.",
+          "caption": "Eigener Dimensionierungsweg: Rechnen, priorisieren und anschließend unter Last messen."
+        }
+      ]
+    },
+    {
+      "title": "Geführte Bandbreitenrechnung",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "voip-sizing-sequence",
+          "title": "Eine VoIP-Rechnung aufbauen",
+          "prompt": "Ordne den Rechen- und Prüfweg.",
+          "tag": "Übung",
+          "steps": [
+            {
+              "id": "assumptions",
+              "label": "Gesprächsrichtungen, Codec und Paketierungsintervall eindeutig festlegen"
+            },
+            {
+              "id": "overhead",
+              "label": "RTP/UDP/IP-, Layer-2- und möglichen Tunneloverhead bestimmen"
+            },
+            {
+              "id": "calculate",
+              "label": "Rate pro Richtung berechnen und mit Gleichzeitigkeit multiplizieren"
+            },
+            {
+              "id": "reserve",
+              "label": "Planungsreserve und QoS getrennt ergänzen"
+            },
+            {
+              "id": "validate",
+              "label": "Unter Last Durchsatz, Jitter, Verlust und Sprachqualität messen"
+            }
+          ],
+          "expected": [
+            "assumptions",
+            "overhead",
+            "calculate",
+            "reserve",
+            "validate"
+          ],
+          "correctFeedback": "Richtig: Die Reihenfolge bildet den belastbaren technischen Entscheidungsweg ab.",
+          "wrongFeedback": "Prüfe zuerst Anforderungen und Grenzen, wähle dann die Technik und verifiziere zuletzt die Wirkung."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "voip-bandbreite-card-1",
+              "label": "Paketierungsintervall",
+              "front": "Wie wirkt ein kürzeres Intervall auf den relativen Overhead?",
+              "back": "Es erzeugt mehr Pakete pro Sekunde; die Header fallen häufiger an und ihr relativer Anteil steigt."
+            },
+            {
+              "id": "voip-bandbreite-card-2",
+              "label": "Richtung",
+              "front": "Warum muss die Bezugsrichtung genannt werden?",
+              "back": "Vollduplex-Kommunikation sendet in beide Richtungen; Uplink und Downlink können getrennt begrenzt sein."
+            },
+            {
+              "id": "voip-bandbreite-card-3",
+              "label": "QoS",
+              "front": "Warum reicht freie Bandbreite allein nicht?",
+              "back": "Jitter, Verlust, Warteschlangen und konkurrierende Bursts können Sprache trotz ausreichender Durchschnittsrate stören."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "voip-bandbreite-recall",
+          "title": "Eine VoIP-Planung erklären",
+          "prompt": "Erkläre einer prüfenden Person den Unterschied zwischen einfacher Overheadschätzung und paketgenauer Rechnung. Nenne Einheiten, Richtung und Abnahmewerte.",
+          "label": "Deine Erklärung",
+          "placeholder": "Bei der Schätzung …",
+          "minLength": 150,
+          "model": "Die Schätzung multipliziert Codec-Rate, Gesprächszahl, angenommenen Overhead und Reserve. Paketgenau addiere ich Payload- und Header-Byte pro Paket, multipliziere mit 8 und der Paketrate. Das Ergebnis wird pro Richtung angegeben und mit der Gleichzeitigkeit skaliert. Zusätzlich plane ich QoS und prüfe unter Last Bandbreite, Jitter, Verlust und Sprachqualität."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "voip-bandbreite-transfer-a",
+          "requiredObjective": "voip-bandwidth-model",
+          "question": "Welche Rechnung ist fachlich am transparentesten?",
+          "options": [
+            {
+              "text": "Sie nennt Codec, Paketierungsintervall, Header, Gesprächsrichtungen, Gleichzeitigkeit, Reserve und die Einheit des Ergebnisses.",
+              "rationale": "Richtig. Damit sind Annahmen und Genauigkeit prüfbar.",
+              "correct": true
+            },
+            {
+              "text": "Sie schreibt nur „VoIP braucht 100 kbit/s“ ohne Kontext.",
+              "rationale": "Codec, Paketierung, Pfad und Richtung fehlen.",
+              "correct": false
+            },
+            {
+              "text": "Sie ignoriert Header, weil sie keine Sprachdaten enthalten.",
+              "rationale": "Header verbrauchen trotzdem Leitungskapazität.",
+              "correct": false
+            },
+            {
+              "text": "Sie addiert Prozentwerte direkt als kbit/s.",
+              "rationale": "Prozent und Datenrate müssen dimensionsrichtig verknüpft werden.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "numeric",
+          "id": "voip-bandbreite-transfer-b",
+          "prompt": "Berechne für 18 gleichzeitige Gesprächsrichtungen mit 64 kbit/s Codec-Nutzrate und 20 % Overhead die geschätzte Gesamtbandbreite ohne zusätzliche Reserve. Gib das Ergebnis in kbit/s ein.",
+          "expected": 1382.4,
+          "tolerance": 0.1,
+          "label": "Gesamtbandbreite in kbit/s",
+          "placeholder": "Ergebnis eingeben",
+          "correctFeedback": "Richtig: 18 · 64 · 1,20 = 1 382,4 kbit/s pro betrachteter Richtung.",
+          "wrongFeedback": "Nutze n · Codec-Rate · (1 + Overhead): 18 · 64 · 1,20. Gib das Ergebnis in kbit/s ein.",
+          "requiredObjective": "voip-bandwidth-calculate"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **IHK Bonn, Chunk 00377:** VoIP-Komponenten und Prüfungskontext.\n- **IT-Berufe Lernfelder 10–12, PDF-Seite 74:** Planungs- und Kommunikationskontext.\n- **Kurationshinweis:** Der Formelteil ist eigenständig hergeleitet und benötigt fachliche Freigabe gegen das konkret verwendete Netzprofil.\n\nDie veröffentlichten Erklärgrafiken und Übungsfälle sind eigenständig erstellt. Quellenlücken und technische Grenzen bleiben im Kurationsartefakt sichtbar."
+        }
+      ]
+    }
+  ]
+}

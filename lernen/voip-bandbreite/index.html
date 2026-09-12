@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Codec-Nutzrate, Paketierungsintervall, RTP/UDP/IP- und Layer-2-Overhead, Gesprächszahl und Reserve in eine nachvollziehbare Bandbreitenplanung übersetzen.">
+<title>VoIP-Bandbreite mit Paket-Overhead und Reserve dimensionieren – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-1">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="voip-bandbreite" data-progress-id="ga2-6__14" data-content-revision="2026-09-12.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-6">Block N6 · WLAN, WAN und VPN</a><span class="sep">›</span>
+    <span class="here">VoIP-Bandbreite mit Paket-Overhead und Reserve dimensionieren</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">VoIP-Bandbreite mit Paket-Overhead und Reserve dimensionieren</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 33 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Ein 64-kbit/s-Codec erzeugt auf der Leitung mehr als 64 kbit/s. Sprachdaten werden in vielen kleinen Paketen übertragen; jeder Frame trägt zusätzliche Header. Die korrekte Rechnung beginnt deshalb bei Einheiten und Paketierungsintervall.</p>
+<section class="learning-goals" aria-labelledby="voip-bandbreite-goals">
+  <h2 id="voip-bandbreite-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>vereinfachte und paketgenaue VoIP-Bandbreitenmodelle unterscheiden und alle Eingangsgrößen mit korrekter Einheit erklären</li>
+    <li>Gesamtbandbreite für gleichzeitige Gespräche einschließlich Overhead und Planungsreserve berechnen und das Ergebnis begründen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Warum 64 nicht gleich 64 bleibt</h2>
+<section class="quiz" data-quiz="voip-bandbreite-diagnostic" data-correct="0">
+  <h3>Warum benötigt ein 64-kbit/s-Codec auf dem WAN typischerweise mehr als 64 kbit/s pro Gesprächsrichtung?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Je kürzer das Paketierungsintervall, desto häufiger fällt dieser Overhead an."><span class="m">A</span> Weil jedes Sprachpaket zusätzliche RTP-, UDP-, IP- und Layer-2-Header trägt.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die Mehrlast entsteht aus Headern und gegebenenfalls Tunneling, nicht aus einer pauschalen Verdopplung."><span class="m">B</span> Weil der Codec automatisch jedes Paket verdoppelt.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Das ist kein Teil des Übertragungsmodells."><span class="m">C</span> Weil Switches die Sprache als Text speichern.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Netzraten werden typischerweise in bit/s angegeben."><span class="m">D</span> Weil Bandbreite nur in Byte pro Stunde gemessen wird.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">ENTSCHEIDUNGSGRENZE</span><p>Erst pro Gesprächsrichtung rechnen, dann gleichzeitige Gespräche und Reserve anwenden. Duplex und die Frage „pro Richtung oder Summe beider Richtungen?“ immer ausdrücklich benennen.</p></aside><h2 class="sec" id="s2"><span class="num">2</span>Zwei Rechenmodelle mit klarer Genauigkeit</h2>
+<p>Für eine schnelle Schätzung kann die Codec-Nutzrate mit einem dokumentierten Overheadfaktor multipliziert werden. Das ist nur so gut wie die Annahme.</p>
+<p>Paketgenau gilt: Payload-Byte und Header-Byte pro Paket werden mit der Paketrate multipliziert. Die Paketrate ist der Kehrwert des Paketierungsintervalls. Danach folgen gleichzeitige Gespräche und eine begründete Planungsreserve. Alle Werte beziehen sich auf <strong>eine Richtung</strong>, sofern nicht ausdrücklich anders angegeben.</p>
+<div class="math-display" role="group" aria-label="VoIP-Bandbreite als Schätzung und paketgenaues Modell"><math display="block" aria-label="VoIP-Bandbreite als Schätzung und paketgenaues Modell"><mtable columnalign="left"><mtr><mtd><msub><mi>R</mi><mtext>gesamt</mtext></msub><mo>≈</mo><mi>n</mi><mo>·</mo><msub><mi>R</mi><mtext>Codec</mtext></msub><mo>·</mo><mrow><mo>(</mo><mn>1</mn><mo>+</mo><mi>o</mi><mo>)</mo></mrow><mo>·</mo><mrow><mo>(</mo><mn>1</mn><mo>+</mo><mi>r</mi><mo>)</mo></mrow></mtd></mtr><mtr><mtd><msub><mi>R</mi><mtext>Richtung</mtext></msub><mo>=</mo><mrow><mo>(</mo><msub><mi>B</mi><mtext>Payload</mtext></msub><mo>+</mo><msub><mi>B</mi><mtext>Header</mtext></msub><mo>)</mo></mrow><mo>·</mo><mn>8</mn><mo>·</mo><msub><mi>f</mi><mtext>Pakete</mtext></msub></mtd></mtr></mtable></math><div class="math-legend"><span>n = gleichzeitige Gespräche</span><span>o = Overheadanteil als Dezimalzahl</span><span>r = Planungsreserve als Dezimalzahl</span><span>B = Byte pro Paket, f = Pakete pro Sekunde</span></div></div><figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Wo Bandbreite entsteht">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-voip-bandwidth-layers-title diagram-voip-bandwidth-layers-desc">
+  <title id="diagram-voip-bandwidth-layers-title">Wo Bandbreite entsteht</title>
+  <desc id="diagram-voip-bandwidth-layers-desc">Vier Karten zeigen Codec-Payload, Protokollheader, Layer-2-/Tunneloverhead und Planungsreserve.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Wo Bandbreite entsteht</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">Codec-Payload</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">Komprimierte</tspan><tspan x="64" dy="30">Sprachdaten pro Zeit</tspan><tspan x="64" dy="30">oder pro Paket;</tspan></text></g><g><rect class="diagram-row" x="265" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="287" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="287" dy="0">RTP / UDP / IP</tspan></text><text x="287" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="287" dy="0">Header je</tspan><tspan x="287" dy="30">Sprachpaket; häufige</tspan><tspan x="287" dy="30">kleine Pakete</tspan></text></g><g><rect class="diagram-row" x="488" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="510" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="510" dy="0">Layer 2 / Tunnel</tspan></text><text x="510" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="510" dy="0">Ethernet, VLAN,</tspan><tspan x="510" dy="30">Provider- und</tspan><tspan x="510" dy="30">VPN-Overhead hängen</tspan></text></g><g><rect class="diagram-row" x="711" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="733" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="733" dy="0">Planungsreserve</tspan></text><text x="733" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="733" dy="0">Zusätzlicher</tspan><tspan x="733" dy="30">Spielraum für</tspan><tspan x="733" dy="30">Lastschwankung und</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigenes Paketmodell: Der Overhead fällt pro Paket an, nicht nur einmal pro Gespräch.</figcaption>
+</figure><h2 class="sec" id="s3"><span class="num">3</span>Beispiel: 18 Gespräche mit vereinfachtem Overhead</h2>
+<p>Für eine erste Schätzung werden 18 gleichzeitige Gesprächsrichtungen, 64 kbit/s Codec-Nutzrate und 20 % Protokolloverhead angenommen. Ohne zusätzliche Reserve ergibt das <strong>18 · 64 · 1,20 = 1 382,4 kbit/s pro betrachteter Richtung</strong>. Für eine reale Freigabe werden Paketierungsintervall, tatsächlicher Layer-2-/VPN-Overhead, Gesprächsmodell, weiterer Verkehr und Qualitätsmesswerte ergänzt.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Vom Gesprächsprofil zur Abnahme">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="650" viewBox="0 0 960 650" role="img" aria-labelledby="diagram-voip-sizing-flow-title diagram-voip-sizing-flow-desc">
+  <title id="diagram-voip-sizing-flow-title">Vom Gesprächsprofil zur Abnahme</title>
+  <desc id="diagram-voip-sizing-flow-desc">Ein Ablauf führt von Codec und Paketmodell über Gleichzeitigkeit und QoS zum Lasttest.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Vom Gesprächsprofil zur Abnahme</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Codec</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Codec, Bitrate und Paketierungsintervall festlegen.</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Paket</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Payload- und Headergröße für den tatsächlichen Pfad bestimmen.</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Gleichzeitigkeit</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Maximal gleichzeitig aktive Gesprächsrichtungen ansetzen.</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Reserve/QoS</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Reserve, Priorisierung und übrigen Echtzeitverkehr einplanen.</tspan></text><path d="M480 472v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 494 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="512" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="541" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Test</tspan></text><text x="178" y="568" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Bandbreite, Jitter, Verlust und Sprachqualität unter Last</tspan><tspan x="178" dy="25">prüfen.</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigener Dimensionierungsweg: Rechnen, priorisieren und anschließend unter Last messen.</figcaption>
+</figure><h2 class="sec" id="s4"><span class="num">4</span>Geführte Bandbreitenrechnung</h2>
+<section class="sequence-practice" data-sequence="voip-sizing-sequence" data-expected="assumptions,overhead,calculate,reserve,validate" data-correct-feedback="Richtig: Die Reihenfolge bildet den belastbaren technischen Entscheidungsweg ab." data-wrong-feedback="Prüfe zuerst Anforderungen und Grenzen, wähle dann die Technik und verifiziere zuletzt die Wirkung." aria-labelledby="voip-sizing-sequence-title">
+  <div class="lab-heading"><div><h3 id="voip-sizing-sequence-title">Eine VoIP-Rechnung aufbauen</h3><p>Ordne den Rechen- und Prüfweg.</p></div><span class="lab-tag">Übung</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="assumptions" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Gesprächsrichtungen, Codec und Paketierungsintervall eindeutig festlegen</span></li>
+    <li data-step="overhead" tabindex="-1"><span class="step-position" data-step-position>2</span><span>RTP/UDP/IP-, Layer-2- und möglichen Tunneloverhead bestimmen</span></li>
+    <li data-step="calculate" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Rate pro Richtung berechnen und mit Gleichzeitigkeit multiplizieren</span></li>
+    <li data-step="reserve" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Planungsreserve und QoS getrennt ergänzen</span></li>
+    <li data-step="validate" tabindex="-1"><span class="step-position" data-step-position>5</span><span>Unter Last Durchsatz, Jitter, Verlust und Sprachqualität messen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Karteikarten und freier Abruf</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="voip-bandbreite-card-1" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wie wirkt ein kürzeres Intervall auf den relativen Overhead?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Es erzeugt mehr Pakete pro Sekunde; die Header fallen häufiger an und ihr relativer Anteil steigt.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="voip-bandbreite-card-2" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum muss die Bezugsrichtung genannt werden?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Vollduplex-Kommunikation sendet in beide Richtungen; Uplink und Downlink können getrennt begrenzt sein.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="voip-bandbreite-card-3" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum reicht freie Bandbreite allein nicht?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Jitter, Verlust, Warteschlangen und konkurrierende Bursts können Sprache trotz ausreichender Durchschnittsrate stören.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Paketierungsintervall“:</span><button type="button" data-card-id="voip-bandbreite-card-1" data-card-rate="known">gewusst</button><button type="button" data-card-id="voip-bandbreite-card-1" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="voip-bandbreite-card-1"></span></div>
+<div class="card-rating"><span>Karte „Richtung“:</span><button type="button" data-card-id="voip-bandbreite-card-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="voip-bandbreite-card-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="voip-bandbreite-card-2"></span></div>
+<div class="card-rating"><span>Karte „QoS“:</span><button type="button" data-card-id="voip-bandbreite-card-3" data-card-rate="known">gewusst</button><button type="button" data-card-id="voip-bandbreite-card-3" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="voip-bandbreite-card-3"></span></div><section class="recall-practice" data-recall="voip-bandbreite-recall" data-min-length="150" aria-labelledby="voip-bandbreite-recall-title">
+  <div class="recall-prompt"><h3 id="voip-bandbreite-recall-title">Eine VoIP-Planung erklären</h3><p>Erkläre einer prüfenden Person den Unterschied zwischen einfacher Overheadschätzung und paketgenauer Rechnung. Nenne Einheiten, Richtung und Abnahmewerte.</p></div>
+  <label class="sr-only" for="voip-bandbreite-recall-answer">Deine Erklärung</label>
+  <textarea id="voip-bandbreite-recall-answer" data-recall-input rows="4" placeholder="Bei der Schätzung …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Die Schätzung multipliziert Codec-Rate, Gesprächszahl, angenommenen Overhead und Reserve. Paketgenau addiere ich Payload- und Header-Byte pro Paket, multipliziere mit 8 und der Paketrate. Das Ergebnis wird pro Richtung angegeben und mit der Gleichzeitigkeit skaliert. Zusätzlich plane ich QoS und prüfe unter Last Bandbreite, Jitter, Verlust und Sprachqualität.</div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Lernziel-Check</h2>
+<section class="quiz" data-quiz="voip-bandbreite-transfer-a" data-correct="0" data-required-objective="voip-bandwidth-model">
+  <h3>Welche Rechnung ist fachlich am transparentesten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Damit sind Annahmen und Genauigkeit prüfbar."><span class="m">A</span> Sie nennt Codec, Paketierungsintervall, Header, Gesprächsrichtungen, Gleichzeitigkeit, Reserve und die Einheit des Ergebnisses.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Codec, Paketierung, Pfad und Richtung fehlen."><span class="m">B</span> Sie schreibt nur „VoIP braucht 100 kbit/s“ ohne Kontext.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Header verbrauchen trotzdem Leitungskapazität."><span class="m">C</span> Sie ignoriert Header, weil sie keine Sprachdaten enthalten.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Prozent und Datenrate müssen dimensionsrichtig verknüpft werden."><span class="m">D</span> Sie addiert Prozentwerte direkt als kbit/s.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="numeric-practice transfer-number" data-numeric-practice="voip-bandbreite-transfer-b" data-required-objective="voip-bandwidth-calculate" data-expected="1382.4" data-tolerance="0.1" data-correct-feedback="Richtig: 18 · 64 · 1,20 = 1 382,4 kbit/s pro betrachteter Richtung." data-wrong-feedback="Nutze n · Codec-Rate · (1 + Overhead): 18 · 64 · 1,20. Gib das Ergebnis in kbit/s ein.">
+  <h3>Berechne das Ergebnis</h3>
+  <p>Berechne für 18 gleichzeitige Gesprächsrichtungen mit 64 kbit/s Codec-Nutzrate und 20 % Overhead die geschätzte Gesamtbandbreite ohne zusätzliche Reserve. Gib das Ergebnis in kbit/s ein.</p>
+  <label for="voip-bandbreite-transfer-b-answer">Gesamtbandbreite in kbit/s</label>
+  <div class="answer-row"><input id="voip-bandbreite-transfer-b-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Ergebnis eingeben"><button type="button" class="lbtn primary" data-numeric-check>Antwort prüfen</button></div>  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s7"><span class="num">7</span>Quellen und Einordnung</h2>
+<ul>
+<li><strong>IHK Bonn, Chunk 00377:</strong> VoIP-Komponenten und Prüfungskontext.</li>
+<li><strong>IT-Berufe Lernfelder 10–12, PDF-Seite 74:</strong> Planungs- und Kommunikationskontext.</li>
+<li><strong>Kurationshinweis:</strong> Der Formelteil ist eigenständig hergeleitet und benötigt fachliche Freigabe gegen das konkret verwendete Netzprofil.</li>
+</ul>
+<p>Die veröffentlichten Erklärgrafiken und Übungsfälle sind eigenständig erstellt. Quellenlücken und technische Grenzen bleiben im Kurationsartefakt sichtbar.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-6"><span class="d">zurück zu</span><span class="t">Block N6 · WLAN, WAN und VPN</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N6 · WLAN, WAN und VPN</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Warum 64 nicht gleich 64 bleibt</a></li>
+<li><a href="#s2" data-t="s2">Zwei Rechenmodelle mit klarer Genauigkeit</a></li>
+<li><a href="#s3" data-t="s3">Beispiel: 18 Gespräche mit vereinfachtem Overhead</a></li>
+<li><a href="#s4" data-t="s4">Geführte Bandbreitenrechnung</a></li>
+<li><a href="#s5" data-t="s5">Karteikarten und freier Abruf</a></li>
+<li><a href="#s6" data-t="s6">Lernziel-Check</a></li>
+<li><a href="#s7" data-t="s7">Quellen und Einordnung</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-6">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

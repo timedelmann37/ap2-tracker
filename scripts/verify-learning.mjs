@@ -193,6 +193,24 @@ for (const topic of switchingVlanTopics) {
   check((page.match(/<svg class="learning-diagram/g) || []).length === 2, `${topic.slug}: zwei eigenständige Erklärgrafiken sind eingebettet`);
 }
 
+const wlanWanVpnTopics = manifest.topics
+  .filter(topic => topic.groupId === 'ga2-6')
+  .sort((left, right) => Number(left.itemId.split('__')[1]) - Number(right.itemId.split('__')[1]));
+check(wlanWanVpnTopics.length === 15, 'WLAN-, WAN- und VPN-Block ist mit allen 15 Kernthemen vollständig umgesetzt');
+check(
+  JSON.stringify(wlanWanVpnTopics.map(topic => topic.itemId)) === JSON.stringify(Array.from({ length: 15 }, (_, index) => `ga2-6__${index}`)),
+  'WLAN-, WAN- und VPN-Block ist lückenlos mit den kanonischen Fortschritts-Schlüsseln verdrahtet'
+);
+for (const topic of wlanWanVpnTopics) {
+  const page = await readFile(path.join(repoRoot, 'lernen', topic.slug, 'index.html'), 'utf8');
+  check((page.match(/<svg class="learning-diagram/g) || []).length === 2, `${topic.slug}: zwei eigenständige Erklärgrafiken sind eingebettet`);
+  check((page.match(/data-step=/g) || []).length >= 5, `${topic.slug}: geführter Transfer enthält einen vollständigen Entscheidungsweg`);
+}
+for (const slug of ['wlan-standards-frequenzen', 'wlan-kanalplanung', 'wlan-site-survey', 'ipsec', 'x509-zertifikate', 'voip-bandbreite']) {
+  const page = await readFile(path.join(repoRoot, 'lernen', slug, 'index.html'), 'utf8');
+  check((page.match(/<math/g) || []).length >= 1, `${slug}: Formel oder technische Beziehung ist als visuelles semantisches MathML gesetzt`);
+}
+
 const backupPage = await readFile(path.join(repoRoot, 'lernen', 'backup-methods', 'index.html'), 'utf8');
 check(backupPage.includes('data-sequence="incremental-restore"') && backupPage.includes('data-expected="verify,full,increments,validate"'), 'Backup-Einheit trainiert die Restore-Reihenfolge interaktiv');
 check((backupPage.match(/<math/g) || []).length >= 4, 'Backup-Rechnungen werden visuell und semantisch gesetzt');

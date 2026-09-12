@@ -1,0 +1,333 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "wlan-sicherheit",
+    "slug": "wlan-sicherheit",
+    "title": "WLAN-Sicherheit als mehrschichtiges Profil entwerfen",
+    "description": "WPA2 und WPA3, Personal und Enterprise, 802.1X, RADIUS, Gasttrennung und Captive Portal fachlich abgrenzen und kombinieren.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__4",
+    "week": "KW 40",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": [
+      "europa-integratoren-2026",
+      "itlf10-12-2023"
+    ],
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "security-methods",
+      "label": "WPA2/WPA3 sowie Personal/Enterprise nach Authentisierung, Schlüsselmodell und Migrationsgrenzen unterscheiden"
+    },
+    {
+      "id": "security-profile",
+      "label": "für Mitarbeitende und Gäste ein mehrschichtiges WLAN-Profil mit 802.1X, RADIUS, Segmentierung und Portalrolle begründen"
+    }
+  ],
+  "intro": "Ein Captive Portal ist keine Funkverschlüsselung, ein VLAN ist keine Benutzeridentität und ein gemeinsames Passwort ist keine individuelle Nachvollziehbarkeit. Ein belastbares WLAN-Profil kombiniert passende Schichten.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunks europa-integratoren-2026:01059 und :01051",
+        "use": "WPA2/WPA3-Grundunterschiede sowie zeitlich begrenzter Gastzugang über Voucher und Captive Portal",
+        "reviewStatus": "Direkte Textstellen geprüft; pauschale Marketingaussagen nicht übernommen"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seite 217",
+        "use": "802.1X-Rollen und RADIUS als identitätsbasierte Zugangskontrolle",
+        "reviewStatus": "Als Enterprise-Authentisierungskontext geprüft"
+      }
+    ],
+    "notes": [
+      "Die gemappte Quelle itlf6-9-2022:00212 enthält WPA3 nur als Produktmerkmal und wird nicht als vollständiger Sicherheitsbeleg verwendet.",
+      "WPA3-SAE verbessert das passwortbasierte Verfahren, ersetzt aber weder starke Passwörter noch Segmentierung, Patchmanagement und sichere Endgeräte.",
+      "Ein Captive Portal regelt Anmeldung oder Nutzungsbedingungen nach Funkzugang; seine konkrete Schutzwirkung hängt von der übrigen Architektur ab.",
+      "Private Buchabbildungen wurden nicht veröffentlicht oder nachgezeichnet; beide Diagramme sind eigenständige, reduzierte Lernmodelle.",
+      "Hersteller-, Tarif- und versionsabhängige Werte sind als solche markiert und müssen vor einer realen Umsetzung gegen aktuelle Dokumentation geprüft werden."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "wlan-security-methods",
+      "type": "comparison",
+      "title": "Authentisierungsmodelle im Vergleich",
+      "description": "Die Karten trennen Funkverfahren, Identität und Gastfreigabe.",
+      "items": [
+        {
+          "label": "WPA2/WPA3 Personal",
+          "detail": "Gemeinsames Zugangswissen; einfacher Betrieb, aber schwache individuelle Zuordnung und aufwendiger Geheimniswechsel."
+        },
+        {
+          "label": "WPA2/WPA3 Enterprise",
+          "detail": "802.1X/EAP mit RADIUS; individuelle Identität und zentrale Policy, dafür PKI-/Verzeichnis- und Betriebsaufwand."
+        },
+        {
+          "label": "Captive Portal",
+          "detail": "Webbasierte Freigabe, Voucher oder Bedingungen; ist weder allein Funkverschlüsselung noch interne Firewall."
+        },
+        {
+          "label": "Gastsegment",
+          "detail": "Eigenes VLAN/Netz und restriktive Regeln; Internetzugang ohne direkten Zugriff auf interne Ressourcen."
+        }
+      ]
+    },
+    {
+      "id": "enterprise-auth-flow",
+      "type": "flow",
+      "title": "802.1X- und RADIUS-Entscheidungspfad",
+      "description": "Client, Access Point und RADIUS übernehmen getrennte Rollen.",
+      "items": [
+        {
+          "label": "Supplicant",
+          "detail": "Client weist Identität mit dem gewählten EAP-Verfahren nach."
+        },
+        {
+          "label": "Authenticator",
+          "detail": "AP kontrolliert den Port und transportiert die Authentisierung."
+        },
+        {
+          "label": "RADIUS",
+          "detail": "Prüft Identität und liefert Autorisierungsattribute."
+        },
+        {
+          "label": "Policy",
+          "detail": "Rolle, VLAN und Zugriffsregeln werden durchgesetzt."
+        },
+        {
+          "label": "Accounting",
+          "detail": "Erfolg, Fehler und Sitzungsdaten werden angemessen protokolliert."
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Portal gleich Verschlüsselung?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "wlan-sicherheit-diagnostic",
+          "diagnostic": true,
+          "question": "Ein Gast-WLAN zeigt nach dem Verbinden ein Captive Portal. Welche Aussage ist sicher?",
+          "options": [
+            {
+              "text": "Das Portal steuert einen nachgelagerten Freigabeprozess; über Funkverschlüsselung und interne Trennung sagt es allein nichts aus.",
+              "rationale": "Richtig. Portal, Funkzugang und Segmentierung sind getrennte Kontrollen.",
+              "correct": true
+            },
+            {
+              "text": "Das WLAN nutzt dadurch automatisch WPA3-Enterprise.",
+              "rationale": "Ein Portal beweist weder WPA3 noch 802.1X.",
+              "correct": false
+            },
+            {
+              "text": "Gäste können dadurch technisch nie interne Systeme erreichen.",
+              "rationale": "Dafür braucht es Segmentierung und durchgesetzte Netzregeln.",
+              "correct": false
+            },
+            {
+              "text": "Alle Gäste besitzen automatisch ein individuelles Zertifikat.",
+              "rationale": "Voucher oder Webanmeldung sind keine Zertifikatsausstellung.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "ENTSCHEIDUNGSGRENZE",
+          "markdown": "Funk schützen, Identität prüfen, Zugriffsrechte begrenzen, Gäste isolieren und Betrieb überwachen – jede Schicht beantwortet eine andere Sicherheitsfrage."
+        }
+      ]
+    },
+    {
+      "title": "Verfahren und Rollen nicht vermischen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**Personal** nutzt typischerweise ein gemeinsames Geheimnis oder SAE-Passwort; Verwaltung und individuelle Zuordnung sind begrenzt. **Enterprise** verbindet 802.1X/EAP mit einer Authentifizierungsinfrastruktur, häufig RADIUS, und ermöglicht individuelle Konten oder Zertifikate.\n\n**WPA2** bleibt in Beständen verbreitet; **WPA3** verbessert unter anderem passwortbasierte Anmeldung mit SAE. Übergangsmodi können Kompatibilität erleichtern, aber Sicherheitsniveau und Clientverhalten müssen getestet werden. Gäste gehören in ein getrenntes Segment mit minimalen Freigaben; ein Portal kann Voucher oder Zustimmung verwalten, ersetzt jedoch die Trennung nicht."
+        },
+        {
+          "type": "figure",
+          "diagramId": "wlan-security-methods",
+          "alt": "Vier Karten vergleichen Personal, Enterprise, Captive Portal und Gastsegment.",
+          "caption": "Eigene Sicherheitskarte: Jede Komponente hat eine begrenzte Aufgabe."
+        }
+      ]
+    },
+    {
+      "title": "Beispiel: Mitarbeitende, BYOD und Gäste",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Verwaltete Firmengeräte nutzen Enterprise-Authentisierung mit individuellen Nachweisen und einer Mitarbeiterrolle. BYOD erhält eine begrenzte Rolle oder ein eigenes Onboarding. Gäste landen in einem isolierten Segment mit Internetzugang und optionalem Voucher-Portal. Managementschnittstellen der APs sind nicht aus Gast- oder Clientnetzen erreichbar. Übergangsmodi werden nur nach Clienttest und mit Migrationsplan eingesetzt."
+        },
+        {
+          "type": "figure",
+          "diagramId": "enterprise-auth-flow",
+          "alt": "Ein fünfstufiger Ablauf zeigt Supplicant, AP als Authenticator, RADIUS, Policy und Accounting.",
+          "caption": "Eigener Authentisierungspfad: Identität und Netzrecht werden getrennt entschieden."
+        }
+      ]
+    },
+    {
+      "title": "Geführtes Sicherheitsprofil",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "wlan-security-profile-sequence",
+          "title": "Ein WLAN-Profil zusammensetzen",
+          "prompt": "Ordne den Entwurfsweg.",
+          "tag": "Übung",
+          "steps": [
+            {
+              "id": "identities",
+              "label": "Nutzergruppen, Gerätebesitz und benötigte Nachweisstärke erfassen"
+            },
+            {
+              "id": "auth",
+              "label": "Personal oder Enterprise und ein passendes Authentisierungsverfahren wählen"
+            },
+            {
+              "id": "segments",
+              "label": "Rollen auf getrennte Segmente und minimale Zugriffsregeln abbilden"
+            },
+            {
+              "id": "guest",
+              "label": "Gastfreigabe, Isolation, Laufzeit und Portalrolle definieren"
+            },
+            {
+              "id": "operate",
+              "label": "Zertifikate, Passwörter, Logs, Updates und Notfallzugang betreiben"
+            }
+          ],
+          "expected": [
+            "identities",
+            "auth",
+            "segments",
+            "guest",
+            "operate"
+          ],
+          "correctFeedback": "Richtig: Die Reihenfolge bildet den belastbaren technischen Entscheidungsweg ab.",
+          "wrongFeedback": "Prüfe zuerst Anforderungen und Grenzen, wähle dann die Technik und verifiziere zuletzt die Wirkung."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "wlan-sicherheit-card-1",
+              "label": "Personal",
+              "front": "Was ist die zentrale Betriebsgrenze eines gemeinsamen WLAN-Passworts?",
+              "back": "Es liefert keine belastbare individuelle Identität; Wechsel und Entzug betreffen häufig viele Geräte."
+            },
+            {
+              "id": "wlan-sicherheit-card-2",
+              "label": "Enterprise",
+              "front": "Welche Rollen bilden einen typischen 802.1X-Pfad?",
+              "back": "Supplicant am Client, Authenticator am AP und Authentifizierungsserver, häufig RADIUS."
+            },
+            {
+              "id": "wlan-sicherheit-card-3",
+              "label": "Captive Portal",
+              "front": "Was ersetzt ein Captive Portal nicht?",
+              "back": "Funkverschlüsselung, interne Segmentierung, Firewallregeln und starke Geräte- oder Benutzeridentität."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "wlan-sicherheit-recall",
+          "title": "Ein WLAN-Sicherheitsprofil erklären",
+          "prompt": "Entwirf für Mitarbeitende und Gäste ein Profil. Grenze WPA, 802.1X/RADIUS, Segmentierung und Portal voneinander ab.",
+          "label": "Deine Erklärung",
+          "placeholder": "Mitarbeitende authentisieren …",
+          "minLength": 150,
+          "model": "Mitarbeitende nutzen ein aktuelles Enterprise-Profil mit 802.1X/EAP und RADIUS; individuelle Nachweise ermöglichen rollenbasierte Autorisierung. Gäste erhalten ein separates Segment mit minimalen Regeln und optionalem Voucher-Portal. Das Portal ist keine Funkverschlüsselung, das VLAN keine Identität. Management bleibt getrennt. Clientkompatibilität, Zertifikatslebenszyklus, Logs und Migrationspfad werden getestet."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "wlan-sicherheit-transfer-a",
+          "requiredObjective": "security-methods",
+          "question": "Welche Abgrenzung ist vollständig korrekt?",
+          "options": [
+            {
+              "text": "Enterprise nutzt 802.1X/EAP für individuelle Authentisierung; RADIUS prüft oder vermittelt die Identität, während Segmentregeln den Zugriff begrenzen.",
+              "rationale": "Richtig. Identität und Netzberechtigung sind getrennt, aber verknüpft.",
+              "correct": true
+            },
+            {
+              "text": "Ein VLAN ersetzt RADIUS, weil eine VLAN-ID den Benutzer kryptografisch beweist.",
+              "rationale": "Ein VLAN ist Segmentierung, keine Identität.",
+              "correct": false
+            },
+            {
+              "text": "Ein Captive Portal verschlüsselt automatisch jeden Funkframe mit WPA3.",
+              "rationale": "Portal und Funkverschlüsselung sind getrennte Ebenen.",
+              "correct": false
+            },
+            {
+              "text": "WPA3 macht Endgerätepatches überflüssig.",
+              "rationale": "Ein Funkverfahren ersetzt kein Gerätemanagement.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "wlan-sicherheit-transfer-b",
+          "requiredObjective": "security-profile",
+          "question": "Welche Lösung passt für Gäste am besten?",
+          "options": [
+            {
+              "text": "Eigenes Gastsegment mit minimalen Freigaben, Clientisolation nach Bedarf und zeitlich begrenztem Portal- oder Voucherprozess.",
+              "rationale": "Richtig. Zugang und erreichbare Ressourcen werden gemeinsam begrenzt.",
+              "correct": true
+            },
+            {
+              "text": "Dasselbe interne VLAN wie Administratoren, nur mit anderer SSID.",
+              "rationale": "SSID-Namen allein trennen keinen Verkehr.",
+              "correct": false
+            },
+            {
+              "text": "Nur ein Portal vor das unsegmentierte LAN setzen.",
+              "rationale": "Das Portal ersetzt keine Netztrennung.",
+              "correct": false
+            },
+            {
+              "text": "Managementoberflächen der APs aus dem Gastnetz freigeben.",
+              "rationale": "Management gehört in eine getrennte, restriktive Zone.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **EUROPA Prüfungsvorbereitung, Chunks 01059 und 01051:** WPA2/WPA3 sowie Voucher-/Captive-Portal-Kontext.\n- **IT-Berufe Lernfelder 10–12, PDF-Seite 217:** 802.1X- und RADIUS-Rollen.\n\nDie veröffentlichten Erklärgrafiken und Übungsfälle sind eigenständig erstellt. Quellenlücken und technische Grenzen bleiben im Kurationsartefakt sichtbar."
+        }
+      ]
+    }
+  ]
+}

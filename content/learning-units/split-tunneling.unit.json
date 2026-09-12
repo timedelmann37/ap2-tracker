@@ -1,0 +1,339 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "split-tunneling",
+    "slug": "split-tunneling",
+    "title": "Split Tunneling als Routing- und Sicherheitsentscheidung planen",
+    "description": "Full Tunnel und Split Tunnel anhand von Routen, DNS, Kontrollpunkten, Bandbreite und lokalen Risiken vergleichen und prüfen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__12",
+    "week": "KW 40",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "sources": [
+      "itlf10-12-2023",
+      "europa-integratoren-2026"
+    ],
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "split-full-compare",
+      "label": "Full Tunnel und Split Tunnel nach Verkehrsweg, Kontrollmöglichkeit, Bandbreite und Angriffsfläche unterscheiden"
+    },
+    {
+      "id": "split-policy-design",
+      "label": "eine explizite Split-Tunnel-Policy mit Zielpräfixen, DNS-Verhalten, lokalen Netzen und Testfällen entwerfen"
+    }
+  ],
+  "intro": "Split Tunneling ist keine Komfortoption ohne Sicherheitswirkung. Es entscheidet, welche Ziele über das Unternehmensgateway laufen und welche das Endgerät direkt erreicht. Damit verändern sich Kontrolle, Bandbreite, Latenz und Brückenrisiken.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seite 200",
+        "use": "Site-to-End-VPN und die Wahl zwischen gesamtem beziehungsweise ausgewähltem Verkehr einordnen",
+        "reviewStatus": "Direkter Remote-Access-Kontext geprüft"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seite 202",
+        "use": "VPN-Systeme als technische Umsetzungsvarianten ergänzen",
+        "reviewStatus": "Indirekter Kontext geprüft"
+      },
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunk europa-integratoren-2026:01083",
+        "use": "Remote-Access-Szenario und Vertrauensgrenze ergänzen",
+        "reviewStatus": "Szenariokontext geprüft"
+      }
+    ],
+    "notes": [
+      "Welche Präfixe, Domains oder Anwendungen geteilt werden können, hängt von Client, VPN-Plattform und Sicherheitsrichtlinie ab.",
+      "Lokale LAN-Zugriffe, DNS-Auflösung, IPv4/IPv6-Dual-Stack und Fail-open-Verhalten müssen ausdrücklich getestet werden.",
+      "Split Tunneling ist weder pauschal unsicher noch pauschal empfehlenswert; die Entscheidung folgt Schutzbedarf und kontrollierbaren Risiken.",
+      "Private Buchabbildungen wurden nicht veröffentlicht oder nachgezeichnet; beide Diagramme sind eigenständige, reduzierte Lernmodelle.",
+      "Hersteller-, Tarif- und versionsabhängige Werte sind als solche markiert und müssen vor einer realen Umsetzung gegen aktuelle Dokumentation geprüft werden."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "split-full-paths",
+      "type": "comparison",
+      "title": "Full und Split Tunnel",
+      "description": "Die Pfade werden anhand von Kontrolle und Risiko verglichen.",
+      "items": [
+        {
+          "label": "Full Tunnel",
+          "detail": "Unternehmensgateway sieht vorgesehenen Verkehr; zentrale Kontrolle, aber höhere Last und möglicher Umweg."
+        },
+        {
+          "label": "Split Tunnel",
+          "detail": "Nur definierte Ziele nutzen VPN; weniger zentrale Last, stärkere Abhängigkeit von Endpunktschutz."
+        },
+        {
+          "label": "Lokales LAN",
+          "detail": "Drucker, Router oder fremde Geräte können eine zusätzliche Angriffsfläche bilden; Zugriff explizit regeln."
+        },
+        {
+          "label": "DNS und IPv6",
+          "detail": "Namensauflösung und zweiter IP-Stack können unbeabsichtigte Nebenpfade erzeugen."
+        }
+      ]
+    },
+    {
+      "id": "split-policy-flow",
+      "type": "flow",
+      "title": "Split-Policy verifizieren",
+      "description": "Jede Verkehrsklasse erhält einen erwarteten Pfad.",
+      "items": [
+        {
+          "label": "Ziele",
+          "detail": "Interne Präfixe, SaaS-Dienste, Internet und lokale Netze klassifizieren."
+        },
+        {
+          "label": "Routen",
+          "detail": "IPv4- und IPv6-Pfade sowie Prioritäten definieren."
+        },
+        {
+          "label": "DNS",
+          "detail": "Resolver und Suchdomänen je Zielklasse festlegen."
+        },
+        {
+          "label": "Kontrollen",
+          "detail": "Firewall, EDR, Proxy und Logging pro Pfad zuordnen."
+        },
+        {
+          "label": "Tests",
+          "detail": "Normalbetrieb, Tunnelverlust, fremdes LAN und DNS-Fehler prüfen."
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Welcher Weg gilt für welches Ziel?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "split-tunneling-diagnostic",
+          "diagnostic": true,
+          "question": "Was beschreibt Full Tunnel bei einem Remote-Client?",
+          "options": [
+            {
+              "text": "Der relevante Standardverkehr wird über den VPN-Tunnel und die Unternehmenskontrollen geführt.",
+              "rationale": "Richtig. Ausnahmen und lokale Sonderwege müssen trotzdem konkret geprüft werden.",
+              "correct": true
+            },
+            {
+              "text": "Nur interne Netze laufen durch den Tunnel, alles andere lokal.",
+              "rationale": "Das ist die typische Grundidee von Split Tunneling.",
+              "correct": false
+            },
+            {
+              "text": "Das Gerät benötigt keine lokale Internetverbindung.",
+              "rationale": "Der Tunnel braucht weiterhin einen Transportweg.",
+              "correct": false
+            },
+            {
+              "text": "DNS kann niemals einen anderen Weg nehmen.",
+              "rationale": "DNS-Verhalten muss separat konfiguriert und getestet werden.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "ENTSCHEIDUNGSGRENZE",
+          "markdown": "Policy nicht als Schalter dokumentieren, sondern als Routingtabelle: Ziel → Pfad → DNS → Kontrolle → Verhalten bei Fehler."
+        }
+      ]
+    },
+    {
+      "title": "Verkehrsweg und Kontrollpunkt gemeinsam betrachten",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**Full Tunnel** führt den vorgesehenen Verkehr über das Unternehmensgateway. Das zentralisiert Filterung und Protokollierung, belastet aber WAN und VPN-Infrastruktur und kann Umwege erzeugen. **Split Tunnel** sendet nur definierte Unternehmensziele durch den Tunnel; allgemeiner Internetverkehr bleibt lokal. Das spart zentrale Bandbreite, verlagert jedoch Kontrollen auf Client und lokale Verbindung.\n\nBesonders wichtig sind konsistente IPv4-/IPv6-Routen, DNS-Zuordnung, Zugriff auf lokale Netze, SaaS-Ausnahmen und Verhalten bei Tunnelausfall. Unklare Überschneidungen können Daten am vorgesehenen Kontrollpunkt vorbeileiten."
+        },
+        {
+          "type": "figure",
+          "diagramId": "split-full-paths",
+          "alt": "Vier Karten vergleichen Full Tunnel, Split Tunnel, lokale Netze sowie DNS- und IPv6-Nebenpfade.",
+          "caption": "Eigene Pfadkarte: Mehr zentrale Kontrolle und weniger Umweg sind gegensätzliche Ziele."
+        }
+      ]
+    },
+    {
+      "title": "Beispiel: internes ERP und Videokonferenz-SaaS",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Das interne ERP-Präfix und interne DNS-Zonen laufen durch den Tunnel. Ein freigegebener Videokonferenzdienst darf lokal ausbrechen, wenn Endpunktschutz und SaaS-Kontrollen den Schutzbedarf erfüllen. Lokale RFC1918-Netze sind standardmäßig blockiert oder eng begrenzt. Tests prüfen zusätzlich IPv6 und den Fall, dass der Tunnel ausfällt."
+        },
+        {
+          "type": "figure",
+          "diagramId": "split-policy-flow",
+          "alt": "Ein fünfstufiger Ablauf zeigt Zielklassifikation, Routen, DNS, Kontrollen und Tests.",
+          "caption": "Eigene Policyprüfung: Für jede Zielklasse muss der tatsächlich beobachtete Pfad feststehen."
+        }
+      ]
+    },
+    {
+      "title": "Geführte Split-Policy",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "split-policy-sequence",
+          "title": "Verkehrsklassen sicher zuordnen",
+          "prompt": "Ordne den Entwurfsweg.",
+          "tag": "Übung",
+          "steps": [
+            {
+              "id": "classify",
+              "label": "Interne, SaaS-, Internet- und lokale Ziele samt Schutzbedarf klassifizieren"
+            },
+            {
+              "id": "route",
+              "label": "Erwartete IPv4- und IPv6-Pfade für jede Klasse definieren"
+            },
+            {
+              "id": "dns",
+              "label": "Resolver, Suchdomänen und Schutz gegen DNS-Nebenpfade festlegen"
+            },
+            {
+              "id": "controls",
+              "label": "Kontrollen und Logs auf VPN-Gateway, SaaS und Client zuordnen"
+            },
+            {
+              "id": "verify",
+              "label": "Pfad, DNS und Fail-Verhalten in mehreren Netzen messen"
+            }
+          ],
+          "expected": [
+            "classify",
+            "route",
+            "dns",
+            "controls",
+            "verify"
+          ],
+          "correctFeedback": "Richtig: Die Reihenfolge bildet den belastbaren technischen Entscheidungsweg ab.",
+          "wrongFeedback": "Prüfe zuerst Anforderungen und Grenzen, wähle dann die Technik und verifiziere zuletzt die Wirkung."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "split-tunneling-card-1",
+              "label": "Full Tunnel",
+              "front": "Was ist sein zentraler Vorteil?",
+              "back": "Vorgesehener Verkehr kann über zentrale Unternehmenskontrollen geführt werden."
+            },
+            {
+              "id": "split-tunneling-card-2",
+              "label": "Split Tunnel",
+              "front": "Was ist sein zentraler betrieblicher Vorteil?",
+              "back": "Allgemeiner oder freigegebener Verkehr belastet das zentrale VPN weniger und vermeidet Umwege."
+            },
+            {
+              "id": "split-tunneling-card-3",
+              "label": "DNS-Leak",
+              "front": "Warum gehört DNS in den Test?",
+              "back": "Namensanfragen können sensible Ziele verraten oder über einen anderen Pfad als der Nutzverkehr laufen."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "split-tunneling-recall",
+          "title": "Eine Split-Policy verteidigen",
+          "prompt": "Entwirf die Pfade für ERP, Videokonferenz-SaaS, allgemeines Web und lokales LAN. Nenne DNS-, IPv6- und Ausfalltests.",
+          "label": "Deine Erklärung",
+          "placeholder": "ERP wird …",
+          "minLength": 150,
+          "model": "ERP und interne DNS-Zonen laufen durch den Tunnel. Freigegebener SaaS-Verkehr kann lokal ausbrechen, wenn der Schutzbedarf durch Client- und SaaS-Kontrollen gedeckt ist. Allgemeines Web folgt der festgelegten Unternehmenspolicy; lokales LAN bleibt blockiert oder minimal. Ich teste IPv4/IPv6, DNS, fremde Netze, Tunnelverlust und die tatsächlich sichtbaren Kontrollpunkte."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "split-tunneling-transfer-a",
+          "requiredObjective": "split-full-compare",
+          "question": "Welche Aussage ist korrekt?",
+          "options": [
+            {
+              "text": "Split Tunneling braucht explizite Ziel-, Routing-, DNS- und Kontrollregeln; es ist kein folgenloser Komfortschalter.",
+              "rationale": "Richtig. Die Schutzwirkung verschiebt sich je Pfad.",
+              "correct": true
+            },
+            {
+              "text": "Split Tunnel verschlüsselt automatisch jedes lokale Druckerprotokoll.",
+              "rationale": "Lokaler Verkehr kann gerade außerhalb des Tunnels bleiben.",
+              "correct": false
+            },
+            {
+              "text": "Full Tunnel benötigt keine Kapazitätsplanung.",
+              "rationale": "Zentraler Transport und Gateway müssen die Last tragen.",
+              "correct": false
+            },
+            {
+              "text": "IPv6 kann ignoriert werden, wenn IPv4-Routen stimmen.",
+              "rationale": "Ein zweiter Stack kann einen unbeabsichtigten Nebenpfad erzeugen.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "split-tunneling-transfer-b",
+          "requiredObjective": "split-policy-design",
+          "question": "Welcher Nachweis ist für eine Split-Policy am stärksten?",
+          "options": [
+            {
+              "text": "Gemessene Zielpfade und DNS-Resolver für alle Verkehrsklassen in Normal- und Ausfallfällen, einschließlich IPv6.",
+              "rationale": "Richtig. So wird die deklarierte Policy praktisch überprüft.",
+              "correct": true
+            },
+            {
+              "text": "Nur ein Screenshot des verbundenen VPN-Icons.",
+              "rationale": "Das Icon zeigt keine einzelnen Verkehrswege.",
+              "correct": false
+            },
+            {
+              "text": "Nur ein Ping zu einem internen Host.",
+              "rationale": "Andere Zielklassen und DNS bleiben ungeprüft.",
+              "correct": false
+            },
+            {
+              "text": "Die Annahme, dass der Client alles richtig routet.",
+              "rationale": "Routen und Fehlerfälle müssen beobachtet werden.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **IT-Berufe Lernfelder 10–12, PDF-Seite 200:** Site-to-End und gesamter beziehungsweise ausgewählter VPN-Verkehr.\n- **PDF-Seite 202 und EUROPA-Chunk 01083:** VPN-System- und Remote-Access-Kontext.\n\nDie veröffentlichten Erklärgrafiken und Übungsfälle sind eigenständig erstellt. Quellenlücken und technische Grenzen bleiben im Kurationsartefakt sichtbar."
+        }
+      ]
+    }
+  ]
+}

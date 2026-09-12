@@ -1,0 +1,345 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "x509-zertifikate",
+    "slug": "x509-zertifikate",
+    "title": "X.509-Zertifikate und Vertrauenskette prüfen",
+    "description": "Zertifikat, privater Schlüssel, CSR, CA und Vertrauenskette auseinanderhalten und einen Zertifikatsfehler systematisch untersuchen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__10",
+    "week": "KW 40",
+    "estimatedMinutes": 31,
+    "relevance": "hoch",
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "x509-components",
+      "label": "Zertifikat, privater Schlüssel, CSR, CA, Signatur und Vertrauenskette nach ihrer Aufgabe unterscheiden"
+    },
+    {
+      "id": "x509-validation",
+      "label": "Identität, Gültigkeitszeitraum, Key Usage, Vertrauenskette und Sperrstatus in einer nachvollziehbaren Validierung prüfen"
+    }
+  ],
+  "intro": "Ein Zertifikat ist kein geheimer Schlüssel. Es bindet einen öffentlichen Schlüssel an eine benannte Identität und weitere Bedingungen. Vertrauen entsteht erst, wenn der Prüfer die Signaturkette und die beabsichtigte Nutzung akzeptiert.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seiten 33 und 34",
+        "use": "CSR, Zertifikatsfelder, CA-Signatur und Vertrauenskette erklären",
+        "reviewStatus": "Direkte Seiten geprüft; private Beispielabbildungen nicht übernommen"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seiten 246 und 255",
+        "use": "Zertifikatseinsatz und Vorlagen-/Lifecycle-Kontext ergänzen",
+        "reviewStatus": "Kontext geprüft; produktspezifische Bedienung nicht verallgemeinert"
+      }
+    ],
+    "notes": [
+      "Der private Schlüssel bleibt beim Schlüsselinhaber und gehört weder in den CSR noch in das ausgestellte Zertifikat.",
+      "Eine erfolgreiche Signaturprüfung allein genügt nicht: Name, Zeit, beabsichtigte Nutzung, Richtlinie und gegebenenfalls Sperrstatus müssen ebenfalls passen.",
+      "Sperrprüfung und genaue Pfadbildung sind client- und richtlinienabhängig; die Einheit vermittelt die prüfbaren Kernfragen.",
+      "Private Buchabbildungen wurden nicht veröffentlicht oder nachgezeichnet; beide Diagramme sind eigenständige, reduzierte Lernmodelle.",
+      "Hersteller-, Tarif- und versionsabhängige Werte sind als solche markiert und müssen vor einer realen Umsetzung gegen aktuelle Dokumentation geprüft werden."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "x509-issuance-flow",
+      "type": "flow",
+      "title": "Von der Anfrage zum Zertifikat",
+      "description": "Der private Schlüssel bleibt am Endpunkt.",
+      "items": [
+        {
+          "label": "Schlüsselpaar",
+          "detail": "Privater Schlüssel wird geschützt erzeugt; öffentlicher Schlüssel darf verteilt werden."
+        },
+        {
+          "label": "CSR",
+          "detail": "Enthält öffentlichen Schlüssel, beantragte Identität und Antragssignatur."
+        },
+        {
+          "label": "CA-Prüfung",
+          "detail": "Die CA prüft Identität und Richtlinienanforderungen."
+        },
+        {
+          "label": "Ausstellung",
+          "detail": "Die CA signiert Zertifikatsdaten und Laufzeit."
+        },
+        {
+          "label": "Installation",
+          "detail": "Zertifikat wird dem passenden privaten Schlüssel und Dienst zugeordnet."
+        }
+      ]
+    },
+    {
+      "id": "x509-validation-flow",
+      "type": "flow",
+      "title": "Vertrauenskette validieren",
+      "description": "Signatur, Name, Zeit und Nutzung werden getrennt geprüft.",
+      "items": [
+        {
+          "label": "Identität",
+          "detail": "Hostname, Benutzer oder Gerät passt zur gewünschten Gegenstelle."
+        },
+        {
+          "label": "Zeit",
+          "detail": "Aktuelle Zeit liegt im Gültigkeitsfenster."
+        },
+        {
+          "label": "Nutzung",
+          "detail": "Key Usage, Extended Key Usage und Policy erlauben den Zweck."
+        },
+        {
+          "label": "Kette",
+          "detail": "Alle Signaturen führen zu einem lokal vertrauten Anchor."
+        },
+        {
+          "label": "Status",
+          "detail": "Sperrinformation und Richtlinienentscheidung werden berücksichtigt."
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Was darf veröffentlicht werden?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "x509-zertifikate-diagnostic",
+          "diagnostic": true,
+          "question": "Welche Komponente muss geheim bleiben?",
+          "options": [
+            {
+              "text": "Der private Schlüssel des Zertifikatsinhabers.",
+              "rationale": "Richtig. Zertifikat und öffentlicher Schlüssel dürfen verteilt werden; der private Schlüssel nicht.",
+              "correct": true
+            },
+            {
+              "text": "Das ausgestellte Zertifikat.",
+              "rationale": "Das Zertifikat wird gerade an Prüfer ausgeliefert.",
+              "correct": false
+            },
+            {
+              "text": "Der öffentliche Schlüssel.",
+              "rationale": "Er ist Bestandteil des Zertifikats.",
+              "correct": false
+            },
+            {
+              "text": "Der Name der ausstellenden CA.",
+              "rationale": "Der Aussteller ist ein öffentliches Zertifikatsfeld.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "ENTSCHEIDUNGSGRENZE",
+          "markdown": "Privater Schlüssel signiert oder entschlüsselt am Endpunkt. Das Zertifikat verteilt den öffentlichen Schlüssel samt Identität. Die CA bestätigt diese Bindung durch ihre Signatur."
+        }
+      ]
+    },
+    {
+      "title": "Vom Schlüsselpaar zur Vertrauenskette",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Der Antragsteller erzeugt ein **Schlüsselpaar** und daraus einen **CSR** mit öffentlichem Schlüssel und beantragter Identität. Eine CA prüft den Antrag gemäß ihrer Richtlinie und signiert ein Zertifikat. Der private Schlüssel verlässt den vorgesehenen sicheren Speicher nicht.\n\nBei der Validierung baut der Client einen Pfad vom **Leaf-Zertifikat** über mögliche **Intermediate CAs** zu einem lokal vertrauten **Root**. Zusätzlich prüft er Namen, Gültigkeitszeit, Key Usage/Extended Key Usage, Signaturen und – soweit Richtlinie und Client es verlangen – Sperrinformationen."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Vereinfachte Signaturprüfung eines Zertifikats",
+          "mathml": "<math display=\"block\"><mrow><mtext>Verify</mtext><mo>(</mo><msub><mi>K</mi><mtext>CA,pub</mtext></msub><mo>,</mo><mtext>Zertifikatsdaten</mtext><mo>,</mo><mtext>CA-Signatur</mtext><mo>)</mo><mo>=</mo><mtext>wahr</mtext></mrow></math>",
+          "legend": [
+            "Die Signatur bestätigt Integrität und Ausstellerbindung",
+            "Sie bestätigt nicht allein Name, Zeit oder erlaubte Nutzung"
+          ]
+        },
+        {
+          "type": "figure",
+          "diagramId": "x509-issuance-flow",
+          "alt": "Ein Ablauf zeigt Schlüsselpaar, CSR, CA-Prüfung, Ausstellung und Installation.",
+          "caption": "Eigener Ausstellungsweg: Der private Schlüssel bleibt beim Inhaber."
+        }
+      ]
+    },
+    {
+      "title": "Beispiel: gültige Signatur, falscher Hostname",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein VPN-Gateway präsentiert ein von einer vertrauten CA signiertes Zertifikat, dessen Name jedoch nur `vpn-alt.example` enthält. Der Client verbindet sich mit `vpn.example`. Trotz intakter Signatur darf die Identitätsprüfung fehlschlagen. Die Lösung ist kein Abschalten der Prüfung, sondern ein Zertifikat mit passender Identität und sauberem Lifecycle."
+        },
+        {
+          "type": "figure",
+          "diagramId": "x509-validation-flow",
+          "alt": "Ein Ablauf zeigt die Validierung von Identität, Zeit, Nutzung, Kette und Status.",
+          "caption": "Eigener Prüfpfad: Kryptografisch gültig ist nicht automatisch für diesen Namen und Zweck gültig."
+        }
+      ]
+    },
+    {
+      "title": "Geführte Zertifikatsprüfung",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "x509-validation-sequence",
+          "title": "Einen Zertifikatsfehler eingrenzen",
+          "prompt": "Ordne die Prüfschritte.",
+          "tag": "Übung",
+          "steps": [
+            {
+              "id": "purpose",
+              "label": "Gewünschte Gegenstelle und Verwendungszweck festhalten"
+            },
+            {
+              "id": "identity",
+              "label": "Subject Alternative Name beziehungsweise Identität vergleichen"
+            },
+            {
+              "id": "time",
+              "label": "Systemzeit und Gültigkeitsfenster prüfen"
+            },
+            {
+              "id": "chain",
+              "label": "Zwischenzertifikate, Signaturen und Vertrauensanker prüfen"
+            },
+            {
+              "id": "usage",
+              "label": "Key Usage, Sperrstatus, Schlüsselzuordnung und Richtlinie prüfen"
+            }
+          ],
+          "expected": [
+            "purpose",
+            "identity",
+            "time",
+            "chain",
+            "usage"
+          ],
+          "correctFeedback": "Richtig: Die Reihenfolge bildet den belastbaren technischen Entscheidungsweg ab.",
+          "wrongFeedback": "Prüfe zuerst Anforderungen und Grenzen, wähle dann die Technik und verifiziere zuletzt die Wirkung."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "x509-zertifikate-card-1",
+              "label": "CSR",
+              "front": "Was enthält ein CSR?",
+              "back": "Den öffentlichen Schlüssel, beantragte Identitätsdaten und eine Antragssignatur – nicht den privaten Schlüssel."
+            },
+            {
+              "id": "x509-zertifikate-card-2",
+              "label": "Root CA",
+              "front": "Warum wird einem Root-Zertifikat vertraut?",
+              "back": "Weil es als Vertrauensanker lokal oder organisatorisch installiert und akzeptiert wurde, nicht bloß weil es selbstsigniert ist."
+            },
+            {
+              "id": "x509-zertifikate-card-3",
+              "label": "Hostname",
+              "front": "Warum reicht eine gültige CA-Signatur nicht?",
+              "back": "Der präsentierte Name und die erlaubte Verwendung müssen zusätzlich zum gewünschten Dienst passen."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "x509-zertifikate-recall",
+          "title": "Eine Zertifikatskette erklären",
+          "prompt": "Erkläre Ausstellung und Prüfung eines VPN-Serverzertifikats. Benenne die Rolle von CSR, privatem Schlüssel, Intermediate und Root.",
+          "label": "Deine Erklärung",
+          "placeholder": "Der Server erzeugt …",
+          "minLength": 150,
+          "model": "Der Server erzeugt ein Schlüsselpaar und hält den privaten Schlüssel geschützt. Der CSR enthält öffentlichen Schlüssel und beantragte Identität. Die CA prüft und signiert das Leaf-Zertifikat. Der Client validiert Name, Zeit und Verwendung sowie die Signaturkette über Intermediates zu einem lokal vertrauten Root und berücksichtigt gegebenenfalls den Sperrstatus."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "x509-zertifikate-transfer-a",
+          "requiredObjective": "x509-components",
+          "question": "Welche Aussage ist korrekt?",
+          "options": [
+            {
+              "text": "Das Zertifikat enthält den öffentlichen Schlüssel; der zugehörige private Schlüssel bleibt geschützt beim Inhaber.",
+              "rationale": "Richtig. Beide werden nicht gemeinsam veröffentlicht.",
+              "correct": true
+            },
+            {
+              "text": "Der private Schlüssel wird im Zertifikat mitgesendet.",
+              "rationale": "Das würde die Sicherheit vollständig zerstören.",
+              "correct": false
+            },
+            {
+              "text": "Ein CSR ist bereits das fertige, von der CA signierte Zertifikat.",
+              "rationale": "Der CSR ist der Antrag.",
+              "correct": false
+            },
+            {
+              "text": "Jedes selbstsignierte Root ist auf jedem Gerät automatisch vertrauenswürdig.",
+              "rationale": "Vertrauen entsteht durch lokalen Vertrauensanker und Richtlinie.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "x509-zertifikate-transfer-b",
+          "requiredObjective": "x509-validation",
+          "question": "Die Kette ist signaturseitig gültig, aber der Servername passt nicht. Was ist die richtige Reaktion?",
+          "options": [
+            {
+              "text": "Verbindung ablehnen beziehungsweise Fehler beheben und ein Zertifikat mit passender Identität bereitstellen.",
+              "rationale": "Richtig. Die Namensprüfung ist Teil der Gegenstellenidentität.",
+              "correct": true
+            },
+            {
+              "text": "Hostname-Prüfung dauerhaft abschalten.",
+              "rationale": "Das öffnet die Verbindung für falsche Gegenstellen.",
+              "correct": false
+            },
+            {
+              "text": "Den privaten Schlüssel per E-Mail verteilen.",
+              "rationale": "Private Schlüssel dürfen nicht verteilt werden.",
+              "correct": false
+            },
+            {
+              "text": "Nur das WLAN wechseln.",
+              "rationale": "Das korrigiert den Zertifikatsnamen nicht.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **IT-Berufe Lernfelder 10–12, PDF-Seiten 33–34:** CSR, Zertifikatsfelder und Vertrauenskette.\n- **PDF-Seiten 246 und 255:** Einsatz- und Lifecycle-Kontext.\n\nDie veröffentlichten Erklärgrafiken und Übungsfälle sind eigenständig erstellt. Quellenlücken und technische Grenzen bleiben im Kurationsartefakt sichtbar."
+        }
+      ]
+    }
+  ]
+}

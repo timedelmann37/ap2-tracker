@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Providerbasierte MPLS-Dienste und softwaregesteuerte WAN-Overlays anhand von Pfad, Steuerung, Sicherheit, SLA und Betrieb unterscheiden.">
+<title>MPLS und SD-WAN als Betriebsmodelle vergleichen – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-1">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="mpls-sd-wan" data-progress-id="ga2-6__6" data-content-revision="2026-09-12.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-6">Block N6 · WLAN, WAN und VPN</a><span class="sep">›</span>
+    <span class="here">MPLS und SD-WAN als Betriebsmodelle vergleichen</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">MPLS und SD-WAN als Betriebsmodelle vergleichen</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 29 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>MPLS und SD-WAN sind keine austauschbaren Kabelarten. MPLS ist typischerweise ein gemanagter Providerdienst; SD-WAN legt Steuerung und verschlüsselte Overlays auf einen oder mehrere vorhandene Zugangswege. Beides kann kombiniert werden.</p>
+<section class="learning-goals" aria-labelledby="mpls-sd-wan-goals">
+  <h2 id="mpls-sd-wan-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>MPLS-VPN und SD-WAN nach Underlay, Overlay, Pfadauswahl, Sichtbarkeit und Verantwortungsgrenze vergleichen</li>
+    <li>für ein Filialnetz ein begründetes Betriebsmodell mit Sicherheits-, SLA- und Ausfallannahmen entwerfen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Privat transportiert oder kryptografisch geschützt?</h2>
+<section class="quiz" data-quiz="mpls-sd-wan-diagnostic" data-correct="0">
+  <h3>Welche Aussage ist korrekt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Vertraulichkeit muss separat zugesichert oder kryptografisch ergänzt werden."><span class="m">A</span> Ein MPLS-VPN kann Verkehrsnetze logisch trennen, garantiert aber nicht automatisch Ende-zu-Ende-Verschlüsselung.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="MPLS-Weiterleitung und IPsec-Verschlüsselung sind verschiedene Mechanismen."><span class="m">B</span> MPLS ist immer ein verschlüsseltes IPsec-Protokoll.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="SD-WAN benötigt Underlays wie Internet, Mobilfunk oder MPLS."><span class="m">C</span> SD-WAN ersetzt jede physische Zugangsleitung.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Zentrale, anwendungsbezogene Policy ist häufig ein Kern des Betriebsmodells."><span class="m">D</span> Bei SD-WAN gibt es keine zentrale Policy.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">ENTSCHEIDUNGSGRENZE</span><p>Underlay transportiert, Overlay verbindet, Policy entscheidet. Verschlüsselung, Verfügbarkeit und SLA müssen für jede Schicht ausdrücklich geprüft werden.</p></aside><h2 class="sec" id="s2"><span class="num">2</span>Providerdienst und Overlay sauber trennen</h2>
+<p><strong>MPLS-VPN:</strong> Der Provider betreibt ein logisch getrenntes WAN und kann definierte Klassen oder Serviceziele anbieten. Der Kunde muss Providergrenze, Verschlüsselungsbedarf und Übergaben verstehen.</p>
+<p><strong>SD-WAN:</strong> Edge-Geräte bauen über ein oder mehrere Underlays Overlays auf. Eine zentrale Policy kann Anwendungen erkennen, Pfade anhand gemessener Qualität wählen und Konfiguration verteilen. Das erlaubt hybride Wege, schafft aber Abhängigkeiten von Orchestrierung, Schlüsseln, Telemetrie und Herstellerbetrieb.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: MPLS und SD-WAN im Vergleich">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-mpls-sdwan-models-title diagram-mpls-sdwan-models-desc">
+  <title id="diagram-mpls-sdwan-models-title">MPLS und SD-WAN im Vergleich</title>
+  <desc id="diagram-mpls-sdwan-models-desc">Vier Karten vergleichen MPLS-Dienst, SD-WAN-Overlay, hybriden Betrieb und Sicherheitsgrenzen.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">MPLS und SD-WAN im Vergleich</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">MPLS-Dienst</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">Provider-WAN mit</tspan><tspan x="64" dy="30">logischer Trennung</tspan><tspan x="64" dy="30">und möglichen</tspan></text></g><g><rect class="diagram-row" x="265" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="287" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="287" dy="0">SD-WAN-Overlay</tspan></text><text x="287" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="287" dy="0">Policygesteuerte</tspan><tspan x="287" dy="30">Tunnel über</tspan><tspan x="287" dy="30">vorhandene</tspan></text></g><g><rect class="diagram-row" x="488" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="510" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="510" dy="0">Hybrider Betrieb</tspan></text><text x="510" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="510" dy="0">MPLS und Internet</tspan><tspan x="510" dy="30">können gleichzeitig</tspan><tspan x="510" dy="30">Underlay sein;</tspan></text></g><g><rect class="diagram-row" x="711" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="733" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="733" dy="0">Sicherheit</tspan></text><text x="733" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="733" dy="0">MPLS ist nicht</tspan><tspan x="733" dy="30">automatisch</tspan><tspan x="733" dy="30">verschlüsselt;</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigenes Schichtenmodell: Transportdienst, Overlay und Kryptografie getrennt zusichern.</figcaption>
+</figure><h2 class="sec" id="s3"><span class="num">3</span>Beispiel: ERP, Videokonferenz und Webverkehr</h2>
+<p>Eine Filiale hat MPLS und lokalen Internetzugang. ERP darf wegen betrieblicher Vorgaben bevorzugt über MPLS laufen; Videokonferenzen wählen den Weg mit geeigneter Latenz, Verlust und Jitter; allgemeiner Webverkehr kann direkt ins Internet. Das Design dokumentiert, ob und wo verschlüsselt wird, wie zentrale Steuerung ausfällt und was bei widersprüchlichen Messwerten geschieht.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Anwendungsbezogene Pfadauswahl">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="650" viewBox="0 0 960 650" role="img" aria-labelledby="diagram-sdwan-policy-flow-title diagram-sdwan-policy-flow-desc">
+  <title id="diagram-sdwan-policy-flow-title">Anwendungsbezogene Pfadauswahl</title>
+  <desc id="diagram-sdwan-policy-flow-desc">Ein fünfstufiger Ablauf zeigt Anwendung, Policy, Qualitätsmessung, Pfadauswahl und Telemetrie.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Anwendungsbezogene Pfadauswahl</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Anwendung</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Verkehr wird einer bekannten Klasse oder einem Ziel</tspan><tspan x="178" dy="25">zugeordnet.</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Policy</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Priorität, erlaubte Wege und Sicherheitsvorgaben werden</tspan><tspan x="178" dy="25">angewendet.</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Messung</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Latenz, Verlust und Jitter der verfügbaren Underlays werden</tspan><tspan x="178" dy="25">beobachtet.</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Pfad</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Ein zulässiger Weg wird gewählt oder bei Grenzwertverletzung</tspan><tspan x="178" dy="25">gewechselt.</tspan></text><path d="M480 472v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 494 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="512" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="541" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Telemetrie</tspan></text><text x="178" y="568" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Ergebnis und Abweichungen fließen in Betrieb und Fehlersuche</tspan><tspan x="178" dy="25">zurück.</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigener Policy-Regelkreis: Ein Pfadwechsel ist nur so gut wie Messung und Grenzwerte.</figcaption>
+</figure><h2 class="sec" id="s4"><span class="num">4</span>Geführter Architekturvergleich</h2>
+<section class="sequence-practice" data-sequence="mpls-sdwan-design-sequence" data-expected="applications,underlays,security,policy,failure" data-correct-feedback="Richtig: Die Reihenfolge bildet den belastbaren technischen Entscheidungsweg ab." data-wrong-feedback="Prüfe zuerst Anforderungen und Grenzen, wähle dann die Technik und verifiziere zuletzt die Wirkung." aria-labelledby="mpls-sdwan-design-sequence-title">
+  <div class="lab-heading"><div><h3 id="mpls-sdwan-design-sequence-title">Ein hybrides WAN entwerfen</h3><p>Ordne die Entwurfsschritte.</p></div><span class="lab-tag">Übung</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="applications" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Anwendungen, Ziele und Qualitätsgrenzen klassifizieren</span></li>
+    <li data-step="underlays" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Underlays, Übergaben, SLAs und gemeinsame Fehlerwege erfassen</span></li>
+    <li data-step="security" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Vertrauensgrenzen, Tunnel und Schlüsselbetrieb festlegen</span></li>
+    <li data-step="policy" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Zulässige Pfade, Prioritäten und Umschaltgrenzen definieren</span></li>
+    <li data-step="failure" tabindex="-1"><span class="step-position" data-step-position>5</span><span>Controller-, Underlay- und Edge-Ausfälle praktisch testen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Karteikarten und freier Abruf</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="mpls-sd-wan-card-1" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was ist ein Underlay?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Der zugrunde liegende Transportweg, etwa Internet, MPLS oder Mobilfunk, über dem ein Overlay arbeiten kann.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="mpls-sd-wan-card-2" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was ergänzt ein SD-WAN-Overlay?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Logische Tunnel, zentrale Policy, Messung, Pfadauswahl und häufig kryptografischen Schutz.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="mpls-sd-wan-card-3" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum ist ein MPLS-VPN nicht automatisch Ende-zu-Ende verschlüsselt?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Logische Trennung im Providernetz ist nicht dasselbe wie kryptografische Vertraulichkeit zwischen Endpunkten.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Underlay“:</span><button type="button" data-card-id="mpls-sd-wan-card-1" data-card-rate="known">gewusst</button><button type="button" data-card-id="mpls-sd-wan-card-1" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="mpls-sd-wan-card-1"></span></div>
+<div class="card-rating"><span>Karte „Overlay“:</span><button type="button" data-card-id="mpls-sd-wan-card-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="mpls-sd-wan-card-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="mpls-sd-wan-card-2"></span></div>
+<div class="card-rating"><span>Karte „MPLS-Sicherheit“:</span><button type="button" data-card-id="mpls-sd-wan-card-3" data-card-rate="known">gewusst</button><button type="button" data-card-id="mpls-sd-wan-card-3" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="mpls-sd-wan-card-3"></span></div><section class="recall-practice" data-recall="mpls-sd-wan-recall" data-min-length="150" aria-labelledby="mpls-sd-wan-recall-title">
+  <div class="recall-prompt"><h3 id="mpls-sd-wan-recall-title">Ein hybrides WAN erklären</h3><p>Erkläre für drei Anwendungen, wann MPLS, Internet und ein SD-WAN-Overlay welche Aufgabe übernehmen. Benenne Sicherheits- und Ausfallgrenzen.</p></div>
+  <label class="sr-only" for="mpls-sd-wan-recall-answer">Deine Erklärung</label>
+  <textarea id="mpls-sd-wan-recall-answer" data-recall-input rows="4" placeholder="Das Underlay …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> MPLS und Internet sind mögliche Underlays. SD-WAN legt ein policygesteuertes Overlay darüber und wählt je Anwendung einen zulässigen Pfad anhand von Qualitätsmessungen. MPLS-Trennung ist nicht automatisch Verschlüsselung; Tunnel und Schlüsselbetrieb werden separat festgelegt. Controller-, Edge- und Leitungsfehler sowie Rückfallregeln müssen getestet werden.</div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Lernziel-Check</h2>
+<section class="quiz" data-quiz="mpls-sd-wan-transfer-a" data-correct="0" data-required-objective="mpls-sdwan-compare">
+  <h3>Welche Zuordnung stimmt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Beide Modelle lassen sich kombinieren."><span class="m">A</span> MPLS kann ein Provider-Underlay sein; SD-WAN kann darüber und über Internet ein policygesteuertes Overlay betreiben.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="SD-WAN ist ein Steuerungs- und Overlaymodell."><span class="m">B</span> SD-WAN ist eine neue Glasfaserart.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Das muss separat realisiert oder vertraglich geklärt werden."><span class="m">C</span> MPLS verschlüsselt zwangsläufig jede Nutzlast bis zum Endgerät.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Ohne Underlay können keine Pakete zwischen Standorten transportiert werden."><span class="m">D</span> Ein Overlay benötigt keinen Transportweg.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="mpls-sd-wan-transfer-b" data-correct="0" data-required-objective="mpls-sdwan-design">
+  <h3>Was gehört in eine belastbare SD-WAN-Policy?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Damit ist die Entscheidung prüfbar."><span class="m">A</span> Anwendungsklasse, zulässige Pfade, messbare Qualitätsgrenzen, Sicherheitsvorgaben und Rückfallverhalten.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Eine Darstellung ersetzt keine technische Policy."><span class="m">B</span> Nur eine Farbe pro Standort.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Pfadqualität umfasst weitere Messwerte und Sicherheitsgrenzen."><span class="m">C</span> Ausschließlich die maximale Downloadrate.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Unbestimmtes Verhalten erschwert Sicherheit und Betrieb."><span class="m">D</span> Keine Ausfallregel, damit das System frei entscheidet.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s7"><span class="num">7</span>Quellen und Einordnung</h2>
+<ul>
+<li><strong>EUROPA Prüfungsvorbereitung, Chunks 01085, 00505 und 01083:</strong> MPLS- und Site-to-Site-VPN-Kontext.</li>
+<li><strong>IT-Berufe Lernfelder 10–12, PDF-Seite 202:</strong> VPN-Systeme und Tunneltechniken.</li>
+<li><strong>Kurationshinweis:</strong> Direkter SD-WAN-Buchbeleg fehlt; der Abschnitt benötigt eine spätere Fachfreigabe.</li>
+</ul>
+<p>Die veröffentlichten Erklärgrafiken und Übungsfälle sind eigenständig erstellt. Quellenlücken und technische Grenzen bleiben im Kurationsartefakt sichtbar.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-6"><span class="d">zurück zu</span><span class="t">Block N6 · WLAN, WAN und VPN</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N6 · WLAN, WAN und VPN</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Privat transportiert oder kryptografisch geschützt?</a></li>
+<li><a href="#s2" data-t="s2">Providerdienst und Overlay sauber trennen</a></li>
+<li><a href="#s3" data-t="s3">Beispiel: ERP, Videokonferenz und Webverkehr</a></li>
+<li><a href="#s4" data-t="s4">Geführter Architekturvergleich</a></li>
+<li><a href="#s5" data-t="s5">Karteikarten und freier Abruf</a></li>
+<li><a href="#s6" data-t="s6">Lernziel-Check</a></li>
+<li><a href="#s7" data-t="s7">Quellen und Einordnung</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-6">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

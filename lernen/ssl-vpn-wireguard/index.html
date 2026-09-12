@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Die unscharfe Bezeichnung SSL-VPN einordnen und OpenVPN sowie WireGuard nach Schicht, Identität, Kryptografie und Betriebsmodell auswählen.">
+<title>TLS-VPN, OpenVPN und WireGuard fachlich vergleichen – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-1">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="ssl-vpn-wireguard" data-progress-id="ga2-6__11" data-content-revision="2026-09-12.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-6">Block N6 · WLAN, WAN und VPN</a><span class="sep">›</span>
+    <span class="here">TLS-VPN, OpenVPN und WireGuard fachlich vergleichen</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">TLS-VPN, OpenVPN und WireGuard fachlich vergleichen</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 30 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>„SSL-VPN“ ist ein historisch und produktseitig unscharfer Sammelbegriff. Moderne Lösungen verwenden TLS oder eigene aktuelle Protokolle. Die Wahl entscheidet nicht nur über Kryptografie, sondern auch über Benutzeridentität, Gerätekonfiguration und Betrieb.</p>
+<section class="learning-goals" aria-labelledby="ssl-vpn-wireguard-goals">
+  <h2 id="ssl-vpn-wireguard-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>TLS-basierte VPNs, OpenVPN und WireGuard nach Transport, Tunnelmodell, Schlüsseln und typischem Einsatz unterscheiden</li>
+    <li>für Remote Access oder Standortkopplung eine Lösung einschließlich Identität, Routen, Schlüsselwechsel und Entzug begründen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Einstieg: Ein Protokoll oder ein Produktlabel?</h2>
+<section class="quiz" data-quiz="ssl-vpn-wireguard-diagnostic" data-correct="0">
+  <h3>Welche Aussage zu „SSL-VPN“ ist am belastbarsten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Das Label allein ist technisch nicht präzise genug."><span class="m">A</span> Der Begriff bezeichnet häufig TLS-basierte Remote-Access- oder Tunnelprodukte; die konkrete Technik und Version müssen im Produkt geprüft werden.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Alte SSL-Versionen sind kein zeitgemäßer Sicherheitsstandard."><span class="m">B</span> Es bedeutet zwingend, dass SSL 3.0 heute sicher eingesetzt wird.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="WireGuard verwendet ein eigenes Tunnelprotokoll."><span class="m">C</span> Es ist immer identisch mit WireGuard.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Jede sichere Lösung benötigt verwaltetes Schlüsselmaterial."><span class="m">D</span> Es benötigt weder Zertifikate noch Schlüssel.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">ENTSCHEIDUNGSGRENZE</span><p>Protokollname ersetzt kein Betriebskonzept. Prüfe Endpunkte, Identität, Schlüsselverteilung, Routen, DNS, Entzug, Updates und Ausfallverhalten.</p></aside><h2 class="sec" id="s2"><span class="num">2</span>Drei Ebenen der Auswahl</h2>
+<p><strong>TLS-basierte VPN-Portale/Clients</strong> können gut durch restriktive Netze erreichbar sein und Benutzeranmeldung eng integrieren; genaue Tunnel- und Zugriffsmodelle sind produktspezifisch. <strong>OpenVPN</strong> ist flexibel und nutzt typischerweise TLS-basierte Authentisierung sowie einen eigenen Datenkanal. <strong>WireGuard</strong> ist ein schlankes Layer-3-Tunnelprotokoll mit statischen öffentlichen Peer-Schlüsseln und bewusst kleinerem Protokollumfang.</p>
+<p>Keine dieser Bezeichnungen legt allein MFA, Autorisierung oder Gerätekonformität fest. Für den Betrieb zählen Enrollment, Secret-Schutz, Rotation, Entzug, zentrale Policy, Clientupdates und nachvollziehbare Logs.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: VPN-Modelle im Vergleich">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-vpn-protocol-models-title diagram-vpn-protocol-models-desc">
+  <title id="diagram-vpn-protocol-models-title">VPN-Modelle im Vergleich</title>
+  <desc id="diagram-vpn-protocol-models-desc">Vier Karten vergleichen TLS-VPN-Produkte, OpenVPN, WireGuard und notwendige Plattformfunktionen.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">VPN-Modelle im Vergleich</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">TLS-VPN-Produkt</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">Häufig Remote Access</tspan><tspan x="64" dy="30">über TLS; Portal,</tspan><tspan x="64" dy="30">Volltunnel und</tspan></text></g><g><rect class="diagram-row" x="265" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="287" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="287" dy="0">OpenVPN</tspan></text><text x="287" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="287" dy="0">Flexibles</tspan><tspan x="287" dy="30">Tunnelmodell mit</tspan><tspan x="287" dy="30">TLS-Steuerung;</tspan></text></g><g><rect class="diagram-row" x="488" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="510" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="510" dy="0">WireGuard</tspan></text><text x="510" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="510" dy="0">Schlanker L3-Tunnel</tspan><tspan x="510" dy="30">mit öffentlichen</tspan><tspan x="510" dy="30">Peer-Schlüsseln;</tspan></text></g><g><rect class="diagram-row" x="711" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="733" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="733" dy="0">Gesamtlösung</tspan></text><text x="733" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="733" dy="0">MFA, Gerätezustand,</tspan><tspan x="733" dy="30">Routen, DNS, Logs,</tspan><tspan x="733" dy="30">Updates und Entzug</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Protokollkarte: Schlanker Kern und vollständiger Unternehmensbetrieb sind verschiedene Ebenen.</figcaption>
+</figure><h2 class="sec" id="s3"><span class="num">3</span>Beispiel: 120 verwaltete Notebooks</h2>
+<p>Für 120 Geräte reicht das Kopieren statischer Konfigurationsdateien nicht. Die Lösung braucht eindeutige Gerätezuordnung, Benutzer-MFA, automatisierbares Enrollment, minimale Netze, sichere DNS-Vorgaben, Updatekanal und schnellen Entzug. WireGuard kann der Tunneldatendienst sein; eine Verwaltungsplattform ergänzt Identität und Lifecycle. OpenVPN oder ein TLS-VPN-Produkt können diese Funktionen anders bündeln – sie müssen konkret geprüft werden.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Vom Enrollment bis zum Entzug">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="650" viewBox="0 0 960 650" role="img" aria-labelledby="diagram-vpn-client-lifecycle-title diagram-vpn-client-lifecycle-desc">
+  <title id="diagram-vpn-client-lifecycle-title">Vom Enrollment bis zum Entzug</title>
+  <desc id="diagram-vpn-client-lifecycle-desc">Ein Ablauf zeigt Registrierung, Schlüssel, Policy, Betrieb und Entzug eines VPN-Clients.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Vom Enrollment bis zum Entzug</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Registrieren</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Benutzer, Gerät und zulässige Rolle eindeutig zuordnen.</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Schlüssel</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Secret oder privaten Schlüssel geschützt ausstellen und</tspan><tspan x="178" dy="25">speichern.</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Policy</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Routen, DNS, erreichbare Ziele und MFA festlegen.</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Betrieb</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Version, Logs, Ablaufzeiten und ungewöhnliche Nutzung</tspan><tspan x="178" dy="25">überwachen.</tspan></text><path d="M480 472v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 494 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="512" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="541" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Entzug</tspan></text><text x="178" y="568" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Verlorene Geräte und ausscheidende Nutzer zeitnah sperren.</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigener Lifecycle: Ein Tunnel ist nur bis zum rechtzeitigen Entzug seiner Berechtigung sicher.</figcaption>
+</figure><h2 class="sec" id="s4"><span class="num">4</span>Geführte Produktauswahl</h2>
+<section class="sequence-practice" data-sequence="vpn-protocol-selection-sequence" data-expected="scenario,protocol,identity,lifecycle,pilot" data-correct-feedback="Richtig: Die Reihenfolge bildet den belastbaren technischen Entscheidungsweg ab." data-wrong-feedback="Prüfe zuerst Anforderungen und Grenzen, wähle dann die Technik und verifiziere zuletzt die Wirkung." aria-labelledby="vpn-protocol-selection-sequence-title">
+  <div class="lab-heading"><div><h3 id="vpn-protocol-selection-sequence-title">Eine VPN-Lösung bewerten</h3><p>Ordne die Prüfschritte.</p></div><span class="lab-tag">Übung</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="scenario" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Remote Access oder Standortkopplung, Clienttypen und Netzgrenzen bestimmen</span></li>
+    <li data-step="protocol" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Tunnelprotokoll, Transporterreichbarkeit und Kryptografiemodell prüfen</span></li>
+    <li data-step="identity" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Benutzer-, Geräteidentität und MFA mit dem Tunnel verknüpfen</span></li>
+    <li data-step="lifecycle" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Enrollment, Rotation, Update, Logging und Entzug entwerfen</span></li>
+    <li data-step="pilot" tabindex="-1"><span class="step-position" data-step-position>5</span><span>Routen, DNS, Roaming, Sperrung und Ausfall im Pilot testen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Karteikarten und freier Abruf</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="ssl-vpn-wireguard-card-1" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum ist der Begriff allein unzureichend?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Er kann verschiedene TLS-basierte Produktmodelle meinen; Protokollversion, Tunnelumfang und Identitätsfunktionen müssen konkret geprüft werden.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="ssl-vpn-wireguard-card-2" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wie erkennt WireGuard einen Peer?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Über dessen konfigurierten öffentlichen Schlüssel; Benutzeridentität und MFA sind zusätzliche Ebenen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="ssl-vpn-wireguard-card-3" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche Betriebsfrage bleibt trotz TLS?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Wie Zertifikate/Profile ausgestellt, geschützt, aktualisiert, widerrufen und Rollen zugeordnet werden.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „SSL-VPN“:</span><button type="button" data-card-id="ssl-vpn-wireguard-card-1" data-card-rate="known">gewusst</button><button type="button" data-card-id="ssl-vpn-wireguard-card-1" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ssl-vpn-wireguard-card-1"></span></div>
+<div class="card-rating"><span>Karte „WireGuard“:</span><button type="button" data-card-id="ssl-vpn-wireguard-card-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="ssl-vpn-wireguard-card-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ssl-vpn-wireguard-card-2"></span></div>
+<div class="card-rating"><span>Karte „OpenVPN“:</span><button type="button" data-card-id="ssl-vpn-wireguard-card-3" data-card-rate="known">gewusst</button><button type="button" data-card-id="ssl-vpn-wireguard-card-3" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ssl-vpn-wireguard-card-3"></span></div><section class="recall-practice" data-recall="ssl-vpn-wireguard-recall" data-min-length="150" aria-labelledby="ssl-vpn-wireguard-recall-title">
+  <div class="recall-prompt"><h3 id="ssl-vpn-wireguard-recall-title">Protokoll und Plattform trennen</h3><p>Vergleiche OpenVPN und WireGuard für 120 Remote-Clients. Nenne je Stärken und die zusätzlich benötigten Betriebsfunktionen.</p></div>
+  <label class="sr-only" for="ssl-vpn-wireguard-recall-answer">Deine Erklärung</label>
+  <textarea id="ssl-vpn-wireguard-recall-answer" data-recall-input rows="4" placeholder="OpenVPN …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> OpenVPN bietet flexible, TLS-basierte Authentisierungs- und Tunnelkonfiguration. WireGuard hat einen schlanken L3-Protokollkern und öffentliche Peer-Schlüssel. Bei beiden brauche ich Benutzer- und Gerätezuordnung, MFA, Enrollment, minimale Routen, DNS-Policy, Updates, Logs, Rotation und Entzug. Die Auswahl wird mit realen Clients und Ausfallfällen getestet.</div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Lernziel-Check</h2>
+<section class="quiz" data-quiz="ssl-vpn-wireguard-transfer-a" data-correct="0" data-required-objective="vpn-protocol-compare">
+  <h3>Welche Aussage trifft WireGuard am besten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Protokollkern und Betriebsplattform werden getrennt bewertet."><span class="m">A</span> Es ist ein schlankes L3-VPN-Protokoll mit öffentlichen Peer-Schlüsseln; Unternehmensidentität und Lifecycle müssen ergänzt werden.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="MFA ist keine eingebaute Benutzerfunktion des Protokollkerns."><span class="m">B</span> Es authentisiert automatisch jeden menschlichen Nutzer per MFA.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein Portal ist ein anderer Zugangsmechanismus."><span class="m">C</span> Es ist dasselbe wie ein Captive Portal.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Peer-Schlüssel müssen sicher erzeugt, verteilt und entzogen werden."><span class="m">D</span> Es benötigt keine Schlüsselverwaltung.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="ssl-vpn-wireguard-transfer-b" data-correct="0" data-required-objective="vpn-protocol-operate">
+  <h3>Was ist bei 120 Remote-Clients die wichtigste zusätzliche Betriebsanforderung?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Skalierung entsteht im Lifecycle, nicht nur im Tunnelaufbau."><span class="m">A</span> Automatisiertes Enrollment, eindeutige Zuordnung, Updates, Monitoring sowie schneller Schlüssel- und Geräteentzug.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Ein Verlust würde alle Geräte betreffen und individuelle Sperrung verhindern."><span class="m">B</span> Ein gemeinsamer privater Schlüssel für alle Geräte.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Clients und Gateways benötigen weiter Sicherheitsupdates."><span class="m">C</span> Keine Versionspflege nach dem Rollout.</button>
+  <button class="opt" type="button" data-answer="3" data-rationale="Berechtigungen sollten minimal und rollenbezogen sein."><span class="m">D</span> Vollzugriff auf alle Netze für jede Rolle.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s7"><span class="num">7</span>Quellen und Einordnung</h2>
+<ul>
+<li><strong>IT-Berufe Lernfelder 10–12, PDF-Seiten 202 und 243:</strong> VPN-Systeme und TLS-Endpunktkontext.</li>
+<li><strong>EUROPA Prüfungsvorbereitung, Chunk 01083:</strong> Remote-Access- und Standortkopplungsszenarien.</li>
+</ul>
+<p>Die veröffentlichten Erklärgrafiken und Übungsfälle sind eigenständig erstellt. Quellenlücken und technische Grenzen bleiben im Kurationsartefakt sichtbar.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-6"><span class="d">zurück zu</span><span class="t">Block N6 · WLAN, WAN und VPN</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N6 · WLAN, WAN und VPN</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Einstieg: Ein Protokoll oder ein Produktlabel?</a></li>
+<li><a href="#s2" data-t="s2">Drei Ebenen der Auswahl</a></li>
+<li><a href="#s3" data-t="s3">Beispiel: 120 verwaltete Notebooks</a></li>
+<li><a href="#s4" data-t="s4">Geführte Produktauswahl</a></li>
+<li><a href="#s5" data-t="s5">Karteikarten und freier Abruf</a></li>
+<li><a href="#s6" data-t="s6">Lernziel-Check</a></li>
+<li><a href="#s7" data-t="s7">Quellen und Einordnung</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-6">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

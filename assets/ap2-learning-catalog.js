@@ -1636,6 +1636,381 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "wlan-standards-frequenzen",
+    "slug": "wlan-standards-frequenzen",
+    "title": "WLAN-Standards und Frequenzbänder sicher auswählen",
+    "description": "802.11-Generationen, Frequenzbänder und theoretische Datenraten einordnen und aus einer Anforderung eine belastbare WLAN-Auswahl ableiten.",
+    "domain": "GA2",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__0",
+    "week": "KW 40",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "standard-classification",
+      "standard-selection"
+    ],
+    "sources": [
+      "ihk-bonn",
+      "itlf6-9-2022"
+    ],
+    "contentHash": "91b0f323e4ef65ebf1141102bff31a42634c7375a175bafebda4a624a636615a",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "wlan-kanalplanung",
+    "slug": "wlan-kanalplanung",
+    "title": "WLAN-Kanäle planen, ohne 1/6/11 blind anzuwenden",
+    "description": "Kanalbreite, Überlappung und Gleichkanalnutzung unterscheiden und einen belastbaren 2,4- und 5-GHz-Kanalplan entwickeln.",
+    "domain": "GA2",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__1",
+    "week": "KW 40",
+    "estimatedMinutes": 27,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "channel-overlap",
+      "channel-plan"
+    ],
+    "sources": [
+      "itlf6-9-2022"
+    ],
+    "contentHash": "708fff07cada1168a1a07a2663db7b900aa7310d2813fa9e6955947c8b2fc2c1",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "wlan-site-survey",
+    "slug": "wlan-site-survey",
+    "title": "WLAN-Site-Survey von der Prognose zum Lasttest",
+    "description": "Virtuelle, passive und aktive Site Surveys unterscheiden, Messwerte korrekt lesen und AP-Positionen nachvollziehbar verbessern.",
+    "domain": "GA2",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__2",
+    "week": "KW 40",
+    "estimatedMinutes": 26,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "survey-methods",
+      "survey-decision"
+    ],
+    "sources": [
+      "europa-integratoren-2026",
+      "itlf6-9-2022"
+    ],
+    "contentHash": "c3c943cb443365923fd43403a0199fbb125163c86c64df1407ac97c1bd779c96",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "wlan-controller",
+    "slug": "wlan-controller",
+    "title": "WLAN-Controller und Standalone-APs passend betreiben",
+    "description": "Aufgaben von Access Point und WLAN-Controller trennen sowie für kleine und größere Funknetze eine begründete Betriebsarchitektur wählen.",
+    "domain": "GA2",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__3",
+    "week": "KW 40",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "controller-functions",
+      "controller-selection"
+    ],
+    "sources": [
+      "europa-integratoren-2026",
+      "itlf6-9-2022"
+    ],
+    "contentHash": "39939b4093a13dc9dcb2ba3cbd402f9930c2c0c26aef30ba8b98eb15ec917402",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "wlan-sicherheit",
+    "slug": "wlan-sicherheit",
+    "title": "WLAN-Sicherheit als mehrschichtiges Profil entwerfen",
+    "description": "WPA2 und WPA3, Personal und Enterprise, 802.1X, RADIUS, Gasttrennung und Captive Portal fachlich abgrenzen und kombinieren.",
+    "domain": "GA2",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__4",
+    "week": "KW 40",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "security-methods",
+      "security-profile"
+    ],
+    "sources": [
+      "europa-integratoren-2026",
+      "itlf10-12-2023"
+    ],
+    "contentHash": "d38be07543461c22c08ec508955ffe51fcd887f1408960bbfc3dfd40d5efdc3b",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "wan-zugangsarten",
+    "slug": "wan-zugangsarten",
+    "title": "WAN-Zugänge nach Bedarf und Betriebsrisiko auswählen",
+    "description": "DSL, Kabel, Glasfaser, Standleitung, Mobilfunk und Richtfunk nicht nur nach Bandbreite, sondern nach Medium, SLA und Ausfallrisiko vergleichen.",
+    "domain": "GA2",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__5",
+    "week": "KW 40",
+    "estimatedMinutes": 27,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "wan-access-compare",
+      "wan-access-select"
+    ],
+    "sources": [
+      "itlf6-9-2022",
+      "it-basiswissen-2012",
+      "europa-integratoren-2026"
+    ],
+    "contentHash": "41d66bb058f60912752de5319a77c41a5e27a4b5d407586f4e1f6ca72c040fce",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "mpls-sd-wan",
+    "slug": "mpls-sd-wan",
+    "title": "MPLS und SD-WAN als Betriebsmodelle vergleichen",
+    "description": "Providerbasierte MPLS-Dienste und softwaregesteuerte WAN-Overlays anhand von Pfad, Steuerung, Sicherheit, SLA und Betrieb unterscheiden.",
+    "domain": "GA2",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__6",
+    "week": "KW 40",
+    "estimatedMinutes": 29,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "mpls-sdwan-compare",
+      "mpls-sdwan-design"
+    ],
+    "sources": [
+      "europa-integratoren-2026",
+      "itlf10-12-2023"
+    ],
+    "contentHash": "46f02664ddd6dbb134a61b052ab9490b5219d6c9deccdee78858064b6f15f321",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "provider-redundanz",
+    "slug": "provider-redundanz",
+    "title": "Provider-Redundanz ohne gemeinsame Fehlerdomäne planen",
+    "description": "Dual-WAN, Failover und Active-Active anhand physischer und logischer Abhängigkeiten entwerfen, testen und überwachen.",
+    "domain": "GA2",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__7",
+    "week": "KW 40",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "redundancy-domains",
+      "redundancy-validate"
+    ],
+    "sources": [
+      "itlf10-12-2023",
+      "europa-integratoren-2026"
+    ],
+    "contentHash": "db8e441d5049255fcd603b8c43922b257419c53e2b5c23933bda16bdea548914",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "vpn-arten",
+    "slug": "vpn-arten",
+    "title": "VPN-Arten nach Endpunkten und Vertrauensgrenze unterscheiden",
+    "description": "Site-to-Site, Remote-Access und End-to-End anhand von Tunnelendpunkten, erreichbaren Netzen, Identität und Betriebsverantwortung auswählen.",
+    "domain": "GA2",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__8",
+    "week": "KW 40",
+    "estimatedMinutes": 27,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "vpn-types-classify",
+      "vpn-type-select"
+    ],
+    "sources": [
+      "europa-integratoren-2026",
+      "itlf10-12-2023",
+      "itlf6-9-2022"
+    ],
+    "contentHash": "e81e9d8b62cc8314510abdb2efffe9ff049b5ee2ceff017a4004ae2ae59fc550",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "ipsec",
+    "slug": "ipsec",
+    "title": "IPsec mit IKE, AH, ESP und Security Associations verstehen",
+    "description": "IPsec-Bausteine, Tunnel- und Transportmodus sowie den IKEv2-Aufbau so einordnen, dass Schutzversprechen und Fehlersuche nachvollziehbar werden.",
+    "domain": "GA2",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__9",
+    "week": "KW 40",
+    "estimatedMinutes": 32,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "ipsec-components",
+      "ipsec-design"
+    ],
+    "sources": [
+      "itlf10-12-2023",
+      "ihk-bonn"
+    ],
+    "contentHash": "da0fa7ebda9f5fd79fe4ada3e5ca1845c82aa3e593b0334e65183ff2208fcb37",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "x509-zertifikate",
+    "slug": "x509-zertifikate",
+    "title": "X.509-Zertifikate und Vertrauenskette prüfen",
+    "description": "Zertifikat, privater Schlüssel, CSR, CA und Vertrauenskette auseinanderhalten und einen Zertifikatsfehler systematisch untersuchen.",
+    "domain": "GA2",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__10",
+    "week": "KW 40",
+    "estimatedMinutes": 31,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "x509-components",
+      "x509-validation"
+    ],
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentHash": "4a1887bf2dc7f9db860cfd39c897d63282ee127dc738b7cc973aac70fd0b1413",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "ssl-vpn-wireguard",
+    "slug": "ssl-vpn-wireguard",
+    "title": "TLS-VPN, OpenVPN und WireGuard fachlich vergleichen",
+    "description": "Die unscharfe Bezeichnung SSL-VPN einordnen und OpenVPN sowie WireGuard nach Schicht, Identität, Kryptografie und Betriebsmodell auswählen.",
+    "domain": "GA2",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__11",
+    "week": "KW 40",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "vpn-protocol-compare",
+      "vpn-protocol-operate"
+    ],
+    "sources": [
+      "itlf10-12-2023",
+      "europa-integratoren-2026"
+    ],
+    "contentHash": "b2966d16d56179ce5d3e4bc08c6617b30f9c1e4ce6a668ec21ef43422804f8b0",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "split-tunneling",
+    "slug": "split-tunneling",
+    "title": "Split Tunneling als Routing- und Sicherheitsentscheidung planen",
+    "description": "Full Tunnel und Split Tunnel anhand von Routen, DNS, Kontrollpunkten, Bandbreite und lokalen Risiken vergleichen und prüfen.",
+    "domain": "GA2",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__12",
+    "week": "KW 40",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "split-full-compare",
+      "split-policy-design"
+    ],
+    "sources": [
+      "itlf10-12-2023",
+      "europa-integratoren-2026"
+    ],
+    "contentHash": "474bd4d41faf5c3cc0c2d90ef6d5f5d42cee8ce79136fb1c2e55d807b280a5cf",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "sicheres-homeoffice",
+    "slug": "sicheres-homeoffice",
+    "title": "Sicheres Homeoffice als Ende-zu-Ende-Betrieb entwerfen",
+    "description": "Verwaltetes Endgerät, starke Identität, VPN, minimale Rechte, Patchen, Datensicherung und Arbeitsumgebung zu einem prüfbaren Schutzkonzept verbinden.",
+    "domain": "GA2",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__13",
+    "week": "KW 40",
+    "estimatedMinutes": 31,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "homeoffice-controls",
+      "homeoffice-response"
+    ],
+    "sources": [
+      "itlf10-12-2023",
+      "europa-integratoren-2026"
+    ],
+    "contentHash": "c16d223ff3fb094130e82a768ea280f4512b9457258d2d867e0ae8897e063f3d",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "voip-bandbreite",
+    "slug": "voip-bandbreite",
+    "title": "VoIP-Bandbreite mit Paket-Overhead und Reserve dimensionieren",
+    "description": "Codec-Nutzrate, Paketierungsintervall, RTP/UDP/IP- und Layer-2-Overhead, Gesprächszahl und Reserve in eine nachvollziehbare Bandbreitenplanung übersetzen.",
+    "domain": "GA2",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__14",
+    "week": "KW 40",
+    "estimatedMinutes": 33,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "voip-bandwidth-model",
+      "voip-bandwidth-calculate"
+    ],
+    "sources": [
+      "ihk-bonn",
+      "itlf10-12-2023"
+    ],
+    "contentHash": "6923e3c02fb516e3eeb7f1dd7e03160a35afd21feeb74eeff3ae591c235e523c",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "company-goals",
     "slug": "company-goals",
     "title": "Unternehmensziele und Zielkonflikte sicher abwägen",

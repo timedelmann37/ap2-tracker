@@ -1,0 +1,341 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "wlan-kanalplanung",
+    "slug": "wlan-kanalplanung",
+    "title": "WLAN-Kanäle planen, ohne 1/6/11 blind anzuwenden",
+    "description": "Kanalbreite, Überlappung und Gleichkanalnutzung unterscheiden und einen belastbaren 2,4- und 5-GHz-Kanalplan entwickeln.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__1",
+    "week": "KW 40",
+    "estimatedMinutes": 27,
+    "relevance": "hoch",
+    "sources": [
+      "itlf6-9-2022"
+    ],
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "channel-overlap",
+      "label": "Überlappung, Kanalbreite und Gleichkanalbelegung unterscheiden und den verbreiteten 1/6/11-Plan korrekt einordnen"
+    },
+    {
+      "id": "channel-plan",
+      "label": "für benachbarte Funkzellen einen dokumentierten Kanalplan aus Messung, Regulierungsbereich und Clientfähigkeiten ableiten"
+    }
+  ],
+  "intro": "Kanalnummern sind keine Farben, die man beliebig verteilt. Entscheidend ist die tatsächlich belegte Bandbreite. Im 2,4-GHz-Band überlappen viele Kanalbelegungen; im 5- und 6-GHz-Band kommen mehr Kanäle, unterschiedliche Breiten und regulatorische Randbedingungen hinzu.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf6-9-2022",
+        "sourceLocator": "Chunk itlf6-9-2022:00240",
+        "use": "Kanäle für mehrere WLANs anhand vorhandener Belegung und Gebäudedämpfung wählen",
+        "reviewStatus": "Aufgaben- und Materialkontext geprüft; private Kanalgrafik nicht übernommen"
+      },
+      {
+        "sourceId": "itlf6-9-2022",
+        "sourceLocator": "Chunk itlf6-9-2022:00212",
+        "use": "Dualband-APs und gemeinsame Funkressourcen als Auswahlkontext",
+        "reviewStatus": "Nur technische Produktmerkmale genutzt"
+      }
+    ],
+    "notes": [
+      "1/6/11 ist ein robuster und verbreiteter 20-MHz-Dreikanalplan, besonders für gemischte Clientbestände. Er ist keine weltweit allein zulässige oder stets optimale Lösung.",
+      "Im europäischen Regulierungsbereich kann je nach Kanalbreite, Gerät und Planung auch ein Vierkanalansatz betrachtet werden. Vor Umsetzung sind Landesregeln und Clientunterstützung zu prüfen.",
+      "Der gemappte Chunk itlf6-9-2022:00225 ist eine allgemeine Selbsteinschätzung und wurde als Fehltreffer ausgeschlossen.",
+      "Private Buchabbildungen wurden nicht veröffentlicht oder nachgezeichnet; beide Diagramme sind eigenständige, reduzierte Lernmodelle.",
+      "Hersteller-, Tarif- und versionsabhängige Werte sind als solche markiert und müssen vor einer realen Umsetzung gegen aktuelle Dokumentation geprüft werden."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "channel-interference-types",
+      "type": "comparison",
+      "title": "Zwei verschiedene Konfliktarten",
+      "description": "Gleichkanal- und Überlappungsprobleme werden getrennt bewertet.",
+      "items": [
+        {
+          "label": "Gleicher Kanal",
+          "detail": "Zellen erkennen sich eher und teilen die Airtime; räumliche Wiederverwendung ist bei ausreichendem Abstand möglich."
+        },
+        {
+          "label": "Teilweise Überlappung",
+          "detail": "Signale liegen nur teilweise im selben Spektrum; Kollisionen und Wiederholungen können schwerer koordinierbar sein."
+        },
+        {
+          "label": "Zu breite Kanäle",
+          "detail": "Mehr Bruttorate pro Verbindung, aber weniger unabhängige Kanäle und größere Konfliktfläche."
+        },
+        {
+          "label": "Saubere Wiederverwendung",
+          "detail": "Kanäle werden mit Zellabstand, Leistungsplanung und Lastmessung erneut eingesetzt."
+        }
+      ]
+    },
+    {
+      "id": "channel-plan-flow",
+      "type": "flow",
+      "title": "Kanalplan als Regelkreis",
+      "description": "Messung, Entwurf und erneute Messung bilden einen geschlossenen Planungsablauf.",
+      "items": [
+        {
+          "label": "Regeln prüfen",
+          "detail": "Land, Band, Kanalbreite, DFS und Geräteunterstützung."
+        },
+        {
+          "label": "Spektrum messen",
+          "detail": "Fremdnetze, Auslastung und nicht-WLAN-Störer erfassen."
+        },
+        {
+          "label": "Zellen entwerfen",
+          "detail": "Kanäle, Breite und Sendeleistung gemeinsam festlegen."
+        },
+        {
+          "label": "Unter Last testen",
+          "detail": "Airtime, Wiederholungen, Signal und Durchsatz messen."
+        },
+        {
+          "label": "Nachsteuern",
+          "detail": "Plan dokumentieren und bei Umgebungsänderungen anpassen."
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Nachbar-AP oder Nachbarfrequenz?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "wlan-kanalplanung-diagnostic",
+          "diagnostic": true,
+          "question": "Zwei nahe Access Points senden beide auf Kanal 6. Welches Problem ist damit primär zu erwarten?",
+          "options": [
+            {
+              "text": "Sie teilen sich denselben Funkkanal und müssen um Airtime konkurrieren.",
+              "rationale": "Richtig. Das ist Gleichkanalbelegung, nicht automatisch spektrale Überlappung.",
+              "correct": true
+            },
+            {
+              "text": "Ihre Frequenzen überlappen nur teilweise und können einander deshalb nicht erkennen.",
+              "rationale": "Bei identischem Kanal können koordinierende Mechanismen greifen; die Airtime wird geteilt.",
+              "correct": false
+            },
+            {
+              "text": "Beide verdoppeln automatisch die verfügbare Datenrate.",
+              "rationale": "Mehr Zellen auf demselben Kanal erzeugen nicht automatisch mehr lokale Airtime.",
+              "correct": false
+            },
+            {
+              "text": "Kanal 6 ist technisch deaktiviert, sobald zwei APs ihn nutzen.",
+              "rationale": "Kanalwiederverwendung ist möglich, aber Zellabstand und Last müssen passen.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "ENTSCHEIDUNGSGRENZE",
+          "markdown": "Gleichkanalbelegung teilt Airtime; teilweise überlappende Kanäle können schwerer koordinierbare Störungen erzeugen. Kanalbreite und Zellabstand gehören deshalb in dieselbe Planung."
+        }
+      ]
+    },
+    {
+      "title": "Kanalbreite als belegten Frequenzraum verstehen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Im 2,4-GHz-Band liegen Kanalmitten eng beieinander. Ein 20-MHz-Signal belegt deutlich mehr als den Abstand zweier benachbarter Kanalnummern. Der Plan **1/6/11** hält deshalb in vielen gemischten Umgebungen ausreichend Abstand und ist leicht interoperabel.\n\nEin breiterer Kanal kann die Bruttorate erhöhen, verbraucht aber mehr Spektrum und reduziert die Zahl unabhängig planbarer Zellen. In dichten Netzen sind mehrere schmalere, sauber wiederverwendete Kanäle häufig wertvoller als wenige sehr breite."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Die Mittenfrequenz im 2,4-Gigahertz-Band steigt pro Kanalnummer näherungsweise um fünf Megahertz",
+          "mathml": "<math display=\"block\"><mrow><msub><mi>f</mi><mi>c</mi></msub><mo>≈</mo><mn>2407</mn><mtext> MHz</mtext><mo>+</mo><mn>5</mn><mtext> MHz</mtext><mo>·</mo><mi>c</mi></mrow></math>",
+          "legend": [
+            "c = Kanalnummer für die üblichen Kanäle 1 bis 13",
+            "Belegte Bandbreite ist größer als der Abstand benachbarter Kanalmitten"
+          ]
+        },
+        {
+          "type": "figure",
+          "diagramId": "channel-interference-types",
+          "alt": "Vergleichskarten unterscheiden gleichen Kanal, teilweise Überlappung, zu breite Kanäle und saubere Wiederverwendung.",
+          "caption": "Eigene Spektrumsskizze: Interferenzursache zuerst korrekt benennen."
+        }
+      ]
+    },
+    {
+      "title": "Beispiel: drei dicht benachbarte Schulungsräume",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Bei drei nahen APs mit vielen Altgeräten ist 20 MHz im 2,4-GHz-Band die robuste Ausgangsbasis. 1/6/11 kann drei klar getrennte Zellen bilden. In Europa kann ein anderer Plan technisch möglich sein, muss aber zu Kanalbreite, Clients und lokalen Regeln passen. Für Kapazität werden aktuelle Clients möglichst in 5 GHz geführt; dort werden verfügbare Kanäle und DFS-Randbedingungen separat geplant."
+        },
+        {
+          "type": "figure",
+          "diagramId": "channel-plan-flow",
+          "alt": "Ein Regelkreis führt von regulatorischer Prüfung und Messung über Entwurf und Lasttest zum Nachsteuern.",
+          "caption": "Eigener Planungsablauf: Ein Kanalplan ist ohne Messung nur eine Hypothese."
+        }
+      ]
+    },
+    {
+      "title": "Geführter Kanalplan",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "channel-planning-sequence",
+          "title": "Vom Spektrum zum Plan",
+          "prompt": "Ordne die Arbeitsschritte für eine Bestandsumgebung.",
+          "tag": "Übung",
+          "steps": [
+            {
+              "id": "regulatory",
+              "label": "Zulässige Bänder, Kanäle und Geräteeigenschaften feststellen"
+            },
+            {
+              "id": "survey",
+              "label": "Vorhandene Belegung und Störer am Einsatzort messen"
+            },
+            {
+              "id": "width",
+              "label": "Kanalbreite passend zu Dichte und Kapazitätsziel wählen"
+            },
+            {
+              "id": "assign",
+              "label": "Benachbarte Zellen auf getrennte oder räumlich wiederverwendbare Kanäle legen"
+            },
+            {
+              "id": "verify",
+              "label": "Airtime, Retry-Rate und Nutzdurchsatz unter Last prüfen"
+            }
+          ],
+          "expected": [
+            "regulatory",
+            "survey",
+            "width",
+            "assign",
+            "verify"
+          ],
+          "correctFeedback": "Richtig: Die Reihenfolge bildet den belastbaren technischen Entscheidungsweg ab.",
+          "wrongFeedback": "Prüfe zuerst Anforderungen und Grenzen, wähle dann die Technik und verifiziere zuletzt die Wirkung."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "wlan-kanalplanung-card-1",
+              "label": "Gleichkanal",
+              "front": "Was passiert bei zwei nahen Zellen auf demselben Kanal?",
+              "back": "Sie konkurrieren um dieselbe Airtime; das ist nicht dasselbe wie teilweise spektrale Überlappung."
+            },
+            {
+              "id": "wlan-kanalplanung-card-2",
+              "label": "1/6/11",
+              "front": "Wie ist 1/6/11 korrekt zu formulieren?",
+              "back": "Als verbreiteter robuster Dreikanalplan für 20 MHz im 2,4-GHz-Band, nicht als universell einzig erlaubte Lösung."
+            },
+            {
+              "id": "wlan-kanalplanung-card-3",
+              "label": "Kanalbreite",
+              "front": "Was ist der zentrale Nachteil breiter Kanäle?",
+              "back": "Sie belegen mehr Spektrum und lassen weniger unabhängig planbare Zellen übrig."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "wlan-kanalplanung-recall",
+          "title": "Einen Kanalplan begründen",
+          "prompt": "Begründe einen Kanalplan für drei benachbarte Räume und erkläre Gleichkanalnutzung, Überlappung, Kanalbreite und Messung.",
+          "label": "Deine Erklärung",
+          "placeholder": "Ich beginne mit …",
+          "minLength": 150,
+          "model": "Zuerst prüfe ich Regulierungsbereich und Clientfähigkeiten, dann messe ich das Spektrum. Im 2,4-GHz-Band plane ich bei 20 MHz robuste getrennte Kanäle, häufig 1/6/11, ohne sie als universelle Regel auszugeben. Gleicher Kanal bedeutet geteilte Airtime; teilweise Überlappung kann schwerer koordinierbare Störung erzeugen. Abschließend prüfe ich Airtime, Retry-Rate und Nutzdurchsatz unter Last."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "wlan-kanalplanung-transfer-a",
+          "requiredObjective": "channel-overlap",
+          "question": "Welche Aussage zu 1/6/11 ist korrekt?",
+          "options": [
+            {
+              "text": "Es ist ein verbreiteter robuster 20-MHz-Dreikanalplan; die endgültige Wahl hängt von Region, Geräten, Messung und Zellplanung ab.",
+              "rationale": "Richtig. Die Regel ist nützlich, aber nicht universell exklusiv.",
+              "correct": true
+            },
+            {
+              "text": "Es sind weltweit die einzigen technisch nutzbaren 2,4-GHz-Kanäle.",
+              "rationale": "Regulierungsbereiche und verfügbare Kanäle unterscheiden sich.",
+              "correct": false
+            },
+            {
+              "text": "Die drei Kanäle dürfen nur gemeinsam auf demselben AP laufen.",
+              "rationale": "Der Plan dient typischerweise der Verteilung benachbarter Zellen.",
+              "correct": false
+            },
+            {
+              "text": "Mit 40 MHz entstehen automatisch sechs unabhängige Kanäle.",
+              "rationale": "Breitere Kanäle verbrauchen mehr Spektrum und reduzieren die Planungsfreiheit.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "wlan-kanalplanung-transfer-b",
+          "requiredObjective": "channel-plan",
+          "question": "In einer dichten Umgebung steigen Retry-Rate und Airtime-Auslastung. Was ist der beste nächste Schritt?",
+          "options": [
+            {
+              "text": "Spektrum und Zellüberlappung messen, Kanalbreite und Sendeleistung prüfen und den Plan anschließend unter Last erneut testen.",
+              "rationale": "Richtig. Erst Ursache belegen, dann gezielt ändern und Wirkung nachweisen.",
+              "correct": true
+            },
+            {
+              "text": "Alle APs auf maximale Sendeleistung und denselben breiten Kanal setzen.",
+              "rationale": "Das vergrößert Konfliktbereiche und kann die Airtime-Lage verschlechtern.",
+              "correct": false
+            },
+            {
+              "text": "Nur die SSID umbenennen.",
+              "rationale": "Ein Name ändert keine Funkbelegung.",
+              "correct": false
+            },
+            {
+              "text": "Mehr Kanäle in einer einzigen breiten Belegung bündeln.",
+              "rationale": "Das kann weniger unabhängiges Spektrum übrig lassen.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **IT-Berufe Lernfelder 6–9, Chunk 00240:** Gebäude-, Dämpfungs- und Kanalwahlfall mit mehreren Access Points.\n- **IT-Berufe Lernfelder 6–9, Chunk 00212:** Dualband- und Access-Point-Kontext.\n\nDie veröffentlichten Erklärgrafiken und Übungsfälle sind eigenständig erstellt. Quellenlücken und technische Grenzen bleiben im Kurationsartefakt sichtbar."
+        }
+      ]
+    }
+  ]
+}

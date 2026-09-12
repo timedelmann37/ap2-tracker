@@ -1,0 +1,333 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "provider-redundanz",
+    "slug": "provider-redundanz",
+    "title": "Provider-Redundanz ohne gemeinsame Fehlerdomäne planen",
+    "description": "Dual-WAN, Failover und Active-Active anhand physischer und logischer Abhängigkeiten entwerfen, testen und überwachen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__7",
+    "week": "KW 40",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "sources": [
+      "itlf10-12-2023",
+      "europa-integratoren-2026"
+    ],
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "redundancy-domains",
+      "label": "gemeinsame Fehlerdomänen von Leitung, Trasse, Gebäudeeinführung, Provider, CPE, Energie, DNS und Routing erkennen"
+    },
+    {
+      "id": "redundancy-validate",
+      "label": "eine Dual-WAN-Lösung mit Zustandsprüfung, Umschaltung, Rückschaltung und regelmäßigem Test belastbar absichern"
+    }
+  ],
+  "intro": "Zwei Routerbilder sind noch keine Redundanz. Wenn beide Leitungen dieselbe Hauseinführung, denselben Carrier, dieselbe Stromversorgung oder denselben DNS-Dienst benötigen, kann ein einzelner Fehler weiterhin alles stoppen.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seite 185",
+        "use": "Provider- und Routerkontext als Ausgangspunkt für die Redundanzanalyse",
+        "reviewStatus": "Nur indirekter Kontext; kein vollständiger Redundanzbeleg"
+      },
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunk europa-integratoren-2026:01085",
+        "use": "Unterschiedliche WAN-Transportwege und Providerleistungen in die Ausfallanalyse einordnen",
+        "reviewStatus": "Indirekter Architekturkontext geprüft"
+      }
+    ],
+    "notes": [
+      "Die bereitgestellten Quellen enthalten für Provider-Redundanz keinen ausreichend geschlossenen Lehrtext. Die Einheit ist daher als fachlich kuratierter Entwurf mit hoher Prüfpriorität zu behandeln.",
+      "BGP ist nicht automatisch erforderlich: Kleine Standorte können ausgehend mit Dual-WAN, NAT und Health Checks arbeiten; eingehende Dienste stellen zusätzliche Anforderungen.",
+      "Failover und Rückschaltung können Sitzungen unterbrechen. Das muss an realen Anwendungen getestet werden.",
+      "Private Buchabbildungen wurden nicht veröffentlicht oder nachgezeichnet; beide Diagramme sind eigenständige, reduzierte Lernmodelle.",
+      "Hersteller-, Tarif- und versionsabhängige Werte sind als solche markiert und müssen vor einer realen Umsetzung gegen aktuelle Dokumentation geprüft werden."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "redundancy-domains-map",
+      "type": "comparison",
+      "title": "Redundanzebenen im Vergleich",
+      "description": "Jede Karte zeigt eine mögliche gemeinsame Ursache.",
+      "items": [
+        {
+          "label": "Physischer Weg",
+          "detail": "Leerrohr, Hauseinführung, Vermittlungsstelle und Funkstandort können beide Anschlüsse treffen."
+        },
+        {
+          "label": "Netz und Provider",
+          "detail": "Carrier, Vorleister, Peering, Adressraum oder Routingsteuerung können gemeinsam ausfallen."
+        },
+        {
+          "label": "Lokaler Betrieb",
+          "detail": "Firewall, Switch, Netzteil, USV und Konfigurationsfehler bleiben oft Single Points of Failure."
+        },
+        {
+          "label": "Abhängige Dienste",
+          "detail": "DNS, Authentisierung, Tunnelcontroller und Cloudsteuerung können trotz intakter Leitungen blockieren."
+        }
+      ]
+    },
+    {
+      "id": "redundancy-failover-loop",
+      "type": "flow",
+      "title": "Failover als überprüfbarer Regelkreis",
+      "description": "Erkennung, Umschaltung und Wiederherstellung werden getrennt.",
+      "items": [
+        {
+          "label": "Prüfen",
+          "detail": "Mehrere unabhängige Ziele und relevante Anwendungen überwachen."
+        },
+        {
+          "label": "Entprellen",
+          "detail": "Kurze Schwankung von anhaltendem Ausfall unterscheiden."
+        },
+        {
+          "label": "Umschalten",
+          "detail": "Routen, NAT, Tunnel und Policy auf den Reserveweg bringen."
+        },
+        {
+          "label": "Validieren",
+          "detail": "DNS, Anwendung und Rückweg nach der Umschaltung prüfen."
+        },
+        {
+          "label": "Rückschalten",
+          "detail": "Stabilität abwarten und kontrolliert zum Zielbetrieb zurückkehren."
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Zwei Verträge, ein Kabelschacht",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "provider-redundanz-diagnostic",
+          "diagnostic": true,
+          "question": "Standort A hat zwei Internetverträge, beide Fasern laufen durch dieselbe Gebäudeeinführung. Welche Aussage stimmt?",
+          "options": [
+            {
+              "text": "Ein Schaden an dieser Einführung bleibt eine gemeinsame Fehlerdomäne.",
+              "rationale": "Richtig. Vertragliche Vielfalt beseitigt keinen gemeinsamen physischen Pfad.",
+              "correct": true
+            },
+            {
+              "text": "Zwei Verträge garantieren physische Trassenredundanz.",
+              "rationale": "Die tatsächlichen Wege müssen ausdrücklich geprüft werden.",
+              "correct": false
+            },
+            {
+              "text": "Ein zweiter DNS-Name verhindert den Faserausfall.",
+              "rationale": "DNS ersetzt keine Transportverbindung.",
+              "correct": false
+            },
+            {
+              "text": "Active-Active macht die gemeinsame Einführung unzerstörbar.",
+              "rationale": "Lastverteilung entfernt die physische Abhängigkeit nicht.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "ENTSCHEIDUNGSGRENZE",
+          "markdown": "Redundanz wird gegen konkrete Fehler entworfen: Was darf ausfallen, wie wird es erkannt, wohin wird umgeschaltet und wie wird die Wiederherstellung nachgewiesen?"
+        }
+      ]
+    },
+    {
+      "title": "Fehlerdomänen statt Gerätezahlen zählen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Prüfe mindestens **Medium und Trasse**, **Gebäudeeinführung**, **Provider-/Vorleistungsnetz**, **Router und Firewall**, **Switch und Strom**, **Adressierung/NAT**, **DNS** sowie externe Identitäts- oder Controllerdienste. Zwei Komponenten, die dieselbe notwendige Ressource teilen, sind gegen deren Ausfall nicht redundant.\n\n**Active-Passive** hält einen Weg als Reserve bereit. **Active-Active** nutzt mehrere Wege gleichzeitig, verlangt aber saubere Pfad-, Sitzungs- und Rückweglogik. Beides benötigt Health Checks, die nicht nur den lokalen Link, sondern einen relevanten Ende-zu-Ende-Dienst prüfen."
+        },
+        {
+          "type": "figure",
+          "diagramId": "redundancy-domains-map",
+          "alt": "Vier Karten zeigen physische, providerseitige, lokale und dienstabhängige Fehlerdomänen.",
+          "caption": "Eigenes Fehlerdomänenmodell: Geräteanzahl ist kein Redundanznachweis."
+        }
+      ]
+    },
+    {
+      "title": "Beispiel: Glasfaser plus 5G",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Glasfaser und 5G vermeiden wahrscheinlich denselben letzten Kabelweg, können aber weiter gemeinsame Abhängigkeiten besitzen: dieselbe Firewall, dieselbe USV, derselbe DNS-Resolver oder dieselbe Providerplattform. Der Health Check prüft deshalb mehrere externe Ziele sowie einen geschäftlichen Dienst. Für die Rückschaltung gilt eine Stabilitätszeit, damit das System bei flackerndem Primärweg nicht ständig wechselt."
+        },
+        {
+          "type": "figure",
+          "diagramId": "redundancy-failover-loop",
+          "alt": "Ein Ablauf zeigt Prüfen, Entprellen, Umschalten, Validieren und kontrolliertes Rückschalten.",
+          "caption": "Eigener Failover-Regelkreis: Link-up ist kein ausreichender Ende-zu-Ende-Test."
+        }
+      ]
+    },
+    {
+      "title": "Geführter Redundanznachweis",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "provider-redundancy-sequence",
+          "title": "Dual-WAN prüfen",
+          "prompt": "Ordne die Arbeitsschritte.",
+          "tag": "Übung",
+          "steps": [
+            {
+              "id": "failures",
+              "label": "Zu tolerierende Fehler und maximale Unterbrechung benennen"
+            },
+            {
+              "id": "dependencies",
+              "label": "Gemeinsame physische, logische und betriebliche Abhängigkeiten kartieren"
+            },
+            {
+              "id": "mechanism",
+              "label": "Active-Passive oder Active-Active samt Routing, NAT und Tunnel festlegen"
+            },
+            {
+              "id": "health",
+              "label": "Health Checks, Grenzwerte und Rückschaltlogik definieren"
+            },
+            {
+              "id": "test",
+              "label": "Fehler einzeln auslösen und Anwendung, Monitoring sowie Wiederherstellung protokollieren"
+            }
+          ],
+          "expected": [
+            "failures",
+            "dependencies",
+            "mechanism",
+            "health",
+            "test"
+          ],
+          "correctFeedback": "Richtig: Die Reihenfolge bildet den belastbaren technischen Entscheidungsweg ab.",
+          "wrongFeedback": "Prüfe zuerst Anforderungen und Grenzen, wähle dann die Technik und verifiziere zuletzt die Wirkung."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "provider-redundanz-card-1",
+              "label": "SPOF",
+              "front": "Was ist ein Single Point of Failure?",
+              "back": "Eine einzelne notwendige Komponente oder Abhängigkeit, deren Ausfall den betrachteten Dienst stoppt."
+            },
+            {
+              "id": "provider-redundanz-card-2",
+              "label": "Health Check",
+              "front": "Warum reicht der Interface-Status nicht?",
+              "back": "Ein Link kann elektrisch aktiv sein, obwohl Routing, DNS oder der Zielservice nicht funktioniert."
+            },
+            {
+              "id": "provider-redundanz-card-3",
+              "label": "Rückschaltung",
+              "front": "Warum braucht Failback eine Stabilitätsbedingung?",
+              "back": "Sie verhindert häufiges Wechseln bei einem nur kurzzeitig oder wiederholt gestörten Primärweg."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "provider-redundanz-recall",
+          "title": "Redundanz gegen einen Bagger verteidigen",
+          "prompt": "Entwirf Dual-WAN für einen Standort und erkläre, welche gemeinsamen Fehler du prüfst, wie Failover erkannt wird und wie du es testest.",
+          "label": "Deine Erklärung",
+          "placeholder": "Ich definiere zuerst …",
+          "minLength": 150,
+          "model": "Zuerst definiere ich tolerierbare Fehler und Unterbrechungszeit. Dann prüfe ich Trasse, Hauseinführung, Provider/Vorleister, Firewall, Switch, Strom, DNS und Controller. Health Checks testen mehr als Link-up und werden entprellt. Beim Failover prüfe ich Routen, NAT, Tunnel und Anwendungen. Erst protokollierte Fehler- und Rückschalttests weisen die Redundanz nach."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "provider-redundanz-transfer-a",
+          "requiredObjective": "redundancy-domains",
+          "question": "Welche Kombination ist tatsächlich stärker gegen einen Tiefbauschaden?",
+          "options": [
+            {
+              "text": "Zwei geprüfte, räumlich getrennte letzte Wege mit getrennten Einführungen und dokumentierten Providerabhängigkeiten.",
+              "rationale": "Richtig. Der konkrete gemeinsame physische Fehler wird reduziert.",
+              "correct": true
+            },
+            {
+              "text": "Zwei Tarife über dieselbe Faser und dieselbe Einführung.",
+              "rationale": "Ein Schaden kann beide gleichzeitig treffen.",
+              "correct": false
+            },
+            {
+              "text": "Zwei SSIDs am selben Access Point.",
+              "rationale": "Das schafft keinen zweiten WAN-Pfad.",
+              "correct": false
+            },
+            {
+              "text": "Zwei Rechnungen für dieselbe Leitung.",
+              "rationale": "Abrechnung ist keine technische Trennung.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "provider-redundanz-transfer-b",
+          "requiredObjective": "redundancy-validate",
+          "question": "Welcher Test ist am aussagekräftigsten?",
+          "options": [
+            {
+              "text": "Primärweg kontrolliert trennen, Umschaltzeit und Anwendung prüfen, Monitoring alarmieren lassen und stabile Rückschaltung verifizieren.",
+              "rationale": "Richtig. Der gesamte Regelkreis wird nachgewiesen.",
+              "correct": true
+            },
+            {
+              "text": "Nur prüfen, ob am Backup-Router eine LED leuchtet.",
+              "rationale": "Das beweist keinen funktionsfähigen Ende-zu-Ende-Pfad.",
+              "correct": false
+            },
+            {
+              "text": "Die Konfiguration lesen, ohne einen Fehlerfall auszulösen.",
+              "rationale": "Konfiguration und reale Wirkung können auseinanderliegen.",
+              "correct": false
+            },
+            {
+              "text": "Jeden Health Check deaktivieren.",
+              "rationale": "Dann fehlt die automatische Ausfallerkennung.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **IT-Berufe Lernfelder 10–12, PDF-Seite 185:** Provider-/Routerkontext.\n- **EUROPA Prüfungsvorbereitung, Chunk 01085:** WAN-Transport- und Providerkontext.\n- **Kurationshinweis:** Kein geschlossener lokaler Redundanzbeleg; hohe Prüfpriorität vor Publikation.\n\nDie veröffentlichten Erklärgrafiken und Übungsfälle sind eigenständig erstellt. Quellenlücken und technische Grenzen bleiben im Kurationsartefakt sichtbar."
+        }
+      ]
+    }
+  ]
+}

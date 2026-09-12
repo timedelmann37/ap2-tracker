@@ -227,6 +227,27 @@ try {
   assert(await page.locator('.math-display > math').count() >= 2, 'MTU and oversubscription calculations use visual accessible MathML');
   assert(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'Jumbo-frame topic has no horizontal page overflow');
 
+  await page.goto(`${base}/lernen/wlan-kanalplanung/`);
+  assert(await page.locator('figure .learning-diagram').count() === 2, 'WLAN channel planning exposes both instructional diagrams');
+  assert(await page.locator('.math-display > math').count() >= 1, 'WLAN channel relation uses visual accessible MathML');
+  assert(await page.locator('[data-sequence="channel-planning-sequence"] [data-step]').count() === 5, 'WLAN channel planning exposes the complete decision sequence');
+  await page.locator('[data-quiz="wlan-kanalplanung-transfer-a"] [data-answer="0"]').click();
+  assert(await page.locator('#mark-done').isDisabled(), 'One WLAN channel objective does not unlock completion');
+  await page.locator('[data-quiz="wlan-kanalplanung-transfer-b"] [data-answer="0"]').click();
+  assert(!await page.locator('#mark-done').isDisabled(), 'Both WLAN channel objectives unlock completion');
+
+  await page.goto(`${base}/lernen/voip-bandbreite/`);
+  assert(await page.locator('figure .learning-diagram').count() === 2, 'VoIP bandwidth topic exposes both instructional diagrams');
+  assert(await page.locator('.math-display > math').count() >= 1, 'VoIP bandwidth formulas use visual accessible MathML');
+  await page.locator('[data-quiz="voip-bandbreite-transfer-a"] [data-answer="0"]').click();
+  assert(await page.locator('#mark-done').isDisabled(), 'VoIP concept check alone does not unlock completion');
+  const voipNumeric = page.locator('[data-numeric-practice="voip-bandbreite-transfer-b"]');
+  await voipNumeric.locator('[data-numeric-input]').fill('1382,4');
+  await voipNumeric.locator('[data-numeric-check]').click();
+  assert(await voipNumeric.locator('[data-numeric-feedback]').getAttribute('data-result') === 'correct', 'VoIP transfer calculation accepts decimal comma and correct overhead result');
+  assert(!await page.locator('#mark-done').isDisabled(), 'Both VoIP objectives unlock completion');
+  assert(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'VoIP bandwidth topic has no horizontal page overflow');
+
   await page.goto(`${base}/lernen/ethernet-standards/`);
   const domainAccentMatches = await page.evaluate(() => {
     const probe = document.createElement('span');

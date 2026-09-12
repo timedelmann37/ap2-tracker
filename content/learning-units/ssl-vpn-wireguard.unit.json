@@ -1,0 +1,339 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "ssl-vpn-wireguard",
+    "slug": "ssl-vpn-wireguard",
+    "title": "TLS-VPN, OpenVPN und WireGuard fachlich vergleichen",
+    "description": "Die unscharfe Bezeichnung SSL-VPN einordnen und OpenVPN sowie WireGuard nach Schicht, Identität, Kryptografie und Betriebsmodell auswählen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__11",
+    "week": "KW 40",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": [
+      "itlf10-12-2023",
+      "europa-integratoren-2026"
+    ],
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "vpn-protocol-compare",
+      "label": "TLS-basierte VPNs, OpenVPN und WireGuard nach Transport, Tunnelmodell, Schlüsseln und typischem Einsatz unterscheiden"
+    },
+    {
+      "id": "vpn-protocol-operate",
+      "label": "für Remote Access oder Standortkopplung eine Lösung einschließlich Identität, Routen, Schlüsselwechsel und Entzug begründen"
+    }
+  ],
+  "intro": "„SSL-VPN“ ist ein historisch und produktseitig unscharfer Sammelbegriff. Moderne Lösungen verwenden TLS oder eigene aktuelle Protokolle. Die Wahl entscheidet nicht nur über Kryptografie, sondern auch über Benutzeridentität, Gerätekonfiguration und Betrieb.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seite 202",
+        "use": "OpenVPN, WireGuard und weitere VPN-Systeme einordnen",
+        "reviewStatus": "Direkte Vergleichstabelle geprüft; Begriffe fachlich aktualisiert"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seite 243",
+        "use": "TLS-Terminierung und Vertrauensgrenzen als Kontext ergänzen",
+        "reviewStatus": "Nur TLS-/Endpunktkontext genutzt"
+      },
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunk europa-integratoren-2026:01083",
+        "use": "Remote-Access- und Site-to-Site-Szenarien zuordnen",
+        "reviewStatus": "Architekturkontext geprüft"
+      }
+    ],
+    "notes": [
+      "SSL 2.0/3.0 sind veraltet; der gebräuchliche Produktbegriff SSL-VPN darf nicht als Empfehlung für altes SSL verstanden werden.",
+      "OpenVPN nutzt typischerweise TLS für Steuerung und Authentisierung, ist aber konfigurationsabhängig.",
+      "WireGuard identifiziert Tunnelpeers über öffentliche Schlüssel. Benutzeridentität, MFA, Geräteverwaltung, Adressvergabe und Schlüsselentzug müssen durch die Gesamtlösung ergänzt werden.",
+      "Private Buchabbildungen wurden nicht veröffentlicht oder nachgezeichnet; beide Diagramme sind eigenständige, reduzierte Lernmodelle.",
+      "Hersteller-, Tarif- und versionsabhängige Werte sind als solche markiert und müssen vor einer realen Umsetzung gegen aktuelle Dokumentation geprüft werden."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "vpn-protocol-models",
+      "type": "comparison",
+      "title": "VPN-Modelle im Vergleich",
+      "description": "Die Karten trennen Protokollkern und ergänzende Plattformfunktionen.",
+      "items": [
+        {
+          "label": "TLS-VPN-Produkt",
+          "detail": "Häufig Remote Access über TLS; Portal, Volltunnel und App-Zugriff können je Produkt verschieden sein."
+        },
+        {
+          "label": "OpenVPN",
+          "detail": "Flexibles Tunnelmodell mit TLS-Steuerung; Zertifikate, Profile, Cipher und Serverbetrieb konfigurieren."
+        },
+        {
+          "label": "WireGuard",
+          "detail": "Schlanker L3-Tunnel mit öffentlichen Peer-Schlüsseln; Identitäts- und Lifecycle-Funktionen ergänzen."
+        },
+        {
+          "label": "Gesamtlösung",
+          "detail": "MFA, Gerätezustand, Routen, DNS, Logs, Updates und Entzug entscheiden über den sicheren Betrieb."
+        }
+      ]
+    },
+    {
+      "id": "vpn-client-lifecycle",
+      "type": "flow",
+      "title": "Vom Enrollment bis zum Entzug",
+      "description": "Nicht nur der erfolgreiche Verbindungsaufbau zählt.",
+      "items": [
+        {
+          "label": "Registrieren",
+          "detail": "Benutzer, Gerät und zulässige Rolle eindeutig zuordnen."
+        },
+        {
+          "label": "Schlüssel",
+          "detail": "Secret oder privaten Schlüssel geschützt ausstellen und speichern."
+        },
+        {
+          "label": "Policy",
+          "detail": "Routen, DNS, erreichbare Ziele und MFA festlegen."
+        },
+        {
+          "label": "Betrieb",
+          "detail": "Version, Logs, Ablaufzeiten und ungewöhnliche Nutzung überwachen."
+        },
+        {
+          "label": "Entzug",
+          "detail": "Verlorene Geräte und ausscheidende Nutzer zeitnah sperren."
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Ein Protokoll oder ein Produktlabel?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "ssl-vpn-wireguard-diagnostic",
+          "diagnostic": true,
+          "question": "Welche Aussage zu „SSL-VPN“ ist am belastbarsten?",
+          "options": [
+            {
+              "text": "Der Begriff bezeichnet häufig TLS-basierte Remote-Access- oder Tunnelprodukte; die konkrete Technik und Version müssen im Produkt geprüft werden.",
+              "rationale": "Richtig. Das Label allein ist technisch nicht präzise genug.",
+              "correct": true
+            },
+            {
+              "text": "Es bedeutet zwingend, dass SSL 3.0 heute sicher eingesetzt wird.",
+              "rationale": "Alte SSL-Versionen sind kein zeitgemäßer Sicherheitsstandard.",
+              "correct": false
+            },
+            {
+              "text": "Es ist immer identisch mit WireGuard.",
+              "rationale": "WireGuard verwendet ein eigenes Tunnelprotokoll.",
+              "correct": false
+            },
+            {
+              "text": "Es benötigt weder Zertifikate noch Schlüssel.",
+              "rationale": "Jede sichere Lösung benötigt verwaltetes Schlüsselmaterial.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "ENTSCHEIDUNGSGRENZE",
+          "markdown": "Protokollname ersetzt kein Betriebskonzept. Prüfe Endpunkte, Identität, Schlüsselverteilung, Routen, DNS, Entzug, Updates und Ausfallverhalten."
+        }
+      ]
+    },
+    {
+      "title": "Drei Ebenen der Auswahl",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**TLS-basierte VPN-Portale/Clients** können gut durch restriktive Netze erreichbar sein und Benutzeranmeldung eng integrieren; genaue Tunnel- und Zugriffsmodelle sind produktspezifisch. **OpenVPN** ist flexibel und nutzt typischerweise TLS-basierte Authentisierung sowie einen eigenen Datenkanal. **WireGuard** ist ein schlankes Layer-3-Tunnelprotokoll mit statischen öffentlichen Peer-Schlüsseln und bewusst kleinerem Protokollumfang.\n\nKeine dieser Bezeichnungen legt allein MFA, Autorisierung oder Gerätekonformität fest. Für den Betrieb zählen Enrollment, Secret-Schutz, Rotation, Entzug, zentrale Policy, Clientupdates und nachvollziehbare Logs."
+        },
+        {
+          "type": "figure",
+          "diagramId": "vpn-protocol-models",
+          "alt": "Vier Karten vergleichen TLS-VPN-Produkte, OpenVPN, WireGuard und notwendige Plattformfunktionen.",
+          "caption": "Eigene Protokollkarte: Schlanker Kern und vollständiger Unternehmensbetrieb sind verschiedene Ebenen."
+        }
+      ]
+    },
+    {
+      "title": "Beispiel: 120 verwaltete Notebooks",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Für 120 Geräte reicht das Kopieren statischer Konfigurationsdateien nicht. Die Lösung braucht eindeutige Gerätezuordnung, Benutzer-MFA, automatisierbares Enrollment, minimale Netze, sichere DNS-Vorgaben, Updatekanal und schnellen Entzug. WireGuard kann der Tunneldatendienst sein; eine Verwaltungsplattform ergänzt Identität und Lifecycle. OpenVPN oder ein TLS-VPN-Produkt können diese Funktionen anders bündeln – sie müssen konkret geprüft werden."
+        },
+        {
+          "type": "figure",
+          "diagramId": "vpn-client-lifecycle",
+          "alt": "Ein Ablauf zeigt Registrierung, Schlüssel, Policy, Betrieb und Entzug eines VPN-Clients.",
+          "caption": "Eigener Lifecycle: Ein Tunnel ist nur bis zum rechtzeitigen Entzug seiner Berechtigung sicher."
+        }
+      ]
+    },
+    {
+      "title": "Geführte Produktauswahl",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "vpn-protocol-selection-sequence",
+          "title": "Eine VPN-Lösung bewerten",
+          "prompt": "Ordne die Prüfschritte.",
+          "tag": "Übung",
+          "steps": [
+            {
+              "id": "scenario",
+              "label": "Remote Access oder Standortkopplung, Clienttypen und Netzgrenzen bestimmen"
+            },
+            {
+              "id": "protocol",
+              "label": "Tunnelprotokoll, Transporterreichbarkeit und Kryptografiemodell prüfen"
+            },
+            {
+              "id": "identity",
+              "label": "Benutzer-, Geräteidentität und MFA mit dem Tunnel verknüpfen"
+            },
+            {
+              "id": "lifecycle",
+              "label": "Enrollment, Rotation, Update, Logging und Entzug entwerfen"
+            },
+            {
+              "id": "pilot",
+              "label": "Routen, DNS, Roaming, Sperrung und Ausfall im Pilot testen"
+            }
+          ],
+          "expected": [
+            "scenario",
+            "protocol",
+            "identity",
+            "lifecycle",
+            "pilot"
+          ],
+          "correctFeedback": "Richtig: Die Reihenfolge bildet den belastbaren technischen Entscheidungsweg ab.",
+          "wrongFeedback": "Prüfe zuerst Anforderungen und Grenzen, wähle dann die Technik und verifiziere zuletzt die Wirkung."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "ssl-vpn-wireguard-card-1",
+              "label": "SSL-VPN",
+              "front": "Warum ist der Begriff allein unzureichend?",
+              "back": "Er kann verschiedene TLS-basierte Produktmodelle meinen; Protokollversion, Tunnelumfang und Identitätsfunktionen müssen konkret geprüft werden."
+            },
+            {
+              "id": "ssl-vpn-wireguard-card-2",
+              "label": "WireGuard",
+              "front": "Wie erkennt WireGuard einen Peer?",
+              "back": "Über dessen konfigurierten öffentlichen Schlüssel; Benutzeridentität und MFA sind zusätzliche Ebenen."
+            },
+            {
+              "id": "ssl-vpn-wireguard-card-3",
+              "label": "OpenVPN",
+              "front": "Welche Betriebsfrage bleibt trotz TLS?",
+              "back": "Wie Zertifikate/Profile ausgestellt, geschützt, aktualisiert, widerrufen und Rollen zugeordnet werden."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "ssl-vpn-wireguard-recall",
+          "title": "Protokoll und Plattform trennen",
+          "prompt": "Vergleiche OpenVPN und WireGuard für 120 Remote-Clients. Nenne je Stärken und die zusätzlich benötigten Betriebsfunktionen.",
+          "label": "Deine Erklärung",
+          "placeholder": "OpenVPN …",
+          "minLength": 150,
+          "model": "OpenVPN bietet flexible, TLS-basierte Authentisierungs- und Tunnelkonfiguration. WireGuard hat einen schlanken L3-Protokollkern und öffentliche Peer-Schlüssel. Bei beiden brauche ich Benutzer- und Gerätezuordnung, MFA, Enrollment, minimale Routen, DNS-Policy, Updates, Logs, Rotation und Entzug. Die Auswahl wird mit realen Clients und Ausfallfällen getestet."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "ssl-vpn-wireguard-transfer-a",
+          "requiredObjective": "vpn-protocol-compare",
+          "question": "Welche Aussage trifft WireGuard am besten?",
+          "options": [
+            {
+              "text": "Es ist ein schlankes L3-VPN-Protokoll mit öffentlichen Peer-Schlüsseln; Unternehmensidentität und Lifecycle müssen ergänzt werden.",
+              "rationale": "Richtig. Protokollkern und Betriebsplattform werden getrennt bewertet.",
+              "correct": true
+            },
+            {
+              "text": "Es authentisiert automatisch jeden menschlichen Nutzer per MFA.",
+              "rationale": "MFA ist keine eingebaute Benutzerfunktion des Protokollkerns.",
+              "correct": false
+            },
+            {
+              "text": "Es ist dasselbe wie ein Captive Portal.",
+              "rationale": "Ein Portal ist ein anderer Zugangsmechanismus.",
+              "correct": false
+            },
+            {
+              "text": "Es benötigt keine Schlüsselverwaltung.",
+              "rationale": "Peer-Schlüssel müssen sicher erzeugt, verteilt und entzogen werden.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "ssl-vpn-wireguard-transfer-b",
+          "requiredObjective": "vpn-protocol-operate",
+          "question": "Was ist bei 120 Remote-Clients die wichtigste zusätzliche Betriebsanforderung?",
+          "options": [
+            {
+              "text": "Automatisiertes Enrollment, eindeutige Zuordnung, Updates, Monitoring sowie schneller Schlüssel- und Geräteentzug.",
+              "rationale": "Richtig. Skalierung entsteht im Lifecycle, nicht nur im Tunnelaufbau.",
+              "correct": true
+            },
+            {
+              "text": "Ein gemeinsamer privater Schlüssel für alle Geräte.",
+              "rationale": "Ein Verlust würde alle Geräte betreffen und individuelle Sperrung verhindern.",
+              "correct": false
+            },
+            {
+              "text": "Keine Versionspflege nach dem Rollout.",
+              "rationale": "Clients und Gateways benötigen weiter Sicherheitsupdates.",
+              "correct": false
+            },
+            {
+              "text": "Vollzugriff auf alle Netze für jede Rolle.",
+              "rationale": "Berechtigungen sollten minimal und rollenbezogen sein.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **IT-Berufe Lernfelder 10–12, PDF-Seiten 202 und 243:** VPN-Systeme und TLS-Endpunktkontext.\n- **EUROPA Prüfungsvorbereitung, Chunk 01083:** Remote-Access- und Standortkopplungsszenarien.\n\nDie veröffentlichten Erklärgrafiken und Übungsfälle sind eigenständig erstellt. Quellenlücken und technische Grenzen bleiben im Kurationsartefakt sichtbar."
+        }
+      ]
+    }
+  ]
+}
