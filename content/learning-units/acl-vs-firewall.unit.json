@@ -1,0 +1,321 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "acl-vs-firewall",
+    "slug": "acl-vs-firewall",
+    "title": "ACLs und Firewalls am richtigen Prüfpunkt einsetzen",
+    "description": "Paketfilter, Verbindungszustand und Richtung im Inter-VLAN-Verkehr unterscheiden.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-7",
+    "groupLabel": "Block N7 · Netzwerksicherheit",
+    "itemId": "ga2-7__7",
+    "week": "KW 42",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "sources": [
+      "europa-integratoren-2026"
+    ],
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "kontrollziel",
+      "label": "eine einfache stateless ACL von zustandsbehafteter Filterung unterscheiden"
+    },
+    {
+      "id": "filterpunkt",
+      "label": "Filterpunkt und Rückverkehr in einem konkreten Netzfall korrekt beurteilen"
+    }
+  ],
+  "intro": "Eine Regel hilft nur dort, wo der Verkehr sie tatsächlich passiert. Entscheidend sind Prüfpunkt, Richtung und Fähigkeiten – nicht das Etikett Switch, Router oder Firewall.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Markdown-Chunk 01079, Zeilen 10219–10226",
+        "use": "Layer-3-Switch, Inter-VLAN-Routing und ACLs",
+        "reviewStatus": "Relevanten ACL-Absatz geprüft; STP-Anteile nicht verwendet"
+      }
+    ],
+    "notes": [
+      "Unpassende ITLF6–9-Verweise 00202 und 00211 nicht als ACL-Fachbeleg verwendet.",
+      "Übungsmodell explizit stateless, First Match und implizites Verwerfen; keine allgemeine Herstellerbehauptung.",
+      "Eigene Fälle und Diagramme; keine privaten Buchabbildungen veröffentlicht. Fach- und Verständlichkeitsfreigabe durch einen Menschen steht aus."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "acl-vs-firewall-modell",
+      "type": "layers",
+      "title": "Drei Fragen vor jeder Regel",
+      "description": "Zuerst wird der Verkehrsweg geklärt, dann die benötigte Prüftiefe und zuletzt die Gegenprobe.",
+      "items": [
+        {
+          "label": "Prüfpunkt",
+          "detail": "Passiert der Verkehr diese Stelle?"
+        },
+        {
+          "label": "Paketfelder",
+          "detail": "Adressen, Protokoll, Ports"
+        },
+        {
+          "label": "Zustand",
+          "detail": "Gehört die Antwort zur Sitzung?"
+        },
+        {
+          "label": "Anwendung",
+          "detail": "Inhalt nur mit passender Sicht"
+        }
+      ]
+    },
+    {
+      "id": "acl-vs-firewall-ablauf",
+      "type": "flow",
+      "title": "Regeln entlang des Weges prüfen",
+      "description": "Hinweg und Rückweg werden getrennt gezeichnet und jeweils am tatsächlichen Filterpunkt geprüft.",
+      "items": [
+        {
+          "label": "Bedarf",
+          "detail": "Client darf HTTPS zum Server"
+        },
+        {
+          "label": "Hinweg",
+          "detail": "Ingress an VLAN 20"
+        },
+        {
+          "label": "Rückweg",
+          "detail": "Ingress an VLAN 30"
+        },
+        {
+          "label": "Test",
+          "detail": "Erlaubt und verboten prüfen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "acl-vs-firewall-diagnose",
+          "question": "Reicht eine ACL am Router, um jeden Austausch zwischen zwei Hosts desselben VLANs zu kontrollieren?",
+          "options": [
+            {
+              "text": "Nein, direkt geswitchter Verkehr kann den Router umgehen.",
+              "rationale": "Richtig: Regeln wirken nur am durchlaufenen Prüfpunkt.",
+              "correct": true
+            },
+            {
+              "text": "Ja, jedes Ethernet-Frame muss durch den Router.",
+              "rationale": "Lokale Kommunikation benötigt nicht grundsätzlich ein Gateway.",
+              "correct": false
+            },
+            {
+              "text": "Ja, sobald der Router ein Default Gateway ist.",
+              "rationale": "Die Gateway-Adresse zwingt lokalen Verkehr nicht zum Routing.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Leitgedanke",
+          "markdown": "Eine ACL ist ein Regelwerk. Ob Zustände oder Anwendungsinhalte geprüft werden, hängt von der Implementierung ab."
+        }
+      ]
+    },
+    {
+      "title": "Nicht das Gehäuse entscheidet",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Eine einfache **stateless IP-ACL** prüft Paketfelder, etwa Quell- und Zieladresse, Protokoll und bei TCP/UDP Ports. Sie kann auf einem Router oder Layer-3-Switch Verkehr zwischen VLANs begrenzen. Ein **stateful Filter** führt zusätzlich Verbindungszustände und ordnet Rückverkehr erlaubten Sitzungen zu. Firewalls verwenden ebenfalls Regeln beziehungsweise ACLs; die Begriffe schließen sich nicht aus.\n\nIn unserem Modell gilt **erste passende Regel, danach implizites Verwerfen**. Das ist eine deklarierte Übungsannahme, keine universelle Eigenschaft jedes Systems. Auch Richtung und Platzierung sind ausdrücklich anzugeben: inbound bedeutet hinein in das betrachtete Interface, nicht pauschal aus dem Internet.\n\nEine ACL am VLAN-Gateway sieht gerouteten Verkehr, aber normalerweise nicht zwei direkt miteinander kommunizierende Hosts im selben VLAN. Dafür wären andere Kontrollpunkte nötig, etwa Hostfirewalls, geeignete Port-/VLAN-ACLs oder Segmentierung. Eine bloße TCP-ACK-Prüfung ist kein vollständiger Verbindungszustand."
+        },
+        {
+          "type": "figure",
+          "diagramId": "acl-vs-firewall-modell",
+          "alt": "Zuerst wird der Verkehrsweg geklärt, dann die benötigte Prüftiefe und zuletzt die Gegenprobe.",
+          "caption": "Drei Fragen vor jeder Regel – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Client 10.20.0.25 im VLAN 20 darf den Webserver 10.30.0.8 im VLAN 30 per HTTPS erreichen. Die ACL liegt inbound am gerouteten VLAN-20-Interface.\n\n| Nr. | Quelle | Ziel | Protokoll / Zielport | Aktion |\n|---|---|---|---|---|\n| 1 | 10.20.0.0/24 | 10.30.0.8 | TCP / 443 | erlauben |\n| 2 | beliebig | beliebig | beliebig | verwerfen |\n\nEin Paket von Client-Port 51000 an Server-Port 443 trifft Regel 1. Die Antwort von Server-Port 443 an Client-Port 51000 kommt über VLAN 30 herein und verlässt VLAN 20; sie wird nicht von genau dieser inbound ACL am VLAN 20 geprüft. Existieren weitere stateless ACLs am Rückweg, müssen sie gesondert betrachtet werden. Ein stateful Filter kann passende Antworten einer erlaubten Sitzung zuordnen, sofern beide Richtungen seinen Zustandsmechanismus passieren.\n\nGegenprobe: SSH zum Server trifft Regel 2. Ein direkter Austausch zwischen zwei Clients im VLAN 20 passiert das VLAN-Gateway hingegen nicht und wird durch diese ACL nicht abgesichert."
+        },
+        {
+          "type": "figure",
+          "diagramId": "acl-vs-firewall-ablauf",
+          "alt": "Hinweg und Rückweg werden getrennt gezeichnet und jeweils am tatsächlichen Filterpunkt geprüft.",
+          "caption": "Regeln entlang des Weges prüfen – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Selbst entscheiden",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "acl-vs-firewall-uebung",
+          "question": "Die ACL liegt inbound am Client-VLAN. Was bedeutet inbound hier?",
+          "options": [
+            {
+              "text": "Ausschließlich vom Internet zur Firma.",
+              "rationale": "Inbound ist keine globale Herkunftsbezeichnung.",
+              "correct": false
+            },
+            {
+              "text": "Vom Client-VLAN in das betrachtete Layer-3-Interface hinein.",
+              "rationale": "Richtig: Die Richtung wird am Interface definiert.",
+              "correct": true
+            },
+            {
+              "text": "Jeder Rückverkehr vom Server.",
+              "rationale": "Der Rückweg erreicht zunächst ein anderes Interface.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "sequence",
+          "id": "acl-vs-firewall-reihenfolge",
+          "title": "Eine ACL planen",
+          "prompt": "Ordne die Schritte vor einer produktiven Freigabe.",
+          "steps": [
+            {
+              "id": "s2",
+              "label": "Regeln und Zustandsannahmen am Prüfpunkt festlegen"
+            },
+            {
+              "id": "s0",
+              "label": "Erlaubte Kommunikation mit Quelle und Ziel erfassen"
+            },
+            {
+              "id": "s3",
+              "label": "Erlaubte und verbotene Verbindungen testen"
+            },
+            {
+              "id": "s1",
+              "label": "Hinweg und Rückweg mit Interfaces zeichnen"
+            }
+          ],
+          "expected": [
+            "s0",
+            "s1",
+            "s2",
+            "s3"
+          ],
+          "correctFeedback": "Richtig: Erst Bedarf und Verkehrsweg, dann Regeln und Gegenproben.",
+          "wrongFeedback": "Gehe vom belegten Bedarf über die Entscheidung zum Nachweis. Prüfe die erste abweichende Position."
+        }
+      ]
+    },
+    {
+      "title": "Aus dem Gedächtnis erklären",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "acl-vs-firewall-karte-0",
+              "label": "Abruf 1",
+              "front": "Was fehlt einer einfachen stateless ACL?",
+              "back": "Die zuverlässige Zuordnung eines Pakets zu einer zuvor erlaubten Sitzung."
+            },
+            {
+              "id": "acl-vs-firewall-karte-1",
+              "label": "Abruf 2",
+              "front": "Warum ist ein ACK-Bit kein Sitzungsnachweis?",
+              "back": "Das Bit kann gesetzt sein, ohne dass der Filter einen gültigen Verbindungsaufbau gesehen hat."
+            },
+            {
+              "id": "acl-vs-firewall-karte-2",
+              "label": "Abruf 3",
+              "front": "Sind ACL und Firewall Gegensätze?",
+              "back": "Nein. Firewalls nutzen Regeln; entscheidend sind die konkreten Filterfähigkeiten."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "acl-vs-firewall-abruf",
+          "title": "Deine Begründung",
+          "prompt": "Warum kann eine korrekt geschriebene ACL trotzdem wirkungslos sein? Erkläre anhand des Prüfpunktes.",
+          "label": "Eigene Erklärung",
+          "placeholder": "Meine Entscheidung und ihre Grenze …",
+          "minLength": 100,
+          "model": "Wenn der zu sperrende Verkehr die Schnittstelle nicht passiert, wird die ACL nicht ausgewertet. Zwei Hosts im selben VLAN können direkt über den Switch kommunizieren. Dann brauche ich einen passenden lokalen Kontrollpunkt oder getrennte Segmente."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "acl-vs-firewall-transfer-a",
+          "question": "Ein System soll nur Antworten auf zuvor erlaubte Verbindungen zulassen. Welche Eigenschaft ist ausschlaggebend?",
+          "options": [
+            {
+              "text": "Ein beliebiges Gerät mit der Aufschrift Router.",
+              "rationale": "Der Gerätename sagt nichts über die konfigurierte Filterfähigkeit.",
+              "correct": false
+            },
+            {
+              "text": "Eine pauschale Freigabe aller Pakete mit gesetztem ACK.",
+              "rationale": "Das ACK-Bit allein belegt keine zuvor erlaubte Sitzung.",
+              "correct": false
+            },
+            {
+              "text": "Zustandsbehaftete Filterung mit Sicht auf die relevanten Verbindungsrichtungen.",
+              "rationale": "Richtig: Der Zustand begründet die Antwortfreigabe.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "kontrollziel"
+        },
+        {
+          "type": "quiz",
+          "id": "acl-vs-firewall-transfer-b",
+          "question": "Eine inbound ACL am VLAN 40 erlaubt Clients nur TCP/443 zum Server im VLAN 50. Welche Aussage ist richtig?",
+          "options": [
+            {
+              "text": "Die ACL kontrolliert damit automatisch alle Frames im VLAN 40.",
+              "rationale": "Die Router-Schnittstelle sieht nicht jeden lokalen Austausch.",
+              "correct": false
+            },
+            {
+              "text": "Jede Antwort trifft dieselbe inbound ACL am VLAN 40.",
+              "rationale": "Eine geroutete Antwort verlässt dieses Interface.",
+              "correct": false
+            },
+            {
+              "text": "Der Rückweg und weitere ACLs müssen separat geprüft werden; lokaler VLAN-40-Verkehr wird dort nicht automatisch gefiltert.",
+              "rationale": "Richtig: Richtung und Verkehrsweg bestimmen die Reichweite.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "filterpunkt"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Buchgrundlage: EUROPA Prüfungsvorbereitung, Chunk 01079 (Layer-3-Switch und ACLs). Ergänzung zum Filtermodell: [NIST SP 800-41 Rev. 1](https://csrc.nist.gov/pubs/sp/800/41/r1/final). Die genaue Semantik einer konkreten ACL ist in der Produktdokumentation zu prüfen."
+        }
+      ]
+    }
+  ]
+}

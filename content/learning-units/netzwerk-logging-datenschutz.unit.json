@@ -1,0 +1,320 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "netzwerk-logging-datenschutz",
+    "slug": "netzwerk-logging-datenschutz",
+    "title": "Netzwerkprotokollierung zweckgebunden planen",
+    "description": "Ein Logging-Konzept mit Datenminimierung, Löschung, Zugriffsschutz und Mitbestimmungsprüfung entwickeln.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-7",
+    "groupLabel": "Block N7 · Netzwerksicherheit",
+    "itemId": "ga2-7__12",
+    "week": "KW 42",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "konzept",
+      "label": "ein Logging-Konzept mit Zweck, notwendigem Datenumfang, Zugriff und begründeter Aufbewahrung beurteilen"
+    },
+    {
+      "id": "speicherbedarf",
+      "label": "den Rohspeicherbedarf aus Ereignisrate, Ereignisgröße und vorgegebener Aufbewahrung berechnen"
+    }
+  ],
+  "intro": "Sicherheitslogs können Vorfälle erklären – und zugleich viel über Menschen verraten. Eine belastbare Planung macht beides sichtbar, bevor Daten gesammelt werden.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seiten 78–79 sowie Proxy-Tabellenkontext auf PDF-Seite 189",
+        "use": "Schutz, Löschkonzept und Datenschutzbezug bei Protokollierung",
+        "reviewStatus": "OCR/Textkontext geprüft; pauschale Freigabe durch Datenschutzbeauftragten nicht übernommen"
+      }
+    ],
+    "notes": [
+      "Primärabgleich DSGVO Art. 5, 6, 25, 32, 38/39 und BetrVG § 87 Abs. 1 Nr. 6 am 2026-09-12.",
+      "Keine allgemeingültige Aufbewahrungsfrist behauptet. Zahlenfälle sind ausschließlich Kapazitätsübungen.",
+      "Keine personenbezogenen Echtdaten in Beispielen.",
+      "Eigene Fälle und Diagramme; keine privaten Buchabbildungen veröffentlicht. Fach- und Verständlichkeitsfreigabe durch einen Menschen steht aus."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "netzwerk-logging-datenschutz-modell",
+      "type": "layers",
+      "title": "Daten mit Ablaufdatum",
+      "description": "Zweck und minimale Felder werden vor Erfassung festgelegt; Auswertung bleibt begrenzt und endet mit Löschung oder gesondert begründeter Sicherung.",
+      "items": [
+        {
+          "label": "Zweck",
+          "detail": "Welche Sicherheitsfrage?"
+        },
+        {
+          "label": "Felder",
+          "detail": "Nur notwendige Metadaten"
+        },
+        {
+          "label": "Zugriff",
+          "detail": "Benannte Rollen und Nachweis"
+        },
+        {
+          "label": "Löschung",
+          "detail": "Frist, Verfahren und Kontrolle"
+        }
+      ]
+    },
+    {
+      "id": "netzwerk-logging-datenschutz-ablauf",
+      "type": "flow",
+      "title": "Vor dem Sammeln entscheiden",
+      "description": "Zweck und Beteiligung werden geklärt, der Umfang minimiert, Rechte begrenzt und der Löschlauf geprüft.",
+      "items": [
+        {
+          "label": "Klärung",
+          "detail": "Zweck, Grundlage, Beteiligung"
+        },
+        {
+          "label": "Minimierung",
+          "detail": "Felder und Frist begründen"
+        },
+        {
+          "label": "Betrieb",
+          "detail": "Zugriff und Integrität schützen"
+        },
+        {
+          "label": "Kontrolle",
+          "detail": "Löschung tatsächlich prüfen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "netzwerk-logging-datenschutz-diagnose",
+          "question": "In einem Log wurden Namen durch feste IDs ersetzt. Ist es deshalb sicher anonym?",
+          "options": [
+            {
+              "text": "Ja, Zahlen können nie personenbezogen sein.",
+              "rationale": "Kennungen können Personen zuordenbar bleiben.",
+              "correct": false
+            },
+            {
+              "text": "Ja, sobald das Log nur intern gespeichert wird.",
+              "rationale": "Der Speicherort beseitigt den Personenbezug nicht.",
+              "correct": false
+            },
+            {
+              "text": "Nein, Zusatzwissen oder weitere Daten können eine Zuordnung ermöglichen.",
+              "rationale": "Richtig: Das kann lediglich Pseudonymisierung sein.",
+              "correct": true
+            }
+          ],
+          "diagnostic": true
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Leitgedanke",
+          "markdown": "Nicht „alles für alle Fälle“, sondern erforderliche Daten für einen dokumentierten Zweck."
+        }
+      ]
+    },
+    {
+      "title": "Vom Sicherheitszweck zum Datenlebenszyklus",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Logging-Konzept beschreibt Zweck, Rechtsgrundlage, benötigte Felder, Zugriffsrollen, Schutz und Löschung. Personenbezug kann auch durch IP-Adressen, Konten oder die Zusammenführung mehrerer Protokolle entstehen. Die DSGVO verlangt unter anderem Zweckbindung, Datenminimierung, Speicherbegrenzung und angemessene Sicherheit. Sie legt keine einheitliche Aufbewahrungsfrist für alle Netzwerklogs fest.\n\n**Pseudonymisierung** ersetzt direkte Kennungen, lässt eine Zuordnung mit Zusatzwissen aber weiterhin zu; sie ist nicht automatisch Anonymisierung. **Anonymisierung** muss die Identifizierbarkeit tatsächlich ausreichend ausschließen. Nur das Entfernen des Namens genügt dafür nicht.\n\nBei beschäftigtenbezogener Überwachung sind zusätzlich Beteiligungsrechte zu prüfen. § 87 Abs. 1 Nr. 6 BetrVG betrifft technische Einrichtungen zur Verhaltens- oder Leistungsüberwachung. Im Anwendungsbereich mit Betriebsrat ist dessen Rolle vor Einführung und Nutzung zu klären. Datenschutzbeauftragte beraten und überwachen; ihre Beteiligung ersetzt weder eine Rechtsgrundlage noch erforderliche Mitbestimmung.\n\nTechnisch gehören sichere Übertragung, begrenzte Leserechte, Schutz vor Manipulation, synchronisierte Zeit und überprüfbare Löschläufe zusammen. Zugangstoken, Passwörter und unnötige Inhaltsdaten gehören nicht in ein gewöhnliches Ereignislog. Eine konkrete betriebliche Lösung benötigt fachkundige Datenschutz- und gegebenenfalls arbeitsrechtliche Prüfung; diese Einheit ist keine Einzelfallfreigabe."
+        },
+        {
+          "type": "figure",
+          "diagramId": "netzwerk-logging-datenschutz-modell",
+          "alt": "Zweck und minimale Felder werden vor Erfassung festgelegt; Auswertung bleibt begrenzt und endet mit Löschung oder gesondert begründeter Sicherung.",
+          "caption": "Daten mit Ablaufdatum – eigenes Lernmodell."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Rohspeicherbedarf ist Ereignisse pro Tag mal Bytes pro Ereignis mal Anzahl Tage",
+          "mathml": "<math display=\"block\"><mrow><mi>V</mi><mo>=</mo><mi>E</mi><mo>·</mo><mi>B</mi><mo>·</mo><mi>T</mi></mrow></math>",
+          "legend": [
+            "V: Rohdatenvolumen in Byte",
+            "E: Ereignisse pro Tag; B: Byte je Ereignis",
+            "T: separat begründete Aufbewahrung in Tagen; Index und Replikation nicht enthalten"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein fiktives Team möchte wiederholte gescheiterte VPN-Anmeldungen untersuchen. Als Entwurf erfasst es Zeit, pseudonyme Kontokennung, Quelladresse, Ergebnis und Systemkennung – nicht Passwort, Token oder vollständigen Datenverkehr. Der Entwurf muss auf Erforderlichkeit und Rechtsgrundlage geprüft werden. Sicherheitsanalyse und individuelle Leistungsauswertung sind nicht einfach derselbe Zweck.\n\nFür eine reine Kapazitätsübung wird eine bereits separat geprüfte Aufbewahrung von 7 Tagen angenommen: 20.000 Ereignisse pro Tag mit durchschnittlich 300 Byte ergeben 6.000.000 Byte pro Tag und 42.000.000 Byte, also 42 MB Rohdaten. MB bedeutet hier dezimal 1.000.000 Byte. Suchindex, Metadaten, Redundanz und Reserve kommen zusätzlich hinzu. Die Rechnung begründet nicht die Frist.\n\nEine Löschprobe kontrolliert, dass abgelaufene Daten nicht nur aus der Suchansicht verschwinden. Falls konkrete Vorfalldaten länger benötigt werden, sind Umfang, Grund, Verantwortliche und Überprüfung gesondert festzulegen. Auch Kopien und Wiederherstellungen gehören in das Löschkonzept."
+        },
+        {
+          "type": "figure",
+          "diagramId": "netzwerk-logging-datenschutz-ablauf",
+          "alt": "Zweck und Beteiligung werden geklärt, der Umfang minimiert, Rechte begrenzt und der Löschlauf geprüft.",
+          "caption": "Vor dem Sammeln entscheiden – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Selbst entscheiden",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "netzwerk-logging-datenschutz-uebung",
+          "question": "Ein Log sammelt zur Fehlersuche vollständige Zugangstoken. Was ist die passende Korrektur?",
+          "options": [
+            {
+              "text": "Token entfernen beziehungsweise sicher redigieren und nur erforderliche Ereignisfelder erfassen.",
+              "rationale": "Richtig: Diagnosezweck verlangt keinen wiederverwendbaren geheimen Zugangsnachweis.",
+              "correct": true
+            },
+            {
+              "text": "Token nur länger aufbewahren.",
+              "rationale": "Mehr Speicherdauer reduziert das Offenlegungsrisiko nicht.",
+              "correct": false
+            },
+            {
+              "text": "Allen Mitarbeitern Leserechte geben, damit Fehler schneller gefunden werden.",
+              "rationale": "Breiter Zugriff vervielfacht die Offenlegungsmöglichkeiten.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "sequence",
+          "id": "netzwerk-logging-datenschutz-reihenfolge",
+          "title": "Ein Logging-Konzept vorbereiten",
+          "prompt": "Ordne die Planung vor und nach der Einführung.",
+          "steps": [
+            {
+              "id": "s2",
+              "label": "Zugriffsrollen und technische Schutzmaßnahmen umsetzen"
+            },
+            {
+              "id": "s0",
+              "label": "Zweck, Rechtsgrundlage und erforderliche Beteiligung klären"
+            },
+            {
+              "id": "s3",
+              "label": "Löschung, Auswertung und Ausnahmen regelmäßig überprüfen"
+            },
+            {
+              "id": "s1",
+              "label": "Erforderliche Felder und begründete Aufbewahrung festlegen"
+            }
+          ],
+          "expected": [
+            "s0",
+            "s1",
+            "s2",
+            "s3"
+          ],
+          "correctFeedback": "Richtig: Sammlung folgt der begründeten Planung, nicht umgekehrt.",
+          "wrongFeedback": "Gehe vom belegten Bedarf über die Entscheidung zum Nachweis. Prüfe die erste abweichende Position."
+        }
+      ]
+    },
+    {
+      "title": "Aus dem Gedächtnis erklären",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "netzwerk-logging-datenschutz-karte-0",
+              "label": "Abruf 1",
+              "front": "Ist eine Beispiel-Frist eine gesetzliche Frist?",
+              "back": "Nein. Dauer und Erforderlichkeit hängen vom konkreten Zweck und den geltenden Anforderungen ab."
+            },
+            {
+              "id": "netzwerk-logging-datenschutz-karte-1",
+              "label": "Abruf 2",
+              "front": "Ersetzt Pseudonymisierung den Datenschutz?",
+              "back": "Nein. Zuordenbare pseudonyme Daten bleiben personenbezogen."
+            },
+            {
+              "id": "netzwerk-logging-datenschutz-karte-2",
+              "label": "Abruf 3",
+              "front": "Was gehört neben dem Speicherbedarf ins Konzept?",
+              "back": "Zweck, Grundlage, erforderliche Felder, Beteiligung, Zugriffsrollen, Schutz und Löschkontrolle."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "netzwerk-logging-datenschutz-abruf",
+          "title": "Deine Begründung",
+          "prompt": "Ein Team möchte alte VPN-Logs zur Rangliste der Arbeitszeiten nutzen. Welche Fragen müssen vor einer solchen Nutzung geklärt werden?",
+          "label": "Eigene Erklärung",
+          "placeholder": "Meine Entscheidung und ihre Grenze …",
+          "minLength": 100,
+          "model": "Ich prüfe die Zweckänderung und ihre rechtliche Zulässigkeit, Erforderlichkeit und Transparenz sowie die einschlägigen Beteiligungsrechte. Vorhandene technische Leserechte sind keine Erlaubnis für einen neuen Auswertungszweck. Datenschutz und gegebenenfalls Betriebsrat sind frühzeitig einzubeziehen."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "netzwerk-logging-datenschutz-transfer-a",
+          "question": "Welcher Entwurf ist fachlich am vollständigsten?",
+          "options": [
+            {
+              "text": "Alle Pakete unbegrenzt speichern; eine große Festplatte genügt.",
+              "rationale": "Kapazität ist keine Begründung für Umfang und Dauer.",
+              "correct": false
+            },
+            {
+              "text": "Dokumentierter Zweck und Grundlage, minimale Felder, begrenzte Rollen, begründete Frist samt Löschtest und Mitbestimmungsprüfung.",
+              "rationale": "Richtig: Planung betrifft Recht, Datenumfang und technischen Betrieb.",
+              "correct": true
+            },
+            {
+              "text": "Namen durch IDs ersetzen; weitere Prüfungen entfallen.",
+              "rationale": "Pseudonymisierung beseitigt die übrigen Anforderungen nicht.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "konzept"
+        },
+        {
+          "type": "numeric",
+          "id": "netzwerk-logging-datenschutz-transfer-b",
+          "requiredObjective": "speicherbedarf",
+          "prompt": "Kapazitätsfall, keine Fristempfehlung: Für bereits separat begründete 10 Tage entstehen täglich 30.000 Ereignisse mit je 400 Byte. Wie viele MB Rohdaten fallen an? Verwende dezimale MB (1 MB = 1.000.000 Byte), ohne Index oder Replikation.",
+          "expected": 120,
+          "tolerance": 0,
+          "label": "Rohdatenvolumen in MB",
+          "correctFeedback": "120 MB: 30.000 × 400 × 10 = 120.000.000 Byte. Das ist nur Rohspeicher; es rechtfertigt weder die Frist noch zusätzliche Auswertungen.",
+          "wrongFeedback": "Berechne zuerst Byte pro Tag, dann für 10 Tage und teile durch 1.000.000. 12 MB wären nur ein Tag; Index und Replikation sind ausgeschlossen."
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Buchkontext: ITLF10–12, PDF-Seiten 78–79 und 189. Maßgebliche Ergänzungen: [DSGVO](https://eur-lex.europa.eu/eli/reg/2016/679/oj/eng), insbesondere Art. 5, 6, 25, 32 und 38/39; [§ 87 BetrVG](https://www.gesetze-im-internet.de/betrvg/__87.html). Rechtsstand geprüft am 12.09.2026. Ein konkretes betriebliches Konzept bleibt gesondert zu prüfen."
+        }
+      ]
+    }
+  ]
+}

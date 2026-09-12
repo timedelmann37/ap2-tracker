@@ -1,0 +1,321 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "sichere-netzprotokolle",
+    "slug": "sichere-netzprotokolle",
+    "title": "Unsichere Protokolle durch geprüfte sichere Verbindungen ersetzen",
+    "description": "TLS, SSH, Zertifikatsprüfung und HSTS im Migrationsfall richtig einsetzen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-7",
+    "groupLabel": "Block N7 · Netzwerksicherheit",
+    "itemId": "ga2-7__11",
+    "week": "KW 42",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "ersatz",
+      "label": "Telnet, FTP und HTTP durch passende sichere Alternativen ersetzen"
+    },
+    {
+      "id": "validierung",
+      "label": "Gegenstellenprüfung und die Erstkontaktgrenze von HSTS begründen"
+    }
+  ],
+  "intro": "Ein anderes Protokollkürzel macht eine Verbindung nicht von selbst sicher. Die Gegenstelle muss geprüft sein, die Verschlüsselung tatsächlich genutzt werden und ein unsicherer Rückfall ausgeschlossen sein.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seiten 32, 121 und 243",
+        "use": "TLS, SFTP/FTPS und getrennte TLS-Abschnitte",
+        "reviewStatus": "OCR geprüft; vereinfachte Portangaben nicht pauschal übernommen"
+      }
+    ],
+    "notes": [
+      "HSTS durch RFC 6797 ergänzt; abgerufen 2026-09-12.",
+      "Keine pauschale RSA-Schlüsseltransportdarstellung für alle TLS-Versionen; keine feste FTPS-Datenportbehauptung.",
+      "Eigene Fälle und Diagramme; keine privaten Buchabbildungen veröffentlicht. Fach- und Verständlichkeitsfreigabe durch einen Menschen steht aus."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "sichere-netzprotokolle-modell",
+      "type": "layers",
+      "title": "Vier Prüfpunkte bei der Umstellung",
+      "description": "Sicheres Protokoll, geprüfte Identität, abgeschalteter Rückfall und Betriebskontrolle gehören zusammen.",
+      "items": [
+        {
+          "label": "Protokoll",
+          "detail": "SSH, SFTP oder HTTPS"
+        },
+        {
+          "label": "Identität",
+          "detail": "Hostschlüssel oder Zertifikat"
+        },
+        {
+          "label": "Rückfall",
+          "detail": "Unsicheren Zugang entfernen"
+        },
+        {
+          "label": "Betrieb",
+          "detail": "Ablauf und Erneuerung testen"
+        }
+      ]
+    },
+    {
+      "id": "sichere-netzprotokolle-ablauf",
+      "type": "flow",
+      "title": "Migration mit sicherer Gegenprobe",
+      "description": "Neue Verbindung und Identitätsprüfung werden getestet, bevor der alte Zugang entfernt und der Betrieb überwacht wird.",
+      "items": [
+        {
+          "label": "Inventar",
+          "detail": "Clients und Dienste erfassen"
+        },
+        {
+          "label": "Einrichtung",
+          "detail": "Identität und Rechte prüfen"
+        },
+        {
+          "label": "Gegenprobe",
+          "detail": "Fehler müssen sicher abbrechen"
+        },
+        {
+          "label": "Abschaltung",
+          "detail": "Alten Klartextzugang entfernen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "sichere-netzprotokolle-diagnose",
+          "question": "Der SSH-Client meldet einen unerwarteten Hostschlüssel. Welche Reaktion passt?",
+          "options": [
+            {
+              "text": "Warnung immer bestätigen, weil SSH verschlüsselt ist.",
+              "rationale": "Dann könnte die Verbindung zum falschen Server geschützt werden.",
+              "correct": false
+            },
+            {
+              "text": "Verbindung stoppen und den Schlüsselwechsel unabhängig prüfen.",
+              "rationale": "Richtig: Auch legitime Wechsel brauchen einen vertrauenswürdigen Abgleich.",
+              "correct": true
+            },
+            {
+              "text": "Nur den TCP-Port ändern.",
+              "rationale": "Die Identität hängt nicht am gewählten Port.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Leitgedanke",
+          "markdown": "Verschlüsselung ohne geprüfte Gegenstelle kann vertraulich zum falschen Empfänger führen."
+        }
+      ]
+    },
+    {
+      "title": "Transport schützen und Identität prüfen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "| Bisher | Geeignete Alternative | Was zusätzlich geprüft wird |\n|---|---|---|\n| Telnet | SSH | Hostschlüssel vertrauenswürdig verifizieren; Benutzerzugriff begrenzen |\n| FTP | SFTP über SSH oder passend konfiguriertes FTPS | SFTP ist nicht FTP mit TLS; Serveridentität und Berechtigungen prüfen |\n| HTTP | HTTPS | Zertifikatskette, passender Name und Gültigkeit prüfen; unsicheren Rückfall vermeiden |\n\n**TLS** schützt Daten während der Übertragung zwischen seinen Endpunkten. Ein Serverzertifikat bindet eine Identität an einen öffentlichen Schlüssel. Der Client muss unter anderem Vertrauen, Gültigkeit und den angesprochenen Namen prüfen. Die eigentlichen Nutzdaten werden mit symmetrischen Sitzungsschlüsseln geschützt. Die Details des Handshakes hängen von Version und Verfahren ab; der private Serverschlüssel wird nicht an den Client gesendet.\n\n**SFTP** ist ein Dateiübertragungsprotokoll über SSH, üblicherweise auf TCP/22. **FTPS** erweitert FTP um TLS und behält getrennte Steuer- und Datenverbindungen; Datenports hängen vom Betriebsmodus ab. Ein Portwechsel allein bewirkt keine Verschlüsselung.\n\n**HSTS** weist einen unterstützenden Browser über eine gültige HTTPS-Antwort an, den Host für eine festgelegte Dauer nur per HTTPS zu verwenden. Ohne bereits gespeicherte Richtlinie oder passenden Preload-Eintrag bleibt der erste HTTP-Kontakt eine Lücke. Eine HTTP-Weiterleitung erreicht den Browser erst nach dieser ersten Anfrage. HSTS ist kein Zertifikat und keine allgemeine Regel für beliebige Nicht-Browser-Clients."
+        },
+        {
+          "type": "figure",
+          "diagramId": "sichere-netzprotokolle-modell",
+          "alt": "Sicheres Protokoll, geprüfte Identität, abgeschalteter Rückfall und Betriebskontrolle gehören zusammen.",
+          "caption": "Vier Prüfpunkte bei der Umstellung – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Wartungsskript nutzt bisher FTP zum Übertragen von Sicherungsdateien. Du wählst SFTP, richtest ein auf den Sicherungszweck begrenztes Konto ein und hinterlegst den über einen unabhängigen vertrauenswürdigen Kanal geprüften SSH-Hostschlüssel. Ein Test zeigt: Dateiübertragung funktioniert, unerlaubte Pfade bleiben gesperrt. Danach wird der nicht mehr benötigte FTP-Zugang abgeschaltet. Bei unerwartetem Hostschlüsselwechsel stoppt die Verbindung; der Wechsel wird geprüft und nicht blind akzeptiert.\n\nFür ein Webportal richtest du gültiges HTTPS ein und prüfst die Zertifikatserneuerung. Danach wird HSTS bewusst eingeführt. includeSubDomains setzt voraus, dass auch betroffene Subdomains dauerhaft HTTPS unterstützen. Preloading kann die Erstkontaktlücke reduzieren, verlangt aber eine sorgfältige, langfristige Vorbereitung. Eine pauschale Aktivierung ohne Inventar kann eigene Dienste aussperren."
+        },
+        {
+          "type": "figure",
+          "diagramId": "sichere-netzprotokolle-ablauf",
+          "alt": "Neue Verbindung und Identitätsprüfung werden getestet, bevor der alte Zugang entfernt und der Betrieb überwacht wird.",
+          "caption": "Migration mit sicherer Gegenprobe – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Selbst entscheiden",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "sichere-netzprotokolle-uebung",
+          "question": "Warum schützt eine HTTP-zu-HTTPS-Weiterleitung den allerersten HTTP-Aufruf nicht vollständig?",
+          "options": [
+            {
+              "text": "HTTPS wird durch Weiterleitungen grundsätzlich unsicher.",
+              "rationale": "Das Problem liegt vor dem geschützten Verbindungsabschnitt.",
+              "correct": false
+            },
+            {
+              "text": "HSTS ersetzt die Zertifikatsprüfung.",
+              "rationale": "HSTS verlangt HTTPS; es erzeugt keine vertrauenswürdige Serveridentität.",
+              "correct": false
+            },
+            {
+              "text": "Die erste Anfrage erfolgt ohne bekannte HSTS-Richtlinie noch ungeschützt.",
+              "rationale": "Richtig: Die Umleitung wird erst als Antwort empfangen.",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "type": "sequence",
+          "id": "sichere-netzprotokolle-reihenfolge",
+          "title": "FTP sicher ablösen",
+          "prompt": "Ordne die Migration ohne ungeprüften Rückfall.",
+          "steps": [
+            {
+              "id": "s2",
+              "label": "Erlaubte Übertragung und Abbruch bei falscher Identität testen"
+            },
+            {
+              "id": "s0",
+              "label": "Benötigte Clients, Datenpfade und Rechte inventarisieren"
+            },
+            {
+              "id": "s3",
+              "label": "Alten FTP-Zugang abschalten und Betrieb überwachen"
+            },
+            {
+              "id": "s1",
+              "label": "SFTP einrichten und SSH-Hostschlüssel unabhängig prüfen"
+            }
+          ],
+          "expected": [
+            "s0",
+            "s1",
+            "s2",
+            "s3"
+          ],
+          "correctFeedback": "Richtig: Erst funktionsfähiger und geprüfter Ersatz, dann Abschaltung des alten Wegs.",
+          "wrongFeedback": "Gehe vom belegten Bedarf über die Entscheidung zum Nachweis. Prüfe die erste abweichende Position."
+        }
+      ]
+    },
+    {
+      "title": "Aus dem Gedächtnis erklären",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "sichere-netzprotokolle-karte-0",
+              "label": "Abruf 1",
+              "front": "SFTP gleich FTPS?",
+              "back": "Nein. SFTP nutzt SSH; FTPS ist FTP mit TLS."
+            },
+            {
+              "id": "sichere-netzprotokolle-karte-1",
+              "label": "Abruf 2",
+              "front": "Was beweist ein gültiges Zertifikat nicht?",
+              "back": "Dass Inhalte oder Anwendung fehlerfrei und vertrauenswürdig sind; es unterstützt die Identitätsprüfung."
+            },
+            {
+              "id": "sichere-netzprotokolle-karte-2",
+              "label": "Abruf 3",
+              "front": "Welche Grenze hat HSTS beim Erstkontakt?",
+              "back": "Ohne gespeicherte Richtlinie oder geeigneten Preload-Eintrag kann die erste HTTP-Anfrage ungeschützt sein."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "sichere-netzprotokolle-abruf",
+          "title": "Deine Begründung",
+          "prompt": "Ein Admin will Zertifikatsfehler im Skript ignorieren, damit HTTPS immer funktioniert. Begründe eine bessere Lösung.",
+          "label": "Eigene Erklärung",
+          "placeholder": "Meine Entscheidung und ihre Grenze …",
+          "minLength": 100,
+          "model": "Ich behebe Name, Vertrauenskette, Gültigkeit oder die Konfiguration und teste die Erneuerung. Die Prüfung dauerhaft auszuschalten würde die Serveridentität entwerten. Bei einem Fehler soll das Skript sicher stoppen und eine verwertbare Meldung liefern."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "sichere-netzprotokolle-transfer-a",
+          "question": "Welche Kombination ersetzt Telnet, FTP und HTTP sachgerecht?",
+          "options": [
+            {
+              "text": "SSH mit geprüftem Hostschlüssel, SFTP über SSH, HTTPS mit Zertifikatsprüfung.",
+              "rationale": "Richtig: Ersatzprotokoll und Gegenstellenprüfung gehören zusammen.",
+              "correct": true
+            },
+            {
+              "text": "Telnet auf Port 22, FTP auf 443, HTTP auf 8443.",
+              "rationale": "Portnummern ändern den Protokollschutz nicht.",
+              "correct": false
+            },
+            {
+              "text": "SFTP ist FTP mit TLS; daher werden alle FTP-Clients unverändert funktionieren.",
+              "rationale": "SFTP ist ein anderes Protokoll und benötigt geeignete Clients.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "ersatz"
+        },
+        {
+          "type": "quiz",
+          "id": "sichere-netzprotokolle-transfer-b",
+          "question": "Ein Browser kennt einen Portalhost noch nicht; es gibt keinen Preload-Eintrag. Was ist zur HSTS-Wirkung richtig?",
+          "options": [
+            {
+              "text": "Eine erstmals per HTTP gestartete Anfrage kann noch ungeschützt sein; die Richtlinie wird erst über gültiges HTTPS gelernt.",
+              "rationale": "Richtig: Erstkontakt und spätere Richtlinienwirkung sind zu trennen.",
+              "correct": true
+            },
+            {
+              "text": "Der Server kann die erste bereits gesendete HTTP-Anfrage nachträglich verschlüsseln.",
+              "rationale": "Gesendete Daten lassen sich nicht rückwirkend schützen.",
+              "correct": false
+            },
+            {
+              "text": "includeSubDomains erlaubt Zertifikatsfehler auf Unterseiten.",
+              "rationale": "Es erweitert den HTTPS-Zwang, nicht die Zertifikatstoleranz.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "validierung"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Buchgrundlage: ITLF10–12, PDF-Seiten 32, 121 und 243. Ergänzung: [RFC 6797 – HSTS](https://www.rfc-editor.org/info/rfc6797/). Konkrete TLS-Versionen und Algorithmen werden hier nicht als zeitlos sichere Konfiguration festgeschrieben."
+        }
+      ]
+    }
+  ]
+}

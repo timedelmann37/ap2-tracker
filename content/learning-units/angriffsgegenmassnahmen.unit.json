@@ -1,0 +1,328 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "angriffsgegenmassnahmen",
+    "slug": "angriffsgegenmassnahmen",
+    "title": "Gegenmaßnahmen mit Wirkung und Restrisiko begründen",
+    "description": "Zu jedem Netzwerkangriff einen passenden Kontrollpunkt, eine Gegenprobe und eine Grenze benennen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-7",
+    "groupLabel": "Block N7 · Netzwerksicherheit",
+    "itemId": "ga2-7__10",
+    "week": "KW 42",
+    "estimatedMinutes": 32,
+    "relevance": "hoch",
+    "sources": [
+      "itlf6-9-2022",
+      "itlf10-12-2023"
+    ],
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "zuordnung",
+      "label": "Netzwerkangriffe mit passenden technischen Gegenmaßnahmen verbinden"
+    },
+    {
+      "id": "wirksamkeit",
+      "label": "eine Maßnahme am wirksamen Prüfpunkt testen und ihr Restrisiko begründen"
+    }
+  ],
+  "intro": "„Firewall installieren“ ist selten eine vollständige Antwort. Eine prüfungsnahe Begründung nennt Angriff, Kontrollpunkt, Wirkung und verbleibendes Risiko.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf6-9-2022",
+        "sourceLocator": "Markdown-Chunk 00228",
+        "use": "Bedrohungen und Schutzziele",
+        "reviewStatus": "Begriffsrahmen geprüft"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seite 176",
+        "use": "Kombination technischer und organisatorischer Schutzmaßnahmen",
+        "reviewStatus": "OCR geprüft; kein Einzelbeleg für DAI"
+      }
+    ],
+    "notes": [
+      "Primärbelege für DAI, VLAN-Konfiguration und DNSSEC ergänzen die unvollständigen Buchtreffer.",
+      "Historische Rangfolge auf Seite 275 nicht als aktuelle Bedrohungsstatistik übernommen.",
+      "Eigene Fälle und Diagramme; keine privaten Buchabbildungen veröffentlicht. Fach- und Verständlichkeitsfreigabe durch einen Menschen steht aus."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "angriffsgegenmassnahmen-modell",
+      "type": "layers",
+      "title": "Vier Teile einer Begründung",
+      "description": "Der Angriff wird am passenden Kontrollpunkt begrenzt; ein Test und ein ausdrücklich genanntes Restrisiko schließen die Begründung ab.",
+      "items": [
+        {
+          "label": "Mechanismus",
+          "detail": "Was soll verhindert werden?"
+        },
+        {
+          "label": "Kontrollpunkt",
+          "detail": "Wo kann die Maßnahme wirken?"
+        },
+        {
+          "label": "Gegenprobe",
+          "detail": "Erlaubt bleibt erlaubt"
+        },
+        {
+          "label": "Restrisiko",
+          "detail": "Welche Lücke bleibt bestehen?"
+        }
+      ]
+    },
+    {
+      "id": "angriffsgegenmassnahmen-ablauf",
+      "type": "flow",
+      "title": "Kontrolliert härten",
+      "description": "Vor dem Aktivieren werden legitime Pfade und Ausnahmen erfasst; danach werden Erfolg, Fehlblockierung und Restrisiko getestet.",
+      "items": [
+        {
+          "label": "Inventar",
+          "detail": "Legitime Pfade und Geräte"
+        },
+        {
+          "label": "Regel",
+          "detail": "Enge Vertrauensgrenze"
+        },
+        {
+          "label": "Test",
+          "detail": "Positive und negative Probe"
+        },
+        {
+          "label": "Betrieb",
+          "detail": "Zähler, Fehler, Ausnahmen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "angriffsgegenmassnahmen-diagnose",
+          "question": "Der Internet-Uplink ist vor der lokalen Firewall vollständig ausgelastet. Welche zusätzliche Maßnahme trifft den Engpass?",
+          "options": [
+            {
+              "text": "Filterung oder Scrubbing vor dem Uplink mit dem Provider planen.",
+              "rationale": "Richtig: Unerwünschter Verkehr muss vor der knappen Leitung reduziert werden.",
+              "correct": true
+            },
+            {
+              "text": "Nur hinter dem Uplink mehr Pakete verwerfen.",
+              "rationale": "Das gibt die bereits belegte Zugangskapazität nicht zurück.",
+              "correct": false
+            },
+            {
+              "text": "Nur HTTPS aktivieren.",
+              "rationale": "TLS begrenzt die eingehende Datenmenge nicht automatisch.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Leitgedanke",
+          "markdown": "Maßnahme + Wirkung + Gegenprobe + Restrisiko: Erst diese vier Teile ergeben ein belastbares Schutzkonzept."
+        }
+      ]
+    },
+    {
+      "title": "Die Maßnahme muss den Mechanismus treffen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "| Bedrohung | Passende Maßnahme | Wichtige Grenze |\n|---|---|---|\n| Rogue DHCP | DHCP Snooping; Servernachrichten nur auf vorgesehenen vertrauenswürdigen Pfaden | Falsch gesetzte Trust-Ports schwächen den Schutz |\n| ARP-Spoofing | Dynamic ARP Inspection mit verlässlichen Bindungen | Statische Geräte brauchen passende zusätzliche Bindungen/ARP-ACLs |\n| MAC-Flooding | Begrenzung gelernter MACs und passende Port-Security-Reaktion | Telefon plus PC oder Virtualisierung benötigen bewusst gewählte Grenzen |\n| VLAN-Hopping | Access-Ports festlegen, unnötige Trunk-Aushandlung abschalten, erlaubte VLANs begrenzen | Native-VLAN-/Tagging-Konzept gesondert prüfen |\n| DNS-Spoofing | Validierendes DNSSEC für signierte Daten und geschützter Resolverpfad | DNSSEC verschlüsselt nicht und authentifiziert keine unsignierten Zonen |\n| MitM | TLS/SSH mit echter Gegenstellenprüfung | Kompromittierte Endpunkte oder Vertrauensanker bleiben kritisch |\n| DDoS | Schutz vor dem Engpass, etwa Provider-Filter/Scrubbing; ergänzend Rate Limits | Lokales Verwerfen macht einen bereits vollen Uplink nicht frei |\n\n**DHCP Snooping** kann eine Zuordnungsdatenbank aus legitimen DHCP-Vorgängen aufbauen. **DAI** prüft ARP-Angaben dagegen; für statische Adressen muss die gewählte Plattform passende Ausnahmen beziehungsweise statische Prüfgrundlagen erhalten. Eine blanket Trust-Freigabe aller Ports löst das Problem nicht sicher.\n\nPort Security bestätigt keine kryptografische Identität. DNSSEC ist Datenherkunfts- und Integritätsschutz bei erfolgreicher Validierung, nicht Vertraulichkeit; DoT/DoH schützt einen Transportabschnitt, ersetzt aber nicht automatisch die Validierung signierter DNS-Daten. DAI betrifft ARP im IPv4-Netz, nicht pauschal IPv6 Neighbor Discovery."
+        },
+        {
+          "type": "figure",
+          "diagramId": "angriffsgegenmassnahmen-modell",
+          "alt": "Der Angriff wird am passenden Kontrollpunkt begrenzt; ein Test und ein ausdrücklich genanntes Restrisiko schließen die Begründung ab.",
+          "caption": "Vier Teile einer Begründung – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Eine Niederlassung betreibt DHCP-Clients und einen Drucker mit statischer IPv4-Adresse. Ein unerlaubter DHCP-Server an einem Arbeitsplatzport soll keine Konfiguration verteilen. Du legst zunächst fest, welche Ports tatsächlich zum autorisierten DHCP-Pfad gehören. DHCP Snooping verwirft unerlaubte Servernachrichten an Client-Ports. Erst mit aufgebauten und geprüften Bindungen aktivierst du DAI kontrolliert.\n\nDer statische Drucker hat möglicherweise keinen DHCP-Eintrag. Für ihn planst du eine passende statische Prüfgrundlage nach Herstellerdokumentation. Im Test muss ein legitimer Client weiter eine Adresse erhalten und der Drucker erreichbar bleiben; unerlaubte Servernachrichten beziehungsweise falsche ARP-Zuordnungen müssen im isolierten Test erkannt oder verworfen werden. Das verhindert keine Angriffe von einem kompromittierten, ausdrücklich vertrauten Infrastrukturpfad.\n\nZweiter Fall: Ein 1-Gbit/s-Uplink erhält 3 Gbit/s unerwünschten Verkehr. Die lokale Firewall steht hinter dem Engpass. Ihre Filter können das interne Netz entlasten, aber nicht die bereits belegte Leitung. Der wirksame zusätzliche Kontrollpunkt liegt beim Provider oder einem vorgeschalteten Schutzdienst."
+        },
+        {
+          "type": "figure",
+          "diagramId": "angriffsgegenmassnahmen-ablauf",
+          "alt": "Vor dem Aktivieren werden legitime Pfade und Ausnahmen erfasst; danach werden Erfolg, Fehlblockierung und Restrisiko getestet.",
+          "caption": "Kontrolliert härten – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Selbst entscheiden",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "angriffsgegenmassnahmen-uebung",
+          "question": "DAI wird aktiviert, danach fällt ein statisch adressierter Drucker aus. Was prüfst du zuerst?",
+          "options": [
+            {
+              "text": "Alle Arbeitsplatzports dauerhaft als trusted setzen.",
+              "rationale": "Das würde die Prüfgrenze aufheben.",
+              "correct": false
+            },
+            {
+              "text": "Ob eine passende, vertrauenswürdige Prüfgrundlage für seine IP/MAC-Zuordnung vorhanden ist.",
+              "rationale": "Richtig: DHCP-basierte Bindungen entstehen für statische Geräte nicht zwangsläufig.",
+              "correct": true
+            },
+            {
+              "text": "DNSSEC abschalten.",
+              "rationale": "DNSSEC ist nicht die Grundlage der ARP-Zuordnungsprüfung.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "sequence",
+          "id": "angriffsgegenmassnahmen-reihenfolge",
+          "title": "Eine Schutzfunktion einführen",
+          "prompt": "Ordne die Einführung mit Gegenprobe.",
+          "steps": [
+            {
+              "id": "s2",
+              "label": "Im isolierten Test erlaubte und unerlaubte Fälle prüfen"
+            },
+            {
+              "id": "s0",
+              "label": "Legitime Kommunikation und statische Ausnahmen erfassen"
+            },
+            {
+              "id": "s3",
+              "label": "Kontrolliert ausrollen und Fehlblockierungen überwachen"
+            },
+            {
+              "id": "s1",
+              "label": "Vertrauenswürdige Prüfgrundlagen und begrenzte Regeln vorbereiten"
+            }
+          ],
+          "expected": [
+            "s0",
+            "s1",
+            "s2",
+            "s3"
+          ],
+          "correctFeedback": "Richtig: Erst Prüfgrundlage, dann Gegenprobe und kontrollierter Betrieb.",
+          "wrongFeedback": "Gehe vom belegten Bedarf über die Entscheidung zum Nachweis. Prüfe die erste abweichende Position."
+        }
+      ]
+    },
+    {
+      "title": "Aus dem Gedächtnis erklären",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "angriffsgegenmassnahmen-karte-0",
+              "label": "Abruf 1",
+              "front": "Was schützt DAI?",
+              "back": "Die Plausibilität von ARP-Zuordnungen anhand vertrauenswürdiger Bindungen beziehungsweise Prüfregeln."
+            },
+            {
+              "id": "angriffsgegenmassnahmen-karte-1",
+              "label": "Abruf 2",
+              "front": "Was schützt DNSSEC nicht?",
+              "back": "Die Vertraulichkeit von DNS-Abfragen; unsignierte Daten erhalten nicht automatisch Herkunftsschutz."
+            },
+            {
+              "id": "angriffsgegenmassnahmen-karte-2",
+              "label": "Abruf 3",
+              "front": "Warum keine beliebige MAC-Grenze pro Port?",
+              "back": "Legitime Mehrgerätefälle können sonst gesperrt werden; die Grenze muss zum Portzweck passen."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "angriffsgegenmassnahmen-abruf",
+          "title": "Deine Begründung",
+          "prompt": "Begründe Schutz vor VLAN-Hopping, ohne zu behaupten, eine einzige Einstellung beseitige alle Varianten.",
+          "label": "Eigene Erklärung",
+          "placeholder": "Meine Entscheidung und ihre Grenze …",
+          "minLength": 100,
+          "model": "Ich konfiguriere Clientports ausdrücklich als Access-Ports, verhindere unnötige Trunk-Aushandlung und beschränke VLANs auf echten Trunks. Native VLAN und Tag-Verarbeitung prüfe ich zusätzlich gegen Double-Tagging-Risiken. Das ersetzt keine Regeln für absichtlich gerouteten Inter-VLAN-Verkehr."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "angriffsgegenmassnahmen-transfer-a",
+          "question": "Welche Maßnahmenkombination passt zu Rogue DHCP, ARP-Spoofing und DNS-Manipulation?",
+          "options": [
+            {
+              "text": "Für alle drei genügt dieselbe Anzahl erlaubter MAC-Adressen.",
+              "rationale": "Port Security validiert weder DHCP-Servernachrichten noch DNS-Signaturen.",
+              "correct": false
+            },
+            {
+              "text": "Für alle drei genügt ein zusätzlicher Load Balancer.",
+              "rationale": "Lastverteilung liefert diese Prüfungen nicht automatisch.",
+              "correct": false
+            },
+            {
+              "text": "DHCP Snooping; DAI mit verlässlichen Bindungen; DNSSEC-Validierung für signierte Daten und geschützter Resolverpfad.",
+              "rationale": "Richtig: Jede Maßnahme adressiert einen anderen Mechanismus.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "zuordnung"
+        },
+        {
+          "type": "quiz",
+          "id": "angriffsgegenmassnahmen-transfer-b",
+          "question": "Welche Antwort beschreibt eine wirksame DDoS-Maßnahme samt Grenze?",
+          "options": [
+            {
+              "text": "Eine WAF im eigenen LAN garantiert unbegrenzte Internetkapazität.",
+              "rationale": "Sie schafft keine Kapazität vor dem Standort.",
+              "correct": false
+            },
+            {
+              "text": "Alle Anfragen sperren und damit den Dienst als verfügbar bewerten.",
+              "rationale": "Eine vollständige Sperre erfüllt das Verfügbarkeitsziel nicht.",
+              "correct": false
+            },
+            {
+              "text": "Vor dem gesättigten Uplink filtern, legitimen Verkehr testen; Anwendungsüberlast und Fehlfilterung bleiben zu überwachen.",
+              "rationale": "Richtig: Kontrollpunkt, Gegenprobe und Restrisiko werden genannt.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "wirksamkeit"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Buchkontext: ITLF6–9, Chunk 00228; ITLF10–12, PDF-Seite 176. Fachergänzung: [Cisco – DAI](https://www.cisco.com/c/en/us/support/docs/switches/lan-switch-software/222274-troubleshoot-dynamic-arp-inspection-dai.html), [Cisco – VLAN Trunking](https://www.cisco.com/c/en/us/td/docs/switches/lan/c9000/lyr2-fwd/vlan/vlan-configuration-guide/configure-vlan-trunks.html), [RFC 4033](https://www.rfc-editor.org/info/rfc4033/). Maßnahmen sind Konzepte, keine ungeprüfte Konfiguration für ein Produktivnetz."
+        }
+      ]
+    }
+  ]
+}

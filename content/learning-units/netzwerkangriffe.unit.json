@@ -1,0 +1,322 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "netzwerkangriffe",
+    "slug": "netzwerkangriffe",
+    "title": "Netzwerkangriffe anhand von Belegen unterscheiden",
+    "description": "Sieben Angriffsarten nach Mechanismus, Voraussetzung und betroffener Sicherheitswirkung einordnen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-7",
+    "groupLabel": "Block N7 · Netzwerksicherheit",
+    "itemId": "ga2-7__9",
+    "week": "KW 42",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "sources": [
+      "itlf6-9-2022"
+    ],
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "mechanismus",
+      "label": "ARP-, DHCP-, DNS-, MAC- und VLAN-Angriffe nach ihrem Mechanismus unterscheiden"
+    },
+    {
+      "id": "beleg",
+      "label": "MitM und DDoS anhand von Beobachtungen abgrenzen, ohne Symptome als Beweis auszugeben"
+    }
+  ],
+  "intro": "Ein langsames Netz ist noch kein DDoS. Eine geänderte MAC-Adresse ist noch kein bewiesener Angriff. Eine gute Analyse verbindet Beobachtung, Mechanismus und Gegenprobe.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf6-9-2022",
+        "sourceLocator": "Markdown-Chunk 00228",
+        "use": "Begriffe DoS, MitM und Schutzziele",
+        "reviewStatus": "Ausschnitte geprüft; Detailmechanismen durch Primärquellen ergänzt"
+      }
+    ],
+    "notes": [
+      "ITLF10–12 Seite 361 verworfen: RSTP-Topologie statt Angriffsbeleg.",
+      "Switchverhalten nicht pauschal als Hub-Modus beschrieben; keine Angriffsanleitungen.",
+      "Primärabgleich Cisco DAI und VLAN Trunking sowie RFC 4033; abgerufen 2026-09-12.",
+      "Eigene Fälle und Diagramme; keine privaten Buchabbildungen veröffentlicht. Fach- und Verständlichkeitsfreigabe durch einen Menschen steht aus."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "netzwerkangriffe-modell",
+      "type": "layers",
+      "title": "Von der Beobachtung zur Hypothese",
+      "description": "Adresszuordnung, Segmentgrenze, Überlast und Kommunikationspfad sind unterschiedliche Ebenen eines Verdachts.",
+      "items": [
+        {
+          "label": "Zuordnung",
+          "detail": "ARP, DHCP oder DNS verändert"
+        },
+        {
+          "label": "Segment",
+          "detail": "MAC-Tabelle oder VLAN-Grenze"
+        },
+        {
+          "label": "Verfügbarkeit",
+          "detail": "Leitung, Zustände oder Anwendung"
+        },
+        {
+          "label": "Datenpfad",
+          "detail": "Dritter zwischen den Partnern"
+        }
+      ]
+    },
+    {
+      "id": "netzwerkangriffe-ablauf",
+      "type": "flow",
+      "title": "Hypothese statt vorschneller Diagnose",
+      "description": "Beobachtete Änderungen werden dem Mechanismus zugeordnet, mit legitimen Ursachen verglichen und erst dann bewertet.",
+      "items": [
+        {
+          "label": "Beobachtung",
+          "detail": "Was hat sich konkret geändert?"
+        },
+        {
+          "label": "Mechanismus",
+          "detail": "Welche Zuordnung ist betroffen?"
+        },
+        {
+          "label": "Gegenprobe",
+          "detail": "Legitime Änderung ausschließen"
+        },
+        {
+          "label": "Bewertung",
+          "detail": "Beleg und Unsicherheit benennen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "netzwerkangriffe-diagnose",
+          "question": "Die Gateway-IP ist gleich geblieben, aber ihre ARP-Zuordnung zeigt eine fremde MAC. Welche Hypothese passt zuerst?",
+          "options": [
+            {
+              "text": "Zwingend DNS-Spoofing.",
+              "rationale": "DNS betrifft Namen und nicht diese ARP-Zuordnung.",
+              "correct": false
+            },
+            {
+              "text": "Damit ist bereits ein DDoS bewiesen.",
+              "rationale": "Eine Adressänderung belegt keine verteilte Überlast.",
+              "correct": false
+            },
+            {
+              "text": "ARP-Manipulation oder ein legitimer Wechsel der Gateway-MAC.",
+              "rationale": "Richtig: Geändert wurde die lokale IP-zu-MAC-Zuordnung.",
+              "correct": true
+            }
+          ],
+          "diagnostic": true
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Leitgedanke",
+          "markdown": "Erst den manipulierten Mechanismus benennen, dann die mögliche Wirkung. Ein Symptom allein beweist keine Ursache."
+        }
+      ]
+    },
+    {
+      "title": "Welche Zuordnung oder Ressource wird angegriffen?",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "| Angriffsart | Mechanismus | Voraussetzung oder Grenze |\n|---|---|---|\n| ARP-Spoofing | Falsche IPv4-zu-MAC-Zuordnung im lokalen Segment | Ungesicherte Annahme gefälschter ARP-Angaben |\n| MAC-Flooding | Viele Quell-MACs belasten die Weiterleitungstabelle | Reaktion des Switches ist geräteabhängig; kein garantierter Hub-Modus |\n| VLAN-Hopping | Unerlaubter Übergang über Trunk-Aushandlung oder Tag-Verarbeitung | Fehlkonfiguration beziehungsweise passende Native-VLAN-Bedingungen |\n| Rogue DHCP | Nicht autorisierter Server verteilt Netzparameter | Client erreicht oder akzeptiert dessen Angebot |\n| DNS-Spoofing | Gefälschte Namensantwort führt zum falschen Ziel | Fehlende oder umgangene geeignete Validierung |\n| DDoS | Viele Quellen überlasten Verbindung, Zustände oder Anwendung | Engpass bestimmt die Wirkung |\n| Man-in-the-Middle | Dritter sitzt zwischen Kommunikationspartnern | Umleitung allein entschlüsselt korrekt validiertes TLS nicht |\n\n**ARP** ordnet im lokalen IPv4-Netz IP-Adressen MAC-Adressen zu; es ist nicht DNS. **DNS** ordnet unter anderem Namen IP-Adressen zu. **DHCP** liefert Netzkonfiguration, etwa Adresse, Gateway und Resolver. Diese Ebenen können zusammenspielen, bleiben aber unterschiedliche Mechanismen.\n\nBei MAC-Flooding kann unbekannter Unicast-Verkehr im betroffenen VLAN geflutet werden, soweit Gerät und Schutzfunktionen das zulassen. Nicht jedes Paket wird zwangsläufig überall sichtbar. VLAN-Hopping umfasst verschiedene Varianten: unerlaubte Trunk-Aushandlung und Double-Tagging haben unterschiedliche Voraussetzungen. Ein erfolgreicher Wechsel des Datenpfads beweist noch keinen lesbaren HTTPS-Inhalt."
+        },
+        {
+          "type": "figure",
+          "diagramId": "netzwerkangriffe-modell",
+          "alt": "Adresszuordnung, Segmentgrenze, Überlast und Kommunikationspfad sind unterschiedliche Ebenen eines Verdachts.",
+          "caption": "Von der Beobachtung zur Hypothese – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Im Labor meldet ein Client plötzlich ein anderes Standardgateway. Fall A: Ein aufgezeichnetes DHCP-Angebot enthält dieses Gateway und stammt nicht vom freigegebenen Server. Das stützt die Hypothese Rogue DHCP. Fall B: Gateway-IP und DHCP-Konfiguration bleiben unverändert, aber die ARP-Zuordnung der Gateway-IP zeigt eine fremde MAC-Adresse. Das stützt ARP-Spoofing; vor einem Urteil prüfst du einen legitimen Routerwechsel oder ein Redundanzereignis.\n\nFall C: Nur ein Portalname löst auf eine unerwartete IP auf. Hier sind DNS-Antwort, verwendeter Resolver und mögliche legitime DNS-Änderung zu vergleichen. Dass alle drei Fälle zu einem falschen Ziel führen können, macht sie nicht zum selben Angriff.\n\nEine HTTPS-Zertifikatswarnung wird nicht weggeklickt. Korrekte Servervalidierung begrenzt das Mitlesen selbst bei umgeleitetem Verkehr. Ein gleichzeitig gesättigter Uplink wäre ein zusätzlicher Befund; für DDoS braucht es Belege für verteilte Überlast, nicht nur eine langsame Seite."
+        },
+        {
+          "type": "figure",
+          "diagramId": "netzwerkangriffe-ablauf",
+          "alt": "Beobachtete Änderungen werden dem Mechanismus zugeordnet, mit legitimen Ursachen verglichen und erst dann bewertet.",
+          "caption": "Hypothese statt vorschneller Diagnose – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Selbst entscheiden",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "netzwerkangriffe-uebung",
+          "question": "Ein Switch lernt sehr viele neue Quell-MACs. Welche Aussage ist fachlich vorsichtig?",
+          "options": [
+            {
+              "text": "MAC-Flooding ist eine Hypothese; Tabellenzustand, legitime Ursachen und Geräteverhalten prüfen.",
+              "rationale": "Richtig: Die Beobachtung und ihre mögliche Wirkung werden getrennt.",
+              "correct": true
+            },
+            {
+              "text": "Jeder Switch überträgt dann sicher alle Frames an alle Ports.",
+              "rationale": "Verhalten und Schutzfunktionen sind geräteabhängig; VLAN-Grenzen verschwinden nicht automatisch.",
+              "correct": false
+            },
+            {
+              "text": "Dadurch werden TLS-Schlüssel offen übertragen.",
+              "rationale": "Eine belastete MAC-Tabelle hebt TLS nicht auf.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "sequence",
+          "id": "netzwerkangriffe-reihenfolge",
+          "title": "Einen Verdacht untersuchen",
+          "prompt": "Ordne den defensiven Diagnoseablauf.",
+          "steps": [
+            {
+              "id": "s2",
+              "label": "Mit freigegebener Konfiguration und weiteren Belegen vergleichen"
+            },
+            {
+              "id": "s0",
+              "label": "Zeitpunkt und konkrete Änderung sichern"
+            },
+            {
+              "id": "s3",
+              "label": "Hypothese, Sicherheitswirkung und verbleibende Unsicherheit dokumentieren"
+            },
+            {
+              "id": "s1",
+              "label": "Betroffene Zuordnung oder Ressource bestimmen"
+            }
+          ],
+          "expected": [
+            "s0",
+            "s1",
+            "s2",
+            "s3"
+          ],
+          "correctFeedback": "Richtig: Aus dem Symptom wird erst durch Einordnung und Gegenprobe eine begründete Bewertung.",
+          "wrongFeedback": "Gehe vom belegten Bedarf über die Entscheidung zum Nachweis. Prüfe die erste abweichende Position."
+        }
+      ]
+    },
+    {
+      "title": "Aus dem Gedächtnis erklären",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "netzwerkangriffe-karte-0",
+              "label": "Abruf 1",
+              "front": "Rogue DHCP oder ARP-Spoofing?",
+              "back": "DHCP verändert die angebotene Netzkonfiguration; ARP manipuliert lokale IP-zu-MAC-Zuordnungen."
+            },
+            {
+              "id": "netzwerkangriffe-karte-1",
+              "label": "Abruf 2",
+              "front": "Was unterscheidet DoS von DDoS?",
+              "back": "DDoS nutzt verteilte Quellen; beide zielen auf Verfügbarkeit."
+            },
+            {
+              "id": "netzwerkangriffe-karte-2",
+              "label": "Abruf 3",
+              "front": "Entschlüsselt MitM automatisch HTTPS?",
+              "back": "Nein. Korrekte TLS-Validierung schützt trotz umgeleitetem Pfad, solange Endpunkte und Vertrauensbasis nicht kompromittiert sind."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "netzwerkangriffe-abruf",
+          "title": "Deine Begründung",
+          "prompt": "Eine Webseite lädt langsam und zeigt eine Zertifikatswarnung. Welche zwei getrennten Hypothesen würdest du prüfen?",
+          "label": "Eigene Erklärung",
+          "placeholder": "Meine Entscheidung und ihre Grenze …",
+          "minLength": 100,
+          "model": "Die Langsamkeit kann durch Last, einen Verbindungsfehler oder einen Verfügbarkeitsangriff entstehen. Die Warnung kann auf falschen Namen, abgelaufenes Zertifikat oder ein fremdes Ziel hindeuten. Ich sichere Meldung, DNS-Antwort und Verbindungskontext, statt DDoS oder MitM ohne zusätzliche Belege zu behaupten."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "netzwerkangriffe-transfer-a",
+          "question": "Ein fremder Server bietet Clients einen neuen Resolver an; gleichzeitig versucht ein Endgerät, einen Trunk auszuhandeln. Welche Zuordnung passt?",
+          "options": [
+            {
+              "text": "Beides ist ARP-Spoofing.",
+              "rationale": "Es ist keine manipulierte ARP-Zuordnung beschrieben.",
+              "correct": false
+            },
+            {
+              "text": "Erster Befund: Rogue DHCP; zweiter Befund: möglicher VLAN-Hopping-Versuch.",
+              "rationale": "Richtig: Netzparameter und VLAN-Zugangsgrenze sind verschieden.",
+              "correct": true
+            },
+            {
+              "text": "Erster Befund: MAC-Flooding; zweiter: DNS-Cache-Poisoning.",
+              "rationale": "Weder MAC-Tabellenlast noch manipulierte DNS-Antworten sind hier der beobachtete Mechanismus.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "mechanismus"
+        },
+        {
+          "type": "quiz",
+          "id": "netzwerkangriffe-transfer-b",
+          "question": "Viele unabhängige Quellen sättigen den Uplink. Gleichzeitig scheitert eine umgeleitete HTTPS-Verbindung an der Zertifikatsprüfung. Welche Bewertung stimmt?",
+          "options": [
+            {
+              "text": "Die Zertifikatswarnung beweist, dass der gesamte Klartext bereits gelesen wurde.",
+              "rationale": "Die abgebrochene Prüfung kann gerade den Verbindungsaufbau verhindern.",
+              "correct": false
+            },
+            {
+              "text": "Die verteilte Überlast stützt DDoS; die Umleitung beweist kein erfolgreiches TLS-Mitlesen.",
+              "rationale": "Richtig: Verfügbarkeit und Vertraulichkeit sind getrennt zu bewerten.",
+              "correct": true
+            },
+            {
+              "text": "TLS verhindert grundsätzlich jede Überlastung des Uplinks.",
+              "rationale": "Verschlüsselung schafft keine zusätzliche Leitungskapazität.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "beleg"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Buchgrundlage: ITLF6–9, Chunk 00228. Details: [Cisco – DAI](https://www.cisco.com/c/en/us/support/docs/switches/lan-switch-software/222274-troubleshoot-dynamic-arp-inspection-dai.html), [Cisco – VLAN Trunking](https://www.cisco.com/c/en/us/td/docs/switches/lan/c9000/lyr2-fwd/vlan/vlan-configuration-guide/configure-vlan-trunks.html), [RFC 4033 – DNSSEC](https://www.rfc-editor.org/info/rfc4033/). Alle Beobachtungsfälle sind eigene defensive Lernbeispiele."
+        }
+      ]
+    }
+  ]
+}

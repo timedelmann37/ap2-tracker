@@ -278,6 +278,32 @@ try {
   assert(await precision.locator('[data-numeric-feedback]').getAttribute('data-result') === 'correct', 'IDS precision accepts confirmed alerts divided by all alerts');
   assert(await page.locator('.math-display > math').count() === 1, 'IDS precision is rendered as semantic visual mathematics');
 
+  for (const [slug, correct] of [['nac-8021x', 1], ['acl-vs-firewall', 2], ['reverse-proxy-waf', 0], ['netzwerkangriffe', 1], ['angriffsgegenmassnahmen', 2], ['sichere-netzprotokolle', 0]]) {
+    await page.goto(`${base}/lernen/${slug}/`);
+    assert(await page.locator('#mark-done').isDisabled(), `${slug}: unattempted objectives gate completion`);
+    await page.locator(`[data-quiz="${slug}-diagnose"] [data-answer]`).first().click();
+    assert(await page.locator('#mark-done').isDisabled(), `${slug}: diagnostic does not grant an objective`);
+    await page.locator(`[data-quiz="${slug}-transfer-a"] [data-answer="${(correct + 1) % 3}"]`).click();
+    assert(await page.locator('#mark-done').isDisabled(), `${slug}: wrong transfer does not unlock completion`);
+    await page.locator(`[data-quiz="${slug}-transfer-a"] [data-quiz-reset]`).click();
+    await page.locator(`[data-quiz="${slug}-transfer-a"] [data-answer="${correct}"]`).click();
+    assert(await page.locator('#mark-done').isDisabled(), `${slug}: one objective is insufficient`);
+    await page.locator(`[data-quiz="${slug}-transfer-b"] [data-answer="${correct}"]`).click();
+    assert(!await page.locator('#mark-done').isDisabled(), `${slug}: both objectives unlock completion`);
+    await page.reload();
+    assert(!await page.locator('#mark-done').isDisabled(), `${slug}: results persist after reload`);
+  }
+  await page.goto(`${base}/lernen/netzwerk-logging-datenschutz/`);
+  await page.locator('[data-quiz="netzwerk-logging-datenschutz-transfer-a"] [data-answer="1"]').click();
+  const logVolume = page.locator('[data-numeric-practice="netzwerk-logging-datenschutz-transfer-b"]');
+  await logVolume.locator('[data-numeric-input]').fill('12');
+  await logVolume.locator('[data-numeric-check]').click();
+  assert(await page.locator('#mark-done').isDisabled(), 'Logging: one-day volume does not pass ten-day objective');
+  await logVolume.locator('[data-numeric-input]').fill('120');
+  await logVolume.locator('[data-numeric-check]').click();
+  assert(!await page.locator('#mark-done').isDisabled(), 'Logging: 120 decimal MB and concept check unlock completion');
+  assert(await page.locator('.math-display > math').count() === 1, 'Logging volume formula uses visual semantic MathML');
+
   await page.goto(`${base}/lernen/ethernet-standards/`);
   const domainAccentMatches = await page.evaluate(() => {
     const probe = document.createElement('span');
@@ -428,6 +454,17 @@ try {
     await mobilePage.goto(`${base}/lernen/${slug}/`);
     assert(await mobilePage.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `${slug}: no mobile page overflow`);
     assert(await mobilePage.locator('.learning-diagram').count() === 2, `${slug}: both diagrams render on mobile`);
+  }
+  for (const theme of ['dark', 'light']) {
+    for (const slug of ['nac-8021x', 'acl-vs-firewall', 'reverse-proxy-waf', 'netzwerkangriffe', 'angriffsgegenmassnahmen', 'sichere-netzprotokolle', 'netzwerk-logging-datenschutz']) {
+      await mobilePage.goto(`${base}/lernen/${slug}/`);
+      await mobilePage.evaluate(value => document.documentElement.setAttribute('data-theme', value), theme);
+      assert(await mobilePage.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `${slug}: ${theme} mobile page has no overflow`);
+      assert(await mobilePage.locator('.learning-diagram').count() === 2, `${slug}: two diagrams in ${theme}`);
+      for (const table of await mobilePage.locator('.twrap').all()) {
+        assert(await table.evaluate(node => { if (node.scrollWidth <= node.clientWidth) return true; node.scrollLeft = 50; return node.scrollLeft > 0; }), `${slug}: wide tables remain scrollable`);
+      }
+    }
   }
   await mobile.close();
 
