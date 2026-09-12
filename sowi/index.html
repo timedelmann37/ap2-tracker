@@ -1083,7 +1083,7 @@
       </div>
       <div id="accountLoggedIn" hidden>
         <div class="account-user-row" id="accountUserRow"></div>
-        <p>Dein Fortschritt wird automatisch in deinem Konto gespeichert.</p>
+        <p id="accountSyncStatus" role="status" aria-live="polite">Fortschritt wird abgeglichen …</p>
         <div class="account-actions">
           <button type="button" id="accountSignOut" class="account-btn">Abmelden</button>
         </div>
@@ -2599,12 +2599,15 @@ function closeAccountModal(){
 function refreshAccountUI(){
   const els = accountEls();
   if (!els.btn) return;
+  els.btn.classList.toggle('is-signed-in', !!cloudUser);
+  els.btn.setAttribute('aria-label', cloudUser ? 'Angemeldet – Konto öffnen' : 'Anmelden');
+  els.btn.setAttribute('aria-haspopup', 'dialog');
   if (cloudUser) {
-    if (els.btnLabel) els.btnLabel.textContent = 'Konto';
+    if (els.btnLabel) els.btnLabel.textContent = 'Angemeldet';
     if (els.title) els.title.textContent = 'Konto';
     if (els.loggedOut) els.loggedOut.hidden = true;
     if (els.loggedIn) els.loggedIn.hidden = false;
-    if (els.userRow) els.userRow.textContent = cloudUser.email || 'Angemeldet';
+    if (els.userRow) els.userRow.textContent = cloudUser.email ? 'Angemeldet als ' + cloudUser.email : 'Angemeldet';
   } else {
     if (els.btnLabel) els.btnLabel.textContent = 'Anmelden';
     if (els.title) els.title.textContent = 'Anmelden';
@@ -2619,8 +2622,16 @@ function refreshUIAfterCloudSync(){
   else if (typeof render === 'function') render();
 }
 
+function setSyncStatus(message, failed = false){
+  const el = document.getElementById('accountSyncStatus');
+  if (!el) return;
+  el.textContent = message;
+  el.classList.toggle('sync-error', failed);
+}
+
 function scheduleCloudPush(){
   if (!sb || !cloudUser) return;
+  setSyncStatus('Änderungen noch nicht in der Cloud gespeichert …');
   clearTimeout(cloudSyncTimer);
   cloudSyncTimer = setTimeout(pushStateToCloud, 900);
 }
@@ -2628,18 +2639,30 @@ function scheduleCloudPush(){
 async function pushStateToCloud(){
   if (!sb || !cloudUser || cloudSyncing) return;
   cloudSyncing = true;
-  const { error } = await sb.from('progress').upsert(
-    { user_id: cloudUser.id, state: state, updated_at: new Date().toISOString() },
-    { onConflict: 'user_id' }
-  );
-  cloudSyncing = false;
-  if (error) console.error('Cloud-Sync fehlgeschlagen:', error.message);
+  const userId = cloudUser.id;
+  const snapshot = JSON.stringify(state);
+  setSyncStatus('Wird gespeichert …');
+  try {
+    const { error } = await sb.from('progress').upsert(
+      { user_id: userId, state: JSON.parse(snapshot), updated_at: new Date().toISOString() },
+      { onConflict: 'user_id' }
+    );
+    if (error) throw error;
+    if (cloudUser?.id === userId) {
+      if (JSON.stringify(state) !== snapshot) scheduleCloudPush();
+      else setSyncStatus('Fortschritt gespeichert');
+    }
+  } catch (error) {
+    if (cloudUser?.id === userId) setSyncStatus('Synchronisierung fehlgeschlagen. Dein Fortschritt bleibt lokal gespeichert.', true);
+  } finally {
+    cloudSyncing = false;
+  }
 }
 
 async function pullStateFromCloud(){
   if (!sb || !cloudUser) return;
   const { data, error } = await sb.from('progress').select('state').eq('user_id', cloudUser.id).maybeSingle();
-  if (error) { console.error('Cloud-Fortschritt konnte nicht geladen werden:', error.message); return; }
+  if (error) { setSyncStatus('Cloud-Fortschritt konnte nicht geladen werden. Dein lokaler Fortschritt bleibt erhalten.', true); return; }
   const localKeys = Object.keys(state).length;
   const cloudState = (data && data.state) || {};
   const cloudKeys = Object.keys(cloudState).length;
@@ -2721,6 +2744,8 @@ async function initCloudSync(){
       pullStateFromCloud();
     } else if (event === 'SIGNED_OUT') {
       cloudUser = null;
+      clearTimeout(cloudSyncTimer);
+      setSyncStatus('Fortschritt wird abgeglichen …');
       refreshAccountUI();
     }
   });

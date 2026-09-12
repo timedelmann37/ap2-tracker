@@ -156,3 +156,12 @@ Begriffe und Hierarchie bleiben `Bereich > Themengruppe > Kernthema`.
   Simulation und Einzeltracker, ergänzend Hellmodus und Reduced Motion.
 
 Inhalte, Fortschritt und Cloud-Sync werden durch die Gestaltung nicht migriert.
+
+### Kontostatus
+
+Der Kontobutton zeigt bei aktiver Sitzung einen grünen Statuspunkt, „Angemeldet“
+und einen Öffnungspfeil. Der Text bleibt mobil sichtbar. Die vorhandene
+Glasnavigation (Doppler-Referenz) und der semantische Success-Token bleiben
+die Basis. Im Kontofenster stehen „Angemeldet als“ mit E-Mail und ein eigener,
+live aktualisierter Speicherstatus. Anmeldung bedeutet nicht erfolgreiche
+Synchronisierung; Fehler lassen den Anmeldestatus bestehen.
