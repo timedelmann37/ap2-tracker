@@ -882,12 +882,15 @@
 <link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
 <link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-1">
 <script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
 </head>
 <body class="area-page area-wiso">
 
 <nav class="topnav" aria-label="Hauptnavigation">
   <div class="topnav-inner">
-  <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7.5 4.25v9.5L12 21l-7.5-4.25v-9.5L12 3Z"/><path d="m4.8 7.4 7.2 4.1 7.2-4.1M12 21v-9.5"/></svg></span>AP2 Vorbereitung</a>
+  <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
   <div class="topnav-links">
     <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
     <div class="topnav-dropdown" id="navThemenWrap">
@@ -1083,7 +1086,7 @@
       </div>
       <div id="accountLoggedIn" hidden>
         <div class="account-user-row" id="accountUserRow"></div>
-        <p>Dein Fortschritt wird automatisch in deinem Konto gespeichert.</p>
+        <p id="accountSyncStatus" role="status" aria-live="polite">Fortschritt wird abgeglichen …</p>
         <div class="account-actions">
           <button type="button" id="accountSignOut" class="account-btn">Abmelden</button>
         </div>
@@ -2599,12 +2602,15 @@ function closeAccountModal(){
 function refreshAccountUI(){
   const els = accountEls();
   if (!els.btn) return;
+  els.btn.classList.toggle('is-signed-in', !!cloudUser);
+  els.btn.setAttribute('aria-label', cloudUser ? 'Angemeldet – Konto öffnen' : 'Anmelden');
+  els.btn.setAttribute('aria-haspopup', 'dialog');
   if (cloudUser) {
-    if (els.btnLabel) els.btnLabel.textContent = 'Konto';
+    if (els.btnLabel) els.btnLabel.textContent = 'Angemeldet';
     if (els.title) els.title.textContent = 'Konto';
     if (els.loggedOut) els.loggedOut.hidden = true;
     if (els.loggedIn) els.loggedIn.hidden = false;
-    if (els.userRow) els.userRow.textContent = cloudUser.email || 'Angemeldet';
+    if (els.userRow) els.userRow.textContent = cloudUser.email ? 'Angemeldet als ' + cloudUser.email : 'Angemeldet';
   } else {
     if (els.btnLabel) els.btnLabel.textContent = 'Anmelden';
     if (els.title) els.title.textContent = 'Anmelden';
@@ -2619,8 +2625,16 @@ function refreshUIAfterCloudSync(){
   else if (typeof render === 'function') render();
 }
 
+function setSyncStatus(message, failed = false){
+  const el = document.getElementById('accountSyncStatus');
+  if (!el) return;
+  el.textContent = message;
+  el.classList.toggle('sync-error', failed);
+}
+
 function scheduleCloudPush(){
   if (!sb || !cloudUser) return;
+  setSyncStatus('Änderungen noch nicht in der Cloud gespeichert …');
   clearTimeout(cloudSyncTimer);
   cloudSyncTimer = setTimeout(pushStateToCloud, 900);
 }
@@ -2628,18 +2642,30 @@ function scheduleCloudPush(){
 async function pushStateToCloud(){
   if (!sb || !cloudUser || cloudSyncing) return;
   cloudSyncing = true;
-  const { error } = await sb.from('progress').upsert(
-    { user_id: cloudUser.id, state: state, updated_at: new Date().toISOString() },
-    { onConflict: 'user_id' }
-  );
-  cloudSyncing = false;
-  if (error) console.error('Cloud-Sync fehlgeschlagen:', error.message);
+  const userId = cloudUser.id;
+  const snapshot = JSON.stringify(state);
+  setSyncStatus('Wird gespeichert …');
+  try {
+    const { error } = await sb.from('progress').upsert(
+      { user_id: userId, state: JSON.parse(snapshot), updated_at: new Date().toISOString() },
+      { onConflict: 'user_id' }
+    );
+    if (error) throw error;
+    if (cloudUser?.id === userId) {
+      if (JSON.stringify(state) !== snapshot) scheduleCloudPush();
+      else setSyncStatus('Fortschritt gespeichert');
+    }
+  } catch (error) {
+    if (cloudUser?.id === userId) setSyncStatus('Synchronisierung fehlgeschlagen. Dein Fortschritt bleibt lokal gespeichert.', true);
+  } finally {
+    cloudSyncing = false;
+  }
 }
 
 async function pullStateFromCloud(){
   if (!sb || !cloudUser) return;
   const { data, error } = await sb.from('progress').select('state').eq('user_id', cloudUser.id).maybeSingle();
-  if (error) { console.error('Cloud-Fortschritt konnte nicht geladen werden:', error.message); return; }
+  if (error) { setSyncStatus('Cloud-Fortschritt konnte nicht geladen werden. Dein lokaler Fortschritt bleibt erhalten.', true); return; }
   const localKeys = Object.keys(state).length;
   const cloudState = (data && data.state) || {};
   const cloudKeys = Object.keys(cloudState).length;
@@ -2721,6 +2747,8 @@ async function initCloudSync(){
       pullStateFromCloud();
     } else if (event === 'SIGNED_OUT') {
       cloudUser = null;
+      clearTimeout(cloudSyncTimer);
+      setSyncStatus('Fortschritt wird abgeglichen …');
       refreshAccountUI();
     }
   });
