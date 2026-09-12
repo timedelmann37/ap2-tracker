@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Ein- und Zwei-Firewall-DMZ vergleichen, Dienste platzieren und einen kompromittierten DMZ-Host begrenzen.">
+<title>Eine DMZ über Vertrauensgrenzen entwerfen – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-1">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="dmz-architektur" data-progress-id="ga2-7__3" data-content-revision="2026-09-12.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-7">Block N7 · Netzwerksicherheit</a><span class="sep">›</span>
+    <span class="here">Eine DMZ über Vertrauensgrenzen entwerfen</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">Eine DMZ über Vertrauensgrenzen entwerfen</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 25 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Eine DMZ ist eine getrennte Zone für exponierte Dienste. Ihr Nutzen zeigt sich besonders dann, wenn ein solcher Dienst kompromittiert wird: Welche internen Ziele kann er anschließend erreichen?</p>
+<section class="learning-goals" aria-labelledby="dmz-architektur-goals">
+  <h2 id="dmz-architektur-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>DMZ, internes Netz und Internet mit Ein- oder Zwei-Firewall-Architektur und deren Abhängigkeiten erklären</li>
+    <li>minimale Kommunikationsbeziehungen für öffentliche Dienste und deren Backend ableiten</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Vorwissen aktivieren</h2>
+<section class="quiz" data-quiz="dmz-architektur-diagnose" data-correct="2">
+  <h3>Ein Webserver in der DMZ wird übernommen. Welche Regel wäre besonders gefährlich?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Das ist die beabsichtigte öffentliche Funktion, ohne Freigabe des ganzen LAN."><span class="m">A</span> Internet darf HTTPS zu genau diesem Webserver aufbauen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Das begrenzt die Verwaltungswege."><span class="m">B</span> Wartung läuft nur über einen definierten administrativen Zugang.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Richtig: Damit würde die DMZ zur breiten Ausgangsbasis ins interne Netz."><span class="m">C</span> DMZ darf neue Verbindungen zu beliebigen internen Zielen aufbauen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">Leitgedanke</span><p>Bewerte jede Zonenregel aus Sicht eines bereits kompromittierten Systems.</p></aside><h2 class="sec" id="s2"><span class="num">2</span>Ein Gerät oder zwei Grenzen?</h2>
+<p>Bei einer <strong>Ein-Firewall-DMZ</strong> trennt eine Firewall mindestens drei Zonen: Internet, DMZ und intern. Sie benötigt passende Interfaces beziehungsweise logisch getrennte Netze und Regeln zwischen allen Zonen. Das vereinfacht den Betrieb, bündelt aber Durchsetzung und Konfigurationsrisiken auf einem System.</p>
+<p>Eine <strong>Zwei-Firewall-DMZ</strong> liegt zwischen einer äußeren und einer inneren Firewall. Die äußere kontrolliert Internet/DMZ, die innere DMZ/LAN. Das ermöglicht getrennte Kontrollpunkte, erhöht aber Aufwand und kann gemeinsame Fehler behalten. Zwei hintereinander liegende Geräte sind nicht automatisch redundant.</p>
+<p>Öffentliche Web- oder Maildienste gehören in die exponierte Zone. Interne Datenbanken, Backups und Verwaltungsdienste werden nicht pauschal veröffentlicht. Wenn ein DMZ-Dienst ein internes Backend benötigt, beschränke die Verbindung auf ein Ziel und einen Dienst. Auch dieser freigegebene Pfad bleibt ein Restrisiko.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Zwei kontrollierte Übergänge">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-topology" xmlns="http://www.w3.org/2000/svg" width="960" height="500" viewBox="0 0 960 500" role="img" aria-labelledby="diagram-dmz-zonen-title diagram-dmz-zonen-desc">
+  <title id="diagram-dmz-zonen-title">Zwei kontrollierte Übergänge</title>
+  <desc id="diagram-dmz-zonen-desc">Internet, äußere Firewall, Webserver in der DMZ, innere Firewall und internes Backend liegen in einem Pfad. Jede Grenze besitzt eigene Regeln.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Zwei kontrollierte Übergänge</tspan></text>
+  <g class="diagram-edge allowed"><path d="M120 160 L360 160"/><text class="diagram-edge-label" x="240" y="152" text-anchor="middle">TCP/443</text></g><g class="diagram-edge allowed"><path d="M360 160 L620 160"/><text class="diagram-edge-label" x="490" y="152" text-anchor="middle">HTTPS</text></g><g class="diagram-edge allowed"><path d="M620 160 L620 350"/><text class="diagram-edge-label" x="620" y="247" text-anchor="middle">TCP/5432</text></g><g class="diagram-edge allowed"><path d="M620 350 L300 350"/><text class="diagram-edge-label" x="460" y="342" text-anchor="middle">enges Ziel</text></g><g class="diagram-node client" transform="translate(120 160)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="120" y="155" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="120" dy="0">Internet</tspan></text><text class="diagram-node-detail" x="120" y="179" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="120" dy="0">öffentliche Clients</tspan></text><g class="diagram-node router" transform="translate(360 160)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="360" y="155" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="360" dy="0">Äußere FW</tspan></text><text class="diagram-node-detail" x="360" y="179" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="360" dy="0">nur HTTPS</tspan></text><g class="diagram-node server" transform="translate(620 160)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="620" y="155" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="620" dy="0">DMZ-Web</tspan></text><text class="diagram-node-detail" x="620" y="179" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="620" dy="0">192.0.2.40</tspan></text><g class="diagram-node router" transform="translate(620 350)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="620" y="345" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="620" dy="0">Innere FW</tspan></text><text class="diagram-node-detail" x="620" y="369" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="620" dy="0">nur Backenddienst</tspan></text><g class="diagram-node server" transform="translate(300 350)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="300" y="345" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="300" dy="0">Internes Backend</tspan></text><text class="diagram-node-detail" x="300" y="369" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="300" dy="0">10.30.0.10</tspan></text>
+</svg>
+  </div>
+  <figcaption>Zwei kontrollierte Übergänge – eigenes Lernmodell.</figcaption>
+</figure><h2 class="sec" id="s3"><span class="num">3</span>Durchgearbeitetes Beispiel</h2>
+<p>Ein Portal <code>192.0.2.40</code> liefert HTTPS. Seine Datenbank <code>10.30.0.10</code> stellt im Beispiel TCP/5432 bereit. Erlaubte neue Flüsse sind Internet → Portal TCP/443 und Portal → Datenbank TCP/5432. Internet → Datenbank sowie Portal → interne Dateifreigaben bleiben gesperrt. Antworten werden zustandsbezogen behandelt.</p>
+<p>Wird das Portal übernommen, schützt die Sperre andere interne Dienste; die Datenbankverbindung bleibt jedoch erreichbar. Daher benötigt die Datenbank zusätzlich ein eingeschränktes Anwendungskonto und eigene Härtung. Administration erfolgt über einen kontrollierten Managementpfad, nicht aus dem gesamten Internet. In einer Ein-Firewall-Variante gelten dieselben logischen Zonenregeln auf einem Gerät.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Den Schaden eines DMZ-Einbruchs begrenzen">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="542" viewBox="0 0 960 542" role="img" aria-labelledby="diagram-dmz-architektur-ablauf-title diagram-dmz-architektur-ablauf-desc">
+  <title id="diagram-dmz-architektur-ablauf-title">Den Schaden eines DMZ-Einbruchs begrenzen</title>
+  <desc id="diagram-dmz-architektur-ablauf-desc">Exponierung, erlaubter Backendweg, Administration und Negativtests ergeben den Prüfrundgang.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Den Schaden eines DMZ-Einbruchs begrenzen</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Öffentlicher Dienst</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Nur benötigte Endpunkte veröffentlichen</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Backend</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Ein Ziel und einen Dienst erlauben</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Verwaltung</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Getrennten administrativen Pfad vorsehen</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Gegenprobe</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">DMZ darf übriges LAN nicht erreichen</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Den Schaden eines DMZ-Einbruchs begrenzen – eigenes Lernmodell.</figcaption>
+</figure><h2 class="sec" id="s4"><span class="num">4</span>Selbst entscheiden</h2>
+<section class="quiz" data-quiz="dmz-architektur-uebung" data-correct="0">
+  <h3>Würde eine zweite Firewall den Missbrauch des ausdrücklich erlaubten Datenbankzugriffs automatisch verhindern?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig: Netzfreigabe bleibt auch für einen kompromittierten Sender nutzbar."><span class="m">A</span> Nein; der erlaubte Pfad braucht zusätzliche Anwendungskontrollen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die Geräteanzahl garantiert keine Anwendungssicherheit."><span class="m">B</span> Ja, zwei Firewalls erkennen jede schädliche Datenbankabfrage.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Segmentierung ist keine Verschlüsselung."><span class="m">C</span> Ja, eine DMZ verschlüsselt alle Datenbankanfragen automatisch.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="sequence-practice" data-sequence="dmz-architektur-reihenfolge" data-expected="s0,s1,s2,s3" data-correct-feedback="Richtig: Der Test bewertet die verbleibende Reichweite eines exponierten Hosts." data-wrong-feedback="Gehe vom belegten Bedarf über die Entscheidung zum Nachweis. Prüfe die erste abweichende Position." aria-labelledby="dmz-architektur-reihenfolge-title">
+  <div class="lab-heading"><div><h3 id="dmz-architektur-reihenfolge-title">Eine DMZ planen</h3><p>Ordne die Schritte vom Dienst zum Nachweis.</p></div><span class="lab-tag">Ablauf</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="s2" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Benötigte Flüsse sowie Managementpfad minimal freigeben</span></li>
+    <li data-step="s0" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Öffentliche Dienste und interne Schutzobjekte erfassen</span></li>
+    <li data-step="s3" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Kompromittierten DMZ-Host als Testannahme prüfen</span></li>
+    <li data-step="s1" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Zonen und ihre Durchsetzungspunkte festlegen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Aus dem Gedächtnis erklären</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="dmz-architektur-karte-0" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was ist eine DMZ?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Eine getrennte Zone für exponierte Dienste mit kontrollierten Übergängen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="dmz-architektur-karte-1" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was unterscheidet zwei Firewalls von Redundanz?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Zwei serielle Kontrollpunkte liefern nicht automatisch einen ausfallsicheren Ersatzpfad.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="dmz-architektur-karte-2" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was bleibt trotz enger Backendregel gefährlich?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Missbrauch des erlaubten Dienstes; dort braucht es zusätzliche Rechte- und Anwendungskontrollen.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Abruf 1“:</span><button type="button" data-card-id="dmz-architektur-karte-0" data-card-rate="known">gewusst</button><button type="button" data-card-id="dmz-architektur-karte-0" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="dmz-architektur-karte-0"></span></div>
+<div class="card-rating"><span>Karte „Abruf 2“:</span><button type="button" data-card-id="dmz-architektur-karte-1" data-card-rate="known">gewusst</button><button type="button" data-card-id="dmz-architektur-karte-1" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="dmz-architektur-karte-1"></span></div>
+<div class="card-rating"><span>Karte „Abruf 3“:</span><button type="button" data-card-id="dmz-architektur-karte-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="dmz-architektur-karte-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="dmz-architektur-karte-2"></span></div><section class="recall-practice" data-recall="dmz-architektur-abruf" data-min-length="100" aria-labelledby="dmz-architektur-abruf-title">
+  <div class="recall-prompt"><h3 id="dmz-architektur-abruf-title">Deine Begründung</h3><p>Zeichne gedanklich Internet, DMZ und LAN. Nenne zwei erlaubte und zwei gesperrte Flüsse sowie ein Restrisiko.</p></div>
+  <label class="sr-only" for="dmz-architektur-abruf-answer">Eigene Erklärung</label>
+  <textarea id="dmz-architektur-abruf-answer" data-recall-input rows="4" placeholder="Meine Entscheidung und ihre Grenze …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Internet erreicht nur HTTPS am Portal. Das Portal erreicht nur den definierten Datenbankdienst. Internet zur Datenbank und Portal zu internen Dateifreigaben sind gesperrt. Der erlaubte Datenbankpfad bleibt bei Portalübernahme nutzbar; eingeschränkte Konten und Anwendungshärtung begrenzen diesen Missbrauch.</div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Lernziel-Check</h2>
+<section class="quiz" data-quiz="dmz-architektur-transfer-a" data-correct="1" data-required-objective="dmz-aufbau">
+  <h3>Welche Aussage zur Ein-Firewall-DMZ stimmt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Eine Drei-Zonen-Firewall kann eine DMZ abbilden."><span class="m">A</span> Eine DMZ erfordert zwingend zwei physische Firewalls.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig: Logische Trennung und Geräteanzahl sind verschiedene Eigenschaften."><span class="m">B</span> Ein Gerät kann drei getrennte Zonen mit Regeln zwischen ihnen kontrollieren, bündelt aber zentrale Abhängigkeiten.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Serielle Kontrolle ist kein redundanter Ersatzpfad."><span class="m">C</span> Zwei serielle Firewalls sind automatisch ein HA-Paar.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="dmz-architektur-transfer-b" data-correct="1" data-required-objective="dmz-freigabe">
+  <h3>Ein Mailrelay in der DMZ benötigt genau einen internen Mailserver auf TCP/25. Welche Freigabe passt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Das erweitert den Schaden einer Übernahme."><span class="m">A</span> DMZ-Netz → gesamtes LAN, beliebiger Dienst.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig: Quelle, Ziel und Dienst folgen dem Bedarf."><span class="m">B</span> Nur Relay-IP → Mailserver-IP TCP/25; andere neue DMZ-LAN-Verbindungen bleiben gesperrt.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Das umgeht den vorgesehenen Vermittlungspunkt."><span class="m">C</span> Internet → gesamtes LAN TCP/25.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s7"><span class="num">7</span>Quellen und Grenzen</h2>
+<p>Buchgrundlage: EUROPA, Chunk 00352, und ITLF10–12, PDF-Seite 184. Topologie und Beispieldienste sind neu entworfen. Die zusätzlichen Grenzen des freigegebenen Backendpfads sind Teil der Falllösung.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-7"><span class="d">zurück zu</span><span class="t">Block N7 · Netzwerksicherheit</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N7 · Netzwerksicherheit</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Vorwissen aktivieren</a></li>
+<li><a href="#s2" data-t="s2">Ein Gerät oder zwei Grenzen?</a></li>
+<li><a href="#s3" data-t="s3">Durchgearbeitetes Beispiel</a></li>
+<li><a href="#s4" data-t="s4">Selbst entscheiden</a></li>
+<li><a href="#s5" data-t="s5">Aus dem Gedächtnis erklären</a></li>
+<li><a href="#s6" data-t="s6">Lernziel-Check</a></li>
+<li><a href="#s7" data-t="s7">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-7">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

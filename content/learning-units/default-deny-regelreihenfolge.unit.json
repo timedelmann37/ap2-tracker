@@ -1,0 +1,316 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "default-deny-regelreihenfolge",
+    "slug": "default-deny-regelreihenfolge",
+    "title": "Default Deny und die erste passende Regel",
+    "description": "First-Match-Regelwerke Schritt für Schritt auswerten, Verschattung erkennen und Änderungen nachvollziehbar pflegen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-7",
+    "groupLabel": "Block N7 · Netzwerksicherheit",
+    "itemId": "ga2-7__2",
+    "week": "KW 42",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "sources": [
+      "europa-integratoren-2026",
+      "itlf10-12-2023"
+    ],
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "default-deny",
+      "label": "Default Deny, implizite Aktionen und Verschattung im angegebenen Auswertungsmodell erklären"
+    },
+    {
+      "id": "first-match",
+      "label": "für ein neues Paket die erste passende Regel bestimmen und das Ergebnis begründen"
+    }
+  ],
+  "intro": "Eine korrekt formulierte Sperrregel kann wirkungslos sein, wenn vorher eine breite Freigabe greift. Deshalb gehören Inhalt und Reihenfolge jeder Regel zusammen.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunk 00352",
+        "use": "Dienstbezogene Freigaben und abschließende Sperre",
+        "reviewStatus": "Direkter Regelfall geprüft; keine problematischen Mail-Port-Bezeichnungen übernommen"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seite 188",
+        "use": "Gruppierte Regeln, Sprünge und Regelaktionen",
+        "reviewStatus": "Ausschnitt geprüft; Beispiel bewusst auf einfache First-Match-Liste begrenzt"
+      }
+    ],
+    "notes": [
+      "Der ursprüngliche Mappingtreffer EUROPA 01092 betrifft IPv6-Routing und wurde ausgeschlossen. Chunk 00149 ist nur allgemeiner Sicherheitskontext.",
+      "First Match gilt hier für eine lineare Liste terminaler Regeln bei neuen Verbindungen. Sprünge, Zustandstabellen und produktspezifische Prioritäten sind ausdrücklich außerhalb dieses Rechenmodells.",
+      "Eigene Fälle und Diagramme; keine privaten Buchabbildungen veröffentlicht. Fach- und Verständlichkeitsfreigabe durch einen Menschen steht aus."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "default-deny-regelreihenfolge-modell",
+      "type": "layers",
+      "title": "Auswertung einer linearen Liste",
+      "description": "Paket, Vergleich, erster Treffer und Default-Aktion zeigen die First-Match-Logik.",
+      "items": [
+        {
+          "label": "Start",
+          "detail": "Neue Verbindung und Filterpunkt"
+        },
+        {
+          "label": "Vergleich",
+          "detail": "Regeln von oben nach unten"
+        },
+        {
+          "label": "Treffer",
+          "detail": "Terminale Aktion ausführen"
+        },
+        {
+          "label": "Kein Treffer",
+          "detail": "Default-Aktion anwenden"
+        }
+      ]
+    },
+    {
+      "id": "default-deny-regelreihenfolge-ablauf",
+      "type": "flow",
+      "title": "Verschattung reparieren",
+      "description": "Gewünschte Policy und erster Treffer werden vor einem kontrollierten Test abgeglichen.",
+      "items": [
+        {
+          "label": "Soll",
+          "detail": "Welche Verbindung soll erlaubt sein?"
+        },
+        {
+          "label": "Ist",
+          "detail": "Welche Regel trifft tatsächlich zuerst?"
+        },
+        {
+          "label": "Änderung",
+          "detail": "Ausnahme begrenzen und richtig einordnen"
+        },
+        {
+          "label": "Gegenprobe",
+          "detail": "Neue Verbindungen beider Fälle testen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "default-deny-regelreihenfolge-diagnose",
+          "question": "Regel 1 erlaubt jedes neue TCP-Paket, Regel 2 sperrt TCP/22. Was passiert mit neuem SSH-Verkehr im First-Match-Modell?",
+          "options": [
+            {
+              "text": "Regel 2 gewinnt immer, weil Sperren Vorrang haben.",
+              "rationale": "Einen solchen Vorrang gibt es im angegebenen Modell nicht.",
+              "correct": false
+            },
+            {
+              "text": "Regel 1 erlaubt ihn; Regel 2 wird nicht mehr erreicht.",
+              "rationale": "Richtig: Die erste passende terminale Regel beendet die Auswertung.",
+              "correct": true
+            },
+            {
+              "text": "Die letzte Regel gewinnt.",
+              "rationale": "Das wäre ein anderes Auswertungsmodell.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Leitgedanke",
+          "markdown": "Im hier verwendeten First-Match-Modell entscheidet die erste passende terminale Regel. Ohne Treffer gilt die Default-Aktion."
+        }
+      ]
+    },
+    {
+      "title": "Reihenfolge ist Teil der Policy",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**Default Deny** erlaubt ausschließlich explizit freigegebene Kommunikation. In diesem Kapitel betrachten wir neue Verbindungen in einer linearen Liste: Prüfung von oben nach unten, Ende beim ersten Treffer. Bestehende Zustände und zusätzliche Regelketten sind vorher getrennt zu betrachten.\n\nEine spätere Regel ist **verschattet**, wenn ihr relevanter Verkehr bereits von früheren Regeln entschieden wird. Eine enge Ausnahme muss deshalb vor einer breiten Sperre stehen; eine spezielle Sperre vor einer breiten Freigabe. Nicht jede Plattform verwendet identische Prioritäten. Prüfe die tatsächliche Engine, statt First Match überall vorauszusetzen.\n\nEine implizite Default-Aktion ist auch ohne sichtbare Abschlusszeile wirksam. Dokumentiere diese Aktion, verwende aussagekräftige Regel-IDs und prüfe Ausnahmen regelmäßig. Eine Regeländerung beendet je nach Plattform bestehende Sitzungen nicht automatisch."
+        },
+        {
+          "type": "figure",
+          "diagramId": "default-deny-regelreihenfolge-modell",
+          "alt": "Paket, Vergleich, erster Treffer und Default-Aktion zeigen die First-Match-Logik.",
+          "caption": "Auswertung einer linearen Liste – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Modell: First Match für neue Verbindungen, kein NAT, kein passender Zustand. Alle Regeln beziehen sich auf Ziel `10.30.0.20`.\n\n| Nr. | Quelle | Dienst | Aktion |\n| --- | --- | --- | --- |\n| 1 | 10.10.0.7 | TCP/22 | erlauben |\n| 2 | beliebig | TCP/22 | sperren |\n| 3 | 10.10.0.0/24 | TCP/443 | erlauben |\n| 4 | beliebig | beliebig | sperren |\n\nNeue SSH-Verbindung von `.7`: Regel 1 trifft. SSH von `.8`: Regel 1 passt nicht, Regel 2 sperrt. HTTPS von `.8`: Regeln 1 und 2 haben den falschen Dienst, Regel 3 erlaubt. HTTPS von `10.11.0.8`: auch Regel 3 hat die falsche Quelle, also sperrt Regel 4. So wird jede Entscheidung bis zur ersten passenden Zeile begründet."
+        },
+        {
+          "type": "figure",
+          "diagramId": "default-deny-regelreihenfolge-ablauf",
+          "alt": "Gewünschte Policy und erster Treffer werden vor einem kontrollierten Test abgeglichen.",
+          "caption": "Verschattung reparieren – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Selbst entscheiden",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "default-deny-regelreihenfolge-uebung",
+          "question": "Regel 2 wird vor Regel 1 verschoben. Welche Wirkung hat das?",
+          "options": [
+            {
+              "text": "Die Quelle .7 bleibt automatisch privilegiert.",
+              "rationale": "Eine spezifische Quelle gewinnt nicht automatisch gegen eine frühere Regel.",
+              "correct": false
+            },
+            {
+              "text": "HTTPS wird dadurch für alle Netze freigegeben.",
+              "rationale": "Die SSH-Regel betrifft kein HTTPS.",
+              "correct": false
+            },
+            {
+              "text": "Auch die Wartung von .7 per SSH wird gesperrt.",
+              "rationale": "Richtig: Die breite SSH-Sperre fängt die Ausnahme vorher ab.",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "type": "sequence",
+          "id": "default-deny-regelreihenfolge-reihenfolge",
+          "title": "Ausnahme mit Sperre anordnen",
+          "prompt": "Ordne einen kontrollierten Arbeitsablauf, nicht bloß Regelnummern.",
+          "steps": [
+            {
+              "id": "s2",
+              "label": "Überbreite oder verschattete Regeln korrigieren"
+            },
+            {
+              "id": "s0",
+              "label": "Gewünschte Ausnahme und Grundsperre formulieren"
+            },
+            {
+              "id": "s3",
+              "label": "Neue Positiv- und Negativverbindungen testen"
+            },
+            {
+              "id": "s1",
+              "label": "Ersten Treffer für alle betroffenen Flüsse bestimmen"
+            }
+          ],
+          "expected": [
+            "s0",
+            "s1",
+            "s2",
+            "s3"
+          ],
+          "correctFeedback": "Richtig: Die Reihenfolge wird aus den Testflüssen abgeleitet.",
+          "wrongFeedback": "Gehe vom belegten Bedarf über die Entscheidung zum Nachweis. Prüfe die erste abweichende Position."
+        }
+      ]
+    },
+    {
+      "title": "Aus dem Gedächtnis erklären",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "default-deny-regelreihenfolge-karte-0",
+              "label": "Abruf 1",
+              "front": "Was ist Default Deny?",
+              "back": "Verkehr ohne explizite Freigabe wird gesperrt."
+            },
+            {
+              "id": "default-deny-regelreihenfolge-karte-1",
+              "label": "Abruf 2",
+              "front": "Was ist Verschattung?",
+              "back": "Eine frühere Regel entscheidet den Verkehr einer späteren bereits."
+            },
+            {
+              "id": "default-deny-regelreihenfolge-karte-2",
+              "label": "Abruf 3",
+              "front": "Warum neue Verbindungen testen?",
+              "back": "Bestehender Zustand kann eine geänderte Regel noch umgehen beziehungsweise weiterhin erlauben."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "default-deny-regelreihenfolge-abruf",
+          "title": "Deine Begründung",
+          "prompt": "Erkläre anhand des Beispiels, warum eine spezifische Freigabe unterhalb einer breiten Sperre nicht hilft. Nenne zwei Betriebsprüfungen.",
+          "label": "Eigene Erklärung",
+          "placeholder": "Meine Entscheidung und ihre Grenze …",
+          "minLength": 100,
+          "model": "Im First-Match-Modell beendet die breite Sperre die Auswertung vor der Ausnahme. Ich prüfe zuerst die tatsächlich verwendete Engine und danach neue Verbindungen mit erlaubten und nicht erlaubten Quellen. Bestehende Zustände, Regel-IDs, Zweck und Reviewtermin werden zusätzlich kontrolliert."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "default-deny-regelreihenfolge-transfer-a",
+          "question": "Eine gewünschte Ausnahme liegt unter einer terminalen Sperre, die dieselben Pakete erfasst. Welche Diagnose passt?",
+          "options": [
+            {
+              "text": "Die Ausnahme ist im angegebenen First-Match-Modell verschattet.",
+              "rationale": "Richtig: Die frühere Regel beendet die Auswertung.",
+              "correct": true
+            },
+            {
+              "text": "Die Ausnahme gewinnt immer durch ihre kleinere Netzmaske.",
+              "rationale": "Präfixlänge ist hier kein automatischer Regelvorrang.",
+              "correct": false
+            },
+            {
+              "text": "Default Deny verlangt das Löschen aller Ausnahmen.",
+              "rationale": "Explizite enge Freigaben gehören gerade zu Default Deny.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "default-deny"
+        },
+        {
+          "type": "numeric",
+          "id": "default-deny-regelreihenfolge-transfer-b",
+          "requiredObjective": "first-match",
+          "prompt": "Neues Beispiel, First Match ohne Zustand/NAT: Regel 1 erlaubt TCP/22 von 10.8.0.5 zu 10.9.0.20. Regel 2 sperrt TCP/22 von allen Quellen zu diesem Ziel. Regel 3 erlaubt TCP/443 von 10.8.0.0/24 zu diesem Ziel. Regel 4 sperrt alles Übrige. Ein neues TCP-Paket von 10.8.0.19 an 10.9.0.20:443 kommt an. Welche Regelnummer entscheidet?",
+          "expected": 3,
+          "tolerance": 0,
+          "label": "Erste passende Regelnummer",
+          "correctFeedback": "Regel 3: Die ersten beiden betreffen Port 22. Quelle und Ziel von Regel 3 passen für HTTPS.",
+          "wrongFeedback": "Prüfe Quelle, Ziel UND Dienst. Die Regeln 1 und 2 passen wegen Port 22 nicht."
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Buchgrundlage: EUROPA, Chunk 00352; ITLF10–12, PDF-Seite 188. Der frühere Treffer EUROPA 01092 behandelt IPv6-Routing und wurde verworfen. Alle Übungen benennen ihr First-Match-Modell ausdrücklich."
+        }
+      ]
+    }
+  ]
+}

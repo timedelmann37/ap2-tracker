@@ -1,0 +1,379 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "dmz-architektur",
+    "slug": "dmz-architektur",
+    "title": "Eine DMZ über Vertrauensgrenzen entwerfen",
+    "description": "Ein- und Zwei-Firewall-DMZ vergleichen, Dienste platzieren und einen kompromittierten DMZ-Host begrenzen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-7",
+    "groupLabel": "Block N7 · Netzwerksicherheit",
+    "itemId": "ga2-7__3",
+    "week": "KW 42",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "sources": [
+      "europa-integratoren-2026",
+      "itlf10-12-2023"
+    ],
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "dmz-aufbau",
+      "label": "DMZ, internes Netz und Internet mit Ein- oder Zwei-Firewall-Architektur und deren Abhängigkeiten erklären"
+    },
+    {
+      "id": "dmz-freigabe",
+      "label": "minimale Kommunikationsbeziehungen für öffentliche Dienste und deren Backend ableiten"
+    }
+  ],
+  "intro": "Eine DMZ ist eine getrennte Zone für exponierte Dienste. Ihr Nutzen zeigt sich besonders dann, wenn ein solcher Dienst kompromittiert wird: Welche internen Ziele kann er anschließend erreichen?",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunk 00352",
+        "use": "Öffentlicher Dienst in DMZ zwischen äußerer und innerer Firewall",
+        "reviewStatus": "Text geprüft; eigene Topologie erstellt"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seite 184",
+        "use": "Trennung von externem Netz, DMZ und internem Netz",
+        "reviewStatus": "Direkten Text im Firewalltypen-Batch geprüft"
+      }
+    ],
+    "notes": [
+      "ITLF6–9 Chunk 00202 beschreibt im Batch überwiegend allgemeine Kundenverkabelung und wurde nicht als DMZ-Beleg genutzt.",
+      "Zwei Firewalls sind keine automatische Hochverfügbarkeit. Trassen, Energie, Administration, Regeln und mögliche gemeinsame Fehler bleiben zu prüfen.",
+      "Eigene Fälle und Diagramme; keine privaten Buchabbildungen veröffentlicht. Fach- und Verständlichkeitsfreigabe durch einen Menschen steht aus."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "dmz-zonen",
+      "type": "topology",
+      "title": "Zwei kontrollierte Übergänge",
+      "description": "Internet, äußere Firewall, Webserver in der DMZ, innere Firewall und internes Backend liegen in einem Pfad. Jede Grenze besitzt eigene Regeln.",
+      "height": 500,
+      "nodes": [
+        {
+          "id": "internet",
+          "label": "Internet",
+          "detail": "öffentliche Clients",
+          "x": 120,
+          "y": 160,
+          "kind": "client"
+        },
+        {
+          "id": "outer",
+          "label": "Äußere FW",
+          "detail": "nur HTTPS",
+          "x": 360,
+          "y": 160,
+          "kind": "router"
+        },
+        {
+          "id": "web",
+          "label": "DMZ-Web",
+          "detail": "192.0.2.40",
+          "x": 620,
+          "y": 160,
+          "kind": "server"
+        },
+        {
+          "id": "inner",
+          "label": "Innere FW",
+          "detail": "nur Backenddienst",
+          "x": 620,
+          "y": 350,
+          "kind": "router"
+        },
+        {
+          "id": "db",
+          "label": "Internes Backend",
+          "detail": "10.30.0.10",
+          "x": 300,
+          "y": 350,
+          "kind": "server"
+        }
+      ],
+      "edges": [
+        {
+          "from": "internet",
+          "to": "outer",
+          "label": "TCP/443",
+          "kind": "allowed"
+        },
+        {
+          "from": "outer",
+          "to": "web",
+          "label": "HTTPS",
+          "kind": "allowed"
+        },
+        {
+          "from": "web",
+          "to": "inner",
+          "label": "TCP/5432",
+          "kind": "allowed"
+        },
+        {
+          "from": "inner",
+          "to": "db",
+          "label": "enges Ziel",
+          "kind": "allowed"
+        }
+      ]
+    },
+    {
+      "id": "dmz-architektur-ablauf",
+      "type": "flow",
+      "title": "Den Schaden eines DMZ-Einbruchs begrenzen",
+      "description": "Exponierung, erlaubter Backendweg, Administration und Negativtests ergeben den Prüfrundgang.",
+      "items": [
+        {
+          "label": "Öffentlicher Dienst",
+          "detail": "Nur benötigte Endpunkte veröffentlichen"
+        },
+        {
+          "label": "Backend",
+          "detail": "Ein Ziel und einen Dienst erlauben"
+        },
+        {
+          "label": "Verwaltung",
+          "detail": "Getrennten administrativen Pfad vorsehen"
+        },
+        {
+          "label": "Gegenprobe",
+          "detail": "DMZ darf übriges LAN nicht erreichen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "dmz-architektur-diagnose",
+          "question": "Ein Webserver in der DMZ wird übernommen. Welche Regel wäre besonders gefährlich?",
+          "options": [
+            {
+              "text": "Internet darf HTTPS zu genau diesem Webserver aufbauen.",
+              "rationale": "Das ist die beabsichtigte öffentliche Funktion, ohne Freigabe des ganzen LAN.",
+              "correct": false
+            },
+            {
+              "text": "Wartung läuft nur über einen definierten administrativen Zugang.",
+              "rationale": "Das begrenzt die Verwaltungswege.",
+              "correct": false
+            },
+            {
+              "text": "DMZ darf neue Verbindungen zu beliebigen internen Zielen aufbauen.",
+              "rationale": "Richtig: Damit würde die DMZ zur breiten Ausgangsbasis ins interne Netz.",
+              "correct": true
+            }
+          ],
+          "diagnostic": true
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Leitgedanke",
+          "markdown": "Bewerte jede Zonenregel aus Sicht eines bereits kompromittierten Systems."
+        }
+      ]
+    },
+    {
+      "title": "Ein Gerät oder zwei Grenzen?",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Bei einer **Ein-Firewall-DMZ** trennt eine Firewall mindestens drei Zonen: Internet, DMZ und intern. Sie benötigt passende Interfaces beziehungsweise logisch getrennte Netze und Regeln zwischen allen Zonen. Das vereinfacht den Betrieb, bündelt aber Durchsetzung und Konfigurationsrisiken auf einem System.\n\nEine **Zwei-Firewall-DMZ** liegt zwischen einer äußeren und einer inneren Firewall. Die äußere kontrolliert Internet/DMZ, die innere DMZ/LAN. Das ermöglicht getrennte Kontrollpunkte, erhöht aber Aufwand und kann gemeinsame Fehler behalten. Zwei hintereinander liegende Geräte sind nicht automatisch redundant.\n\nÖffentliche Web- oder Maildienste gehören in die exponierte Zone. Interne Datenbanken, Backups und Verwaltungsdienste werden nicht pauschal veröffentlicht. Wenn ein DMZ-Dienst ein internes Backend benötigt, beschränke die Verbindung auf ein Ziel und einen Dienst. Auch dieser freigegebene Pfad bleibt ein Restrisiko."
+        },
+        {
+          "type": "figure",
+          "diagramId": "dmz-zonen",
+          "alt": "Internet, äußere Firewall, Webserver in der DMZ, innere Firewall und internes Backend liegen in einem Pfad. Jede Grenze besitzt eigene Regeln.",
+          "caption": "Zwei kontrollierte Übergänge – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Portal `192.0.2.40` liefert HTTPS. Seine Datenbank `10.30.0.10` stellt im Beispiel TCP/5432 bereit. Erlaubte neue Flüsse sind Internet → Portal TCP/443 und Portal → Datenbank TCP/5432. Internet → Datenbank sowie Portal → interne Dateifreigaben bleiben gesperrt. Antworten werden zustandsbezogen behandelt.\n\nWird das Portal übernommen, schützt die Sperre andere interne Dienste; die Datenbankverbindung bleibt jedoch erreichbar. Daher benötigt die Datenbank zusätzlich ein eingeschränktes Anwendungskonto und eigene Härtung. Administration erfolgt über einen kontrollierten Managementpfad, nicht aus dem gesamten Internet. In einer Ein-Firewall-Variante gelten dieselben logischen Zonenregeln auf einem Gerät."
+        },
+        {
+          "type": "figure",
+          "diagramId": "dmz-architektur-ablauf",
+          "alt": "Exponierung, erlaubter Backendweg, Administration und Negativtests ergeben den Prüfrundgang.",
+          "caption": "Den Schaden eines DMZ-Einbruchs begrenzen – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Selbst entscheiden",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "dmz-architektur-uebung",
+          "question": "Würde eine zweite Firewall den Missbrauch des ausdrücklich erlaubten Datenbankzugriffs automatisch verhindern?",
+          "options": [
+            {
+              "text": "Nein; der erlaubte Pfad braucht zusätzliche Anwendungskontrollen.",
+              "rationale": "Richtig: Netzfreigabe bleibt auch für einen kompromittierten Sender nutzbar.",
+              "correct": true
+            },
+            {
+              "text": "Ja, zwei Firewalls erkennen jede schädliche Datenbankabfrage.",
+              "rationale": "Die Geräteanzahl garantiert keine Anwendungssicherheit.",
+              "correct": false
+            },
+            {
+              "text": "Ja, eine DMZ verschlüsselt alle Datenbankanfragen automatisch.",
+              "rationale": "Segmentierung ist keine Verschlüsselung.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "sequence",
+          "id": "dmz-architektur-reihenfolge",
+          "title": "Eine DMZ planen",
+          "prompt": "Ordne die Schritte vom Dienst zum Nachweis.",
+          "steps": [
+            {
+              "id": "s2",
+              "label": "Benötigte Flüsse sowie Managementpfad minimal freigeben"
+            },
+            {
+              "id": "s0",
+              "label": "Öffentliche Dienste und interne Schutzobjekte erfassen"
+            },
+            {
+              "id": "s3",
+              "label": "Kompromittierten DMZ-Host als Testannahme prüfen"
+            },
+            {
+              "id": "s1",
+              "label": "Zonen und ihre Durchsetzungspunkte festlegen"
+            }
+          ],
+          "expected": [
+            "s0",
+            "s1",
+            "s2",
+            "s3"
+          ],
+          "correctFeedback": "Richtig: Der Test bewertet die verbleibende Reichweite eines exponierten Hosts.",
+          "wrongFeedback": "Gehe vom belegten Bedarf über die Entscheidung zum Nachweis. Prüfe die erste abweichende Position."
+        }
+      ]
+    },
+    {
+      "title": "Aus dem Gedächtnis erklären",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "dmz-architektur-karte-0",
+              "label": "Abruf 1",
+              "front": "Was ist eine DMZ?",
+              "back": "Eine getrennte Zone für exponierte Dienste mit kontrollierten Übergängen."
+            },
+            {
+              "id": "dmz-architektur-karte-1",
+              "label": "Abruf 2",
+              "front": "Was unterscheidet zwei Firewalls von Redundanz?",
+              "back": "Zwei serielle Kontrollpunkte liefern nicht automatisch einen ausfallsicheren Ersatzpfad."
+            },
+            {
+              "id": "dmz-architektur-karte-2",
+              "label": "Abruf 3",
+              "front": "Was bleibt trotz enger Backendregel gefährlich?",
+              "back": "Missbrauch des erlaubten Dienstes; dort braucht es zusätzliche Rechte- und Anwendungskontrollen."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "dmz-architektur-abruf",
+          "title": "Deine Begründung",
+          "prompt": "Zeichne gedanklich Internet, DMZ und LAN. Nenne zwei erlaubte und zwei gesperrte Flüsse sowie ein Restrisiko.",
+          "label": "Eigene Erklärung",
+          "placeholder": "Meine Entscheidung und ihre Grenze …",
+          "minLength": 100,
+          "model": "Internet erreicht nur HTTPS am Portal. Das Portal erreicht nur den definierten Datenbankdienst. Internet zur Datenbank und Portal zu internen Dateifreigaben sind gesperrt. Der erlaubte Datenbankpfad bleibt bei Portalübernahme nutzbar; eingeschränkte Konten und Anwendungshärtung begrenzen diesen Missbrauch."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "dmz-architektur-transfer-a",
+          "question": "Welche Aussage zur Ein-Firewall-DMZ stimmt?",
+          "options": [
+            {
+              "text": "Eine DMZ erfordert zwingend zwei physische Firewalls.",
+              "rationale": "Eine Drei-Zonen-Firewall kann eine DMZ abbilden.",
+              "correct": false
+            },
+            {
+              "text": "Ein Gerät kann drei getrennte Zonen mit Regeln zwischen ihnen kontrollieren, bündelt aber zentrale Abhängigkeiten.",
+              "rationale": "Richtig: Logische Trennung und Geräteanzahl sind verschiedene Eigenschaften.",
+              "correct": true
+            },
+            {
+              "text": "Zwei serielle Firewalls sind automatisch ein HA-Paar.",
+              "rationale": "Serielle Kontrolle ist kein redundanter Ersatzpfad.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "dmz-aufbau"
+        },
+        {
+          "type": "quiz",
+          "id": "dmz-architektur-transfer-b",
+          "question": "Ein Mailrelay in der DMZ benötigt genau einen internen Mailserver auf TCP/25. Welche Freigabe passt?",
+          "options": [
+            {
+              "text": "DMZ-Netz → gesamtes LAN, beliebiger Dienst.",
+              "rationale": "Das erweitert den Schaden einer Übernahme.",
+              "correct": false
+            },
+            {
+              "text": "Nur Relay-IP → Mailserver-IP TCP/25; andere neue DMZ-LAN-Verbindungen bleiben gesperrt.",
+              "rationale": "Richtig: Quelle, Ziel und Dienst folgen dem Bedarf.",
+              "correct": true
+            },
+            {
+              "text": "Internet → gesamtes LAN TCP/25.",
+              "rationale": "Das umgeht den vorgesehenen Vermittlungspunkt.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "dmz-freigabe"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Buchgrundlage: EUROPA, Chunk 00352, und ITLF10–12, PDF-Seite 184. Topologie und Beispieldienste sind neu entworfen. Die zusätzlichen Grenzen des freigegebenen Backendpfads sind Teil der Falllösung."
+        }
+      ]
+    }
+  ]
+}

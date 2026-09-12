@@ -1,0 +1,328 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "zero-trust-segmentierung",
+    "slug": "zero-trust-segmentierung",
+    "title": "Zero Trust und Mikrosegmentierung am Zugriff erklären",
+    "description": "Schutzbedarf, Identität und Gerätezustand in eine minimale Zugriffsentscheidung übersetzen und Segmentierung richtig einordnen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-7",
+    "groupLabel": "Block N7 · Netzwerksicherheit",
+    "itemId": "ga2-7__4",
+    "week": "KW 42",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "zt-unterscheiden",
+      "label": "Netzsegmentierung, Mikrosegmentierung und Zero Trust nach Aufgabe und Schutzgrenze unterscheiden"
+    },
+    {
+      "id": "zt-entscheiden",
+      "label": "einen Zugriff anhand von Identität, Ressource, Gerätezustand und minimalen Rechten beurteilen"
+    }
+  ],
+  "intro": "Ein Gerät im internen VLAN kann trotzdem kompromittiert sein. Zero Trust macht die Netzposition deshalb nicht zum alleinigen Vertrauensbeweis. Entscheidend ist, welcher Akteur unter welchen Bedingungen genau welche Ressource nutzen darf.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seite 54",
+        "use": "Granulare identitätsbezogene Zugriffskontrolle und Grenzen reiner Zonen",
+        "reviewStatus": "Direkten OCR-Ausschnitt geprüft"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seite 372",
+        "use": "Unterschiedliche Schutzbedarfe von Infrastruktur und Daten",
+        "reviewStatus": "Kontext geprüft; keine vollständige Zero-Trust-Architektur daraus abgeleitet"
+      }
+    ],
+    "notes": [
+      "Seite 260 behandelt vor allem Penetrationstests; nicht als direkter Mikrosegmentierungsbeleg genutzt.",
+      "Ergänzender Primärabgleich: NIST SP 800-207, https://csrc.nist.gov/pubs/sp/800/207/final, abgerufen 2026-09-12.",
+      "Erneute Policybewertung bedeutet nicht, dass jedes einzelne Paket eine interaktive MFA-Eingabe auslöst. Umsetzung und Intervalle folgen dem Zugriffskontext.",
+      "Eigene Fälle und Diagramme; keine privaten Buchabbildungen veröffentlicht. Fach- und Verständlichkeitsfreigabe durch einen Menschen steht aus."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "zero-trust-segmentierung-modell",
+      "type": "layers",
+      "title": "Vom groben Netz zur Ressource",
+      "description": "Zone, Workloadgrenze, Identität und konkrete Handlung bilden aufeinander bezogene Kontrollfragen.",
+      "items": [
+        {
+          "label": "Zone",
+          "detail": "Welcher Schutzbedarf gilt?"
+        },
+        {
+          "label": "Workload",
+          "detail": "Welche Dienste dürfen kommunizieren?"
+        },
+        {
+          "label": "Akteur",
+          "detail": "Wer oder welches System greift zu?"
+        },
+        {
+          "label": "Ressource",
+          "detail": "Welche konkrete Handlung ist erlaubt?"
+        }
+      ]
+    },
+    {
+      "id": "zero-trust-segmentierung-ablauf",
+      "type": "flow",
+      "title": "Eine Ressource gezielt freigeben",
+      "description": "Identität und Gerätezustand führen zur minimalen Freigabe und späteren Neubewertung.",
+      "items": [
+        {
+          "label": "Identität",
+          "detail": "Benutzer und Gerät nachweisen"
+        },
+        {
+          "label": "Kontext",
+          "detail": "Rolle, Zustand und Ziel bewerten"
+        },
+        {
+          "label": "Durchsetzung",
+          "detail": "Nur benötigte Ressource freigeben"
+        },
+        {
+          "label": "Neubewertung",
+          "detail": "Auf geänderte Bedingungen reagieren"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "zero-trust-segmentierung-diagnose",
+          "question": "Ein Notebook hat eine interne IP-Adresse. Was ist dadurch für den Zugriff auf Personalakten bewiesen?",
+          "options": [
+            {
+              "text": "Nur seine Netzposition; die konkrete Berechtigung ist noch offen.",
+              "rationale": "Richtig: Position ersetzt keine Zugriffsentscheidung.",
+              "correct": true
+            },
+            {
+              "text": "Der Benutzer darf automatisch alle internen Daten lesen.",
+              "rationale": "Intern ist keine universelle Rolle.",
+              "correct": false
+            },
+            {
+              "text": "Das Gerät besitzt garantiert einen aktuellen Patchstand.",
+              "rationale": "Adressierung enthält keinen solchen Nachweis.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Leitgedanke",
+          "markdown": "Ressource und erlaubte Handlung begrenzen; Identität und Kontext prüfen; geänderte Bedingungen berücksichtigen."
+        }
+      ]
+    },
+    {
+      "title": "Zonen helfen, ersetzen aber keine Autorisierung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**Segmentierung** teilt Netze beispielsweise nach Funktion und Schutzbedarf. **Mikrosegmentierung** setzt feinere Grenzen zwischen Workloads oder einzelnen Diensten, auch für seitliche Kommunikation. Sie wirkt nur, wenn die Übergänge tatsächlich kontrolliert werden; eine andere VLAN-Nummer allein verhindert keinen erlaubten Routingpfad.\n\n**Zero Trust** richtet Zugriffsentscheidungen auf Ressourcen und konkrete Akteure aus. Eine Regel kann Benutzerrolle, Geräteidentität, verwalteten Zustand, Zielanwendung und gewünschte Handlung kombinieren. Netzposition darf Kontext liefern, ist aber keine alleinige Freigabe.\n\nBei verändertem Gerätezustand muss die Policy geeignet reagieren, etwa Rechte reduzieren oder Zugang entziehen. Das verlangt nachvollziehbare Signale, einen Durchsetzungspunkt und getesteten Entzug. Mehr Segmente ohne gepflegte Regeln schaffen vor allem Betriebsaufwand."
+        },
+        {
+          "type": "figure",
+          "diagramId": "zero-trust-segmentierung-modell",
+          "alt": "Zone, Workloadgrenze, Identität und konkrete Handlung bilden aufeinander bezogene Kontrollfragen.",
+          "caption": "Vom groben Netz zur Ressource – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Eine Sachbearbeiterin benötigt Lesezugriff auf ein Fachportal. Ihr verwaltetes Notebook ist aktuell. Die Policy erlaubt dieser Rolle genau die benötigte Portalansicht, nicht RDP zu allen Servern. Ein interner Standort ist dafür kein Ersatznachweis.\n\nWird das Gerät als kompromittiert gemeldet, entzieht oder begrenzt die Lösung den Zugriff entsprechend der Richtlinie. Für den Betrieb wird getestet, ob bestehende Sitzungen beendet werden und wie eine spätere kontrollierte Wiederzulassung erfolgt. Separat beschränkt Mikrosegmentierung die Kommunikation des Portalservers auf sein benötigtes Backend."
+        },
+        {
+          "type": "figure",
+          "diagramId": "zero-trust-segmentierung-ablauf",
+          "alt": "Identität und Gerätezustand führen zur minimalen Freigabe und späteren Neubewertung.",
+          "caption": "Eine Ressource gezielt freigeben – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Selbst entscheiden",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "zero-trust-segmentierung-uebung",
+          "question": "Eine Firma ergänzt 40 VLANs, erlaubt zwischen ihnen aber weiterhin jeden Verkehr. Welches Ziel ist dadurch noch nicht erreicht?",
+          "options": [
+            {
+              "text": "Eine logische Einteilung des Netzes.",
+              "rationale": "Die VLANs können eine solche Einteilung bilden.",
+              "correct": false
+            },
+            {
+              "text": "Wirksame Begrenzung seitlicher Kommunikation.",
+              "rationale": "Richtig: Grenzen benötigen durchgesetzte minimale Regeln.",
+              "correct": true
+            },
+            {
+              "text": "Eine neue Zuordnung von Broadcastdomänen.",
+              "rationale": "Das kann VLAN-Konfiguration leisten; die Sicherheitsfreigaben bleiben trotzdem breit.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "sequence",
+          "id": "zero-trust-segmentierung-reihenfolge",
+          "title": "Eine Ressourcenpolicy entwerfen",
+          "prompt": "Ordne die Schritte eines kleinen, überprüfbaren Zugriffsmodells.",
+          "steps": [
+            {
+              "id": "s2",
+              "label": "Minimale Autorisierung am Kontrollpunkt durchsetzen"
+            },
+            {
+              "id": "s0",
+              "label": "Ressource und benötigte Handlung bestimmen"
+            },
+            {
+              "id": "s3",
+              "label": "Zugriff sowie Entzug bei geändertem Kontext testen"
+            },
+            {
+              "id": "s1",
+              "label": "Akteur und zuverlässige Kontextsignale definieren"
+            }
+          ],
+          "expected": [
+            "s0",
+            "s1",
+            "s2",
+            "s3"
+          ],
+          "correctFeedback": "Richtig: Auch der Entzug gehört zum Nachweis, nicht nur der erfolgreiche Login.",
+          "wrongFeedback": "Gehe vom belegten Bedarf über die Entscheidung zum Nachweis. Prüfe die erste abweichende Position."
+        }
+      ]
+    },
+    {
+      "title": "Aus dem Gedächtnis erklären",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "zero-trust-segmentierung-karte-0",
+              "label": "Abruf 1",
+              "front": "Ist ein VLAN Zero Trust?",
+              "back": "Nein. Es kann Teil einer Segmentierung sein; Ressourcenautorisierung braucht weitere Kontrollen."
+            },
+            {
+              "id": "zero-trust-segmentierung-karte-1",
+              "label": "Abruf 2",
+              "front": "Was begrenzt Mikrosegmentierung?",
+              "back": "Feingranulare Kommunikation zwischen Workloads oder Diensten."
+            },
+            {
+              "id": "zero-trust-segmentierung-karte-2",
+              "label": "Abruf 3",
+              "front": "Was ist beim Entzug zu testen?",
+              "back": "Ob neue und bestehende Zugriffe entsprechend der Richtlinie beendet oder eingeschränkt werden."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "zero-trust-segmentierung-abruf",
+          "title": "Deine Begründung",
+          "prompt": "Entwirf eine Portalberechtigung für eine Rolle. Erkläre den Fall eines kompromittierten Geräts und die zusätzliche Rolle der Mikrosegmentierung.",
+          "label": "Eigene Erklärung",
+          "placeholder": "Meine Entscheidung und ihre Grenze …",
+          "minLength": 100,
+          "model": "Die Rolle erhält nur die benötigte Portalhandlung mit passenden Geräte- und Identitätsnachweisen. Eine Kompromittierung ändert den Kontext und muss wirksamen Entzug auslösen. Mikrosegmentierung begrenzt ergänzend die Verbindungen zwischen Portal, Backend und anderen Workloads. Der interne Standort ersetzt keine dieser Prüfungen."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "zero-trust-segmentierung-transfer-a",
+          "question": "Welche Aussage grenzt die Begriffe korrekt ab?",
+          "options": [
+            {
+              "text": "Ein VLAN authentisiert automatisch menschliche Nutzer.",
+              "rationale": "Eine Netzzuordnung ist kein Identitätsnachweis.",
+              "correct": false
+            },
+            {
+              "text": "Zero Trust verlangt zwingend einen Cloudanbieter.",
+              "rationale": "Die Architekturprinzipien schreiben keinen einzelnen Betriebsort vor.",
+              "correct": false
+            },
+            {
+              "text": "Mikrosegmentierung begrenzt feine Kommunikationsbeziehungen; Zero Trust umfasst ressourcenbezogene Zugriffsentscheidungen mit Identität und Kontext.",
+              "rationale": "Richtig: Die Konzepte ergänzen sich.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "zt-unterscheiden"
+        },
+        {
+          "type": "quiz",
+          "id": "zero-trust-segmentierung-transfer-b",
+          "question": "Ein interner Client hat gültige Zugangsdaten, ist aber nachweislich kompromittiert. Was passt zur beschriebenen Policy?",
+          "options": [
+            {
+              "text": "Alle Rechte behalten, weil die Adresse intern ist.",
+              "rationale": "Damit wäre Netzposition wieder pauschaler Vertrauensbeweis.",
+              "correct": false
+            },
+            {
+              "text": "Nur eine andere VLAN-Nummer vergeben und alle Zugriffe unverändert lassen.",
+              "rationale": "Ohne wirksame Policy ist die Berechtigungsgrenze unverändert.",
+              "correct": false
+            },
+            {
+              "text": "Den veränderten Kontext berücksichtigen und Ressourcenzugriff nach Richtlinie entziehen oder begrenzen.",
+              "rationale": "Richtig: Gültige Identität allein hebt Gerätesignale nicht auf.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "zt-entscheiden"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Buchgrundlage: ITLF10–12, PDF-Seite 54; Schutzbedarfskontext auf Seite 372. Ergänzend: [NIST SP 800-207](https://csrc.nist.gov/pubs/sp/800/207/final). Die Beispiele sind eigenständig; reiner VLAN-Aufbau wird nicht mit Zero Trust gleichgesetzt."
+        }
+      ]
+    }
+  ]
+}

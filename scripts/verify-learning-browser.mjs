@@ -248,6 +248,36 @@ try {
   assert(!await page.locator('#mark-done').isDisabled(), 'Both VoIP objectives unlock completion');
   assert(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'VoIP bandwidth topic has no horizontal page overflow');
 
+  await page.goto(`${base}/lernen/default-deny-regelreihenfolge/`);
+  const ruleSequence = page.locator('[data-sequence="default-deny-regelreihenfolge-reihenfolge"]');
+  await ruleSequence.locator('[data-sequence-check]').click();
+  assert((await ruleSequence.locator('[data-sequence-feedback]').textContent()).includes('Position'), 'N7 sequence starts unsolved and explains the first misplaced step');
+  await ruleSequence.locator('[data-step="s0"] [data-move="up"]').click();
+  await ruleSequence.locator('[data-step="s1"] [data-move="up"]').click();
+  await ruleSequence.locator('[data-step="s1"] [data-move="up"]').click();
+  await ruleSequence.locator('[data-sequence-check]').click();
+  assert((await ruleSequence.locator('[data-sequence-feedback]').textContent()).includes('Richtig'), 'N7 sequence can be solved with labelled move controls');
+  await page.locator('[data-quiz="default-deny-regelreihenfolge-transfer-a"] [data-answer="0"]').click();
+  const ruleNumber = page.locator('[data-numeric-practice="default-deny-regelreihenfolge-transfer-b"]');
+  await ruleNumber.locator('[data-numeric-input]').fill('2');
+  await ruleNumber.locator('[data-numeric-check]').click();
+  assert(await page.locator('#mark-done').isDisabled(), 'Wrong first-match result keeps N7 completion gated');
+  await ruleNumber.locator('[data-numeric-input]').fill('3');
+  await ruleNumber.locator('[data-numeric-check]').click();
+  assert(!await page.locator('#mark-done').isDisabled(), 'Correct first-match reasoning and number unlock N7 completion');
+  await page.reload();
+  assert(!await page.locator('#mark-done').isDisabled(), 'N7 objective results survive reload');
+
+  await page.goto(`${base}/lernen/ids-ips/`);
+  const precision = page.locator('[data-numeric-practice="ids-ips-transfer-b"]');
+  await precision.locator('[data-numeric-input]').fill('75');
+  await precision.locator('[data-numeric-check]').click();
+  assert(await precision.locator('[data-numeric-feedback]').getAttribute('data-result') === 'wrong', 'IDS precision rejects the false-alarm share');
+  await precision.locator('[data-numeric-input]').fill('25');
+  await precision.locator('[data-numeric-check]').click();
+  assert(await precision.locator('[data-numeric-feedback]').getAttribute('data-result') === 'correct', 'IDS precision accepts confirmed alerts divided by all alerts');
+  assert(await page.locator('.math-display > math').count() === 1, 'IDS precision is rendered as semantic visual mathematics');
+
   await page.goto(`${base}/lernen/ethernet-standards/`);
   const domainAccentMatches = await page.evaluate(() => {
     const probe = document.createElement('span');
@@ -394,6 +424,11 @@ try {
   await mobilePage.goto(`${base}/lernen/netzwerktopologien/`);
   assert(await mobilePage.locator('.learning-diagram').count() === 2, 'Topology diagrams render on mobile');
   assert(await mobilePage.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'Topology learning page has no horizontal page overflow at 390px');
+  for (const slug of ['firewall-typen', 'firewall-regelwerk', 'default-deny-regelreihenfolge', 'dmz-architektur', 'zero-trust-segmentierung', 'ids-ips']) {
+    await mobilePage.goto(`${base}/lernen/${slug}/`);
+    assert(await mobilePage.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `${slug}: no mobile page overflow`);
+    assert(await mobilePage.locator('.learning-diagram').count() === 2, `${slug}: both diagrams render on mobile`);
+  }
   await mobile.close();
 
   console.log('PASS learning route, persistence, quiz retry, shared progress and mobile navigation');

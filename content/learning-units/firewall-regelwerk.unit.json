@@ -1,0 +1,328 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "firewall-regelwerk",
+    "slug": "firewall-regelwerk",
+    "title": "Aus einer Kommunikationsmatrix Firewallregeln ableiten",
+    "description": "Quelle, Ziel, Protokoll, Port und Aktion aus einem Szenario bestimmen und positive sowie negative Testfälle planen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-7",
+    "groupLabel": "Block N7 · Netzwerksicherheit",
+    "itemId": "ga2-7__1",
+    "week": "KW 42",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "sources": [
+      "itlf10-12-2023",
+      "ihk-bonn"
+    ],
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "regel-ableiten",
+      "label": "einen benötigten Kommunikationsfluss mit Initiator, Ziel, Protokoll, Ports und Aktion vollständig beschreiben"
+    },
+    {
+      "id": "regel-pruefen",
+      "label": "überbreite Freigaben durch konkrete Negativtests und dokumentierte Verantwortlichkeit erkennen"
+    }
+  ],
+  "intro": "„Der Webserver muss erreichbar sein“ ist noch keine Firewallregel. Erst Initiator, Ziel, Dienst und Durchsetzungsort machen daraus eine prüfbare Freigabe.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seiten 188 und 236",
+        "use": "Regelaktionen, Logging und ICMP ohne Transportports",
+        "reviewStatus": "Exportierte OCR-Ausschnitte geprüft"
+      },
+      {
+        "sourceId": "ihk-bonn",
+        "sourceLocator": "Chunk 00218",
+        "use": "Regeltabelle und Rückweg bei reinem Paketfilter",
+        "reviewStatus": "Aufgabenstruktur genutzt, eigenes Beispiel erstellt"
+      }
+    ],
+    "notes": [
+      "Beispiel verwendet eine Stateful Firewall und bereits ausgewertete Zieladressen am Filterpunkt. NAT-Reihenfolge und Interface-Richtung sind vor Umsetzung plattformspezifisch zu prüfen.",
+      "ICMP hat Typ/Code statt TCP-/UDP-Ports. Tests verwenden ausschließlich Dokumentationsadressen und private Beispielnetze.",
+      "Eigene Fälle und Diagramme; keine privaten Buchabbildungen veröffentlicht. Fach- und Verständlichkeitsfreigabe durch einen Menschen steht aus."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "firewall-regelwerk-modell",
+      "type": "layers",
+      "title": "Vom Bedarf zu den Regelfeldern",
+      "description": "Bedarf, Endpunkte, Dienst und Nachweis bilden die vier Teile einer dokumentierten Freigabe.",
+      "items": [
+        {
+          "label": "Zweck",
+          "detail": "Warum wird die Verbindung benötigt?"
+        },
+        {
+          "label": "Endpunkte",
+          "detail": "Initiator und genaues Ziel"
+        },
+        {
+          "label": "Dienst",
+          "detail": "Protokoll und Serverport"
+        },
+        {
+          "label": "Nachweis",
+          "detail": "Soll erlauben / soll sperren"
+        }
+      ]
+    },
+    {
+      "id": "firewall-regelwerk-ablauf",
+      "type": "flow",
+      "title": "Regelprüfung am Paket",
+      "description": "Filterpunkt, Zustand, Kriterien und Ergebnis werden nacheinander betrachtet.",
+      "items": [
+        {
+          "label": "Filterpunkt",
+          "detail": "Welche Adressen und Richtung gelten hier?"
+        },
+        {
+          "label": "Zustand",
+          "detail": "Neue Verbindung oder gültige Antwort?"
+        },
+        {
+          "label": "Kriterien",
+          "detail": "Quelle, Ziel und Dienst vergleichen"
+        },
+        {
+          "label": "Ergebnis",
+          "detail": "Aktion und Regel-ID im Log nachweisen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "firewall-regelwerk-diagnose",
+          "question": "Ein Client baut HTTPS auf. Welcher Port ist im neuen Paket normalerweise 443?",
+          "options": [
+            {
+              "text": "Der Zielport des Servers.",
+              "rationale": "Richtig: Der Client verwendet üblicherweise einen dynamischen Quellport.",
+              "correct": true
+            },
+            {
+              "text": "Der Quellport des Clients.",
+              "rationale": "Die Dienstnummer beschreibt den Serverendpunkt.",
+              "correct": false
+            },
+            {
+              "text": "Quell- und Zielport müssen beide 443 sein.",
+              "rationale": "Das würde normale Clientverbindungen unnötig ausschließen.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Leitgedanke",
+          "markdown": "Initiator → konkretes Ziel → benötigter Dienst → minimale Freigabe → Gegenprobe."
+        }
+      ]
+    },
+    {
+      "title": "Eine Regel als überprüfbaren Satz formulieren",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Erfasse zunächst die **Kommunikationsmatrix**: Wer beginnt welchen Dienst zu welchem Ziel, warum und wie lange? Übertrage dann Quelle, Ziel, Protokoll, Quell-/Zielport und Aktion auf den zuständigen Filterpunkt. Bei TCP/UDP ist der Clientquellport meist dynamisch. ICMP benötigt stattdessen Typ und gegebenenfalls Code.\n\nUnterscheide **Neue Verbindung** von **Rückverkehr**. Eine Stateful Firewall kann Antworten über vorhandenen Zustand erlauben. Ein stateless Filter benötigt eine ausdrücklich passende Rückwegregel. NAT und Filterung sind getrennte Funktionen; dokumentiere die am jeweiligen Prüfpunkt sichtbaren Adressen.\n\nJede Ausnahme erhält Zweck, Verantwortlichen und Überprüfungstermin. Erfolg allein genügt nicht: Prüfe auch eine falsche Quelle, einen falschen Zielport und einen unerwünschten Zugriff aus der Gegenrichtung."
+        },
+        {
+          "type": "figure",
+          "diagramId": "firewall-regelwerk-modell",
+          "alt": "Bedarf, Endpunkte, Dienst und Nachweis bilden die vier Teile einer dokumentierten Freigabe.",
+          "caption": "Vom Bedarf zu den Regelfeldern – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Portal in der DMZ hat `192.0.2.40`. Das Beispiel betrachtet neue Verbindungen nach einer etwaigen Adressübersetzung. HTTPS ist öffentlich, SSH nur vom Wartungshost `198.51.100.18` erlaubt. Vorhandener gültiger Rückverkehr wird zustandsbezogen behandelt.\n\n| Quelle | Ziel | Protokoll | Quellport | Zielport | Aktion |\n| --- | --- | --- | --- | --- | --- |\n| beliebig | 192.0.2.40 | TCP | dynamisch/beliebig | 443 | erlauben |\n| 198.51.100.18 | 192.0.2.40 | TCP | dynamisch/beliebig | 22 | erlauben |\n| übriger neuer Verkehr | beliebig | beliebig | – | – | verwerfen |\n\nDie zweite Zeile erlaubt einen Host und einen Dienst. Sie erlaubt weder dessen Zugriff auf alle DMZ-Systeme noch beliebigen SSH-Verkehr. Gegenproben: SSH von `198.51.100.19` muss scheitern; TCP/80 zum Portal ebenfalls. ICMP ist durch TCP/443 nicht mitfreigegeben."
+        },
+        {
+          "type": "figure",
+          "diagramId": "firewall-regelwerk-ablauf",
+          "alt": "Filterpunkt, Zustand, Kriterien und Ergebnis werden nacheinander betrachtet.",
+          "caption": "Regelprüfung am Paket – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Selbst entscheiden",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "firewall-regelwerk-uebung",
+          "question": "Eine Kollegin schlägt für die Wartung Quelle 198.51.100.0/24, Ziel beliebig und Dienst beliebig vor. Welche Korrektur folgt aus dem Beispiel?",
+          "options": [
+            {
+              "text": "Nur einen Kommentar ergänzen und die breite Regel behalten.",
+              "rationale": "Dokumentation verkleinert die technische Freigabe nicht.",
+              "correct": false
+            },
+            {
+              "text": "Quelle auf .18, Ziel auf das Portal und Dienst auf TCP/22 begrenzen.",
+              "rationale": "Richtig: Genau diese Kommunikation ist beauftragt.",
+              "correct": true
+            },
+            {
+              "text": "Quellport 22 setzen, Ziel beliebig lassen.",
+              "rationale": "Der SSH-Dienst liegt am Zielport; die Überbreite bleibt.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "sequence",
+          "id": "firewall-regelwerk-reihenfolge",
+          "title": "Von der Anfrage zur Abnahme",
+          "prompt": "Bringe die Schritte in die Reihenfolge eines kontrollierten Changes.",
+          "steps": [
+            {
+              "id": "s2",
+              "label": "Eng begrenzte Regel mit Rückfallplan einrichten"
+            },
+            {
+              "id": "s0",
+              "label": "Initiator, Ziel und geschäftlichen Zweck klären"
+            },
+            {
+              "id": "s3",
+              "label": "Erlaubte und verbotene Testflüsse protokollieren"
+            },
+            {
+              "id": "s1",
+              "label": "Regelfelder und Filterpunkt festlegen"
+            }
+          ],
+          "expected": [
+            "s0",
+            "s1",
+            "s2",
+            "s3"
+          ],
+          "correctFeedback": "Richtig: Die technische Freigabe folgt dem Bedarf und erhält eine Gegenprobe.",
+          "wrongFeedback": "Gehe vom belegten Bedarf über die Entscheidung zum Nachweis. Prüfe die erste abweichende Position."
+        }
+      ]
+    },
+    {
+      "title": "Aus dem Gedächtnis erklären",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "firewall-regelwerk-karte-0",
+              "label": "Abruf 1",
+              "front": "Was bezeichnet der Zielport?",
+              "back": "Den angesprochenen TCP-/UDP-Dienst am Empfänger."
+            },
+            {
+              "id": "firewall-regelwerk-karte-1",
+              "label": "Abruf 2",
+              "front": "Was prüfst du für ICMP?",
+              "back": "Typ und gegebenenfalls Code, keine TCP-/UDP-Ports."
+            },
+            {
+              "id": "firewall-regelwerk-karte-2",
+              "label": "Abruf 3",
+              "front": "Was zeigt ein Negativtest?",
+              "back": "Ob eine ähnliche, aber nicht erlaubte Kommunikation tatsächlich gesperrt wird."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "firewall-regelwerk-abruf",
+          "title": "Deine Begründung",
+          "prompt": "Formuliere eine minimale SSH-Regel und drei Gegenproben. Erläutere den Rückweg für eine Stateful Firewall.",
+          "label": "Eigene Erklärung",
+          "placeholder": "Meine Entscheidung und ihre Grenze …",
+          "minLength": 100,
+          "model": "Nur der freigegebene Wartungshost darf zum konkreten Server TCP/22 beginnen. Der Clientquellport bleibt dynamisch. Andere Quellen, andere Ziele und andere Dienste müssen gesperrt bleiben. Gültiger Rückverkehr wird über Zustand behandelt; NAT- und Filterpunkt werden dokumentiert."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "firewall-regelwerk-transfer-a",
+          "question": "Ein Monitoringhost 10.12.0.8 soll HTTPS an 10.20.0.9 abrufen. Welche neue Verbindung passt?",
+          "options": [
+            {
+              "text": "Quelle 10.20.0.9, Ziel 10.12.0.8, TCP, Zielport 443, erlauben.",
+              "rationale": "Das vertauscht den Initiator.",
+              "correct": false
+            },
+            {
+              "text": "Quelle 10.12.0.0/16, Ziel beliebig, beliebiges IP-Protokoll, erlauben.",
+              "rationale": "Das überschreitet den beschriebenen Bedarf erheblich.",
+              "correct": false
+            },
+            {
+              "text": "Quelle 10.12.0.8, Ziel 10.20.0.9, TCP, Zielport 443, erlauben.",
+              "rationale": "Richtig: Initiator und Serverdienst sind korrekt zugeordnet.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "regel-ableiten"
+        },
+        {
+          "type": "quiz",
+          "id": "firewall-regelwerk-transfer-b",
+          "question": "Der freigegebene Zugriff funktioniert. Welcher zusätzliche Test prüft eine wichtige Berechtigungsgrenze?",
+          "options": [
+            {
+              "text": "Den erlaubten Zugriff nur zehnmal wiederholen.",
+              "rationale": "Das prüft keine unerlaubte Quelle.",
+              "correct": false
+            },
+            {
+              "text": "Den Zielserver neu benennen.",
+              "rationale": "Ein Name belegt keine Filterwirkung.",
+              "correct": false
+            },
+            {
+              "text": "Denselben Dienst von einem nicht freigegebenen Host anfragen; er muss gesperrt werden.",
+              "rationale": "Richtig: Das prüft die Quellbegrenzung.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "regel-pruefen"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Buchgrundlage: ITLF10–12, PDF-Seiten 188/236; IHK Bonn, Chunk 00218. Eigene Kommunikationsmatrix und Dokumentationsadressen. Die Prüfung setzt bekannte NAT-/Filterreihenfolge und ein explizit gewähltes Zustandsmodell voraus."
+        }
+      ]
+    }
+  ]
+}
