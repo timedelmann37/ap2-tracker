@@ -24,10 +24,17 @@ try {
       createClient() {
         return {
           auth: {
-            async getSession() { return { data: { session: null } }; },
+            async getSession() { return { data: { session: { user: { id: 'learning-test-user', email: 'learning@example.invalid' } } } }; },
             onAuthStateChange() { return { data: { subscription: { unsubscribe() {} } } }; }
           },
-          from() { return {}; }
+          from() {
+            return {
+              select() { return this; },
+              eq() { return this; },
+              async maybeSingle() { return { data: null, error: null }; },
+              async upsert() { return { error: null }; }
+            };
+          }
         };
       }
     };`
@@ -65,6 +72,7 @@ try {
   await learningLink.waitFor({ state: 'visible' });
   await learningLink.click();
   await page.waitForURL('**/lernen/raid/');
+  await page.waitForFunction(() => document.getElementById('learning-save')?.textContent === 'synchronisiert');
 
   const done = page.locator('#mark-done');
   const repeat = page.locator('#mark-rep');

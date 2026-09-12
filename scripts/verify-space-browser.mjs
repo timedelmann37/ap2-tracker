@@ -5,6 +5,10 @@ const browser = await chromium.launch();
 try {
   const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
   const page = await context.newPage();
+  await page.route(/supabase-js/, route => route.fulfill({
+    contentType: 'text/javascript',
+    body: `window.supabase={createClient:()=>({auth:{getSession:async()=>({data:{session:{user:{id:'space-test-user',email:'space@example.invalid'}}}}),onAuthStateChange:()=>{}},from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:null,error:null})})}),upsert:async()=>({error:null})})})};`
+  }));
   await page.goto(base + '/netzwerke/');
   const atmosphere = page.locator('.space-atmosphere');
   const ambientState = () => atmosphere.locator('> div').evaluateAll(layers => layers.map(el => ({

@@ -31,6 +31,19 @@ die anfängliche Beschränkung auf eine kurze Eingangsanimation.
   läuft innerhalb der erledigten Breite. Änderungen gleiten in 850ms vor/zurück.
   Bei 0% ist der Balken leer. Abhaken erzeugt einen kurzen Bestätigungsimpuls.
 
+## Revision 3 — ruhige Themengruppen und klarer Hellmodus
+
+Die Nutzerkorrektur vom 12. September ersetzt für die Bereichsseiten die
+volle Breite geöffneter Themengruppen. Karten bleiben in ihrer Grid-Spalte und
+animieren ihre gemessene Höhe beim Öffnen und Schließen über 340ms. Dadurch
+bleiben Nachbarkarten horizontal stabil und folgende Reihen wandern mit dem
+wachsenden Inhalt statt sprunghaft.
+
+Im Hellmodus werden die Glasflächen deckender, Kanten und Schatten klarer und
+Sekundärtexte sowie Bereichsfarben dunkler. Die Aurora bleibt sichtbar, wird
+aber schmaler und weniger flächig, damit sie den Seitenkontrast nicht auswäscht.
+Reduced Motion öffnet Themengruppen weiterhin ohne Höhenanimation.
+
 Zusätzliche Strukturreferenz: Refero Doppler Projektübersicht
 `e64eb4ca-90b8-4d33-ba62-1a499e5f2017` (getrennte Bereichspanels), übertragen
 auf die vorhandenen Lernaufgaben. Marketing-Stil und Produkthierarchie behalten

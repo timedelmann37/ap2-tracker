@@ -7,6 +7,20 @@ direkt auf der Seite sichtbar - ein Klick auf die Versionsnummer im Hub (in
 der Fußzeile) zeigt dieselbe Liste als Änderungsprotokoll. Gepflegt wird das
 Changelog ausschließlich im Hub, nicht mehr in den einzelnen Bereichen.
 
+## [3.10.2] - 2026-09-12
+
+### Geändert
+
+- Themengruppen öffnen und schließen jetzt mit einer echten Höhenanimation.
+  Die Karte bleibt in ihrer Spalte, sodass Nachbarkarten nicht mehr horizontal
+  springen.
+- Der Hellmodus hat deckendere Flächen, klarere Kanten und Schatten, dunklere
+  Sekundärtexte sowie eine schmalere Aurora mit besser sichtbaren Farben.
+
+### Barrierefreiheit
+
+- Bei reduzierter Bewegung öffnen und schließen Themengruppen weiterhin sofort.
+
 ## [3.10.1] - 2026-09-12
 
 ### Geändert

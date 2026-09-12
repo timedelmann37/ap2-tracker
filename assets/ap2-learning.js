@@ -55,7 +55,6 @@
   function setProgressEnabled(enabled) {
     cloudReady = enabled;
     renderMastery();
-    document.getElementById('mark-done')?.toggleAttribute('disabled', !enabled);
     document.getElementById('mark-rep')?.toggleAttribute('disabled', !enabled);
     if (saveNote && !enabled) {
       saveNote.innerHTML = '<a href="/?konto=anmelden">Anmelden, um Fortschritt zu speichern</a>';

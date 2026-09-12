@@ -55,8 +55,8 @@ Wochenanzeige und zu Badges, Kreise zum Countdown und zur Bewegungssteuerung.
 Der Hub führt mit einer großen linken Textspalte und dem echten Countdown;
 rechts stehen ein führender Lernbereich und zwei verbundene Nebenflächen.
 Unter 760px stehen diese untereinander. Bereiche zeigen Titel und Fortschritt
-nebeneinander und Themengruppen in zwei Spalten; geöffnete Gruppen nutzen die
-volle Breite. Übersicht zeigt getrennte versetzte Glasflächen. Lernpfad und generierte Lernseiten
+nebeneinander und Themengruppen in zwei Spalten. Eine geöffnete Gruppe bleibt
+in ihrer Spalte, damit Nachbarkarten horizontal stabil bleiben. Übersicht zeigt getrennte versetzte Glasflächen. Lernpfad und generierte Lernseiten
 nutzen die gemeinsame CSS-Schicht. Simulation und älterer Einzeltracker
 übernehmen die Tokens und Theme-Steuerung bei eigenen Bedienlayouts.
 
@@ -71,7 +71,9 @@ Der zuvor verwendete geschlossene Lichtring wurde auf Nutzerwunsch entfernt,
 weil er wie ein unplatziertes Einzelobjekt wirkte. Neue Hintergrundakzente
 bleiben randständig und deutlich schwächer als Fortschritt und Kartenkanten.
 Der Hintergrund liegt viewport-fixiert hinter Glasflächen mit 30–48% Tönung
-und 24px Backdrop-Blur. Im Hellmodus sind Polarlicht und Lichtbögen schwächer.
+und 24px Backdrop-Blur. Im Hellmodus sind Polarlicht und Lichtbögen schmaler
+und schwächer; deckendere weiße Flächen, klarere violettgraue Kanten und
+dunklere Sekundärtexte halten die Hierarchie sichtbar.
 Die gleichen zwei Ebenen gelten auf allen Seiten,
 einschließlich Lernseiten, Simulation und Einzeltracker. Countdown-Kontur,
 Glasspiegelung und kurze Hover-Bewegungen ergänzen den Hintergrund. Inhalte bleiben
@@ -82,6 +84,9 @@ Fortschrittsbalken tragen eine 2,8s Lichtspur innerhalb der wirklich erledigten
 Breite. Eine helle Kante steht am tatsächlichen Prozentwert. Änderungen gleiten
 in 850ms vor oder zurück; Zuwachs leuchtet kurz auf. 0% bleibt leer. Reduced
 Motion entfernt Sweep, Atmosphäre, Impuls und Breitenübergang vollständig.
+Themengruppen animieren beim Öffnen und Schließen ihre gemessene Höhe über
+340ms. Nachbarkarten bewegen sich dadurch nur vertikal mit dem wachsenden Inhalt;
+Reduced Motion schaltet diesen Übergang ab.
 
 Akzente haben auf Nutzerwunsch Laser-Charakter: schmaler weißer Kern, gesättigte
 violette/cyanfarbene Kante und Lichtschein außerhalb der Kontur. Das gilt für
@@ -92,7 +97,8 @@ kein Licht. Lesetext bleibt ohne Leuchteffekt, der Hellmodus reduziert den Schei
 Ohne gespeicherte Wahl gilt Dark. `ap2-theme-v1` bleibt erhalten; explizites
 Light/Dark hat Vorrang. Ein alter expliziter Systemwert folgt weiter dem OS.
 Der Toggle invertiert unmittelbar, auch bei blockiertem Storage. Der Hellmodus
-verwendet kühle Flächen `#f7f5fb` / Weiß und dunkle violette Tinte.
+verwendet kühle Flächen `#e9edf5` / `#f2f4f8`, deckendes Weiß und dunkle
+violette Tinte.
 
 ## Implementierung und Prüfung
 
