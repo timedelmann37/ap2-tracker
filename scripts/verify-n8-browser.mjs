@@ -10,7 +10,13 @@ const topics = [
   ['usv-technikraum', 2, [['transfer-b', 260, 60]]],
   ['sla-netzdienste', 0, [['transfer-b', 60, 1]]],
   ['snmp-netflow-syslog', 1, []],
-  ['netzwerk-messwerte', 2, [['transfer-b', 20, 2.5], ['transfer-verlust', 1.5, 12]]]
+  ['netzwerk-messwerte', 2, [['transfer-b', 20, 2.5], ['transfer-verlust', 1.5, 12]]],
+  ['monitoring-trendanalyse', 1, [['transfer-b', 2, 5]]],
+  ['systematische-netzfehlersuche', 2, []],
+  ['netzwerk-diagnosewerkzeuge', 0, []],
+  ['wireshark', 1, []],
+  ['span-mirror-port', 2, [['transfer-b', 300, 0]]],
+  ['netzdokumentation', 0, []]
 ];
 function assert(value, message) { if (!value) throw new Error(message); }
 const browser = await chromium.launch({ headless: true });

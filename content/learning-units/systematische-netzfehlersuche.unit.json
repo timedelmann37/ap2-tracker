@@ -1,0 +1,320 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "systematische-netzfehlersuche",
+    "slug": "systematische-netzfehlersuche",
+    "title": "Netzfehler mit prüfbaren Hypothesen eingrenzen",
+    "description": "Schichtenbezogene Tests auswählen und Beobachtung, Vermutung und bestätigte Ursache sauber trennen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__9",
+    "week": "KW 44",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "ziel-0",
+      "label": "aus Symptomen eine trennscharfe Testhypothese ableiten"
+    },
+    {
+      "id": "ziel-1",
+      "label": "eine Änderung mit Rückfallplan und dokumentierter Erfolgskontrolle beurteilen"
+    }
+  ],
+  "intro": "Ein Client erreicht das Portal nicht. Statt mehrere Einstellungen auf Verdacht zu ändern, suchst du den Test, der zwei mögliche Ursachen voneinander trennt.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seiten 345 und 366",
+        "use": "Geplante Netzwerkprüfungen, Sollverhalten und Dokumentation; eigene systematische Diagnoseschleife",
+        "reviewStatus": "Quellenausschnitte geprüft; eigener Lernfall, menschliche Freigabe offen"
+      }
+    ],
+    "notes": [
+      "Eigene Texte, Aufgaben und Grafiken. Originalabbildungen bleiben privat.",
+      "Verlinkte Primärdokumentationen am 2026-09-13 geprüft; menschliche Fach- und Verständlichkeitsfreigabe steht aus."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "modell",
+      "type": "layers",
+      "title": "Vier Ebenen der Aussage",
+      "description": "Befund: Portalname löst auf A nicht auf; Hypothese: Resolverauswahl auf A ist falsch; Test: Gezielt vorgesehenen Resolver fragen; Nachweis: Ursprung korrigieren und Dienst testen.",
+      "items": [
+        {
+          "label": "Befund",
+          "detail": "Portalname löst auf A nicht auf"
+        },
+        {
+          "label": "Hypothese",
+          "detail": "Resolverauswahl auf A ist falsch"
+        },
+        {
+          "label": "Test",
+          "detail": "Gezielt vorgesehenen Resolver fragen"
+        },
+        {
+          "label": "Nachweis",
+          "detail": "Ursprung korrigieren und Dienst testen"
+        }
+      ]
+    },
+    {
+      "id": "ablauf",
+      "type": "flow",
+      "title": "Diagnose als überprüfbare Schleife",
+      "description": "Eingrenzen: Umfang und Kontrollfall; Vorhersage: Hypothese und erwarteter Befund; Test: Eine Einflussgröße untersuchen; Abschluss: Validieren und dokumentieren.",
+      "items": [
+        {
+          "label": "Eingrenzen",
+          "detail": "Umfang und Kontrollfall"
+        },
+        {
+          "label": "Vorhersage",
+          "detail": "Hypothese und erwarteter Befund"
+        },
+        {
+          "label": "Test",
+          "detail": "Eine Einflussgröße untersuchen"
+        },
+        {
+          "label": "Abschluss",
+          "detail": "Validieren und dokumentieren"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "systematische-netzfehlersuche-diagnose",
+          "question": "Nach einem Neustart läuft der Dienst. Ist die Ursache bewiesen?",
+          "options": [
+            {
+              "text": "Nein, der Neustart hat den Zustand verändert, nicht die Ursache erklärt.",
+              "rationale": "Ein Workaround kann Symptome beseitigen, ohne den Auslöser zu erklären.",
+              "correct": true
+            },
+            {
+              "text": "Ja, jeder erfolgreiche Neustart beweist einen Hardwaredefekt.",
+              "rationale": "Viele Software- und Zustandsprobleme reagieren ebenfalls darauf.",
+              "correct": false
+            },
+            {
+              "text": "Ja, weitere Befunde werden nicht benötigt.",
+              "rationale": "Ohne Befunde ist Wiederholung schwer zu verhindern.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Leitgedanke",
+          "markdown": "Ein Client erreicht das Portal nicht. Statt mehrere Einstellungen auf Verdacht zu ändern, suchst du den Test, der zwei mögliche Ursachen voneinander trennt."
+        }
+      ]
+    },
+    {
+      "title": "Von der Beobachtung zur widerlegbaren Hypothese",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Zuerst klärst du **Umfang und Zeitpunkt**: ein Client oder alle, ein Dienst oder mehrere, seit wann, nach welcher Änderung? Notiere die genaue Fehlermeldung und vergleiche mit einem funktionierenden Kontrollfall. Sichere flüchtige Befunde vor einem Neustart.\n\n**Bottom-up** bedeutet: Signal und Link prüfen, dann VLAN und lokale Nachbarschaft, IP-Konfiguration und Route, Transportverbindung und schließlich Anwendung. Ein leuchtender Link beweist kein korrektes VLAN; ein erfolgreicher Ping beweist keine funktionierende Anmeldung. Mit guten Vorbefunden darfst du gezielt bei einer höheren Schicht beginnen und danach nach unten eingrenzen.\n\nEine **Hypothese** nennt eine mögliche Ursache und eine erwartete Beobachtung. Der Test muss sie von Alternativen unterscheiden. Ändere möglichst nur eine relevante Größe. Ein negatives Resultat ist ebenfalls nützlich: Es verwirft oder schwächt eine Vermutung. Ein Timeout beweist allein weder Kabelbruch noch Firewallregel."
+        },
+        {
+          "type": "figure",
+          "diagramId": "modell",
+          "alt": "Befund: Portalname löst auf A nicht auf; Hypothese: Resolverauswahl auf A ist falsch; Test: Gezielt vorgesehenen Resolver fragen; Nachweis: Ursprung korrigieren und Dienst testen.",
+          "caption": "Vier Ebenen der Aussage – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Nur Client A meldet beim Portal einen Namensfehler; Client B funktioniert. Bei A sind Link, passende IP-Konfiguration und Erreichbarkeit des vorgesehenen Gateways bestätigt. Hypothese: A verwendet einen unpassenden DNS-Server.\n\nA fragt laut Konfiguration Resolver 10.44.0.99; B verwendet 10.44.0.53. Eine gezielte Anfrage des Portalnamens an 10.44.0.53 liefert auch von A die erwartete Antwort. Das grenzt die Suche auf Resolverauswahl und den üblichen Auflösungspfad ein. Es beweist noch nicht, ob DHCP, eine manuelle Einstellung oder ein VPN die falsche Auswahl verursacht hat.\n\nNach Prüfung des Konfigurationsursprungs wird genau dieser Fehler mit Freigabe korrigiert. Der Rückfallplan stellt den vorherigen Zustand wieder her. Erfolgskontrolle: neue DNS-Anfrage und vollständiger Portalaufruf mit Anmeldung; danach Kontrollclient und betroffene Dienste prüfen. Ein IP-direkter HTTPS-Aufruf ist kein gleichwertiger DNS-Test, weil Hostname, SNI und Zertifikat betroffen sein können."
+        },
+        {
+          "type": "figure",
+          "diagramId": "ablauf",
+          "alt": "Eingrenzen: Umfang und Kontrollfall; Vorhersage: Hypothese und erwarteter Befund; Test: Eine Einflussgröße untersuchen; Abschluss: Validieren und dokumentieren.",
+          "caption": "Diagnose als überprüfbare Schleife – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Selbst entscheiden",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "systematische-netzfehlersuche-uebung",
+          "question": "Drei VLANs funktionieren, nur VLAN 44 scheitert. Was grenzt am sinnvollsten ein?",
+          "options": [
+            {
+              "text": "Alle Switches gleichzeitig zurücksetzen.",
+              "rationale": "Das vergrößert den Eingriff und zerstört Vergleichszustände.",
+              "correct": false
+            },
+            {
+              "text": "Einen funktionierenden und betroffenen Port bezüglich VLAN und Weiterleitung vergleichen.",
+              "rationale": "Der Vergleich nutzt den begrenzten Fehlerumfang.",
+              "correct": true
+            },
+            {
+              "text": "Nur die Internetbandbreite messen.",
+              "rationale": "Ein VLAN-spezifischer Fehler wird damit nicht gezielt getrennt.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "sequence",
+          "id": "systematische-netzfehlersuche-reihenfolge",
+          "title": "Vorgehen ordnen",
+          "prompt": "Ordne die Schritte für diesen Lernfall.",
+          "steps": [
+            {
+              "id": "s2",
+              "label": "Begrenzten Test durchführen und Befund festhalten"
+            },
+            {
+              "id": "s0",
+              "label": "Fehlerumfang und unveränderten Vergleichsfall erfassen"
+            },
+            {
+              "id": "s3",
+              "label": "Freigegebene Korrektur validieren und dokumentieren"
+            },
+            {
+              "id": "s1",
+              "label": "Hypothese mit erwarteter Testreaktion formulieren"
+            }
+          ],
+          "expected": [
+            "s0",
+            "s1",
+            "s2",
+            "s3"
+          ],
+          "correctFeedback": "Richtig: Fehlerumfang und unveränderten Vergleichsfall erfassen → Hypothese mit erwarteter Testreaktion formulieren → Begrenzten Test durchführen und Befund festhalten → Freigegebene Korrektur validieren und dokumentieren.",
+          "wrongFeedback": "Prüfe die erste abweichende Position. Kläre zunächst die Voraussetzungen, bevor du Ergebnisse bewertest."
+        }
+      ]
+    },
+    {
+      "title": "Aus dem Gedächtnis erklären",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "systematische-netzfehlersuche-karte-0",
+              "label": "Abruf 1",
+              "front": "Befund oder Ursache?",
+              "back": "Eine Beobachtung beschreibt das Geschehen; die Ursache braucht passende Belege."
+            },
+            {
+              "id": "systematische-netzfehlersuche-karte-1",
+              "label": "Abruf 2",
+              "front": "Wozu Kontrollfall?",
+              "back": "Er zeigt, welche Bedingungen beim funktionierenden Vergleich anders sind."
+            },
+            {
+              "id": "systematische-netzfehlersuche-karte-2",
+              "label": "Abruf 3",
+              "front": "Warum nicht alles zugleich ändern?",
+              "back": "Sonst bleibt unklar, welche Änderung wirkte, und der Rückweg wird schwieriger."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "systematische-netzfehlersuche-abruf",
+          "title": "Deine Begründung",
+          "prompt": "Ping funktioniert, die Webanwendung nicht. Erkläre den nächsten sinnvollen Schritt ohne vorschnelle Ursache.",
+          "label": "Eigene Erklärung",
+          "placeholder": "Meine Begründung und ihre Grenzen …",
+          "minLength": 80,
+          "model": "Ich trenne Namensauflösung, TCP-Verbindung, TLS und Anwendung. Ich prüfe die konkrete Fehlermeldung und vergleiche gezielt mit einem funktionierenden Client. Ping bestätigt nur seinen eigenen Testpfad, nicht den vollständigen Dienst."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "systematische-netzfehlersuche-transfer-a",
+          "question": "Ein Client erreicht das Gateway und den DNS-Server, aber die Namensanfrage läuft in einen Timeout. Welche Hypothese ist prüfbar?",
+          "options": [
+            {
+              "text": "Das Clientkabel ist sicher durchtrennt.",
+              "rationale": "Die erfolgreichen Erreichbarkeitstests sprechen dagegen.",
+              "correct": false
+            },
+            {
+              "text": "Die Benutzeranmeldung ist definitiv falsch.",
+              "rationale": "Eine Namensanfrage prüft noch keine Portal-Anmeldung.",
+              "correct": false
+            },
+            {
+              "text": "Der Resolverdienst oder sein DNS-Pfad antwortet nicht; gezielte DNS-Anfrage und Dienstprüfung vergleichen.",
+              "rationale": "IP-Erreichbarkeit und DNS-Dienst sind verschiedene Prüfebenen.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "ziel-0"
+        },
+        {
+          "type": "quiz",
+          "id": "systematische-netzfehlersuche-transfer-b",
+          "question": "Welche Abschlussnotiz ist ausreichend nachvollziehbar?",
+          "options": [
+            {
+              "text": "Geht wieder, vermutlich Router.",
+              "rationale": "Es fehlen Beleg, Änderung und Erfolgskriterium.",
+              "correct": false
+            },
+            {
+              "text": "Alle Einstellungen geändert; Ergebnis unbekannt.",
+              "rationale": "Mehrere unkontrollierte Änderungen erlauben keine Zuordnung.",
+              "correct": false
+            },
+            {
+              "text": "Symptom, Zeit, Test und Erwartung, Befund, einzelne freigegebene Änderung, Rückfallweg und Ende-zu-Ende-Ergebnis.",
+              "rationale": "Damit können andere die Entscheidung und den Erfolg prüfen.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "ziel-1"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Buchkontext: ITLF10–12, PDF-Seiten 345 und 366 (geplante Tests, Sollverhalten und Dokumentation). Diagnoseschleife und Portalbeispiel sind eigene Lernfälle."
+        }
+      ]
+    }
+  ]
+}

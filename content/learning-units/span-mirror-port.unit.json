@@ -1,0 +1,355 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "span-mirror-port",
+    "slug": "span-mirror-port",
+    "title": "Mit SPAN den richtigen Verkehr sichtbar machen",
+    "description": "Spiegelquelle, Richtung und Analyseport auswählen und Grenzen eines Mitschnitts erkennen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__12",
+    "week": "KW 44",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "ziel-0",
+      "label": "eine geeignete Spiegelkonfiguration aus der Analysefrage ableiten"
+    },
+    {
+      "id": "ziel-1",
+      "label": "aus gleichzeitigen Kopierrichtungen den Überschuss gegenüber der Analysekapazität berechnen"
+    }
+  ],
+  "intro": "Ein Analysegerät an einem freien Switchport sieht nicht automatisch Gespräche anderer Geräte. Du planst, welcher Verkehr wohin kopiert werden muss.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seite 257",
+        "use": "Paketanalysator als Buchkontext; SPAN-spezifische Details aus Herstellerdokumentation",
+        "reviewStatus": "Quellenausschnitte geprüft; eigener Lernfall, menschliche Freigabe offen"
+      }
+    ],
+    "notes": [
+      "Eigene Texte, Aufgaben und Grafiken. Originalabbildungen bleiben privat.",
+      "Verlinkte Primärdokumentationen am 2026-09-13 geprüft; menschliche Fach- und Verständlichkeitsfreigabe steht aus."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "modell",
+      "type": "layers",
+      "title": "Vier Einstellungen für eine Aufnahme",
+      "description": "Quelle: Port 3 des Clients; Richtung: Ingress und Egress; Ziel: Separater Analyseport 8; Prüfung: Beide Dialogrichtungen sichtbar.",
+      "items": [
+        {
+          "label": "Quelle",
+          "detail": "Port 3 des Clients"
+        },
+        {
+          "label": "Richtung",
+          "detail": "Ingress und Egress"
+        },
+        {
+          "label": "Ziel",
+          "detail": "Separater Analyseport 8"
+        },
+        {
+          "label": "Prüfung",
+          "detail": "Beide Dialogrichtungen sichtbar"
+        }
+      ]
+    },
+    {
+      "id": "ablauf",
+      "type": "topology",
+      "title": "Originalpfad und separate Analysekopie",
+      "description": "Client A an Port 3 kommuniziert über den Switch mit dem Server. Der Switch liefert zusätzlich eine Kopie beider Richtungen über Port 8 zum Analysator; dieser liegt nicht im Originalpfad.",
+      "height": 460,
+      "nodes": [
+        {
+          "id": "client",
+          "label": "Client A",
+          "detail": "Quelle: Port 3",
+          "x": 130,
+          "y": 170,
+          "kind": "client"
+        },
+        {
+          "id": "switch",
+          "label": "Switch",
+          "detail": "spiegelt Port 3",
+          "x": 460,
+          "y": 170,
+          "kind": "switch"
+        },
+        {
+          "id": "server",
+          "label": "Server",
+          "detail": "Originaldialog",
+          "x": 790,
+          "y": 170,
+          "kind": "server"
+        },
+        {
+          "id": "capture",
+          "label": "Analysator",
+          "detail": "Ziel: Port 8",
+          "x": 460,
+          "y": 370,
+          "kind": "server"
+        }
+      ],
+      "edges": [
+        {
+          "from": "client",
+          "to": "switch",
+          "label": "Originaldialog",
+          "kind": "allowed"
+        },
+        {
+          "from": "switch",
+          "to": "server",
+          "label": "Originaldialog",
+          "kind": "allowed"
+        },
+        {
+          "from": "switch",
+          "to": "capture",
+          "label": "Kopie beider Richtungen",
+          "kind": "allowed"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "span-mirror-port-diagnose",
+          "question": "Promiscuous Mode ist aktiv. Siehst du damit jeden fremden Unicast am Switch?",
+          "options": [
+            {
+              "text": "Nein, der Switch muss diesen Verkehr überhaupt zum Analyseport liefern.",
+              "rationale": "Empfangsmodus ersetzt keine passende Weiterleitung oder Spiegelung.",
+              "correct": true
+            },
+            {
+              "text": "Ja, die Netzkarte steuert dadurch die Switchtabelle.",
+              "rationale": "Der lokale Empfangsmodus ändert die Switchweiterleitung nicht.",
+              "correct": false
+            },
+            {
+              "text": "Ja, sofern der Analysator eine IP-Adresse hat.",
+              "rationale": "Eine IP-Adresse erzeugt keine Kopie fremder Gespräche.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Leitgedanke",
+          "markdown": "Ein Analysegerät an einem freien Switchport sieht nicht automatisch Gespräche anderer Geräte. Du planst, welcher Verkehr wohin kopiert werden muss."
+        }
+      ]
+    },
+    {
+      "title": "Originalverkehr und Analysekopie",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Switch leitet bekannten Unicast normalerweise gezielt zum passenden Port. **Promiscuous Mode** am Analysegerät allein bringt fremden Unicast nicht zu dessen Anschluss. **Port Mirroring beziehungsweise SPAN** kopiert ausgewählten Verkehr zu einem Analyseziel. Quelle kann je nach Plattform ein Port oder VLAN sein.\n\n**Ingress** bezeichnet den Eintritt in den Switch am Quellport, **Egress** den Austritt. Für einen beidseitigen Dialog muss der gewählte Umfang beide Richtungen erfassen. Der Zielport ist der Anschluss des Analysators, nicht der zu untersuchende Client. Seine normale Nutzung kann durch SPAN eingeschränkt sein; Fähigkeiten, VLAN-Tag-Verhalten und Einschränkungen hängen vom Modell ab."
+        },
+        {
+          "type": "figure",
+          "diagramId": "modell",
+          "alt": "Quelle: Port 3 des Clients; Richtung: Ingress und Egress; Ziel: Separater Analyseport 8; Prüfung: Beide Dialogrichtungen sichtbar.",
+          "caption": "Vier Einstellungen für eine Aufnahme – eigenes Lernmodell."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Kopierlast ist Ingresslast plus Egresslast.",
+          "mathml": "<math display=\"block\"><msub><mi>L</mi><mtext>Kopie</mtext></msub><mo>=</mo><msub><mi>L</mi><mtext>Ingress</mtext></msub><mo>+</mo><msub><mi>L</mi><mtext>Egress</mtext></msub></math>",
+          "legend": [
+            "Gleichzeitige Kopierrichtungen addieren",
+            "Mbit/s; vereinfachtes Modell ohne Overhead",
+            "Kopierengpass ist kein Beweis für Produktionsverlust"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Im eigenen Labor hängt Client A an Port 3. Sein Dialog mit dem Server soll untersucht werden. Port 3 wird als Quelle in beiden Richtungen, der separate Port 8 zum Analysator als Ziel geplant. Eine kurze bekannte Testverbindung prüft, ob Anfrage und Antwort in der Aufnahme erscheinen. Der Serververkehr bleibt auf dem normalen Weiterleitungspfad; der Analysator bekommt Kopien.\n\nAm Quellport treten gleichzeitig 700 Mbit/s hinein und 600 Mbit/s heraus. Beide Kopierrichtungen ergeben 1.300 Mbit/s für einen Analyseausgang mit 1.000 Mbit/s. Die Kopierlast übersteigt ihn um 300 Mbit/s. Dauerhaft passt das nicht verlustfrei; Paketgrößen, Puffer und Implementierung bestimmen das tatsächliche Verlustbild. Das beweist keinen entsprechenden Verlust im Originalverkehr.\n\nBegrenze für die konkrete Frage den Umfang oder wähle ausreichende Analysekapazität. Prüfe außerdem Drops am Capturehost und dessen Speicherrate. Plane Freigabe, kurzen Aufnahmezeitraum, geschützte Ablage und anschließenden Rückbau. Ein unvollständiger Mitschnitt darf nicht als vollständiger Beweis verkauft werden."
+        },
+        {
+          "type": "figure",
+          "diagramId": "ablauf",
+          "alt": "Client A an Port 3 kommuniziert über den Switch mit dem Server. Der Switch liefert zusätzlich eine Kopie beider Richtungen über Port 8 zum Analysator; dieser liegt nicht im Originalpfad.",
+          "caption": "Originalpfad und separate Analysekopie – eigene Lernskizze."
+        }
+      ]
+    },
+    {
+      "title": "Selbst entscheiden",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "span-mirror-port-uebung",
+          "question": "Du spiegelst nur Ingress am Clientport. Welche wichtige Sicht kann fehlen?",
+          "options": [
+            {
+              "text": "Alle vom Client gesendeten Anfragen.",
+              "rationale": "Diese treten dort in den Switch ein.",
+              "correct": false
+            },
+            {
+              "text": "Antworten, die den Switch zum Client hin verlassen.",
+              "rationale": "Sie gehören am Clientport zur Egress-Richtung.",
+              "correct": true
+            },
+            {
+              "text": "Die Uhrzeit im Mitschnitt muss fehlen.",
+              "rationale": "Die Richtung bestimmt nicht die Zeitstempelfunktion.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "sequence",
+          "id": "span-mirror-port-reihenfolge",
+          "title": "Vorgehen ordnen",
+          "prompt": "Ordne die Schritte für diesen Lernfall.",
+          "steps": [
+            {
+              "id": "s2",
+              "label": "Bekannten Dialog erfassen und Capture-Verluste prüfen"
+            },
+            {
+              "id": "s0",
+              "label": "Analysefrage, Berechtigung und Quellport festlegen"
+            },
+            {
+              "id": "s3",
+              "label": "Begrenzt auswerten, sicher ablegen und Spiegelung zurückbauen"
+            },
+            {
+              "id": "s1",
+              "label": "Richtungen, Zielport und Kopierkapazität planen"
+            }
+          ],
+          "expected": [
+            "s0",
+            "s1",
+            "s2",
+            "s3"
+          ],
+          "correctFeedback": "Richtig: Analysefrage, Berechtigung und Quellport festlegen → Richtungen, Zielport und Kopierkapazität planen → Bekannten Dialog erfassen und Capture-Verluste prüfen → Begrenzt auswerten, sicher ablegen und Spiegelung zurückbauen.",
+          "wrongFeedback": "Prüfe die erste abweichende Position. Kläre zunächst die Voraussetzungen, bevor du Ergebnisse bewertest."
+        }
+      ]
+    },
+    {
+      "title": "Aus dem Gedächtnis erklären",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "span-mirror-port-karte-0",
+              "label": "Abruf 1",
+              "front": "Ingress aus wessen Sicht?",
+              "back": "Aus Sicht des Switches: Verkehr tritt am betrachteten Quellport ein."
+            },
+            {
+              "id": "span-mirror-port-karte-1",
+              "label": "Abruf 2",
+              "front": "SPAN-Ziel gleich Quelle?",
+              "back": "Nein. Die Quelle wird beobachtet, das Ziel erhält die Kopien."
+            },
+            {
+              "id": "span-mirror-port-karte-2",
+              "label": "Abruf 3",
+              "front": "Capture-Verlust gleich Produktionsverlust?",
+              "back": "Nein. Die Kopie kann unvollständig sein, obwohl Originalpakete weitergeleitet wurden."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "span-mirror-port-abruf",
+          "title": "Deine Begründung",
+          "prompt": "Warum ist ein 1-Gbit/s-Analyseport nicht immer ausreichend für einen 1-Gbit/s-Full-Duplex-Quellport?",
+          "label": "Eigene Erklärung",
+          "placeholder": "Meine Begründung und ihre Grenzen …",
+          "minLength": 80,
+          "model": "Beide Quellrichtungen können gleichzeitig Last liefern, deren Kopien sich am Analyseausgang addieren. Ich vergleiche die gesamte Kopierlast mit Ziel- und Capturekapazität und kennzeichne mögliche Aufzeichnungslücken."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "span-mirror-port-transfer-a",
+          "question": "Ein vollständiger Clientdialog an Port 5 soll beobachtet werden. Welche Planung passt?",
+          "options": [
+            {
+              "text": "Den Analysatorport als einzige Quelle einstellen.",
+              "rationale": "Dann wird nicht gezielt der Clientdialog gespiegelt.",
+              "correct": false
+            },
+            {
+              "text": "Nur Promiscuous Mode aktivieren und Vollständigkeit voraussetzen.",
+              "rationale": "Der Switch liefert fremden Unicast damit nicht automatisch.",
+              "correct": false
+            },
+            {
+              "text": "Port 5 als Quelle beider Richtungen, eigener Analysezielport und bekannte Testverbindung.",
+              "rationale": "Quelle, Umfang und Ziel sind getrennt und werden kontrolliert.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "ziel-0"
+        },
+        {
+          "type": "numeric",
+          "id": "span-mirror-port-transfer-b",
+          "requiredObjective": "ziel-1",
+          "prompt": "Am Quellport werden gleichzeitig 800 Mbit/s Ingress und 500 Mbit/s Egress gespiegelt. Das Analyseziel kann 1.000 Mbit/s übertragen. Um wie viele Mbit/s übersteigt die angebotene Kopierlast die Zielkapazität? Keine Overheads berücksichtigen.",
+          "expected": 300,
+          "tolerance": 0,
+          "label": "Überschuss in Mbit/s",
+          "correctFeedback": "Beide Kopierrichtungen ergeben 1.300 Mbit/s. Gegenüber 1.000 Mbit/s Zielkapazität sind das 300 Mbit/s Überschuss; nicht automatisch 300 Mbit/s Verlust im Originalnetz.",
+          "wrongFeedback": "Addiere beide gespiegelten Richtungen und vergleiche die Summe mit dem Analyseausgang."
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Buchkontext: ITLF10–12, PDF-Seite 257 (Paketanalysator), kein direkter SPAN-Beleg. Ergänzung: [Cisco SPAN](https://www.cisco.com/c/en/us/support/docs/switches/catalyst-6500-series-switches/10570-41.html), [Wireshark Ethernet-Erfassung](https://wiki.wireshark.org/CaptureSetup/Ethernet). Beispielplanung, keine universelle Switch-Konfiguration; die konkrete Plattformdokumentation bleibt maßgeblich."
+        }
+      ]
+    }
+  ]
+}

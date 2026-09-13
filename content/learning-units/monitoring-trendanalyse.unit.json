@@ -1,0 +1,318 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "monitoring-trendanalyse",
+    "slug": "monitoring-trendanalyse",
+    "title": "Kapazität aus Trends rechtzeitig planen",
+    "description": "Vergleichbare Lastreihen beurteilen und den Zeitpunkt einer Kapazitätsmaßnahme berechnen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__8",
+    "week": "KW 44",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "ziel-0",
+      "label": "Trendannahmen und Lastspitzen von belastbaren Kapazitätsaussagen unterscheiden"
+    },
+    {
+      "id": "ziel-1",
+      "label": "aus Wachstum, Planungsgrenze und Vorlauf einen spätesten Maßnahmenbeginn berechnen"
+    }
+  ],
+  "intro": "Ein Uplink reicht heute – doch eine Bestellung hilft nicht erst am Tag der Überlastung. Du übersetzt Messreihen in eine begründete Entscheidung mit Vorlauf.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seiten 109 und 111",
+        "use": "Schwellwerte, Ressourcenüberwachung und Skalierung; lineare Prognose als eigenes Lernmodell",
+        "reviewStatus": "Quellenausschnitte geprüft; eigener Lernfall, menschliche Freigabe offen"
+      }
+    ],
+    "notes": [
+      "Eigene Texte, Aufgaben und Grafiken. Originalabbildungen bleiben privat.",
+      "Verlinkte Primärdokumentationen am 2026-09-13 geprüft; menschliche Fach- und Verständlichkeitsfreigabe steht aus."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "modell",
+      "type": "layers",
+      "title": "Vier Fragen an den Trend",
+      "description": "Messbasis: Gleiche Richtung, Einheit und Fenster; Verlauf: Spitzen und Datenlücken einordnen; Grenze: Dienstziel und Ausfallbetrieb beachten; Vorlauf: Lieferung, Umsetzung und Reserve.",
+      "items": [
+        {
+          "label": "Messbasis",
+          "detail": "Gleiche Richtung, Einheit und Fenster"
+        },
+        {
+          "label": "Verlauf",
+          "detail": "Spitzen und Datenlücken einordnen"
+        },
+        {
+          "label": "Grenze",
+          "detail": "Dienstziel und Ausfallbetrieb beachten"
+        },
+        {
+          "label": "Vorlauf",
+          "detail": "Lieferung, Umsetzung und Reserve"
+        }
+      ]
+    },
+    {
+      "id": "ablauf",
+      "type": "flow",
+      "title": "Vom Messwert zum Termin",
+      "description": "Vergleichen: Zeitreihe bereinigen; Schätzen: Wachstumsmodell begründen; Planen: Grenze und Vorlauf festlegen; Prüfen: Prognose mit neuen Daten abgleichen.",
+      "items": [
+        {
+          "label": "Vergleichen",
+          "detail": "Zeitreihe bereinigen"
+        },
+        {
+          "label": "Schätzen",
+          "detail": "Wachstumsmodell begründen"
+        },
+        {
+          "label": "Planen",
+          "detail": "Grenze und Vorlauf festlegen"
+        },
+        {
+          "label": "Prüfen",
+          "detail": "Prognose mit neuen Daten abgleichen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "monitoring-trendanalyse-diagnose",
+          "question": "Der Wochenmittelwert liegt bei 30 %. Ist ein Ausbau damit sicher unnötig?",
+          "options": [
+            {
+              "text": "Ja, nur der Mittelwert zählt.",
+              "rationale": "Kurze Engpässe werden dadurch ausgeblendet.",
+              "correct": false
+            },
+            {
+              "text": "Ja, solange irgendein Ping antwortet.",
+              "rationale": "ICMP-Erreichbarkeit ersetzt keine Kapazitätsprüfung.",
+              "correct": false
+            },
+            {
+              "text": "Nein, Spitzen und Dienstprobleme können im Mittel verschwinden.",
+              "rationale": "Der Mittelwert allein beschreibt die kritischen Zeitfenster nicht.",
+              "correct": true
+            }
+          ],
+          "diagnostic": true
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Leitgedanke",
+          "markdown": "Ein Uplink reicht heute – doch eine Bestellung hilft nicht erst am Tag der Überlastung. Du übersetzt Messreihen in eine begründete Entscheidung mit Vorlauf."
+        }
+      ]
+    },
+    {
+      "title": "Gleiche Messbasis, begrenzte Prognose",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Eine Trendreihe braucht dieselbe Schnittstelle, Richtung, Einheit und Zeitaggregation. Ein Wochenmittel lässt sich nicht direkt mit einem Fünf-Minuten-Maximum vergleichen. Fehlende Daten sind keine Nullwerte. Ein Interface-Wechsel oder eine geänderte Linkrate kann die Reihe unterbrechen.\n\n**Mittelwert, Maximum und Perzentil** beantworten verschiedene Fragen: Ein Mittelwert beschreibt das Niveau, ein Maximum eine einzelne Spitze. Beim 95. Perzentil liegen ungefähr 95 Prozent der Beobachtungen höchstens auf diesem Wert; das ist keine Garantie für störungsfreie Spitzen. Aggregierte Werte können kurze Überlast verdecken. Ergänze Latenz, Drops und die Dienstwirkung.\n\nEine **lineare Prognose** setzt einen konstanten absoluten Zuwachs voraus. Sie ist kein Naturgesetz: Saison, neue Standorte, Backups und Ausfälle verändern die Last. Plane mit einer begründeten Grenze unterhalb der technischen Kapazität und prüfe auch den Ausfallbetrieb. Eine Grenze von 800 Mbit/s auf einem 1-Gbit/s-Link ist hier eine eigene Planungsannahme, kein allgemeiner Standard."
+        },
+        {
+          "type": "figure",
+          "diagramId": "modell",
+          "alt": "Messbasis: Gleiche Richtung, Einheit und Fenster; Verlauf: Spitzen und Datenlücken einordnen; Grenze: Dienstziel und Ausfallbetrieb beachten; Vorlauf: Lieferung, Umsetzung und Reserve.",
+          "caption": "Vier Fragen an den Trend – eigenes Lernmodell."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Zeit bis zur Grenze: Grenze minus aktuelle Last geteilt durch Zuwachs. Beginn: diese Zeit minus Vorlauf minus Reserve.",
+          "mathml": "<math display=\"block\"><mtable><mtr><mtd><msub><mi>t</mi><mi>G</mi></msub><mo>=</mo><mfrac><mrow><mi>G</mi><mo>−</mo><msub><mi>L</mi><mn>0</mn></msub></mrow><mi>g</mi></mfrac></mtd></mtr><mtr><mtd><msub><mi>t</mi><mtext>Start</mtext></msub><mo>=</mo><msub><mi>t</mi><mi>G</mi></msub><mo>−</mo><mi>V</mi><mo>−</mo><mi>R</mi></mtd></mtr></mtable></math>",
+          "legend": [
+            "G: Planungsgrenze, L₀: aktuelle Last in Mbit/s",
+            "g > 0: konstanter Zuwachs in Mbit/s je Woche",
+            "V: Vorlauf, R: Reserve in Wochen; negatives Ergebnis: Start bereits nötig"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Vier vergleichbare Wochenwerte am selben Uplink betragen 400, 450, 500 und 550 Mbit/s. Zwischen dem ersten und letzten Wert liegen drei Wochenabstände, nicht vier. Der beobachtete Zuwachs beträgt 50 Mbit/s je Woche. Bis zur eigenen Planungsgrenze von 800 Mbit/s fehlen 250 Mbit/s: Im linearen Modell bleiben fünf Wochen.\n\nBeschaffung und Umsetzung benötigen drei Wochen; eine zusätzliche Woche ist als Terminreserve vorgesehen. Der Maßnahmenbeginn muss deshalb spätestens in einer Woche liegen. Das heißt nicht, dass danach automatisch ein Ausfall eintritt: Es ist der späteste Start unter diesen Annahmen. Im Ausfall eines Parallelpfads kann die verfügbare Reserve schon heute geringer sein.\n\nVor einer Bestellung vergleicht das Team Verlagerung planbarer Last, Optimierung und Ausbau. Es hält Annahmen und Verantwortliche fest und aktualisiert die Prognose regelmäßig. Ein Wachstumssprung nach Eröffnung einer Filiale verlangt eine neue Rechnung."
+        },
+        {
+          "type": "figure",
+          "diagramId": "ablauf",
+          "alt": "Vergleichen: Zeitreihe bereinigen; Schätzen: Wachstumsmodell begründen; Planen: Grenze und Vorlauf festlegen; Prüfen: Prognose mit neuen Daten abgleichen.",
+          "caption": "Vom Messwert zum Termin – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Selbst entscheiden",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "monitoring-trendanalyse-uebung",
+          "question": "Die Reihe enthält 500, 550, fehlend, 650 Mbit/s. Wie behandelst du die Lücke?",
+          "options": [
+            {
+              "text": "Als fehlende Messung markieren und die tatsächlichen Zeitabstände verwenden.",
+              "rationale": "Eine Lücke liefert keinen gemessenen Lastwert.",
+              "correct": true
+            },
+            {
+              "text": "Mit null auffüllen und den Absturz als Entlastung werten.",
+              "rationale": "Keine Daten sind keine Nullauslastung.",
+              "correct": false
+            },
+            {
+              "text": "650 mit dem vorherigen Wert über genau eine Woche vergleichen.",
+              "rationale": "Der Messzeitpunkt kann zwei Wochen entfernt sein.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "sequence",
+          "id": "monitoring-trendanalyse-reihenfolge",
+          "title": "Vorgehen ordnen",
+          "prompt": "Ordne die Schritte für diesen Lernfall.",
+          "steps": [
+            {
+              "id": "s2",
+              "label": "Grenztermin um Vorlauf und Reserve vorziehen"
+            },
+            {
+              "id": "s0",
+              "label": "Messreihe und Datenqualität prüfen"
+            },
+            {
+              "id": "s3",
+              "label": "Maßnahme verantworten und Prognose nachführen"
+            },
+            {
+              "id": "s1",
+              "label": "Zuwachs sowie Modellannahmen festhalten"
+            }
+          ],
+          "expected": [
+            "s0",
+            "s1",
+            "s2",
+            "s3"
+          ],
+          "correctFeedback": "Richtig: Messreihe und Datenqualität prüfen → Zuwachs sowie Modellannahmen festhalten → Grenztermin um Vorlauf und Reserve vorziehen → Maßnahme verantworten und Prognose nachführen.",
+          "wrongFeedback": "Prüfe die erste abweichende Position. Kläre zunächst die Voraussetzungen, bevor du Ergebnisse bewertest."
+        }
+      ]
+    },
+    {
+      "title": "Aus dem Gedächtnis erklären",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "monitoring-trendanalyse-karte-0",
+              "label": "Abruf 1",
+              "front": "Warum nicht jede Lücke mit null füllen?",
+              "back": "Fehlende Messungen bedeuten unbekannte Last, nicht Leerlauf."
+            },
+            {
+              "id": "monitoring-trendanalyse-karte-1",
+              "label": "Abruf 2",
+              "front": "Was verbirgt ein Mittelwert?",
+              "back": "Kurze Spitzen, die trotz geringem Durchschnitt einen Dienst beeinträchtigen können."
+            },
+            {
+              "id": "monitoring-trendanalyse-karte-2",
+              "label": "Abruf 3",
+              "front": "Warum Vorlauf abziehen?",
+              "back": "Die Kapazität muss vor Erreichen der Planungsgrenze nutzbar sein."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "monitoring-trendanalyse-abruf",
+          "title": "Deine Begründung",
+          "prompt": "Ein neuer Standort verdoppelt die Nutzerzahl. Warum reicht der alte lineare Trend nicht?",
+          "label": "Eigene Erklärung",
+          "placeholder": "Meine Begründung und ihre Grenzen …",
+          "minLength": 80,
+          "model": "Der Strukturbruch verändert die Lastannahmen. Ich schätze den neuen Bedarf einschließlich Spitzen und Ausfallbetrieb, prüfe die Messbasis und rechne den Maßnahmenbeginn mit dem tatsächlichen Vorlauf neu."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "monitoring-trendanalyse-transfer-a",
+          "question": "Neue Messwerte sind Tagesmaxima, ältere Werte Wochenmittel. Was ist vor der Prognose nötig?",
+          "options": [
+            {
+              "text": "Alle Werte unverändert aneinanderhängen.",
+              "rationale": "Damit wird ein Methodenwechsel als Lastwachstum behandelt.",
+              "correct": false
+            },
+            {
+              "text": "Eine vergleichbare Aggregation und Zeitbasis herstellen; Spitzen separat bewerten.",
+              "rationale": "Unterschiedliche Statistiken erzeugen sonst einen künstlichen Trend.",
+              "correct": true
+            },
+            {
+              "text": "Nur den größten Wert behalten und jede Unsicherheit streichen.",
+              "rationale": "Ein Extremwert beschreibt keinen verlässlichen zeitlichen Verlauf.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "ziel-0"
+        },
+        {
+          "type": "numeric",
+          "id": "monitoring-trendanalyse-transfer-b",
+          "requiredObjective": "ziel-1",
+          "prompt": "Aktuell 600 Mbit/s, konstanter Zuwachs 40 Mbit/s pro Woche, Planungsgrenze 800 Mbit/s. Lieferung und Umsetzung dauern zwei Wochen, zusätzliche Terminreserve eine Woche. In wie vielen Wochen muss die Maßnahme spätestens beginnen? Ergebnis in Wochen.",
+          "expected": 2,
+          "tolerance": 0,
+          "label": "Spätester Beginn in Wochen",
+          "correctFeedback": "Bis zur Grenze bleiben (800 − 600) / 40 = 5 Wochen. Zwei Wochen Umsetzung und eine Woche Reserve abziehen: spätestens in 2 Wochen beginnen.",
+          "wrongFeedback": "Berechne zuerst die Zeit bis zur Grenze, dann ziehe beide Vorlaufanteile ab."
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Buchkontext: ITLF10–12, PDF-Seiten 109 und 111. Prognosewerte, lineares Modell und Planungsgrenzen sind eigene didaktische Annahmen, keine Herstellerempfehlung."
+        }
+      ]
+    }
+  ]
+}
