@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Auslastung, Fehlerzähler, Latenz, Verlust und Jitter mit Messfenster und Aussagegrenzen einordnen.">
+<title>Netzwerkmesswerte korrekt lesen und berechnen – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-1">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="netzwerk-messwerte" data-progress-id="ga2-8__7" data-content-revision="2026-09-13.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-8">Block N8 · Verfügbarkeit, Monitoring und Fehlersuche</a><span class="sep">›</span>
+    <span class="here">Netzwerkmesswerte korrekt lesen und berechnen</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">Netzwerkmesswerte korrekt lesen und berechnen</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 34 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Eine Zahl wird erst mit Einheit, Zeitraum, Messrichtung und Messverfahren zu einer Aussage. Dieselbe Verbindung kann im Mittel frei wirken und trotzdem kurze Warteschlangen erzeugen.</p>
+<section class="learning-goals" aria-labelledby="netzwerk-messwerte-goals">
+  <h2 id="netzwerk-messwerte-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Latenz, Jitter, Zähler und Auslastung ohne unzulässige Schlussfolgerungen interpretieren</li>
+    <li>die mittlere Richtungsauslastung aus einem Bytezählerdelta berechnen</li>
+    <li>die beobachtete Verlustquote einer abgegrenzten Messreihe berechnen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Vorwissen aktivieren</h2>
+<section class="quiz" data-quiz="netzwerk-messwerte-diagnose" data-correct="0">
+  <h3>Ein Interface zeigt seit dem Start 10.000 Fehler. Ist damit die aktuelle Fehlerrate bekannt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig: Ein kumulativer Zähler ist keine aktuelle Rate."><span class="m">A</span> Nein. Es fehlen Zuwachs, Zeitraum und passende Bezugsgröße.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die Zählerzahl enthält keinen solchen Zeitnenner."><span class="m">B</span> Ja, es sind genau 10.000 Fehler pro Sekunde.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die Lauf- und Messzeit beeinflusst die Interpretation."><span class="m">C</span> Ja, unabhängig davon, wie lange das Gerät läuft.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">Leitgedanke</span><p>Immer fragen: Was wurde wo, wie lange und in welcher Richtung gemessen?</p></aside><h2 class="sec" id="s2"><span class="num">2</span>Fünf Messgrößen, fünf Grenzen</h2>
+<p><strong>Auslastung</strong> vergleicht die Datenrate mit der betrachteten Kapazität. Bei einem Full-Duplex-Link werden Sende- und Empfangsrichtung getrennt bewertet. Ein Mittelwert über fünf Minuten kann kurze Spitzen verdecken. Welche Overheads im Zähler enthalten sind, hängt vom Messpunkt ab.</p>
+<p><strong>Fehlerzähler</strong> sind häufig kumulativ. Ein großer Gesamtwert seit dem Start sagt ohne Zuwachs und Zeitfenster wenig über die aktuelle Lage. Reboot, Zählerreset oder Überlauf können einfache Differenzen ungültig machen. <strong>Discards</strong> sind nicht zwangsläufig Bitfehler; volle Warteschlangen oder Richtlinien können ebenfalls verwerfen.</p>
+<p><strong>Latenz</strong> bezeichnet Verzögerung. ping misst üblicherweise eine Round-Trip-Zeit, nicht direkt die Einweglatenz. Halbieren setzt Annahmen über beide Richtungen voraus. <strong>Paketverlust</strong> braucht einen Nenner: gesendete Pakete einer abgegrenzten Messung. Ausbleibende ICMP-Antworten können außerdem durch Filterung oder geringere Priorisierung entstehen; sie beweisen nicht denselben Verlust für jeden Anwendungsfluss.</p>
+<p><strong>Jitter</strong> beschreibt Schwankung der Verzögerung; die genaue Kennzahl muss genannt werden. Hohe konstante Latenz ist etwas anderes als stark schwankende Latenz. Für Echtzeitdienste sind beide wichtig. Ursache und Messsymptom bleiben getrennt: Eine hohe Auslastung zusammen mit steigender Latenz stützt eine Warteschlangenhypothese, beweist sie aber nicht allein.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Zur Zahl gehört ihre Messgrundlage">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-layers" xmlns="http://www.w3.org/2000/svg" width="960" height="512" viewBox="0 0 960 512" role="img" aria-labelledby="diagram-modell-title diagram-modell-desc">
+  <title id="diagram-modell-title">Zur Zahl gehört ihre Messgrundlage</title>
+  <desc id="diagram-modell-desc">Menge, Zeit, Richtung und Verfahren bestimmen, welche Aussage sich aus einem Messwert ableiten lässt.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Zur Zahl gehört ihre Messgrundlage</tspan></text>
+  <g><rect class="diagram-row" x="42" y="82" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="82" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="130" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Auslastung</tspan></text><text x="194" y="116" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Zählerdelta je Richtung und Zeit</tspan></text></g><g><rect class="diagram-row" x="42" y="182" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="182" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="230" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Fehler /</tspan><tspan x="105" dy="25">Drops</tspan></text><text x="194" y="216" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Zuwachs und Ursache unterscheiden</tspan></text></g><g><rect class="diagram-row" x="42" y="282" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="282" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="330" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Latenz /</tspan><tspan x="105" dy="25">Jitter</tspan></text><text x="194" y="316" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Verzögerung und Schwankung</tspan></text></g><g><rect class="diagram-row" x="42" y="382" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="382" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="430" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Verlust</tspan></text><text x="194" y="416" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Fehlende von gesendeten Paketen</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Zur Zahl gehört ihre Messgrundlage – eigenes Lernmodell.</figcaption>
+</figure><div class="math-display" role="group" aria-label="Auslastung ist Bytezählerdelta mal acht geteilt durch Zeitdelta mal Linkkapazität, mal hundert Prozent"><math display="block" aria-label="Auslastung ist Bytezählerdelta mal acht geteilt durch Zeitdelta mal Linkkapazität, mal hundert Prozent"><mrow><mi>U</mi><mo>=</mo><mfrac><mrow><mi>ΔB</mi><mo>·</mo><mn>8</mn></mrow><mrow><mi>Δt</mi><mo>·</mo><mi>C</mi></mrow></mfrac><mo>·</mo><mn>100</mn><mo>%</mo></mrow></math><div class="math-legend"><span>ΔB: Bytezählerzuwachs einer Richtung</span><span>Δt: Sekunden; C: Kapazität dieser Richtung in bit/s</span><span>Gültige Differenz ohne Reset/Überlauf; Dezimaleinheiten</span></div></div><div class="math-display" role="group" aria-label="Beobachteter Paketverlust ist gesendet minus empfangen, geteilt durch gesendet, mal hundert Prozent"><math display="block" aria-label="Beobachteter Paketverlust ist gesendet minus empfangen, geteilt durch gesendet, mal hundert Prozent"><mrow><mi>L</mi><mo>=</mo><mfrac><mrow><mi>gesendet</mi><mo>−</mo><mi>empfangen</mi></mrow><mi>gesendet</mi></mfrac><mo>·</mo><mn>100</mn><mo>%</mo></mrow></math><div class="math-legend"><span>Abgegrenzte Messreihe mit eindeutiger Zuordnung</span><span>Messverlust ist noch keine allgemeine Aussage über jede Anwendung</span></div></div><h2 class="sec" id="s3"><span class="num">3</span>Durchgearbeitetes Beispiel</h2>
+<p>Ein Sendezähler steigt in 10 Sekunden von 1.000.000.000 auf 1.125.000.000 Byte. Das Delta sind 125.000.000 Byte, entsprechend 1.000.000.000 Bit. Pro Sekunde sind das 100.000.000 Bit. Bei einer Richtungskapazität von 1.000.000.000 bit/s ergibt sich 10 Prozent mittlere Auslastung. Der Full-Duplex-Empfang wird nicht in denselben Nenner hineingemischt.</p>
+<p>Ein Fehlerzähler steigt gleichzeitig von 20 auf 23. Das sind drei neue Fehler, nicht 23 neue Fehler. Ob dies relevant ist, hängt zusätzlich von Paketmenge, Art der Fehler und Vergleichswerten ab. Nach einem Reset wäre eine negative Differenz kein negativer Verkehr, sondern ein ungültiges Messintervall.</p>
+<p>In einer eigenen Testreihe werden 500 eindeutig nummerierte Pakete gesendet und 490 im vorgegebenen Zeitfenster empfangen. Zehn fehlen, also zwei Prozent. Danach vergleichst du die Messung mit dem betroffenen Anwendungsfluss und dem Pfad. Du behauptest nicht, jede Verbindung verliere genau zwei Prozent.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Messung vor der Diagnose prüfen">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="542" viewBox="0 0 960 542" role="img" aria-labelledby="diagram-ablauf-title diagram-ablauf-desc">
+  <title id="diagram-ablauf-title">Messung vor der Diagnose prüfen</title>
+  <desc id="diagram-ablauf-desc">Messpunkt und Fenster festlegen, gültige Differenz bilden, Einheiten umrechnen und danach Ursachenhypothesen prüfen.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Messung vor der Diagnose prüfen</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Definition</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Richtung, Einheit und Zeitraum</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Validität</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Reset und Lücken ausschließen</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Berechnung</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Delta und Bezugsgröße verwenden</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Einordnung</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Mit Dienst und Pfad abgleichen</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Messung vor der Diagnose prüfen – eigenes Lernmodell.</figcaption>
+</figure><h2 class="sec" id="s4"><span class="num">4</span>Selbst entscheiden</h2>
+<section class="quiz" data-quiz="netzwerk-messwerte-uebung" data-correct="1">
+  <h3>ping zeigt 40 ms RTT. Kannst du daraus ohne weitere Annahmen 20 ms Einweglatenz folgern?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Asymmetrische Wege und unterschiedliche Last sind möglich."><span class="m">A</span> Ja, jede Route ist in beiden Richtungen identisch.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig: Halbierung setzt zusätzliche Symmetrieannahmen voraus."><span class="m">B</span> Nein. Hin- und Rückweg sowie Verarbeitung können unterschiedlich sein.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="RTT umfasst den Hin- und Rückweg."><span class="m">C</span> Ja, weil RTT nur den Hinweg misst.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="sequence-practice" data-sequence="netzwerk-messwerte-reihenfolge" data-expected="s0,s1,s2,s3" data-correct-feedback="Richtig: Zählerdelta, Zeit und Kapazität müssen zur gleichen Richtung passen." data-wrong-feedback="Prüfe die erste abweichende Position. Erst Grundlagen klären, dann entscheiden und nachweisen." aria-labelledby="netzwerk-messwerte-reihenfolge-title">
+  <div class="lab-heading"><div><h3 id="netzwerk-messwerte-reihenfolge-title">Eine Auslastung berechnen</h3><p>Ordne die Messauswertung.</p></div><span class="lab-tag">Ablauf</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="s2" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Byte in Bit und dann in Datenrate umrechnen</span></li>
+    <li data-step="s0" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Richtung, Linkkapazität und Messzeitraum festhalten</span></li>
+    <li data-step="s3" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Durch Richtungskapazität teilen und Ergebnis einordnen</span></li>
+    <li data-step="s1" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Gültiges Bytezählerdelta ohne Reset bestimmen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Aus dem Gedächtnis erklären</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="netzwerk-messwerte-karte-0" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Hohe Latenz gleich hoher Jitter?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Nein. Verzögerung kann hoch, aber konstant sein; Jitter beschreibt ihre Schwankung.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="netzwerk-messwerte-karte-1" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum Zählerdifferenzen?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Kumulative Gesamtstände werden erst durch Differenz und Zeitraum zur aktuellen Rate.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="netzwerk-messwerte-karte-2" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was bedeutet ein negativer Zählerzuwachs?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Möglicherweise Reset oder Überlauf; das Intervall darf nicht blind als negativer Verkehr ausgewertet werden.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Abruf 1“:</span><button type="button" data-card-id="netzwerk-messwerte-karte-0" data-card-rate="known">gewusst</button><button type="button" data-card-id="netzwerk-messwerte-karte-0" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="netzwerk-messwerte-karte-0"></span></div>
+<div class="card-rating"><span>Karte „Abruf 2“:</span><button type="button" data-card-id="netzwerk-messwerte-karte-1" data-card-rate="known">gewusst</button><button type="button" data-card-id="netzwerk-messwerte-karte-1" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="netzwerk-messwerte-karte-1"></span></div>
+<div class="card-rating"><span>Karte „Abruf 3“:</span><button type="button" data-card-id="netzwerk-messwerte-karte-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="netzwerk-messwerte-karte-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="netzwerk-messwerte-karte-2"></span></div><section class="recall-practice" data-recall="netzwerk-messwerte-abruf" data-min-length="80" aria-labelledby="netzwerk-messwerte-abruf-title">
+  <div class="recall-prompt"><h3 id="netzwerk-messwerte-abruf-title">Deine Begründung</h3><p>Ein Fünf-Minuten-Mittelwert zeigt 20 Prozent, während Telefonate stocken. Warum ist die Leitung damit nicht entlastet?</p></div>
+  <label class="sr-only" for="netzwerk-messwerte-abruf-answer">Eigene Erklärung</label>
+  <textarea id="netzwerk-messwerte-abruf-answer" data-recall-input rows="4" placeholder="Meine Begründung und ihre Grenzen …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Das Mittel kann kurze Spitzen und Warteschlangen verdecken. Ich prüfe kleinere Zeitfenster, Latenzschwankung, Verlust und die betroffene Richtung beziehungsweise Verkehrsklasse. Der Durchschnitt allein schließt ein Echtzeitproblem nicht aus.</div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Lernziel-Check</h2>
+<section class="quiz" data-quiz="netzwerk-messwerte-transfer-a" data-correct="2" data-required-objective="interpretation">
+  <h3>Welche Aussage zu stockender Telefonie und Interface-Messwerten ist belastbar?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Kurze Spitzen können im Mittel verborgen bleiben."><span class="m">A</span> Niedrige Durchschnittsauslastung schließt jede Warteschlange aus.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Discards können auch durch Warteschlangen oder Richtlinien entstehen."><span class="m">B</span> Jeder Discard beweist ein beschädigtes Kabel.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Richtig: Messverfahren und Dienstwirkung müssen zusammenpassen."><span class="m">C</span> Jitter und Verlust im passenden Messfluss prüfen; Mittelwerte und kumulative Zähler allein beweisen keine Ursache.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="numeric-practice transfer-number" data-numeric-practice="netzwerk-messwerte-transfer-b" data-required-objective="auslastung" data-expected="20" data-tolerance="0" data-correct-feedback="20 Prozent: 250.000.000 × 8 / 10 = 200.000.000 bit/s; geteilt durch 1.000.000.000 bit/s." data-wrong-feedback="Byte zuerst mit acht in Bit umrechnen, dann durch zehn Sekunden und die Richtungskapazität teilen. 2,5 Prozent lässt die Byte/Bit-Umrechnung aus.">
+  <h3>Berechne das Ergebnis</h3>
+  <p>Ein gültiger Sendezähler steigt in 10 Sekunden um 250.000.000 Byte. Die Richtungskapazität beträgt 1.000.000.000 bit/s. Wie hoch ist die mittlere Auslastung dieser Richtung in Prozent? Ganze Zahl.</p>
+  <label for="netzwerk-messwerte-transfer-b-answer">Auslastung in Prozent</label>
+  <div class="answer-row"><input id="netzwerk-messwerte-transfer-b-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Ergebnis"><button type="button" class="lbtn primary" data-numeric-check>Antwort prüfen</button></div>  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p>
+</section><section class="numeric-practice transfer-number" data-numeric-practice="netzwerk-messwerte-transfer-verlust" data-required-objective="verlust" data-expected="1.5" data-tolerance="0.01" data-correct-feedback="1,5 Prozent: 12 fehlende Pakete geteilt durch 800 gesendete, mal 100." data-wrong-feedback="Der Nenner sind die 800 gesendeten Pakete. Zwölf ist die Anzahl fehlender Pakete, noch nicht die Prozentzahl.">
+  <h3>Berechne das Ergebnis</h3>
+  <p>In einer abgegrenzten Testreihe werden 800 Pakete gesendet und 788 eindeutig zugeordnet innerhalb des Messfensters empfangen. Wie hoch ist der beobachtete Verlust in Prozent? Eine Nachkommastelle.</p>
+  <label for="netzwerk-messwerte-transfer-verlust-answer">Beobachteter Verlust in Prozent</label>
+  <div class="answer-row"><input id="netzwerk-messwerte-transfer-verlust-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Ergebnis"><button type="button" class="lbtn primary" data-numeric-check>Antwort prüfen</button></div>  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s7"><span class="num">7</span>Quellen und Grenzen</h2>
+<p>Buchkontext: ITLF10–12, PDF-Seiten 109 und 190. Eigene Messreihen und offengelegte Rechenmodelle; Zählersemantik muss zur MIB beziehungsweise zum Messgerät passen. Die Prozentwerte beschreiben nur die jeweilige Messung. Zur Messdefinition: <a href="https://www.rfc-editor.org/rfc/rfc3393.html">RFC 3393 – Delay Variation</a> und <a href="https://www.rfc-editor.org/rfc/rfc2680.html">RFC 2680 – Paketverlust</a>.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-8"><span class="d">zurück zu</span><span class="t">Block N8 · Verfügbarkeit, Monitoring und Fehlersuche</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Block N8 · Verfügbarkeit, Monitoring und Fehlersuche</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 3 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Vorwissen aktivieren</a></li>
+<li><a href="#s2" data-t="s2">Fünf Messgrößen, fünf Grenzen</a></li>
+<li><a href="#s3" data-t="s3">Durchgearbeitetes Beispiel</a></li>
+<li><a href="#s4" data-t="s4">Selbst entscheiden</a></li>
+<li><a href="#s5" data-t="s5">Aus dem Gedächtnis erklären</a></li>
+<li><a href="#s6" data-t="s6">Lernziel-Check</a></li>
+<li><a href="#s7" data-t="s7">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-8">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

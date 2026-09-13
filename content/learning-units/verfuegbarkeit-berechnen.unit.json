@@ -1,0 +1,364 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "verfuegbarkeit-berechnen",
+    "slug": "verfuegbarkeit-berechnen",
+    "title": "Verfügbarkeit und Ausfallzeit sauber berechnen",
+    "description": "Zeitanteile, Reihensysteme und unabhängige Parallelpfade mit klaren Annahmen berechnen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__2",
+    "week": "KW 44",
+    "estimatedMinutes": 38,
+    "relevance": "hoch",
+    "sources": [
+      "itlf6-9-2022",
+      "itlf10-12-2023"
+    ],
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "modell",
+      "label": "Messfenster und Unabhängigkeitsannahmen eines Verfügbarkeitsmodells beurteilen"
+    },
+    {
+      "id": "ausfallzeit",
+      "label": "eine vorgegebene Verfügbarkeit in erlaubte Ausfallminuten umrechnen"
+    },
+    {
+      "id": "reihe",
+      "label": "die Verfügbarkeit unabhängiger notwendiger Komponenten in Reihe berechnen"
+    },
+    {
+      "id": "parallel",
+      "label": "die Verfügbarkeit zweier unabhängiger hinreichender Parallelpfade berechnen"
+    }
+  ],
+  "intro": "99,9 Prozent sagen erst dann etwas aus, wenn Dienst, Messfenster und Ausfallbegriff feststehen. Für redundante Systeme kommen Annahmen über gemeinsame Fehler hinzu.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf6-9-2022",
+        "sourceLocator": "Markdown-Chunk 00243",
+        "use": "Verfügbarkeit in Jahresausfallzeit umrechnen",
+        "reviewStatus": "Direkten SLA-Auszug aus Nachbarthema geprüft"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seite 49",
+        "use": "HA-Cluster und Active/Passive als Kontext",
+        "reviewStatus": "OCR geprüft; liefert nicht allein die Rechenformeln"
+      }
+    ],
+    "notes": [
+      "NIST-Reihen-/Parallelmodelle als Primärabgleich der unabhängigen UND-/ODER-Logik; Zuverlässigkeit nicht mit Verfügbarkeit gleichgesetzt.",
+      "ITLF6–9 00220 (Speicherangebot) nicht als Beleg der Verfügbarkeitsrechnung verwendet.",
+      "Eigene Beispiele und Grafiken. Private Buchabbildungen werden nicht veröffentlicht. Menschliche Fachfreigabe steht aus."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "modell",
+      "type": "layers",
+      "title": "Welche Bedingung hält den Dienst aktiv?",
+      "description": "Reihe verlangt alle notwendigen Komponenten, Parallelität mindestens einen vollständigen Pfad; gemeinsame Abhängigkeiten bleiben davor bestehen.",
+      "items": [
+        {
+          "label": "Reihe: UND",
+          "detail": "Alle notwendigen Teile verfügbar"
+        },
+        {
+          "label": "Parallel: ODER",
+          "detail": "Ein vollständiger Pfad genügt"
+        },
+        {
+          "label": "Annahme",
+          "detail": "Keine gemeinsame Ursache im Modell"
+        },
+        {
+          "label": "Messfenster",
+          "detail": "Gleicher Zeitraum und Dienst"
+        }
+      ]
+    },
+    {
+      "id": "ablauf",
+      "type": "flow",
+      "title": "Vom Netzplan zur Zahl",
+      "description": "Dienstgrenze und Logik bestimmen die Formel; erst danach werden Prozente umgewandelt, gerechnet und Annahmen geprüft.",
+      "items": [
+        {
+          "label": "Grenze",
+          "detail": "Dienst und Zeitraum festlegen"
+        },
+        {
+          "label": "Logik",
+          "detail": "UND, ODER, gemeinsame Teile"
+        },
+        {
+          "label": "Rechnung",
+          "detail": "Anteile einsetzen, spät runden"
+        },
+        {
+          "label": "Plausibilität",
+          "detail": "Ergebnis und Annahmen prüfen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "verfuegbarkeit-berechnen-diagnose",
+          "question": "Zwei notwendige Komponenten haben jeweils 99 Prozent Verfügbarkeit. Kann das Reihensystem im unabhängigen Modell 99,99 Prozent erreichen?",
+          "options": [
+            {
+              "text": "Ja. Zwei Komponenten ergeben automatisch Redundanz.",
+              "rationale": "Notwendige Komponenten in Reihe sind keine Alternativpfade.",
+              "correct": false
+            },
+            {
+              "text": "Nein. Beide müssen funktionieren, daher liegt der Wert unter 99 Prozent.",
+              "rationale": "Richtig: Ein zusätzlicher notwendiger Teil schafft einen weiteren Ausfallgrund.",
+              "correct": true
+            },
+            {
+              "text": "Ja. Man addiert die Neuner hinter dem Komma.",
+              "rationale": "Prozentziffern sind keine Rechenregel.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Leitgedanke",
+          "markdown": "Erst den Dienst und seine Abhängigkeiten modellieren, dann mit Dezimalanteilen rechnen und erst am Ende runden."
+        }
+      ]
+    },
+    {
+      "title": "Zeitanteil, UND und ODER",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Die beobachtete **Verfügbarkeit** ist der Anteil der vereinbarten Zeit, in dem der definierte Dienst funktioniert. Bei 24/7 über ein Nichtschaltjahr sind es 365 Tage beziehungsweise 525.600 Minuten. Ein anderer Kalender oder ein begrenztes Servicefenster ergibt einen anderen Nenner. Geplante Wartung zählt nur so, wie die Messregel es festlegt.\n\nIm **Reihenmodell** müssen alle Komponenten funktionieren: eine UND-Bedingung. Im **Parallelmodell** reicht mindestens ein vollständiger Pfad: eine ODER-Bedingung. Die Produktformeln gelten hier für statistisch unabhängige Betriebszustände, ausreichend leistungsfähige Ersatzpfade und eine idealisierte Umschaltung. Sie sind keine Zusage für reale Anlagen mit gemeinsamen Ausfällen.\n\nProzente werden zuerst in Anteile umgewandelt: 99 Prozent entsprechen 0,99. Verfügbarkeiten werden nicht einfach addiert oder gemittelt. Zwei Pfade mit gemeinsamer Stromversorgung sind nicht unabhängig gegenüber deren Ausfall. Im Parallelmodell muss zudem jeder verbleibende Pfad den Dienst allein tragen können.\n\nZuverlässigkeit – kein Ausfall innerhalb eines Zeitintervalls – ist nicht dasselbe wie Verfügbarkeit eines reparierbaren Systems. Wir verwenden hier Betriebswahrscheinlichkeiten im vereinfachten Verfügbarkeitsmodell und rechnen getrennt mit beobachteter Ausfallzeit."
+        },
+        {
+          "type": "figure",
+          "diagramId": "modell",
+          "alt": "Reihe verlangt alle notwendigen Komponenten, Parallelität mindestens einen vollständigen Pfad; gemeinsame Abhängigkeiten bleiben davor bestehen.",
+          "caption": "Welche Bedingung hält den Dienst aktiv? – eigenes Lernmodell."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Verfügbarkeit ist eins minus Ausfallzeit durch Gesamtzeit; Ausfallzeit ist Gesamtzeit mal eins minus Verfügbarkeit",
+          "mathml": "<math display=\"block\"><mtable><mtr><mtd><mi>A</mi><mo>=</mo><mn>1</mn><mo>−</mo><mfrac><msub><mi>t</mi><mi>aus</mi></msub><mi>T</mi></mfrac></mtd></mtr><mtr><mtd><msub><mi>t</mi><mi>aus</mi></msub><mo>=</mo><mi>T</mi><mo>·</mo><mo>(</mo><mn>1</mn><mo>−</mo><mi>A</mi><mo>)</mo></mtd></mtr></mtable></math>",
+          "legend": [
+            "A: Verfügbarkeit als Anteil von 0 bis 1",
+            "T und t aus in derselben Zeiteinheit"
+          ]
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Reihenverfügbarkeit ist A1 mal A2; Parallelverfügbarkeit ist eins minus das Produkt der Ausfallanteile",
+          "mathml": "<math display=\"block\"><mtable><mtr><mtd><msub><mi>A</mi><mtext>Reihe</mtext></msub><mo>=</mo><msub><mi>A</mi><mn>1</mn></msub><mo>·</mo><msub><mi>A</mi><mn>2</mn></msub></mtd></mtr><mtr><mtd><msub><mi>A</mi><mtext>Parallel</mtext></msub><mo>=</mo><mn>1</mn><mo>−</mo><mo>(</mo><mn>1</mn><mo>−</mo><msub><mi>A</mi><mn>1</mn></msub><mo>)</mo><mo>·</mo><mo>(</mo><mn>1</mn><mo>−</mo><msub><mi>A</mi><mn>2</mn></msub><mo>)</mo></mtd></mtr></mtable></math>",
+          "legend": [
+            "Nur für die hier beschriebenen unabhängigen Betriebszustände",
+            "Reihe: beide nötig; Parallel: einer genügt, ideale Umschaltung"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**Zeitmodell:** Bei 99,9 Prozent bleiben 0,1 Prozent Ausfallanteil. 525.600 Minuten mal 0,001 ergeben 525,6 Minuten, also 8,76 Stunden pro Nichtschaltjahr. Bei 99,99 Prozent sind es 52,56 Minuten. Ein zusätzlicher Neuner reduziert hier das Ausfallbudget um den Faktor zehn.\n\n**Vier notwendige Komponenten:** Jede hat im Modell 99 Prozent Verfügbarkeit. Viermaliges Multiplizieren von 0,99 ergibt 0,96059601, also 96,059601 Prozent. Das System liegt unter dem Einzelwert, weil jeder einzelne Ausfall den Dienst unterbrechen kann.\n\n**Zwei Alternativpfade:** Beide haben 99 Prozent Verfügbarkeit und sind unabhängig. Beide gleichzeitig ausgefallen: 0,01 mal 0,01 ergibt 0,0001. Das Gegenereignis liefert 0,9999, also 99,99 Prozent. Eine zusätzlich notwendige gemeinsame Komponente mit 98 Prozent würde das Ergebnis wieder begrenzen: Unter passender weiterer Unabhängigkeit wären 0,98 mal 0,9999 gleich 97,9902 Prozent. Der gemeinsame Teil darf nicht im Bild verschwinden."
+        },
+        {
+          "type": "figure",
+          "diagramId": "ablauf",
+          "alt": "Dienstgrenze und Logik bestimmen die Formel; erst danach werden Prozente umgewandelt, gerechnet und Annahmen geprüft.",
+          "caption": "Vom Netzplan zur Zahl – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Selbst entscheiden",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "verfuegbarkeit-berechnen-uebung",
+          "question": "Zwei Router teilen eine einzige Stromversorgung. Was ist am idealen Parallelmodell problematisch?",
+          "options": [
+            {
+              "text": "Man sollte stattdessen die beiden Prozente addieren.",
+              "rationale": "Addition kann sogar Werte über 100 Prozent liefern.",
+              "correct": false
+            },
+            {
+              "text": "Die Versorgung zählt nur bei drei Routern.",
+              "rationale": "Ihre Wirkung hängt nicht an dieser Anzahl.",
+              "correct": false
+            },
+            {
+              "text": "Der Versorgungsausfall kann beide treffen und verletzt diese Unabhängigkeitsannahme.",
+              "rationale": "Richtig: Die gemeinsame Ursache muss gesondert modelliert werden.",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "type": "sequence",
+          "id": "verfuegbarkeit-berechnen-reihenfolge",
+          "title": "Eine Verfügbarkeitsrechnung vorbereiten",
+          "prompt": "Ordne den Rechenweg ohne vorzeitiges Runden.",
+          "steps": [
+            {
+              "id": "s2",
+              "label": "Prozentwerte in Anteile umwandeln und passende Formel auswerten"
+            },
+            {
+              "id": "s0",
+              "label": "Dienst, Messfenster und Ausfalldefinition festlegen"
+            },
+            {
+              "id": "s3",
+              "label": "In gefragte Einheit umrechnen und am Ende runden"
+            },
+            {
+              "id": "s1",
+              "label": "Notwendige Teile und Alternativpfade mit Annahmen markieren"
+            }
+          ],
+          "expected": [
+            "s0",
+            "s1",
+            "s2",
+            "s3"
+          ],
+          "correctFeedback": "Richtig: Das Modell kommt vor der Formel, die Rundung nach der Rechnung.",
+          "wrongFeedback": "Prüfe die erste abweichende Position. Erst Grundlagen klären, dann entscheiden und nachweisen."
+        }
+      ]
+    },
+    {
+      "title": "Aus dem Gedächtnis erklären",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "verfuegbarkeit-berechnen-karte-0",
+              "label": "Abruf 1",
+              "front": "99,9 Prozent als Anteil?",
+              "back": "0,999; der Ausfallanteil beträgt 0,001."
+            },
+            {
+              "id": "verfuegbarkeit-berechnen-karte-1",
+              "label": "Abruf 2",
+              "front": "Wann gilt die einfache Parallelformel?",
+              "back": "Bei unabhängigen Betriebszuständen, hinreichender Restleistung und idealisierter Umschaltung."
+            },
+            {
+              "id": "verfuegbarkeit-berechnen-karte-2",
+              "label": "Abruf 3",
+              "front": "Was ist der Unterschied zur Zuverlässigkeit?",
+              "back": "Zuverlässigkeit betrachtet Ausfallfreiheit über eine Dauer; Verfügbarkeit betrachtet die Betriebsbereitschaft und kann Reparaturen einschließen."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "verfuegbarkeit-berechnen-abruf",
+          "title": "Deine Begründung",
+          "prompt": "Warum ist die Aussage „Zwei Router ergeben 99,99 Prozent“ ohne weitere Angaben nicht belastbar?",
+          "label": "Eigene Erklärung",
+          "placeholder": "Meine Begründung und ihre Grenzen …",
+          "minLength": 80,
+          "model": "Es fehlen Einzelwerte, Dienstgrenze, Unabhängigkeit, gemeinsame Strom-/Datenwege, Restleistung und Umschaltwirkung. Erst mit diesen Angaben lässt sich ein passendes Modell bilden. Die Zahl ist kein allgemeiner Bonus für zwei Geräte."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "verfuegbarkeit-berechnen-transfer-a",
+          "question": "Welche Datengrundlage erlaubt die hier verwendete Parallelrechnung?",
+          "options": [
+            {
+              "text": "Gleiches Messmodell, unabhängige Pfadzustände, jeder Pfad allein ausreichend und ideale Übernahme.",
+              "rationale": "Richtig: Diese Annahmen begründen die vereinfachte ODER-Rechnung.",
+              "correct": true
+            },
+            {
+              "text": "Nur zwei gleich aussehende Router.",
+              "rationale": "Die Gehäuse beweisen weder Unabhängigkeit noch Dienstfähigkeit.",
+              "correct": false
+            },
+            {
+              "text": "Ein Mittelwert aus unterschiedlichen Servicefenstern.",
+              "rationale": "Unterschiedliche Messgrundlagen sind nicht ohne Weiteres kombinierbar.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "modell"
+        },
+        {
+          "type": "numeric",
+          "id": "verfuegbarkeit-berechnen-transfer-b",
+          "requiredObjective": "ausfallzeit",
+          "prompt": "Ein 24/7-Dienst soll in einem Nichtschaltjahr mit 525.600 Minuten 99,95 Prozent verfügbar sein. Wie viele Ausfallminuten sind maximal erlaubt? Auf eine Nachkommastelle runden.",
+          "expected": 262.8,
+          "tolerance": 0.01,
+          "label": "Ausfallminuten",
+          "correctFeedback": "262,8 Minuten: 525.600 × (1 − 0,9995). Erst in Minuten rechnen, dann runden.",
+          "wrongFeedback": "Verwende den Ausfallanteil 0,0005, nicht den Verfügbarkeitsanteil. 4,38 wäre das Ergebnis in Stunden, gefragt sind Minuten."
+        },
+        {
+          "type": "numeric",
+          "id": "verfuegbarkeit-berechnen-transfer-reihe",
+          "requiredObjective": "reihe",
+          "prompt": "Zwei notwendige Komponenten in Reihe haben unabhängige Verfügbarkeiten von 98 Prozent und 99 Prozent. Wie hoch ist die Systemverfügbarkeit in Prozent? Zwei Nachkommastellen.",
+          "expected": 97.02,
+          "tolerance": 0.001,
+          "label": "Reihenverfügbarkeit in Prozent",
+          "correctFeedback": "97,02 Prozent: 0,98 × 0,99 × 100. Beide Komponenten müssen funktionieren.",
+          "wrongFeedback": "Multipliziere die Anteile 0,98 und 0,99. 98,5 wäre ein Mittelwert, nicht die Wahrscheinlichkeit, dass beide funktionieren."
+        },
+        {
+          "type": "numeric",
+          "id": "verfuegbarkeit-berechnen-transfer-parallel",
+          "requiredObjective": "parallel",
+          "prompt": "Zwei unabhängige vollständige Pfade haben jeweils 98 Prozent Verfügbarkeit; einer genügt, Umschaltung ideal. Wie hoch ist die Parallelverfügbarkeit in Prozent? Zwei Nachkommastellen.",
+          "expected": 99.96,
+          "tolerance": 0.001,
+          "label": "Parallelverfügbarkeit in Prozent",
+          "correctFeedback": "99,96 Prozent: Beide fehlen mit 0,02 × 0,02 = 0,0004; das Gegenereignis ist 0,9996.",
+          "wrongFeedback": "Berechne zuerst den gemeinsamen Ausfall und ziehe ihn von eins ab. 96,04 Prozent wäre das Reihenergebnis."
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Buchgrundlage: ITLF6–9, Chunk 00243; ITLF10–12, PDF-Seite 49 als HA-Kontext. [NIST – Reihenmodell](https://www.itl.nist.gov/div898/handbook/apr/section1/apr182.htm) und [Parallelmodell](https://www.itl.nist.gov/div898/handbook/apr/section1/apr183.htm) erläutern unabhängige Systemlogik. Die hier verwendeten Verfügbarkeitsannahmen sind ausdrücklich angegeben."
+        }
+      ]
+    }
+  ]
+}

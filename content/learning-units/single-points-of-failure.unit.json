@@ -1,0 +1,357 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "single-points-of-failure",
+    "slug": "single-points-of-failure",
+    "title": "Single Points of Failure im Netzplan finden",
+    "description": "Dienstabhängigkeiten verfolgen und gemeinsame technische oder organisatorische Ausfallpunkte erkennen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__3",
+    "week": "KW 44",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "spof",
+      "label": "einen Single Point of Failure bezogen auf einen konkreten Dienst erkennen"
+    },
+    {
+      "id": "massnahme",
+      "label": "eine Abhängigkeit gezielt absichern und den Nachweis samt Restrisiko beschreiben"
+    }
+  ],
+  "intro": "Ein doppeltes Routersymbol kann Sicherheit suggerieren, obwohl beide Wege am selben Switch oder Stromverteiler hängen. Entscheidend ist der vollständige Weg zum benötigten Dienst.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seiten 53, 67 und 165",
+        "use": "Firewall/Router als SPOF und virtuelle Zeitserver auf gemeinsamer Hardware",
+        "reviewStatus": "OCR-Auszüge geprüft; dienstbezogen neu aufbereitet"
+      }
+    ],
+    "notes": [
+      "Unterschied zwischen Einzelpunkt und gemeinsamer Ausfallursache ausdrücklich benannt.",
+      "Eigene Beispiele und Grafiken. Private Buchabbildungen werden nicht veröffentlicht. Menschliche Fachfreigabe steht aus."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "gemeinsame-firewall",
+      "type": "topology",
+      "title": "Zwei Router, eine gemeinsame Firewall",
+      "description": "Router A und B führen beide durch eine einzelne Firewall zum Portal. Ihr Ausfall stoppt beide Wege.",
+      "height": 460,
+      "nodes": [
+        {
+          "id": "a",
+          "label": "Router A",
+          "detail": "Weg A",
+          "x": 150,
+          "y": 150,
+          "kind": "router"
+        },
+        {
+          "id": "b",
+          "label": "Router B",
+          "detail": "Weg B",
+          "x": 150,
+          "y": 350,
+          "kind": "router"
+        },
+        {
+          "id": "fw",
+          "label": "Firewall",
+          "detail": "gemeinsamer SPOF",
+          "x": 460,
+          "y": 250,
+          "kind": "router"
+        },
+        {
+          "id": "app",
+          "label": "Portal",
+          "detail": "benötigter Dienst",
+          "x": 780,
+          "y": 250,
+          "kind": "server"
+        }
+      ],
+      "edges": [
+        {
+          "from": "a",
+          "to": "fw",
+          "label": "Pfad A",
+          "kind": "allowed"
+        },
+        {
+          "from": "b",
+          "to": "fw",
+          "label": "Pfad B",
+          "kind": "allowed"
+        },
+        {
+          "from": "fw",
+          "to": "app",
+          "label": "einziger Übergang",
+          "kind": "allowed"
+        }
+      ]
+    },
+    {
+      "id": "ablauf",
+      "type": "flow",
+      "title": "Abhängigkeiten einzeln prüfen",
+      "description": "Dienst definieren, einen Punkt gedanklich entfernen, Wirkung bestimmen und eine genau passende Absicherung testen.",
+      "items": [
+        {
+          "label": "Dienst",
+          "detail": "Ziel und Nutzer bestimmen"
+        },
+        {
+          "label": "Entfernen",
+          "detail": "Einen Punkt ausfallen lassen"
+        },
+        {
+          "label": "Wirkung",
+          "detail": "Bleibt ein vollständiger Weg?"
+        },
+        {
+          "label": "Absicherung",
+          "detail": "Gezielt ersetzen und testen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "single-points-of-failure-diagnose",
+          "question": "Zwei Router benutzen dieselbe einzige Firewall. Ist die Firewall automatisch kein SPOF mehr?",
+          "options": [
+            {
+              "text": "Nein, weil sich zwei Router ihre Firewall immer gegenseitig ersetzen.",
+              "rationale": "Router übernehmen nicht automatisch den Firewall-Dienst.",
+              "correct": false
+            },
+            {
+              "text": "Nein, solange die Router verschiedene IP-Adressen haben.",
+              "rationale": "Verschiedene Adressen beseitigen keine gemeinsame Abhängigkeit.",
+              "correct": false
+            },
+            {
+              "text": "Doch: Wenn beide Dienstwege sie benötigen, stoppt ihr Ausfall beide.",
+              "rationale": "Richtig: Doppelte vorgelagerte Geräte entfernen den gemeinsamen Punkt nicht.",
+              "correct": true
+            }
+          ],
+          "diagnostic": true
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Leitgedanke",
+          "markdown": "Ein SPOF ist eine einzelne Abhängigkeit, deren Ausfall den betrachteten Dienst stoppt."
+        }
+      ]
+    },
+    {
+      "title": "Dienstgrenze statt Gerätezählen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein **Single Point of Failure** ist immer relativ zu einem Ziel zu beurteilen: Der Ausfall eines einzigen Clients kann dessen Nutzung beenden, ohne den Dienst für alle zu stoppen. Definiere deshalb Nutzergruppe, Dienst und Ausfallkriterium.\n\nVerfolge dann Datenpfad, Stromversorgung und Hilfsdienste. Ein zentraler Switch, eine Firewall, ein Netzteil, eine gemeinsame USV oder Kabeltrasse kann mehrere scheinbar redundante Wege gleichzeitig unterbrechen. Auch DNS, Authentifizierung oder ein nur auf einem Host laufender virtueller Dienst kann zum notwendigen Einzelpunkt werden.\n\nNicht jede gemeinsame Abhängigkeit wirkt sofort: Ein DNS-Cache kann einen Resolverausfall zeitweise verdecken; bestehende Sitzungen können ohne neue Anmeldung weiterlaufen. Prüfe deshalb auch neue Verbindungen und die Dauer. Ein gemeinsamer Softwarefehler ist eine gemeinsame Ausfallursache, auch wenn er kein einzelnes Hardwarebauteil ist.\n\nDie Gegenmaßnahme muss genau zur Abhängigkeit passen. Ein zusätzliches Routerchassis repariert keine gemeinsame Stromversorgung. Dokumentation, Wiederanlauf und verfügbare Zugangsdaten können die Wiederherstellungszeit verkürzen, schaffen aber nicht automatisch unterbrechungsfreien Ersatz."
+        },
+        {
+          "type": "figure",
+          "diagramId": "gemeinsame-firewall",
+          "alt": "Router A und B führen beide durch eine einzelne Firewall zum Portal. Ihr Ausfall stoppt beide Wege.",
+          "caption": "Zwei Router, eine gemeinsame Firewall – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Portal ist über zwei Router erreichbar. Beide Router führen jedoch durch eine einzige Firewall zum Backend. Aus Sicht neuer Portalverbindungen ist diese Firewall ein SPOF: Fällt sie aus, sind beide Routerpfade abgeschnitten. Ein Firewallpaar kann diesen Punkt reduzieren, muss aber tatsächlich Zustände, Regeln und Übernahme geeignet handhaben.\n\nDie Analyse geht weiter: Beide Firewalls an derselben USV würden deren Ausfall weiterhin teilen. Zwei virtuelle DNS-Server auf demselben Hypervisor teilen den Host. Ein positiver Test mit einer bereits geöffneten Sitzung beweist noch nicht, dass neue Nutzer sich anmelden können. Ein guter Testplan entfernt kontrolliert jeweils eine Fehlerdomäne, prüft neue und bestehende Verbindungen und dokumentiert die Unterbrechung.\n\nFür die Bewertung benennst du: „Die einzelne Firewall beendet bei Ausfall beide Portalwege. Ein getestetes Paar mit getrennten Versorgungswegen reduziert diesen Einzelausfall. Gemeinsame Konfigurationsfehler bleiben möglich.“"
+        },
+        {
+          "type": "figure",
+          "diagramId": "ablauf",
+          "alt": "Dienst definieren, einen Punkt gedanklich entfernen, Wirkung bestimmen und eine genau passende Absicherung testen.",
+          "caption": "Abhängigkeiten einzeln prüfen – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Selbst entscheiden",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "single-points-of-failure-uebung",
+          "question": "Zwei DNS-VMs laufen auf demselben Host. Welche Gegenprobe ist besonders wichtig?",
+          "options": [
+            {
+              "text": "Den Ausfall des gemeinsamen Hosts im genehmigten Testfall betrachten.",
+              "rationale": "Richtig: Zwei Prozesse teilen hier eine physische Fehlerdomäne.",
+              "correct": true
+            },
+            {
+              "text": "Nur eine der beiden DNS-VMs neu starten.",
+              "rationale": "Das testet nicht den gemeinsamen Hostausfall.",
+              "correct": false
+            },
+            {
+              "text": "Nur die Anzahl der VM-Adressen zählen.",
+              "rationale": "Adressen sind keine unabhängigen Betriebswege.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "sequence",
+          "id": "single-points-of-failure-reihenfolge",
+          "title": "Eine SPOF-Analyse begründen",
+          "prompt": "Ordne die Schritte bezogen auf einen klar definierten Dienst.",
+          "steps": [
+            {
+              "id": "s2",
+              "label": "Einzelausfälle gedanklich durchspielen und Auswirkungen markieren"
+            },
+            {
+              "id": "s0",
+              "label": "Dienst und betroffene Nutzergruppe festlegen"
+            },
+            {
+              "id": "s3",
+              "label": "Gezielte Maßnahmen mit Ausfalltest und Restrisiko beschreiben"
+            },
+            {
+              "id": "s1",
+              "label": "Vollständige technische und unterstützende Abhängigkeiten erfassen"
+            }
+          ],
+          "expected": [
+            "s0",
+            "s1",
+            "s2",
+            "s3"
+          ],
+          "correctFeedback": "Richtig: Ein SPOF-Befund braucht eine Dienstwirkung, nicht nur ein auffälliges Symbol.",
+          "wrongFeedback": "Prüfe die erste abweichende Position. Erst Grundlagen klären, dann entscheiden und nachweisen."
+        }
+      ]
+    },
+    {
+      "title": "Aus dem Gedächtnis erklären",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "single-points-of-failure-karte-0",
+              "label": "Abruf 1",
+              "front": "Ist jeder einzelne Client ein SPOF des ganzen Netzes?",
+              "back": "Nein. Das hängt von Dienstgrenze und betroffenem Nutzerkreis ab."
+            },
+            {
+              "id": "single-points-of-failure-karte-1",
+              "label": "Abruf 2",
+              "front": "Warum neue Sitzungen testen?",
+              "back": "Bestehende Sitzungen und Caches können ausgefallene Hilfsdienste zeitweise verdecken."
+            },
+            {
+              "id": "single-points-of-failure-karte-2",
+              "label": "Abruf 3",
+              "front": "Was bleibt bei zwei identischen Geräten riskant?",
+              "back": "Gemeinsame Versorgung, Trassen, Steuerung oder Konfigurations-/Softwarefehler."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "single-points-of-failure-abruf",
+          "title": "Deine Begründung",
+          "prompt": "Ein Kollege zählt vier Server und erklärt das Portal für redundant. Welche Informationen fehlen?",
+          "label": "Eigene Erklärung",
+          "placeholder": "Meine Begründung und ihre Grenzen …",
+          "minLength": 80,
+          "model": "Ich brauche Dienst- und Datenabhängigkeiten, tatsächliche Übernahme, gemeinsame Hosts/Storage/Versorgung sowie DNS und Anmeldung. Vier Server können weiterhin an einer gemeinsamen notwendigen Komponente hängen."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "single-points-of-failure-transfer-a",
+          "question": "Zwei Gateway-Router und zwei DNS-VMs existieren, beide DNS-VMs liegen aber auf einem einzigen Host. Für neue Namensauflösung gilt:",
+          "options": [
+            {
+              "text": "Zwei VMs beweisen zwei physisch unabhängige Resolver.",
+              "rationale": "Virtuelle Instanzen können dieselbe Hardware teilen.",
+              "correct": false
+            },
+            {
+              "text": "Der Host bleibt eine gemeinsame notwendige Abhängigkeit, wenn kein weiterer Resolver verfügbar ist.",
+              "rationale": "Richtig: Die Dienstgrenze ist hier neue Namensauflösung.",
+              "correct": true
+            },
+            {
+              "text": "DNS ist nie eine Abhängigkeit, weil IP-Pakete keine Namen enthalten.",
+              "rationale": "Anwendungen brauchen häufig erst die Namensauflösung.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "spof"
+        },
+        {
+          "type": "quiz",
+          "id": "single-points-of-failure-transfer-b",
+          "question": "Welche Maßnahme adressiert den gemeinsamen Stromverteiler eines Routerpaares?",
+          "options": [
+            {
+              "text": "Nur die Router-Prioritäten ändern.",
+              "rationale": "Prioritäten liefern keinen Strom.",
+              "correct": false
+            },
+            {
+              "text": "Geeignete getrennte Versorgungspfade planen und den tatsächlichen Versorgungsausfall testen; gemeinsame vorgelagerte Quellen bleiben zu prüfen.",
+              "rationale": "Richtig: Die Maßnahme trifft die Ursache und nennt ihre Grenze.",
+              "correct": true
+            },
+            {
+              "text": "Eine zusätzliche IP-Adresse auf demselben Router eintragen.",
+              "rationale": "Eine logische Adresse überlebt keinen gemeinsamen Versorgungsausfall.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "massnahme"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Buchgrundlage: ITLF10–12, PDF-Seiten 53, 67 und 165. Eigenes Portal-/DNS-Szenario; keine reale Infrastruktur wird verändert oder zum Ausfall gebracht."
+        }
+      ]
+    }
+  ]
+}

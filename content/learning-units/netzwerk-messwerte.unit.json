@@ -1,0 +1,343 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "netzwerk-messwerte",
+    "slug": "netzwerk-messwerte",
+    "title": "Netzwerkmesswerte korrekt lesen und berechnen",
+    "description": "Auslastung, Fehlerzähler, Latenz, Verlust und Jitter mit Messfenster und Aussagegrenzen einordnen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__7",
+    "week": "KW 44",
+    "estimatedMinutes": 34,
+    "relevance": "hoch",
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "interpretation",
+      "label": "Latenz, Jitter, Zähler und Auslastung ohne unzulässige Schlussfolgerungen interpretieren"
+    },
+    {
+      "id": "auslastung",
+      "label": "die mittlere Richtungsauslastung aus einem Bytezählerdelta berechnen"
+    },
+    {
+      "id": "verlust",
+      "label": "die beobachtete Verlustquote einer abgegrenzten Messreihe berechnen"
+    }
+  ],
+  "intro": "Eine Zahl wird erst mit Einheit, Zeitraum, Messrichtung und Messverfahren zu einer Aussage. Dieselbe Verbindung kann im Mittel frei wirken und trotzdem kurze Warteschlangen erzeugen.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seiten 109 und 190",
+        "use": "Monitoring, Schwellwerte und Performance-Protokollierung",
+        "reviewStatus": "OCR geprüft; Detailmessmodelle und Zahlen eigenständig ergänzt"
+      }
+    ],
+    "notes": [
+      "ITLF10–12 Seite 51 beschreibt Skalierung, nicht die Messdefinitionen, und wird nicht als direkter Beleg verwendet.",
+      "Richtung, Byte/Bit, Zählerreset und ICMP-Aussagegrenze explizit; Jitter nicht ohne Kennzahl als universeller Zahlenwert berechnet.",
+      "Eigene Beispiele und Grafiken. Private Buchabbildungen werden nicht veröffentlicht. Menschliche Fachfreigabe steht aus."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "modell",
+      "type": "layers",
+      "title": "Zur Zahl gehört ihre Messgrundlage",
+      "description": "Menge, Zeit, Richtung und Verfahren bestimmen, welche Aussage sich aus einem Messwert ableiten lässt.",
+      "items": [
+        {
+          "label": "Auslastung",
+          "detail": "Zählerdelta je Richtung und Zeit"
+        },
+        {
+          "label": "Fehler / Drops",
+          "detail": "Zuwachs und Ursache unterscheiden"
+        },
+        {
+          "label": "Latenz / Jitter",
+          "detail": "Verzögerung und Schwankung"
+        },
+        {
+          "label": "Verlust",
+          "detail": "Fehlende von gesendeten Paketen"
+        }
+      ]
+    },
+    {
+      "id": "ablauf",
+      "type": "flow",
+      "title": "Messung vor der Diagnose prüfen",
+      "description": "Messpunkt und Fenster festlegen, gültige Differenz bilden, Einheiten umrechnen und danach Ursachenhypothesen prüfen.",
+      "items": [
+        {
+          "label": "Definition",
+          "detail": "Richtung, Einheit und Zeitraum"
+        },
+        {
+          "label": "Validität",
+          "detail": "Reset und Lücken ausschließen"
+        },
+        {
+          "label": "Berechnung",
+          "detail": "Delta und Bezugsgröße verwenden"
+        },
+        {
+          "label": "Einordnung",
+          "detail": "Mit Dienst und Pfad abgleichen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "netzwerk-messwerte-diagnose",
+          "question": "Ein Interface zeigt seit dem Start 10.000 Fehler. Ist damit die aktuelle Fehlerrate bekannt?",
+          "options": [
+            {
+              "text": "Nein. Es fehlen Zuwachs, Zeitraum und passende Bezugsgröße.",
+              "rationale": "Richtig: Ein kumulativer Zähler ist keine aktuelle Rate.",
+              "correct": true
+            },
+            {
+              "text": "Ja, es sind genau 10.000 Fehler pro Sekunde.",
+              "rationale": "Die Zählerzahl enthält keinen solchen Zeitnenner.",
+              "correct": false
+            },
+            {
+              "text": "Ja, unabhängig davon, wie lange das Gerät läuft.",
+              "rationale": "Die Lauf- und Messzeit beeinflusst die Interpretation.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Leitgedanke",
+          "markdown": "Immer fragen: Was wurde wo, wie lange und in welcher Richtung gemessen?"
+        }
+      ]
+    },
+    {
+      "title": "Fünf Messgrößen, fünf Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**Auslastung** vergleicht die Datenrate mit der betrachteten Kapazität. Bei einem Full-Duplex-Link werden Sende- und Empfangsrichtung getrennt bewertet. Ein Mittelwert über fünf Minuten kann kurze Spitzen verdecken. Welche Overheads im Zähler enthalten sind, hängt vom Messpunkt ab.\n\n**Fehlerzähler** sind häufig kumulativ. Ein großer Gesamtwert seit dem Start sagt ohne Zuwachs und Zeitfenster wenig über die aktuelle Lage. Reboot, Zählerreset oder Überlauf können einfache Differenzen ungültig machen. **Discards** sind nicht zwangsläufig Bitfehler; volle Warteschlangen oder Richtlinien können ebenfalls verwerfen.\n\n**Latenz** bezeichnet Verzögerung. ping misst üblicherweise eine Round-Trip-Zeit, nicht direkt die Einweglatenz. Halbieren setzt Annahmen über beide Richtungen voraus. **Paketverlust** braucht einen Nenner: gesendete Pakete einer abgegrenzten Messung. Ausbleibende ICMP-Antworten können außerdem durch Filterung oder geringere Priorisierung entstehen; sie beweisen nicht denselben Verlust für jeden Anwendungsfluss.\n\n**Jitter** beschreibt Schwankung der Verzögerung; die genaue Kennzahl muss genannt werden. Hohe konstante Latenz ist etwas anderes als stark schwankende Latenz. Für Echtzeitdienste sind beide wichtig. Ursache und Messsymptom bleiben getrennt: Eine hohe Auslastung zusammen mit steigender Latenz stützt eine Warteschlangenhypothese, beweist sie aber nicht allein."
+        },
+        {
+          "type": "figure",
+          "diagramId": "modell",
+          "alt": "Menge, Zeit, Richtung und Verfahren bestimmen, welche Aussage sich aus einem Messwert ableiten lässt.",
+          "caption": "Zur Zahl gehört ihre Messgrundlage – eigenes Lernmodell."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Auslastung ist Bytezählerdelta mal acht geteilt durch Zeitdelta mal Linkkapazität, mal hundert Prozent",
+          "mathml": "<math display=\"block\"><mrow><mi>U</mi><mo>=</mo><mfrac><mrow><mi>ΔB</mi><mo>·</mo><mn>8</mn></mrow><mrow><mi>Δt</mi><mo>·</mo><mi>C</mi></mrow></mfrac><mo>·</mo><mn>100</mn><mo>%</mo></mrow></math>",
+          "legend": [
+            "ΔB: Bytezählerzuwachs einer Richtung",
+            "Δt: Sekunden; C: Kapazität dieser Richtung in bit/s",
+            "Gültige Differenz ohne Reset/Überlauf; Dezimaleinheiten"
+          ]
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Beobachteter Paketverlust ist gesendet minus empfangen, geteilt durch gesendet, mal hundert Prozent",
+          "mathml": "<math display=\"block\"><mrow><mi>L</mi><mo>=</mo><mfrac><mrow><mi>gesendet</mi><mo>−</mo><mi>empfangen</mi></mrow><mi>gesendet</mi></mfrac><mo>·</mo><mn>100</mn><mo>%</mo></mrow></math>",
+          "legend": [
+            "Abgegrenzte Messreihe mit eindeutiger Zuordnung",
+            "Messverlust ist noch keine allgemeine Aussage über jede Anwendung"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Sendezähler steigt in 10 Sekunden von 1.000.000.000 auf 1.125.000.000 Byte. Das Delta sind 125.000.000 Byte, entsprechend 1.000.000.000 Bit. Pro Sekunde sind das 100.000.000 Bit. Bei einer Richtungskapazität von 1.000.000.000 bit/s ergibt sich 10 Prozent mittlere Auslastung. Der Full-Duplex-Empfang wird nicht in denselben Nenner hineingemischt.\n\nEin Fehlerzähler steigt gleichzeitig von 20 auf 23. Das sind drei neue Fehler, nicht 23 neue Fehler. Ob dies relevant ist, hängt zusätzlich von Paketmenge, Art der Fehler und Vergleichswerten ab. Nach einem Reset wäre eine negative Differenz kein negativer Verkehr, sondern ein ungültiges Messintervall.\n\nIn einer eigenen Testreihe werden 500 eindeutig nummerierte Pakete gesendet und 490 im vorgegebenen Zeitfenster empfangen. Zehn fehlen, also zwei Prozent. Danach vergleichst du die Messung mit dem betroffenen Anwendungsfluss und dem Pfad. Du behauptest nicht, jede Verbindung verliere genau zwei Prozent."
+        },
+        {
+          "type": "figure",
+          "diagramId": "ablauf",
+          "alt": "Messpunkt und Fenster festlegen, gültige Differenz bilden, Einheiten umrechnen und danach Ursachenhypothesen prüfen.",
+          "caption": "Messung vor der Diagnose prüfen – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Selbst entscheiden",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "netzwerk-messwerte-uebung",
+          "question": "ping zeigt 40 ms RTT. Kannst du daraus ohne weitere Annahmen 20 ms Einweglatenz folgern?",
+          "options": [
+            {
+              "text": "Ja, jede Route ist in beiden Richtungen identisch.",
+              "rationale": "Asymmetrische Wege und unterschiedliche Last sind möglich.",
+              "correct": false
+            },
+            {
+              "text": "Nein. Hin- und Rückweg sowie Verarbeitung können unterschiedlich sein.",
+              "rationale": "Richtig: Halbierung setzt zusätzliche Symmetrieannahmen voraus.",
+              "correct": true
+            },
+            {
+              "text": "Ja, weil RTT nur den Hinweg misst.",
+              "rationale": "RTT umfasst den Hin- und Rückweg.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "sequence",
+          "id": "netzwerk-messwerte-reihenfolge",
+          "title": "Eine Auslastung berechnen",
+          "prompt": "Ordne die Messauswertung.",
+          "steps": [
+            {
+              "id": "s2",
+              "label": "Byte in Bit und dann in Datenrate umrechnen"
+            },
+            {
+              "id": "s0",
+              "label": "Richtung, Linkkapazität und Messzeitraum festhalten"
+            },
+            {
+              "id": "s3",
+              "label": "Durch Richtungskapazität teilen und Ergebnis einordnen"
+            },
+            {
+              "id": "s1",
+              "label": "Gültiges Bytezählerdelta ohne Reset bestimmen"
+            }
+          ],
+          "expected": [
+            "s0",
+            "s1",
+            "s2",
+            "s3"
+          ],
+          "correctFeedback": "Richtig: Zählerdelta, Zeit und Kapazität müssen zur gleichen Richtung passen.",
+          "wrongFeedback": "Prüfe die erste abweichende Position. Erst Grundlagen klären, dann entscheiden und nachweisen."
+        }
+      ]
+    },
+    {
+      "title": "Aus dem Gedächtnis erklären",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "netzwerk-messwerte-karte-0",
+              "label": "Abruf 1",
+              "front": "Hohe Latenz gleich hoher Jitter?",
+              "back": "Nein. Verzögerung kann hoch, aber konstant sein; Jitter beschreibt ihre Schwankung."
+            },
+            {
+              "id": "netzwerk-messwerte-karte-1",
+              "label": "Abruf 2",
+              "front": "Warum Zählerdifferenzen?",
+              "back": "Kumulative Gesamtstände werden erst durch Differenz und Zeitraum zur aktuellen Rate."
+            },
+            {
+              "id": "netzwerk-messwerte-karte-2",
+              "label": "Abruf 3",
+              "front": "Was bedeutet ein negativer Zählerzuwachs?",
+              "back": "Möglicherweise Reset oder Überlauf; das Intervall darf nicht blind als negativer Verkehr ausgewertet werden."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "netzwerk-messwerte-abruf",
+          "title": "Deine Begründung",
+          "prompt": "Ein Fünf-Minuten-Mittelwert zeigt 20 Prozent, während Telefonate stocken. Warum ist die Leitung damit nicht entlastet?",
+          "label": "Eigene Erklärung",
+          "placeholder": "Meine Begründung und ihre Grenzen …",
+          "minLength": 80,
+          "model": "Das Mittel kann kurze Spitzen und Warteschlangen verdecken. Ich prüfe kleinere Zeitfenster, Latenzschwankung, Verlust und die betroffene Richtung beziehungsweise Verkehrsklasse. Der Durchschnitt allein schließt ein Echtzeitproblem nicht aus."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "netzwerk-messwerte-transfer-a",
+          "question": "Welche Aussage zu stockender Telefonie und Interface-Messwerten ist belastbar?",
+          "options": [
+            {
+              "text": "Niedrige Durchschnittsauslastung schließt jede Warteschlange aus.",
+              "rationale": "Kurze Spitzen können im Mittel verborgen bleiben.",
+              "correct": false
+            },
+            {
+              "text": "Jeder Discard beweist ein beschädigtes Kabel.",
+              "rationale": "Discards können auch durch Warteschlangen oder Richtlinien entstehen.",
+              "correct": false
+            },
+            {
+              "text": "Jitter und Verlust im passenden Messfluss prüfen; Mittelwerte und kumulative Zähler allein beweisen keine Ursache.",
+              "rationale": "Richtig: Messverfahren und Dienstwirkung müssen zusammenpassen.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "interpretation"
+        },
+        {
+          "type": "numeric",
+          "id": "netzwerk-messwerte-transfer-b",
+          "requiredObjective": "auslastung",
+          "prompt": "Ein gültiger Sendezähler steigt in 10 Sekunden um 250.000.000 Byte. Die Richtungskapazität beträgt 1.000.000.000 bit/s. Wie hoch ist die mittlere Auslastung dieser Richtung in Prozent? Ganze Zahl.",
+          "expected": 20,
+          "tolerance": 0,
+          "label": "Auslastung in Prozent",
+          "correctFeedback": "20 Prozent: 250.000.000 × 8 / 10 = 200.000.000 bit/s; geteilt durch 1.000.000.000 bit/s.",
+          "wrongFeedback": "Byte zuerst mit acht in Bit umrechnen, dann durch zehn Sekunden und die Richtungskapazität teilen. 2,5 Prozent lässt die Byte/Bit-Umrechnung aus."
+        },
+        {
+          "type": "numeric",
+          "id": "netzwerk-messwerte-transfer-verlust",
+          "requiredObjective": "verlust",
+          "prompt": "In einer abgegrenzten Testreihe werden 800 Pakete gesendet und 788 eindeutig zugeordnet innerhalb des Messfensters empfangen. Wie hoch ist der beobachtete Verlust in Prozent? Eine Nachkommastelle.",
+          "expected": 1.5,
+          "tolerance": 0.01,
+          "label": "Beobachteter Verlust in Prozent",
+          "correctFeedback": "1,5 Prozent: 12 fehlende Pakete geteilt durch 800 gesendete, mal 100.",
+          "wrongFeedback": "Der Nenner sind die 800 gesendeten Pakete. Zwölf ist die Anzahl fehlender Pakete, noch nicht die Prozentzahl."
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Buchkontext: ITLF10–12, PDF-Seiten 109 und 190. Eigene Messreihen und offengelegte Rechenmodelle; Zählersemantik muss zur MIB beziehungsweise zum Messgerät passen. Die Prozentwerte beschreiben nur die jeweilige Messung. Zur Messdefinition: [RFC 3393 – Delay Variation](https://www.rfc-editor.org/rfc/rfc3393.html) und [RFC 2680 – Paketverlust](https://www.rfc-editor.org/rfc/rfc2680.html)."
+        }
+      ]
+    }
+  ]
+}

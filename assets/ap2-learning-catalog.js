@@ -2328,6 +2328,203 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "netzwerkredundanz",
+    "slug": "netzwerkredundanz",
+    "title": "Netzwerkredundanz bis zum Ausfallfall planen",
+    "description": "Doppelte Uplinks, Ringstrukturen und N+1 nach verbleibender Kapazität und gemeinsamen Fehlern beurteilen.",
+    "domain": "GA2",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__0",
+    "week": "KW 44",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "ausfallwege",
+      "restkapazitaet"
+    ],
+    "sources": [
+      "europa-integratoren-2026"
+    ],
+    "contentHash": "b00993981e548433cd9bd42aa66b429ac77bd3a02ce09a76c7321747fd996219",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "vrrp-hsrp",
+    "slug": "vrrp-hsrp",
+    "title": "Gateway-Failover mit VRRP und HSRP erklären",
+    "description": "Virtuelle IP/MAC, Priorität, Ausfallerkennung und Grenzen der Gateway-Redundanz nachvollziehen.",
+    "domain": "GA2",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__1",
+    "week": "KW 44",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "failover",
+      "grenzen"
+    ],
+    "sources": [
+      "europa-integratoren-2026"
+    ],
+    "contentHash": "2bd7aa997dbb1df8d468f17d982b5f65ba28823e2de64f7780a94eace6709de6",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "verfuegbarkeit-berechnen",
+    "slug": "verfuegbarkeit-berechnen",
+    "title": "Verfügbarkeit und Ausfallzeit sauber berechnen",
+    "description": "Zeitanteile, Reihensysteme und unabhängige Parallelpfade mit klaren Annahmen berechnen.",
+    "domain": "GA2",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__2",
+    "week": "KW 44",
+    "estimatedMinutes": 38,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "modell",
+      "ausfallzeit",
+      "reihe",
+      "parallel"
+    ],
+    "sources": [
+      "itlf6-9-2022",
+      "itlf10-12-2023"
+    ],
+    "contentHash": "3094689030e5477dc00cc44340da4cfa4dae564c67b1aa6cff72b65feaad36df",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "single-points-of-failure",
+    "slug": "single-points-of-failure",
+    "title": "Single Points of Failure im Netzplan finden",
+    "description": "Dienstabhängigkeiten verfolgen und gemeinsame technische oder organisatorische Ausfallpunkte erkennen.",
+    "domain": "GA2",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__3",
+    "week": "KW 44",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "spof",
+      "massnahme"
+    ],
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentHash": "9f0274dab37886b600033669714938dc5ff86922dda223f44730215551862d3c",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "usv-technikraum",
+    "slug": "usv-technikraum",
+    "title": "USV und Technikraum für den Dienst auslegen",
+    "description": "Watt, VA, Laufzeit und Wärmeabfuhr zusammen betrachten, statt nur die USV-Nennzahl zu vergleichen.",
+    "domain": "GA2",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__4",
+    "week": "KW 44",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "auslegung",
+      "leistung"
+    ],
+    "sources": [
+      "europa-integratoren-2026"
+    ],
+    "contentHash": "1da9756f4c637038b7c3ac564926ef31a2885ba5cee7c75e77ab90ecb18c422d",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "sla-netzdienste",
+    "slug": "sla-netzdienste",
+    "title": "Netzdienste mit messbaren SLA-Zielen vereinbaren",
+    "description": "Verfügbarkeit, Reaktionszeit, Wiederherstellung und vereinbarte Folgen einer Abweichung getrennt beurteilen.",
+    "domain": "GA2",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__5",
+    "week": "KW 44",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "zeiten",
+      "budget"
+    ],
+    "sources": [
+      "itlf6-9-2022",
+      "europa-integratoren-2026"
+    ],
+    "contentHash": "8c48228725c973bcfb527063071b69f7231e08562b9e525acccb49b591842c21",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "snmp-netflow-syslog",
+    "slug": "snmp-netflow-syslog",
+    "title": "Monitoringquellen zu einer brauchbaren Alarmierung verbinden",
+    "description": "SNMP, Flowdaten und Syslog nach Aussage, Grenzen und Alarmierungsaufgabe auswählen.",
+    "domain": "GA2",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__6",
+    "week": "KW 44",
+    "estimatedMinutes": 32,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "datenquellen",
+      "alarmierung"
+    ],
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentHash": "cb176cefe74f3492584fb85e95d237124f614f6594d0c42992a9f0e7478aba1a",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "netzwerk-messwerte",
+    "slug": "netzwerk-messwerte",
+    "title": "Netzwerkmesswerte korrekt lesen und berechnen",
+    "description": "Auslastung, Fehlerzähler, Latenz, Verlust und Jitter mit Messfenster und Aussagegrenzen einordnen.",
+    "domain": "GA2",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__7",
+    "week": "KW 44",
+    "estimatedMinutes": 34,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "interpretation",
+      "auslastung",
+      "verlust"
+    ],
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentHash": "37eb28c4901c92a260a98268bb787236483dff3cc7bbd0b77530f2c390b11489",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "company-goals",
     "slug": "company-goals",
     "title": "Unternehmensziele und Zielkonflikte sicher abwägen",
