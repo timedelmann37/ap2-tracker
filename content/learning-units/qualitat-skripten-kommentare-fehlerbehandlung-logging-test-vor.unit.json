@@ -1,0 +1,322 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor",
+    "slug": "qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor",
+    "title": "Administrationsskripte sicher prüfen und betreiben",
+    "description": "Eingaben, Fehlerbehandlung, Logging und Wiederholungstests für eine begrenzte Automatisierung beurteilen und nachvollziehbar dokumentieren.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-9",
+    "groupLabel": "Programme zur automatisierten Systemverwaltung",
+    "itemId": "ga1-9__15",
+    "week": "KW 43",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentRevision": "2026-09-14.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "sicherer-ablauf",
+      "label": "Vorschau, Änderung und Fehlerbehandlung voneinander unterscheiden"
+    },
+    {
+      "id": "nachweis",
+      "label": "einen aussagekräftigen Test- und Protokollnachweis auswählen"
+    }
+  ],
+  "intro": "Ein Skript soll einen Auftrag zuverlässig erfüllen – auch bei ungültigen Daten, fehlenden Rechten und erneuter Ausführung. Du prüfst hier einen eigenen Ablauf auf Papier und im Browser. Es werden keine Verwaltungsbefehle ausgeführt.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "OCR PDF-Seite 122, Abschnitte Informationsquellen für Skripting und Versionierung",
+        "use": "Quellenkritik, Testsysteme und nachvollziehbare Skriptstände",
+        "reviewStatus": "Abschnitt gelesen; Kontextbeleg, keine Vorlage für Beispielcode"
+      }
+    ],
+    "notes": [
+      "Ergänzender didaktischer Impuls: https://ausbildung-in-der-it.de/lernen/systemintegration/lektion/administrationsaufgabe-automatisieren ; eigenes Statusbericht-Szenario statt fremdem Ordnerskript.",
+      "PowerShell-Fakten gegen Microsoft Learn zu ShouldProcess und about_Try_Catch_Finally geprüft am 14.09.2026. Kein ausführbares Administrationsskript.",
+      "Mapping-Treffer PDF-Seite 298 behandelt Projektarbeit, nicht Skriptqualität; nicht als direkter Beleg übernommen. Menschliche Fachfreigabe offen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "kontrollen",
+      "type": "layers",
+      "title": "Vier unterschiedliche Nachweise",
+      "description": "Gültige Eingabe ist nicht erfolgreiche Ausführung.",
+      "items": [
+        {
+          "label": "Eingabe",
+          "detail": "Auftrag und Ziel sind zulässig"
+        },
+        {
+          "label": "Vorschau",
+          "detail": "Geplante Wirkung ist verständlich"
+        },
+        {
+          "label": "Ausführung",
+          "detail": "Ergebnis und Fehler sind erfasst"
+        },
+        {
+          "label": "Abnahme",
+          "detail": "Sollzustand wurde geprüft"
+        }
+      ]
+    },
+    {
+      "id": "ablauf",
+      "type": "flow",
+      "title": "Vom Auftrag zum überprüften Ergebnis",
+      "description": "Kontrollen vor und nach der Änderung.",
+      "items": [
+        {
+          "label": "Voraussetzungen",
+          "detail": "Auftrag, Eingaben und erlaubte Ziele prüfen"
+        },
+        {
+          "label": "Vorschau",
+          "detail": "Plan in Testumgebung als Vorschau prüfen"
+        },
+        {
+          "label": "Ausführung",
+          "detail": "Freigegebene Änderungen mit Fehlerbehandlung ausführen"
+        },
+        {
+          "label": "Abnahme",
+          "detail": "Soll-Ist-Vergleich und Wiederholungstest dokumentieren"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-diagnose",
+          "question": "Eine Vorschau zeigt die erwartete Änderung. Was weißt du damit?",
+          "options": [
+            {
+              "text": "Die spätere Ausführung gelingt sicher.",
+              "rationale": "Zustand und Berechtigungen können sich noch ändern.",
+              "correct": false
+            },
+            {
+              "text": "Der geplante Eingriff ist sichtbar; sein Erfolg ist noch nicht nachgewiesen.",
+              "rationale": "Eine Vorschau ersetzt weder Ausführung noch Nachkontrolle.",
+              "correct": true
+            },
+            {
+              "text": "Das Skript benötigt keine Fehlerbehandlung mehr.",
+              "rationale": "Auch ein plausibler Plan kann während der Ausführung scheitern.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Kontrollen statt blindem Ablauf",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Lege vor dem Schreiben fest: Was soll nach dem Lauf gelten, welche Ziele sind erlaubt und was muss unverändert bleiben? Prüfe Pflichtfelder, zulässige Werte und doppelte Kennungen vor dem ersten schreibenden Schritt. Ein unklarer Auftrag wird nicht durch mehr Automatisierung sicherer.\n\nKommentare erklären Entscheidungen und Grenzen, statt jede Codezeile nachzuerzählen. Dokumentiere Voraussetzungen, Aufruf, Rechtebedarf, erwartete Ergebnisse, Fehlerreaktion und zuständige Person. Eine Versionskennung verbindet das getestete Skript mit dem später eingesetzten Stand."
+        },
+        {
+          "type": "figure",
+          "diagramId": "kontrollen",
+          "alt": "Eingabeprüfung, Vorschau, Ausführung und Abnahme liefern verschiedene Nachweise.",
+          "caption": "Eigene Übersicht: Kein einzelner grüner Status ersetzt alle Kontrollen."
+        },
+        {
+          "type": "markdown",
+          "markdown": "In PowerShell muss eine Vorschau tatsächlich unterstützt und an den Änderungsstellen umgesetzt sein. Bei korrekt eingebundenem ShouldProcess unterdrückt -WhatIf diese Änderung; beliebiger Code außerhalb der Prüfung wird dadurch nicht automatisch sicher. Prüfe die Wirkung in einer Testumgebung.\n\ntry/catch behandelt terminierende Fehler. Ein nicht terminierender Cmdlet-Fehler erreicht catch nicht ohne passende Behandlung, beispielsweise -ErrorAction Stop beim betreffenden Cmdlet. finally ist für Abschlussarbeiten gedacht, nicht als bedingungslose Erfolgsmeldung. Eine Fehlermeldung zu unterdrücken stellt den Sollzustand nicht her."
+        }
+      ]
+    },
+    {
+      "title": "Eigener Fall: Statusberichte bereitstellen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Team will für drei freigegebene Testgeräte je einen Statusbericht erzeugen. Der Lauf darf nur die Testablage verwenden. A liefert Daten, B ist nicht erreichbar, C liefert Daten. Im vereinbarten Modell sind die Berichte unabhängig: Nach einem Gerätefehler darf der Lauf mit dem nächsten Gerät fortfahren, aber am Ende nicht vollständigen Erfolg melden.\n\nFür A und C wird jeweils geprüft, ob ein lesbarer Bericht mit passender Gerätekennung und Laufkennung vorliegt. Für B wird ein fehlgeschlagener Abruf dokumentiert. Der Gesamtstatus lautet daher Teilerfolg. Ein erfolgreicher letzter Schritt darf den vorherigen Fehler nicht verdecken.\n\nDas Protokoll enthält Laufkennung, Skriptversion, Zielkennung, Schritt, Ergebnis und eine bereinigte Fehlerklasse. Zugangstoken, Kennwörter und vollständige vertrauliche Nutzdaten gehören nicht hinein. Protokollzugriff und Aufbewahrung müssen zum betrieblichen Konzept passen."
+        },
+        {
+          "type": "figure",
+          "diagramId": "ablauf",
+          "alt": "Auftrag prüfen, Vorschau testen, freigegeben ausführen, Soll-Ist-Vergleich und Wiederholung testen.",
+          "caption": "Eigene Ablaufskizze. Fortsetzen oder Abbrechen hängt von den vereinbarten Abhängigkeiten ab."
+        }
+      ]
+    },
+    {
+      "title": "Vorhersagen und prüfen",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-quellenfall",
+          "question": "Im beschriebenen Lauf scheitert B, C gelingt. Welche Abschlussmeldung passt?",
+          "options": [
+            {
+              "text": "Alles erfolgreich, weil der letzte Abruf gelang.",
+              "rationale": "Das Ergebnis von C beseitigt den Fehler bei B nicht.",
+              "correct": false
+            },
+            {
+              "text": "Teilerfolg: A und C geprüft, B fehlgeschlagen.",
+              "rationale": "Die Meldung bildet die unabhängigen Teilergebnisse ab.",
+              "correct": true
+            },
+            {
+              "text": "Keine Berichte vorhanden.",
+              "rationale": "Das widerspricht den erfolgreichen, geprüften Berichten für A und C.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "sequence",
+          "id": "qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-reihenfolge",
+          "title": "Qualitätssicherung ordnen",
+          "prompt": "Ordne den freigegebenen Ablauf.",
+          "steps": [
+            {
+              "id": "s2",
+              "label": "Freigegebene Änderungen mit Fehlerbehandlung ausführen"
+            },
+            {
+              "id": "s0",
+              "label": "Auftrag, Eingaben und erlaubte Ziele prüfen"
+            },
+            {
+              "id": "s3",
+              "label": "Soll-Ist-Vergleich und Wiederholungstest dokumentieren"
+            },
+            {
+              "id": "s1",
+              "label": "Plan in Testumgebung als Vorschau prüfen"
+            }
+          ],
+          "expected": [
+            "s0",
+            "s1",
+            "s2",
+            "s3"
+          ],
+          "correctFeedback": "Erst Voraussetzungen und Vorschau prüfen, danach ausführen und den erreichten Zustand nachweisen.",
+          "wrongFeedback": "Eine Freigabe braucht vorher einen geprüften Plan; eine Abnahme braucht ein tatsächliches Ergebnis."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Wiederholbarkeit bedeutet nicht automatisch, dass jeder Lauf denselben Dateinamen überschreiben soll. Für diesen Fall wird je Laufkennung genau ein Bericht pro Gerät erwartet. Eine erneute Verarbeitung derselben Laufkennung darf keine widersprüchlichen Dubletten erzeugen; ein späterer geplanter Lauf darf dagegen einen neuen Bericht erzeugen. Lege diese Semantik vor dem Test fest.\n\nTeste mindestens: gültige Eingabe, ungültige Kennung ohne Schreibwirkung, bereits verarbeitetes Ziel, unerreichbares Gerät und fehlendes Schreibrecht. Prüfe auch, was bei parallelen Läufen geschieht. Ein vorheriger Existenztest allein verhindert keinen Wettlauf zweier Prozesse."
+        }
+      ]
+    },
+    {
+      "title": "Aus dem Gedächtnis erklären",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-karte-0",
+              "label": "Vorschau",
+              "front": "Was beweist -WhatIf nicht?",
+              "back": "Nicht den späteren Erfolg und nicht die Sicherheit beliebiger ungeschützter Änderungsstellen."
+            },
+            {
+              "id": "qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-karte-1",
+              "label": "Fehler",
+              "front": "Warum reicht try/catch nicht für jeden Cmdlet-Fehler?",
+              "back": "catch verarbeitet terminierende Fehler; nicht terminierende Fehler brauchen eine passende Behandlung."
+            },
+            {
+              "id": "qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-karte-2",
+              "label": "Protokoll",
+              "front": "Warum gehört die Skriptversion ins Laufprotokoll?",
+              "back": "Damit ein Ergebnis einem konkreten, nachvollziehbaren Implementierungsstand zugeordnet werden kann."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-quellenbegruendung",
+          "title": "Dein Testplan",
+          "prompt": "Plane den Fall fehlender Schreibrechte: erwartete Wirkung, Fehlernachweis und Abschlussstatus. Erkläre, welche Daten nicht ins Protokoll gehören.",
+          "label": "Deine Begründung",
+          "minLength": 80,
+          "model": "In einer freigegebenen Testumgebung lasse ich das Schreiben scheitern. Es darf kein gültiger Bericht behauptet werden. Lauf-, Ziel- und Versionskennung sowie eine bereinigte Fehlerklasse erklären den Fehlschlag. Der Abschlussstatus meldet mindestens einen Fehler beziehungsweise Teilerfolg, nicht vollständigen Erfolg. Geheimnisse und vertrauliche Berichtsinhalte bleiben aus dem Protokoll."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-transfer-a",
+          "question": "Ein anderes Skript ändert ein gemeinsames Konfigurationsobjekt in abhängigen Schritten. Schritt zwei scheitert. Welche Entscheidung ist tragfähig?",
+          "options": [
+            {
+              "text": "Wie beim unabhängigen Berichtslauf immer fortsetzen.",
+              "rationale": "Hier hängen die Schritte voneinander ab; die Strategie ist nicht übertragbar.",
+              "correct": false
+            },
+            {
+              "text": "Den Fehler ausblenden und Erfolg melden.",
+              "rationale": "Damit wäre der erreichte Zustand unbekannt und die Meldung falsch.",
+              "correct": false
+            },
+            {
+              "text": "Nach festgelegter Fehlerstrategie stoppen, Zustand prüfen und nur kontrolliert rückgängig machen.",
+              "rationale": "Abhängigkeiten bestimmen das Vorgehen; ein Rollback darf fremde Änderungen nicht überschreiben.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "sicherer-ablauf"
+        },
+        {
+          "type": "quiz",
+          "id": "qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-transfer-b",
+          "question": "Welcher Nachweis stützt die Freigabe eines neuen Skriptstands am besten?",
+          "options": [
+            {
+              "text": "Versionierter Testbericht mit Soll/Ist für Normal-, Wiederholungs- und Fehlerfälle unter dokumentierten Bedingungen.",
+              "rationale": "Die Wirkung und Grenzen sind nachvollziehbar, auch wenn Tests nicht jeden möglichen Fehler ausschließen.",
+              "correct": true
+            },
+            {
+              "text": "Ein Screenshot der Vorschau.",
+              "rationale": "Er zeigt nicht den erreichten Zustand nach echter Ausführung.",
+              "correct": false
+            },
+            {
+              "text": "Nur ein Kommentar: funktioniert.",
+              "rationale": "Ohne Testfälle und Ergebnisse lässt sich die Aussage nicht prüfen.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "nachweis"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Buchkontext: ITLF10–12, PDF-Seite 122, Testsysteme und Versionierung. Ergänzender didaktischer Impuls: [Ausbildung in der IT – Administrationsaufgabe automatisieren](https://ausbildung-in-der-it.de/lernen/systemintegration/lektion/administrationsaufgabe-automatisieren). Eigene Fälle und Grafiken, keine übernommenen Skripte.\n\nPowerShell-Fachabgleich am 14.09.2026: [Microsoft Learn – ShouldProcess](https://learn.microsoft.com/en-us/powershell/scripting/learn/deep-dives/everything-about-shouldprocess?view=powershell-7.5) und [try/catch/finally](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_try_catch_finally?view=powershell-7.5). Dies ist eine Entwurfs- und Prüflektion, kein produktionsfertiges Skript. Konkrete Rechte, Aufbewahrung und Rücknahme müssen im jeweiligen Betrieb festgelegt werden."
+        }
+      ]
+    }
+  ]
+}

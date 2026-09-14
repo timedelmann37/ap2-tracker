@@ -134,8 +134,24 @@ Revision jeweils `2026-09-14.1`, weiterhin `CURATED_DRAFT`, Pflichtziele unverä
 390/1440px, beide Themes, Tastatur und Speicherung geprüft, beide neuen Fälle
 visuell kontrolliert. Kein erneuter vollständiger Navigationstest.
 
+Vierte Einbindung am 14.09.2026: vollständige neue Einheit für `ga1-9__15`,
+„Qualität von Skripten“, unter
+`/lernen/qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor/`.
+Eigener Statusbericht-Fall mit Eingabeprüfung, Vorschau, unabhängigen und
+abhängigen Fehlerfällen, Wiederholung, Logging und Freigabe. Zwei eigene
+Diagramme, Diagnose, Sortierung, Karten, Selbsterklärung und zwei Pflichtziele.
+Buchkontext: ITLF10–12 PDF-Seite 122, Testsysteme/Versionierung. Die gemappte
+Seite 298 ist kein direkter Skriptbeleg. Portal-Automatisierungslektion als
+didaktischer Impuls; ShouldProcess und try/catch gegen Microsoft Learn geprüft.
+Keine fremden Skripte übernommen oder ausgeführt. `CURATED_DRAFT`.
+
+Verifikation: `npm test` erfolgreich; gezielte Browserprüfung der acht
+Quellenfälle einschließlich Pflichtzielen, Wiederladen, Rücknahme, Sortierung,
+Karten und beiden Themes erfolgreich. Neue Diagramme mobil und am Desktop
+visuell geprüft. Abdeckung jetzt 115/380; GA1 7/164.
+
 Noch nicht umgesetzt: die weiteren Zuordnungsvorschläge für
-Automatisierung, Alternativen und WiSo. Die URL-Inventur bleibt
+Alternativen und WiSo; weitere Automatisierungs-Kernthemen bleiben offen. Die URL-Inventur bleibt
 eine Lesewarteschlange und wird durch diesen Batch nicht pauschal als geprüft
 markiert.
 

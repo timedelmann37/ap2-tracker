@@ -1,6 +1,6 @@
 import { chromium } from 'playwright';
 const base = process.env.AP2_BASE_URL || 'http://127.0.0.1:4321';
-const cases = [['netzwerk-messwerte', 1], ['konfiguration-beschreiben', 2], ['ga2-zeitmanagement', 0], ['backup-methods', 1], ['backup-window', 2], ['segmentierung-vorteile', 1], ['zero-trust-segmentierung', 2]];
+const cases = [['netzwerk-messwerte', 1], ['konfiguration-beschreiben', 2], ['ga2-zeitmanagement', 0], ['backup-methods', 1], ['backup-window', 2], ['segmentierung-vorteile', 1], ['zero-trust-segmentierung', 2], ['qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor', 1]];
 const assert = (ok, message) => { if (!ok) throw new Error(message); };
 const browser = await chromium.launch();
 try {
@@ -48,6 +48,46 @@ try {
       }
     }
     console.log(`PASS source case: ${slug}, keyboard, persistence, objective isolation, mobile/themes`);
+    if (slug === 'qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor') {
+      const done = page.locator('#mark-done');
+      const first = page.locator(`[data-quiz="${slug}-transfer-a"]`);
+      await first.locator('[data-answer="0"]').click();
+      assert(await done.isDisabled(), 'Wrong transfer answer keeps gate closed');
+      await first.locator('[data-quiz-reset]').click();
+      await first.locator('[data-answer="2"]').click();
+      assert(await done.isDisabled(), 'One objective is insufficient');
+      await page.locator(`[data-quiz="${slug}-transfer-b"] [data-answer="0"]`).click();
+      assert(!await done.isDisabled(), 'Both objectives unlock completion');
+      await page.reload();
+      assert(!await done.isDisabled(), 'Objectives persist after reload');
+      await done.click();
+      assert(await done.getAttribute('aria-pressed') === 'true', 'Learned state set');
+      await done.click();
+      assert(await done.getAttribute('aria-pressed') === 'false', 'Learned state undone');
+      const sequence = page.locator(`[data-sequence="${slug}-reihenfolge"]`);
+      for (const step of ['s0', 's1', 's1']) {
+        await sequence.locator(`[data-step="${step}"] [data-move="up"]`).focus();
+        await page.keyboard.press('Enter');
+      }
+      await sequence.locator('[data-sequence-check]').click();
+      assert((await sequence.locator('[data-sequence-feedback]').textContent()).includes('Erst Voraussetzungen'), 'Sequence solved by keyboard');
+      const card = page.locator(`[data-flashcard="${slug}-karte-0"]`);
+      await card.focus();
+      await page.keyboard.press('Enter');
+      assert(await card.getAttribute('aria-pressed') === 'true', 'Card keyboard interaction');
+      assert(await page.locator('.learning-diagram').count() === 2, 'Two instructional diagrams');
+      if (process.env.AP2_SOURCE_CAPTURE === '1') {
+        for (const width of [390,1440]) {
+          await page.setViewportSize({width,height:1000});
+          for (const theme of ['light','dark']) {
+            await page.evaluate(t => document.documentElement.setAttribute('data-theme',t),theme);
+            await page.locator('.learning-figure').last().scrollIntoViewIfNeeded();
+            await page.screenshot({path:`.auto-diagram-${width}-${theme}.png`,animations:'disabled'});
+          }
+        }
+      }
+      console.log('PASS automation unit: mandatory objectives, persistence, undo, sequence and cards');
+    }
   }
   assert(!errors.length, errors.join('\n'));
 } finally {

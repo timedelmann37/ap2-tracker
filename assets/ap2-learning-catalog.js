@@ -156,6 +156,30 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "legacy-markdown"
   },
   {
+    "id": "qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor",
+    "slug": "qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor",
+    "title": "Administrationsskripte sicher prüfen und betreiben",
+    "description": "Eingaben, Fehlerbehandlung, Logging und Wiederholungstests für eine begrenzte Automatisierung beurteilen und nachvollziehbar dokumentieren.",
+    "domain": "GA1",
+    "groupId": "ga1-9",
+    "groupLabel": "Programme zur automatisierten Systemverwaltung",
+    "itemId": "ga1-9__15",
+    "week": "KW 43",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-14.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "sicherer-ablauf",
+      "nachweis"
+    ],
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentHash": "ea70b454421353d98b1e0d55bdeb9512277d56034e894fa6169355516d00e470",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "osi-model",
     "slug": "osi-model",
     "title": "Das OSI-Schichtenmodell sicher anwenden",
