@@ -56,7 +56,11 @@ try {
     assert(await topicLink.count() === 1, `${topic.slug}: canonical area item exposes exactly one learning link`);
   }
   await page.goto(`${base}/uebersicht/`);
-  await page.locator('button[data-jump="ga1-3"]').click();
+  const storageRow = page.locator('button[data-jump="ga1-3"]');
+  const storageWeek = page.locator('details.tl-week').filter({ has: storageRow });
+  // Past weeks collapse as the calendar advances; open them like a user would.
+  if (await storageWeek.getAttribute('open') === null) await storageWeek.locator('summary').click();
+  await storageRow.click();
   await page.waitForURL('**/konzeption-administration/#ga1-3');
   const storageLink = page.locator('a.learning-link[href="/lernen/storage-types/"]');
   await storageLink.waitFor({ state: 'visible' });
