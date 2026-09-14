@@ -124,8 +124,18 @@ einschließlich falscher/richtiger Gesamtdauer, Tastatur, Speicherung und
 390/1440px in beiden Themes. Beide neuen Fälle visuell kontrolliert. Der
 vollständige Navigation-/Atmosphäre-Browsertest wurde hier nicht erneut ausgeführt.
 
+Dritte Einbindung am 14.09.2026: `segmentierung-vorteile` übt einen präzisen
+Datenfluss für ein Werkstattterminal; `zero-trust-segmentierung` trennt
+Netzwerkstandort, Anmeldung und ressourcenbezogene Berechtigung im Prüferinnenfall.
+Jeweils eigener Praxisfall, Quiz und gespeicherte Selbsterklärung. Portalquelle:
+Segmentierungslektion; Primärabgleich: Abstract von NIST SP 800-207, direkt gelesen.
+Revision jeweils `2026-09-14.1`, weiterhin `CURATED_DRAFT`, Pflichtziele unverändert.
+`npm test` und gezielter Browsertest aller sieben Quellenfälle erfolgreich;
+390/1440px, beide Themes, Tastatur und Speicherung geprüft, beide neuen Fälle
+visuell kontrolliert. Kein erneuter vollständiger Navigationstest.
+
 Noch nicht umgesetzt: die weiteren Zuordnungsvorschläge für
-Automatisierung, Segmentierung, Alternativen und WiSo. Die URL-Inventur bleibt
+Automatisierung, Alternativen und WiSo. Die URL-Inventur bleibt
 eine Lesewarteschlange und wird durch diesen Batch nicht pauschal als geprüft
 markiert.
 
