@@ -9,10 +9,10 @@ group_id: ga1-4
 group_label: Block 4 · Backup, Recovery und Notfallvorsorge
 item_id: ga1-4__0
 week: KW 38
-estimated_minutes: 24
+estimated_minutes: 31
 relevance: hoch
 sources: ["europa-integratoren-2026", "ihk-bonn", "itlf10-12-2023"]
-content_revision: 2026-09-11.1
+content_revision: 2026-09-14.1
 content_status: CURATED_DRAFT
 learning_objectives: ["backup-selection", "restore-chain"]
 curation: content/curation/backup-methods.json
@@ -113,6 +113,30 @@ Vor dem Restore bestimmst du zuerst den gewünschten Zeitpunkt. Dann suchst du r
 
 <aside class="callout"><span class="lbl">Saubere Formulierung</span><p>Eine synthetische Vollsicherung ist nicht „aus dem Nichts vollständig“. Sie wird auf dem Backupziel aus bereits vorhandener Vollsicherung und Änderungssätzen zusammengesetzt.</p></aside>
 
+## Praxisfall: Backup grün, Wiederherstellung offen
+
+Eigener Fall: Für das Reservierungssystem eines Sportvereins meldet die Sicherungssoftware erfolgreiche Läufe. Im freigegebenen, isolierten Restore-Test startet die Anwendung; bei einer bekannten Reservierung fehlt jedoch die zugehörige Teilnehmerliste. Das Team will den Test wegen des grünen Backupstatus als bestanden eintragen.
+
+Trenne Sicherungslauf und Wiederherstellungsnachweis. Vor dem Test werden erwarteter Datenstand, zusammengehörige Datensätze und nutzbare Funktionen festgelegt. Prüfe gegen diese Kriterien und halte Abweichungen fest. Ein einzelner erfolgreicher Anwendungsstart ersetzt diese Prüfung nicht.
+
+<section class="quiz" data-quiz="backup-methods-quellenfall" data-correct="1">
+  <h3>Wie bewertest du den Restore-Test?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Der Status des Sicherungslaufs belegt nicht den fachlichen Wiederherstellungserfolg."><span class="m">A</span>Bestanden, weil die Sicherungssoftware keinen Fehler meldet.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Der beobachtete Fehler widerspricht dem Abnahmekriterium. Er beweist noch nicht, welcher Sicherungsschritt die Ursache ist."><span class="m">B</span>Nicht bestanden: Die geforderte zusammengehörige Datenansicht fehlt; Ursache und Sicherungsstand müssen geprüft werden.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Damit gingen mögliche Wiederherstellungspunkte verloren, bevor die Ursache geklärt ist."><span class="m">C</span>Alle Sicherungen löschen und erneut beginnen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section>
+
+<section class="recall-practice" data-recall="backup-methods-quellenbegruendung" data-min-length="80" aria-labelledby="backup-methods-quellenfrage">
+  <div class="recall-prompt"><h3 id="backup-methods-quellenfrage">Begründe deinen nächsten Schritt</h3><p>Formuliere zwei überprüfbare Abnahmekriterien für diesen Dienst und beschreibe, was du bei einer Abweichung dokumentierst. Teste gedanklich nur in der freigegebenen Testumgebung.</p></div>
+  <label for="backup-methods-quellenantwort">Deine Fallbegründung</label>
+  <textarea id="backup-methods-quellenantwort" data-recall-input rows="4" placeholder="Kriterium, Beobachtung und nächster Nachweis …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Zum gewählten Sicherungsstand müssen bekannte Reservierungen samt Teilnehmerlisten zusammenpassen. Eine berechtigte Testperson muss eine neue Testreservierung speichern und wieder aufrufen können. Ich notiere erwarteten und tatsächlichen Zustand, Sicherungsstand, Testzeit und Umgebung. Bei Abweichung keine Freigabe; Ursache eingrenzen und nach Korrektur erneut testen. Einzelne Stichproben garantieren nicht die Fehlerfreiheit aller Daten.</div>
+</section>
+
+Die Zusatzübung ersetzt keinen Pflichtnachweis. Vergleiche deine Begründung selbst mit dem Muster; Textlänge ist keine fachliche Bewertung.
+
 ## Karteikarten und Wiederholung
 
 <div class="flashcard-grid">
@@ -153,6 +177,8 @@ Vor dem Restore bestimmst du zuerst den gewünschten Zeitpunkt. Dann suchst du r
 </section>
 
 ## Quellen und Einordnung
+
+Der ergänzende Praxisfall nutzt einen didaktischen Impuls aus [Ausbildung in der IT – Backup und Restore](https://ausbildung-in-der-it.de/lernen/systemintegration/lektion/backup-und-restore-planen). Fachlich abgeglichen mit [NIST SP 800-34 Rev. 1, Anhang A.1, Abschnitte 5.1–5.3](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-34r1.pdf): Daten- und Funktionsprüfung vor Wiederaufnahme. Quellenabschnitte gelesen am 14.09.2026. Szenario, Zahlen und Aufgaben sind eigenständig; die Zeitvorgabe ist eine Übungsannahme, keine Prüfungsvorschrift.
 
 <div class="src-block">
   <p><strong>EUROPA Prüfungsvorbereitung Teil 2 – Integratoren (2026):</strong> Hauptquelle für Sicherungsstrategien, Wiederherstellungsbezug und die Einordnung eines vollständigen Datensicherungskonzepts.</p>

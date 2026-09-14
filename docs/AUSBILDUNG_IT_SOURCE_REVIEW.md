@@ -108,7 +108,23 @@ Antworten, Tastaturbedienung, verdecktes Muster, Speicherung und die Trennung
 von Zusatzübungen und Pflichtnachweisen. Ansichten bei 390/1440px in beiden
 Themes geprüft; repräsentative Aufnahmen aller drei Fälle visuell gelesen.
 
-Noch nicht umgesetzt: die weiteren Zuordnungsvorschläge für Backup/Restore,
+Zweite Einbindung am 14.09.2026: `backup-methods` enthält einen eigenen
+Restore-Abnahmefall mit fehlender Teilnehmerliste; `backup-window` eine
+vollständige Wiederanlaufrechnung aus vier explizit nicht überlappenden Phasen.
+Beide ergänzen Quiz und Selbsterklärung, die Zeitaufgabe zusätzlich eine
+Zahleneingabe mit grafischem MathML-Lösungsweg. Quellenimpuls: Backup-/Restore-
+Lektion des Portals; direkter Fachabgleich: NIST SP 800-34 Rev. 1, Anhang A.1,
+Abschnitte 5.1–5.3 (Daten- und Funktionsvalidierung). Keine Kopie der Portalaufgabe.
+Quellenangaben stehen in Lernseiten und Kurationsnotizen; beide Revisionen
+`2026-09-14.1`, weiterhin `CURATED_DRAFT` und keine neuen Pflichtziele.
+
+Prüfung dieses zweiten Schritts: `npm test` erfolgreich; der erweiterte
+`verify-source-cases-browser.mjs` erfolgreich für alle fünf Praxisfälle,
+einschließlich falscher/richtiger Gesamtdauer, Tastatur, Speicherung und
+390/1440px in beiden Themes. Beide neuen Fälle visuell kontrolliert. Der
+vollständige Navigation-/Atmosphäre-Browsertest wurde hier nicht erneut ausgeführt.
+
+Noch nicht umgesetzt: die weiteren Zuordnungsvorschläge für
 Automatisierung, Segmentierung, Alternativen und WiSo. Die URL-Inventur bleibt
 eine Lesewarteschlange und wird durch diesen Batch nicht pauschal als geprüft
 markiert.

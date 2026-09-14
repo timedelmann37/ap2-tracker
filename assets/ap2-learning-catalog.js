@@ -114,9 +114,9 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "groupLabel": "Block 4 · Backup, Recovery und Notfallvorsorge",
     "itemId": "ga1-4__0",
     "week": "KW 38",
-    "estimatedMinutes": 24,
+    "estimatedMinutes": 31,
     "relevance": "hoch",
-    "contentRevision": "2026-09-11.1",
+    "contentRevision": "2026-09-14.1",
     "contentStatus": "CURATED_DRAFT",
     "learningObjectives": [
       "backup-selection",
@@ -127,7 +127,7 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
       "ihk-bonn",
       "itlf10-12-2023"
     ],
-    "contentHash": "aec3078290f11d33d85ae68721f35d60f62483472389f47a3a214c862fd416b5",
+    "contentHash": "93b5122ef1212e1e6c0846c4e2261ba391fedcc4651f76b3041a50c0767e773f",
     "sourceKind": "legacy-markdown"
   },
   {
@@ -140,9 +140,9 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "groupLabel": "Block 4 · Backup, Recovery und Notfallvorsorge",
     "itemId": "ga1-4__5",
     "week": "KW 38",
-    "estimatedMinutes": 20,
+    "estimatedMinutes": 27,
     "relevance": "hoch",
-    "contentRevision": "2026-09-11.1",
+    "contentRevision": "2026-09-14.1",
     "contentStatus": "CURATED_DRAFT",
     "learningObjectives": [
       "rate-conversion",
@@ -152,7 +152,7 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
       "ihk-bonn",
       "europa-integratoren-2026"
     ],
-    "contentHash": "812fafb375f63f3393e95d54e65b28786c57b9cbdd131f52c95dafeed504941d",
+    "contentHash": "f42a7b7eef9af015f3626a57bef0a01faa620ac2ea1a1e6c7b55d38f37711a4d",
     "sourceKind": "legacy-markdown"
   },
   {
