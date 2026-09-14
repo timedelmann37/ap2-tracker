@@ -2509,9 +2509,9 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
     "itemId": "ga2-8__7",
     "week": "KW 44",
-    "estimatedMinutes": 34,
+    "estimatedMinutes": 40,
     "relevance": "hoch",
-    "contentRevision": "2026-09-13.1",
+    "contentRevision": "2026-09-14.2",
     "contentStatus": "CURATED_DRAFT",
     "learningObjectives": [
       "interpretation",
@@ -2521,7 +2521,7 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sources": [
       "itlf10-12-2023"
     ],
-    "contentHash": "37eb28c4901c92a260a98268bb787236483dff3cc7bbd0b77530f2c390b11489",
+    "contentHash": "e2d8c68c29798e14b34d367d2b00fbcd08d1fa7215bb3cf1eafc6d1a5e9fa0f2",
     "sourceKind": "compact-spec"
   },
   {
@@ -2726,9 +2726,9 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "groupLabel": "Prüfungstechnik GA2",
     "itemId": "ga2-9__2",
     "week": "KW 45–47",
-    "estimatedMinutes": 22,
+    "estimatedMinutes": 28,
     "relevance": "hoch",
-    "contentRevision": "2026-09-14.1",
+    "contentRevision": "2026-09-14.2",
     "contentStatus": "CURATED_DRAFT",
     "learningObjectives": [
       "ziel-0",
@@ -2737,7 +2737,7 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sources": [
       "ihk-bonn"
     ],
-    "contentHash": "4b902a44cb16a9d764bda1d412c2324d77669e9d105be5f4aba1a4139fd6dc73",
+    "contentHash": "3196f3d8ec604b46a9529867da43f4c35a219fda8a69df12148015b81cc3d3fe",
     "sourceKind": "compact-spec"
   },
   {
@@ -2774,9 +2774,9 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "groupLabel": "Prüfungstechnik GA2",
     "itemId": "ga2-9__4",
     "week": "KW 45–47",
-    "estimatedMinutes": 22,
+    "estimatedMinutes": 28,
     "relevance": "hoch",
-    "contentRevision": "2026-09-14.1",
+    "contentRevision": "2026-09-14.2",
     "contentStatus": "CURATED_DRAFT",
     "learningObjectives": [
       "ziel-0",
@@ -2785,7 +2785,7 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sources": [
       "ihk-bonn"
     ],
-    "contentHash": "ce9cf225f1d71a649d1d6fcc02f7d522ef5f1d9a0b1ada5aff4b9d5186a5171b",
+    "contentHash": "dc3b4aab34e69131db3a8210e56a7e08c0fca0e9ae25e1c3398132b1a59d4b49",
     "sourceKind": "compact-spec"
   },
   {

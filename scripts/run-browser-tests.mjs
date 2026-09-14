@@ -41,6 +41,7 @@ try {
   await import('./verify-learning-browser.mjs');
   await import('./verify-n8-browser.mjs');
   await import('./verify-n9-browser.mjs');
+  await import('./verify-source-cases-browser.mjs');
   await import('./verify-space-browser.mjs');
 } finally {
   await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));

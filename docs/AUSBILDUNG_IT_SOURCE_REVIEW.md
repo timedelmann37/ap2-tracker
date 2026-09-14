@@ -81,6 +81,40 @@ Die folgenden Zuordnungen sind eigene redaktionelle Vorschläge, keine vom Porta
 
 ## Restliche Lesewarteschlange
 
+### Erste produktive Einbindung am 14.09.2026
+
+Die Recherche ist jetzt in drei bestehenden Einheiten umgesetzt, nicht nur
+verlinkt. Kanonische JSON-Spezifikationen enthalten jeweils einen eigenen
+Praxisfall, ein Quiz mit fehlerspezifischer Rückmeldung und eine gespeicherte
+Selbsterklärung mit zunächst verdecktem Muster:
+
+| Kernthema / Seite | Neu eingearbeitete Lernhandlung | Quellenrolle |
+| --- | --- | --- |
+| `netzwerk-messwerte` | Unvergleichbare RTT-Messungen erkennen und einen prüfbaren Vergleich planen | Portal: Messdaten-Lektion; fachlicher Abgleich RFC 2330, Abschnitte 13–14 |
+| `konfiguration-beschreiben` | Erlaubte und gesperrte Quellbeziehung testen; Timeout nicht mit Regelbeweis verwechseln | Portal: DMZ-Lektion, Abschnitt zu positiven/negativen Tests; NIST SP 800-41 Rev. 1, Abschnitt 5.3 |
+| `ga2-zeitmanagement` | Einen übersehenen Aufgabenauftrag von einer vermuteten Wissenslücke trennen; nächste Übung und Erfolgskriterium bestimmen | Portal: alte IHK-Prüfungen, Fehlerauswertung; eigene Lernhilfe ohne Prüfungsvorschrift |
+
+Die genannten Quellenabschnitte wurden in diesem Umsetzungsschritt direkt
+gelesen. Die Szenarien sind eigenständig, keine Umbenennung fremder Aufgaben.
+Provenienz steht in den Kurationsnotizen und sichtbar im Quellenabschnitt der
+Lernseite. Der separate Buchkatalog bleibt unverändert; Webquellen werden nicht
+als importierte Bücher ausgegeben. `contentRevision` ist jeweils
+`2026-09-14.2`; Status bleibt `CURATED_DRAFT`. Die Zusatzfälle ändern die
+Pflichtnachweise nicht und vergeben keinen Abschluss für Textlänge.
+
+Verifikation: `npm test` und `npm run test:browser` erfolgreich am 14.09.2026.
+Der neue Test `scripts/verify-source-cases-browser.mjs` prüft falsche/richtige
+Antworten, Tastaturbedienung, verdecktes Muster, Speicherung und die Trennung
+von Zusatzübungen und Pflichtnachweisen. Ansichten bei 390/1440px in beiden
+Themes geprüft; repräsentative Aufnahmen aller drei Fälle visuell gelesen.
+
+Noch nicht umgesetzt: die weiteren Zuordnungsvorschläge für Backup/Restore,
+Automatisierung, Segmentierung, Alternativen und WiSo. Die URL-Inventur bleibt
+eine Lesewarteschlange und wird durch diesen Batch nicht pauschal als geprüft
+markiert.
+
+### Offene Quellenlektüre
+
 1. **Priorität 1:** alle noch nicht ausgewerteten FISI-Lektionen und gemeinsam genutzten Grundlagenseiten, zunächst Systemlösung, Speicher, Virtualisierung, Netzwerkplan, Subnetting, Testprotokoll und Wirtschaftlichkeit. Teilgelesene Seiten vervollständigen, bevor sie einzelne technische Aussagen belegen.
 2. **Priorität 2:** verbleibende FISI-Lernfeldseiten und Prüfungsseiten; Zuordnungen gegen KMK/FIAusbV sowie vorhandene Buchquellen abgleichen.
 3. **Priorität 3:** thematisch passende Lexikonartikel für kommende GA1-/GA2-/WiSo-Blöcke. Definitionen gegen RFC, BSI, Herstellerdokumentation oder geltendes Recht rückprüfen. Keine Komplettübernahme des Lexikons.
