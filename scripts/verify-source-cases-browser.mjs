@@ -49,6 +49,28 @@ try {
     }
     console.log(`PASS source case: ${slug}, keyboard, persistence, objective isolation, mobile/themes`);
     if (slug === 'qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor') {
+      const retry = page.locator(`[data-quiz="${slug}-wiederholung"]`);
+      await retry.locator('[data-answer="2"]').click();
+      assert(await page.locator('#mark-done').isDisabled(), 'Retry exercise cannot complete an objective');
+      await retry.locator('[data-quiz-reset]').click();
+      await retry.locator('[data-answer="1"]').focus();
+      await page.keyboard.press('Enter');
+      const proof = page.locator(`[data-recall="${slug}-wiederholungsnachweis"]`);
+      assert(!await proof.locator('[data-recall-model]').isVisible(), 'Retry model initially hidden');
+      await proof.locator('[data-recall-input]').fill('Für L17 liegen genau drei gültige Berichte vor. Eine weitere Wiederholung erzeugt keine Dubletten, aber einen nachvollziehbaren Versuchseintrag bei unveränderten Eingangsdaten.');
+      await proof.locator('[data-recall-reveal]').click();
+      assert(await proof.locator('[data-recall-model]').isVisible(), 'Retry model revealed');
+      await page.reload();
+      assert((await proof.locator('[data-recall-input]').inputValue()).startsWith('Für L17'), 'Retry proof persists');
+      for (const width of [390, 1440]) {
+        await page.setViewportSize({width, height:1000});
+        for (const theme of ['dark','light']) {
+          await page.evaluate(t => document.documentElement.setAttribute('data-theme', t), theme);
+          await retry.scrollIntoViewIfNeeded();
+          assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'Retry section no overflow');
+          if (process.env.AP2_RETRY_CAPTURE === '1') await page.screenshot({path:`.retry-${width}-${theme}.png`,animations:'disabled'});
+        }
+      }
       const done = page.locator('#mark-done');
       const first = page.locator(`[data-quiz="${slug}-transfer-a"]`);
       await first.locator('[data-answer="0"]').click();

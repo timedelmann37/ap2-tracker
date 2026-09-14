@@ -163,6 +163,20 @@ erfolgreich, einschließlich Tastatur, Speicherung und Pflichtziel-Trennung.
 390/1440px in beiden Themes geprüft, neuer Fall mobil und am Desktop visuell
 kontrolliert. Kein erneuter vollständiger Navigationstest. Abdeckung bleibt 115/380.
 
+Sechster Schritt am 14.09.2026: Automatisierungseinheit um eine eigene
+Wiederholungsübung ergänzt. Auftragskennung und Versuchskennung werden getrennt;
+die Lernenden schließen einen Teilerfolg ohne Dubletten und unterscheiden
+Berichtszustand von Protokollhistorie. Modellannahme unveränderter Eingangsdaten
+explizit, keine zusätzliche externe Tatsachenbehauptung oder Quellenlektüre.
+Quiz und gespeicherter Wiederholungsnachweis ergänzen die vorhandenen Diagramme.
+Revision `2026-09-14.2`, `CURATED_DRAFT`, Pflichtziele unverändert.
+
+`npm test` und gezielte Browserprüfung aller neun Quellenfälle erfolgreich.
+Neue Übung mit falscher/richtiger Antwort, Tastatur, verdeckter Musterlösung,
+Speicherung und Abschlussgrenze geprüft; 390/1440px und beide Themes ohne
+Seitenüberlauf. Mobile Dark- und Desktop-Light-Aufnahme visuell geprüft.
+Kein erneuter vollständiger Navigationstest. Abdeckung unverändert 115/380.
+
 Noch nicht umgesetzt: die weiteren Zuordnungsvorschläge für
 WiSo; weitere Automatisierungs-Kernthemen bleiben offen. Die URL-Inventur bleibt
 eine Lesewarteschlange und wird durch diesen Batch nicht pauschal als geprüft
