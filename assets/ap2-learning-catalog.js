@@ -2774,9 +2774,9 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "groupLabel": "Prüfungstechnik GA2",
     "itemId": "ga2-9__3",
     "week": "KW 45–47",
-    "estimatedMinutes": 22,
+    "estimatedMinutes": 28,
     "relevance": "hoch",
-    "contentRevision": "2026-09-14.1",
+    "contentRevision": "2026-09-14.2",
     "contentStatus": "CURATED_DRAFT",
     "learningObjectives": [
       "ziel-0",
@@ -2785,7 +2785,7 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sources": [
       "ihk-bonn"
     ],
-    "contentHash": "375da6355ad129d234d248bdeb3a65da4e092a3e6e4cca61548db047de856d1b",
+    "contentHash": "01927d924cd3c6d890f0b51c95bc9bea3eabd059366846c1e7082ae2e20928c6",
     "sourceKind": "compact-spec"
   },
   {

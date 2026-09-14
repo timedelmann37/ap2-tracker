@@ -1,6 +1,6 @@
 import { chromium } from 'playwright';
 const base = process.env.AP2_BASE_URL || 'http://127.0.0.1:4321';
-const cases = [['netzwerk-messwerte', 1], ['konfiguration-beschreiben', 2], ['ga2-zeitmanagement', 0], ['backup-methods', 1], ['backup-window', 2], ['segmentierung-vorteile', 1], ['zero-trust-segmentierung', 2], ['qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor', 1]];
+const cases = [['netzwerk-messwerte', 1], ['konfiguration-beschreiben', 2], ['ga2-zeitmanagement', 0], ['backup-methods', 1], ['backup-window', 2], ['segmentierung-vorteile', 1], ['zero-trust-segmentierung', 2], ['qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor', 1], ['alternativen-bewerten', 1]];
 const assert = (ok, message) => { if (!ok) throw new Error(message); };
 const browser = await chromium.launch();
 try {

@@ -150,8 +150,21 @@ Quellenfälle einschließlich Pflichtzielen, Wiederladen, Rücknahme, Sortierung
 Karten und beiden Themes erfolgreich. Neue Diagramme mobil und am Desktop
 visuell geprüft. Abdeckung jetzt 115/380; GA1 7/164.
 
+Fünfte Einbindung am 14.09.2026: `alternativen-bewerten` ergänzt einen eigenen
+Praxisfall zu geänderten Annahmen bei einer Angebotsentscheidung. Quiz und
+gespeicherte Selbsterklärung verlangen eine erneute Bewertung samt verbleibendem
+Nachteil statt einer automatischen Entscheidung nach Preis oder alter Punktzahl.
+Portal-Prüfungsvorbereitungsseite ausschließlich als didaktischer Impuls;
+keine Übernahme pauschaler Bewertungsregeln. Revision `2026-09-14.2`, weiterhin
+`CURATED_DRAFT`, Pflichtziele unverändert.
+
+Verifikation: `npm test` und gezielte Browserprüfung aller neun Quellenfälle
+erfolgreich, einschließlich Tastatur, Speicherung und Pflichtziel-Trennung.
+390/1440px in beiden Themes geprüft, neuer Fall mobil und am Desktop visuell
+kontrolliert. Kein erneuter vollständiger Navigationstest. Abdeckung bleibt 115/380.
+
 Noch nicht umgesetzt: die weiteren Zuordnungsvorschläge für
-Alternativen und WiSo; weitere Automatisierungs-Kernthemen bleiben offen. Die URL-Inventur bleibt
+WiSo; weitere Automatisierungs-Kernthemen bleiben offen. Die URL-Inventur bleibt
 eine Lesewarteschlange und wird durch diesen Batch nicht pauschal als geprüft
 markiert.
 
