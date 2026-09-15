@@ -269,6 +269,20 @@ neuem Quiz, Tastatur, Speicherung, Abschlussgrenzen und 390/1440px in beiden
 Themes. Gegenbeispiel mobil und am Desktop visuell geprüft. Abdeckung bleibt
 118/380; kein neuer vollständiger Navigationstest.
 
+Zehntes Kernthema am 15.09.2026: `ga1-9__3`, Kontrollstrukturen. Eigene Fälle
+zu unabhängigen und exklusiven Bedingungen, for/while/do-while, Nullfall,
+UND-Verknüpfung und Versuchslimit. Fallauswahl ohne Fall-Durchlauf ausdrücklich
+als Modell definiert; Sprachdetails nicht pauschal verallgemeinert. Grafik,
+vollständiger Ablauf, Zahlenübung, Sortierung, Selbsterklärung, Karten und zwei
+Pflichtziele. Quellen: ITLF6–9 Chunk 00159 vollständig sowie Anfang von 00151
+(Einleitung/erstes Beispiel) gelesen; beschädigter OCR-Code nicht übernommen.
+
+`npm test` und gezielter `verify-control-structures-browser.mjs` erfolgreich:
+Fehlantworten, Nullwert-Eingabe, Tastatur, Speicherung, Abschluss/Rücknahme und
+390/1440px in beiden Themes. Code, Grafik und Sortierung visuell geprüft.
+Kein erneuter vollständiger Navigationstest. Revision `2026-09-15.1`,
+`CURATED_DRAFT`; Abdeckung 119/380, GA1 11/164. Menschliche Fachfreigabe offen.
+
 Noch nicht umgesetzt: die weiteren Zuordnungsvorschläge für
 WiSo; weitere Automatisierungs-Kernthemen bleiben offen. Die URL-Inventur bleibt
 eine Lesewarteschlange und wird durch diesen Batch nicht pauschal als geprüft
