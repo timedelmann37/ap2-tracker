@@ -214,9 +214,9 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "groupLabel": "Programme zur automatisierten Systemverwaltung",
     "itemId": "ga1-9__10",
     "week": "KW 43",
-    "estimatedMinutes": 23,
+    "estimatedMinutes": 26,
     "relevance": "hoch",
-    "contentRevision": "2026-09-15.1",
+    "contentRevision": "2026-09-15.2",
     "contentStatus": "CURATED_DRAFT",
     "learningObjectives": [
       "modell",
@@ -225,7 +225,7 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sources": [
       "europa-integratoren-2026"
     ],
-    "contentHash": "11310d40d75d823ad8775cd8167dd76ceaae4434c865be41234b1522d5c8995b",
+    "contentHash": "34472ea5e94d0a53ca280dddf3e77486f6940fc14f6525e510228b5a1f7306c3",
     "sourceKind": "compact-spec"
   },
   {

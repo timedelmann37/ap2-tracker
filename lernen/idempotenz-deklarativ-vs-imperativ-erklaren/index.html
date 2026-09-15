@@ -20,7 +20,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
 </head>
-<body class="area-page area-ga1 learning-page" data-topic-id="idempotenz-deklarativ-vs-imperativ-erklaren" data-progress-id="ga1-9__10" data-content-revision="2026-09-15.1" data-content-status="CURATED_DRAFT">
+<body class="area-page area-ga1 learning-page" data-topic-id="idempotenz-deklarativ-vs-imperativ-erklaren" data-progress-id="ga1-9__10" data-content-revision="2026-09-15.2" data-content-status="CURATED_DRAFT">
 <div id="rp"></div>
 
 <nav class="topnav" aria-label="Hauptnavigation">
@@ -69,7 +69,7 @@
       <h1 class="title">Idempotenz: Zielzustand statt wiederholter Nebenwirkung</h1>
       <div class="meta">
         <span class="pill rel">Prüfungsrelevanz: hoch</span>
-        <span class="pill">≈ 23 Min.</span>
+        <span class="pill">≈ 26 Min.</span>
         <span class="pill" data-topic-status>noch offen</span>
         <span class="pill">Pilot · fachlich in Prüfung</span>
       </div>
@@ -107,7 +107,16 @@
 <p>Unser Konfigurationsmodell enthält genau einen verwalteten Zahlenwert. Andere Änderungen und Fehler während der Ausführung sind für diesen Vergleich ausgeschlossen.</p>
 <p>Operation A setzt ihn auf 30. Aus dem Startwert 10 wird nach dem ersten Lauf 30 und nach dem zweiten Lauf erneut 30. Operation B erhöht ihn bei jedem Lauf um 20. Hier wird aus 10 zuerst 30, danach 50. Beide liefern beim ersten Lauf dasselbe Ergebnis; erst die Wiederholung zeigt den Unterschied.</p>
 <div class="math-display" role="group" aria-label="Setzen: f von 10 gleich 30 und f von 30 gleich 30. Erhöhen: g von 10 gleich 30 und g von 30 gleich 50."><math display="block" aria-label="Setzen: f von 10 gleich 30 und f von 30 gleich 30. Erhöhen: g von 10 gleich 30 und g von 30 gleich 50."><mtable columnalign="left"><mtr><mtd><mi>f</mi><mo>(</mo><mn>10</mn><mo>)</mo><mo>=</mo><mn>30</mn><mo>;</mo><mspace width="0.5em"/><mi>f</mi><mo>(</mo><mn>30</mn><mo>)</mo><mo>=</mo><mn>30</mn></mtd></mtr><mtr><mtd><mi>g</mi><mo>(</mo><mn>10</mn><mo>)</mo><mo>=</mo><mn>30</mn><mo>;</mo><mspace width="0.5em"/><mi>g</mi><mo>(</mo><mn>30</mn><mo>)</mo><mo>=</mo><mn>50</mn></mtd></mtr></mtable></math><div class="math-legend"><span>f: festen Wert 30 setzen</span><span>g: aktuellen Wert um 20 erhöhen</span></div></div><p>Ein neuer Protokolleintrag je Versuch kann trotzdem entstehen. Sage deshalb ausdrücklich, welchen Zustand du vergleichst: hier den verwalteten Konfigurationswert, nicht die komplette Protokollhistorie. Aus einem unveränderten Zielwert folgt außerdem nicht, dass ein Ablauf nebenwirkungsfrei oder parallel sicher ist.</p>
-<h2 class="sec" id="s4"><span class="num">4</span>Wiederholung selbst prüfen</h2>
+<h2 class="sec" id="s4"><span class="num">4</span>Stabil bedeutet nicht richtig</h2>
+<p>Gegenbeispiel zum selben Auftrag: Der Wert soll 30 sein, aber eine fehlerhafte Umsetzung setzt ihn immer auf 20. Nach dem ersten Lauf steht er auf 20 und nach dem zweiten weiterhin auf 20. Diese Operation ist in unserem Modell idempotent, erfüllt aber den Auftrag nicht.</p>
+<p>Prüfe deshalb zwei Dinge getrennt: Stimmt das Ergebnis mit dem Soll überein? Bleibt die Wirkung bei einem identischen Wiederholungsaufruf stabil? Ein grüner Wiederholungstest ohne Soll-Ist-Vergleich könnte eine dauerhaft falsche Konfiguration freigeben.</p>
+<section class="quiz" data-quiz="idempotenz-deklarativ-vs-imperativ-erklaren-stabil-falsch" data-correct="1">
+  <h3>Auftrag: Wert 30. Umsetzung: bei jedem Aufruf auf 20 setzen. Welche Bewertung stimmt unter unseren Modellannahmen?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Der unveränderte Wert 20 bleibt ein falsches Ergebnis für den Auftrag 30."><span class="m">A</span> Korrekt und idempotent, weil der zweite Lauf nichts mehr ändert.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die Wiederholung bleibt stabil; der Soll-Ist-Vergleich schlägt trotzdem fehl."><span class="m">B</span> Idempotent bezüglich des Werts, aber fachlich nicht korrekt.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Idempotenz beschreibt die Wiederholungswirkung, nicht die Übereinstimmung mit dem Auftrag."><span class="m">C</span> Nicht idempotent, weil jede fehlerhafte Umsetzung diese Eigenschaft verliert.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Wiederholung selbst prüfen</h2>
 <section class="numeric-practice transfer-number" data-numeric-practice="idempotenz-deklarativ-vs-imperativ-erklaren-zahl" data-expected="13" data-tolerance="0" data-correct-feedback="Richtig: nach dem ersten Aufruf 9, nach dem zweiten 13. Der zweite Lauf verändert den Wert erneut." data-wrong-feedback="Verwende beim zweiten Aufruf den Zustand nach dem ersten, nicht erneut den Startwert.">
   <h3>Zweiten Lauf vorhersagen</h3>
   <p>Startwert 5. Eine Operation erhöht den aktuellen Wert bei jedem Aufruf um 4. Welcher Wert steht nach zwei Aufrufen im Modell?</p>
@@ -121,7 +130,7 @@
   <button class="opt" type="button" data-answer="1" data-rationale="Der feste Sollwert verhindert ein erneutes Erhöhen."><span class="m">B</span> Nach dem ersten Erreichen von 30 bleibt der Zielwert bei unverändertem Auftrag stabil.</button>
   <button class="opt" type="button" data-answer="2" data-rationale="Das folgt nicht aus dem Auftrag und würde den Sollzustand zerstören."><span class="m">C</span> Jeder zweite Lauf muss den Wert löschen.</button>
   <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
-</section><h2 class="sec" id="s5"><span class="num">5</span>Testplan statt Etikett</h2>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Testplan statt Etikett</h2>
 <section class="sequence-practice" data-sequence="idempotenz-deklarativ-vs-imperativ-erklaren-reihenfolge" data-expected="start,schleife,ausgabe" data-correct-feedback="Erst den Vergleich festlegen, dann ersten und zweiten Zustand prüfen." data-wrong-feedback="Ohne definierten Vergleich weißt du nicht, welche Wirkung stabil bleiben muss." aria-labelledby="idempotenz-deklarativ-vs-imperativ-erklaren-reihenfolge-title">
   <div class="lab-heading"><div><h3 id="idempotenz-deklarativ-vs-imperativ-erklaren-reihenfolge-title">Wiederholungsnachweis aufbauen</h3><p>Ordne die drei Schritte für einen begrenzten Test.</p></div><span class="lab-tag">Ablauf</span></div>
   <ol class="sequence-list" data-sequence-list>
@@ -138,7 +147,7 @@
   <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
   <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Ich beginne beispielsweise bei zehn und wende denselben Auftrag zweimal an. Nach beiden Läufen muss der verwaltete Wert dreißig sein. Eingaben und Sollwert bleiben gleich, kein anderer Prozess ändert den Wert dazwischen. Der Test betrachtet den Konfigurationswert; neue Protokolleinträge sind möglich. Der Versuch beweist weder Fehlerfreiheit für alle Startzustände noch Sicherheit bei parallelen Änderungen.</div>
 </section><p>Ändert ein anderer Prozess den Wert zwischen den Läufen, liegt nicht mehr derselbe Wiederholungsversuch vor. Ein erneutes Herstellen des Sollwerts kann dann sinnvoll sein. Vor einer tatsächlichen Korrektur müssen Zuständigkeit und Änderungsfreigabe geklärt sein. Ein Existenztest allein verhindert außerdem keinen Wettlauf paralleler Prozesse.</p>
-<h2 class="sec" id="s6"><span class="num">6</span>Aus dem Gedächtnis erklären</h2>
+<h2 class="sec" id="s7"><span class="num">7</span>Aus dem Gedächtnis erklären</h2>
 <div class="flashcard-grid">
   <button class="flashcard" type="button" data-flashcard="idempotenz-deklarativ-vs-imperativ-erklaren-karte-0" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was unterscheidet deklarativ von imperativ?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Deklarativ beschreibt das gewünschte Ergebnis, imperativ die auszuführenden Schritte.</span></span></button>
   <button class="flashcard" type="button" data-flashcard="idempotenz-deklarativ-vs-imperativ-erklaren-karte-1" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Ist imperativer Code automatisch nicht idempotent?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Nein. Auch eine Anweisungsfolge kann beim Wiederholen denselben Zielzustand erhalten.</span></span></button>
@@ -146,7 +155,7 @@
 </div>
 <div class="card-rating"><span>Karte „Beschreibung“:</span><button type="button" data-card-id="idempotenz-deklarativ-vs-imperativ-erklaren-karte-0" data-card-rate="known">gewusst</button><button type="button" data-card-id="idempotenz-deklarativ-vs-imperativ-erklaren-karte-0" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="idempotenz-deklarativ-vs-imperativ-erklaren-karte-0"></span></div>
 <div class="card-rating"><span>Karte „Wirkung“:</span><button type="button" data-card-id="idempotenz-deklarativ-vs-imperativ-erklaren-karte-1" data-card-rate="known">gewusst</button><button type="button" data-card-id="idempotenz-deklarativ-vs-imperativ-erklaren-karte-1" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="idempotenz-deklarativ-vs-imperativ-erklaren-karte-1"></span></div>
-<div class="card-rating"><span>Karte „Grenze“:</span><button type="button" data-card-id="idempotenz-deklarativ-vs-imperativ-erklaren-karte-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="idempotenz-deklarativ-vs-imperativ-erklaren-karte-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="idempotenz-deklarativ-vs-imperativ-erklaren-karte-2"></span></div><h2 class="sec" id="s7"><span class="num">7</span>Lernziel-Check</h2>
+<div class="card-rating"><span>Karte „Grenze“:</span><button type="button" data-card-id="idempotenz-deklarativ-vs-imperativ-erklaren-karte-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="idempotenz-deklarativ-vs-imperativ-erklaren-karte-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="idempotenz-deklarativ-vs-imperativ-erklaren-karte-2"></span></div><h2 class="sec" id="s8"><span class="num">8</span>Lernziel-Check</h2>
 <section class="quiz" data-quiz="idempotenz-deklarativ-vs-imperativ-erklaren-transfer-a" data-correct="2" data-required-objective="modell">
   <h3>Ein Auftrag lautet „Die verwaltete Kontaktliste soll genau A und B enthalten“. Welche Einordnung passt?</h3>
   <button class="opt" type="button" data-answer="0" data-rationale="Es wurden keine konkreten Schritte beschrieben."><span class="m">A</span> Das ist zwingend eine imperative Schrittfolge.</button>
@@ -159,7 +168,7 @@
   <button class="opt" type="button" data-answer="1" data-rationale="Erfolgsmeldungen ersetzen keinen Zustandsvergleich."><span class="m">B</span> Er ist idempotent, weil beide Aufrufe erfolgreich waren.</button>
   <button class="opt" type="button" data-answer="2" data-rationale="Die zusätzliche Dublette verändert den Listeninhalt."><span class="m">C</span> Er ist idempotent, weil A weiterhin vorkommt.</button>
   <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
-</section><h2 class="sec" id="s8"><span class="num">8</span>Quellen und Grenzen</h2>
+</section><h2 class="sec" id="s9"><span class="num">9</span>Quellen und Grenzen</h2>
 <p>Buchkontext: EUROPA Prüfungsvorbereitung Teil 2 Integratoren, Chunk 00750, Zeilen 7569–7596, Programmierparadigmen. Definition der Wiederholungswirkung: <a href="https://docs.ansible.com/projects/ansible/latest/reference_appendices/glossary.html#idempotency">Ansible-Glossar – Idempotency</a>, geprüft am 15.09.2026.</p>
 <p>Eigene Zahlenmodelle, Aufgaben und Grafik; keine übernommenen Verwaltungsbefehle. Die Modelle vergleichen den ausdrücklich benannten Zustand unter unveränderten Bedingungen. Produktionsfreigabe, Fehlerbehandlung und gleichzeitige Zugriffe sind zusätzliche Prüfaufgaben.</p>
 
@@ -185,11 +194,12 @@
     <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Vorwissen aktivieren</a></li>
 <li><a href="#s2" data-t="s2">Zwei verschiedene Fragen</a></li>
 <li><a href="#s3" data-t="s3">Zwei vollständig durchgerechnete Modelle</a></li>
-<li><a href="#s4" data-t="s4">Wiederholung selbst prüfen</a></li>
-<li><a href="#s5" data-t="s5">Testplan statt Etikett</a></li>
-<li><a href="#s6" data-t="s6">Aus dem Gedächtnis erklären</a></li>
-<li><a href="#s7" data-t="s7">Lernziel-Check</a></li>
-<li><a href="#s8" data-t="s8">Quellen und Grenzen</a></li></ul>
+<li><a href="#s4" data-t="s4">Stabil bedeutet nicht richtig</a></li>
+<li><a href="#s5" data-t="s5">Wiederholung selbst prüfen</a></li>
+<li><a href="#s6" data-t="s6">Testplan statt Etikett</a></li>
+<li><a href="#s7" data-t="s7">Aus dem Gedächtnis erklären</a></li>
+<li><a href="#s8" data-t="s8">Lernziel-Check</a></li>
+<li><a href="#s9" data-t="s9">Quellen und Grenzen</a></li></ul>
   </aside>
 </div>
 

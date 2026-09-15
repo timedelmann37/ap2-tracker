@@ -257,6 +257,18 @@ repräsentative Ansichten visuell gelesen. Kein erneuter kompletter Browsertest.
 Revision `2026-09-15.1`, `CURATED_DRAFT`. Abdeckung 118/380, GA1 10/164.
 Menschliche Fachfreigabe bleibt offen.
 
+Vertiefung am 15.09.2026: Idempotenz erhält ein eigenes Gegenbeispiel
+„stabil, aber falsch“. Eine konstante falsche Zielkonfiguration trennt
+Wiederholungswirkung von Auftragserfüllung. Zusatzquiz mit gezielten
+Fehlerrückmeldungen; keine neuen Pflichtziele. Ableitung aus dem bereits
+definierten Zahlenmodell, keine zusätzliche externe Quellenbehauptung.
+Revision `2026-09-15.2`, weiterhin `CURATED_DRAFT`.
+
+`npm test` und gezielter Idempotenz-Browsertest erfolgreich, einschließlich
+neuem Quiz, Tastatur, Speicherung, Abschlussgrenzen und 390/1440px in beiden
+Themes. Gegenbeispiel mobil und am Desktop visuell geprüft. Abdeckung bleibt
+118/380; kein neuer vollständiger Navigationstest.
+
 Noch nicht umgesetzt: die weiteren Zuordnungsvorschläge für
 WiSo; weitere Automatisierungs-Kernthemen bleiben offen. Die URL-Inventur bleibt
 eine Lesewarteschlange und wird durch diesen Batch nicht pauschal als geprüft

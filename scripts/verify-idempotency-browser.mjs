@@ -8,7 +8,7 @@ try {
  const errors=[]; page.on('pageerror',e=>errors.push(e.message));
  await page.goto(base+'/lernen/'+slug+'/');
  const done=page.locator('#mark-done');
- for(const [id,correct] of [['diagnose',1],['uebung',1]]) {
+ for(const [id,correct] of [['diagnose',1],['uebung',1],['stabil-falsch',1]]) {
   const quiz=page.locator('[data-quiz="'+slug+'-'+id+'"]');
   const wrong=quiz.locator('[data-answer="'+((correct+1)%3)+'"]');
   await wrong.click();
@@ -62,7 +62,7 @@ try {
   await page.setViewportSize({width,height:1000});
   for(const theme of ['dark','light']) {
    await page.evaluate(t=>document.documentElement.setAttribute('data-theme',t),theme);
-   for(const [name,target] of [['diagram',page.locator('.learning-figure')],['formula',page.locator('math')],['sequence',seq]]) {
+   for(const [name,target] of [['diagram',page.locator('.learning-figure')],['formula',page.locator('math')],['sequence',seq],['counterexample',page.locator('[data-quiz="'+slug+'-stabil-falsch"]')]]) {
     await target.scrollIntoViewIfNeeded();
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'No overflow '+width+'/'+theme);
     if(process.env.AP2_IDEM_CAPTURE==='1') {
@@ -75,5 +75,3 @@ try {
  assert(!errors.length,errors.join('\n'));
  console.log('PASS idempotency: ordering, recall, keyboard, gates, persistence, undo, responsive themes');
 } finally {await browser.close();}
-
-
