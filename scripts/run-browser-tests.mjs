@@ -43,6 +43,7 @@ try {
   await import('./verify-n9-browser.mjs');
   await import('./verify-source-cases-browser.mjs');
   await import('./verify-trace-browser.mjs');
+  await import('./verify-pseudocode-browser.mjs');
   await import('./verify-space-browser.mjs');
 } finally {
   await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));

@@ -156,6 +156,30 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "legacy-markdown"
   },
   {
+    "id": "pseudocode-schreiben-ohne-sprachkenntnis-verstandlich",
+    "slug": "pseudocode-schreiben-ohne-sprachkenntnis-verstandlich",
+    "title": "Pseudocode: einen Ablauf eindeutig beschreiben",
+    "description": "Eingaben, Bedingungen und Ausgaben eines Algorithmus ohne Programmiersprache festlegen und mit Testfällen prüfen.",
+    "domain": "GA1",
+    "groupId": "ga1-9",
+    "groupLabel": "Programme zur automatisierten Systemverwaltung",
+    "itemId": "ga1-9__1",
+    "week": "KW 43",
+    "estimatedMinutes": 22,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-15.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "eindeutig",
+      "randfall"
+    ],
+    "sources": [
+      "europa-integratoren-2026"
+    ],
+    "contentHash": "083ad6e454d86655ac981a3e849edc9482f2e9dacc1797869b227826815ec9b7",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "schreibtischtest-trace-table-variablenbelegung-algorithmus-schritt-schri",
     "slug": "schreibtischtest-trace-table-variablenbelegung-algorithmus-schritt-schri",
     "title": "Schreibtischtest: Algorithmen Schritt für Schritt prüfen",

@@ -194,6 +194,22 @@ geprüft. Diagramm, Tabelle und Übung visuell kontrolliert. Kein vollständiger
 Navigationstest in diesem Lauf. Revision `2026-09-15.1`, `CURATED_DRAFT`;
 Abdeckung 116/380, GA1 8/164. Weitere Quellenlektüre unverändert offen.
 
+Achter Schritt am 15.09.2026: neues Kernthema `ga1-9__1`, verständlicher
+Pseudocode. Eigene Geräteprüfliste mit Eingabevoraussetzungen, Auswahlregel,
+Reihenfolge und leerer Ausgabe. Erklärgrafik, vollständig durchgespielter Fall,
+Sortierübung per Tastatur, Auswahlfragen, eigener Schreibauftrag, Karten und
+zwei Pflichtziele. Quellenimpuls EUROPA Chunk 00303, Zeilen 2935–2952, vollständig
+gelesen. Beschädigter Lösungsausschnitt 00811 nicht als Codevorlage verwendet;
+unpassende Mapping-Kandidaten 00042 und IT-Basiswissen 00115 ausgeschlossen.
+
+`npm test` und neuer `verify-pseudocode-browser.mjs` erfolgreich: falsche/richtige
+Sortierung, Selbsterklärung, Tastatur, Speicherung, Abschlussgrenzen und Rücknahme.
+390/1440px in beiden Themes geprüft, Grafik, Code und Sortierung visuell gelesen;
+lange Codebedingung für mobile Lesbarkeit geteilt, Grafiklabel gekürzt.
+Keine gemeinsamen Layoutänderungen, kein vollständiger Navigationstest in diesem
+Lauf. `CURATED_DRAFT`, Revision `2026-09-15.1`. Abdeckung jetzt 117/380,
+GA1 9/164. Menschliche Fachfreigabe und weitere Quellenlektüre bleiben offen.
+
 Noch nicht umgesetzt: die weiteren Zuordnungsvorschläge für
 WiSo; weitere Automatisierungs-Kernthemen bleiben offen. Die URL-Inventur bleibt
 eine Lesewarteschlange und wird durch diesen Batch nicht pauschal als geprüft
