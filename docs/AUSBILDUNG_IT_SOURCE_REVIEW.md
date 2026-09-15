@@ -224,6 +224,24 @@ nur gezielte Browserprüfung der jüngsten Ergänzungen um den gemeinsamen
 Regressionstest ergänzt. Keine Inhalts- oder Statusänderung; Abdeckung bleibt
 117/380. Diese technische Prüfung ersetzt keine menschliche Fachfreigabe.
 
+Quellenpipeline am 15.09.2026: Die bevorzugten Fundstellen für Pseudocode und
+Schreibtischtest wurden mit den tatsächlich verwendeten Buchbelegen abgeglichen.
+Nicht geprüfte Grafikkandidaten wurden aus diesen beiden bevorzugten Mappings
+entfernt; eigene Neuzeichnungen bleiben vorgesehen. Vier nachweislich unpassende
+Texttreffer werden jetzt mit `excludedChunkIds` themenbezogen ausgeschlossen:
+Pseudocode: EUROPA 01079 (Netzwerke), 00042 (Prüfungshinweise), IT-Basiswissen
+00115 (Signale/Zahlensysteme); Schreibtischtest: IT-Basiswissen 00175
+(Netzwerkdiagnose). Der Export berücksichtigt die Ausschlüsse auch beim
+Nachfüllen aus der alten Suchwarteschlange.
+
+Verifikation: Batch-Vertragstest erfolgreich, einschließlich Ausschluss sowohl
+aus Mapping als auch Fallback und unverändertem Nachbarthema. Realer Export
+`ga1-9 --start 1 --limit 2` liefert zuerst EUROPA 00303 beziehungsweise
+IT-Basiswissen 00221 und IHK Bonn 00076; die vier verworfenen Treffer fehlen.
+Weitere automatisch ergänzte Text-/Grafikkandidaten sind weiterhin ungeprüft.
+Historische Statusfelder des Mappings bleiben unverändert; Lernmanifest und
+Abdeckungsbericht sind maßgeblich. Keine neue Lernseite, Abdeckung 117/380.
+
 Noch nicht umgesetzt: die weiteren Zuordnungsvorschläge für
 WiSo; weitere Automatisierungs-Kernthemen bleiben offen. Die URL-Inventur bleibt
 eine Lesewarteschlange und wird durch diesen Batch nicht pauschal als geprüft
