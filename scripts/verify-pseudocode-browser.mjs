@@ -8,6 +8,17 @@ try {
  const errors=[]; page.on('pageerror',e=>errors.push(e.message));
  await page.goto(base+'/lernen/'+slug+'/');
  const done=page.locator('#mark-done');
+ for(const [id,correct] of [['diagnose',0],['uebung',1]]) {
+  const quiz=page.locator('[data-quiz="'+slug+'-'+id+'"]');
+  const wrong=quiz.locator('[data-answer="'+((correct+1)%3)+'"]');
+  await wrong.click();
+  assert(await wrong.evaluate(el=>el.classList.contains('wrong')),id+': wrong answer identified');
+  await quiz.locator('[data-quiz-reset]').click();
+  const right=quiz.locator('[data-answer="'+correct+'"]');
+  await right.focus(); await page.keyboard.press('Enter');
+  assert(await right.evaluate(el=>el.classList.contains('right')),id+': correct answer identified');
+  assert(await done.isDisabled(),id+': no objective credit');
+ }
  const seq=page.locator('[data-sequence="'+slug+'-reihenfolge"]');
  await seq.locator('[data-sequence-check]').click();
  assert((await seq.locator('[data-sequence-feedback]').textContent()).includes('Vor dem Anhängen'),'Wrong ordering explained');
@@ -57,4 +68,3 @@ try {
  assert(!errors.length,errors.join('\n'));
  console.log('PASS pseudocode: ordering, recall, keyboard, gates, persistence, undo, responsive themes');
 } finally {await browser.close();}
-

@@ -9,6 +9,17 @@ try {
   page.on('pageerror', e => errors.push(e.message));
   await page.goto(base + '/lernen/' + slug + '/');
   const done = page.locator('#mark-done');
+  for (const id of ['diagnose', 'fehler']) {
+    const quiz = page.locator('[data-quiz="' + slug + '-' + id + '"]');
+    const wrong = quiz.locator('[data-answer="0"]');
+    await wrong.click();
+    assert(await wrong.evaluate(el => el.classList.contains('wrong')), id + ': wrong answer identified');
+    await quiz.locator('[data-quiz-reset]').click();
+    const right = quiz.locator('[data-answer="1"]');
+    await right.focus(); await page.keyboard.press('Enter');
+    assert(await right.evaluate(el => el.classList.contains('right')), id + ': correct answer identified');
+    assert(await done.isDisabled(), id + ': no objective credit');
+  }
   const numeric = page.locator('[data-numeric-practice="' + slug + '-summe"]');
   for (const [value, result] of [['8','wrong'],['3','wrong'],['2','wrong'],['7','correct']]) {
     await numeric.locator('[data-numeric-input]').fill(value);

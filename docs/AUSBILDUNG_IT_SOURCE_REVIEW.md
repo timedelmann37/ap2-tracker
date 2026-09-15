@@ -210,6 +210,20 @@ Keine gemeinsamen Layoutänderungen, kein vollständiger Navigationstest in dies
 Lauf. `CURATED_DRAFT`, Revision `2026-09-15.1`. Abdeckung jetzt 117/380,
 GA1 9/164. Menschliche Fachfreigabe und weitere Quellenlektüre bleiben offen.
 
+Qualitätssicherung am 15.09.2026 nach dem achten Schritt: Die Browserprüfungen
+für Pseudocode und Schreibtischtest prüfen jetzt zusätzlich sämtliche vier
+Diagnose-/Zusatzquizze mit falscher Antwort, Rücksetzen und richtiger Antwort
+per Tastatur. Beide Antwortzustände werden direkt kontrolliert; keine dieser
+Übungen darf den Kernthema-Abschluss freischalten.
+
+Der vollständige Lauf `npm run test:browser` ist erfolgreich: Navigation,
+Theme-Persistenz und nicht verfügbarer Speicher, Lernroute, N8/N9, neun
+Quellenfälle, Skriptqualität, Schreibtischtest, Pseudocode sowie Atmosphäre,
+echter Fortschritt, Rücknahme, Pause und Reduced Motion. Damit ist die bislang
+nur gezielte Browserprüfung der jüngsten Ergänzungen um den gemeinsamen
+Regressionstest ergänzt. Keine Inhalts- oder Statusänderung; Abdeckung bleibt
+117/380. Diese technische Prüfung ersetzt keine menschliche Fachfreigabe.
+
 Noch nicht umgesetzt: die weiteren Zuordnungsvorschläge für
 WiSo; weitere Automatisierungs-Kernthemen bleiben offen. Die URL-Inventur bleibt
 eine Lesewarteschlange und wird durch diesen Batch nicht pauschal als geprüft
