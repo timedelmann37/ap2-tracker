@@ -242,6 +242,21 @@ Weitere automatisch ergänzte Text-/Grafikkandidaten sind weiterhin ungeprüft.
 Historische Statusfelder des Mappings bleiben unverändert; Lernmanifest und
 Abdeckungsbericht sind maßgeblich. Keine neue Lernseite, Abdeckung 117/380.
 
+Neuntes Kernthema am 15.09.2026: `ga1-9__10`, Idempotenz und deklarativ versus
+imperativ. Eigene Zustandsmodelle trennen Beschreibung und Wiederholungswirkung;
+explizite Grenzen für Protokolle, veränderte Eingaben und parallele Prozesse.
+Ablaufgrafik, MathML, Zahlenübung, Sortierung, Quizze, eigener Testnachweis,
+Karten und zwei Pflichtziele. Buchbeleg EUROPA 00750, Zeilen 7569–7596,
+gelesen; Idempotenz gegen das offizielle Ansible-Glossar abgeglichen:
+https://docs.ansible.com/projects/ansible/latest/reference_appendices/glossary.html#idempotency
+
+`npm test` und gezielter `verify-idempotency-browser.mjs` erfolgreich:
+Fehlantworten, Zahlenfeedback, Tastatur, Speicherung, Abschlussgrenzen und
+Rücknahme. Grafik, Formel und Übung bei 390/1440px in beiden Themes geprüft,
+repräsentative Ansichten visuell gelesen. Kein erneuter kompletter Browsertest.
+Revision `2026-09-15.1`, `CURATED_DRAFT`. Abdeckung 118/380, GA1 10/164.
+Menschliche Fachfreigabe bleibt offen.
+
 Noch nicht umgesetzt: die weiteren Zuordnungsvorschläge für
 WiSo; weitere Automatisierungs-Kernthemen bleiben offen. Die URL-Inventur bleibt
 eine Lesewarteschlange und wird durch diesen Batch nicht pauschal als geprüft
