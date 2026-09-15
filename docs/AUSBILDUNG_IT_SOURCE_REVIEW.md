@@ -177,6 +177,23 @@ Speicherung und Abschlussgrenze geprüft; 390/1440px und beide Themes ohne
 Seitenüberlauf. Mobile Dark- und Desktop-Light-Aufnahme visuell geprüft.
 Kein erneuter vollständiger Navigationstest. Abdeckung unverändert 115/380.
 
+Siebter Schritt am 15.09.2026: neues Kernthema `ga1-9__2`, Schreibtischtest.
+Eigener Berichtszähler mit Trace-Tabelle, Ablaufgrafik, MathML, Zahleneingabe
+mit drei gezielten Fehlerrückmeldungen, Grenzwertdiagnose, Selbsterklärung,
+Karten und zwei Pflichtnachweisen. Quellen: IT-Basiswissen Chunk 00221
+(Wiederholungsstruktur/Schreibtischtest) und IHK Bonn Chunk 00076
+(Soll-Ist-Abweichungen/Testdaten). Chunk 00175 ist Netzwerkdiagnose und wurde
+als unpassender Mapping-Treffer verworfen. Historische Steuerwerte und
+unbelegte Aussagen zu konkreten Prüfungsterminen nicht übernommen.
+
+`npm test` erfolgreich. Neuer `verify-trace-browser.mjs` prüft Zahlenfeedback,
+verdeckte Musterlösung, Tastatur, Speicherung, Pflichtziele, Abschluss/Rücknahme,
+MathML, Diagramm und 390/1440px in beiden Themes. Mobile Codezeile gekürzt;
+Tabelle im vorhandenen horizontalen Scrollbereich einschließlich Ergebnisspalten
+geprüft. Diagramm, Tabelle und Übung visuell kontrolliert. Kein vollständiger
+Navigationstest in diesem Lauf. Revision `2026-09-15.1`, `CURATED_DRAFT`;
+Abdeckung 116/380, GA1 8/164. Weitere Quellenlektüre unverändert offen.
+
 Noch nicht umgesetzt: die weiteren Zuordnungsvorschläge für
 WiSo; weitere Automatisierungs-Kernthemen bleiben offen. Die URL-Inventur bleibt
 eine Lesewarteschlange und wird durch diesen Batch nicht pauschal als geprüft

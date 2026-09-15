@@ -1,0 +1,309 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "schreibtischtest-trace-table-variablenbelegung-algorithmus-schritt-schri",
+    "slug": "schreibtischtest-trace-table-variablenbelegung-algorithmus-schritt-schri",
+    "title": "Schreibtischtest: Algorithmen Schritt für Schritt prüfen",
+    "description": "Variablenzustände in einer Trace-Tabelle verfolgen, Grenzwerte prüfen und die erste falsche Zustandsänderung begründen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-9",
+    "groupLabel": "Programme zur automatisierten Systemverwaltung",
+    "itemId": "ga1-9__2",
+    "week": "KW 43",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "sources": [
+      "it-basiswissen-2012",
+      "ihk-bonn"
+    ],
+    "contentRevision": "2026-09-15.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "trace",
+      "label": "Variablenzustände und Ergebnis eines Ablaufs korrekt verfolgen"
+    },
+    {
+      "id": "grenze",
+      "label": "eine fehlerhafte Grenzbedingung mit einem Gegenbeispiel nachweisen"
+    }
+  ],
+  "intro": "Bevor ein Skript echte Systeme verändert, spielst du seinen Ablauf mit kleinen Testdaten durch. Ein Schreibtischtest zeigt nicht nur das Ergebnis, sondern auch, wann und warum sich ein Wert verändert. Hier wird ausschließlich ein eigener Pseudocode im Kopf und auf Papier geprüft.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "it-basiswissen-2012",
+        "sourceLocator": "Chunk 00221, Markdown-Zeilen 5375–5491, Abschnitt Wiederholungsstruktur und Schreibtischtest",
+        "use": "Methode: tabellarische Zustände und Bedingungen prüfen",
+        "reviewStatus": "Relevante Abschnitte gelesen; historische Steuerregeln nicht übernommen"
+      },
+      {
+        "sourceId": "ihk-bonn",
+        "sourceLocator": "Chunk 00076, Markdown-Zeilen 1036–1062",
+        "use": "Soll-Ist-Abweichung, Fehlerursache und geeignete Testdaten",
+        "reviewStatus": "Abschnitt gelesen; beschädigte OCR-Antwortfragmente nicht verwendet"
+      }
+    ],
+    "notes": [
+      "Eigener Berichtszähler statt Buchaufgabe. IT-Basiswissen Chunk 00175 ist Netzwerkdiagnose und kein direkter Trace-Beleg.",
+      "Keine Behauptung über konkrete Prüfungstermine oder verbindliche IHK-Bewertung. Menschliche Fachfreigabe offen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "trace-ablauf",
+      "type": "flow",
+      "title": "Ein Durchlauf, vier Fragen",
+      "description": "Immer mit dem aktuellen Zustand weiterarbeiten.",
+      "items": [
+        {
+          "label": "Lesen",
+          "detail": "Nächsten Eingabewert übernehmen"
+        },
+        {
+          "label": "Prüfen",
+          "detail": "Bedingung mit diesem Wert auswerten"
+        },
+        {
+          "label": "Ändern",
+          "detail": "Nur den gewählten Zweig ausführen"
+        },
+        {
+          "label": "Notieren",
+          "detail": "Zustand nach dem Durchlauf festhalten"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "schreibtischtest-trace-table-variablenbelegung-algorithmus-schritt-schri-diagnose",
+          "question": "Eine Variable wird neu zugewiesen. Welcher Wert gilt im nächsten Schritt?",
+          "options": [
+            {
+              "text": "Immer der Startwert.",
+              "rationale": "Der Startwert gilt nur bis zur nächsten Zuweisung.",
+              "correct": false
+            },
+            {
+              "text": "Der zuletzt zugewiesene Wert.",
+              "rationale": "Der aktuelle Zustand wird Schritt für Schritt fortgeführt.",
+              "correct": true
+            },
+            {
+              "text": "Der gewünschte Endwert.",
+              "rationale": "Ein Sollwert ersetzt nicht die tatsächlich ausgeführten Anweisungen.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Auftrag und Beobachtungspunkt festlegen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Unser eigener Auftrag: Eine Liste enthält Anzahlen fehlgeschlagener Anmeldungen pro Testgerät. Berücksichtige nur Geräte mit mindestens drei Fehlversuchen. Zähle diese Geräte und summiere ausschließlich ihre Fehlversuche. Die Eingaben sind in diesem Modell nichtnegative ganze Zahlen; Rechteprüfung und Datenimport sind nicht Teil dieses Algorithmus.\n\nZwei Variablen beginnen bei null: `anzahl` zählt berücksichtigte Geräte, `summe` zählt deren Fehlversuche. Ein Wert von fünf erhöht also die Geräteanzahl nur um eins. Jede Tabellenzeile beschreibt den Zustand **nach einem vollständigen Schleifendurchlauf**. Eine Startzeile hält den Zustand vor der Schleife fest."
+        },
+        {
+          "type": "figure",
+          "diagramId": "trace-ablauf",
+          "alt": "Eingabewert lesen, Bedingung prüfen, ausgewählten Zweig ausführen und aktuellen Zustand notieren.",
+          "caption": "Eigene Ablaufskizze für jede Zeile der Trace-Tabelle."
+        },
+        {
+          "type": "markdown",
+          "markdown": "```text\nanzahl ← 0\nsumme ← 0\nFÜR JEDEN wert IN eingaben:\n    WENN wert mindestens 3 ist:\n        anzahl ← anzahl + 1\n        summe ← summe + wert\nAUSGABE anzahl, summe\n```\n\nDer Pfeil bedeutet Zuweisung: rechte Seite mit dem bisherigen Zustand auswerten, danach den neuen Wert speichern. Die Einrückung legt fest, dass beide Änderungen zur Bedingung gehören. Ist die Bedingung falsch, bleiben beide Variablen unverändert."
+        }
+      ]
+    },
+    {
+      "title": "Vollständiges Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Eingaben in dieser Reihenfolge: **2, 5, 3**. Die Spalte „passt?“ beschreibt die Entscheidung für den aktuellen Wert; die letzten beiden Spalten zeigen den Zustand danach. Auf schmalen Bildschirmen die Tabelle seitlich verschieben, um anzahl und summe zu sehen.\n\n| Nr. | wert | passt? | anzahl | summe |\n|---|---|---|---|---|\n| Start | – | – | 0 | 0 |\n| 1 | 2 | nein | 0 | 0 |\n| 2 | 5 | ja | 1 | 5 |\n| 3 | 3 | ja | 2 | 8 |\n\nBei zwei bleibt der Zustand unverändert. Bei fünf wird erstmals gezählt. Drei liegt genau auf der eingeschlossenen Grenze und wird ebenfalls berücksichtigt. Die Ausgabe lautet deshalb: zwei Geräte, zusammen acht Fehlversuche."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Nach dem dritten Durchlauf ist anzahl gleich eins plus eins gleich zwei, und summe gleich fünf plus drei gleich acht.",
+          "mathml": "<math display=\"block\"><mtable columnalign=\"left\"><mtr><mtd><mtext>anzahl</mtext><mo>=</mo><mn>1</mn><mo>+</mo><mn>1</mn><mo>=</mo><mn>2</mn></mtd></mtr><mtr><mtd><mtext>summe</mtext><mo>=</mo><mn>5</mn><mo>+</mo><mn>3</mn><mo>=</mo><mn>8</mn></mtd></mtr></mtable></math>",
+          "legend": [
+            "anzahl: berücksichtigte Geräte",
+            "summe: Fehlversuche dieser Geräte"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Selbst durchspielen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Neue Eingaben: **4, 1, 3**. Zeichne zuerst Startzeile und drei Durchlaufzeilen. Notiere die Bedingung auch dann, wenn sich kein Wert ändert. Prüfe anschließend deine letzte Summenspalte."
+        },
+        {
+          "type": "numeric",
+          "id": "schreibtischtest-trace-table-variablenbelegung-algorithmus-schritt-schri-summe",
+          "title": "Letzten Zustand vorhersagen",
+          "prompt": "Welche summe wird nach den Eingaben 4, 1, 3 ausgegeben?",
+          "label": "Summe der berücksichtigten Fehlversuche",
+          "expected": 7,
+          "tolerance": 0,
+          "correctFeedback": "Richtig: vier und drei werden berücksichtigt, eins nicht. anzahl endet bei zwei, summe bei sieben.",
+          "wrongFeedback": "Gehe jeden Wert einzeln durch. Nur bei mindestens drei werden beide Variablen verändert.",
+          "misconceptions": [
+            {
+              "value": 8,
+              "feedback": "Du hast auch den nicht berücksichtigten Wert eins addiert."
+            },
+            {
+              "value": 3,
+              "feedback": "summe wird fortgeschrieben, nicht durch den letzten passenden Wert ersetzt."
+            },
+            {
+              "value": 2,
+              "feedback": "Zwei ist die Geräteanzahl, nicht die Summe der Fehlversuche."
+            }
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "Für zusätzliche Tests: Eine leere Liste lässt beide Startwerte unverändert. Die Liste mit nur dem Wert zwei führt keinen Zählvorgang aus. Mit nur dem Wert drei muss ein Gerät berücksichtigt werden. Diese kleinen Fälle trennen Startzustand, ausgeschlossenen Wert und eingeschlossene Grenze."
+        }
+      ]
+    },
+    {
+      "title": "Fehler mit einem Gegenbeispiel finden",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "schreibtischtest-trace-table-variablenbelegung-algorithmus-schritt-schri-fehler",
+          "question": "Jemand ändert die Bedingung zu „wert größer als 3“. Welche einzelne Eingabe zeigt den Unterschied zum Auftrag?",
+          "options": [
+            {
+              "text": "Nur 2.",
+              "rationale": "Zwei wird bei beiden Bedingungen ausgeschlossen.",
+              "correct": false
+            },
+            {
+              "text": "Nur 3.",
+              "rationale": "Drei muss laut Auftrag berücksichtigt werden, wird durch die Änderung aber ausgeschlossen.",
+              "correct": true
+            },
+            {
+              "text": "Nur 5.",
+              "rationale": "Fünf wird bei beiden Bedingungen berücksichtigt.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "schreibtischtest-trace-table-variablenbelegung-algorithmus-schritt-schri-begruendung",
+          "title": "Die erste Abweichung begründen",
+          "prompt": "Spiele den fehlerhaften Ablauf für die einzelne Eingabe 3 durch. Nenne Sollzustand, Istzustand und die erste falsche Entscheidung. Warum beweist ein erfolgreicher Test mit 5 nicht die Korrektheit?",
+          "label": "Dein Fehlernachweis",
+          "minLength": 80,
+          "model": "Soll: ein berücksichtigtes Gerät und drei Fehlversuche. Ist: beide Variablen bleiben null. Die erste falsche Entscheidung liegt bei der Bedingung: größer als drei ist für drei falsch. Mit fünf liefern beide Bedingungen denselben Zweig; dieser Test unterscheidet sie nicht. Ein einzelner erfolgreicher Test beweist keine allgemeine Korrektheit."
+        }
+      ]
+    },
+    {
+      "title": "Aus dem Gedächtnis erklären",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "schreibtischtest-trace-table-variablenbelegung-algorithmus-schritt-schri-karte-0",
+              "label": "Zeitpunkt",
+              "front": "Warum braucht jede Trace-Tabelle einen festgelegten Beobachtungspunkt?",
+              "back": "Sonst werden Werte vor und nach einer Anweisung vermischt; gleich beschriftete Zeilen sind nicht vergleichbar."
+            },
+            {
+              "id": "schreibtischtest-trace-table-variablenbelegung-algorithmus-schritt-schri-karte-1",
+              "label": "Grenzwert",
+              "front": "Warum ist der Wert drei hier besonders nützlich?",
+              "back": "Er unterscheidet mindestens drei von größer als drei und prüft die eingeschlossene Grenze."
+            },
+            {
+              "id": "schreibtischtest-trace-table-variablenbelegung-algorithmus-schritt-schri-karte-2",
+              "label": "Grenze der Methode",
+              "front": "Was beweist ein erfolgreicher Schreibtischtest nicht?",
+              "back": "Nicht die Korrektheit für alle Eingaben und nicht das Verhalten der späteren Laufzeitumgebung, etwa Rechte- oder Netzwerkfehler."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "schreibtischtest-trace-table-variablenbelegung-algorithmus-schritt-schri-transfer-a",
+          "question": "Neue Eingaben: 0, 6, 2, 4. Welcher Endzustand passt zum unveränderten Algorithmus?",
+          "options": [
+            {
+              "text": "anzahl 2, summe 10.",
+              "rationale": "Nur sechs und vier erfüllen die Bedingung.",
+              "correct": true
+            },
+            {
+              "text": "anzahl 4, summe 12.",
+              "rationale": "Hier wurden alle Geräte und alle Werte berücksichtigt, auch ausgeschlossene.",
+              "correct": false
+            },
+            {
+              "text": "anzahl 2, summe 4.",
+              "rationale": "Die Summe wurde fälschlich durch den letzten Wert ersetzt.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "trace"
+        },
+        {
+          "type": "quiz",
+          "id": "schreibtischtest-trace-table-variablenbelegung-algorithmus-schritt-schri-transfer-b",
+          "question": "Ein neuer Auftrag zählt Werte von mindestens 8. Die Umsetzung prüft größer als 8. Welcher Test weist den Fehler direkt nach?",
+          "options": [
+            {
+              "text": "Wert 9: Erwartung ein Treffer.",
+              "rationale": "Neun wird von beiden Bedingungen akzeptiert.",
+              "correct": false
+            },
+            {
+              "text": "Wert 7: Erwartung kein Treffer.",
+              "rationale": "Sieben wird von beiden Bedingungen abgelehnt.",
+              "correct": false
+            },
+            {
+              "text": "Wert 8: Erwartung ein Treffer, tatsächlich kein Treffer.",
+              "rationale": "Der eingeschlossene Grenzwert trennt Soll und fehlerhafte Umsetzung.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "grenze"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Methodenbezug: IT-Basiswissen, Abschnitt Handlungsaufgaben zur Wiederholungsstruktur und zum Schreibtischtest (lokaler Textindex, Zeilen 5375–5491); Prüfvorbereitung IHK Bonn, Programmiertechniken (Zeilen 1036–1062), Soll-Ist-Abweichungen und Testdaten. Das historische Abschreibungsbeispiel und seine Steuerwerte werden nicht übernommen.\n\nAlle Abläufe, Zahlen, Rückmeldungen und die Grafik dieser Einheit sind eigenständig. Es wird keine Aussage über konkrete Prüfungstermine oder verbindliche Punktevergabe abgeleitet. Ein Schreibtischtest ergänzt Tests der realen Implementierung; er ersetzt sie nicht."
+        }
+      ]
+    }
+  ]
+}

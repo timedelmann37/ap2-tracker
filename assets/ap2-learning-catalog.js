@@ -156,6 +156,31 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "legacy-markdown"
   },
   {
+    "id": "schreibtischtest-trace-table-variablenbelegung-algorithmus-schritt-schri",
+    "slug": "schreibtischtest-trace-table-variablenbelegung-algorithmus-schritt-schri",
+    "title": "Schreibtischtest: Algorithmen Schritt für Schritt prüfen",
+    "description": "Variablenzustände in einer Trace-Tabelle verfolgen, Grenzwerte prüfen und die erste falsche Zustandsänderung begründen.",
+    "domain": "GA1",
+    "groupId": "ga1-9",
+    "groupLabel": "Programme zur automatisierten Systemverwaltung",
+    "itemId": "ga1-9__2",
+    "week": "KW 43",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-15.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "trace",
+      "grenze"
+    ],
+    "sources": [
+      "it-basiswissen-2012",
+      "ihk-bonn"
+    ],
+    "contentHash": "1fb90c9c44a5a7ef42e86e40b2ebbe8a4b261fec383ff0dd5192e85b7e4d3942",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor",
     "slug": "qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor",
     "title": "Administrationsskripte sicher prüfen und betreiben",
