@@ -214,9 +214,9 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "groupLabel": "Programme zur automatisierten Systemverwaltung",
     "itemId": "ga1-9__3",
     "week": "KW 43",
-    "estimatedMinutes": 28,
+    "estimatedMinutes": 31,
     "relevance": "hoch",
-    "contentRevision": "2026-09-15.1",
+    "contentRevision": "2026-09-15.2",
     "contentStatus": "CURATED_DRAFT",
     "learningObjectives": [
       "auswahl",
@@ -225,7 +225,7 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sources": [
       "itlf6-9-2022"
     ],
-    "contentHash": "c59ea00679329813cb5bf4b1ecf43a22e78862075ad3d9a6e1eca79a9661a786",
+    "contentHash": "caa0371a3e7e02ec82c6c7ab288ea26df239f6b471c9096dbbfc70636cf8030b",
     "sourceKind": "compact-spec"
   },
   {

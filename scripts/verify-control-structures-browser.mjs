@@ -26,6 +26,13 @@ try {
   assert(await numeric.locator('[data-numeric-feedback]').getAttribute('data-result')===result,'Numeric '+value);
  }
  assert(await done.isDisabled(),'Numeric practice cannot unlock');
+ const boundary=page.locator('[data-numeric-practice="'+slug+'-grenze"]');
+ for(const [value,result] of [['3','wrong'],['5','wrong'],['4','correct']]) {
+  await boundary.locator('[data-numeric-input]').fill(value);
+  await boundary.locator('[data-numeric-check]').focus(); await page.keyboard.press('Enter');
+  assert(await boundary.locator('[data-numeric-feedback]').getAttribute('data-result')===result,'Boundary feedback '+value);
+ }
+ assert(await done.isDisabled(),'Boundary practice cannot unlock');
  const seq=page.locator('[data-sequence="'+slug+'-reihenfolge"]');
  await seq.locator('[data-sequence-check]').click();
  assert((await seq.locator('[data-sequence-feedback]').textContent()).includes('Beim kopfgesteuerten'),'Wrong ordering explained');
@@ -62,7 +69,7 @@ try {
   await page.setViewportSize({width,height:1000});
   for(const theme of ['dark','light']) {
    await page.evaluate(t=>document.documentElement.setAttribute('data-theme',t),theme);
-   for(const [name,target] of [['diagram',page.locator('.learning-figure')],['code',page.locator('pre')],['sequence',seq]]) {
+   for(const [name,target] of [['diagram',page.locator('.learning-figure')],['code',page.locator('pre')],['sequence',seq],['boundary',boundary]]) {
     await target.scrollIntoViewIfNeeded();
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'No overflow '+width+'/'+theme);
     if(process.env.AP2_CONTROL_CAPTURE==='1') {
@@ -75,5 +82,4 @@ try {
  assert(!errors.length,errors.join('\n'));
  console.log('PASS control structures: ordering, recall, keyboard, gates, persistence, undo, responsive themes');
 } finally {await browser.close();}
-
 

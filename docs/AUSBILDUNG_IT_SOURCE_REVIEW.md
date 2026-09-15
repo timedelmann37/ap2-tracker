@@ -283,6 +283,16 @@ Fehlantworten, Nullwert-Eingabe, Tastatur, Speicherung, Abschluss/Rücknahme und
 Kein erneuter vollständiger Navigationstest. Revision `2026-09-15.1`,
 `CURATED_DRAFT`; Abdeckung 119/380, GA1 11/164. Menschliche Fachfreigabe offen.
 
+Vertiefung am 15.09.2026: Kontrollstrukturen ergänzt um den letzten erlaubten
+Durchlauf und einen eigenen Off-by-one-Fall. Zahlenübung trennt „kleiner als“
+von „höchstens“, erklärt Zählerbedeutung und Zeitpunkt der Erhöhung. Eigene
+Ableitung des vorhandenen Versuchsmodells, keine neue Quellenbehauptung.
+Revision `2026-09-15.2`, unveränderte Pflichtziele und `CURATED_DRAFT`.
+`npm test` und gezielter Browsertest erfolgreich, inklusive Fehlwerten 3/5,
+richtiger Eingabe 4, Tastatur und Abschlussgrenzen. Neuer Abschnitt bei
+390/1440px in beiden Themes geprüft und mobil/desktop visuell kontrolliert.
+Abdeckung bleibt 119/380; kein erneuter vollständiger Navigationstest.
+
 Noch nicht umgesetzt: die weiteren Zuordnungsvorschläge für
 WiSo; weitere Automatisierungs-Kernthemen bleiben offen. Die URL-Inventur bleibt
 eine Lesewarteschlange und wird durch diesen Batch nicht pauschal als geprüft
