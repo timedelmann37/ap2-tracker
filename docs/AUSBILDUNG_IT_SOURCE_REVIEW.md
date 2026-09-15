@@ -293,6 +293,16 @@ richtiger Eingabe 4, Tastatur und Abschlussgrenzen. Neuer Abschnitt bei
 390/1440px in beiden Themes geprüft und mobil/desktop visuell kontrolliert.
 Abdeckung bleibt 119/380; kein erneuter vollständiger Navigationstest.
 
+Vorbereitung am 15.09.2026: Für `ga1-9__4` liegt jetzt das begrenzte
+Redaktionspaket `docs/learning-prep/GA1_VARIABLES_FUNCTIONS.md` vor. Buchkontext
+IT-Basiswissen 00221 bis zur Daten-/Verlaufstabelle und offizielle Python-
+Abschnitte zu Listen und Funktionen geprüft. Eigener Dateigrößenfall mit
+Lernzielen, zwei Grafikaufträgen, Übungen, Transfer und Prüfplan vorbereitet.
+Fünf Sollwertfälle einschließlich leerer Liste und Nullwert unabhängig lokal
+berechnet; unveränderte Eingabe und wiederholte Aufrufe geprüft.
+Noch keine Lernseite, keine Freigabe und keine Abdeckungserhöhung: 119/380.
+Nächster Umsetzungsschritt ist dieses Redaktionspaket, nicht erneute Vollsuche.
+
 Noch nicht umgesetzt: die weiteren Zuordnungsvorschläge für
 WiSo; weitere Automatisierungs-Kernthemen bleiben offen. Die URL-Inventur bleibt
 eine Lesewarteschlange und wird durch diesen Batch nicht pauschal als geprüft
