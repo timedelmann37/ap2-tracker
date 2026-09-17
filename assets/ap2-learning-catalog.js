@@ -229,6 +229,30 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "variablen-datentypen-arrays-listen-funktionen-parametern-ruckgabewert",
+    "slug": "variablen-datentypen-arrays-listen-funktionen-parametern-ruckgabewert",
+    "title": "Variablen, Listen und Funktionen sicher unterscheiden",
+    "description": "Index, Wert, Zähler und Summe auseinanderhalten und eine Funktion mit Parametern und Rückgabewert nachvollziehen.",
+    "domain": "GA1",
+    "groupId": "ga1-9",
+    "groupLabel": "Programme zur automatisierten Systemverwaltung",
+    "itemId": "ga1-9__4",
+    "week": "KW 43",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-17.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "daten",
+      "funktion"
+    ],
+    "sources": [
+      "it-basiswissen-2012"
+    ],
+    "contentHash": "15b7c7b3eaa8379da0d95000893f734d29856320bd6cad05038b34049a32ebdd",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "idempotenz-deklarativ-vs-imperativ-erklaren",
     "slug": "idempotenz-deklarativ-vs-imperativ-erklaren",
     "title": "Idempotenz: Zielzustand statt wiederholter Nebenwirkung",

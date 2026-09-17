@@ -303,6 +303,16 @@ berechnet; unveränderte Eingabe und wiederholte Aufrufe geprüft.
 Noch keine Lernseite, keine Freigabe und keine Abdeckungserhöhung: 119/380.
 Nächster Umsetzungsschritt ist dieses Redaktionspaket, nicht erneute Vollsuche.
 
+Umsetzung am 17.09.2026: `ga1-9__4` ist als Lernseite zu Variablen, Typen,
+Listen und Funktionen eingebaut. Grundlage ist das oben dokumentierte
+Redaktionspaket, keine neue Vollrecherche. Zwei eigene Erklärgrafiken,
+MathML, drei Zahlenübungen, Sortieraufgabe, eigener Schreibauftrag,
+Abrufkarten und zwei Pflichtziel-Checks behandeln auch Nullwert und Leerfall.
+`npm test` und gezielter Browsertest erfolgreich, einschließlich Tastatur,
+Fehlantworten, Speicherung und Abschluss/Rücknahme. 390/1440px in beiden
+Themes geprüft. Abdeckung 120/380, GA1 12/164; `CURATED_DRAFT`, menschliche
+Freigabe offen. Kein vollständiger Navigationstest und keine Veröffentlichung.
+
 Noch nicht umgesetzt: die weiteren Zuordnungsvorschläge für
 WiSo; weitere Automatisierungs-Kernthemen bleiben offen. Die URL-Inventur bleibt
 eine Lesewarteschlange und wird durch diesen Batch nicht pauschal als geprüft

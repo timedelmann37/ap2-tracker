@@ -1,6 +1,6 @@
 # Redaktionspaket: Variablen, Listen und Funktionen
 
-Stand: 15.09.2026. Vorbereitung, noch keine gebaute Lerneinheit.
+Stand: 17.09.2026. Als Lerneinheit umgesetzt, Status `CURATED_DRAFT`.
 Kernthema: `ga1-9__4`.
 Slug: `variablen-datentypen-arrays-listen-funktionen-parametern-ruckgabewert`.
 Bestehende Hierarchie und Tracker-Schlüssel unverändert übernehmen.
@@ -78,4 +78,9 @@ Liste. Eine leere Liste besitzt keinen gültigen Elementindex.
 - Zusatzübungen dürfen keine Pflichtziele freischalten.
 - Beide Pflichtziele, Abschluss/Rücknahme und erneutes Laden prüfen.
 - Grafik und Tabellen bei 390/1440px, Dark/Light visuell kontrollieren.
-- Erst nach Umsetzung und Prüfung die Abdeckung erhöhen; dieses Paket zählt nicht.
+- Umsetzung mit `npm test` und gezieltem Browsertest geprüft: Fehlantworten,
+  Tastatur, Sortierung, Erinnerungsauftrag, Speicherung, Pflichtziele und
+  Abschluss/Rücknahme. Darstellung bei 390/1440px in beiden Themes geprüft;
+  Diagramme auf kleinen Bildschirmen innerhalb ihrer Grafikfläche verschiebbar.
+- Abdeckung nach Umsetzung: 120/380, davon GA1 12/164. Menschliche fachliche
+  Freigabe bleibt offen; kein vollständiger Navigationstest in diesem Durchlauf.
