@@ -368,6 +368,13 @@ Lebensdauer-Ausnahme bei herausgelösten Teilen ausdrücklich berücksichtigt.
 Abdeckung 130/380, GA1 22/164, Automatisierungsgruppe 16/16 als Lernentwürfe.
 Menschliche Freigabe offen; kein Push und keine Veröffentlichung.
 
+Umsetzung am 17.09.2026: NAS-/SAN-Auswahl (`ga1-3__1`) mit eigener
+Angebotsmatrix, zwei Grafiken und interaktiver Begründungsübung ergänzt.
+Historische Buchaussagen bereinigt, Zugriffsebenen mit Herstellerdokumentation
+abgeglichen. Details in `docs/learning-prep/GA1_NAS_SAN_DECISION.md`.
+`npm test` und gezielter Browsertest bestanden. Abdeckung 131/380,
+GA1 23/164, Speicherlösungen 5/13. `CURATED_DRAFT`, kein Push.
+
 Noch nicht umgesetzt: die weiteren Zuordnungsvorschläge für
 WiSo und weitere GA1-Themengruppen. Die URL-Inventur bleibt
 eine Lesewarteschlange und wird durch diesen Batch nicht pauschal als geprüft
