@@ -1,0 +1,389 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s",
+    "slug": "typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s",
+    "title": "Verwaltungsskripte: vom Auftrag zum sicheren Ablauf",
+    "description": "Aus einer Anforderung einen prüfbaren Ablauf für Logdateien, Backups, CSV-Konten und Dienststatus entwickeln.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-9",
+    "groupLabel": "Programme zur automatisierten Systemverwaltung",
+    "itemId": "ga1-9__8",
+    "week": "KW 43",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "sources": [
+      "ps-comparisons",
+      "ps-date",
+      "ps-service",
+      "ps-foreach"
+    ],
+    "contentRevision": "2026-09-17.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "auswahl",
+      "label": "Eine eindeutige Auswahlregel in einen Ablauf übersetzen"
+    },
+    {
+      "id": "kontrolle",
+      "label": "Änderungen durch Vorprüfung und Ergebnisprüfung absichern"
+    }
+  ],
+  "intro": "Aus einer Anforderung einen prüfbaren Ablauf für Logdateien, Backups, CSV-Konten und Dienststatus entwickeln. Du bearbeitest eigene Papierfälle; es werden keine echten Systeme verändert.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "ps-comparisons",
+        "sourceLocator": "Equality operators; -gt, -ge, -lt, -le",
+        "use": "Skalarer Vergleich und strenge Grenze",
+        "reviewStatus": "Begrenzter Abschnitt am 17.09.2026 gelesen und abgeglichen"
+      },
+      {
+        "sourceId": "ps-date",
+        "sourceLocator": "Description; Example 3",
+        "use": "Explizites Datumsformat",
+        "reviewStatus": "Begrenzter Abschnitt am 17.09.2026 gelesen und abgeglichen"
+      },
+      {
+        "sourceId": "ps-service",
+        "sourceLocator": "Description; Example 5",
+        "use": "Windows-Dienstobjekte und Status",
+        "reviewStatus": "Begrenzter Abschnitt am 17.09.2026 gelesen und abgeglichen"
+      },
+      {
+        "sourceId": "ps-foreach",
+        "sourceLocator": "Syntax und einfache Beispiele",
+        "use": "Iteration über Datensätze",
+        "reviewStatus": "Begrenzter Abschnitt am 17.09.2026 gelesen und abgeglichen"
+      }
+    ],
+    "notes": [
+      "Eigene Beispiele, Aufgaben und Grafiken. Menschliche Fach- und Verständlichkeitsfreigabe offen.",
+      "Batch 008–009: Outsourcing-, Ticket- und E-Business-Treffer nicht als technische Belege verwendet. Kein Buchbild übernommen; eigene Papieraufträge. Keine Löschung, Sicherung, Kontenanlage oder Dienständerung ausgeführt."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "ablauf",
+      "title": "Vor dem Schreibzugriff",
+      "type": "flow",
+      "items": [
+        {
+          "label": "Auftrag",
+          "detail": "Ziele und Auswahl festlegen"
+        },
+        {
+          "label": "Vorschau",
+          "detail": "Treffer und Grenzfälle prüfen"
+        },
+        {
+          "label": "Ergebnis",
+          "detail": "Wirkung einzeln nachweisen"
+        }
+      ]
+    },
+    {
+      "id": "backup",
+      "title": "Eine Datei ist noch kein Nachweis",
+      "type": "flow",
+      "items": [
+        {
+          "label": "Vorbereitung",
+          "detail": "Quelle, Ziel und freien Platz prüfen"
+        },
+        {
+          "label": "Sicherung",
+          "detail": "Eindeutigen Namen verwenden"
+        },
+        {
+          "label": "Kontrolle",
+          "detail": "Ergebnis und Wiederherstellung testen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-diagnose",
+          "question": "Der Auftrag lautet „alte Logs löschen“. Was fehlt vor einem sicheren Skript?",
+          "options": [
+            {
+              "text": "Nur ein möglichst kurzer Befehl.",
+              "rationale": "Kürze ersetzt keine Auswahlregel.",
+              "correct": false
+            },
+            {
+              "text": "Ein begrenzter Zielbereich und eine eindeutige Altersregel.",
+              "rationale": "Richtig: Sonst ist unklar, welche Dateien betroffen sein dürfen.",
+              "correct": true
+            },
+            {
+              "text": "Eine Erfolgsmeldung am Anfang.",
+              "rationale": "Eine Meldung beweist keine Wirkung.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Auftrag in einen Vertrag übersetzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Notiere vor dem Code: Welche Eingaben sind erlaubt? Welche Objekte sollen verändert werden? Was muss unverändert bleiben? Woran erkennst du Erfolg oder Fehler?\n\nUnser eigener Papierauftrag: Nur freigegebene, geschlossene `.log`-Dateien im vereinbarten Testordner kommen infrage. Sie müssen **älter als 30 volle Tage** sein. Genau 30 Tage reichen nicht. Keine Unterordner, keine Links zu anderen Zielen, keine aktiven Logs. Aufbewahrung und Freigabe werden vom Auftraggeber geklärt; das Skript erfindet keine Löschbefugnis."
+        },
+        {
+          "type": "figure",
+          "diagramId": "ablauf",
+          "alt": "Eingaben abgrenzen, Auswahl prüfen und Ergebnis kontrollieren.",
+          "caption": "Eigene Darstellung des Übungsfalls."
+        }
+      ]
+    },
+    {
+      "title": "Logauswahl zuerst vorhersagen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Die folgenden Datensätze sind bereits auf den erlaubten Ordner und Dateityp begrenzt. `Tage` ist eine vorgegebene ganze Zahl, `Aktiv` ein Wahrheitswert. Das Beispiel prüft nur die verbleibende Auswahlregel. Es liest und löscht **keine Dateien**. Schreibe vor dem Lesen der Erklärung auf, welcher Name erscheint.\n\n```powershell\n$dateien = @(\n  @{Name='a.log'; Tage=31\n    Aktiv=$false}\n  @{Name='b.log'; Tage=30\n    Aktiv=$false}\n  @{Name='c.log'; Tage=60\n    Aktiv=$true}\n)\nforeach ($datei in $dateien) {\n  if (($datei.Tage -gt 30) -and\n      (-not $datei.Aktiv)) {\n    \"Kandidat: $($datei.Name)\"\n  }\n}\n```\n\n`a.log` wird ausgegeben: 31 ist größer als 30 und die Datei ist nicht aktiv. `b.log` liegt genau auf der Grenze und bleibt erhalten. `c.log` ist zwar alt, aber aktiv. Die einzige Ausgabe ist `Kandidat: a.log`. Eine Kandidatenliste ist noch keine ausgeführte Löschung.\n\nBei echten Zeitstempeln müssen Bezugszeit, Zeitzone und Grenze feststehen. Ein zeitlicher Abstand ist nicht einfach die Differenz der angezeigten Kalendertage. Aktive Nutzung lässt sich nicht aus dem Alter ableiten."
+        },
+        {
+          "type": "numeric",
+          "id": "typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-zahl",
+          "title": "Neue Kandidaten zählen",
+          "prompt": "Vier bereits erlaubte Logdateien: 29 Tage/inaktiv, 30 Tage/inaktiv, 31 Tage/inaktiv, 45 Tage/inaktiv. Regel: älter als 30 Tage und nicht aktiv. Wie viele Kandidaten entstehen?",
+          "label": "Anzahl der Kandidaten",
+          "expected": 2,
+          "tolerance": 0,
+          "correctFeedback": "31 und 45 Tage erfüllen die strenge Altersgrenze.",
+          "wrongFeedback": "Prüfe jede Zeile getrennt; genau 30 Tage bleiben ausgeschlossen.",
+          "misconceptions": [
+            {
+              "value": 3,
+              "feedback": "Genau 30 ist nicht älter als 30."
+            },
+            {
+              "value": 4,
+              "feedback": "Auch die 29 Tage alte Datei bleibt erhalten."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-logs",
+          "title": "Selbst schreiben",
+          "prompt": "Schreibe einen Pseudocode für die Logbereinigung: Eingaben prüfen, Kandidaten vorschauen, Freigabe, vor jeder Löschung Ziel und aktive Nutzung erneut prüfen, Fehler protokollieren. Keine echten Befehle nötig.",
+          "label": "Dein Pseudocode",
+          "minLength": 70,
+          "model": "Prüfe den exakt freigegebenen Ordner und die Regel. Ermittle nur erlaubte reguläre Logdateien ohne Links und ohne Rekursion. Filtere Alter und aktive Nutzung. Zeige Kandidaten. Ohne Freigabe ende ohne Änderung. Prüfe vor jedem Einzelzugriff Ziel und Nutzung erneut. Lösche nur dann, protokolliere Erfolg oder Fehler und melde Teilerfolg statt pauschalem Erfolg. Ein echter produktiver Lauf braucht zusätzlich geeignete Schutzmechanismen gegen Änderungen zwischen Prüfung und Zugriff."
+        }
+      ]
+    },
+    {
+      "title": "Backup mit Datumsstempel entwerfen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Datumsstempel macht den Sicherungsstand erkennbar. Für unseren Papierlauf ist der Zeitpunkt fest vorgegeben: 17.09.2026, 14:05 Uhr. Dieses reine Namensbeispiel erzeugt keine Datei:\n\n```powershell\n$zeit = [datetime]'2026-09-17T14:05:00'\n$stempel = Get-Date -Date $zeit `\n  -Format 'yyyyMMdd-HHmm'\n\"backup-$stempel.zip\"\n```\n\nErgebnis: `backup-20260917-1405.zip`. Zwei Läufe in derselben Minute hätten denselben Namen. Eine Kollision muss erkannt werden; zusätzliche Laufkennung oder kontrollierter Abbruch statt ungeprüftem Überschreiben. Ein ZIP-Dateiname sagt außerdem nichts über Konsistenz, Vollständigkeit oder Wiederherstellbarkeit aus."
+        },
+        {
+          "type": "figure",
+          "diagramId": "backup",
+          "alt": "Vorbereitung, Sicherung mit eindeutiger Kennung, anschließend Ergebnis- und Wiederherstellungsprüfung.",
+          "caption": "Eigene Darstellung des Übungsfalls."
+        },
+        {
+          "type": "recall",
+          "id": "typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-backup",
+          "title": "Selbst schreiben",
+          "prompt": "Schreibe sechs bis acht Pseudocode-Schritte für ein Backup: Quelle und Ziel prüfen, Zeitstempel, Namenskollision, Sicherung, Ergebnis und Fehler. Was darf bei fehlgeschlagener Sicherung keinesfalls gemeldet werden?",
+          "label": "Dein Pseudocode",
+          "minLength": 70,
+          "model": "Prüfe Quelle, freigegebenes anderes Ziel, Rechte, Platz und Konsistenzanforderungen. Bilde eine eindeutige Laufkennung mit Datum. Wenn das Ziel schon existiert, brich kontrolliert ab oder verwende eine neue freigegebene Kennung. Führe die passende Sicherung aus. Prüfe deren Ergebnis; teste Wiederherstellung nach dem Sicherungskonzept. Protokolliere Zeitpunkt und Resultat. Bei Fehler keine Erfolgsmeldung und keine letzte brauchbare Sicherung entfernen."
+        }
+      ]
+    },
+    {
+      "title": "CSV-Konten und Dienststatus",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Bei der Benutzeranlage aus CSV trennst du zwei Durchläufe: zuerst alle Daten prüfen, danach nur freigegebene Datensätze verarbeiten. Pflichtfelder, doppelte Logins, bestehende Konten und Ziel-OU gehören in die Vorprüfung. Ein Fehler im zweiten Durchlauf kann dennoch Teilerfolg erzeugen: Halte für jede Zeile fest, ob sie angelegt, übersprungen oder fehlgeschlagen ist. Das ist keine automatische Transaktion.\n\nFür den Dienststatus heißt ein Auftrag zunächst **beobachten**, nicht automatisch neu starten. Unter Windows liefert `Get-Service` Dienstobjekte einschließlich Status. `Running` und `Stopped` sind mögliche Werte. Ein nicht gefundener Dienst oder eine fehlgeschlagene Abfrage darf nicht als `Stopped` ausgegeben werden. Eine Statusaufnahme garantiert keine dauerhafte Verfügbarkeit."
+        },
+        {
+          "type": "recall",
+          "id": "typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-csv",
+          "title": "CSV-Ablauf selbst schreiben",
+          "prompt": "Schreibe einen Ablauf für Name und Login aus einer CSV: Prüfe zuerst alle Zeilen. Wie behandelst du doppelte Logins und eine fehlgeschlagene Anlage nach zwei erfolgreichen Konten?",
+          "label": "Dein Pseudocode",
+          "minLength": 70,
+          "model": "Lies die CSV mit dem vereinbarten Trennzeichen. Prüfe jede Zeile auf Name und Login, doppelte Logins, bestehende Konten und erlaubte Ziel-OU. Bei ungültigen Daten keine Anlage starten, sondern Fehler zur Klärung melden. Nach Freigabe verarbeite die validierten Zeilen und protokolliere jedes Ergebnis. Bei einer fehlgeschlagenen Anlage bleiben vorherige Erfolge sichtbar; melde Teilerfolg, behandle weitere Schritte nach Fehlerstrategie und vermeide bei Wiederholung doppelte Konten."
+        },
+        {
+          "type": "recall",
+          "id": "typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-dienste",
+          "title": "Selbst schreiben",
+          "prompt": "Entwirf einen Ablauf für eine feste Liste erlaubter Dienstnamen. Unterscheide Running, einen anderen gelieferten Status und eine fehlgeschlagene Abfrage. Starte keinen Dienst automatisch.",
+          "label": "Dein Pseudocode",
+          "minLength": 70,
+          "model": "Für jeden freigegebenen Dienstnamen versuche die Statusabfrage. Bei Abfragefehler protokolliere Name und Fehler, ohne einen Status zu erfinden. Andernfalls vergleiche den gelieferten Status mit Running: melde läuft oder protokolliere den tatsächlich gelieferten anderen Status. Fahre mit dem nächsten Namen fort und fasse die Beobachtungen zusammen. Kein Start oder Neustart ist autorisiert."
+        },
+        {
+          "type": "quiz",
+          "id": "typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-uebung",
+          "question": "Ein Backup-Skript meldet nach dem Sicherungsaufruf immer „Erfolg“, auch wenn das Ziel voll war. Was fehlt?",
+          "options": [
+            {
+              "text": "Ein anderer Dateiname allein.",
+              "rationale": "Das behebt den fehlenden Erfolgsnachweis nicht.",
+              "correct": false
+            },
+            {
+              "text": "Eine Prüfung des tatsächlichen Sicherungsergebnisses.",
+              "rationale": "Richtig: Fehler müssen den Ergebniszweig beeinflussen.",
+              "correct": true
+            },
+            {
+              "text": "Eine kürzere Schleife.",
+              "rationale": "Die Länge ist hier nicht die Ursache.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Selbst ordnen und erklären",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-reihenfolge",
+          "title": "Ablauf ordnen",
+          "prompt": "Ordne den Weg vom Auftrag zum Ergebnis.",
+          "steps": [
+            {
+              "id": "abschluss",
+              "label": "Freigegebene Wirkung durchführen und nachweisen"
+            },
+            {
+              "id": "start",
+              "label": "Auftrag und erlaubte Eingaben festlegen"
+            },
+            {
+              "id": "pruefen",
+              "label": "Auswahl und Fehlerfälle prüfen"
+            }
+          ],
+          "expected": [
+            "start",
+            "pruefen",
+            "abschluss"
+          ],
+          "correctFeedback": "Richtig: Voraussetzungen, Prüfung und Abschluss stehen in der vorgesehenen Reihenfolge.",
+          "wrongFeedback": "Prüfe die Voraussetzungen: Der letzte Schritt darf die vorherige Prüfung nicht überspringen."
+        },
+        {
+          "type": "recall",
+          "id": "typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-begruendung",
+          "title": "Aus dem Gedächtnis erklären",
+          "prompt": "Warum reichen ein passender Dateiname und ein gestarteter Befehl nicht als Erfolgsnachweis? Erkläre am Backup und an der CSV-Anlage.",
+          "label": "Deine Erklärung",
+          "minLength": 70,
+          "model": "Der Name bezeichnet nur das geplante Ziel. Das Backup kann scheitern oder unvollständig sein; Sicherungsergebnis und Wiederherstellbarkeit müssen geprüft werden. Eine CSV-Anlage kann einzelne Konten erzeugen und dann fehlschlagen. Einzelergebnisse und Teilerfolg müssen sichtbar bleiben."
+        },
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-karte-0",
+              "label": "Abruf 1",
+              "front": "Was bedeutet „älter als 30“?",
+              "back": "Die Grenze ist streng: genau 30 ist ausgeschlossen."
+            },
+            {
+              "id": "typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-karte-1",
+              "label": "Abruf 2",
+              "front": "Warum eine Vorschau?",
+              "back": "Sie macht die ausgewählten Ziele vor dem Schreibzugriff kontrollierbar."
+            },
+            {
+              "id": "typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-karte-2",
+              "label": "Abruf 3",
+              "front": "Ist ein Abfragefehler ein gestoppter Dienst?",
+              "back": "Nein. Der Zustand ist dann nicht zuverlässig ermittelt."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-transfer-a",
+          "question": "Neuer Auftrag: Nur inaktive Dateien älter als 14 Tage. Welche Auswahl passt?",
+          "options": [
+            {
+              "text": "Auch genau 14 Tage alte Dateien.",
+              "rationale": "Die Grenze ist streng.",
+              "correct": false
+            },
+            {
+              "text": "Alle Dateien mit altem Datum, unabhängig von Aktivität.",
+              "rationale": "Aktive Dateien sind ausgeschlossen.",
+              "correct": false
+            },
+            {
+              "text": "15 Tage/inaktiv ja; 14 Tage/inaktiv und 20 Tage/aktiv nein.",
+              "rationale": "Beide Bedingungen müssen erfüllt sein.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "auswahl"
+        },
+        {
+          "type": "quiz",
+          "id": "typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-transfer-b",
+          "question": "Bei fünf geprüften CSV-Zeilen werden zwei Konten angelegt, die dritte scheitert. Welche Meldung ist korrekt?",
+          "options": [
+            {
+              "text": "Teilerfolg mit Einzelergebnissen; weitere Schritte kontrolliert entscheiden.",
+              "rationale": "Vorprüfung garantiert keine fehlerfreie Ausführung.",
+              "correct": true
+            },
+            {
+              "text": "Alle fünf wurden angelegt.",
+              "rationale": "Das ist nicht belegt.",
+              "correct": false
+            },
+            {
+              "text": "Es wurden automatisch alle Änderungen zurückgenommen.",
+              "rationale": "Ein solches Rollback wurde nicht implementiert.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "kontrolle"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Technischer Abgleich: Microsoft Learn zu [Vergleichen](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_comparison_operators), [Get-Date](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/get-date), [Get-Service](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/get-service) und [foreach](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_foreach), ausgewählte Abschnitte geprüft am 17.09.2026. Eigene Übungsaufträge, keine produktionsfertigen Lösch-, Backup- oder Kontenskripte. Musterantworten sind Selbstvergleich, keine automatische Fachbewertung."
+        }
+      ]
+    }
+  ]
+}

@@ -50,6 +50,7 @@ try {
   await import('./verify-data-formats-browser.mjs');
   await import('./verify-automation-batch-browser.mjs');
   await import('./verify-shell-batch-browser.mjs');
+  await import('./verify-script-workshop-browser.mjs');
   await import('./verify-space-browser.mjs');
 } finally {
   await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));

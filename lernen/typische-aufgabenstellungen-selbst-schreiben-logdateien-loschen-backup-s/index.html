@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Aus einer Anforderung einen prüfbaren Ablauf für Logdateien, Backups, CSV-Konten und Dienststatus entwickeln.">
+<title>Verwaltungsskripte: vom Auftrag zum sicheren Ablauf – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-1">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s" data-progress-id="ga1-9__8" data-content-revision="2026-09-17.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-9">Programme zur automatisierten Systemverwaltung</a><span class="sep">›</span>
+    <span class="here">Verwaltungsskripte: vom Auftrag zum sicheren Ablauf</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Verwaltungsskripte: vom Auftrag zum sicheren Ablauf</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 35 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Aus einer Anforderung einen prüfbaren Ablauf für Logdateien, Backups, CSV-Konten und Dienststatus entwickeln. Du bearbeitest eigene Papierfälle; es werden keine echten Systeme verändert.</p>
+<section class="learning-goals" aria-labelledby="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-goals">
+  <h2 id="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Eine eindeutige Auswahlregel in einen Ablauf übersetzen</li>
+    <li>Änderungen durch Vorprüfung und Ergebnisprüfung absichern</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Vorwissen aktivieren</h2>
+<section class="quiz" data-quiz="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-diagnose" data-correct="1">
+  <h3>Der Auftrag lautet „alte Logs löschen“. Was fehlt vor einem sicheren Skript?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Kürze ersetzt keine Auswahlregel."><span class="m">A</span> Nur ein möglichst kurzer Befehl.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig: Sonst ist unklar, welche Dateien betroffen sein dürfen."><span class="m">B</span> Ein begrenzter Zielbereich und eine eindeutige Altersregel.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Eine Meldung beweist keine Wirkung."><span class="m">C</span> Eine Erfolgsmeldung am Anfang.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2"><span class="num">2</span>Auftrag in einen Vertrag übersetzen</h2>
+<p>Notiere vor dem Code: Welche Eingaben sind erlaubt? Welche Objekte sollen verändert werden? Was muss unverändert bleiben? Woran erkennst du Erfolg oder Fehler?</p>
+<p>Unser eigener Papierauftrag: Nur freigegebene, geschlossene <code>.log</code>-Dateien im vereinbarten Testordner kommen infrage. Sie müssen <strong>älter als 30 volle Tage</strong> sein. Genau 30 Tage reichen nicht. Keine Unterordner, keine Links zu anderen Zielen, keine aktiven Logs. Aufbewahrung und Freigabe werden vom Auftraggeber geklärt; das Skript erfindet keine Löschbefugnis.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Vor dem Schreibzugriff">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="434" viewBox="0 0 960 434" role="img" aria-labelledby="diagram-ablauf-title diagram-ablauf-desc">
+  <title id="diagram-ablauf-title">Vor dem Schreibzugriff</title>
+  <desc id="diagram-ablauf-desc">Eingaben abgrenzen, Auswahl prüfen und Ergebnis kontrollieren.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Vor dem Schreibzugriff</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Auftrag</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Ziele und Auswahl festlegen</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Vorschau</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Treffer und Grenzfälle prüfen</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Ergebnis</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Wirkung einzeln nachweisen</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Darstellung des Übungsfalls.</figcaption>
+</figure><h2 class="sec" id="s3"><span class="num">3</span>Logauswahl zuerst vorhersagen</h2>
+<p>Die folgenden Datensätze sind bereits auf den erlaubten Ordner und Dateityp begrenzt. <code>Tage</code> ist eine vorgegebene ganze Zahl, <code>Aktiv</code> ein Wahrheitswert. Das Beispiel prüft nur die verbleibende Auswahlregel. Es liest und löscht <strong>keine Dateien</strong>. Schreibe vor dem Lesen der Erklärung auf, welcher Name erscheint.</p>
+<pre><code class="language-powershell">$dateien = @(
+  @{Name=&#39;a.log&#39;; Tage=31
+    Aktiv=$false}
+  @{Name=&#39;b.log&#39;; Tage=30
+    Aktiv=$false}
+  @{Name=&#39;c.log&#39;; Tage=60
+    Aktiv=$true}
+)
+foreach ($datei in $dateien) {
+  if (($datei.Tage -gt 30) -and
+      (-not $datei.Aktiv)) {
+    &quot;Kandidat: $($datei.Name)&quot;
+  }
+}
+</code></pre>
+<p><code>a.log</code> wird ausgegeben: 31 ist größer als 30 und die Datei ist nicht aktiv. <code>b.log</code> liegt genau auf der Grenze und bleibt erhalten. <code>c.log</code> ist zwar alt, aber aktiv. Die einzige Ausgabe ist <code>Kandidat: a.log</code>. Eine Kandidatenliste ist noch keine ausgeführte Löschung.</p>
+<p>Bei echten Zeitstempeln müssen Bezugszeit, Zeitzone und Grenze feststehen. Ein zeitlicher Abstand ist nicht einfach die Differenz der angezeigten Kalendertage. Aktive Nutzung lässt sich nicht aus dem Alter ableiten.</p>
+<section class="numeric-practice transfer-number" data-numeric-practice="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-zahl" data-expected="2" data-tolerance="0" data-correct-feedback="31 und 45 Tage erfüllen die strenge Altersgrenze." data-wrong-feedback="Prüfe jede Zeile getrennt; genau 30 Tage bleiben ausgeschlossen.">
+  <h3>Neue Kandidaten zählen</h3>
+  <p>Vier bereits erlaubte Logdateien: 29 Tage/inaktiv, 30 Tage/inaktiv, 31 Tage/inaktiv, 45 Tage/inaktiv. Regel: älter als 30 Tage und nicht aktiv. Wie viele Kandidaten entstehen?</p>
+  <label for="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-zahl-answer">Anzahl der Kandidaten</label>
+  <div class="answer-row"><input id="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-zahl-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Ergebnis"><button type="button" class="lbtn" data-numeric-check>Antwort prüfen</button></div><p>  <template data-numeric-feedback-for="3">Genau 30 ist nicht älter als 30.</template>
+  <template data-numeric-feedback-for="4">Auch die 29 Tage alte Datei bleibt erhalten.</template>
+  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p></p>
+</section><section class="recall-practice" data-recall="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-logs" data-min-length="70" aria-labelledby="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-logs-title">
+  <div class="recall-prompt"><h3 id="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-logs-title">Selbst schreiben</h3><p>Schreibe einen Pseudocode für die Logbereinigung: Eingaben prüfen, Kandidaten vorschauen, Freigabe, vor jeder Löschung Ziel und aktive Nutzung erneut prüfen, Fehler protokollieren. Keine echten Befehle nötig.</p></div>
+  <label class="sr-only" for="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-logs-answer">Dein Pseudocode</label>
+  <textarea id="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-logs-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Prüfe den exakt freigegebenen Ordner und die Regel. Ermittle nur erlaubte reguläre Logdateien ohne Links und ohne Rekursion. Filtere Alter und aktive Nutzung. Zeige Kandidaten. Ohne Freigabe ende ohne Änderung. Prüfe vor jedem Einzelzugriff Ziel und Nutzung erneut. Lösche nur dann, protokolliere Erfolg oder Fehler und melde Teilerfolg statt pauschalem Erfolg. Ein echter produktiver Lauf braucht zusätzlich geeignete Schutzmechanismen gegen Änderungen zwischen Prüfung und Zugriff.</div>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Backup mit Datumsstempel entwerfen</h2>
+<p>Ein Datumsstempel macht den Sicherungsstand erkennbar. Für unseren Papierlauf ist der Zeitpunkt fest vorgegeben: 17.09.2026, 14:05 Uhr. Dieses reine Namensbeispiel erzeugt keine Datei:</p>
+<pre><code class="language-powershell">$zeit = [datetime]&#39;2026-09-17T14:05:00&#39;
+$stempel = Get-Date -Date $zeit `
+  -Format &#39;yyyyMMdd-HHmm&#39;
+&quot;backup-$stempel.zip&quot;
+</code></pre>
+<p>Ergebnis: <code>backup-20260917-1405.zip</code>. Zwei Läufe in derselben Minute hätten denselben Namen. Eine Kollision muss erkannt werden; zusätzliche Laufkennung oder kontrollierter Abbruch statt ungeprüftem Überschreiben. Ein ZIP-Dateiname sagt außerdem nichts über Konsistenz, Vollständigkeit oder Wiederherstellbarkeit aus.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Eine Datei ist noch kein Nachweis">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="434" viewBox="0 0 960 434" role="img" aria-labelledby="diagram-backup-title diagram-backup-desc">
+  <title id="diagram-backup-title">Eine Datei ist noch kein Nachweis</title>
+  <desc id="diagram-backup-desc">Vorbereitung, Sicherung mit eindeutiger Kennung, anschließend Ergebnis- und Wiederherstellungsprüfung.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Eine Datei ist noch kein Nachweis</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Vorbereitung</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Quelle, Ziel und freien Platz prüfen</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Sicherung</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Eindeutigen Namen verwenden</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Kontrolle</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Ergebnis und Wiederherstellung testen</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Darstellung des Übungsfalls.</figcaption>
+</figure><section class="recall-practice" data-recall="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-backup" data-min-length="70" aria-labelledby="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-backup-title">
+  <div class="recall-prompt"><h3 id="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-backup-title">Selbst schreiben</h3><p>Schreibe sechs bis acht Pseudocode-Schritte für ein Backup: Quelle und Ziel prüfen, Zeitstempel, Namenskollision, Sicherung, Ergebnis und Fehler. Was darf bei fehlgeschlagener Sicherung keinesfalls gemeldet werden?</p></div>
+  <label class="sr-only" for="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-backup-answer">Dein Pseudocode</label>
+  <textarea id="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-backup-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Prüfe Quelle, freigegebenes anderes Ziel, Rechte, Platz und Konsistenzanforderungen. Bilde eine eindeutige Laufkennung mit Datum. Wenn das Ziel schon existiert, brich kontrolliert ab oder verwende eine neue freigegebene Kennung. Führe die passende Sicherung aus. Prüfe deren Ergebnis; teste Wiederherstellung nach dem Sicherungskonzept. Protokolliere Zeitpunkt und Resultat. Bei Fehler keine Erfolgsmeldung und keine letzte brauchbare Sicherung entfernen.</div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>CSV-Konten und Dienststatus</h2>
+<p>Bei der Benutzeranlage aus CSV trennst du zwei Durchläufe: zuerst alle Daten prüfen, danach nur freigegebene Datensätze verarbeiten. Pflichtfelder, doppelte Logins, bestehende Konten und Ziel-OU gehören in die Vorprüfung. Ein Fehler im zweiten Durchlauf kann dennoch Teilerfolg erzeugen: Halte für jede Zeile fest, ob sie angelegt, übersprungen oder fehlgeschlagen ist. Das ist keine automatische Transaktion.</p>
+<p>Für den Dienststatus heißt ein Auftrag zunächst <strong>beobachten</strong>, nicht automatisch neu starten. Unter Windows liefert <code>Get-Service</code> Dienstobjekte einschließlich Status. <code>Running</code> und <code>Stopped</code> sind mögliche Werte. Ein nicht gefundener Dienst oder eine fehlgeschlagene Abfrage darf nicht als <code>Stopped</code> ausgegeben werden. Eine Statusaufnahme garantiert keine dauerhafte Verfügbarkeit.</p>
+<section class="recall-practice" data-recall="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-csv" data-min-length="70" aria-labelledby="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-csv-title">
+  <div class="recall-prompt"><h3 id="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-csv-title">CSV-Ablauf selbst schreiben</h3><p>Schreibe einen Ablauf für Name und Login aus einer CSV: Prüfe zuerst alle Zeilen. Wie behandelst du doppelte Logins und eine fehlgeschlagene Anlage nach zwei erfolgreichen Konten?</p></div>
+  <label class="sr-only" for="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-csv-answer">Dein Pseudocode</label>
+  <textarea id="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-csv-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Lies die CSV mit dem vereinbarten Trennzeichen. Prüfe jede Zeile auf Name und Login, doppelte Logins, bestehende Konten und erlaubte Ziel-OU. Bei ungültigen Daten keine Anlage starten, sondern Fehler zur Klärung melden. Nach Freigabe verarbeite die validierten Zeilen und protokolliere jedes Ergebnis. Bei einer fehlgeschlagenen Anlage bleiben vorherige Erfolge sichtbar; melde Teilerfolg, behandle weitere Schritte nach Fehlerstrategie und vermeide bei Wiederholung doppelte Konten.</div>
+</section><section class="recall-practice" data-recall="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-dienste" data-min-length="70" aria-labelledby="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-dienste-title">
+  <div class="recall-prompt"><h3 id="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-dienste-title">Selbst schreiben</h3><p>Entwirf einen Ablauf für eine feste Liste erlaubter Dienstnamen. Unterscheide Running, einen anderen gelieferten Status und eine fehlgeschlagene Abfrage. Starte keinen Dienst automatisch.</p></div>
+  <label class="sr-only" for="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-dienste-answer">Dein Pseudocode</label>
+  <textarea id="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-dienste-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Für jeden freigegebenen Dienstnamen versuche die Statusabfrage. Bei Abfragefehler protokolliere Name und Fehler, ohne einen Status zu erfinden. Andernfalls vergleiche den gelieferten Status mit Running: melde läuft oder protokolliere den tatsächlich gelieferten anderen Status. Fahre mit dem nächsten Namen fort und fasse die Beobachtungen zusammen. Kein Start oder Neustart ist autorisiert.</div>
+</section><section class="quiz" data-quiz="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-uebung" data-correct="1">
+  <h3>Ein Backup-Skript meldet nach dem Sicherungsaufruf immer „Erfolg“, auch wenn das Ziel voll war. Was fehlt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Das behebt den fehlenden Erfolgsnachweis nicht."><span class="m">A</span> Ein anderer Dateiname allein.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig: Fehler müssen den Ergebniszweig beeinflussen."><span class="m">B</span> Eine Prüfung des tatsächlichen Sicherungsergebnisses.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die Länge ist hier nicht die Ursache."><span class="m">C</span> Eine kürzere Schleife.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Selbst ordnen und erklären</h2>
+<section class="sequence-practice" data-sequence="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-reihenfolge" data-expected="start,pruefen,abschluss" data-correct-feedback="Richtig: Voraussetzungen, Prüfung und Abschluss stehen in der vorgesehenen Reihenfolge." data-wrong-feedback="Prüfe die Voraussetzungen: Der letzte Schritt darf die vorherige Prüfung nicht überspringen." aria-labelledby="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-reihenfolge-title">
+  <div class="lab-heading"><div><h3 id="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-reihenfolge-title">Ablauf ordnen</h3><p>Ordne den Weg vom Auftrag zum Ergebnis.</p></div><span class="lab-tag">Ablauf</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="abschluss" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Freigegebene Wirkung durchführen und nachweisen</span></li>
+    <li data-step="start" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Auftrag und erlaubte Eingaben festlegen</span></li>
+    <li data-step="pruefen" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Auswahl und Fehlerfälle prüfen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><section class="recall-practice" data-recall="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-begruendung" data-min-length="70" aria-labelledby="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-begruendung-title">
+  <div class="recall-prompt"><h3 id="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-begruendung-title">Aus dem Gedächtnis erklären</h3><p>Warum reichen ein passender Dateiname und ein gestarteter Befehl nicht als Erfolgsnachweis? Erkläre am Backup und an der CSV-Anlage.</p></div>
+  <label class="sr-only" for="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-begruendung-answer">Deine Erklärung</label>
+  <textarea id="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-begruendung-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Der Name bezeichnet nur das geplante Ziel. Das Backup kann scheitern oder unvollständig sein; Sicherungsergebnis und Wiederherstellbarkeit müssen geprüft werden. Eine CSV-Anlage kann einzelne Konten erzeugen und dann fehlschlagen. Einzelergebnisse und Teilerfolg müssen sichtbar bleiben.</div>
+</section><div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-karte-0" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was bedeutet „älter als 30“?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Die Grenze ist streng: genau 30 ist ausgeschlossen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-karte-1" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum eine Vorschau?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Sie macht die ausgewählten Ziele vor dem Schreibzugriff kontrollierbar.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-karte-2" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Ist ein Abfragefehler ein gestoppter Dienst?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Nein. Der Zustand ist dann nicht zuverlässig ermittelt.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Abruf 1“:</span><button type="button" data-card-id="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-karte-0" data-card-rate="known">gewusst</button><button type="button" data-card-id="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-karte-0" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-karte-0"></span></div>
+<div class="card-rating"><span>Karte „Abruf 2“:</span><button type="button" data-card-id="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-karte-1" data-card-rate="known">gewusst</button><button type="button" data-card-id="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-karte-1" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-karte-1"></span></div>
+<div class="card-rating"><span>Karte „Abruf 3“:</span><button type="button" data-card-id="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-karte-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-karte-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-karte-2"></span></div><h2 class="sec" id="s7"><span class="num">7</span>Lernziel-Check</h2>
+<section class="quiz" data-quiz="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-transfer-a" data-correct="2" data-required-objective="auswahl">
+  <h3>Neuer Auftrag: Nur inaktive Dateien älter als 14 Tage. Welche Auswahl passt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Die Grenze ist streng."><span class="m">A</span> Auch genau 14 Tage alte Dateien.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Aktive Dateien sind ausgeschlossen."><span class="m">B</span> Alle Dateien mit altem Datum, unabhängig von Aktivität.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Beide Bedingungen müssen erfüllt sein."><span class="m">C</span> 15 Tage/inaktiv ja; 14 Tage/inaktiv und 20 Tage/aktiv nein.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s-transfer-b" data-correct="0" data-required-objective="kontrolle">
+  <h3>Bei fünf geprüften CSV-Zeilen werden zwei Konten angelegt, die dritte scheitert. Welche Meldung ist korrekt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Vorprüfung garantiert keine fehlerfreie Ausführung."><span class="m">A</span> Teilerfolg mit Einzelergebnissen; weitere Schritte kontrolliert entscheiden.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Das ist nicht belegt."><span class="m">B</span> Alle fünf wurden angelegt.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein solches Rollback wurde nicht implementiert."><span class="m">C</span> Es wurden automatisch alle Änderungen zurückgenommen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s8"><span class="num">8</span>Quellen und Grenzen</h2>
+<p>Technischer Abgleich: Microsoft Learn zu <a href="https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_comparison_operators">Vergleichen</a>, <a href="https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/get-date">Get-Date</a>, <a href="https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/get-service">Get-Service</a> und <a href="https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_foreach">foreach</a>, ausgewählte Abschnitte geprüft am 17.09.2026. Eigene Übungsaufträge, keine produktionsfertigen Lösch-, Backup- oder Kontenskripte. Musterantworten sind Selbstvergleich, keine automatische Fachbewertung.</p>
+
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-9"><span class="d">zurück zu</span><span class="t">Programme zur automatisierten Systemverwaltung</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Programme zur automatisierten Systemverwaltung</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Vorwissen aktivieren</a></li>
+<li><a href="#s2" data-t="s2">Auftrag in einen Vertrag übersetzen</a></li>
+<li><a href="#s3" data-t="s3">Logauswahl zuerst vorhersagen</a></li>
+<li><a href="#s4" data-t="s4">Backup mit Datumsstempel entwerfen</a></li>
+<li><a href="#s5" data-t="s5">CSV-Konten und Dienststatus</a></li>
+<li><a href="#s6" data-t="s6">Selbst ordnen und erklären</a></li>
+<li><a href="#s7" data-t="s7">Lernziel-Check</a></li>
+<li><a href="#s8" data-t="s8">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-9">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

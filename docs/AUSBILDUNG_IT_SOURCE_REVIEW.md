@@ -349,6 +349,16 @@ Keine AD-Befehle ausgeführt. Abdeckung 126/380, GA1 18/164,
 Automatisierungsgruppe 12/16. Beide `CURATED_DRAFT`; Fachfreigabe offen.
 Keine erneute vollständige Browserregression, kein Push oder Deployment.
 
+Umsetzung am 17.09.2026: Skriptwerkstatt und Skriptanalyse (`ga1-9__8`,
+`ga1-9__9`) ergänzt. Vier eigene Ablaufgrafiken, Schreibaufträge zu Logs,
+Backup, CSV und Dienststatus sowie ein fehlerhafter und korrigierter Zähler
+mit Trace und Grenzfalltests. Unpassende Buchtreffer ausgeschlossen;
+Quellenentscheidungen in `docs/learning-prep/GA1_SCRIPT_WORKSHOP_BATCH.md`.
+`npm test`, echte PowerShell-Beispieltests und vollständiger Browserlauf
+bestanden. Mobil/Desktop und beide Themes inklusive breiter Tabellen geprüft.
+Abdeckung 128/380, GA1 20/164, Automatisierungsgruppe 14/16.
+Beide Einheiten `CURATED_DRAFT`; menschliche Freigabe offen, kein Push.
+
 Noch nicht umgesetzt: die weiteren Zuordnungsvorschläge für
 WiSo; weitere Automatisierungs-Kernthemen bleiben offen. Die URL-Inventur bleibt
 eine Lesewarteschlange und wird durch diesen Batch nicht pauschal als geprüft
