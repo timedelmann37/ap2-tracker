@@ -313,6 +313,20 @@ Fehlantworten, Speicherung und Abschluss/Rücknahme. 390/1440px in beiden
 Themes geprüft. Abdeckung 120/380, GA1 12/164; `CURATED_DRAFT`, menschliche
 Freigabe offen. Kein vollständiger Navigationstest und keine Veröffentlichung.
 
+Umsetzung am 17.09.2026: `ga1-9__12` ergänzt YAML/JSON mit zwei eigenen
+Struktur-/Prüfgrafiken, Fehlerdiagnosen, Zahlenübung, Sortieraufgabe,
+Schreibauftrag, Karten und zwei Pflichtzielen. Buch-Batch `ga1-9-012-012`
+lieferte unpassende Java-/Arduino-Kandidaten; keine davon als Beleg übernommen.
+Stattdessen RFC 8259 Abschnitte 2–7 sowie YAML 1.2.2 Kapitel 2, 6.1 und
+10.3.2 als Primärquellen gelesen und im Quellenkatalog separat als Webquellen
+registriert. Die fünf lokalen Bücher bleiben unverändert.
+Eigene Konfigurationsfälle trennen Syntax, Struktur/Typvertrag und Wirkung;
+kein ausführbares Deployment und kein automatischer Parser im Schreibauftrag.
+`npm test` und gezielter Browsertest bestanden, einschließlich Fehlantworten,
+Tastatur, Persistenz, Abschluss/Rücknahme und 390/1440px in beiden Themes.
+Abdeckung 121/380, GA1 13/164. Status `CURATED_DRAFT`, menschliche Freigabe
+offen; kein vollständiger Browser-Regressionslauf und kein Push.
+
 Noch nicht umgesetzt: die weiteren Zuordnungsvorschläge für
 WiSo; weitere Automatisierungs-Kernthemen bleiben offen. Die URL-Inventur bleibt
 eine Lesewarteschlange und wird durch diesen Batch nicht pauschal als geprüft

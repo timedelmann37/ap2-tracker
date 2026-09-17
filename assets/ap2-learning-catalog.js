@@ -277,6 +277,31 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "yaml-json-lesen-syntaxfehler-finden",
+    "slug": "yaml-json-lesen-syntaxfehler-finden",
+    "title": "YAML und JSON lesen und Fehler eingrenzen",
+    "description": "Datenstruktur, Syntax und fachliche Gültigkeit trennen und Konfigurationsfehler gezielt korrigieren.",
+    "domain": "GA1",
+    "groupId": "ga1-9",
+    "groupLabel": "Programme zur automatisierten Systemverwaltung",
+    "itemId": "ga1-9__12",
+    "week": "KW 43",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-17.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "struktur",
+      "fehler"
+    ],
+    "sources": [
+      "rfc8259",
+      "yaml-1-2-2"
+    ],
+    "contentHash": "ef0b99ec0407227cedca1c5d450e99c0981ebad2a5a77330f71c863d39f68523",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor",
     "slug": "qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor",
     "title": "Administrationsskripte sicher prüfen und betreiben",
