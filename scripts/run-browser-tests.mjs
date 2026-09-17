@@ -53,6 +53,7 @@ try {
   await import('./verify-script-workshop-browser.mjs');
   await import('./verify-notation-browser.mjs');
   await import('./verify-nas-decision-browser.mjs');
+  await import('./verify-object-storage-browser.mjs');
   await import('./verify-space-browser.mjs');
 } finally {
   await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));

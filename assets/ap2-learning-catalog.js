@@ -53,6 +53,32 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "objektspeicher-s3-kompatibel-buckets-keys-versionierung-object-lock",
+    "slug": "objektspeicher-s3-kompatibel-buckets-keys-versionierung-object-lock",
+    "title": "Objektspeicher: Versionen verstehen und schützen",
+    "description": "Buckets, Keys und Versionen unterscheiden und ein Backup-Ziel mit Löschschutz begründet auswählen.",
+    "domain": "GA1",
+    "groupId": "ga1-3",
+    "groupLabel": "Speicherlösungen",
+    "itemId": "ga1-3__2",
+    "week": "KW 37",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-17.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "versionen",
+      "schutz"
+    ],
+    "sources": [
+      "s3-overview",
+      "s3-versioning",
+      "s3-object-lock"
+    ],
+    "contentHash": "33fb1154dda638ef8942b4d362a76e1710a41c56c97b6816d4248d9da3c3167b",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "raid-level",
     "slug": "raid",
     "title": "RAID-Level sicher auswählen und berechnen",

@@ -1,0 +1,342 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "objektspeicher-s3-kompatibel-buckets-keys-versionierung-object-lock",
+    "slug": "objektspeicher-s3-kompatibel-buckets-keys-versionierung-object-lock",
+    "title": "Objektspeicher: Versionen verstehen und schützen",
+    "description": "Buckets, Keys und Versionen unterscheiden und ein Backup-Ziel mit Löschschutz begründet auswählen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-3",
+    "groupLabel": "Speicherlösungen",
+    "itemId": "ga1-3__2",
+    "week": "KW 37",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "sources": [
+      "s3-overview",
+      "s3-versioning",
+      "s3-object-lock"
+    ],
+    "contentRevision": "2026-09-17.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "versionen",
+      "label": "Den Zustand nach Schreiben und Löschen erklären"
+    },
+    {
+      "id": "schutz",
+      "label": "Versionierung und Löschschutz passend unterscheiden"
+    }
+  ],
+  "intro": "Buckets, Keys und Versionen unterscheiden und ein Backup-Ziel mit Löschschutz begründet auswählen. Du bearbeitest eigene Papierfälle; es werden keine echten Systeme verändert.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "s3-overview",
+        "sourceLocator": "How Amazon S3 works: Buckets and Objects",
+        "use": "Grundmodell für General Purpose Buckets",
+        "reviewStatus": "Begrenzter Abschnitt am 17.09.2026 gelesen und abgeglichen"
+      },
+      {
+        "sourceId": "s3-versioning",
+        "sourceLocator": "Version IDs und Versioning workflows",
+        "use": "Versionen, Delete Marker und gezieltes Lesen",
+        "reviewStatus": "Begrenzter Abschnitt am 17.09.2026 gelesen und abgeglichen"
+      },
+      {
+        "sourceId": "s3-object-lock",
+        "sourceLocator": "Einleitung, Retention modes, Legal holds, How deletes work",
+        "use": "Schutz einzelner Versionen und Grenzen",
+        "reviewStatus": "Begrenzter Abschnitt am 17.09.2026 gelesen und abgeglichen"
+      }
+    ],
+    "notes": [
+      "Eigene Beispiele, Aufgaben und Grafiken. Menschliche Fach- und Verständlichkeitsfreigabe offen.",
+      "Batch ga1-3-002-002: Register und Chocolatey-Abschnitte sind keine geeigneten S3-Belege und wurden ausgeschlossen. AWS-General-Purpose-Buckets als Referenzmodell, kein Funktionsversprechen für jeden S3-kompatiblen Anbieter. Keine echten Cloud-Befehle oder Retention-Änderungen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "versionen",
+      "title": "Ein Key, mehrere Zustände",
+      "type": "flow",
+      "items": [
+        {
+          "label": "PUT v1",
+          "detail": "Erste Datenversion bleibt erhalten"
+        },
+        {
+          "label": "PUT v2",
+          "detail": "Neue Version, v1 bleibt bestehen"
+        },
+        {
+          "label": "DELETE ohne ID",
+          "detail": "Marker aktuell; v1 und v2 bleiben"
+        }
+      ]
+    },
+    {
+      "id": "schutz",
+      "title": "Zwei unterschiedliche Schutzaufgaben",
+      "type": "comparison",
+      "items": [
+        {
+          "label": "Versionierung",
+          "detail": "Frühere Datenstände behalten"
+        },
+        {
+          "label": "Object Lock",
+          "detail": "Bestimmte Version vor Löschen schützen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "objektspeicher-s3-kompatibel-buckets-keys-versionierung-object-lock-diagnose",
+          "question": "Ein neues Backup wird unter demselben Key hochgeladen. Ist das alte dadurch garantiert verloren?",
+          "options": [
+            {
+              "text": "Ja, derselbe Name bedeutet immer Überschreiben.",
+              "rationale": "Der konfigurierte Versionierungszustand ist entscheidend.",
+              "correct": false
+            },
+            {
+              "text": "Nicht bei aktivierter Versionierung: Ein weiterer Stand entsteht.",
+              "rationale": "Richtig; der ältere Stand bleibt als eigene Version erhalten.",
+              "correct": true
+            },
+            {
+              "text": "Nein, jeder Objektspeicher schützt automatisch alles.",
+              "rationale": "Versionierung und Löschschutz müssen unterstützt und konfiguriert sein.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Bucket, Key und Objekt",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Objektspeicher verwaltet Datenobjekte mit Metadaten über eine API. Ein **Bucket** ist der Behälter, ein **Key** der Objektname darin. Beispiel: Bucket `lern-backup`, Key `server-a/backup.bin`. Der Schrägstrich im Key kann eine Ordneransicht ermöglichen; bei den hier behandelten S3-General-Purpose-Buckets ist das nicht dieselbe Verzeichnisstruktur wie auf einem Dateisystem.\n\nEine Anwendung muss diese Schnittstelle unterstützen. Ein S3-Endpunkt ist nicht von selbst eine SMB-Freigabe oder ein Blockgerät. Typische Einsatzfälle sind ein Backup-Ziel, ein Archiv oder die Ablage von Rohdaten für Auswertungen (Data Lake). Die Auswahl beginnt bei der Anwendung, nicht beim Produktnamen.\n\n**S3-kompatibel** ist ein Prüfauftrag: Unterstützt das konkrete Produkt die benötigten Operationen, Versionierung und Object Lock auch mit der eingesetzten Backup-Software? Eine erfolgreiche Anmeldung allein beweist das nicht."
+        }
+      ]
+    },
+    {
+      "title": "Zustände Schritt für Schritt",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "versionen",
+          "alt": "Nach PUT v1 folgt PUT v2, danach ein Delete Marker. Beide Datenversionen bleiben erhalten.",
+          "caption": "Eigene Darstellung; aktivierte Versionierung im AWS-S3-Referenzmodell."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Unser Papiermodell startet leer, Versionierung ist bereits aktiv. Es gibt keine Lifecycle-Bereinigung und keine gezielte Versionslöschung. `v1` und `v2` sind kurze Modell-IDs, keine selbst vergebenen echten S3-IDs.\n\n```text\nBucket: lern-backup\nKey: server-a/backup.bin\n1. PUT Inhalt A -> v1\n2. PUT Inhalt B -> v2\n3. DELETE ohne Versions-ID -> Marker\n```\n\nNach Schritt 2 liefert der normale Abruf B. Nach Schritt 3 ist der Marker aktuell: Ein Abruf ohne Versions-ID liefert „nicht gefunden“. Das ist nicht gleichbedeutend mit vernichteten Sicherungsdaten. Ein berechtigter Abruf der expliziten Version v1 liefert weiter A. Eine gezielte Versionslöschung wäre eine andere Operation."
+        },
+        {
+          "type": "numeric",
+          "id": "objektspeicher-s3-kompatibel-buckets-keys-versionierung-object-lock-zahl",
+          "title": "Datenversionen zählen",
+          "prompt": "Wie viele Datenversionen bleiben nach den drei Schritten erhalten? Zähle den Delete Marker nicht als Datenversion.",
+          "label": "Erhaltene Datenversionen",
+          "expected": 2,
+          "tolerance": 0,
+          "correctFeedback": "v1 und v2 bleiben: zwei Datenversionen. Der Marker ist ein zusätzlicher Zustand ohne Backup-Inhalt.",
+          "wrongFeedback": "Unterscheide gespeicherte Datenstände vom Marker und vom Ergebnis eines normalen Abrufs.",
+          "misconceptions": [
+            {
+              "value": 3,
+              "feedback": "Der Marker ist keine dritte Datenversion."
+            },
+            {
+              "value": 0,
+              "feedback": "Nicht gefunden bedeutet hier nicht, dass die alten Versionen entfernt wurden."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Versionierung ist noch kein Löschschutz",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "schutz",
+          "alt": "Versionierung bewahrt frühere Stände; Object Lock schützt einzelne Versionen vor Löschung.",
+          "caption": "Eigene Darstellung; aktivierte Versionierung im AWS-S3-Referenzmodell."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Object Lock verwendet das WORM-Prinzip: einmal schreiben, mehrfach lesen. Im Referenzmodell setzt es Versionierung voraus und schützt **einzelne Versionen**. Eine neue Version oder ein Delete Marker kann trotzdem entstehen.\n\n| Mechanismus | Schutzgrenze |\n| --- | --- |\n| Governance-Retention | Speziell Berechtigte können mit ausdrücklichem Bypass umgehen |\n| Compliance-Retention | Kein Benutzer kann die geschützte Version vor Fristende löschen oder die Frist verkürzen |\n| Legal Hold | Ohne feste Ablaufzeit; durch dafür Berechtigte aufhebbar |\n\nDie Tabelle beschreibt Objektoperationen im bestehenden AWS-Konto. Ein technischer Modusname ist keine pauschale rechtliche Freigabe des gesamten Archivprozesses. Wir ändern in dieser Übung keine echten Fristen."
+        },
+        {
+          "type": "quiz",
+          "id": "objektspeicher-s3-kompatibel-buckets-keys-versionierung-object-lock-uebung",
+          "question": "v1 ist geschützt. Nun wird unter demselben Key v2 angelegt. Welche Aussage passt?",
+          "options": [
+            {
+              "text": "v1 wurde trotz Schutz ersetzt.",
+              "rationale": "Das verwechselt Key und Version.",
+              "correct": false
+            },
+            {
+              "text": "v1 bleibt geschützt; der Schutz von v2 muss separat geklärt werden.",
+              "rationale": "Richtig: etwa durch eine passende Standard-Retention.",
+              "correct": true
+            },
+            {
+              "text": "Object Lock verbietet grundsätzlich jede neue Version.",
+              "rationale": "Der Schutz bezieht sich auf Versionen, nicht auf das Anlegen weiterer Stände.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Eigener Abnahmefall: Backup-Ziel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Eine Schule will tägliche Sicherungen ablegen. Die Backup-Anwendung unterstützt den angebotenen Objektdienst. Das Team verlangt Wiederherstellung alter Stände und einen getesteten Schutz gegen unbefugtes Löschen.\n\nDer Anbieter meldet nur „S3-kompatibel“. Das reicht nicht zur Abnahme. Prüfe in einer isolierten Testumgebung mit freigegebenen Testdaten: Upload, Versionen lesen, Restore eines älteren Stands, Verhalten bei einfachem Löschen und verweigerte geschützte Versionslöschung. Halte Rolle, erwartetes Ergebnis und tatsächliches Ergebnis fest. Dauerhafte Retention darf erst nach bewusster Freigabe konfiguriert werden.\n\nEin erfolgreicher Upload ist noch kein erfolgreicher Restore. Plane außerdem Zugriffsrechte, Schlüsselverfügbarkeit, getrennte Verantwortlichkeiten, Kapazität und Aufbewahrungsregeln. Versionen können zusätzlich Platz und Kosten verursachen. Löschschutz macht eine fehlerhafte Sicherung nicht brauchbar."
+        }
+      ]
+    },
+    {
+      "title": "Selbst ordnen und erklären",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "objektspeicher-s3-kompatibel-buckets-keys-versionierung-object-lock-reihenfolge",
+          "title": "Ablauf ordnen",
+          "prompt": "Ordne die Abnahme eines S3-kompatiblen Backup-Ziels.",
+          "steps": [
+            {
+              "id": "abschluss",
+              "label": "Ergebnisse dokumentieren und erst dann das Ziel freigeben"
+            },
+            {
+              "id": "start",
+              "label": "Anwendung, benötigte Funktionen und Schutzanforderungen festhalten"
+            },
+            {
+              "id": "pruefen",
+              "label": "Freigegebene Testfälle inklusive Restore und Löschverhalten durchführen"
+            }
+          ],
+          "expected": [
+            "start",
+            "pruefen",
+            "abschluss"
+          ],
+          "correctFeedback": "Richtig: Voraussetzungen, Prüfung und Abschluss stehen in der vorgesehenen Reihenfolge.",
+          "wrongFeedback": "Prüfe die Voraussetzungen: Der letzte Schritt darf die vorherige Prüfung nicht überspringen."
+        },
+        {
+          "type": "recall",
+          "id": "objektspeicher-s3-kompatibel-buckets-keys-versionierung-object-lock-begruendung",
+          "title": "Aus dem Gedächtnis erklären",
+          "prompt": "Nach einem Löschvorgang erscheint das Backup verschwunden. Warum darfst du weder sofort Datenverlust noch sichere Wiederherstellbarkeit behaupten?",
+          "label": "Deine Erklärung",
+          "minLength": 70,
+          "model": "Ein aktueller Delete Marker kann den normalen Abruf verdecken, obwohl frühere Datenversionen noch existieren. Ich prüfe Versionsliste, Berechtigungen, Schutzstatus und einen gezielten Restore. Versionierung allein beweist weder Löschschutz noch die Brauchbarkeit des gesicherten Inhalts."
+        },
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "objektspeicher-s3-kompatibel-buckets-keys-versionierung-object-lock-karte-0",
+              "label": "Abruf 1",
+              "front": "Bucket oder Key?",
+              "back": "Bucket: Behälter. Key: Objektname innerhalb dieses Behälters."
+            },
+            {
+              "id": "objektspeicher-s3-kompatibel-buckets-keys-versionierung-object-lock-karte-1",
+              "label": "Abruf 2",
+              "front": "Was beweist ein Delete Marker nicht?",
+              "back": "Dass sämtliche früheren Datenversionen physisch entfernt wurden."
+            },
+            {
+              "id": "objektspeicher-s3-kompatibel-buckets-keys-versionierung-object-lock-karte-2",
+              "label": "Abruf 3",
+              "front": "Ersetzt Object Lock den Restore-Test?",
+              "back": "Nein. Schutz vor Löschen beweist keine erfolgreiche Wiederherstellung."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "objektspeicher-s3-kompatibel-buckets-keys-versionierung-object-lock-transfer-a",
+          "question": "Neuer Fall: Versionierung aktiv, PUT A, PUT B, DELETE ohne ID; keine Bereinigung. Was erhält ein berechtigter gezielter Abruf der ersten Version?",
+          "options": [
+            {
+              "text": "Immer nicht gefunden, weil zuletzt gelöscht wurde.",
+              "rationale": "Das gilt im Modell für den normalen Abruf mit aktuellem Marker.",
+              "correct": false
+            },
+            {
+              "text": "Inhalt B, weil nur der Key zählt.",
+              "rationale": "Die explizite Versions-ID bestimmt den Stand.",
+              "correct": false
+            },
+            {
+              "text": "Inhalt A.",
+              "rationale": "Die erste Datenversion blieb erhalten.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "versionen"
+        },
+        {
+          "type": "quiz",
+          "id": "objektspeicher-s3-kompatibel-buckets-keys-versionierung-object-lock-transfer-b",
+          "question": "Eine Sicherung soll vor unberechtigter Versionslöschung geschützt werden. Was ist die belastbare Abnahme?",
+          "options": [
+            {
+              "text": "Versionierung, passende Retention, Rollen und tatsächlichen Restore prüfen.",
+              "rationale": "Das verbindet Schutzanforderung und nachgewiesene Nutzbarkeit.",
+              "correct": true
+            },
+            {
+              "text": "Nur den Schriftzug S3-kompatibel prüfen.",
+              "rationale": "Er belegt nicht alle benötigten Funktionen.",
+              "correct": false
+            },
+            {
+              "text": "Nur den erfolgreichen Upload prüfen.",
+              "rationale": "Er belegt weder Wiederherstellung noch Löschschutz.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "schutz"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Technische Referenz: [AWS S3 Überblick](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html), [Versioning workflows](https://docs.aws.amazon.com/AmazonS3/latest/userguide/versioning-workflows.html) und [Object Lock](https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lock.html), ausgewählte Abschnitte am 17.09.2026 geprüft. Die Fälle sind selbst erstellt und beziehen sich auf aktivierte Versionierung in General Purpose Buckets. Andere Anbieter separat prüfen. Die Treffer im privaten Buchbatch betrafen Register beziehungsweise Paketverwaltung und wurden nicht als fachliche S3-Belege verwendet. Menschliche Fachfreigabe steht aus."
+        }
+      ]
+    }
+  ]
+}
