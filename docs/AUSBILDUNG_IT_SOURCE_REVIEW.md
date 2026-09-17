@@ -359,8 +359,17 @@ bestanden. Mobil/Desktop und beide Themes inklusive breiter Tabellen geprüft.
 Abdeckung 128/380, GA1 20/164, Automatisierungsgruppe 14/16.
 Beide Einheiten `CURATED_DRAFT`; menschliche Freigabe offen, kein Push.
 
+Umsetzung am 17.09.2026: Struktogramm/PAP und Aggregation/Komposition
+(`ga1-9__0`, `ga1-9__5`) mit fünf eigenen Fachzeichnungen ergänzt.
+Quellen- und Notationsprüfung in `docs/learning-prep/GA1_NOTATION_BATCH.md`.
+OMG-Originalspezifikation begrenzt gelesen und relevante Seiten visuell geprüft;
+Lebensdauer-Ausnahme bei herausgelösten Teilen ausdrücklich berücksichtigt.
+`npm test` und gezielte Browserprüfungen bestanden, 390/1440px und beide Themes.
+Abdeckung 130/380, GA1 22/164, Automatisierungsgruppe 16/16 als Lernentwürfe.
+Menschliche Freigabe offen; kein Push und keine Veröffentlichung.
+
 Noch nicht umgesetzt: die weiteren Zuordnungsvorschläge für
-WiSo; weitere Automatisierungs-Kernthemen bleiben offen. Die URL-Inventur bleibt
+WiSo und weitere GA1-Themengruppen. Die URL-Inventur bleibt
 eine Lesewarteschlange und wird durch diesen Batch nicht pauschal als geprüft
 markiert.
 
