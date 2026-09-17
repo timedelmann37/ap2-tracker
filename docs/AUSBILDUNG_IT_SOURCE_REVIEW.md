@@ -340,6 +340,15 @@ Neue Einheiten bei 390/1440px in beiden Themes geprüft. Abdeckung 124/380,
 GA1 16/164; Automatisierungs-Themengruppe 10/16. Alle drei `CURATED_DRAFT`,
 menschliche Freigabe offen; kein Push oder produktives Deployment.
 
+Umsetzung am 17.09.2026: Bash und PowerShell (`ga1-9__6`, `ga1-9__7`)
+mit vier eigenen Grafiken, Ausgabevorhersagen und interaktiven Übungen ergänzt.
+Quellenabgrenzung und Korrektur der Standardstrom-/Parameterverwechslung in
+`docs/learning-prep/GA1_SHELL_BATCH.md`. `npm test`, echte lokale
+Bash-/PowerShell-Beispieltests und gezielte Browserprüfungen bestanden.
+Keine AD-Befehle ausgeführt. Abdeckung 126/380, GA1 18/164,
+Automatisierungsgruppe 12/16. Beide `CURATED_DRAFT`; Fachfreigabe offen.
+Keine erneute vollständige Browserregression, kein Push oder Deployment.
+
 Noch nicht umgesetzt: die weiteren Zuordnungsvorschläge für
 WiSo; weitere Automatisierungs-Kernthemen bleiben offen. Die URL-Inventur bleibt
 eine Lesewarteschlange und wird durch diesen Batch nicht pauschal als geprüft

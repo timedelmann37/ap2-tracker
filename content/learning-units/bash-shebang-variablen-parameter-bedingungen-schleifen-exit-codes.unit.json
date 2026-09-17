@@ -1,0 +1,364 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "bash-shebang-variablen-parameter-bedingungen-schleifen-exit-codes",
+    "slug": "bash-shebang-variablen-parameter-bedingungen-schleifen-exit-codes",
+    "title": "Bash: Argumente, Ausgabe und Exit-Status lesen",
+    "description": "Argumentgrenzen erhalten, eine Schleife nachvollziehen und Standardausgabe von Fehlerausgabe und Exit-Status unterscheiden.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-9",
+    "groupLabel": "Programme zur automatisierten Systemverwaltung",
+    "itemId": "ga1-9__6",
+    "week": "KW 43",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "sources": [
+      "itlf10-12-2023",
+      "bash-parameters",
+      "bash-scripts",
+      "bash-streams",
+      "bash-pipelines"
+    ],
+    "contentRevision": "2026-09-17.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "argumente",
+      "label": "Argumente und Leerwerte in einer Bash-Schleife richtig verfolgen"
+    },
+    {
+      "id": "status",
+      "label": "Datenströme und Pipeline-Status unterscheiden"
+    }
+  ],
+  "intro": "Argumentgrenzen erhalten, eine Schleife nachvollziehen und Standardausgabe von Fehlerausgabe und Exit-Status unterscheiden. Du bearbeitest eigene Papierfälle; es werden keine echten Systeme verändert.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seite 115, begrenzter OCR-Ausschnitt im Batch 006–007",
+        "use": "Shell-Kontext; fehlerhafte Gleichsetzung der Deskriptoren mit Positionsparametern ausdrücklich korrigiert",
+        "reviewStatus": "Begrenzter Abschnitt am 17.09.2026 gelesen und abgeglichen"
+      },
+      {
+        "sourceId": "bash-parameters",
+        "sourceLocator": "Special Parameters, @ und #; lokaler Bash-Abgleich",
+        "use": "Argumentanzahl und getrennte Argumente",
+        "reviewStatus": "Begrenzter Abschnitt am 17.09.2026 gelesen und abgeglichen"
+      },
+      {
+        "sourceId": "bash-scripts",
+        "sourceLocator": "Shell Scripts, Interpreterzeile und Skriptparameter",
+        "use": "Shebang und Aufruf",
+        "reviewStatus": "Begrenzter Abschnitt am 17.09.2026 gelesen und abgeglichen"
+      },
+      {
+        "sourceId": "bash-streams",
+        "sourceLocator": "Redirections, Standarddeskriptoren und Ausgabeumleitung",
+        "use": "stdin/stdout/stderr und Überschreiben",
+        "reviewStatus": "Begrenzter Abschnitt am 17.09.2026 gelesen und abgeglichen"
+      },
+      {
+        "sourceId": "bash-pipelines",
+        "sourceLocator": "Pipelines, Exit-Status mit und ohne pipefail",
+        "use": "Fehlerstatus einer Pipeline",
+        "reviewStatus": "Begrenzter Abschnitt am 17.09.2026 gelesen und abgeglichen"
+      }
+    ],
+    "notes": [
+      "Eigene Beispiele, Aufgaben und Grafiken. Menschliche Fach- und Verständlichkeitsfreigabe offen.",
+      "GNU-Direktabrufe teils fehlgeschlagen; benannte Handbuchabschnitte aus Suchindexauszügen gelesen, Beispiele zusätzlich lokal mit GNU Bash geprüft. Andere Java-/Ansible-Treffer nicht verwendet."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "argumente",
+      "title": "Argument ist nicht Wort",
+      "type": "flow",
+      "items": [
+        {
+          "label": "Aufruf",
+          "detail": "Nord West als ein zitiertes Argument"
+        },
+        {
+          "label": "Schleife",
+          "detail": "Jeder Eintrag aus zitiertem $@ bleibt einzeln"
+        },
+        {
+          "label": "Auswahl",
+          "detail": "Leere Werte überspringen, andere zählen"
+        }
+      ]
+    },
+    {
+      "id": "stroeme",
+      "title": "Daten und Status getrennt lesen",
+      "type": "flow",
+      "items": [
+        {
+          "label": "stdin · 0",
+          "detail": "Eingabestrom des Programms"
+        },
+        {
+          "label": "stdout · 1 / stderr · 2",
+          "detail": "Ergebnisse / Fehlermeldungen"
+        },
+        {
+          "label": "Exit-Status",
+          "detail": "Separate Zahl für Erfolg oder Fehler"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "bash-shebang-variablen-parameter-bedingungen-schleifen-exit-codes-diagnose",
+          "question": "Ein Skript wird mit \"Nord West\" als einem Argument aufgerufen. Was bewahrt dieses Argument in der for-Schleife?",
+          "options": [
+            {
+              "text": "Unzitiertes $@.",
+              "rationale": "Dabei können Wortaufteilung und Dateinamenexpansion die Grenzen verändern.",
+              "correct": false
+            },
+            {
+              "text": "Zitiertes \"$@\".",
+              "rationale": "Richtig: Jedes übergebene Argument bleibt ein einzelner Eintrag.",
+              "correct": true
+            },
+            {
+              "text": "\"$*\" ist immer identisch.",
+              "rationale": "Es verbindet die Argumente zu einem Wort und hat daher eine andere Bedeutung.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Aufruf und Variablen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Die Shebang-Zeile `#!/usr/bin/env bash` wählt beim direkten ausführbaren Skriptaufruf Bash über die Suchpfade aus. Bei `bash namen.sh ...` wird Bash ausdrücklich gestartet. Die folgenden Beispiele setzen Bash voraus, nicht beliebiges `sh`.\n\nEine Zuweisung lautet `anzahl=0`, ohne Leerzeichen um das Gleichheitszeichen. `$1` bezeichnet das erste Skriptargument, `$#` die Argumentanzahl. `\"$@\"` erhält die einzelnen Argumente, einschließlich übergebener Leerwerte. `$0` ist beim gewöhnlichen Skriptaufruf der Skriptname, **nicht stdin**."
+        },
+        {
+          "type": "figure",
+          "diagramId": "argumente",
+          "alt": "Ein Name mit Leerzeichen bleibt bei zitiertem Dollar-at ein Argument.",
+          "caption": "Eigene Darstellung; keine echten Systemzugriffe."
+        }
+      ]
+    },
+    {
+      "title": "Erst vorhersagen, dann verfolgen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Das Skript gibt nichtleere Namen aus und zählt sie. Es löscht, liest und ändert keine Dateien. Wenn keine Argumente übergeben werden, meldet es einen Eingabefehler. Ein ausdrücklich übergebener leerer Text ist dagegen ein Argument, wird aber nicht gezählt.\n\n```bash\n#!/usr/bin/env bash\nif [ \"$#\" -eq 0 ]; then\n  printf '%s\\n' 'Keine Namen' >&2\n  exit 2\nfi\nanzahl=0\nfor name in \"$@\"; do\n  if [ -n \"$name\" ]; then\n    printf '%s\\n' \"$name\"\n    anzahl=$((anzahl + 1))\n  fi\ndone\nprintf 'Anzahl: %s\\n' \"$anzahl\"\nexit 0\n```\n\n`[ \"$#\" -eq 0 ]` vergleicht Zahlen. `[ -n \"$name\" ]` prüft, ob der Text nicht leer ist. Die Leerzeichen an den eckigen Klammern sind erforderlich. `then`/`fi` begrenzen den if-Zweig, `do`/`done` den Schleifenrumpf.\n\nSage die Ausgabe für `bash namen.sh \"Nord West\" \"\" Sued` voraus. Drei Argumente kommen an. Die Schleife zählt den ersten und dritten Eintrag; der leere zweite Eintrag wird übersprungen."
+        },
+        {
+          "type": "markdown",
+          "markdown": "```text\nNord West\nSued\nAnzahl: 2\n```\n\nDer Exit-Status ist null. Ohne Argumente gibt es keine Standardausgabe, nur `Keine Namen` auf stderr und Status zwei. Bei genau einem leeren Argument gibt es `Anzahl: 0` auf stdout und Status null. Diese Unterscheidung ist Teil unseres ausdrücklich gewählten Vertrags."
+        },
+        {
+          "type": "numeric",
+          "id": "bash-shebang-variablen-parameter-bedingungen-schleifen-exit-codes-zahl",
+          "title": "Andere Argumente",
+          "prompt": "Aufruf: bash namen.sh \"Ost Mitte\" \"\" West Nord. Welche Anzahl wird ausgegeben?",
+          "label": "Gezählte Namen",
+          "expected": 3,
+          "tolerance": 0,
+          "correctFeedback": "Drei nichtleere Argumente. Ost Mitte bleibt ein Eintrag; der Leerwert zählt nicht.",
+          "wrongFeedback": "Zähle nichtleere Argumente, nicht Wörter oder alle Argumentpositionen.",
+          "misconceptions": [
+            {
+              "value": 4,
+              "feedback": "Es gibt vier Argumente, aber eines ist leer."
+            },
+            {
+              "value": 5,
+              "feedback": "Ost Mitte ist wegen der Anführungszeichen ein einzelnes Argument."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Datenstrom ist nicht Parameter",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "stroeme",
+          "alt": "Null, eins und zwei bezeichnen Dateideskriptoren; der Exit-Status ist eine separate Zahl.",
+          "caption": "Eigene Darstellung; keine echten Systemzugriffe."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Die Dateideskriptoren **0 = stdin, 1 = stdout, 2 = stderr** sind nicht die Positionsparameter `$0`, `$1`, `$2`. `>&2` schreibt die Ausgabe unseres printf auf stderr.\n\n`programm | filter` verbindet gewöhnlich stdout des linken Programms mit stdin des rechten; stderr wird nicht automatisch mitgeleitet. `< datei` liest aus einer Datei, `> datei` schreibt stdout und kann vorhandenen Inhalt abschneiden. `>> datei` hängt an; `2> datei` leitet stderr um. Diese Schreibweisen werden hier nur gelesen, nicht auf Dateien ausgeführt.\n\n`$?` liefert den Status des zuletzt abgeschlossenen Vordergrundbefehls beziehungsweise der Pipeline. Sichere ihn sofort, wenn ein weiterer Befehl folgen soll. Null bedeutet für die Shell Erfolg; andere Werte kennzeichnen einen nicht erfolgreichen Status, dessen genaue Bedeutung zum Befehl gehört."
+        }
+      ]
+    },
+    {
+      "title": "Den versteckten Pipelinefehler finden",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Eigener Prüfungsfall: `false | true`. Ohne pipefail gilt der Status des letzten Befehls: null. Mit `set -o pipefail` ergibt dieselbe Pipeline eins. pipefail lässt den rechten nicht erfolgreichen Status der Pipeline gelten; es prüft nicht die fachliche Richtigkeit von Ausgabedaten. Diese Aussage betrifft Bash, nicht automatisch andere Shells."
+        },
+        {
+          "type": "quiz",
+          "id": "bash-shebang-variablen-parameter-bedingungen-schleifen-exit-codes-uebung",
+          "question": "Ohne pipefail liefert der linke Befehl Fehlerstatus 1, der letzte Status 0. Welchen Pipeline-Status erhältst du?",
+          "options": [
+            {
+              "text": "Immer eins.",
+              "rationale": "Standardmäßig bestimmt der letzte Befehl den Status.",
+              "correct": false
+            },
+            {
+              "text": "Null.",
+              "rationale": "Richtig: Der frühe Fehler kann durch den erfolgreichen letzten Befehl verdeckt werden.",
+              "correct": true
+            },
+            {
+              "text": "Die Summe aller Statuswerte.",
+              "rationale": "Exit-Statuswerte werden nicht addiert.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Selbst ordnen und erklären",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "bash-shebang-variablen-parameter-bedingungen-schleifen-exit-codes-reihenfolge",
+          "title": "Ablauf ordnen",
+          "prompt": "Ordne die Prüfung dieses Skripts.",
+          "steps": [
+            {
+              "id": "abschluss",
+              "label": "Ausgabeströme und Exit-Status getrennt prüfen"
+            },
+            {
+              "id": "start",
+              "label": "Argumentvertrag und Leerfall festlegen"
+            },
+            {
+              "id": "pruefen",
+              "label": "Argumente zitiert durchlaufen und Ausgabe vorhersagen"
+            }
+          ],
+          "expected": [
+            "start",
+            "pruefen",
+            "abschluss"
+          ],
+          "correctFeedback": "Richtig: Voraussetzungen, Prüfung und Abschluss stehen in der vorgesehenen Reihenfolge.",
+          "wrongFeedback": "Prüfe die Voraussetzungen: Der letzte Schritt darf die vorherige Prüfung nicht überspringen."
+        },
+        {
+          "type": "recall",
+          "id": "bash-shebang-variablen-parameter-bedingungen-schleifen-exit-codes-begruendung",
+          "title": "Aus dem Gedächtnis erklären",
+          "prompt": "Erkläre den Unterschied zwischen keinem Argument und einem leeren Argument. Nenne außerdem den Unterschied zwischen $1 und Dateideskriptor 1.",
+          "label": "Deine Erklärung",
+          "minLength": 70,
+          "model": "Ohne Argument ist $# null und unser Skript endet mit Status zwei. Ein leerer Text ist ein Argument, wird in der Schleife aber nicht gezählt; das Skript meldet Anzahl null und Status null. $1 ist der erste Argumentwert, während Dateideskriptor 1 den Standardausgabestrom bezeichnet."
+        },
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "bash-shebang-variablen-parameter-bedingungen-schleifen-exit-codes-karte-0",
+              "label": "Abruf 1",
+              "front": "Warum \"$@\" zitieren?",
+              "back": "Damit Argumentgrenzen einschließlich Leerzeichen erhalten bleiben."
+            },
+            {
+              "id": "bash-shebang-variablen-parameter-bedingungen-schleifen-exit-codes-karte-1",
+              "label": "Abruf 2",
+              "front": "Was transportiert eine normale Pipe?",
+              "back": "stdout des linken Befehls zum stdin des rechten; stderr nicht automatisch."
+            },
+            {
+              "id": "bash-shebang-variablen-parameter-bedingungen-schleifen-exit-codes-karte-2",
+              "label": "Abruf 3",
+              "front": "Warum $? sofort sichern?",
+              "back": "Ein weiterer Befehl ersetzt den zuletzt beobachteten Status."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "bash-shebang-variablen-parameter-bedingungen-schleifen-exit-codes-transfer-a",
+          "question": "Aufruf: bash namen.sh \"Team A\" \"\". Welche Ergebniszeile entsteht?",
+          "options": [
+            {
+              "text": "Anzahl: 2",
+              "rationale": "Das leere Argument wird zwar übergeben, aber nicht gezählt.",
+              "correct": false
+            },
+            {
+              "text": "Anzahl: 3",
+              "rationale": "Team A ist ein Argument, nicht zwei.",
+              "correct": false
+            },
+            {
+              "text": "Anzahl: 1",
+              "rationale": "Nur der nichtleere Name wird gezählt.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "argumente"
+        },
+        {
+          "type": "quiz",
+          "id": "bash-shebang-variablen-parameter-bedingungen-schleifen-exit-codes-transfer-b",
+          "question": "Ein frühes Pipelineglied scheitert, das letzte endet erfolgreich. Welche Aussage stimmt für Bash?",
+          "options": [
+            {
+              "text": "Ohne pipefail kann der Gesamtstatus null sein; stderr und Inhalt bleiben gesondert zu prüfen.",
+              "rationale": "Statusregel und tatsächliche Datenqualität sind getrennt.",
+              "correct": true
+            },
+            {
+              "text": "stderr wird durch | immer mitgeleitet.",
+              "rationale": "Die gewöhnliche Pipe leitet standardmäßig stdout.",
+              "correct": false
+            },
+            {
+              "text": "$1 enthält danach automatisch den Pipeline-Status.",
+              "rationale": "$1 ist ein Positionsparameter, nicht der Status.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "status"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Buchkontext: ITLF10–12 PDF-Seite 115, begrenzter OCR-Ausschnitt. GNU-Bash-Handbuch: [Parameter](https://www.gnu.org/s/bash/manual/html_node/Special-Parameters.html), [Skripte](https://www.gnu.org/s/bash/manual/html_node/Shell-Scripts.html), [Umleitungen](https://www.gnu.org/s/bash/manual/html_node/Redirections.html), [Pipelines](https://www.gnu.org/software/bash/manual/html_node/Pipelines.html). Benannte Abschnitte am 17.09.2026 über verfügbare Suchindexauszüge geprüft; direkte Abrufe teils nicht erreichbar. Eigene Beispiele zusätzlich mit lokaler Bash ausgeführt. Keine produktive Dateioperation und keine vollständige Shell-Referenz."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,368 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "powershell-verb-noun-cmdlets-pipeline-import-csv-foreach-ad-cmdlets-mass",
+    "slug": "powershell-verb-noun-cmdlets-pipeline-import-csv-foreach-ad-cmdlets-mass",
+    "title": "PowerShell: Objekte und CSV-Daten verarbeiten",
+    "description": "Eine Objektpipeline lesen, CSV-Datensätze filtern und die Vorbereitung einer Benutzeranlage von ihrer Ausführung trennen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-9",
+    "groupLabel": "Programme zur automatisierten Systemverwaltung",
+    "itemId": "ga1-9__7",
+    "week": "KW 43",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "sources": [
+      "ps-pipelines",
+      "ps-csv",
+      "ps-foreach",
+      "ps-verbs",
+      "ps-aduser"
+    ],
+    "contentRevision": "2026-09-17.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "objekte",
+      "label": "CSV-Objekte filtern und foreach-Ausgaben nachvollziehen"
+    },
+    {
+      "id": "anlage",
+      "label": "Eine kontrollierte Benutzeranlage aus CSV vorbereiten"
+    }
+  ],
+  "intro": "Eine Objektpipeline lesen, CSV-Datensätze filtern und die Vorbereitung einer Benutzeranlage von ihrer Ausführung trennen. Du bearbeitest eigene Papierfälle; es werden keine echten Systeme verändert.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "ps-pipelines",
+        "sourceLocator": "Long description; Using pipelines",
+        "use": "Objekte und Eigenschaftszugriff",
+        "reviewStatus": "Begrenzter Abschnitt am 17.09.2026 gelesen und abgeglichen"
+      },
+      {
+        "sourceId": "ps-csv",
+        "sourceLocator": "Description und Examples 1–2",
+        "use": "Spalten als Eigenschaften, Trennzeichen und Textwerte",
+        "reviewStatus": "Begrenzter Abschnitt am 17.09.2026 gelesen und abgeglichen"
+      },
+      {
+        "sourceId": "ps-foreach",
+        "sourceLocator": "Syntax und einfache Beispiele",
+        "use": "Iteration über eine Sammlung",
+        "reviewStatus": "Begrenzter Abschnitt am 17.09.2026 gelesen und abgeglichen"
+      },
+      {
+        "sourceId": "ps-verbs",
+        "sourceLocator": "Einleitung Verb-Noun",
+        "use": "Cmdlet-Benennung",
+        "reviewStatus": "Begrenzter Abschnitt am 17.09.2026 gelesen und abgeglichen"
+      },
+      {
+        "sourceId": "ps-aduser",
+        "sourceLocator": "Beschreibung, Syntax und WhatIf-Parameter",
+        "use": "Benutzeranlage und Vorschau",
+        "reviewStatus": "Begrenzter Abschnitt am 17.09.2026 gelesen und abgeglichen"
+      }
+    ],
+    "notes": [
+      "Eigene Beispiele, Aufgaben und Grafiken. Menschliche Fach- und Verständlichkeitsfreigabe offen.",
+      "Buch-Batch 006–007 lieferte Chocolatey-, Index- und Authentisierungstreffer, keine passenden PowerShell-/CSV-Fachbelege. Keine veraltete SSH-Konfiguration übernommen. Keine AD-Befehle ausgeführt."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "objekte",
+      "title": "Eigenschaften bleiben nutzbar",
+      "type": "flow",
+      "items": [
+        {
+          "label": "CSV lesen",
+          "detail": "Jede Datenzeile wird ein Objekt"
+        },
+        {
+          "label": "Filtern",
+          "detail": "Abteilung gleich IT auswählen"
+        },
+        {
+          "label": "Verarbeiten",
+          "detail": "Namen der ausgewählten Objekte ausgeben"
+        }
+      ]
+    },
+    {
+      "id": "anlage",
+      "title": "Vorbereitung vor Veränderung",
+      "type": "flow",
+      "items": [
+        {
+          "label": "Daten prüfen",
+          "detail": "Pflichtfelder und doppelte Logins"
+        },
+        {
+          "label": "Ziele prüfen",
+          "detail": "Test-OU, Rechte und vorhandene Konten"
+        },
+        {
+          "label": "Vorschau / Freigabe",
+          "detail": "Erst danach kontrollierte Anlage"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "powershell-verb-noun-cmdlets-pipeline-import-csv-foreach-ad-cmdlets-mass-diagnose",
+          "question": "Was liefert Import-Csv für gewöhnliche CSV-Datenzeilen?",
+          "options": [
+            {
+              "text": "Nur ein Bildschirmfoto der Tabelle.",
+              "rationale": "Die Daten können weiterverarbeitet werden.",
+              "correct": false
+            },
+            {
+              "text": "Objekte mit Eigenschaften aus den Spalten.",
+              "rationale": "Richtig: Die Überschriften werden zu Eigenschaftsnamen.",
+              "correct": true
+            },
+            {
+              "text": "Automatisch neue Benutzerkonten.",
+              "rationale": "Einlesen legt keine Konten an.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Cmdlets und Objektpipeline",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Cmdlet-Namen folgen dem Muster Verb-Noun: `Get-Command` ermittelt Befehle, `Import-Csv` importiert CSV-Daten. Das Verb beschreibt die Handlung, das Nomen den Gegenstand. `Get-Help` hilft, Parameter und Eingabeformen zu prüfen.\n\nZwischen PowerShell-Cmdlets werden normalerweise Objekte weitergereicht. Diese besitzen Eigenschaften, beispielsweise `Name` und `Abteilung`. In `Where-Object { $_.Abteilung -eq 'IT' }` steht `$_` für das gerade verarbeitete Objekt. Der Filter lässt passende Objekte passieren. Das ist nicht dasselbe wie das Durchsuchen einer bereits formatierten Bildschirmzeile. Native Programme können sich anders verhalten; unsere Einheit bleibt bei PowerShell-Objekten."
+        },
+        {
+          "type": "figure",
+          "diagramId": "objekte",
+          "alt": "CSV-Objekte werden anhand der Abteilung gefiltert; anschließend werden ihre Namen ausgegeben.",
+          "caption": "Eigene Darstellung des Übungsfalls."
+        }
+      ]
+    },
+    {
+      "title": "CSV zuerst richtig lesen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Für eine bereitgestellte Datei würde der Import so aussehen:\n\n```powershell\n$daten = Import-Csv `\n  -LiteralPath '.\\team.csv' `\n  -Delimiter ';'\n```\n\nDer Inhalt bestimmt das Trennzeichen, nicht die Dateiendung. Hier heißt die Kopfzeile `Name;Abteilung`. Mit dem falschen Trennzeichen entstehen nicht die erwarteten Eigenschaften. Prüfe Überschriften und Beispielwerte vor der Weiterverarbeitung. Gewöhnliche importierte Feldwerte sind zunächst Text: Eine Ziffernfolge ist nicht automatisch ein sinnvoll validierter Zahlenwert.\n\nDamit unser ausführbares Beispiel keine Datei benötigt, nutzt es `ConvertFrom-Csv` auf eingebettetem Text. Das stellt dieselben Übungsdaten ohne Dateizugriff bereit. Sage zuerst voraus, welche Namen und welche Anzahl erscheinen."
+        },
+        {
+          "type": "markdown",
+          "markdown": "```powershell\n$csv = @'\nName;Abteilung\nAda;IT\nBen;Vertrieb\nCem;IT\n'@\n$daten = $csv |\n  ConvertFrom-Csv -Delimiter ';'\n$auswahl = @(\n  $daten | Where-Object {\n    $_.Abteilung -eq 'IT'\n  }\n)\nforeach ($person in $auswahl) {\n  $person.Name\n}\n\"Anzahl: $($auswahl.Count)\"\n```\n\n`@(...)` sammelt die Auswahl als Array, auch bei keinem oder nur einem Treffer. Die foreach-Anweisung weist `$person` nacheinander jedem ausgewählten Objekt zu. Sie ist ein Sprachkonstrukt; `ForEach-Object` ist dagegen ein Cmdlet für die Pipeline. In dieser Einheit nutzen wir die ausgeschriebene foreach-Anweisung."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Ada und Cem gehören zu IT, Ben nicht. Die Ausgabe lautet:\n\n```text\nAda\nCem\nAnzahl: 2\n```\n\nKein Treffer ergibt ein leeres Array: Der Schleifenrumpf läuft nicht, die Anzahl ist null. Bei genau einem IT-Datensatz läuft er einmal. So bleiben Leer- und Einzelfall ausdrücklich definiert."
+        },
+        {
+          "type": "numeric",
+          "id": "powershell-verb-noun-cmdlets-pipeline-import-csv-foreach-ad-cmdlets-mass-zahl",
+          "title": "Neue Auswahl",
+          "prompt": "Vier Datensätze haben nacheinander die Abteilungen IT, Vertrieb, IT, IT. Der gleiche Filter bleibt bestehen. Wie viele Namen gibt foreach aus?",
+          "label": "Anzahl der Namen",
+          "expected": 3,
+          "tolerance": 0,
+          "correctFeedback": "Drei Objekte erfüllen Abteilung gleich IT und werden verarbeitet.",
+          "wrongFeedback": "Zähle nur passende Objekte, nicht alle CSV-Zeilen oder die Kopfzeile.",
+          "misconceptions": [
+            {
+              "value": 4,
+              "feedback": "Der Vertriebsdatensatz wird herausgefiltert."
+            },
+            {
+              "value": 5,
+              "feedback": "Die Kopfzeile ist keine zusätzliche Person."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Typische Fehler erkennen",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "powershell-verb-noun-cmdlets-pipeline-import-csv-foreach-ad-cmdlets-mass-uebung",
+          "question": "Die Datei nutzt Semikola, Import-Csv aber ein Komma als Trennzeichen. Warum kann der Abteilungsfilter scheitern?",
+          "options": [
+            {
+              "text": "CSV ist grundsätzlich nicht filterbar.",
+              "rationale": "Importierte Objekte lassen sich anhand ihrer Eigenschaften filtern.",
+              "correct": false
+            },
+            {
+              "text": "Die erwarteten Spalten wurden nicht korrekt getrennt.",
+              "rationale": "Richtig: Erst die eingelesene Struktur prüfen.",
+              "correct": true
+            },
+            {
+              "text": "foreach darf nur Zahlen verarbeiten.",
+              "rationale": "foreach kann über unterschiedliche Sammlungen iterieren.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "Ein Filterfehler ist kein Anlass, sofort Konten anzulegen. Kontrolliere die Daten mit Eigenschaften statt formatiertem Text. Halte Einlesen, Validieren und Ändern getrennt. Der bloße Import validiert weder einen zulässigen Login noch eine existierende Ziel-OU."
+        }
+      ]
+    },
+    {
+      "title": "Benutzeranlage nur nach Prüfung",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "anlage",
+          "alt": "Datenvalidierung, Zielprüfung und Vorschau liegen vor einer freigegebenen Benutzeranlage.",
+          "caption": "Eigene Darstellung des Übungsfalls."
+        },
+        {
+          "type": "markdown",
+          "markdown": "`New-ADUser` aus dem ActiveDirectory-Modul erstellt ein Benutzerobjekt. Für einen echten Lauf braucht es eine passende Verwaltungsumgebung, erreichbares Verzeichnis und Berechtigungen. `-Name`, `-SamAccountName` und `-Path` bestimmen wichtige Zielwerte; ein Konto anzulegen ist nicht dasselbe wie es sicher zur Anmeldung zu aktivieren.\n\nEigener Ablauf: Die CSV enthält die Spalten Name und Login. Prüfe vor dem ersten Schreibzugriff leere Pflichtfelder, doppelte Logins innerhalb der Datei, bereits vorhandene Konten und die freigegebene Test-OU. Eingaben nicht blind als Befehle ausführen. Der folgende Ausschnitt ist **nur ein Lese- und Zuordnungsbeispiel**: `$geprueft` und `$testOu` müssen zuvor kontrolliert feststehen.\n\n```powershell\nforeach ($person in $geprueft) {\n  New-ADUser -Name $person.Name `\n    -SamAccountName $person.Login `\n    -Path $testOu `\n    -Enabled $false -WhatIf\n}\n```\n\n`-WhatIf` zeigt bei diesem Cmdlet die beabsichtigte Aktion, ohne sie auszuführen. Das beweist nicht, dass eine spätere echte Anlage sämtliche Anforderungen erfüllt. Keine automatische Passwortvergabe, keine Aktivierung und keine Produktionsfreigabe sind Bestandteil des Beispiels. Zugangsdaten gehören nicht in CSV-Dateien oder Logs. Nach einem freigegebenen echten Lauf wären Ergebnisprüfung und ein nachvollziehbares Fehlerprotokoll erforderlich."
+        }
+      ]
+    },
+    {
+      "title": "Selbst ordnen und erklären",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "powershell-verb-noun-cmdlets-pipeline-import-csv-foreach-ad-cmdlets-mass-reihenfolge",
+          "title": "Ablauf ordnen",
+          "prompt": "Ordne die Vorbereitung einer Benutzeranlage.",
+          "steps": [
+            {
+              "id": "abschluss",
+              "label": "Vorschau bewerten und erst nach Freigabe ändern"
+            },
+            {
+              "id": "start",
+              "label": "CSV mit richtigem Trennzeichen einlesen"
+            },
+            {
+              "id": "pruefen",
+              "label": "Pflichtfelder, Duplikate und Zielumgebung prüfen"
+            }
+          ],
+          "expected": [
+            "start",
+            "pruefen",
+            "abschluss"
+          ],
+          "correctFeedback": "Richtig: Voraussetzungen, Prüfung und Abschluss stehen in der vorgesehenen Reihenfolge.",
+          "wrongFeedback": "Prüfe die Voraussetzungen: Der letzte Schritt darf die vorherige Prüfung nicht überspringen."
+        },
+        {
+          "type": "recall",
+          "id": "powershell-verb-noun-cmdlets-pipeline-import-csv-foreach-ad-cmdlets-mass-begruendung",
+          "title": "Aus dem Gedächtnis erklären",
+          "prompt": "Erkläre die Ausgabe Ada, Cem und Anzahl zwei. Beschreibe außerdem, warum du vor einer Anlage alle CSV-Daten prüfen würdest und nicht erst beim ersten Fehler mitten im Lauf.",
+          "label": "Deine Erklärung",
+          "minLength": 70,
+          "model": "Der Filter wählt zwei Objekte mit Abteilung IT aus; foreach gibt deren Namen aus. Die Array-Anzahl ist zwei. Vorabprüfung erkennt fehlende Felder, doppelte Logins und falsche Ziele, bevor ein Teil der Konten schon verändert wurde. Vorschau und spätere Ergebnisprüfung bleiben getrennte Schritte."
+        },
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "powershell-verb-noun-cmdlets-pipeline-import-csv-foreach-ad-cmdlets-mass-karte-0",
+              "label": "Abruf 1",
+              "front": "Was bezeichnet $_ im Filter?",
+              "back": "Das aktuell durch die Pipeline verarbeitete Objekt."
+            },
+            {
+              "id": "powershell-verb-noun-cmdlets-pipeline-import-csv-foreach-ad-cmdlets-mass-karte-1",
+              "label": "Abruf 2",
+              "front": "Warum das Trennzeichen prüfen?",
+              "back": "Weil sonst die erwarteten Eigenschaften nicht korrekt entstehen."
+            },
+            {
+              "id": "powershell-verb-noun-cmdlets-pipeline-import-csv-foreach-ad-cmdlets-mass-karte-2",
+              "label": "Abruf 3",
+              "front": "Beweist WhatIf die erfolgreiche Anlage?",
+              "back": "Nein. Es zeigt die geplante Aktion, ersetzt aber weder Freigabe noch spätere Ergebnisprüfung."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "powershell-verb-noun-cmdlets-pipeline-import-csv-foreach-ad-cmdlets-mass-transfer-a",
+          "question": "Der CSV-Filter findet keine passende Abteilung. Die Auswahl wird mit @(... ) gesammelt. Was geschieht?",
+          "options": [
+            {
+              "text": "foreach verarbeitet automatisch die Kopfzeile.",
+              "rationale": "Die Kopfzeile ist kein Datensatz.",
+              "correct": false
+            },
+            {
+              "text": "Es wird automatisch ein Ersatzbenutzer angelegt.",
+              "rationale": "Das Beispiel enthält keine solche Anlage.",
+              "correct": false
+            },
+            {
+              "text": "foreach läuft keinmal; die Anzahl ist null.",
+              "rationale": "Das leere Array hat keine Elemente.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "objekte"
+        },
+        {
+          "type": "quiz",
+          "id": "powershell-verb-noun-cmdlets-pipeline-import-csv-foreach-ad-cmdlets-mass-transfer-b",
+          "question": "Zwei CSV-Zeilen enthalten denselben Login. Eine WhatIf-Vorschau wurde angezeigt. Was ist der nächste sinnvolle Schritt?",
+          "options": [
+            {
+              "text": "Duplikat klären und Daten erneut prüfen, bevor Änderungen freigegeben werden.",
+              "rationale": "Eine Vorschau ersetzt die fachliche Eindeutigkeitsprüfung nicht.",
+              "correct": true
+            },
+            {
+              "text": "WhatIf entfernen und sofort beide anlegen.",
+              "rationale": "Das kann zu Teilfehlern und falschen Konten führen.",
+              "correct": false
+            },
+            {
+              "text": "Zweite Zeile ungeprüft umbenennen.",
+              "rationale": "Ein Login ist fachlich zuzuordnen, nicht beliebig zu erfinden.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "anlage"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Microsoft Learn: [Pipelines](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_pipelines), [Import-Csv](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/import-csv), [foreach](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_foreach), [Cmdlet-Namen](https://learn.microsoft.com/en-us/powershell/scripting/developer/cmdlet/approved-verbs-for-windows-powershell-commands) und [New-ADUser](https://learn.microsoft.com/en-us/powershell/module/activedirectory/new-aduser), ausgewählte Abschnitte am 17.09.2026 gelesen. Unpassende Buchtreffer nicht verwendet. Eigene Daten; das reine CSV-Beispiel lokal geprüft. Der AD-Ausschnitt wurde nicht ausgeführt und ist keine vollständige Bereitstellungsanleitung."
+        }
+      ]
+    }
+  ]
+}
