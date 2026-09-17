@@ -327,6 +327,19 @@ Tastatur, Persistenz, Abschluss/Rücknahme und 390/1440px in beiden Themes.
 Abdeckung 121/380, GA1 13/164. Status `CURATED_DRAFT`, menschliche Freigabe
 offen; kein vollständiger Browser-Regressionslauf und kein Push.
 
+Umsetzung am 17.09.2026: Dreierbatch `ga1-9__11`, `ga1-9__13`, `ga1-9__14`
+zu Ansible/IaC, Git und CI/CD eingebaut. Einzelheiten und Quellenentscheidungen
+in `docs/learning-prep/GA1_AUTOMATION_BATCH.md`. Sechs eigene Diagramme,
+grafische CI-Laufzeitrechnung, drei Zahlenübungen, Sortier-/Abrufaufgaben und
+sechs Pflichtnachweise. Buchstellen bei Git/Ansible begrenzt ausgewertet und
+präzisiert; unpassende CI/CD-Treffer nicht als Fachbelege übernommen.
+`npm test`, gezielter Dreier-Browsertest und vollständiger
+`scripts/run-browser-tests.mjs`-Durchlauf erfolgreich: einschließlich Navigation,
+Theme-Persistenz, bestehender Lernmodule und Bewegung/Reduced Motion.
+Neue Einheiten bei 390/1440px in beiden Themes geprüft. Abdeckung 124/380,
+GA1 16/164; Automatisierungs-Themengruppe 10/16. Alle drei `CURATED_DRAFT`,
+menschliche Freigabe offen; kein Push oder produktives Deployment.
+
 Noch nicht umgesetzt: die weiteren Zuordnungsvorschläge für
 WiSo; weitere Automatisierungs-Kernthemen bleiben offen. Die URL-Inventur bleibt
 eine Lesewarteschlange und wird durch diesen Batch nicht pauschal als geprüft

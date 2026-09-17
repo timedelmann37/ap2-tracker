@@ -1,0 +1,363 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "konfigurationsmanagement-iac-ansible-inventory-playbook-modul-rolle",
+    "slug": "konfigurationsmanagement-iac-ansible-inventory-playbook-modul-rolle",
+    "title": "Ansible und IaC: Ziele und Sollzustände trennen",
+    "description": "Inventory, Playbook, Task, Modul und Rolle zuordnen und einen begrenzten Konfigurationslauf beurteilen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-9",
+    "groupLabel": "Programme zur automatisierten Systemverwaltung",
+    "itemId": "ga1-9__11",
+    "week": "KW 43",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "sources": [
+      "itlf10-12-2023",
+      "ansible-concepts",
+      "ansible-check",
+      "terraform-intro",
+      "puppet-architecture",
+      "chef-overview"
+    ],
+    "contentRevision": "2026-09-17.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "bausteine",
+      "label": "Ansible-Bausteine und Zielauswahl korrekt zuordnen"
+    },
+    {
+      "id": "grenzen",
+      "label": "Werkzeugzweck und Grenzen einer Vorabprüfung beurteilen"
+    }
+  ],
+  "intro": "Inventory, Playbook, Task, Modul und Rolle zuordnen und einen begrenzten Konfigurationslauf beurteilen. Du bearbeitest eigene Papierfälle; es werden keine echten Systeme verändert.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seiten 127, 128 und 134, begrenzte OCR-Batch-Ausschnitte",
+        "use": "Automatisierungskontext, Inventory und Rollenbeispiel; veraltete Modul-/Plugin-Zahlen ausgeschlossen",
+        "reviewStatus": "Begrenzter Abschnitt am 17.09.2026 gelesen und abgeglichen"
+      },
+      {
+        "sourceId": "ansible-concepts",
+        "sourceLocator": "Inventory, Plays, Roles, Tasks, Modules und Plugins",
+        "use": "Begriffe gegen offizielle Dokumentation präzisiert",
+        "reviewStatus": "Begrenzter Abschnitt am 17.09.2026 gelesen und abgeglichen"
+      },
+      {
+        "sourceId": "ansible-check",
+        "sourceLocator": "Using check mode; Enforcing or preventing check mode",
+        "use": "Prüfmodus und explizite Ausnahmen",
+        "reviewStatus": "Begrenzter Abschnitt am 17.09.2026 gelesen und abgeglichen"
+      },
+      {
+        "sourceId": "terraform-intro",
+        "sourceLocator": "What is Terraform; How does Terraform work",
+        "use": "Ressourcen-Lebenszyklus, Plan und Apply",
+        "reviewStatus": "Begrenzter Abschnitt am 17.09.2026 gelesen und abgeglichen"
+      },
+      {
+        "sourceId": "puppet-architecture",
+        "sourceLocator": "Puppet architecture, Agent-Server-Ablauf",
+        "use": "Typische Konfigurationsarchitektur",
+        "reviewStatus": "Begrenzter Abschnitt am 17.09.2026 gelesen und abgeglichen"
+      },
+      {
+        "sourceId": "chef-overview",
+        "sourceLocator": "Chef Infra overview, Client/Recipes/Cookbooks",
+        "use": "Begriffliche Abgrenzung",
+        "reviewStatus": "Begrenzter Abschnitt am 17.09.2026 gelesen und abgeglichen"
+      }
+    ],
+    "notes": [
+      "Eigene Beispiele, Aufgaben und Grafiken. Menschliche Fach- und Verständlichkeitsfreigabe offen.",
+      "Buchbehauptungen zu reiner SSH-Nutzung, festen Modulzahlen und Terraform-Ausschluss aus IaC nicht übernommen. Keine konkreten Hostverbindungen oder Infrastrukturänderungen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "bausteine",
+      "title": "Zielauswahl ist nicht die Aufgabe",
+      "type": "flow",
+      "items": [
+        {
+          "label": "Inventory",
+          "detail": "Welche verwalteten Hosts gibt es?"
+        },
+        {
+          "label": "Play",
+          "detail": "Welche Hosts erhalten welche Tasks?"
+        },
+        {
+          "label": "Task / Modul",
+          "detail": "Aufgabe / ausführender Baustein"
+        }
+      ]
+    },
+    {
+      "id": "pruefung",
+      "title": "Vom Soll zur bestätigten Wirkung",
+      "type": "flow",
+      "items": [
+        {
+          "label": "Soll beschreiben",
+          "detail": "Beispiel: Paket soll vorhanden sein"
+        },
+        {
+          "label": "Begrenzt prüfen",
+          "detail": "Ziele und Vorschau kontrollieren"
+        },
+        {
+          "label": "Ergebnis prüfen",
+          "detail": "Nach Ausführung Dienstfunktion testen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "konfigurationsmanagement-iac-ansible-inventory-playbook-modul-rolle-diagnose",
+          "question": "Wo steht bei Ansible die Auswahl verfügbarer verwalteter Hosts und Gruppen?",
+          "options": [
+            {
+              "text": "Nur im Modulnamen.",
+              "rationale": "Das Modul beschreibt eine Fähigkeit, nicht das gesamte Zielinventar.",
+              "correct": false
+            },
+            {
+              "text": "Im Inventory.",
+              "rationale": "Richtig: Daraus werden Ziele für einen Play ausgewählt.",
+              "correct": true
+            },
+            {
+              "text": "Im Git-Commit-Kommentar.",
+              "rationale": "Ein Kommentar ist kein Ansible-Inventory.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Begriffe auseinanderhalten",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Infrastructure as Code beschreibt Infrastruktur in versionierbaren Dateien. Konfigurationsmanagement kümmert sich um gewünschte Einstellungen und Zustände. Beide Ansätze können zusammenarbeiten.\n\nBei Ansible startet der Control Node die Arbeit. Ein Inventory führt verwaltete Hosts und Gruppen. Ein YAML-Playbook enthält Plays; ein Play verbindet ausgewählte Hosts mit Tasks. Ein Task ruft etwa ein Modul auf, das eine bestimmte Fähigkeit bereitstellt. Eine Rolle bündelt wiederverwendbare Inhalte wie Tasks, Variablen und Vorlagen. Plugins erweitern beispielsweise Verbindungen; sie sind nicht einfach ein anderer Name für Rollen."
+        },
+        {
+          "type": "figure",
+          "diagramId": "bausteine",
+          "alt": "Inventory beschreibt Ziele, ein Play verbindet Ziele mit Tasks, ein Task nutzt einen ausführenden Baustein.",
+          "caption": "Eigene Darstellung des Lernmodells."
+        }
+      ]
+    },
+    {
+      "title": "Eigener Zielauswahl-Fall",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Unser Papier-Inventory:\n\n```ini\n[web_test]\nprobe-a\nprobe-b\n\n[web_prod]\nlive-a\n```\n\nEin Play richtet sich an `web_test`. Ohne weitere Einschränkung werden **probe-a und probe-b** ausgewählt, nicht live-a. Die Gruppe benennt Ziele; sie installiert noch nichts. Die gewünschte Aufgabe könnte lauten: „Ein festgelegtes Paket soll vorhanden sein.“ Paketname, Plattform und Rechte müssten für einen echten Lauf zusätzlich geklärt werden.\n\nEine Rolle `web_basis` könnte Paket-, Vorlagen- und Dienstaufgaben bündeln. Das ist eine Inhaltsstruktur, keine zusätzliche Hostgruppe. Sage vor dem nächsten Fall erst selbst voraus, wie viele Zielsysteme gemeint sind."
+        },
+        {
+          "type": "numeric",
+          "id": "konfigurationsmanagement-iac-ansible-inventory-playbook-modul-rolle-zahl",
+          "title": "Ziele zählen",
+          "prompt": "Die ausgewählte Gruppe enthält drei verschiedene Hosts test-a, test-b und test-c. Zwei Produktionshosts liegen nur in einer anderen Gruppe. Keine weitere Einschränkung. Wie viele Hosts wählt der Play aus?",
+          "label": "Anzahl der Zielhosts",
+          "expected": 3,
+          "tolerance": 0,
+          "correctFeedback": "Drei: Nur die ausgewählte Gruppe zählt in diesem Modell.",
+          "wrongFeedback": "Zähle die ausgewählten Hosts, nicht das komplette Inventory.",
+          "misconceptions": [
+            {
+              "value": 5,
+              "feedback": "Die zwei Produktionshosts sind nicht Teil der ausgewählten Gruppe."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Wiederholbar heißt nicht automatisch richtig",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Eigener Soll-Ist-Fall: Auf probe-a ist das gewünschte Paket schon vorhanden, auf probe-b fehlt es. Ein geeignetes zustandsorientiertes Modul lässt den passenden Zustand bestehen und stellt den fehlenden her. Danach sind beide im Soll. Bei unveränderter Umgebung sollte derselbe Sollzustand keinen weiteren Eingriff benötigen. Das ist das Ziel idempotenter Konfiguration, keine Garantie für beliebige Shell-Tasks.\n\nEin erfolgreich gemeldeter Paket-Task beweist noch nicht die erreichbare Anwendung. Prüfe die fachliche Wirkung gesondert. Auch eine wiederholbar falsche Zielauswahl bleibt falsch."
+        },
+        {
+          "type": "figure",
+          "diagramId": "pruefung",
+          "alt": "Sollzustand festlegen, Ziele und Vorschau prüfen, anschließend tatsächliche Wirkung kontrollieren.",
+          "caption": "Eigene Darstellung des Lernmodells."
+        },
+        {
+          "type": "quiz",
+          "id": "konfigurationsmanagement-iac-ansible-inventory-playbook-modul-rolle-uebung",
+          "question": "Eine Rolle enthält passende Tasks, der Play wählt aber die Produktionsgruppe statt der Testgruppe. Was ist das Problem?",
+          "options": [
+            {
+              "text": "Keines: Wiederverwendbare Rollen sind immer sicher.",
+              "rationale": "Der falsche Zielbereich bleibt gefährlich.",
+              "correct": false
+            },
+            {
+              "text": "Die Zielauswahl ist falsch, unabhängig von der Rolle.",
+              "rationale": "Richtig: Inhalt und Ziel müssen beide stimmen.",
+              "correct": true
+            },
+            {
+              "text": "Nur der Rollenname muss länger sein.",
+              "rationale": "Die Benennung korrigiert die Auswahl nicht.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Prüfmodus und Werkzeugwahl",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ansible-Check-Mode schätzt Änderungen für unterstützende Module ab. Nicht unterstützte Tasks können ausbleiben; abhängige Ergebnisse sind begrenzt. Besonders wichtig: Ein Task mit `check_mode: false` kann trotz globalem Check-Modus real ausgeführt werden. Prüfe fremde Playbooks deshalb zuerst; „Check“ ist keine universelle Sicherheitsgrenze. Diff-Ausgaben können sensible Inhalte zeigen.\n\n| Werkzeug | Typischer Schwerpunkt |\n| --- | --- |\n| Ansible | Geordnete Automatisierung mit Plays und wiederverwendbaren Rollen; gewöhnlich ohne dauerhaft installierten Ansible-Agenten auf Zielen |\n| Puppet | Gewünschte Ressourcenzustände; typische Agent-Server-Architektur mit Katalogen |\n| Chef Infra | Konfigurationsressourcen in Recipes/Cookbooks, durch den Client verarbeitet |\n| Terraform | Infrastrukturressourcen über Provider/API verwalten; Änderungen planen und anwenden |\n\nDas sind Schwerpunkte, keine exklusiven Grenzen. Eine mögliche Kombination: Terraform erstellt virtuelle Ressourcen, Ansible konfiguriert darin den Dienst. Terraform-State und Zugangsdaten sind sensible Betriebsdaten. Auswahlentscheidungen hängen von vorhandener Umgebung, Kompetenzen und Anforderungen ab; die alte Buchvergleichstabelle ist keine aktuelle Produktempfehlung."
+        }
+      ]
+    },
+    {
+      "title": "Selbst ordnen und erklären",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "konfigurationsmanagement-iac-ansible-inventory-playbook-modul-rolle-reihenfolge",
+          "title": "Ablauf ordnen",
+          "prompt": "Ordne den geplanten Ablauf für eine freigegebene Testumgebung.",
+          "steps": [
+            {
+              "id": "abschluss",
+              "label": "Begrenzt ausführen und tatsächliche Funktion prüfen"
+            },
+            {
+              "id": "start",
+              "label": "Sollzustand und ausgewählte Testhosts festlegen"
+            },
+            {
+              "id": "pruefen",
+              "label": "Tasks, Rechte und unterstützte Vorabprüfung kontrollieren"
+            }
+          ],
+          "expected": [
+            "start",
+            "pruefen",
+            "abschluss"
+          ],
+          "correctFeedback": "Richtig: Voraussetzungen, Prüfung und Abschluss stehen in der vorgesehenen Reihenfolge.",
+          "wrongFeedback": "Prüfe die Voraussetzungen: Der letzte Schritt darf die vorherige Prüfung nicht überspringen."
+        },
+        {
+          "type": "recall",
+          "id": "konfigurationsmanagement-iac-ansible-inventory-playbook-modul-rolle-begruendung",
+          "title": "Aus dem Gedächtnis erklären",
+          "prompt": "Erkläre den Unterschied zwischen Inventory und Rolle. Warum reicht ein unauffälliger Check-Mode-Lauf nicht als Freigabe für beliebige Produktionshosts?",
+          "label": "Deine Erklärung",
+          "minLength": 70,
+          "model": "Inventory beschreibt verfügbare Ziele und Gruppen; eine Rolle bündelt wiederverwendbaren Inhalt. Die Zielauswahl des Plays muss geprüft sein. Check-Mode deckt nicht jede Aufgabe oder Abhängigkeit ab und kann durch taskbezogene Einstellungen umgangen werden. Deshalb sind Inhaltsprüfung, begrenzter Test und Funktionsnachweis erforderlich."
+        },
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "konfigurationsmanagement-iac-ansible-inventory-playbook-modul-rolle-karte-0",
+              "label": "Abruf 1",
+              "front": "Was bündelt eine Rolle?",
+              "back": "Wiederverwendbare Inhalte wie Tasks, Variablen und Vorlagen; sie ist kein Hostinventar."
+            },
+            {
+              "id": "konfigurationsmanagement-iac-ansible-inventory-playbook-modul-rolle-karte-1",
+              "label": "Abruf 2",
+              "front": "Ist jedes Ansible-Playbook idempotent?",
+              "back": "Nein. Es hängt von Tasks, Modulen und dem beschriebenen Verhalten ab."
+            },
+            {
+              "id": "konfigurationsmanagement-iac-ansible-inventory-playbook-modul-rolle-karte-2",
+              "label": "Abruf 3",
+              "front": "Ist Terraform nur ein Shell-Skript?",
+              "back": "Nein. Es beschreibt Ressourcen und plant deren Änderungen über Provider."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "konfigurationsmanagement-iac-ansible-inventory-playbook-modul-rolle-transfer-a",
+          "question": "Inventory hat die Gruppen labor und produktion. Der Play wählt labor und bindet die Rolle basis ein. Welche Aussage stimmt?",
+          "options": [
+            {
+              "text": "basis ist automatisch eine weitere Hostgruppe.",
+              "rationale": "Eine Rolle bündelt Inhalte, nicht die Auswahl verfügbarer Hosts.",
+              "correct": false
+            },
+            {
+              "text": "Alle Hosts im Inventory werden immer geändert.",
+              "rationale": "Der Play beschränkt die Auswahl auf labor.",
+              "correct": false
+            },
+            {
+              "text": "Die Hosts aus labor erhalten die im Play eingebundenen Aufgaben.",
+              "rationale": "Inventory, Play und Rolle haben getrennte Zuständigkeiten.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "bausteine"
+        },
+        {
+          "type": "quiz",
+          "id": "konfigurationsmanagement-iac-ansible-inventory-playbook-modul-rolle-transfer-b",
+          "question": "Ein fremder Task setzt check_mode: false. Wie beurteilst du einen globalen Check-Lauf?",
+          "options": [
+            {
+              "text": "Der Task kann real ausgeführt werden; vorab Inhalt und Ziel prüfen.",
+              "rationale": "Die Einstellung kann den globalen Prüfmodus für diesen Task aufheben.",
+              "correct": true
+            },
+            {
+              "text": "Änderungen sind unter allen Umständen ausgeschlossen.",
+              "rationale": "Das übersieht die explizite Ausnahme.",
+              "correct": false
+            },
+            {
+              "text": "Der Modus garantiert zusätzlich die fachliche Dienstfunktion.",
+              "rationale": "Eine Vorschau ersetzt keinen Funktionsnachweis.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "grenzen"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Buchkontext: ITLF10–12, ausgewählte OCR-Ausschnitte der PDF-Seiten 127, 128 und 134. Abgleich am 17.09.2026: [Ansible-Begriffe](https://docs.ansible.com/projects/ansible/latest/getting_started/basic_concepts.html), [Check-Mode](https://docs.ansible.com/projects/ansible/latest/playbook_guide/playbooks_checkmode.html), [Terraform](https://developer.hashicorp.com/terraform/intro), [Puppet](https://help.puppet.com/core/current/Content/PuppetCore/architecture.htm), [Chef](https://docs.chef.io/client/19/overview/chef_overview/). Eigene Papierfälle. Keine Modulzählungen, keine produktive Installationsanleitung und keine Ausführung auf echten Hosts."
+        }
+      ]
+    }
+  ]
+}

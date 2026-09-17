@@ -48,6 +48,7 @@ try {
   await import('./verify-control-structures-browser.mjs');
   await import('./verify-variables-browser.mjs');
   await import('./verify-data-formats-browser.mjs');
+  await import('./verify-automation-batch-browser.mjs');
   await import('./verify-space-browser.mjs');
 } finally {
   await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));

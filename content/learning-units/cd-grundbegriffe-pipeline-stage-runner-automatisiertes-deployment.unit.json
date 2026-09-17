@@ -1,0 +1,347 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "cd-grundbegriffe-pipeline-stage-runner-automatisiertes-deployment",
+    "slug": "cd-grundbegriffe-pipeline-stage-runner-automatisiertes-deployment",
+    "title": "CI/CD: vom Commit zur geprüften Bereitstellung",
+    "description": "Pipeline, Stage, Job und Runner zuordnen und entscheiden, wann ein Deployment starten darf.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-9",
+    "groupLabel": "Programme zur automatisierten Systemverwaltung",
+    "itemId": "ga1-9__14",
+    "week": "KW 43",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "sources": [
+      "gitlab-pipelines",
+      "gitlab-delivery"
+    ],
+    "contentRevision": "2026-09-17.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "ablauf",
+      "label": "Stage-Abhängigkeiten einer einfachen Pipeline bestimmen"
+    },
+    {
+      "id": "freigabe",
+      "label": "Prüfergebnis und Deployment-Freigabe unterscheiden"
+    }
+  ],
+  "intro": "Pipeline, Stage, Job und Runner zuordnen und entscheiden, wann ein Deployment starten darf. Du bearbeitest eigene Papierfälle; es werden keine echten Systeme verändert.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "gitlab-pipelines",
+        "sourceLocator": "Einleitung, Pipelines are composed of, Basic pipelines",
+        "use": "Jobs, Stages, Runner und Standard-Abfolge",
+        "reviewStatus": "Begrenzter Abschnitt am 17.09.2026 gelesen und abgeglichen"
+      },
+      {
+        "sourceId": "gitlab-delivery",
+        "sourceLocator": "Deployment strategy",
+        "use": "Manuelle Produktionsfreigabe gegenüber automatischem Deployment",
+        "reviewStatus": "Begrenzter Abschnitt am 17.09.2026 gelesen und abgeglichen"
+      }
+    ],
+    "notes": [
+      "Eigene Beispiele, Aufgaben und Grafiken. Menschliche Fach- und Verständlichkeitsfreigabe offen.",
+      "Buch-Batch 011–014: RACI-, Java- und Stellenanzeigen-Treffer nicht als technische CI/CD-Belege übernommen. Zeitmodell ohne Queue-/Transferzeiten und ohne needs/allow_failure-Ausnahmen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "ablauf",
+      "title": "Einfaches Stage-Modell",
+      "type": "flow",
+      "items": [
+        {
+          "label": "Build · 2 min",
+          "detail": "Ein Paket erzeugen"
+        },
+        {
+          "label": "Tests · 5 min",
+          "detail": "Lint 1 min und Test 5 min parallel"
+        },
+        {
+          "label": "Deploy · 1 min",
+          "detail": "Erst nach erfolgreichen Pflichtjobs"
+        }
+      ]
+    },
+    {
+      "id": "rollen",
+      "title": "Wer macht was?",
+      "type": "layers",
+      "items": [
+        {
+          "label": "Pipeline",
+          "detail": "Gesamter definierter Durchlauf"
+        },
+        {
+          "label": "Stage / Job",
+          "detail": "Gruppe / konkrete ausführbare Aufgabe"
+        },
+        {
+          "label": "Runner",
+          "detail": "Führt einen zugewiesenen Job aus"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "cd-grundbegriffe-pipeline-stage-runner-automatisiertes-deployment-diagnose",
+          "question": "Was führt in GitLab einen Job tatsächlich aus?",
+          "options": [
+            {
+              "text": "Der Branchname.",
+              "rationale": "Ein Verweis auf Code ist kein Ausführungsdienst.",
+              "correct": false
+            },
+            {
+              "text": "Ein geeigneter Runner.",
+              "rationale": "Richtig: Er führt den zugewiesenen Job aus.",
+              "correct": true
+            },
+            {
+              "text": "Die Stage als Dateiformat.",
+              "rationale": "Eine Stage gruppiert Jobs.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Begriffe am Ablauf verstehen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Continuous Integration bedeutet, Änderungen regelmäßig zusammenzuführen und automatisiert zu prüfen. Continuous Delivery hält einen geprüften Stand zur Auslieferung bereit; die Produktionsfreigabe kann manuell bleiben. Continuous Deployment automatisiert auch diesen Schritt nach den vorgesehenen Prüfungen.\n\nEine Pipeline umfasst Jobs und ihre Regeln. Ein Job ist eine konkrete Aufgabe, etwa ein Testlauf. Eine Stage gruppiert Jobs. Ein Runner stellt die Ausführung bereit. Ohne passenden verfügbaren Runner kann ein Job warten, obwohl die Konfiguration korrekt ist."
+        },
+        {
+          "type": "figure",
+          "diagramId": "rollen",
+          "alt": "Pipeline ist der Gesamtablauf, Stage gruppiert Jobs, Runner führt Jobs aus.",
+          "caption": "Eigene Darstellung des Lernmodells."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Hier gilt ein bewusst einfaches GitLab-Stage-Modell: build, test, deploy. Alle Jobs sind verpflichtend und erfolgreich; spätere Stages warten auf die vorherige. Jobs derselben Stage können bei ausreichender Kapazität parallel laufen. Andere Abhängigkeiten oder Fehlerregeln sind möglich, aber nicht Teil unserer Rechnung."
+        }
+      ]
+    },
+    {
+      "title": "Laufzeit zuerst vorhersagen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Unser Build dauert zwei Minuten. Danach laufen Lint mit einer Minute und Tests mit fünf Minuten gleichzeitig. Deployment benötigt eine Minute. Schätze die Gesamtdauer, bevor du die Rechnung liest.\n\nNach Minute zwei ist der Build fertig. Lint endet bei Minute drei; Tests erst bei Minute sieben. Die Deploy-Stage beginnt daher bei Minute sieben und endet bei Minute acht. Nicht alle Jobzeiten werden addiert: Innerhalb der parallelen Stage bestimmt der längere Job die Wartezeit."
+        },
+        {
+          "type": "figure",
+          "diagramId": "ablauf",
+          "alt": "Build zwei Minuten, parallele Tests maximal fünf Minuten, danach Deployment eine Minute.",
+          "caption": "Eigene Darstellung des Lernmodells."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Gesamtdauer gleich zwei plus Maximum von eins und fünf plus eins gleich acht Minuten.",
+          "mathml": "<math display=\"block\"><mrow><mi>T</mi><mo>=</mo><mn>2</mn><mo>+</mo><mi>max</mi><mo>(</mo><mn>1</mn><mo>,</mo><mn>5</mn><mo>)</mo><mo>+</mo><mn>1</mn><mo>=</mo><mn>8</mn></mrow></math>",
+          "legend": [
+            "Alle Zeiten in Minuten",
+            "Ohne Wartezeit, Startaufwand und Übertragung; genügend Runner-Kapazität"
+          ]
+        },
+        {
+          "type": "numeric",
+          "id": "cd-grundbegriffe-pipeline-stage-runner-automatisiertes-deployment-zahl",
+          "title": "Anderer Durchlauf",
+          "prompt": "Build 3 Minuten; zwei gleichzeitig startende Testjobs 2 und 6 Minuten; danach Deploy 1 Minute. Keine Wartezeiten. Wie lange dauert die Pipeline insgesamt?",
+          "label": "Minuten",
+          "expected": 10,
+          "tolerance": 0,
+          "correctFeedback": "Drei plus sechs plus eins: zehn Minuten. Die Testjobs überlappen sich.",
+          "wrongFeedback": "Addiere die Stage-Dauern; für die parallele Test-Stage zählt der längere Job.",
+          "misconceptions": [
+            {
+              "value": 12,
+              "feedback": "Das wäre die Summe aller Jobs ohne parallele Ausführung."
+            },
+            {
+              "value": 6,
+              "feedback": "Sechs ist nur die Test-Stage; Build und Deploy fehlen."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Fehler und Freigaben",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Im Lernmodell schlägt der Testjob fehl. Dann wird das normale Deployment nicht gestartet. Prüfe die erste relevante Fehlermeldung und korrigiere die Ursache; ein erneuter Lauf ist kein Ersatz für Ursachenanalyse. Ein fehlender Runner ist dagegen zunächst ein Ausführungsproblem, kein Beweis für fehlerhaften Code.\n\nEigener Freigabefall: Commit C liefert Paket P. Genau P wurde getestet. Ein nachträglich neu erzeugtes Paket Q ist nicht automatisch durch diese Tests belegt. Für unseren Ablauf wird deshalb dasselbe geprüfte Paket freigegeben und bereitgestellt. Eine erfolgreiche Pipeline beweist nur ihre tatsächlich ausgeführten Prüfungen, nicht Fehlerfreiheit in jeder Umgebung."
+        },
+        {
+          "type": "quiz",
+          "id": "cd-grundbegriffe-pipeline-stage-runner-automatisiertes-deployment-uebung",
+          "question": "Ein Pflicht-Test scheitert im beschriebenen Standardablauf. Was soll passieren?",
+          "options": [
+            {
+              "text": "Deployment trotzdem starten, weil der Build erfolgreich war.",
+              "rationale": "Ein erfolgreicher Build ersetzt den Pflicht-Test nicht.",
+              "correct": false
+            },
+            {
+              "text": "Deployment bleibt gesperrt; Fehlerursache untersuchen.",
+              "rationale": "Richtig: Die geforderte Prüfung ist nicht bestanden.",
+              "correct": true
+            },
+            {
+              "text": "Die Stage einfach umbenennen.",
+              "rationale": "Das behebt die Fehlerursache nicht.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "Deployment ist die Bereitstellung in einer Zielumgebung. Ein Jobname allein schaltet keinen Dienst live. Für einen echten Ablauf müssen Ziel, Berechtigung, geprüftes Artefakt und Erfolgsnachweis feststehen. Zugangsdaten nicht in Repository oder Log schreiben. Unser Modell enthält keine echten Zugangsdaten und startet keine Pipeline."
+        }
+      ]
+    },
+    {
+      "title": "Selbst ordnen und erklären",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "cd-grundbegriffe-pipeline-stage-runner-automatisiertes-deployment-reihenfolge",
+          "title": "Ablauf ordnen",
+          "prompt": "Ordne den vereinbarten Delivery-Ablauf.",
+          "steps": [
+            {
+              "id": "abschluss",
+              "label": "Dasselbe Paket nach Freigabe bereitstellen"
+            },
+            {
+              "id": "start",
+              "label": "Paket aus dem festgelegten Commit bauen"
+            },
+            {
+              "id": "pruefen",
+              "label": "Dieses Paket mit Pflichtprüfungen testen"
+            }
+          ],
+          "expected": [
+            "start",
+            "pruefen",
+            "abschluss"
+          ],
+          "correctFeedback": "Richtig: Voraussetzungen, Prüfung und Abschluss stehen in der vorgesehenen Reihenfolge.",
+          "wrongFeedback": "Prüfe die Voraussetzungen: Der letzte Schritt darf die vorherige Prüfung nicht überspringen."
+        },
+        {
+          "type": "recall",
+          "id": "cd-grundbegriffe-pipeline-stage-runner-automatisiertes-deployment-begruendung",
+          "title": "Aus dem Gedächtnis erklären",
+          "prompt": "Erkläre, warum ein grüner Build weder einen grünen Test noch ein erlaubtes Produktionsdeployment beweist. Nenne außerdem die Rolle des Runners.",
+          "label": "Deine Erklärung",
+          "minLength": 70,
+          "model": "Build, Test und Deployment beantworten verschiedene Fragen. Der Build erzeugt ein Paket; Tests prüfen definierte Eigenschaften. Die Produktion benötigt die vereinbarte Freigabe und Zielkonfiguration. Runner führen Jobs aus; ihre Verfügbarkeit und Berechtigungen müssen passen."
+        },
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "cd-grundbegriffe-pipeline-stage-runner-automatisiertes-deployment-karte-0",
+              "label": "Abruf 1",
+              "front": "Was ist eine Stage?",
+              "back": "Eine Gruppe von Jobs im definierten Ablauf."
+            },
+            {
+              "id": "cd-grundbegriffe-pipeline-stage-runner-automatisiertes-deployment-karte-1",
+              "label": "Abruf 2",
+              "front": "Delivery oder Deployment?",
+              "back": "Bei Delivery kann die Produktionsfreigabe manuell bleiben; Continuous Deployment automatisiert sie nach den vorgesehenen Gates."
+            },
+            {
+              "id": "cd-grundbegriffe-pipeline-stage-runner-automatisiertes-deployment-karte-2",
+              "label": "Abruf 3",
+              "front": "Worauf bezieht sich ein Testergebnis?",
+              "back": "Auf den tatsächlich geprüften Stand beziehungsweise das geprüfte Artefakt und die ausgeführten Tests."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "cd-grundbegriffe-pipeline-stage-runner-automatisiertes-deployment-transfer-a",
+          "question": "Build ist fertig. In der Test-Stage ist Lint grün, der zweite Pflichtjob läuft noch. Darf Deploy im Lernmodell starten?",
+          "options": [
+            {
+              "text": "Ja, ein grüner Job genügt.",
+              "rationale": "Beide Pflichtjobs müssen erfolgreich enden.",
+              "correct": false
+            },
+            {
+              "text": "Ja, sofern Deploy weniger lange dauert.",
+              "rationale": "Die Dauer ersetzt keine Abhängigkeit.",
+              "correct": false
+            },
+            {
+              "text": "Nein, der zweite Pflichtjob muss erfolgreich enden.",
+              "rationale": "Die nächste Stage wartet auf die vollständige Pflichtprüfung.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "ablauf"
+        },
+        {
+          "type": "quiz",
+          "id": "cd-grundbegriffe-pipeline-stage-runner-automatisiertes-deployment-transfer-b",
+          "question": "Alle Tests sind grün, aber die vereinbarte manuelle Produktionsfreigabe fehlt. Welche Aussage passt?",
+          "options": [
+            {
+              "text": "Der Stand kann bereit zur Auslieferung sein; Produktion wartet auf Freigabe.",
+              "rationale": "Delivery bedeutet nicht zwingend automatische Produktionsbereitstellung.",
+              "correct": true
+            },
+            {
+              "text": "Grüne Tests erteilen automatisch jede Berechtigung.",
+              "rationale": "Technischer Erfolg ersetzt keine Freigaberegel.",
+              "correct": false
+            },
+            {
+              "text": "CI ist gescheitert, weil jemand freigeben muss.",
+              "rationale": "Manuelle Freigabe ist mit Delivery vereinbar.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "freigabe"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Technischer Abgleich: [GitLab-Pipelines](https://docs.gitlab.com/ci/pipelines/) und [Deployment-Strategien](https://docs.gitlab.com/topics/autodevops/prepare_deployment/), relevante Grundlagen am 17.09.2026 gelesen. Eigene Zeit- und Freigabefälle. Die Rechnung setzt ausreichend parallele Ausführungskapazität voraus. Abhängigkeiten mit needs, optionale Jobs, Artefaktkonfiguration und produktive Sicherheitsregeln brauchen zusätzliche Planung."
+        }
+      ]
+    }
+  ]
+}
