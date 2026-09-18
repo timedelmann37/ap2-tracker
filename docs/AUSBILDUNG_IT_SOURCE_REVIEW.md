@@ -398,6 +398,12 @@ Buchtreffer ausgeschlossen; Primärdokumentation begrenzt abgeglichen.
 Tests und gezielte Browserprüfung bestanden. Details: `learning-prep/GA1_LVM.md`.
 Stand 135/380 Lernentwürfe; menschliche Freigabe offen.
 
+Deduplizierung/Komprimierung/Thin Provisioning (`ga1-3__9`) ergänzt:
+eigene Blockmodelle, Einsparrechnung und Überbelegungsfall mit Monitoring.
+Primärquellen begrenzt geprüft, unpassende Buchtreffer ausgeschlossen.
+Tests und gezielter Browserlauf bestanden. Details:
+`learning-prep/GA1_STORAGE_EFFICIENCY.md`. Stand 136/380 Lernentwürfe.
+
 Noch nicht umgesetzt: die weiteren Zuordnungsvorschläge für
 WiSo und weitere GA1-Themengruppen. Die URL-Inventur bleibt
 eine Lesewarteschlange und wird durch diesen Batch nicht pauschal als geprüft

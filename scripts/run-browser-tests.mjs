@@ -57,6 +57,7 @@ try {
   await import('./verify-write-penalty-browser.mjs');
   await import('./verify-filesystems-browser.mjs');
   await import('./verify-lvm-browser.mjs');
+  await import('./verify-storage-efficiency-browser.mjs');
   await import('./verify-space-browser.mjs');
 } finally {
   await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
