@@ -367,6 +367,31 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "legacy-markdown"
   },
   {
+    "id": "rto-rpo-definition-abgrenzung-zuordnung-anforderungen",
+    "slug": "rto-rpo-definition-abgrenzung-zuordnung-anforderungen",
+    "title": "RTO und RPO: Ausfallzeit und Datenstand getrennt planen",
+    "description": "Wiederanlaufziele in messbare Anforderungen übersetzen und mit einem Ausfallprotokoll vergleichen.",
+    "domain": "GA1",
+    "groupId": "ga1-4",
+    "groupLabel": "Backup, Recovery und Notfallvorsorge",
+    "itemId": "ga1-4__4",
+    "week": "KW 38",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-18.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "zuordnen",
+      "pruefen"
+    ],
+    "sources": [
+      "recovery-nist-rto",
+      "recovery-nist-rpo"
+    ],
+    "contentHash": "fbd9c82e17488dcce3188fdd6f27f08e32a2b615c93e2395c2ab2650199e8003",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "backup-window",
     "slug": "backup-window",
     "title": "Backup-Fenster mit Datenrate und Engpass berechnen",

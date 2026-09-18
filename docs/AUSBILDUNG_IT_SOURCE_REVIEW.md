@@ -414,6 +414,8 @@ Am 18.09.2026 ergänzt: Kapazitätsplanung (`ga1-3__11`) als CURATED_DRAFT mit W
 
 Am 18.09.2026 ergänzt: Archivierung (`ga1-3__12`) als CURATED_DRAFT mit Prozessprüfung, Frist-Modellrechnung und HSM/Stub/Recall. Ausgewählte AO-/GoBD-Grundlagen und IBM-Funktionsbeschreibung geprüft; pauschale Buch-Fristangabe nicht übernommen. Eigene Grafiken und Übungen, statische Tests und gezielte Browserprüfung bestanden. Rechtsprüfung bleibt ausdrücklich begrenzt; menschliche Freigabe offen. Details: `docs/learning-prep/GA1_ARCHIVING.md`. Speicherlösungen 13/13 Lernentwürfe; insgesamt 139/380. Keine Veröffentlichung.
 
+Am 18.09.2026 ergänzt: RTO/RPO (`ga1-4__4`) als CURATED_DRAFT mit getrennten Zielwerten, Ausfallprotokollen, Zahlenübung, zwei Grafiken und MathML. NIST-Begriffsdefinitionen geprüft; themenfremde Buchtreffer ausgeschlossen. Statische Tests und gezielte Browserprüfung bestanden. Details: `docs/learning-prep/GA1_RTO_RPO.md`. Stand 140/380 Lernentwürfe; menschliche Freigabe offen, keine Veröffentlichung.
+
 Noch nicht umgesetzt: die weiteren Zuordnungsvorschläge für
 WiSo und weitere GA1-Themengruppen. Die URL-Inventur bleibt
 eine Lesewarteschlange und wird durch diesen Batch nicht pauschal als geprüft
