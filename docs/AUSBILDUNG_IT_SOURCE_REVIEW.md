@@ -416,6 +416,8 @@ Am 18.09.2026 ergänzt: Archivierung (`ga1-3__12`) als CURATED_DRAFT mit Prozess
 
 Am 18.09.2026 ergänzt: RTO/RPO (`ga1-4__4`) als CURATED_DRAFT mit getrennten Zielwerten, Ausfallprotokollen, Zahlenübung, zwei Grafiken und MathML. NIST-Begriffsdefinitionen geprüft; themenfremde Buchtreffer ausgeschlossen. Statische Tests und gezielte Browserprüfung bestanden. Details: `docs/learning-prep/GA1_RTO_RPO.md`. Stand 140/380 Lernentwürfe; menschliche Freigabe offen, keine Veröffentlichung.
 
+Am 18.09.2026 ergänzt: Backup-Auswahl im Szenario (`ga1-4__1`) als CURATED_DRAFT. Eigene Mengen-/Restore-Modelle vergleichen Sicherungsfenster und RTO, einschließlich eines Falls ohne geeigneten Kandidaten. IBM-Methodengrundlagen geprüft; unpassende Buchtreffer ausgeschlossen. Grafiken, MathML, Übungen, statische Tests und gezielte Browserprüfung abgeschlossen. Details: `docs/learning-prep/GA1_BACKUP_CHOICE.md`. Stand 141/380, menschliche Freigabe offen, keine Veröffentlichung.
+
 Noch nicht umgesetzt: die weiteren Zuordnungsvorschläge für
 WiSo und weitere GA1-Themengruppen. Die URL-Inventur bleibt
 eine Lesewarteschlange und wird durch diesen Batch nicht pauschal als geprüft

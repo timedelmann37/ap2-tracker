@@ -62,6 +62,7 @@ try {
   await import('./verify-capacity-browser.mjs');
   await import('./verify-archive-browser.mjs');
   await import('./verify-rto-browser.mjs');
+  await import('./verify-backup-choice-browser.mjs');
   await import('./verify-space-browser.mjs');
 } finally {
   await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));

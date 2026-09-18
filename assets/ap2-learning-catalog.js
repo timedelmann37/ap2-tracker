@@ -367,6 +367,30 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "legacy-markdown"
   },
   {
+    "id": "szenario-passende-kombination-wahlen-begrunden",
+    "slug": "szenario-passende-kombination-wahlen-begrunden",
+    "title": "Backup-Verfahren im Szenario begründet auswählen",
+    "description": "Sicherungsfenster, Restore-Kette und Wiederanlaufziel gemeinsam prüfen statt pauschal ein Verfahren zu bevorzugen.",
+    "domain": "GA1",
+    "groupId": "ga1-4",
+    "groupLabel": "Backup, Recovery und Notfallvorsorge",
+    "itemId": "ga1-4__1",
+    "week": "KW 38",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-18.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "auswahl",
+      "grenzen"
+    ],
+    "sources": [
+      "backup-choice-ibm"
+    ],
+    "contentHash": "9a7f39bcfe91754a10439f6f951b66d00e5903983ff562d308916fb32b688283",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "rto-rpo-definition-abgrenzung-zuordnung-anforderungen",
     "slug": "rto-rpo-definition-abgrenzung-zuordnung-anforderungen",
     "title": "RTO und RPO: Ausfallzeit und Datenstand getrennt planen",
