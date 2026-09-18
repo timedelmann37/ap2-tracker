@@ -1,0 +1,370 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "software-defined-storage-verteilte-systeme-replikation-vs-erasure",
+    "slug": "software-defined-storage-verteilte-systeme-replikation-vs-erasure",
+    "title": "Verteilte Speicher: Kopien, Erasure Coding und Ausfallbereiche",
+    "description": "Speicherbedarf und Ausfalltoleranz gemeinsam beurteilen, statt die Anzahl der Server mit Sicherheit gleichzusetzen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-3",
+    "groupLabel": "Speicherlösungen",
+    "itemId": "ga1-3__10",
+    "week": "KW 37",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": [
+      "sds-ceph-ec",
+      "sds-ceph-arch"
+    ],
+    "contentRevision": "2026-09-18.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "kapazitaet",
+      "label": "Replikations- und Erasure-Coding-Bedarf berechnen"
+    },
+    {
+      "id": "ausfall",
+      "label": "Ausfallbereiche und Dienstverfügbarkeit getrennt beurteilen"
+    }
+  ],
+  "intro": "Speicherbedarf und Ausfalltoleranz gemeinsam beurteilen, statt die Anzahl der Server mit Sicherheit gleichzusetzen. Du vergleichst eigene Cluster-Modelle; kein echter Cluster wird konfiguriert.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "sds-ceph-ec",
+        "sourceLocator": "Einleitung, Erasure-code profiles, overhead und recovery",
+        "use": "Kopien/Fragmente, Platzierung, Kapazitätsmodell und Betriebsgrenzen",
+        "reviewStatus": "Ausgewählte Abschnitte am 18.09.2026 gelesen"
+      },
+      {
+        "sourceId": "sds-ceph-arch",
+        "sourceLocator": "Einleitung, Cluster-Komponenten und Erasure Coding",
+        "use": "Kopien/Fragmente, Platzierung, Kapazitätsmodell und Betriebsgrenzen",
+        "reviewStatus": "Ausgewählte Abschnitte am 18.09.2026 gelesen"
+      }
+    ],
+    "notes": [
+      "Eigene Beispiele und Grafiken; menschliche Fachfreigabe offen.",
+      "Zunächst latest-Dokumentation entdeckt, wegen Entwicklungsversion für Inhalte auf versionierte Squid-Dokumentation gewechselt. Keine Defaults oder Tuningempfehlungen verallgemeinert.",
+      "Buchbatch ga1-3-010-010 enthält historische IHK-Bonn-SAN-/NAS-Produktangaben, keine belastbare EC-/SDS-Grundlage. Ausgeschlossen; offene Referenzen bleiben offen.",
+      "EC-Fälle nehmen idealisiertes Reed-Solomon mit je einem Fragment pro Host und intakten verbleibenden Fragmenten desselben Datenstands an. Keine Quorum- oder Schreibfreigabe aus Fragmentzahl abgeleitet."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "schutz",
+      "title": "Vollständige Kopien oder Fragmente?",
+      "type": "comparison",
+      "items": [
+        {
+          "label": "Dreifache Replikation",
+          "detail": "3 vollständige Kopien desselben Objekts"
+        },
+        {
+          "label": "Erasure Coding 4+2",
+          "detail": "4 Datenfragmente plus 2 Codierungsfragmente"
+        }
+      ]
+    },
+    {
+      "id": "racks",
+      "title": "Sechs Hosts sind nicht sechs Racks",
+      "type": "comparison",
+      "items": [
+        {
+          "label": "Rack A",
+          "detail": "D1, D2, D3 auf 3 Hosts"
+        },
+        {
+          "label": "Rack B",
+          "detail": "D4 und P1 auf 2 Hosts"
+        },
+        {
+          "label": "Rack C",
+          "detail": "P2 auf 1 Host"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "software-defined-storage-verteilte-systeme-replikation-vs-erasure-diagnose",
+          "question": "Drei Kopien liegen auf drei Servern im selben Rack. Was ist damit noch nicht nachgewiesen?",
+          "options": [
+            {
+              "text": "Dass drei vollständige Kopien existieren können.",
+              "rationale": "Das ist durchaus möglich, aber nicht die offene Schutzfrage.",
+              "correct": false
+            },
+            {
+              "text": "Schutz gegen den vollständigen Ausfall dieses Racks.",
+              "rationale": "Richtig: Eine gemeinsame Abhängigkeit kann alle Kopien treffen.",
+              "correct": true
+            },
+            {
+              "text": "Dass die Server Dateien speichern können.",
+              "rationale": "Die relevante Frage ist die Platzierung, nicht die Dateifähigkeit.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Was Software-defined Storage hier bedeutet",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Bei **Software-defined Storage (SDS)** steuert Software wesentliche Speicherfunktionen wie Bereitstellung, Platzierung und Schutz über eine abstrakte Verwaltungsschicht. In einem verteilten System übernehmen mehrere Knoten diese Aufgaben gemeinsam. SDS bedeutet nicht „ohne Hardware“ und auch nicht automatisch „ausfallsicher“.\n\nCeph ist ein Beispiel: Speicherprozesse auf Knoten verwalten Daten und deren Verteilung; weitere Dienste halten Clusterzustand und Metadaten bereit. Je nach Dienst kann derselbe Unterbau Objekt-, Block- oder Dateizugriff anbieten. Für eine reale Auswahl zählen Anwendungsunterstützung, Netzwerk, Betriebswissen und getestetes Ausfallverhalten – nicht nur die Zahl der Knoten."
+        }
+      ]
+    },
+    {
+      "title": "Replikation und Erasure Coding",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "schutz",
+          "alt": "Replikation speichert drei vollständige Kopien, EC 4+2 sechs Teilfragmente mit vier Daten- und zwei Codierungsfragmenten.",
+          "caption": "Eigene Modellanordnung, keine produktive Konfigurationsempfehlung."
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Replikation** hält mehrere vollständige Kopien. Bei Replikationsfaktor drei sind hier insgesamt drei Kopien gemeint, nicht ein Original plus drei weitere.\n\n**Erasure Coding (EC)** zerlegt Daten und berechnet zusätzliche Codierungsfragmente. Unser idealisiertes Reed-Solomon-Modell verwendet vier Datenfragmente und zwei Codierungsfragmente, kurz **4+2**. Aus beliebigen vier intakten Fragmenten desselben Datenstands lässt sich der Inhalt rekonstruieren. Zwei fehlende Fragmente sind im Modell tolerierbar; drei nicht mehr allgemein.\n\nDiese Aussage betrifft Rekonstruktion. Ob der Dienst weiter lesen oder schreiben darf, hängt zusätzlich von Clusterzustand und Betriebsregeln ab. Ein Codierungsfragment ist keine vollständige Kopie."
+        }
+      ]
+    },
+    {
+      "title": "Eigener Kapazitätsvergleich",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Archiv enthält 8 TiB Nutzdaten. Verglichen werden dreifache Replikation und EC 4+2. Alle Werte beziehen sich auf die Daten und ihren Schutz; Metadaten, Rundung, freie Betriebsreserve und weitere Kopien bleiben außen vor."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Replikation benötigt acht mal drei gleich 24 TiB.",
+          "mathml": "<math display=\"block\"><mrow><mn>8</mn><mo>·</mo><mn>3</mn><mo>=</mo><mn>24</mn></mrow></math>",
+          "legend": [
+            "Nutzdaten mal Gesamtzahl der Kopien; Ergebnis in TiB"
+          ]
+        },
+        {
+          "type": "math",
+          "ariaLabel": "EC benötigt acht mal vier plus zwei geteilt durch vier gleich zwölf TiB.",
+          "mathml": "<math display=\"block\"><mrow><mn>8</mn><mo>·</mo><mfrac><mrow><mn>4</mn><mo>+</mo><mn>2</mn></mrow><mn>4</mn></mfrac><mo>=</mo><mn>12</mn></mrow></math>",
+          "legend": [
+            "Allgemeiner Speicherfaktor: (k+m)/k; k Datenfragmente, m Codierungsfragmente"
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "EC braucht in diesem Vergleich weniger Platz, ist aber nicht kostenlos: Codierung und Wiederaufbau benötigen Rechenarbeit, Datenträgerzugriffe und Netzwerkverkehr. Schreiblatenz und Wiederaufbauzeit müssen zur Arbeitslast passen. Die Modellzahl ist daher noch keine Einkaufsgröße."
+        },
+        {
+          "type": "numeric",
+          "id": "software-defined-storage-verteilte-systeme-replikation-vs-erasure-zahl",
+          "title": "Jetzt du: größeres Archiv",
+          "prompt": "12 TiB Nutzdaten sollen mit EC 4+2 gespeichert werden. Wie viele TiB benötigt das gleiche ideale Datenmodell inklusive Codierungsfragmenten, aber ohne Metadaten und Betriebsreserve?",
+          "label": "Speicherbedarf in TiB",
+          "expected": 18,
+          "tolerance": 0,
+          "correctFeedback": "Der Faktor ist 6/4 beziehungsweise 1,5. Für 12 TiB werden 18 TiB benötigt.",
+          "wrongFeedback": "Die Nutzdaten entsprechen vier Datenfragmenten; zusätzliche zwei Fragmente erzeugen den Mehrbedarf.",
+          "misconceptions": [
+            {
+              "value": 72,
+              "feedback": "Sechs Fragmente sind keine sechs vollständigen Kopien."
+            },
+            {
+              "value": 36,
+              "feedback": "Das wäre dreifache Replikation, nicht EC 4+2."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Failure Domains: gemeinsam ausfallen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Eine **Failure Domain** ist ein Bereich, dessen Komponenten durch ein gemeinsames Ereignis ausfallen können: ein Datenträger, ein Host, ein Rack oder ein Standort. Gemeinsame Stromversorgung und Netzwerkpfade gehören in die Betrachtung.\n\nDie Platzierungsregel muss zum Schutzziel passen. Host-Trennung allein beweist keine Rack-Trennung. Unser eigener 4+2-Fall hat genau ein Fragment je Host, verteilt aber sechs Hosts ungleich auf drei Racks:"
+        },
+        {
+          "type": "figure",
+          "diagramId": "racks",
+          "alt": "Rack A enthält drei Fragmente, Rack B zwei und Rack C eines.",
+          "caption": "Eigene Modellanordnung, keine produktive Konfigurationsempfehlung."
+        },
+        {
+          "type": "markdown",
+          "markdown": "```text\nRack A: D1 D2 D3\nRack B: D4 P1\nRack C: P2\n```\n\nFällt Rack B vollständig aus, fehlen zwei Fragmente; vier bleiben erhalten. Die Daten sind im Modell rekonstruierbar. Fällt Rack A aus, fehlen drei; nur drei bleiben. Damit ist die zugesicherte Rekonstruktion nicht mehr gegeben.\n\nWer zwei Rack-Ausfälle abdecken will, darf nicht einfach „zwei Paritätsfragmente“ mit „zwei Racks“ gleichsetzen. Entscheidend ist, wie viele Fragmente jeder konkrete Ausfall entfernt. Eine Platzierung mit einem Fragment je Rack wäre ein anderes Modell und benötigte hier sechs entsprechende Bereiche."
+        },
+        {
+          "type": "quiz",
+          "id": "software-defined-storage-verteilte-systeme-replikation-vs-erasure-uebung",
+          "question": "Im dargestellten Fall fällt nur Rack A aus. Warum reicht „sechs Hosts vorhanden“ als Sicherheitsbegründung nicht?",
+          "options": [
+            {
+              "text": "Weil EC immer genau zwei vollständige Kopien speichert.",
+              "rationale": "Codierungsfragmente sind keine Vollkopien.",
+              "correct": false
+            },
+            {
+              "text": "Weil der einzelne Rack-Ausfall drei Fragmente gleichzeitig entfernt.",
+              "rationale": "Richtig: Die gemeinsame Abhängigkeit übersteigt das Zwei-Fragment-Budget.",
+              "correct": true
+            },
+            {
+              "text": "Weil jede Rack-Verteilung identisch wirkt.",
+              "rationale": "Die Anzahl betroffener Fragmente hängt gerade von der Verteilung ab.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Nach dem Ausfall ist die Arbeit nicht vorbei",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein noch rekonstruierbarer Datenbestand ist nicht wieder vollständig geschützt. Fehlende Kopien oder Fragmente müssen auf geeigneten verfügbaren Bereichen neu aufgebaut werden. Dafür braucht der Betrieb Platz, Bandbreite und Zeit. Ein weiterer Ausfall währenddessen kann die verbleibende Toleranz überschreiten.\n\nTeste deshalb nicht nur den gesunden Cluster, sondern auch Ausfall und Wiederaufbau unter Last. Prüfe zusätzlich die Erreichbarkeit und Funktionsfähigkeit der Kontroll- und Metadatendienste. „Daten vorhanden“ und „Dienst verfügbar“ sind zwei unterschiedliche Aussagen.\n\nWeder EC noch Replikation sind ein unabhängiges Backup. Eine logische Fehländerung oder Löschung kann vom System korrekt auf alle Kopien beziehungsweise Fragmente angewendet werden. Für ältere unveränderte Stände braucht es einen passenden Sicherungs- und Wiederherstellungsweg."
+        }
+      ]
+    },
+    {
+      "title": "Selbst ordnen und erklären",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "software-defined-storage-verteilte-systeme-replikation-vs-erasure-reihenfolge",
+          "title": "Ablauf ordnen",
+          "prompt": "Ordne die begründete Planung eines verteilten Speichers.",
+          "steps": [
+            {
+              "id": "abschluss",
+              "label": "Ausfall, Wiederaufbau und Restore unter Last nachweisen"
+            },
+            {
+              "id": "start",
+              "label": "Arbeitslast und zu überstehende Ausfallbereiche festlegen"
+            },
+            {
+              "id": "pruefen",
+              "label": "Schutzverfahren, Platzierung, Kapazität und Reserve planen"
+            }
+          ],
+          "expected": [
+            "start",
+            "pruefen",
+            "abschluss"
+          ],
+          "correctFeedback": "Richtig: Voraussetzungen, Prüfung und Abschluss stehen in der vorgesehenen Reihenfolge.",
+          "wrongFeedback": "Prüfe die Voraussetzungen: Der letzte Schritt darf die vorherige Prüfung nicht überspringen."
+        },
+        {
+          "type": "recall",
+          "id": "software-defined-storage-verteilte-systeme-replikation-vs-erasure-begruendung",
+          "title": "Aus dem Gedächtnis erklären",
+          "prompt": "Ein Anbieter sagt: „Wir haben sechs Server und EC 4+2; zwei Rack-Ausfälle sind also kein Problem.“ Welche Angaben fehlen für diese Zusage?",
+          "label": "Deine Erklärung",
+          "minLength": 70,
+          "model": "Ich brauche die tatsächliche Verteilung der Fragmente auf Racks und gemeinsame Strom-/Netzabhängigkeiten. Zwei fehlende Fragmente sind nicht automatisch zwei ausgefallene Racks: Ein Rack kann mehrere Fragmente enthalten. Außerdem sind Rekonstruierbarkeit, Dienstverfügbarkeit und Schreibfreigabe verschieden. Zu prüfen sind Kontrollkomponenten, Clusterregeln sowie Reserve und Zeit für den Wiederaufbau."
+        },
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "software-defined-storage-verteilte-systeme-replikation-vs-erasure-karte-0",
+              "label": "Abruf 1",
+              "front": "Was bedeutet 4+2 im Modell?",
+              "back": "Vier Datenfragmente und zwei zusätzliche Codierungsfragmente; insgesamt sechs."
+            },
+            {
+              "id": "software-defined-storage-verteilte-systeme-replikation-vs-erasure-karte-1",
+              "label": "Abruf 2",
+              "front": "Was ist eine Failure Domain?",
+              "back": "Ein gemeinsamer Ausfallbereich, etwa Host, Rack oder Standort."
+            },
+            {
+              "id": "software-defined-storage-verteilte-systeme-replikation-vs-erasure-karte-2",
+              "label": "Abruf 3",
+              "front": "Ersetzt Replikation ein Backup?",
+              "back": "Nein. Fehlerhafte Änderungen oder Löschungen können ebenfalls repliziert werden; unabhängige Wiederherstellung bleibt nötig."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "software-defined-storage-verteilte-systeme-replikation-vs-erasure-transfer-a",
+          "question": "Neuer Datenbestand: 20 TiB, EC 4+2, gleiche Modellannahmen. Welcher Datenbedarf ist richtig?",
+          "options": [
+            {
+              "text": "120 TiB.",
+              "rationale": "Hier wurden Fragmente mit Vollkopien verwechselt.",
+              "correct": false
+            },
+            {
+              "text": "20 TiB.",
+              "rationale": "Die Codierungsfragmente brauchen ebenfalls Platz.",
+              "correct": false
+            },
+            {
+              "text": "30 TiB.",
+              "rationale": "20 mal 6/4 ergibt 30 TiB vor zusätzlichen Reserven.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "kapazitaet"
+        },
+        {
+          "type": "quiz",
+          "id": "software-defined-storage-verteilte-systeme-replikation-vs-erasure-transfer-b",
+          "question": "Vier intakte Fragmente eines 4+2-Satzes sind verfügbar. Was darfst du daraus sicher ableiten?",
+          "options": [
+            {
+              "text": "Rekonstruktion ist im Modell möglich; Dienstbetrieb und Schreibfreigabe sind gesondert zu prüfen.",
+              "rationale": "Datenerhalt allein beantwortet die Betriebsfrage nicht.",
+              "correct": true
+            },
+            {
+              "text": "Alle Schreibvorgänge sind automatisch uneingeschränkt möglich.",
+              "rationale": "Clusterregeln und weitere Komponenten sind noch ungeprüft.",
+              "correct": false
+            },
+            {
+              "text": "Jeder weitere Rack-Ausfall ist unkritisch.",
+              "rationale": "Die verbleibende Schutzreserve kann bereits aufgebraucht sein.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "ausfall"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "[Ceph Squid: Erasure code](https://docs.ceph.com/en/squid/rados/operations/erasure-code/) · [Ceph Squid: Architecture](https://docs.ceph.com/en/squid/architecture/). Ausgewählte Abschnitte am 18.09.2026 gelesen. Versionierte Squid-Dokumentation statt Entwicklungsversion als Referenz verwendet. Keine aktuellen Default-, Tuning- oder Hardwareempfehlungen abgeleitet. Historische SAN-/NAS-Buchtreffer nicht als SDS-/EC-Beleg übernommen. Alle Zahlen und Rack-Anordnungen sind eigene Modelle. Menschliche Fachfreigabe offen."
+        }
+      ]
+    }
+  ]
+}

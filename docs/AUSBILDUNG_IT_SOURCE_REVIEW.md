@@ -404,6 +404,12 @@ Primärquellen begrenzt geprüft, unpassende Buchtreffer ausgeschlossen.
 Tests und gezielter Browserlauf bestanden. Details:
 `learning-prep/GA1_STORAGE_EFFICIENCY.md`. Stand 136/380 Lernentwürfe.
 
+Verteilte Speicher (`ga1-3__10`) ergänzt: Replikation/EC, Kapazitätsfälle
+und Rack-Ausfallmodell. Versionierte Ceph-Primärquellen begrenzt geprüft;
+historische Buchtreffer ausgeschlossen. Tests und Browserprüfung bestanden,
+Grafikbeschriftungen nach Sichtprüfung korrigiert. Details:
+`learning-prep/GA1_DISTRIBUTED_STORAGE.md`. Stand 137/380 Lernentwürfe.
+
 Noch nicht umgesetzt: die weiteren Zuordnungsvorschläge für
 WiSo und weitere GA1-Themengruppen. Die URL-Inventur bleibt
 eine Lesewarteschlange und wird durch diesen Batch nicht pauschal als geprüft
