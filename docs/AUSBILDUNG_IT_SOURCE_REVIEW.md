@@ -410,6 +410,8 @@ historische Buchtreffer ausgeschlossen. Tests und Browserprüfung bestanden,
 Grafikbeschriftungen nach Sichtprüfung korrigiert. Details:
 `learning-prep/GA1_DISTRIBUTED_STORAGE.md`. Stand 137/380 Lernentwürfe.
 
+Am 18.09.2026 ergänzt: Kapazitätsplanung (`ga1-3__11`) als CURATED_DRAFT mit Wachstumsmodell, Reserve-Prozentbasis, TB/TiB, zwei eigenen Grafiken und drei MathML-Formeln. NIST und Ceph-Squid-Primärabschnitte geprüft; unpassende Buchbatch-Treffer ausgeschlossen. Zahlenübung, Fehlerrückmeldungen, Abrufkarten und Transferchecks sowie gezielte Browserprüfung bestanden. Details: `docs/learning-prep/GA1_CAPACITY_PLANNING.md`. Keine menschliche Freigabe oder Veröffentlichung; Abdeckung 138/380.
+
 Noch nicht umgesetzt: die weiteren Zuordnungsvorschläge für
 WiSo und weitere GA1-Themengruppen. Die URL-Inventur bleibt
 eine Lesewarteschlange und wird durch diesen Batch nicht pauschal als geprüft

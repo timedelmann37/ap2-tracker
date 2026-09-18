@@ -290,6 +290,31 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "kapazitatsplanung-wachstum-reservekapazitat-bruttokapazitat-vs-nutzkapaz",
+    "slug": "kapazitatsplanung-wachstum-reservekapazitat-bruttokapazitat-vs-nutzkapaz",
+    "title": "Kapazitätsplanung: Wachstum, Reserve und TB/TiB",
+    "description": "Vom Datenbestand zur begründeten Speicherkapazität rechnen, ohne Einheiten und Reserve zu vermischen.",
+    "domain": "GA1",
+    "groupId": "ga1-3",
+    "groupLabel": "Speicherlösungen",
+    "itemId": "ga1-3__11",
+    "week": "KW 37",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-18.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "kapazitaet",
+      "einheiten"
+    ],
+    "sources": [
+      "capacity-nist-binary",
+      "capacity-ceph-reserve"
+    ],
+    "contentHash": "81a0f4238d15063fd4f36589f2496d85677512d20f8d843583f27883ea146966",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "backup-methods",
     "slug": "backup-methods",
     "title": "Sicherungsarten auswählen und Restore-Ketten beherrschen",
