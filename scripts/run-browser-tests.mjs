@@ -55,6 +55,7 @@ try {
   await import('./verify-nas-decision-browser.mjs');
   await import('./verify-object-storage-browser.mjs');
   await import('./verify-write-penalty-browser.mjs');
+  await import('./verify-filesystems-browser.mjs');
   await import('./verify-space-browser.mjs');
 } finally {
   await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));

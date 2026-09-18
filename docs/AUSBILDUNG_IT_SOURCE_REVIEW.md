@@ -386,6 +386,12 @@ drei MathML-Formeln. Dell-I/O-Modell begrenzt abgeglichen; ungeeignete
 Buchtreffer ausgeschlossen. Tests und gezielte Browserprüfung bestanden.
 Details: `learning-prep/GA1_WRITE_PENALTY.md`. Stand 133/380 Lernentwürfe.
 
+Dateisysteme (`ga1-3__7`) als Entwurf ergänzt: sechs Dateisysteme,
+Journal/Prüfsumme/Snapshot, Quotas und eigene Auswahlfälle. Sieben offizielle
+Quellen begrenzt geprüft; unpassende Buchtreffer ausgeschlossen. Tests und
+gezielte Browserprüfung bestanden. Details: `learning-prep/GA1_FILESYSTEMS.md`.
+Abdeckung 134/380; menschliche Fachfreigabe offen.
+
 Noch nicht umgesetzt: die weiteren Zuordnungsvorschläge für
 WiSo und weitere GA1-Themengruppen. Die URL-Inventur bleibt
 eine Lesewarteschlange und wird durch diesen Batch nicht pauschal als geprüft

@@ -1,0 +1,396 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs",
+    "slug": "dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs",
+    "title": "Dateisysteme: passend auswählen und Daten schützen",
+    "description": "NTFS, ReFS, ext4, XFS, ZFS und Btrfs einordnen; Journal, Prüfsumme, Snapshot und Quota unterscheiden.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-3",
+    "groupLabel": "Speicherlösungen",
+    "itemId": "ga1-3__7",
+    "week": "KW 37",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": [
+      "fs-refs",
+      "fs-ext4",
+      "fs-xfs",
+      "fs-btrfs",
+      "fs-zfs-concepts",
+      "fs-zfs-scrub",
+      "fs-ntfs-quota"
+    ],
+    "contentRevision": "2026-09-18.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "auswahl",
+      "label": "Ein Dateisystem anhand konkreter Anforderungen auswählen"
+    },
+    {
+      "id": "schutz",
+      "label": "Schutzfunktionen und Speichergrenzen richtig einordnen"
+    }
+  ],
+  "intro": "NTFS, ReFS, ext4, XFS, ZFS und Btrfs einordnen; Journal, Prüfsumme, Snapshot und Quota unterscheiden. Du bearbeitest Papierfälle; es wird kein Laufwerk formatiert.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "fs-refs",
+        "sourceLocator": "Resiliency, Supported deployments und Feature comparison",
+        "use": "Begrenzter fachlicher Abgleich der genannten Funktion",
+        "reviewStatus": "Ausgewählte Abschnitte am 18.09.2026 gelesen"
+      },
+      {
+        "sourceId": "fs-ext4",
+        "sourceLocator": "Einleitung und Data Mode",
+        "use": "Begrenzter fachlicher Abgleich der genannten Funktion",
+        "reviewStatus": "Ausgewählte Abschnitte am 18.09.2026 gelesen"
+      },
+      {
+        "sourceId": "fs-xfs",
+        "sourceLocator": "Einleitung, logdev und Quota-Mountoptionen",
+        "use": "Begrenzter fachlicher Abgleich der genannten Funktion",
+        "reviewStatus": "Ausgewählte Abschnitte am 18.09.2026 gelesen"
+      },
+      {
+        "sourceId": "fs-btrfs",
+        "sourceLocator": "Einleitung und Feature overview",
+        "use": "Begrenzter fachlicher Abgleich der genannten Funktion",
+        "reviewStatus": "Ausgewählte Abschnitte am 18.09.2026 gelesen"
+      },
+      {
+        "sourceId": "fs-zfs-concepts",
+        "sourceLocator": "ZFS File System Hierarchy und Snapshots",
+        "use": "Begrenzter fachlicher Abgleich der genannten Funktion",
+        "reviewStatus": "Ausgewählte Abschnitte am 18.09.2026 gelesen"
+      },
+      {
+        "sourceId": "fs-zfs-scrub",
+        "sourceLocator": "DESCRIPTION, Prüfsummen und Reparatur",
+        "use": "Begrenzter fachlicher Abgleich der genannten Funktion",
+        "reviewStatus": "Ausgewählte Abschnitte am 18.09.2026 gelesen"
+      },
+      {
+        "sourceId": "fs-ntfs-quota",
+        "sourceLocator": "Parameters und Remarks",
+        "use": "Begrenzter fachlicher Abgleich der genannten Funktion",
+        "reviewStatus": "Ausgewählte Abschnitte am 18.09.2026 gelesen"
+      }
+    ],
+    "notes": [
+      "Eigene Beispiele, Aufgaben und Grafiken; menschliche Fachfreigabe offen.",
+      "Buchbatch ga1-3-007-007 liefert VM-Backup-, RAID- und NTP-Kontext, aber keinen passenden Dateisystemvergleich. Nicht als Beleg übernommen. Snapshot im eigenen Pool ausdrücklich nicht mit unabhängigem Backup gleichgesetzt.",
+      "Versions- und Distributionsfreigaben vor realem Einsatz prüfen; keine Formatierungs- oder Reparaturbefehle."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "schutz",
+      "title": "Drei Funktionen, drei Aufgaben",
+      "type": "comparison",
+      "items": [
+        {
+          "label": "Journal",
+          "detail": "Änderungen konsistent verarbeiten"
+        },
+        {
+          "label": "Prüfsumme",
+          "detail": "Veränderte Daten erkennen"
+        },
+        {
+          "label": "Snapshot",
+          "detail": "Früheren Zustand festhalten"
+        }
+      ]
+    },
+    {
+      "id": "pruefen",
+      "title": "Erkennen ist noch nicht reparieren",
+      "type": "flow",
+      "items": [
+        {
+          "label": "Block prüfen",
+          "detail": "Gelesene Daten mit Prüfsumme abgleichen"
+        },
+        {
+          "label": "Gute Kopie suchen",
+          "detail": "Geeignete Redundanz muss vorhanden sein"
+        },
+        {
+          "label": "Ergebnis prüfen",
+          "detail": "Reparieren oder Wiederherstellung planen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-diagnose",
+          "question": "Ein Dateisystem besitzt ein Journal. Was folgt daraus?",
+          "options": [
+            {
+              "text": "Jede gelöschte Datei ist dauerhaft wiederherstellbar.",
+              "rationale": "Ein Journal ist kein vollständiges Versionsarchiv.",
+              "correct": false
+            },
+            {
+              "text": "Bestimmte Änderungen lassen sich nach einer Unterbrechung konsistent behandeln.",
+              "rationale": "Richtig: Welche Daten protokolliert werden, hängt vom Dateisystem und Modus ab.",
+              "correct": true
+            },
+            {
+              "text": "Ein Backup ist grundsätzlich unnötig.",
+              "rationale": "Ein Journal schützt nicht vor jedem Datenverlust.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Dateisystem, Volume und Freigabe",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Dateisystem organisiert Dateien, Namen, Verzeichnisse, Metadaten und die Belegung seines Speicherbereichs. Ein **Volume** stellt dafür Speicher bereit; eine **SMB-/NFS-Freigabe** macht Dateien über das Netzwerk zugänglich. Das sind unterschiedliche Aufgaben.\n\nEin Windows-Client kann eine SMB-Freigabe nutzen, deren Server seine Dateien auf einem Linux-Dateisystem ablegt. Der Client muss dafür nicht das lokale Datenträgerformat des Servers direkt lesen. Rechte, Identitäten und Unterstützung des Dateidienstes müssen trotzdem stimmen.\n\nWähle deshalb zuerst nach Serverbetriebssystem, Anwendungsfreigabe und benötigten Funktionen. Der modernste Name allein ist keine Begründung."
+        }
+      ]
+    },
+    {
+      "title": "Die sechs Kandidaten einordnen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "| Dateisystem | Einordnung für die Auswahl |\n| --- | --- |\n| NTFS | Allgemeiner Windows-Einsatz; unterstützt Startvolumes, Zugriffslisten und benutzerbezogene Datenträgerquotas |\n| ReFS | Windows-Speicheraufgaben mit Integritätsfunktionen; Metadatenprüfsummen, Dateidaten optional über Integrity Streams; kein Windows-Startvolume |\n| ext4 | Linux-Dateisystem mit Journaling; im üblichen ordered-Modus werden Metadaten journalisiert |\n| XFS | Linux-Journaling-Dateisystem mit Schwerpunkt auf Skalierbarkeit; Benutzer-, Gruppen- und Projektquotas möglich |\n| ZFS | Verbindet Speicherpools und Datasets; bietet Snapshots und Blockprüfsummen mit Reparatur bei geeigneter Redundanz |\n| Btrfs | Linux-Copy-on-Write-Dateisystem mit Subvolumes, Snapshots und Prüfsummen; geeignete redundante Kopien ermöglichen Reparatur |\n\nDas ist keine vollständige Kompatibilitätsmatrix. ReFS ist nicht einfach ein überall austauschbares NTFS: Die Microsoft-Vergleichstabelle führt beispielsweise native Datenträgerquotas und Bootfähigkeit nur für NTFS. Funktionen und Freigaben hängen von Version und Einsatz ab.\n\nFür ZFS und Btrfs gehören Pool-/Gerätelayout, Betriebserfahrung und Distributionssupport zur Auswahl. Ein Funktionsname allein sagt nicht, ob die Funktion aktiv ist oder alle Dateidaten abdeckt. Bei Btrfs sind insbesondere die RAID5/6-Profile laut aktueller Projektdokumentation nicht produktionsreif; aus der Funktionsliste folgt keine Empfehlung dafür."
+        }
+      ]
+    },
+    {
+      "title": "Journal, Prüfsumme, Snapshot",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "schutz",
+          "alt": "Journal für konsistente Änderungen, Prüfsumme zur Fehlererkennung, Snapshot für einen früheren Zustand.",
+          "caption": "Eigene begriffliche Darstellung; kein Produkt-Benchmark."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Ein **Journal** zeichnet Änderungen auf, damit das Dateisystem nach einer Unterbrechung seine Struktur konsistent behandeln kann. Daten- und Metadaten-Journaling sind nicht dasselbe. Es ist kein Versprechen, dass jeder zuletzt geschriebene Inhalt einen Stromausfall übersteht.\n\nEine **Prüfsumme** macht Abweichungen erkennbar. Daraus entstehen die ursprünglichen Nutzdaten nicht automatisch neu. Eine Reparatur braucht eine noch korrekte Kopie oder ausreichende Redundanz. ReFS kann dafür zum Beispiel geeignete Storage-Spaces-Redundanz nutzen; bei ZFS prüft ein Scrub die Blöcke und kann mit geeigneter Redundanz Fehler korrigieren."
+        },
+        {
+          "type": "figure",
+          "diagramId": "pruefen",
+          "alt": "Prüfsumme kontrollieren, brauchbare Redundanz suchen, Reparaturergebnis prüfen oder Restore planen.",
+          "caption": "Eigene begriffliche Darstellung; kein Produkt-Benchmark."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Ein **Snapshot** hält einen Zeitpunkt fest. Bei Copy-on-Write werden geänderte Blöcke neu abgelegt, während der ältere Stand weiter referenziert werden kann. Ein Snapshot ist dadurch nicht zwingend eine vollständige zweite Kopie. Änderungen können seinen zusätzlichen Platzbedarf wachsen lassen.\n\nEin Snapshot **im selben Pool** ist kein unabhängiges Backup: Geht der Pool verloren, fehlen auch seine Snapshots. Für Datenbanken ist zusätzlich zu prüfen, ob der Snapshot einen wiederherstellbaren Anwendungszustand enthält. Eine separate Sicherung muss den geforderten Restore tatsächlich ermöglichen."
+        },
+        {
+          "type": "quiz",
+          "id": "dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-uebung",
+          "question": "Ein ZFS-Pool meldet einen Prüfsummenfehler, aber es gibt keine brauchbare redundante Kopie. Was ist korrekt?",
+          "options": [
+            {
+              "text": "Die Prüfsumme rekonstruiert jede beschädigte Datei allein.",
+              "rationale": "Eine Prüfsumme ist keine vollständige Kopie des Inhalts.",
+              "correct": false
+            },
+            {
+              "text": "Erkennung ist möglich; automatische Reparatur ist damit nicht garantiert.",
+              "rationale": "Richtig: Es fehlt eine verlässliche Grundlage für die Wiederherstellung.",
+              "correct": true
+            },
+            {
+              "text": "Prüfsummen schützen nur vor zu langen Dateinamen.",
+              "rationale": "Sie prüfen Datenintegrität, nicht die Namenslänge.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quota: genug Platz und trotzdem kein Upload?",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Eine Quota begrenzt die Nutzung eines bestimmten Geltungsbereichs. NTFS-Datenträgerquotas werden pro Nutzer und Volume verwaltet; XFS kennt zusätzlich Gruppen- und Projektquotas. Andere Werkzeuge können Verzeichnisgrenzen umsetzen. Diese Mechanismen darf man nicht allein wegen des gemeinsamen Wortes „Quota“ gleichsetzen.\n\nWarnschwelle und erzwungene Obergrenze sind verschieden. Nur das Erfassen oder Warnen muss neue Schreibvorgänge noch nicht verhindern. Unser eigener Fall verwendet ausdrücklich eine **erzwungene harte Grenze**:\n\n```text\nNutzerin: Mara\nAngerechnete Nutzung: 8 GiB\nHarte Grenze: 10 GiB\nNeuer Upload: 3 GiB\nFreier Platz auf dem Volume: 500 GiB\n```\n\nDer Upload überschreitet Maras Quote trotz freien Volume-Platzes. Im Modell wird die gesamte zusätzliche Nutzdatenmenge angerechnet; Kompression, Metadaten und gemeinsam genutzte Blöcke bleiben außen vor."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Neue Nutzung gleich acht plus drei gleich elf GiB und damit größer als zehn GiB.",
+          "mathml": "<math display=\"block\"><mrow><mn>8</mn><mo>+</mo><mn>3</mn><mo>=</mo><mn>11</mn><mo>&gt;</mo><mn>10</mn></mrow></math>",
+          "legend": [
+            "Alle Größen in GiB; eigenes vereinfachtes Quota-Modell"
+          ]
+        },
+        {
+          "type": "numeric",
+          "id": "dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-zahl",
+          "title": "Restbudget statt freier Volume-Platz",
+          "prompt": "Wie viele GiB darf Mara vor dem Upload im Modell noch zusätzlich belegen, ohne die harte Grenze zu überschreiten?",
+          "label": "Zusätzlich belegbare GiB",
+          "expected": 2,
+          "tolerance": 0,
+          "correctFeedback": "Zwei GiB bleiben bis zur Grenze. Die 500 GiB Volume-Platz erhöhen Maras Quote nicht.",
+          "wrongFeedback": "Ziehe die angerechnete Nutzung von der harten Grenze ab, nicht vom freien Volume-Platz.",
+          "misconceptions": [
+            {
+              "value": 500,
+              "feedback": "Das ist der freie Volume-Platz, nicht das persönliche Quota-Restbudget."
+            },
+            {
+              "value": 3,
+              "feedback": "Der gewünschte Upload passt nicht vollständig in das Restbudget."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Zwei begründete Auswahlfälle",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**Fall A – Windows-Startvolume:** Gefordert sind ein unterstütztes Windows-Startvolume und native benutzerbezogene Datenträgerquotas. Zwischen NTFS und ReFS passt NTFS zu diesen Muss-Kriterien. „ReFS klingt robuster“ hebt die fehlende Bootfähigkeit nicht auf.\n\n**Fall B – Linux-Dateiserver:** Die freigegebene Distribution unterstützt ext4 und XFS, das Team beherrscht beide. Es benötigt ausdrücklich native XFS-Projektquotas, und die Anwendung ist für XFS freigegeben. XFS ist deshalb ein begründeter Kandidat. Vor Freigabe bleiben Lasttest, Backup/Restore und das Quota-Verhalten zu prüfen. Daraus folgt nicht, dass ext4 generell ungeeignet wäre.\n\nSind integrierte Snapshots und Prüfsummen zentrale Anforderungen, kommen auch ZFS oder Btrfs in die Prüfung – jedoch nur mit passender Plattformfreigabe, bewusstem Redundanzlayout und Wiederherstellungsplan. Keine dieser Funktionen ersetzt die anderen automatisch."
+        }
+      ]
+    },
+    {
+      "title": "Selbst ordnen und erklären",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-reihenfolge",
+          "title": "Ablauf ordnen",
+          "prompt": "Ordne die Auswahl für einen neuen Dateiserver.",
+          "steps": [
+            {
+              "id": "abschluss",
+              "label": "Ergebnisse dokumentieren und Betrieb freigeben"
+            },
+            {
+              "id": "start",
+              "label": "Betriebssystem, Anwendung und benötigte Funktionen erfassen"
+            },
+            {
+              "id": "pruefen",
+              "label": "Support, Quotas und Wiederherstellung im Test nachweisen"
+            }
+          ],
+          "expected": [
+            "start",
+            "pruefen",
+            "abschluss"
+          ],
+          "correctFeedback": "Richtig: Voraussetzungen, Prüfung und Abschluss stehen in der vorgesehenen Reihenfolge.",
+          "wrongFeedback": "Prüfe die Voraussetzungen: Der letzte Schritt darf die vorherige Prüfung nicht überspringen."
+        },
+        {
+          "type": "recall",
+          "id": "dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-begruendung",
+          "title": "Aus dem Gedächtnis erklären",
+          "prompt": "Ein Kollege meint: „Unser Dateisystem hat Prüfsummen und Snapshots. Backups können wir streichen.“ Entgegne mit zwei unterschiedlichen Ausfallszenarien.",
+          "label": "Deine Erklärung",
+          "minLength": 70,
+          "model": "Prüfsummen können eine Beschädigung erkennen, aber ohne brauchbare redundante Kopie nicht sicher reparieren. Ein Snapshot im selben Pool geht bei Verlust des Pools mit verloren. Für solche Fälle benötigen wir eine unabhängige Sicherung und einen getesteten Restore. Auch ein Snapshot muss zum benötigten Anwendungszustand passen."
+        },
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-karte-0",
+              "label": "Abruf 1",
+              "front": "Journal und Backup: derselbe Zweck?",
+              "back": "Nein. Ein Journal unterstützt konsistente Änderungen und Wiederanlauf; es ist kein unabhängiger historischer Datenbestand."
+            },
+            {
+              "id": "dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-karte-1",
+              "label": "Abruf 2",
+              "front": "Was fehlt einer Prüfsumme zur Reparatur?",
+              "back": "Eine verfügbare korrekte Kopie beziehungsweise ausreichende rekonstruierbare Redundanz."
+            },
+            {
+              "id": "dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-karte-2",
+              "label": "Abruf 3",
+              "front": "Quota ist nicht freier Platz – warum?",
+              "back": "Eine Quote begrenzt die Nutzung eines Nutzers, Projekts oder Datasets. Das gesamte Volume kann trotzdem noch freien Platz haben."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-transfer-a",
+          "question": "Ein neues Windows-System soll vom betrachteten Volume starten. Zur Wahl stehen NTFS und ReFS. Welche Begründung trägt?",
+          "options": [
+            {
+              "text": "ReFS, weil ein modernerer Name genügt.",
+              "rationale": "Bootfähigkeit ist ein Muss-Kriterium.",
+              "correct": false
+            },
+            {
+              "text": "Beide sind ohne weitere Prüfung identisch.",
+              "rationale": "Die Funktionsumfänge unterscheiden sich.",
+              "correct": false
+            },
+            {
+              "text": "NTFS, weil es das geforderte Startvolume unterstützt.",
+              "rationale": "Eine konkrete Anforderung entscheidet, nicht eine allgemeine Rangliste.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "auswahl"
+        },
+        {
+          "type": "quiz",
+          "id": "dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-transfer-b",
+          "question": "Ein Pool fällt vollständig aus. Der einzige ältere Stand ist ein Snapshot in genau diesem Pool. Welche Aussage stimmt?",
+          "options": [
+            {
+              "text": "Der Snapshot stellt keine unabhängige Sicherung gegen diesen Ausfall dar.",
+              "rationale": "Aktiver Stand und Snapshot hängen vom selben Pool ab.",
+              "correct": true
+            },
+            {
+              "text": "Der Snapshot liegt automatisch auf einem anderen Gerät.",
+              "rationale": "Ein Snapshot bedeutet keine automatische externe Kopie.",
+              "correct": false
+            },
+            {
+              "text": "Eine Quota rekonstruiert den Pool.",
+              "rationale": "Quotas begrenzen Nutzung, sie reparieren keine Daten.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "schutz"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "[Microsoft: ReFS overview](https://learn.microsoft.com/en-us/windows-server/storage/refs/refs-overview) · [Linux Kernel: ext4](https://docs.kernel.org/admin-guide/ext4.html) · [Linux Kernel: XFS](https://docs.kernel.org/admin-guide/xfs.html) · [Btrfs: Introduction](https://btrfs.readthedocs.io/en/latest/Introduction.html) · [OpenZFS: zfsconcepts](https://openzfs.github.io/openzfs-docs/man/master/7/zfsconcepts.7.html) · [OpenZFS: zpool-scrub](https://openzfs.github.io/openzfs-docs/man/master/8/zpool-scrub.8.html) · [Microsoft: fsutil quota](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/fsutil-quota). Ausgewählte Abschnitte am 18.09.2026 geprüft. Die Buchtreffer liefern angrenzenden VM-/RAID-/NTP-Kontext, aber keinen belastbaren Vergleich dieser Dateisysteme; deshalb nicht als Fachbeleg verwendet. Alle Fälle und Grafiken sind selbst erstellt. Keine Formatierung, kein Reparatureingriff. Menschliche Fachfreigabe offen."
+        }
+      ]
+    }
+  ]
+}

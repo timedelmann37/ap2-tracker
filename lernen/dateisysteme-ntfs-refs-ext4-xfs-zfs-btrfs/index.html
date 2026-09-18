@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="NTFS, ReFS, ext4, XFS, ZFS und Btrfs einordnen; Journal, Prüfsumme, Snapshot und Quota unterscheiden.">
+<title>Dateisysteme: passend auswählen und Daten schützen – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-1">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs" data-progress-id="ga1-3__7" data-content-revision="2026-09-18.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-3">Speicherlösungen</a><span class="sep">›</span>
+    <span class="here">Dateisysteme: passend auswählen und Daten schützen</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Dateisysteme: passend auswählen und Daten schützen</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 30 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>NTFS, ReFS, ext4, XFS, ZFS und Btrfs einordnen; Journal, Prüfsumme, Snapshot und Quota unterscheiden. Du bearbeitest Papierfälle; es wird kein Laufwerk formatiert.</p>
+<section class="learning-goals" aria-labelledby="dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-goals">
+  <h2 id="dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Ein Dateisystem anhand konkreter Anforderungen auswählen</li>
+    <li>Schutzfunktionen und Speichergrenzen richtig einordnen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Vorwissen aktivieren</h2>
+<section class="quiz" data-quiz="dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-diagnose" data-correct="1">
+  <h3>Ein Dateisystem besitzt ein Journal. Was folgt daraus?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Ein Journal ist kein vollständiges Versionsarchiv."><span class="m">A</span> Jede gelöschte Datei ist dauerhaft wiederherstellbar.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig: Welche Daten protokolliert werden, hängt vom Dateisystem und Modus ab."><span class="m">B</span> Bestimmte Änderungen lassen sich nach einer Unterbrechung konsistent behandeln.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein Journal schützt nicht vor jedem Datenverlust."><span class="m">C</span> Ein Backup ist grundsätzlich unnötig.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2"><span class="num">2</span>Dateisystem, Volume und Freigabe</h2>
+<p>Ein Dateisystem organisiert Dateien, Namen, Verzeichnisse, Metadaten und die Belegung seines Speicherbereichs. Ein <strong>Volume</strong> stellt dafür Speicher bereit; eine <strong>SMB-/NFS-Freigabe</strong> macht Dateien über das Netzwerk zugänglich. Das sind unterschiedliche Aufgaben.</p>
+<p>Ein Windows-Client kann eine SMB-Freigabe nutzen, deren Server seine Dateien auf einem Linux-Dateisystem ablegt. Der Client muss dafür nicht das lokale Datenträgerformat des Servers direkt lesen. Rechte, Identitäten und Unterstützung des Dateidienstes müssen trotzdem stimmen.</p>
+<p>Wähle deshalb zuerst nach Serverbetriebssystem, Anwendungsfreigabe und benötigten Funktionen. Der modernste Name allein ist keine Begründung.</p>
+<h2 class="sec" id="s3"><span class="num">3</span>Die sechs Kandidaten einordnen</h2>
+<div class="twrap"><table class="knowledge-table">
+<thead>
+<tr>
+<th>Dateisystem</th>
+<th>Einordnung für die Auswahl</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>NTFS</td>
+<td>Allgemeiner Windows-Einsatz; unterstützt Startvolumes, Zugriffslisten und benutzerbezogene Datenträgerquotas</td>
+</tr>
+<tr>
+<td>ReFS</td>
+<td>Windows-Speicheraufgaben mit Integritätsfunktionen; Metadatenprüfsummen, Dateidaten optional über Integrity Streams; kein Windows-Startvolume</td>
+</tr>
+<tr>
+<td>ext4</td>
+<td>Linux-Dateisystem mit Journaling; im üblichen ordered-Modus werden Metadaten journalisiert</td>
+</tr>
+<tr>
+<td>XFS</td>
+<td>Linux-Journaling-Dateisystem mit Schwerpunkt auf Skalierbarkeit; Benutzer-, Gruppen- und Projektquotas möglich</td>
+</tr>
+<tr>
+<td>ZFS</td>
+<td>Verbindet Speicherpools und Datasets; bietet Snapshots und Blockprüfsummen mit Reparatur bei geeigneter Redundanz</td>
+</tr>
+<tr>
+<td>Btrfs</td>
+<td>Linux-Copy-on-Write-Dateisystem mit Subvolumes, Snapshots und Prüfsummen; geeignete redundante Kopien ermöglichen Reparatur</td>
+</tr>
+</tbody></table></div>
+<p>Das ist keine vollständige Kompatibilitätsmatrix. ReFS ist nicht einfach ein überall austauschbares NTFS: Die Microsoft-Vergleichstabelle führt beispielsweise native Datenträgerquotas und Bootfähigkeit nur für NTFS. Funktionen und Freigaben hängen von Version und Einsatz ab.</p>
+<p>Für ZFS und Btrfs gehören Pool-/Gerätelayout, Betriebserfahrung und Distributionssupport zur Auswahl. Ein Funktionsname allein sagt nicht, ob die Funktion aktiv ist oder alle Dateidaten abdeckt. Bei Btrfs sind insbesondere die RAID5/6-Profile laut aktueller Projektdokumentation nicht produktionsreif; aus der Funktionsliste folgt keine Empfehlung dafür.</p>
+<h2 class="sec" id="s4"><span class="num">4</span>Journal, Prüfsumme, Snapshot</h2>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Drei Funktionen, drei Aufgaben">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-schutz-title diagram-schutz-desc">
+  <title id="diagram-schutz-title">Drei Funktionen, drei Aufgaben</title>
+  <desc id="diagram-schutz-desc">Journal für konsistente Änderungen, Prüfsumme zur Fehlererkennung, Snapshot für einen früheren Zustand.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Drei Funktionen, drei Aufgaben</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">Journal</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">Änderungen konsistent</tspan><tspan x="64" dy="30">verarbeiten</tspan></text></g><g><rect class="diagram-row" x="340" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="362" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="362" dy="0">Prüfsumme</tspan></text><text x="362" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="362" dy="0">Veränderte Daten erkennen</tspan></text></g><g><rect class="diagram-row" x="638" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="660" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="660" dy="0">Snapshot</tspan></text><text x="660" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="660" dy="0">Früheren Zustand festhalten</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene begriffliche Darstellung; kein Produkt-Benchmark.</figcaption>
+</figure><p>Ein <strong>Journal</strong> zeichnet Änderungen auf, damit das Dateisystem nach einer Unterbrechung seine Struktur konsistent behandeln kann. Daten- und Metadaten-Journaling sind nicht dasselbe. Es ist kein Versprechen, dass jeder zuletzt geschriebene Inhalt einen Stromausfall übersteht.</p>
+<p>Eine <strong>Prüfsumme</strong> macht Abweichungen erkennbar. Daraus entstehen die ursprünglichen Nutzdaten nicht automatisch neu. Eine Reparatur braucht eine noch korrekte Kopie oder ausreichende Redundanz. ReFS kann dafür zum Beispiel geeignete Storage-Spaces-Redundanz nutzen; bei ZFS prüft ein Scrub die Blöcke und kann mit geeigneter Redundanz Fehler korrigieren.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Erkennen ist noch nicht reparieren">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="434" viewBox="0 0 960 434" role="img" aria-labelledby="diagram-pruefen-title diagram-pruefen-desc">
+  <title id="diagram-pruefen-title">Erkennen ist noch nicht reparieren</title>
+  <desc id="diagram-pruefen-desc">Prüfsumme kontrollieren, brauchbare Redundanz suchen, Reparaturergebnis prüfen oder Restore planen.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Erkennen ist noch nicht reparieren</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Block prüfen</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Gelesene Daten mit Prüfsumme abgleichen</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Gute Kopie suchen</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Geeignete Redundanz muss vorhanden sein</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Ergebnis prüfen</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Reparieren oder Wiederherstellung planen</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene begriffliche Darstellung; kein Produkt-Benchmark.</figcaption>
+</figure><p>Ein <strong>Snapshot</strong> hält einen Zeitpunkt fest. Bei Copy-on-Write werden geänderte Blöcke neu abgelegt, während der ältere Stand weiter referenziert werden kann. Ein Snapshot ist dadurch nicht zwingend eine vollständige zweite Kopie. Änderungen können seinen zusätzlichen Platzbedarf wachsen lassen.</p>
+<p>Ein Snapshot <strong>im selben Pool</strong> ist kein unabhängiges Backup: Geht der Pool verloren, fehlen auch seine Snapshots. Für Datenbanken ist zusätzlich zu prüfen, ob der Snapshot einen wiederherstellbaren Anwendungszustand enthält. Eine separate Sicherung muss den geforderten Restore tatsächlich ermöglichen.</p>
+<section class="quiz" data-quiz="dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-uebung" data-correct="1">
+  <h3>Ein ZFS-Pool meldet einen Prüfsummenfehler, aber es gibt keine brauchbare redundante Kopie. Was ist korrekt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Eine Prüfsumme ist keine vollständige Kopie des Inhalts."><span class="m">A</span> Die Prüfsumme rekonstruiert jede beschädigte Datei allein.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig: Es fehlt eine verlässliche Grundlage für die Wiederherstellung."><span class="m">B</span> Erkennung ist möglich; automatische Reparatur ist damit nicht garantiert.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Sie prüfen Datenintegrität, nicht die Namenslänge."><span class="m">C</span> Prüfsummen schützen nur vor zu langen Dateinamen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Quota: genug Platz und trotzdem kein Upload?</h2>
+<p>Eine Quota begrenzt die Nutzung eines bestimmten Geltungsbereichs. NTFS-Datenträgerquotas werden pro Nutzer und Volume verwaltet; XFS kennt zusätzlich Gruppen- und Projektquotas. Andere Werkzeuge können Verzeichnisgrenzen umsetzen. Diese Mechanismen darf man nicht allein wegen des gemeinsamen Wortes „Quota“ gleichsetzen.</p>
+<p>Warnschwelle und erzwungene Obergrenze sind verschieden. Nur das Erfassen oder Warnen muss neue Schreibvorgänge noch nicht verhindern. Unser eigener Fall verwendet ausdrücklich eine <strong>erzwungene harte Grenze</strong>:</p>
+<pre><code class="language-text">Nutzerin: Mara
+Angerechnete Nutzung: 8 GiB
+Harte Grenze: 10 GiB
+Neuer Upload: 3 GiB
+Freier Platz auf dem Volume: 500 GiB
+</code></pre>
+<p>Der Upload überschreitet Maras Quote trotz freien Volume-Platzes. Im Modell wird die gesamte zusätzliche Nutzdatenmenge angerechnet; Kompression, Metadaten und gemeinsam genutzte Blöcke bleiben außen vor.</p>
+<div class="math-display" role="group" aria-label="Neue Nutzung gleich acht plus drei gleich elf GiB und damit größer als zehn GiB."><math display="block" aria-label="Neue Nutzung gleich acht plus drei gleich elf GiB und damit größer als zehn GiB."><mrow><mn>8</mn><mo>+</mo><mn>3</mn><mo>=</mo><mn>11</mn><mo>&gt;</mo><mn>10</mn></mrow></math><div class="math-legend"><span>Alle Größen in GiB; eigenes vereinfachtes Quota-Modell</span></div></div><section class="numeric-practice transfer-number" data-numeric-practice="dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-zahl" data-expected="2" data-tolerance="0" data-correct-feedback="Zwei GiB bleiben bis zur Grenze. Die 500 GiB Volume-Platz erhöhen Maras Quote nicht." data-wrong-feedback="Ziehe die angerechnete Nutzung von der harten Grenze ab, nicht vom freien Volume-Platz.">
+  <h3>Restbudget statt freier Volume-Platz</h3>
+  <p>Wie viele GiB darf Mara vor dem Upload im Modell noch zusätzlich belegen, ohne die harte Grenze zu überschreiten?</p>
+  <label for="dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-zahl-answer">Zusätzlich belegbare GiB</label>
+  <div class="answer-row"><input id="dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-zahl-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Ergebnis"><button type="button" class="lbtn" data-numeric-check>Antwort prüfen</button></div><p>  <template data-numeric-feedback-for="500">Das ist der freie Volume-Platz, nicht das persönliche Quota-Restbudget.</template>
+  <template data-numeric-feedback-for="3">Der gewünschte Upload passt nicht vollständig in das Restbudget.</template>
+  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p></p>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Zwei begründete Auswahlfälle</h2>
+<p><strong>Fall A – Windows-Startvolume:</strong> Gefordert sind ein unterstütztes Windows-Startvolume und native benutzerbezogene Datenträgerquotas. Zwischen NTFS und ReFS passt NTFS zu diesen Muss-Kriterien. „ReFS klingt robuster“ hebt die fehlende Bootfähigkeit nicht auf.</p>
+<p><strong>Fall B – Linux-Dateiserver:</strong> Die freigegebene Distribution unterstützt ext4 und XFS, das Team beherrscht beide. Es benötigt ausdrücklich native XFS-Projektquotas, und die Anwendung ist für XFS freigegeben. XFS ist deshalb ein begründeter Kandidat. Vor Freigabe bleiben Lasttest, Backup/Restore und das Quota-Verhalten zu prüfen. Daraus folgt nicht, dass ext4 generell ungeeignet wäre.</p>
+<p>Sind integrierte Snapshots und Prüfsummen zentrale Anforderungen, kommen auch ZFS oder Btrfs in die Prüfung – jedoch nur mit passender Plattformfreigabe, bewusstem Redundanzlayout und Wiederherstellungsplan. Keine dieser Funktionen ersetzt die anderen automatisch.</p>
+<h2 class="sec" id="s7"><span class="num">7</span>Selbst ordnen und erklären</h2>
+<section class="sequence-practice" data-sequence="dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-reihenfolge" data-expected="start,pruefen,abschluss" data-correct-feedback="Richtig: Voraussetzungen, Prüfung und Abschluss stehen in der vorgesehenen Reihenfolge." data-wrong-feedback="Prüfe die Voraussetzungen: Der letzte Schritt darf die vorherige Prüfung nicht überspringen." aria-labelledby="dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-reihenfolge-title">
+  <div class="lab-heading"><div><h3 id="dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-reihenfolge-title">Ablauf ordnen</h3><p>Ordne die Auswahl für einen neuen Dateiserver.</p></div><span class="lab-tag">Ablauf</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="abschluss" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Ergebnisse dokumentieren und Betrieb freigeben</span></li>
+    <li data-step="start" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Betriebssystem, Anwendung und benötigte Funktionen erfassen</span></li>
+    <li data-step="pruefen" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Support, Quotas und Wiederherstellung im Test nachweisen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><section class="recall-practice" data-recall="dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-begruendung" data-min-length="70" aria-labelledby="dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-begruendung-title">
+  <div class="recall-prompt"><h3 id="dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-begruendung-title">Aus dem Gedächtnis erklären</h3><p>Ein Kollege meint: „Unser Dateisystem hat Prüfsummen und Snapshots. Backups können wir streichen.“ Entgegne mit zwei unterschiedlichen Ausfallszenarien.</p></div>
+  <label class="sr-only" for="dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-begruendung-answer">Deine Erklärung</label>
+  <textarea id="dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-begruendung-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Prüfsummen können eine Beschädigung erkennen, aber ohne brauchbare redundante Kopie nicht sicher reparieren. Ein Snapshot im selben Pool geht bei Verlust des Pools mit verloren. Für solche Fälle benötigen wir eine unabhängige Sicherung und einen getesteten Restore. Auch ein Snapshot muss zum benötigten Anwendungszustand passen.</div>
+</section><div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-karte-0" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Journal und Backup: derselbe Zweck?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Nein. Ein Journal unterstützt konsistente Änderungen und Wiederanlauf; es ist kein unabhängiger historischer Datenbestand.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-karte-1" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was fehlt einer Prüfsumme zur Reparatur?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Eine verfügbare korrekte Kopie beziehungsweise ausreichende rekonstruierbare Redundanz.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-karte-2" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Quota ist nicht freier Platz – warum?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Eine Quote begrenzt die Nutzung eines Nutzers, Projekts oder Datasets. Das gesamte Volume kann trotzdem noch freien Platz haben.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Abruf 1“:</span><button type="button" data-card-id="dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-karte-0" data-card-rate="known">gewusst</button><button type="button" data-card-id="dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-karte-0" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-karte-0"></span></div>
+<div class="card-rating"><span>Karte „Abruf 2“:</span><button type="button" data-card-id="dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-karte-1" data-card-rate="known">gewusst</button><button type="button" data-card-id="dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-karte-1" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-karte-1"></span></div>
+<div class="card-rating"><span>Karte „Abruf 3“:</span><button type="button" data-card-id="dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-karte-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-karte-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-karte-2"></span></div><h2 class="sec" id="s8"><span class="num">8</span>Lernziel-Check</h2>
+<section class="quiz" data-quiz="dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-transfer-a" data-correct="2" data-required-objective="auswahl">
+  <h3>Ein neues Windows-System soll vom betrachteten Volume starten. Zur Wahl stehen NTFS und ReFS. Welche Begründung trägt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Bootfähigkeit ist ein Muss-Kriterium."><span class="m">A</span> ReFS, weil ein modernerer Name genügt.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die Funktionsumfänge unterscheiden sich."><span class="m">B</span> Beide sind ohne weitere Prüfung identisch.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Eine konkrete Anforderung entscheidet, nicht eine allgemeine Rangliste."><span class="m">C</span> NTFS, weil es das geforderte Startvolume unterstützt.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs-transfer-b" data-correct="0" data-required-objective="schutz">
+  <h3>Ein Pool fällt vollständig aus. Der einzige ältere Stand ist ein Snapshot in genau diesem Pool. Welche Aussage stimmt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Aktiver Stand und Snapshot hängen vom selben Pool ab."><span class="m">A</span> Der Snapshot stellt keine unabhängige Sicherung gegen diesen Ausfall dar.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Ein Snapshot bedeutet keine automatische externe Kopie."><span class="m">B</span> Der Snapshot liegt automatisch auf einem anderen Gerät.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Quotas begrenzen Nutzung, sie reparieren keine Daten."><span class="m">C</span> Eine Quota rekonstruiert den Pool.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s9"><span class="num">9</span>Quellen und Grenzen</h2>
+<p><a href="https://learn.microsoft.com/en-us/windows-server/storage/refs/refs-overview">Microsoft: ReFS overview</a> · <a href="https://docs.kernel.org/admin-guide/ext4.html">Linux Kernel: ext4</a> · <a href="https://docs.kernel.org/admin-guide/xfs.html">Linux Kernel: XFS</a> · <a href="https://btrfs.readthedocs.io/en/latest/Introduction.html">Btrfs: Introduction</a> · <a href="https://openzfs.github.io/openzfs-docs/man/master/7/zfsconcepts.7.html">OpenZFS: zfsconcepts</a> · <a href="https://openzfs.github.io/openzfs-docs/man/master/8/zpool-scrub.8.html">OpenZFS: zpool-scrub</a> · <a href="https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/fsutil-quota">Microsoft: fsutil quota</a>. Ausgewählte Abschnitte am 18.09.2026 geprüft. Die Buchtreffer liefern angrenzenden VM-/RAID-/NTP-Kontext, aber keinen belastbaren Vergleich dieser Dateisysteme; deshalb nicht als Fachbeleg verwendet. Alle Fälle und Grafiken sind selbst erstellt. Keine Formatierung, kein Reparatureingriff. Menschliche Fachfreigabe offen.</p>
+
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-3"><span class="d">zurück zu</span><span class="t">Speicherlösungen</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Speicherlösungen</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Vorwissen aktivieren</a></li>
+<li><a href="#s2" data-t="s2">Dateisystem, Volume und Freigabe</a></li>
+<li><a href="#s3" data-t="s3">Die sechs Kandidaten einordnen</a></li>
+<li><a href="#s4" data-t="s4">Journal, Prüfsumme, Snapshot</a></li>
+<li><a href="#s5" data-t="s5">Quota: genug Platz und trotzdem kein Upload?</a></li>
+<li><a href="#s6" data-t="s6">Zwei begründete Auswahlfälle</a></li>
+<li><a href="#s7" data-t="s7">Selbst ordnen und erklären</a></li>
+<li><a href="#s8" data-t="s8">Lernziel-Check</a></li>
+<li><a href="#s9" data-t="s9">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-3">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>
