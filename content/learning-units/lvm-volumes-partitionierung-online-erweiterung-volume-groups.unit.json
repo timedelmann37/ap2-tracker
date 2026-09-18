@@ -1,0 +1,395 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "lvm-volumes-partitionierung-online-erweiterung-volume-groups",
+    "slug": "lvm-volumes-partitionierung-online-erweiterung-volume-groups",
+    "title": "LVM: Speicher verteilen und sicher erweitern",
+    "description": "Physical Volume, Volume Group und Logical Volume unterscheiden; Kapazität planen und Dateisysteme auf der richtigen Ebene erweitern.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-3",
+    "groupLabel": "Speicherlösungen",
+    "itemId": "ga1-3__8",
+    "week": "KW 37",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "sources": [
+      "lvm-vg",
+      "lvm-lv",
+      "lvm-ext4-grow",
+      "lvm-xfs-grow"
+    ],
+    "contentRevision": "2026-09-18.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "kapazitaet",
+      "label": "Freien VG-Platz und Erweiterungsbedarf korrekt bestimmen"
+    },
+    {
+      "id": "ebenen",
+      "label": "LV- und Dateisystem-Erweiterung unterscheiden und prüfen"
+    }
+  ],
+  "intro": "Physical Volume, Volume Group und Logical Volume unterscheiden; Kapazität planen und Dateisysteme auf der richtigen Ebene erweitern. Alle Angaben sind Papiermodelle; es werden keine Datenträger verändert.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "lvm-vg",
+        "sourceLocator": "Einleitung und 3.4 Extending an LVM volume group",
+        "use": "Begrenzter Abgleich des Schichtenmodells und der Erweiterung",
+        "reviewStatus": "Ausgewählte Abschnitte am 18.09.2026 gelesen"
+      },
+      {
+        "sourceId": "lvm-lv",
+        "sourceLocator": "4.1, 4.2.1 und 4.3.1",
+        "use": "Begrenzter Abgleich des Schichtenmodells und der Erweiterung",
+        "reviewStatus": "Ausgewählte Abschnitte am 18.09.2026 gelesen"
+      },
+      {
+        "sourceId": "lvm-ext4-grow",
+        "sourceLocator": "DESCRIPTION",
+        "use": "Begrenzter Abgleich des Schichtenmodells und der Erweiterung",
+        "reviewStatus": "Ausgewählte Abschnitte am 18.09.2026 gelesen"
+      },
+      {
+        "sourceId": "lvm-xfs-grow",
+        "sourceLocator": "DESCRIPTION",
+        "use": "Begrenzter Abgleich des Schichtenmodells und der Erweiterung",
+        "reviewStatus": "Ausgewählte Abschnitte am 18.09.2026 gelesen"
+      }
+    ],
+    "notes": [
+      "Eigene Modelle und Grafiken; menschliche Fachfreigabe offen.",
+      "Batch ga1-3-008-008: ITLF6–9-Gehäuse-/RAID-Kontext und EUROPA-RAID-Tabelle sind keine LVM-Anleitung; ausgeschlossen. Nicht aufgelöste Registerverweise nicht als gelesen behandelt.",
+      "Nur lineare thick LVs ohne RAID-/Thin-/Snapshot-Zusatzbedarf im Rechenmodell. Keine Partitionierungs-, Formatierungs- oder Verkleinerungsbefehle."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "schichten",
+      "title": "Vom Datenträger zur Datei",
+      "type": "flow",
+      "items": [
+        {
+          "label": "Physical Volume",
+          "detail": "Für LVM vorbereiteter Blockspeicher"
+        },
+        {
+          "label": "Volume Group",
+          "detail": "Gemeinsamer Vorrat an Extents"
+        },
+        {
+          "label": "Logical Volume",
+          "detail": "Zugewiesener logischer Blockspeicher"
+        },
+        {
+          "label": "Dateisystem",
+          "detail": "Dateien im LV organisieren"
+        }
+      ]
+    },
+    {
+      "id": "wachstum",
+      "title": "Wachstum auf zwei Ebenen",
+      "type": "flow",
+      "items": [
+        {
+          "label": "Voraussetzungen",
+          "detail": "Ziel, Backup, freien VG-Platz prüfen"
+        },
+        {
+          "label": "LV erweitern",
+          "detail": "Zusätzliche Extents zuweisen"
+        },
+        {
+          "label": "Dateisystem erweitern",
+          "detail": "Neuen Blockspeicher nutzbar machen"
+        },
+        {
+          "label": "Kontrollieren",
+          "detail": "Beide Größen und Anwendung prüfen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "lvm-volumes-partitionierung-online-erweiterung-volume-groups-diagnose",
+          "question": "Ein LV wurde größer, aber das Dateisystem meldet unveränderte Kapazität. Ist das zwingend ein Defekt?",
+          "options": [
+            {
+              "text": "Ja, beide Größen müssen immer automatisch identisch wachsen.",
+              "rationale": "Blockgerät und Dateisystem sind unterschiedliche Ebenen.",
+              "correct": false
+            },
+            {
+              "text": "Nein, möglicherweise wurde nur das LV vergrößert.",
+              "rationale": "Richtig: Die Dateisystem-Erweiterung muss gesondert erfolgen oder erfolgreich mit erledigt werden.",
+              "correct": true
+            },
+            {
+              "text": "Nein, das löst sich nur durch Löschen aller Dateien.",
+              "rationale": "Datenverlust ist keine notwendige Lösung.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Partition und LVM sauber trennen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Eine Partition beschreibt einen abgegrenzten Bereich auf einem Datenträger. LVM ergänzt eine flexible Verwaltung von Blockspeicher. Ein **Physical Volume (PV)** ist für LVM vorbereiteter Speicher, etwa eine Partition oder ein vollständiges geeignetes Blockgerät. Eine **Volume Group (VG)** bündelt PVs. Ein **Logical Volume (LV)** erhält Speicher aus dieser Gruppe und kann anschließend ein Dateisystem tragen.\n\nLVM verteilt Speicher in gleich großen Einheiten, den **Extents**. Im einfachen linearen Modell entsprechen logische Extents des LVs zugeordneten physischen Extents. Ein LV kann sich über mehrere PVs erstrecken.\n\nDas ist nicht automatisch RAID: Ein linear über zwei Datenträger verteiltes LV besitzt dadurch keine zusätzliche Kopie. Fällt ein benötigter Datenträger aus, sind die betroffenen Daten gefährdet. LVM unterstützt auch gesonderte RAID-Layouts; sie sind nicht Gegenstand unserer linearen Rechnung."
+        },
+        {
+          "type": "figure",
+          "diagramId": "schichten",
+          "alt": "PV liefert Speicher an eine VG; daraus erhält ein LV Extents; darauf liegt ein Dateisystem.",
+          "caption": "Eigene Darstellung eines einfachen LVM-Modells."
+        }
+      ]
+    },
+    {
+      "title": "Drei Bedeutungen von freiem Speicher",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "| Ebene | Was ist frei? |\n| --- | --- |\n| Datenträger | Noch nicht zugeordneter beziehungsweise noch nicht für LVM erschlossener Bereich |\n| Volume Group | Extents, die noch keinem gewöhnlichen LV zugeordnet sind |\n| Dateisystem | Innerhalb des LVs noch für Dateien nutzbare Blöcke |\n\nEin fast leeres 100-GiB-Dateisystem in einem thick LV hält trotzdem die zugewiesenen LV-Extents belegt. Freier Dateisystemplatz ist also nicht automatisch freier VG-Platz. Thin Provisioning folgt anderen Regeln und wird separat behandelt."
+        }
+      ]
+    },
+    {
+      "title": "Eigener Kapazitätsfall",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Die VG `vg_lernen` besitzt **200 GiB bereits nutzbare LVM-Kapazität**. Zwei lineare thick LVs belegen 80 GiB für Daten und 60 GiB für Protokolle. Weitere Belegungen gibt es nicht. Metadaten und Extent-Rundungen sind in den Modellwerten bereits berücksichtigt."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Freier VG-Platz gleich 200 minus 80 minus 60 gleich 60 GiB.",
+          "mathml": "<math display=\"block\"><mrow><mn>200</mn><mo>−</mo><mn>80</mn><mo>−</mo><mn>60</mn><mo>=</mo><mn>60</mn></mrow></math>",
+          "legend": [
+            "Alle Größen in GiB; bereits nutzbare VG-Kapazität, keine Rohplattenrechnung"
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "Das Daten-LV soll **von 80 auf 120 GiB** wachsen. Dafür werden nicht 120 zusätzliche GiB benötigt, sondern 40. Die VG bietet genug Platz; danach bleiben 20 GiB frei."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Zusatzbedarf gleich 120 minus 80 gleich 40; verbleibend gleich 60 minus 40 gleich 20 GiB.",
+          "mathml": "<math display=\"block\"><mrow><mn>120</mn><mo>−</mo><mn>80</mn><mo>=</mo><mn>40</mn><mspace width=\"1em\"/><mo>;</mo><mspace width=\"1em\"/><mn>60</mn><mo>−</mo><mn>40</mn><mo>=</mo><mn>20</mn></mrow></math>",
+          "legend": [
+            "Zielgröße und zusätzlich benötigte Größe unterscheiden"
+          ]
+        },
+        {
+          "type": "numeric",
+          "id": "lvm-volumes-partitionierung-online-erweiterung-volume-groups-zahl",
+          "title": "Jetzt du: Wachstum auf 130 GiB",
+          "prompt": "Nutze erneut den ursprünglichen Zustand (200 GiB VG, LVs 80 und 60 GiB). Das Daten-LV wächst diesmal auf 130 GiB. Wie viele GiB bleiben der VG frei?",
+          "label": "Freie VG-Kapazität in GiB",
+          "expected": 10,
+          "tolerance": 0,
+          "correctFeedback": "Das Daten-LV benötigt 50 GiB zusätzlich. Von zuvor 60 GiB bleiben 10 GiB frei.",
+          "wrongFeedback": "Rechne entweder mit der neuen Gesamtbelegung oder ziehe nur den Zuwachs vom ursprünglichen VG-Freiraum ab.",
+          "misconceptions": [
+            {
+              "value": 50,
+              "feedback": "Das ist der Zuwachs des LVs, nicht der verbleibende Freiraum."
+            },
+            {
+              "value": 60,
+              "feedback": "Das war der freie Platz vor der Erweiterung."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Online erweitern – aber vollständig",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "wachstum",
+          "alt": "Zuerst Voraussetzungen prüfen, dann LV, danach Dateisystem erweitern und beide Ergebnisse kontrollieren.",
+          "caption": "Eigene Darstellung eines einfachen LVM-Modells."
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Online** bedeutet hier: Das Dateisystem bleibt während der unterstützten Erweiterung eingebunden. Es bedeutet weder risikolos noch unbegrenzt. Prüfe vorher Zielgerät und Mountpoint, Sicherung und Wiederherstellungsweg, Dateisystemtyp, freie VG-Extents sowie die Unterstützung der eingesetzten Version.\n\nIst genug VG-Platz vorhanden, muss nicht bei jeder LV-Erweiterung neu partitioniert werden. Fehlt Platz, ist zuerst die darunterliegende Kapazität zu erweitern: beispielsweise ein korrekt vorbereitetes zusätzliches PV in die VG aufnehmen. Bei einer vergrößerten bestehenden Disk sind die tatsächlich vorhandenen Schichten zu berücksichtigen; eine größere virtuelle Disk allein macht die VG noch nicht automatisch größer.\n\nDas Vergrößern des LVs und des Dateisystems sind zwei Schritte. Manche Werkzeuge können beide verbinden, etwa die unterstützte Dateisystemanpassung über `--resizefs`. Prüfe trotzdem beide Ergebnisse. ext4 kann mit geeigneter Kernel-/Dateisystemunterstützung online wachsen; `xfs_growfs` erweitert ein eingebundenes XFS. Die Werkzeuge sind nicht austauschbar."
+        },
+        {
+          "type": "markdown",
+          "markdown": "```text\nPapierprotokoll nach einem Teilschritt:\nLV daten:          120 GiB\nDateisystem daten: bisherige Größe\nVG frei:           20 GiB\n```\n\nDas Protokoll passt zu einem bereits erweiterten LV mit noch nicht erweitertem Dateisystem. Prüfe die passende Dateisystem-Erweiterung und deren Ergebnis. **Nicht formatieren:** Formatierung legt ein Dateisystem neu an und ist kein normaler Erweiterungsschritt."
+        },
+        {
+          "type": "quiz",
+          "id": "lvm-volumes-partitionierung-online-erweiterung-volume-groups-uebung",
+          "question": "Im Papierprotokoll ist nur das LV größer. Was ist der passende nächste Prüfschritt?",
+          "options": [
+            {
+              "text": "Ein neues Dateisystem über die vorhandenen Daten formatieren.",
+              "rationale": "Das kann vorhandene Daten zerstören.",
+              "correct": false
+            },
+            {
+              "text": "Dateisystemtyp, Unterstützung und ausstehende Dateisystem-Erweiterung prüfen.",
+              "rationale": "Richtig: Auf der noch unveränderten Ebene weiterarbeiten.",
+              "correct": true
+            },
+            {
+              "text": "Die gesamte freie VG-Kapazität ungeprüft zuweisen.",
+              "rationale": "Mehr LV-Platz löst die ausgelassene Dateisystem-Erweiterung nicht.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Kontrollieren statt Erfolg vermuten",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Im echten Betrieb helfen Bestandsanzeigen wie `pvs`, `vgs` und `lvs` für die LVM-Ebenen sowie `df -hT` für eingebundene Dateisysteme. Diese Namen sind Orientierung, kein auszuführender Arbeitsauftrag. Das Dateisystem kann wegen Verwaltungsdaten eine andere nutzbare Größe melden als das LV.\n\nPrüfe zusätzlich, ob der erwartete Mountpoint verwendet wird und die Anwendung lesen und schreiben kann. Dokumentiere Ausgangsstand, neue Größe und verbleibende Reserve.\n\n**Verkleinern ist nicht einfach die Umkehrung:** Würde ein LV unter die noch benötigte Dateisystemgröße gekürzt, könnten Daten abgeschnitten werden. Unterstützung, Mindestgröße und Reihenfolge müssen separat geprüft werden. Diese Einheit enthält bewusst keine Verkleinerungsanleitung."
+        }
+      ]
+    },
+    {
+      "title": "Selbst ordnen und erklären",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "lvm-volumes-partitionierung-online-erweiterung-volume-groups-reihenfolge",
+          "title": "Ablauf ordnen",
+          "prompt": "Backup, Ziel und freie VG-Kapazität sind bereits geprüft. Ordne die eigentliche Erweiterung.",
+          "steps": [
+            {
+              "id": "abschluss",
+              "label": "LV, Dateisystem und Anwendung kontrollieren"
+            },
+            {
+              "id": "start",
+              "label": "Dem LV zusätzliche Extents zuweisen"
+            },
+            {
+              "id": "pruefen",
+              "label": "Das unterstützte Dateisystem vergrößern"
+            }
+          ],
+          "expected": [
+            "start",
+            "pruefen",
+            "abschluss"
+          ],
+          "correctFeedback": "Richtig: Voraussetzungen, Prüfung und Abschluss stehen in der vorgesehenen Reihenfolge.",
+          "wrongFeedback": "Prüfe die Voraussetzungen: Der letzte Schritt darf die vorherige Prüfung nicht überspringen."
+        },
+        {
+          "type": "recall",
+          "id": "lvm-volumes-partitionierung-online-erweiterung-volume-groups-begruendung",
+          "title": "Aus dem Gedächtnis erklären",
+          "prompt": "Warum kann das Löschen von Dateien auf /home nicht automatisch eine Vergrößerung von /daten aus freiem VG-Platz ermöglichen? Gehe von gewöhnlichen thick LVs aus.",
+          "label": "Deine Erklärung",
+          "minLength": 70,
+          "model": "Das Löschen gibt Blöcke innerhalb des Dateisystems von /home frei. Die dem thick LV zugewiesenen Extents bleiben diesem LV zugeordnet und werden nicht automatisch VG-frei. Für /daten brauche ich freie VG-Extents oder einen separat geplanten Umbau. Eine Verkleinerung ist keine sichere automatische Umkehrung und hängt vom Dateisystem ab."
+        },
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "lvm-volumes-partitionierung-online-erweiterung-volume-groups-karte-0",
+              "label": "Abruf 1",
+              "front": "PV, VG, LV in einem Satz?",
+              "back": "PVs stellen Speicher bereit; die VG bündelt ihn; LVs erhalten daraus Extents."
+            },
+            {
+              "id": "lvm-volumes-partitionierung-online-erweiterung-volume-groups-karte-1",
+              "label": "Abruf 2",
+              "front": "Was zeigen freie GiB in df nicht?",
+              "back": "Wie viele Extents in der Volume Group noch keinem thick LV zugeordnet sind."
+            },
+            {
+              "id": "lvm-volumes-partitionierung-online-erweiterung-volume-groups-karte-2",
+              "label": "Abruf 3",
+              "front": "Ist eine lineare VG mit zwei Platten automatisch gespiegelt?",
+              "back": "Nein. Zusammenfassen von Speicher erzeugt allein keine redundante Kopie."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "lvm-volumes-partitionierung-online-erweiterung-volume-groups-transfer-a",
+          "question": "Eine andere VG hat 300 GiB nutzbare Kapazität. LVs belegen 120 und 100 GiB. Das erste wächst auf 160 GiB. Wie viel VG-Platz bleibt frei?",
+          "options": [
+            {
+              "text": "80 GiB.",
+              "rationale": "Das ist der Freiraum vor der Erweiterung.",
+              "correct": false
+            },
+            {
+              "text": "140 GiB.",
+              "rationale": "Das zweite LV belegt ebenfalls Speicher.",
+              "correct": false
+            },
+            {
+              "text": "40 GiB.",
+              "rationale": "300 GiB abzüglich 160 und 100 GiB.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "kapazitaet"
+        },
+        {
+          "type": "quiz",
+          "id": "lvm-volumes-partitionierung-online-erweiterung-volume-groups-transfer-b",
+          "question": "Nach der Erweiterung meldet lvs die Zielgröße; df zeigt noch den alten Stand. Welche Schlussfolgerung ist begründet?",
+          "options": [
+            {
+              "text": "LV und Dateisystem getrennt prüfen; der Dateisystem-Schritt kann fehlen oder gescheitert sein.",
+              "rationale": "Der Erfolg auf einer Ebene beweist nicht den Erfolg auf der anderen.",
+              "correct": true
+            },
+            {
+              "text": "Die Partition muss sofort gelöscht werden.",
+              "rationale": "Das ist weder begründet noch ein sicherer Standardweg.",
+              "correct": false
+            },
+            {
+              "text": "LVM ist grundsätzlich defekt.",
+              "rationale": "Der Befund erklärt sich bereits durch unterschiedliche Ebenen.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "ebenen"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "[Red Hat: Managing LVM volume groups](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/configuring_and_managing_logical_volumes/managing-lvm-volume-groups_configuring-and-managing-logical-volumes) · [Red Hat: Basic logical volume management](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/configuring_and_managing_logical_volumes/basic-logical-volume-management_configuring-and-managing-logical-volumes) · [e2fsprogs: resize2fs(8)](https://man7.org/linux/man-pages/man8/resize2fs.8.html) · [xfsprogs: xfs_growfs(8)](https://man7.org/linux/man-pages/man8/xfs_growfs.8.html). Ausgewählte Abschnitte am 18.09.2026 gelesen. Die Buchtreffer betreffen RAID-/Gehäusekontext, keine konkrete LVM-Anleitung; nicht als fachliche Belege übernommen. Eigene lineare thick-LV-Modelle ohne Thin Pools, Spiegel oder Snapshot-Zusatzbedarf. Keine realen Speicheränderungen. Menschliche Fachfreigabe offen."
+        }
+      ]
+    }
+  ]
+}

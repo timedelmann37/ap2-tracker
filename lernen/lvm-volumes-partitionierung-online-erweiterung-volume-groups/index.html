@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Physical Volume, Volume Group und Logical Volume unterscheiden; Kapazität planen und Dateisysteme auf der richtigen Ebene erweitern.">
+<title>LVM: Speicher verteilen und sicher erweitern – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-1">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="lvm-volumes-partitionierung-online-erweiterung-volume-groups" data-progress-id="ga1-3__8" data-content-revision="2026-09-18.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-3">Speicherlösungen</a><span class="sep">›</span>
+    <span class="here">LVM: Speicher verteilen und sicher erweitern</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">LVM: Speicher verteilen und sicher erweitern</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 25 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Physical Volume, Volume Group und Logical Volume unterscheiden; Kapazität planen und Dateisysteme auf der richtigen Ebene erweitern. Alle Angaben sind Papiermodelle; es werden keine Datenträger verändert.</p>
+<section class="learning-goals" aria-labelledby="lvm-volumes-partitionierung-online-erweiterung-volume-groups-goals">
+  <h2 id="lvm-volumes-partitionierung-online-erweiterung-volume-groups-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Freien VG-Platz und Erweiterungsbedarf korrekt bestimmen</li>
+    <li>LV- und Dateisystem-Erweiterung unterscheiden und prüfen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Vorwissen aktivieren</h2>
+<section class="quiz" data-quiz="lvm-volumes-partitionierung-online-erweiterung-volume-groups-diagnose" data-correct="1">
+  <h3>Ein LV wurde größer, aber das Dateisystem meldet unveränderte Kapazität. Ist das zwingend ein Defekt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Blockgerät und Dateisystem sind unterschiedliche Ebenen."><span class="m">A</span> Ja, beide Größen müssen immer automatisch identisch wachsen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig: Die Dateisystem-Erweiterung muss gesondert erfolgen oder erfolgreich mit erledigt werden."><span class="m">B</span> Nein, möglicherweise wurde nur das LV vergrößert.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Datenverlust ist keine notwendige Lösung."><span class="m">C</span> Nein, das löst sich nur durch Löschen aller Dateien.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2"><span class="num">2</span>Partition und LVM sauber trennen</h2>
+<p>Eine Partition beschreibt einen abgegrenzten Bereich auf einem Datenträger. LVM ergänzt eine flexible Verwaltung von Blockspeicher. Ein <strong>Physical Volume (PV)</strong> ist für LVM vorbereiteter Speicher, etwa eine Partition oder ein vollständiges geeignetes Blockgerät. Eine <strong>Volume Group (VG)</strong> bündelt PVs. Ein <strong>Logical Volume (LV)</strong> erhält Speicher aus dieser Gruppe und kann anschließend ein Dateisystem tragen.</p>
+<p>LVM verteilt Speicher in gleich großen Einheiten, den <strong>Extents</strong>. Im einfachen linearen Modell entsprechen logische Extents des LVs zugeordneten physischen Extents. Ein LV kann sich über mehrere PVs erstrecken.</p>
+<p>Das ist nicht automatisch RAID: Ein linear über zwei Datenträger verteiltes LV besitzt dadurch keine zusätzliche Kopie. Fällt ein benötigter Datenträger aus, sind die betroffenen Daten gefährdet. LVM unterstützt auch gesonderte RAID-Layouts; sie sind nicht Gegenstand unserer linearen Rechnung.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Vom Datenträger zur Datei">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="542" viewBox="0 0 960 542" role="img" aria-labelledby="diagram-schichten-title diagram-schichten-desc">
+  <title id="diagram-schichten-title">Vom Datenträger zur Datei</title>
+  <desc id="diagram-schichten-desc">PV liefert Speicher an eine VG; daraus erhält ein LV Extents; darauf liegt ein Dateisystem.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Vom Datenträger zur Datei</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Physical Volume</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Für LVM vorbereiteter Blockspeicher</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Volume Group</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Gemeinsamer Vorrat an Extents</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Logical Volume</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Zugewiesener logischer Blockspeicher</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Dateisystem</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Dateien im LV organisieren</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Darstellung eines einfachen LVM-Modells.</figcaption>
+</figure><h2 class="sec" id="s3"><span class="num">3</span>Drei Bedeutungen von freiem Speicher</h2>
+<div class="twrap"><table class="knowledge-table">
+<thead>
+<tr>
+<th>Ebene</th>
+<th>Was ist frei?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Datenträger</td>
+<td>Noch nicht zugeordneter beziehungsweise noch nicht für LVM erschlossener Bereich</td>
+</tr>
+<tr>
+<td>Volume Group</td>
+<td>Extents, die noch keinem gewöhnlichen LV zugeordnet sind</td>
+</tr>
+<tr>
+<td>Dateisystem</td>
+<td>Innerhalb des LVs noch für Dateien nutzbare Blöcke</td>
+</tr>
+</tbody></table></div>
+<p>Ein fast leeres 100-GiB-Dateisystem in einem thick LV hält trotzdem die zugewiesenen LV-Extents belegt. Freier Dateisystemplatz ist also nicht automatisch freier VG-Platz. Thin Provisioning folgt anderen Regeln und wird separat behandelt.</p>
+<h2 class="sec" id="s4"><span class="num">4</span>Eigener Kapazitätsfall</h2>
+<p>Die VG <code>vg_lernen</code> besitzt <strong>200 GiB bereits nutzbare LVM-Kapazität</strong>. Zwei lineare thick LVs belegen 80 GiB für Daten und 60 GiB für Protokolle. Weitere Belegungen gibt es nicht. Metadaten und Extent-Rundungen sind in den Modellwerten bereits berücksichtigt.</p>
+<div class="math-display" role="group" aria-label="Freier VG-Platz gleich 200 minus 80 minus 60 gleich 60 GiB."><math display="block" aria-label="Freier VG-Platz gleich 200 minus 80 minus 60 gleich 60 GiB."><mrow><mn>200</mn><mo>−</mo><mn>80</mn><mo>−</mo><mn>60</mn><mo>=</mo><mn>60</mn></mrow></math><div class="math-legend"><span>Alle Größen in GiB; bereits nutzbare VG-Kapazität, keine Rohplattenrechnung</span></div></div><p>Das Daten-LV soll <strong>von 80 auf 120 GiB</strong> wachsen. Dafür werden nicht 120 zusätzliche GiB benötigt, sondern 40. Die VG bietet genug Platz; danach bleiben 20 GiB frei.</p>
+<div class="math-display" role="group" aria-label="Zusatzbedarf gleich 120 minus 80 gleich 40; verbleibend gleich 60 minus 40 gleich 20 GiB."><math display="block" aria-label="Zusatzbedarf gleich 120 minus 80 gleich 40; verbleibend gleich 60 minus 40 gleich 20 GiB."><mrow><mn>120</mn><mo>−</mo><mn>80</mn><mo>=</mo><mn>40</mn><mspace width="1em"/><mo>;</mo><mspace width="1em"/><mn>60</mn><mo>−</mo><mn>40</mn><mo>=</mo><mn>20</mn></mrow></math><div class="math-legend"><span>Zielgröße und zusätzlich benötigte Größe unterscheiden</span></div></div><section class="numeric-practice transfer-number" data-numeric-practice="lvm-volumes-partitionierung-online-erweiterung-volume-groups-zahl" data-expected="10" data-tolerance="0" data-correct-feedback="Das Daten-LV benötigt 50 GiB zusätzlich. Von zuvor 60 GiB bleiben 10 GiB frei." data-wrong-feedback="Rechne entweder mit der neuen Gesamtbelegung oder ziehe nur den Zuwachs vom ursprünglichen VG-Freiraum ab.">
+  <h3>Jetzt du: Wachstum auf 130 GiB</h3>
+  <p>Nutze erneut den ursprünglichen Zustand (200 GiB VG, LVs 80 und 60 GiB). Das Daten-LV wächst diesmal auf 130 GiB. Wie viele GiB bleiben der VG frei?</p>
+  <label for="lvm-volumes-partitionierung-online-erweiterung-volume-groups-zahl-answer">Freie VG-Kapazität in GiB</label>
+  <div class="answer-row"><input id="lvm-volumes-partitionierung-online-erweiterung-volume-groups-zahl-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Ergebnis"><button type="button" class="lbtn" data-numeric-check>Antwort prüfen</button></div><p>  <template data-numeric-feedback-for="50">Das ist der Zuwachs des LVs, nicht der verbleibende Freiraum.</template>
+  <template data-numeric-feedback-for="60">Das war der freie Platz vor der Erweiterung.</template>
+  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p></p>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Online erweitern – aber vollständig</h2>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Wachstum auf zwei Ebenen">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="542" viewBox="0 0 960 542" role="img" aria-labelledby="diagram-wachstum-title diagram-wachstum-desc">
+  <title id="diagram-wachstum-title">Wachstum auf zwei Ebenen</title>
+  <desc id="diagram-wachstum-desc">Zuerst Voraussetzungen prüfen, dann LV, danach Dateisystem erweitern und beide Ergebnisse kontrollieren.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Wachstum auf zwei Ebenen</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Voraussetzungen</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Ziel, Backup, freien VG-Platz prüfen</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">LV erweitern</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Zusätzliche Extents zuweisen</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Dateisystem erweitern</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Neuen Blockspeicher nutzbar machen</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Kontrollieren</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Beide Größen und Anwendung prüfen</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Darstellung eines einfachen LVM-Modells.</figcaption>
+</figure><p><strong>Online</strong> bedeutet hier: Das Dateisystem bleibt während der unterstützten Erweiterung eingebunden. Es bedeutet weder risikolos noch unbegrenzt. Prüfe vorher Zielgerät und Mountpoint, Sicherung und Wiederherstellungsweg, Dateisystemtyp, freie VG-Extents sowie die Unterstützung der eingesetzten Version.</p>
+<p>Ist genug VG-Platz vorhanden, muss nicht bei jeder LV-Erweiterung neu partitioniert werden. Fehlt Platz, ist zuerst die darunterliegende Kapazität zu erweitern: beispielsweise ein korrekt vorbereitetes zusätzliches PV in die VG aufnehmen. Bei einer vergrößerten bestehenden Disk sind die tatsächlich vorhandenen Schichten zu berücksichtigen; eine größere virtuelle Disk allein macht die VG noch nicht automatisch größer.</p>
+<p>Das Vergrößern des LVs und des Dateisystems sind zwei Schritte. Manche Werkzeuge können beide verbinden, etwa die unterstützte Dateisystemanpassung über <code>--resizefs</code>. Prüfe trotzdem beide Ergebnisse. ext4 kann mit geeigneter Kernel-/Dateisystemunterstützung online wachsen; <code>xfs_growfs</code> erweitert ein eingebundenes XFS. Die Werkzeuge sind nicht austauschbar.</p>
+<pre><code class="language-text">Papierprotokoll nach einem Teilschritt:
+LV daten:          120 GiB
+Dateisystem daten: bisherige Größe
+VG frei:           20 GiB
+</code></pre>
+<p>Das Protokoll passt zu einem bereits erweiterten LV mit noch nicht erweitertem Dateisystem. Prüfe die passende Dateisystem-Erweiterung und deren Ergebnis. <strong>Nicht formatieren:</strong> Formatierung legt ein Dateisystem neu an und ist kein normaler Erweiterungsschritt.</p>
+<section class="quiz" data-quiz="lvm-volumes-partitionierung-online-erweiterung-volume-groups-uebung" data-correct="1">
+  <h3>Im Papierprotokoll ist nur das LV größer. Was ist der passende nächste Prüfschritt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Das kann vorhandene Daten zerstören."><span class="m">A</span> Ein neues Dateisystem über die vorhandenen Daten formatieren.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig: Auf der noch unveränderten Ebene weiterarbeiten."><span class="m">B</span> Dateisystemtyp, Unterstützung und ausstehende Dateisystem-Erweiterung prüfen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Mehr LV-Platz löst die ausgelassene Dateisystem-Erweiterung nicht."><span class="m">C</span> Die gesamte freie VG-Kapazität ungeprüft zuweisen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Kontrollieren statt Erfolg vermuten</h2>
+<p>Im echten Betrieb helfen Bestandsanzeigen wie <code>pvs</code>, <code>vgs</code> und <code>lvs</code> für die LVM-Ebenen sowie <code>df -hT</code> für eingebundene Dateisysteme. Diese Namen sind Orientierung, kein auszuführender Arbeitsauftrag. Das Dateisystem kann wegen Verwaltungsdaten eine andere nutzbare Größe melden als das LV.</p>
+<p>Prüfe zusätzlich, ob der erwartete Mountpoint verwendet wird und die Anwendung lesen und schreiben kann. Dokumentiere Ausgangsstand, neue Größe und verbleibende Reserve.</p>
+<p><strong>Verkleinern ist nicht einfach die Umkehrung:</strong> Würde ein LV unter die noch benötigte Dateisystemgröße gekürzt, könnten Daten abgeschnitten werden. Unterstützung, Mindestgröße und Reihenfolge müssen separat geprüft werden. Diese Einheit enthält bewusst keine Verkleinerungsanleitung.</p>
+<h2 class="sec" id="s7"><span class="num">7</span>Selbst ordnen und erklären</h2>
+<section class="sequence-practice" data-sequence="lvm-volumes-partitionierung-online-erweiterung-volume-groups-reihenfolge" data-expected="start,pruefen,abschluss" data-correct-feedback="Richtig: Voraussetzungen, Prüfung und Abschluss stehen in der vorgesehenen Reihenfolge." data-wrong-feedback="Prüfe die Voraussetzungen: Der letzte Schritt darf die vorherige Prüfung nicht überspringen." aria-labelledby="lvm-volumes-partitionierung-online-erweiterung-volume-groups-reihenfolge-title">
+  <div class="lab-heading"><div><h3 id="lvm-volumes-partitionierung-online-erweiterung-volume-groups-reihenfolge-title">Ablauf ordnen</h3><p>Backup, Ziel und freie VG-Kapazität sind bereits geprüft. Ordne die eigentliche Erweiterung.</p></div><span class="lab-tag">Ablauf</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="abschluss" tabindex="-1"><span class="step-position" data-step-position>1</span><span>LV, Dateisystem und Anwendung kontrollieren</span></li>
+    <li data-step="start" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Dem LV zusätzliche Extents zuweisen</span></li>
+    <li data-step="pruefen" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Das unterstützte Dateisystem vergrößern</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><section class="recall-practice" data-recall="lvm-volumes-partitionierung-online-erweiterung-volume-groups-begruendung" data-min-length="70" aria-labelledby="lvm-volumes-partitionierung-online-erweiterung-volume-groups-begruendung-title">
+  <div class="recall-prompt"><h3 id="lvm-volumes-partitionierung-online-erweiterung-volume-groups-begruendung-title">Aus dem Gedächtnis erklären</h3><p>Warum kann das Löschen von Dateien auf /home nicht automatisch eine Vergrößerung von /daten aus freiem VG-Platz ermöglichen? Gehe von gewöhnlichen thick LVs aus.</p></div>
+  <label class="sr-only" for="lvm-volumes-partitionierung-online-erweiterung-volume-groups-begruendung-answer">Deine Erklärung</label>
+  <textarea id="lvm-volumes-partitionierung-online-erweiterung-volume-groups-begruendung-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Das Löschen gibt Blöcke innerhalb des Dateisystems von /home frei. Die dem thick LV zugewiesenen Extents bleiben diesem LV zugeordnet und werden nicht automatisch VG-frei. Für /daten brauche ich freie VG-Extents oder einen separat geplanten Umbau. Eine Verkleinerung ist keine sichere automatische Umkehrung und hängt vom Dateisystem ab.</div>
+</section><div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="lvm-volumes-partitionierung-online-erweiterung-volume-groups-karte-0" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>PV, VG, LV in einem Satz?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>PVs stellen Speicher bereit; die VG bündelt ihn; LVs erhalten daraus Extents.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="lvm-volumes-partitionierung-online-erweiterung-volume-groups-karte-1" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was zeigen freie GiB in df nicht?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Wie viele Extents in der Volume Group noch keinem thick LV zugeordnet sind.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="lvm-volumes-partitionierung-online-erweiterung-volume-groups-karte-2" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Ist eine lineare VG mit zwei Platten automatisch gespiegelt?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Nein. Zusammenfassen von Speicher erzeugt allein keine redundante Kopie.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Abruf 1“:</span><button type="button" data-card-id="lvm-volumes-partitionierung-online-erweiterung-volume-groups-karte-0" data-card-rate="known">gewusst</button><button type="button" data-card-id="lvm-volumes-partitionierung-online-erweiterung-volume-groups-karte-0" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="lvm-volumes-partitionierung-online-erweiterung-volume-groups-karte-0"></span></div>
+<div class="card-rating"><span>Karte „Abruf 2“:</span><button type="button" data-card-id="lvm-volumes-partitionierung-online-erweiterung-volume-groups-karte-1" data-card-rate="known">gewusst</button><button type="button" data-card-id="lvm-volumes-partitionierung-online-erweiterung-volume-groups-karte-1" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="lvm-volumes-partitionierung-online-erweiterung-volume-groups-karte-1"></span></div>
+<div class="card-rating"><span>Karte „Abruf 3“:</span><button type="button" data-card-id="lvm-volumes-partitionierung-online-erweiterung-volume-groups-karte-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="lvm-volumes-partitionierung-online-erweiterung-volume-groups-karte-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="lvm-volumes-partitionierung-online-erweiterung-volume-groups-karte-2"></span></div><h2 class="sec" id="s8"><span class="num">8</span>Lernziel-Check</h2>
+<section class="quiz" data-quiz="lvm-volumes-partitionierung-online-erweiterung-volume-groups-transfer-a" data-correct="2" data-required-objective="kapazitaet">
+  <h3>Eine andere VG hat 300 GiB nutzbare Kapazität. LVs belegen 120 und 100 GiB. Das erste wächst auf 160 GiB. Wie viel VG-Platz bleibt frei?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Das ist der Freiraum vor der Erweiterung."><span class="m">A</span> 80 GiB.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Das zweite LV belegt ebenfalls Speicher."><span class="m">B</span> 140 GiB.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="300 GiB abzüglich 160 und 100 GiB."><span class="m">C</span> 40 GiB.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="lvm-volumes-partitionierung-online-erweiterung-volume-groups-transfer-b" data-correct="0" data-required-objective="ebenen">
+  <h3>Nach der Erweiterung meldet lvs die Zielgröße; df zeigt noch den alten Stand. Welche Schlussfolgerung ist begründet?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Der Erfolg auf einer Ebene beweist nicht den Erfolg auf der anderen."><span class="m">A</span> LV und Dateisystem getrennt prüfen; der Dateisystem-Schritt kann fehlen oder gescheitert sein.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Das ist weder begründet noch ein sicherer Standardweg."><span class="m">B</span> Die Partition muss sofort gelöscht werden.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Der Befund erklärt sich bereits durch unterschiedliche Ebenen."><span class="m">C</span> LVM ist grundsätzlich defekt.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s9"><span class="num">9</span>Quellen und Grenzen</h2>
+<p><a href="https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/configuring_and_managing_logical_volumes/managing-lvm-volume-groups_configuring-and-managing-logical-volumes">Red Hat: Managing LVM volume groups</a> · <a href="https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/configuring_and_managing_logical_volumes/basic-logical-volume-management_configuring-and-managing-logical-volumes">Red Hat: Basic logical volume management</a> · <a href="https://man7.org/linux/man-pages/man8/resize2fs.8.html">e2fsprogs: resize2fs(8)</a> · <a href="https://man7.org/linux/man-pages/man8/xfs_growfs.8.html">xfsprogs: xfs_growfs(8)</a>. Ausgewählte Abschnitte am 18.09.2026 gelesen. Die Buchtreffer betreffen RAID-/Gehäusekontext, keine konkrete LVM-Anleitung; nicht als fachliche Belege übernommen. Eigene lineare thick-LV-Modelle ohne Thin Pools, Spiegel oder Snapshot-Zusatzbedarf. Keine realen Speicheränderungen. Menschliche Fachfreigabe offen.</p>
+
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-3"><span class="d">zurück zu</span><span class="t">Speicherlösungen</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Speicherlösungen</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Vorwissen aktivieren</a></li>
+<li><a href="#s2" data-t="s2">Partition und LVM sauber trennen</a></li>
+<li><a href="#s3" data-t="s3">Drei Bedeutungen von freiem Speicher</a></li>
+<li><a href="#s4" data-t="s4">Eigener Kapazitätsfall</a></li>
+<li><a href="#s5" data-t="s5">Online erweitern – aber vollständig</a></li>
+<li><a href="#s6" data-t="s6">Kontrollieren statt Erfolg vermuten</a></li>
+<li><a href="#s7" data-t="s7">Selbst ordnen und erklären</a></li>
+<li><a href="#s8" data-t="s8">Lernziel-Check</a></li>
+<li><a href="#s9" data-t="s9">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-3">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

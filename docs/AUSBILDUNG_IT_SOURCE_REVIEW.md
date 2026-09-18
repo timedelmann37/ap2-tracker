@@ -392,6 +392,12 @@ Quellen begrenzt geprüft; unpassende Buchtreffer ausgeschlossen. Tests und
 gezielte Browserprüfung bestanden. Details: `learning-prep/GA1_FILESYSTEMS.md`.
 Abdeckung 134/380; menschliche Fachfreigabe offen.
 
+LVM/Volumes (`ga1-3__8`) ergänzt: Schichtenmodell, Kapazitätsfälle und
+Online-Erweiterung mit getrennter LV-/Dateisystemprüfung. Ungeeignete
+Buchtreffer ausgeschlossen; Primärdokumentation begrenzt abgeglichen.
+Tests und gezielte Browserprüfung bestanden. Details: `learning-prep/GA1_LVM.md`.
+Stand 135/380 Lernentwürfe; menschliche Freigabe offen.
+
 Noch nicht umgesetzt: die weiteren Zuordnungsvorschläge für
 WiSo und weitere GA1-Themengruppen. Die URL-Inventur bleibt
 eine Lesewarteschlange und wird durch diesen Batch nicht pauschal als geprüft
