@@ -315,6 +315,32 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "archivierung-revisionssichere-ablage-aufbewahrungsfristen-hsm",
+    "slug": "archivierung-revisionssichere-ablage-aufbewahrungsfristen-hsm",
+    "title": "Archivierung: nachvollziehbar aufbewahren und wiederfinden",
+    "description": "Archiv, Backup und HSM unterscheiden, Fristen sauber einordnen und einen Archivierungsprozess auf Lücken prüfen.",
+    "domain": "GA1",
+    "groupId": "ga1-3",
+    "groupLabel": "Speicherlösungen",
+    "itemId": "ga1-3__12",
+    "week": "KW 37",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-18.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "verfahren",
+      "hsm"
+    ],
+    "sources": [
+      "archive-ao147",
+      "archive-gobd",
+      "archive-hsm"
+    ],
+    "contentHash": "4e9773f879b7a6716d2c74af6889a11df5035eb961473765daf1d0e662c5db4b",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "backup-methods",
     "slug": "backup-methods",
     "title": "Sicherungsarten auswählen und Restore-Ketten beherrschen",

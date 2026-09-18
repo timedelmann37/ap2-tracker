@@ -412,6 +412,8 @@ Grafikbeschriftungen nach Sichtprüfung korrigiert. Details:
 
 Am 18.09.2026 ergänzt: Kapazitätsplanung (`ga1-3__11`) als CURATED_DRAFT mit Wachstumsmodell, Reserve-Prozentbasis, TB/TiB, zwei eigenen Grafiken und drei MathML-Formeln. NIST und Ceph-Squid-Primärabschnitte geprüft; unpassende Buchbatch-Treffer ausgeschlossen. Zahlenübung, Fehlerrückmeldungen, Abrufkarten und Transferchecks sowie gezielte Browserprüfung bestanden. Details: `docs/learning-prep/GA1_CAPACITY_PLANNING.md`. Keine menschliche Freigabe oder Veröffentlichung; Abdeckung 138/380.
 
+Am 18.09.2026 ergänzt: Archivierung (`ga1-3__12`) als CURATED_DRAFT mit Prozessprüfung, Frist-Modellrechnung und HSM/Stub/Recall. Ausgewählte AO-/GoBD-Grundlagen und IBM-Funktionsbeschreibung geprüft; pauschale Buch-Fristangabe nicht übernommen. Eigene Grafiken und Übungen, statische Tests und gezielte Browserprüfung bestanden. Rechtsprüfung bleibt ausdrücklich begrenzt; menschliche Freigabe offen. Details: `docs/learning-prep/GA1_ARCHIVING.md`. Speicherlösungen 13/13 Lernentwürfe; insgesamt 139/380. Keine Veröffentlichung.
+
 Noch nicht umgesetzt: die weiteren Zuordnungsvorschläge für
 WiSo und weitere GA1-Themengruppen. Die URL-Inventur bleibt
 eine Lesewarteschlange und wird durch diesen Batch nicht pauschal als geprüft
