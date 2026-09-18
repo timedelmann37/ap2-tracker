@@ -381,6 +381,11 @@ Unpassende Buchbatch-Treffer ausgeschlossen. Zwei eigene Grafiken und
 interaktive Prüfungen; Details in `learning-prep/GA1_OBJECT_STORAGE.md`.
 Stand: 132/380 Lernentwürfe; menschliche Fachfreigabe weiterhin offen.
 
+Write Penalty (`ga1-3__4`) ergänzt: eigene IOPS-Fälle, zwei Grafiken und
+drei MathML-Formeln. Dell-I/O-Modell begrenzt abgeglichen; ungeeignete
+Buchtreffer ausgeschlossen. Tests und gezielte Browserprüfung bestanden.
+Details: `learning-prep/GA1_WRITE_PENALTY.md`. Stand 133/380 Lernentwürfe.
+
 Noch nicht umgesetzt: die weiteren Zuordnungsvorschläge für
 WiSo und weitere GA1-Themengruppen. Die URL-Inventur bleibt
 eine Lesewarteschlange und wird durch diesen Batch nicht pauschal als geprüft
