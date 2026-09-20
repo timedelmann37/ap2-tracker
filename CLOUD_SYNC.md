@@ -65,6 +65,38 @@ dafür, dass jeder Nutzer ausschließlich seine eigene Zeile lesen und
 schreiben kann — das ist die einzige Sicherheitsschranke, da der Client
 direkt mit der Datenbank spricht (kein eigenes Backend).
 
+## 2b. Lerngruppe einrichten (Rangliste)
+
+Optional, aber Voraussetzung für den Abschnitt „Lerngruppe" auf der Übersicht
+und die Profil-Felder im Konto-Dialog. Die ausführbare Einrichtung liegt in
+[`supabase/leaderboard.sql`](supabase/leaderboard.sql) — im **SQL Editor** →
+**New query** einfügen und mit **Run** ausführen. Sie setzt Schritt 2 voraus
+und kann gefahrlos mehrfach laufen; Fortschrittsdaten werden dabei weder
+gelesen noch verändert.
+
+Was sie anlegt:
+
+- **`public.profiles`**: pro Konto ein Anzeigename und der Schalter
+  `show_on_leaderboard` (Standard: an, also **Opt-out**). Ein Trigger legt die
+  Zeile bei jeder neuen Registrierung an, der Anzeigename ist mit dem Teil der
+  E-Mail vor dem `@` vorbelegt; bestehende Konten werden einmalig nachgezogen.
+  Row Level Security wie bei `progress`: jeder sieht und ändert nur die eigene
+  Zeile.
+- **`public.leaderboard`** (View): läuft mit Datenbank-Rechten und darf daher
+  alle `progress`-Zeilen lesen, gibt aber **nur Zählwerte** heraus —
+  `display_name`, `done_count` (abgehakte Kernthemen gesamt), `week_count`
+  (davon in den letzten 7 Tagen, ohne Wiederholungsmarker) und
+  `last_active_at`. Weder E-Mail noch der rohe Fortschritt verlassen die
+  Datenbank. Nur Konten mit `show_on_leaderboard = true` erscheinen.
+- **Rechte**: Lesen der View ist ausschließlich der Rolle `authenticated`
+  erlaubt; `anon` (nicht angemeldete Besucher) bekommt `permission denied`.
+  Supabase vergibt neue Objekte standardmäßig auch an `anon`, die Datei nimmt
+  das explizit zurück.
+
+Prüfen lässt sich die Datei lokal ohne Supabase-Projekt mit
+`npm run test:leaderboard-sql` (eingebettetes Postgres via PGlite, mit Stub
+für `auth.users`, `auth.uid()` und die Rollen).
+
 ## 3. Magic-Link-Login aktivieren
 
 1. Im Dashboard: **Authentication** → **Providers** → **Email** ist bei
