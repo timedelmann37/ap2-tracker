@@ -64,5 +64,7 @@ assert(missing.length === 0, `alle allowlisteten Laufzeit-Dateien wurden veroeff
 assert(!actual.some(file => /(?:^|\/)(?:knowledge-base|content|scripts|node_modules|\.git)(?:\/|$)/.test(file)), 'private Quellen und Build-Eingaben sind nicht im Publish-Verzeichnis');
 assert(!actual.some(file => /CameraPlainVariable|Inter-Latin|RhymesDisplay|RobotoMono/i.test(file)), 'unversionierte Workspace-Schriften werden nicht lokal mitveroeffentlicht');
 
-const netlifyConfig = await readFile(path.join(repoRoot, 'netlify.toml'), 'utf8');
-assert(/publish\s*=\s*"dist"/.test(netlifyConfig), 'Netlify veroeffentlicht ausschliesslich dist');
+const nginxConfig = await readFile(path.join(repoRoot, 'nginx', 'default.conf'), 'utf8');
+assert(/location = \/tracker \{ return 301 \/; \}/.test(nginxConfig), 'nginx leitet /tracker auf den Hub um');
+assert(/error_page 404 \/index\.html;/.test(nginxConfig), 'nginx zeigt bei 404 die Startseite mit korrektem Status');
+assert(!/try_files[^;]*\/index\.html/.test(nginxConfig), 'nginx hat keinen Catch-all-Rewrite auf die Startseite');
