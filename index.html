@@ -251,6 +251,18 @@
     border:1px solid var(--border); border-radius:var(--r-sm); font-size:12px; margin-bottom:12px;
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
   }
+  .account-profile{ border-top:1px solid var(--border); padding-top:12px; margin-bottom:12px; }
+  .account-profile[hidden]{ display:none; }
+  .account-label{
+    display:block; font-size:11px; font-weight:500; color: var(--text-secondary);
+    letter-spacing:.02em; margin-bottom:6px;
+  }
+  .account-check{
+    display:flex; align-items:center; gap:8px; font-size:12px; color: var(--text-primary);
+    cursor:pointer; margin:2px 0 8px;
+  }
+  .account-check input{ accent-color: var(--brand-bright); width:15px; height:15px; margin:0; cursor:pointer; }
+  .account-body p.account-hint{ font-size:11.5px; color: var(--text-muted); margin:0; }
 
   /* ---------- Hero ---------- */
   .hub-head{ margin: 48px 0 44px; }
@@ -861,6 +873,15 @@
       <div id="accountLoggedIn" hidden>
         <div class="account-user-row" id="accountUserRow"></div>
         <p id="accountSyncStatus" role="status" aria-live="polite">Fortschritt wird abgeglichen …</p>
+        <div class="account-profile" id="accountProfile" hidden>
+          <label class="account-label" for="accountDisplayName">Anzeigename</label>
+          <input type="text" id="accountDisplayName" class="account-input" maxlength="32" autocomplete="nickname" spellcheck="false" placeholder="Wie du in der Lerngruppe heißt">
+          <label class="account-check">
+            <input type="checkbox" id="accountShowOnLeaderboard" checked>
+            <span>In der Lerngruppe anzeigen</span>
+          </label>
+          <p class="account-hint">Andere sehen nur deinen Anzeigenamen und Zählwerte, nie deine E-Mail oder einzelne Themen.</p>
+        </div>
         <div class="account-actions">
           <button type="button" id="accountSignOut" class="account-btn">Abmelden</button>
         </div>
@@ -2063,7 +2084,107 @@ function accountEls(){
     signOut: document.getElementById('accountSignOut'),
     status: document.getElementById('accountStatus'),
     title: document.getElementById('accountTitle'),
+    profile: document.getElementById('accountProfile'),
+    displayName: document.getElementById('accountDisplayName'),
+    showOnLeaderboard: document.getElementById('accountShowOnLeaderboard'),
   };
+}
+
+// ---------------------------------------------------------------
+// Profil (Lerngruppe): Anzeigename + Opt-out. Liegt in public.profiles,
+// eine Zeile je Konto (RLS: nur die eigene). Andere sehen davon nur den
+// Anzeigenamen über die View public.leaderboard - siehe CLOUD_SYNC.md 2b.
+// ---------------------------------------------------------------
+const PROFILE_NAME_MAX = 32;
+let cloudProfile = null;
+let profileSaveTimer = null;
+let profileSaving = false;
+
+function defaultDisplayName(email){
+  const local = String(email || '').split('@')[0].trim();
+  return (local || 'Lernende:r').slice(0, PROFILE_NAME_MAX);
+}
+
+function renderProfileUI(){
+  const els = accountEls();
+  if (!els.profile) return;
+  const available = !!(cloudUser && cloudProfile);
+  els.profile.hidden = !available;
+  if (!available) return;
+  if (els.displayName && document.activeElement !== els.displayName) els.displayName.value = cloudProfile.display_name;
+  if (els.showOnLeaderboard) els.showOnLeaderboard.checked = cloudProfile.show_on_leaderboard !== false;
+}
+
+async function loadProfile(){
+  if (!sb || !cloudUser) return;
+  const userId = cloudUser.id;
+  const { data, error } = await sb.from('profiles').select('display_name, show_on_leaderboard').eq('user_id', userId).maybeSingle();
+  if (cloudUser?.id !== userId) return;
+  if (error) {
+    // Tabelle fehlt (PGRST205) oder kein Zugriff: Block bleibt ausgeblendet, Sync läuft weiter.
+    cloudProfile = null;
+    renderProfileUI();
+    return;
+  }
+  cloudProfile = data
+    ? { display_name: data.display_name, show_on_leaderboard: data.show_on_leaderboard !== false }
+    : { display_name: defaultDisplayName(cloudUser.email), show_on_leaderboard: true };
+  renderProfileUI();
+}
+
+function readProfileForm(){
+  const els = accountEls();
+  return {
+    display_name: els.displayName ? els.displayName.value.trim().slice(0, PROFILE_NAME_MAX) : '',
+    show_on_leaderboard: els.showOnLeaderboard ? els.showOnLeaderboard.checked : true,
+  };
+}
+
+function scheduleProfileSave(){
+  clearTimeout(profileSaveTimer);
+  profileSaveTimer = setTimeout(saveProfile, 700);
+}
+
+async function saveProfile(){
+  clearTimeout(profileSaveTimer);
+  if (!sb || !cloudUser || !cloudProfile) return;
+  const els = accountEls();
+  const next = readProfileForm();
+  if (!next.display_name) {
+    if (els.displayName) els.displayName.value = cloudProfile.display_name;
+    setAccountStatus('Der Anzeigename darf nicht leer sein.', 'error');
+    return;
+  }
+  if (next.display_name === cloudProfile.display_name && next.show_on_leaderboard === cloudProfile.show_on_leaderboard) return;
+  if (profileSaving) { scheduleProfileSave(); return; }
+  profileSaving = true;
+  const userId = cloudUser.id;
+  setAccountStatus('Profil wird gespeichert …');
+  try {
+    const { error } = await sb.from('profiles').upsert(
+      { user_id: userId, display_name: next.display_name, show_on_leaderboard: next.show_on_leaderboard, updated_at: new Date().toISOString() },
+      { onConflict: 'user_id' }
+    );
+    if (error) throw error;
+    if (cloudUser?.id !== userId) return;
+    cloudProfile = next;
+    setAccountStatus(next.show_on_leaderboard ? 'Profil gespeichert.' : 'Profil gespeichert - du bist in der Lerngruppe nicht sichtbar.', 'ok');
+  } catch (error) {
+    if (cloudUser?.id === userId) setAccountStatus('Profil konnte nicht gespeichert werden: ' + (error.message || 'unbekannter Fehler'), 'error');
+  } finally {
+    profileSaving = false;
+    renderProfileUI();
+  }
+}
+
+function wireProfileUI(){
+  const els = accountEls();
+  if (els.displayName) {
+    els.displayName.addEventListener('input', scheduleProfileSave);
+    els.displayName.addEventListener('blur', saveProfile);
+    els.displayName.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); saveProfile(); } });
+  }
+  if (els.showOnLeaderboard) els.showOnLeaderboard.addEventListener('change', saveProfile);
 }
 
 function setAccountStatus(msg, kind){
@@ -2097,6 +2218,7 @@ function refreshAccountUI(){
     if (els.loggedOut) els.loggedOut.hidden = true;
     if (els.loggedIn) els.loggedIn.hidden = false;
     if (els.userRow) els.userRow.textContent = cloudUser.email ? 'Angemeldet als ' + cloudUser.email : 'Angemeldet';
+    renderProfileUI();
   } else {
     if (els.btnLabel) els.btnLabel.textContent = 'Anmelden';
     if (els.title) els.title.textContent = 'Anmelden';
@@ -2197,6 +2319,7 @@ function wireAccountUI(){
   if (els.sendLink) els.sendLink.addEventListener('click', sendMagicLink);
   if (els.email) els.email.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMagicLink(); });
   if (els.signOut) els.signOut.addEventListener('click', signOutCloud);
+  wireProfileUI();
 }
 
 async function initCloudSync(){
@@ -2216,6 +2339,7 @@ async function initCloudSync(){
   if (sessionData && sessionData.session) {
     cloudUser = sessionData.session.user;
     refreshAccountUI();
+    loadProfile();
     await pullStateFromCloud();
   }
 
@@ -2223,10 +2347,13 @@ async function initCloudSync(){
     if (event === 'SIGNED_IN' && session) {
       cloudUser = session.user;
       refreshAccountUI();
+      loadProfile();
       pullStateFromCloud();
     } else if (event === 'SIGNED_OUT') {
       cloudUser = null;
+      cloudProfile = null;
       clearTimeout(cloudSyncTimer);
+      clearTimeout(profileSaveTimer);
       setSyncStatus('Fortschritt wird abgeglichen …');
       refreshAccountUI();
     }
