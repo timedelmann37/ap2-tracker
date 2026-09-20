@@ -153,7 +153,7 @@
   /* Lever 3: staggerter Load-in - nur bei erlaubter Bewegung; Default und reduce zeigen alles sofort */
   @media (prefers-reduced-motion: no-preference){
     @keyframes riseIn{ from{ opacity: 0; transform: translateY(10px); } to{ opacity: 1; transform: none; } }
-    .tw-card, .category .cards > details.card, .dash, .dash-recent, .timeline-panel, .rhythm{
+    .tw-card, .category .cards > details.card, .dash, .group-panel, .dash-recent, .timeline-panel, .rhythm{
       animation: riseIn .5s cubic-bezier(.16, 1, .3, 1) both;
     }
     .tw-rest .tw-card:nth-child(1){ animation-delay: 55ms; }
@@ -163,6 +163,7 @@
     .category .cards > details.card:nth-child(4){ animation-delay: 135ms; }
     .category .cards > details.card:nth-child(5){ animation-delay: 180ms; }
     .category .cards > details.card:nth-child(n+6){ animation-delay: 215ms; }
+    .group-panel{ animation-delay: 30ms; }
     .dash-recent{ animation-delay: 50ms; }
     .timeline-panel, .rhythm{ animation-delay: 100ms; }
   }
@@ -861,6 +862,36 @@
   .heatmap-legend[hidden]{ display:none; }
   .heatmap-legend .heatday{ width:11px; height:11px; }
 
+  /* ---------- Lerngruppe (Rangliste, nur eingeloggt) ---------- */
+  .group-panel{ margin-bottom: 40px; }
+  .group-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom: 14px; }
+  .group-head .panel-label{ margin:0; }
+  .seg{ display:inline-flex; border:1px solid var(--border); border-radius: var(--r-sm); padding:2px; background: var(--surface-2); }
+  .seg-btn{
+    border:none; background:transparent; color: var(--text-secondary); font-family:inherit; font-size:11.5px; font-weight:500;
+    padding:5px 10px; border-radius: calc(var(--r-sm) - 2px); cursor:pointer;
+  }
+  .seg-btn:hover{ color: var(--text-primary); }
+  .seg-btn.is-active{ background: var(--surface-1); color: var(--text-primary); border:1px solid var(--border-strong); padding:4px 9px; }
+  .group-list{ display:flex; flex-direction:column; gap:4px; margin:0; padding:0; list-style:none; }
+  .group-row{
+    display:grid; grid-template-columns: 26px minmax(0,1fr) auto; column-gap:10px; align-items:center;
+    padding:8px 10px; border-radius: var(--r-sm); background: var(--surface-2); border:1px solid transparent;
+    font-size:12px;
+  }
+  .group-row.is-me{ border-color: var(--border-strong); box-shadow: inset 3px 0 0 var(--brand-bright); }
+  .group-rank{ font-family: var(--font-mono); font-size:11px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  .group-name{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color: var(--text-primary); }
+  .group-row.is-me .group-name::after{ content:' · du'; color: var(--text-muted); }
+  .group-value{ grid-column:3; grid-row:1; font-family: var(--font-mono); font-size:12.5px; font-weight:600; font-variant-numeric: tabular-nums; text-align:right; white-space:nowrap; }
+  .group-value small{ font-weight:400; color: var(--text-muted); font-size:10.5px; margin-left:4px; }
+  .group-active{ grid-column: 2 / -1; grid-row:2; font-size:10.5px; color: var(--text-muted); margin-top:1px; }
+  @media (min-width: 560px){
+    .group-row{ grid-template-columns: 26px minmax(0,1fr) 110px auto; }
+    .group-active{ grid-column: 3; grid-row: 1; margin-top:0; }
+    .group-value{ grid-column: 4; }
+  }
+  .group-note{ font-size:11.5px; color: var(--text-muted); margin:10px 0 0; line-height:1.5; }
   .dash-recent{ margin-bottom: 40px; }
   .dash-list-head{ font-size:11px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; color:var(--text-muted); margin:0 0 11px; }
   .chip-list{ display:flex; flex-direction:column; gap:6px; }
@@ -1034,6 +1065,19 @@
       </div>
     </section>
   </div>
+
+  <section class="panel group-panel" id="groupPanel">
+    <div class="group-head">
+      <h2 class="panel-label">Lerngruppe</h2>
+      <div class="seg" id="groupMode" role="group" aria-label="Zeitraum" hidden>
+        <button type="button" class="seg-btn is-active" data-mode="week" aria-pressed="true">Diese Woche</button>
+        <button type="button" class="seg-btn" data-mode="total" aria-pressed="false">Gesamt</button>
+      </div>
+    </div>
+    <div class="group-body" id="groupBody">
+      <p class="chip-empty"><a href="/?konto=anmelden">Melde dich an</a>, um die Lerngruppe zu sehen.</p>
+    </div>
+  </section>
 
   <section class="panel dash-recent">
     <h2 class="dash-list-head">Zuletzt bearbeitet</h2>
@@ -2449,9 +2493,116 @@ function wireAccountUI(){
   if (els.signOut) els.signOut.addEventListener('click', signOutCloud);
 }
 
+// ---------------------------------------------------------------
+// Lerngruppe: liest die View public.leaderboard (nur für angemeldete
+// Nutzer freigegeben, liefert je Opt-in-Profil nur Anzeigename + Zählwerte).
+// Gesamtzahl der Kernthemen kommt aus DATA, die Datenbank kennt den
+// Katalog nicht. Einrichtung: CLOUD_SYNC.md, Abschnitt 2b.
+// ---------------------------------------------------------------
+const GROUP_TOTAL_ITEMS = DATA.reduce((n, cat) => n + cat.topics.reduce((m, t) => m + countTopic(t).total, 0), 0);
+let groupRows = null;
+let groupMode = 'week';
+
+function groupEls(){
+  return { body: document.getElementById('groupBody'), mode: document.getElementById('groupMode') };
+}
+
+function relativeActivity(iso){
+  if (!iso) return 'noch nichts abgehakt';
+  const then = new Date(iso);
+  if (isNaN(then)) return '';
+  const startOf = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const days = Math.round((startOf(new Date()) - startOf(then)) / 86400000);
+  if (days <= 0) return 'heute aktiv';
+  if (days === 1) return 'gestern aktiv';
+  if (days < 14) return 'vor ' + days + ' Tagen aktiv';
+  return 'zuletzt am ' + then.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
+}
+
+function groupNote(text){
+  const els = groupEls();
+  if (els.mode) els.mode.hidden = true;
+  if (els.body) els.body.innerHTML = '<p class="chip-empty">' + text + '</p>';
+}
+
+function renderGroup(){
+  const els = groupEls();
+  if (!els.body) return;
+  if (!cloudUser) { groupNote('<a href="/?konto=anmelden">Melde dich an</a>, um die Lerngruppe zu sehen.'); return; }
+  if (!groupRows) return;
+
+  const key = groupMode === 'total' ? 'done_count' : 'week_count';
+  const rows = groupRows.slice().sort((a, b) =>
+    (b[key] - a[key]) ||
+    ((b.last_active_at ? Date.parse(b.last_active_at) : 0) - (a.last_active_at ? Date.parse(a.last_active_at) : 0)) ||
+    a.display_name.localeCompare(b.display_name, 'de')
+  );
+
+  els.mode.hidden = false;
+  els.mode.querySelectorAll('.seg-btn').forEach(btn => {
+    const active = btn.dataset.mode === groupMode;
+    btn.classList.toggle('is-active', active);
+    btn.setAttribute('aria-pressed', String(active));
+  });
+
+  const list = document.createElement('ol');
+  list.className = 'group-list';
+  rows.forEach((row, i) => {
+    const li = document.createElement('li');
+    li.className = 'group-row' + (row.user_id === cloudUser.id ? ' is-me' : '');
+    const rank = document.createElement('span'); rank.className = 'group-rank'; rank.textContent = (i + 1) + '.';
+    const name = document.createElement('span'); name.className = 'group-name'; name.textContent = row.display_name;
+    const active = document.createElement('span'); active.className = 'group-active'; active.textContent = relativeActivity(row.last_active_at);
+    const value = document.createElement('span'); value.className = 'group-value';
+    if (groupMode === 'total') {
+      const pct = GROUP_TOTAL_ITEMS ? Math.round(row.done_count / GROUP_TOTAL_ITEMS * 100) : 0;
+      value.innerHTML = pct + ' %<small>' + row.done_count + ' / ' + GROUP_TOTAL_ITEMS + '</small>';
+    } else {
+      value.innerHTML = row.week_count + '<small>' + (row.week_count === 1 ? 'Kernthema' : 'Kernthemen') + '</small>';
+    }
+    li.append(rank, name, active, value);
+    list.appendChild(li);
+  });
+
+  els.body.replaceChildren(list);
+  if (rows.length < 2) {
+    const note = document.createElement('p');
+    note.className = 'group-note';
+    note.textContent = 'Bisher bist du allein hier - sobald sich jemand aus deiner Gruppe anmeldet, erscheint die Liste.';
+    els.body.appendChild(note);
+  }
+}
+
+async function loadGroup(){
+  if (!sb || !cloudUser) { renderGroup(); return; }
+  const userId = cloudUser.id;
+  const { data, error } = await sb.from('leaderboard').select('user_id, display_name, done_count, week_count, last_active_at');
+  if (cloudUser?.id !== userId) return;
+  if (error) {
+    console.error('Lerngruppe konnte nicht geladen werden:', error.message);
+    groupNote('Lerngruppe ist noch nicht eingerichtet (siehe CLOUD_SYNC.md, Abschnitt 2b).');
+    return;
+  }
+  groupRows = data || [];
+  renderGroup();
+}
+
+function wireGroupUI(){
+  const els = groupEls();
+  if (!els.mode) return;
+  els.mode.addEventListener('click', (e) => {
+    const btn = e.target.closest('.seg-btn');
+    if (!btn || btn.dataset.mode === groupMode) return;
+    groupMode = btn.dataset.mode;
+    renderGroup();
+  });
+}
+
 async function initCloudSync(){
   wireAccountUI();
+  wireGroupUI();
   refreshAccountUI();
+  renderGroup();
   if (!sb) return;
 
   if (typeof saveState === 'function') {
@@ -2463,6 +2614,7 @@ async function initCloudSync(){
   if (sessionData && sessionData.session) {
     cloudUser = sessionData.session.user;
     refreshAccountUI();
+    loadGroup();
     await pullStateFromCloud();
   }
 
@@ -2470,12 +2622,15 @@ async function initCloudSync(){
     if (event === 'SIGNED_IN' && session) {
       cloudUser = session.user;
       refreshAccountUI();
+      loadGroup();
       pullStateFromCloud();
     } else if (event === 'SIGNED_OUT') {
       cloudUser = null;
+      groupRows = null;
       clearTimeout(cloudSyncTimer);
       setSyncStatus('Fortschritt wird abgeglichen …');
       refreshAccountUI();
+      renderGroup();
     }
   });
 }
