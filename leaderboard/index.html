@@ -566,7 +566,68 @@
     .bottomnav-link svg { width: 20px; height: 20px; display: block; }
     .bottomnav-link.active { color: var(--brand); }
     .bottomnav-link:active { background: var(--surface-2); }
-    .page { padding-bottom: 92px !important; }
+    .page { padding-bottom: 96px !important; }
+  }
+
+  /* Search Overlay & Modal Styles */
+  .search-overlay {
+    position: fixed; inset: 0; z-index: 100;
+    background: color-mix(in srgb, var(--page) 50%, rgba(0, 0, 0, 0.65));
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 9vh 16px 16px;
+  }
+  .search-overlay[hidden] { display: none !important; }
+  .search-panel {
+    width: 100%; max-width: 560px;
+    background: var(--surface-1);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r-md);
+    padding: 14px;
+    display: flex; flex-direction: column; gap: 10px;
+    max-height: 76vh;
+    box-shadow: 0 20px 60px rgb(0 0 0 / 45%);
+  }
+  .search-bar { display: flex; align-items: center; gap: 8px; width: 100%; }
+  .search-bar svg {
+    width: 18px !important; height: 18px !important; min-width: 18px !important; max-width: 18px !important;
+    flex-shrink: 0; color: var(--text-muted);
+  }
+  .search-bar input {
+    flex: 1; min-width: 0; font-family: inherit; font-size: 14px;
+    padding: 9px 12px; border: 1px solid var(--border-strong);
+    border-radius: var(--r-sm); background: var(--page); color: var(--text-primary);
+  }
+  .search-bar button.search-close {
+    font-family: inherit; font-size: 14px; padding: 8px 12px;
+    border: 1px solid var(--border); border-radius: var(--r-sm);
+    background: var(--surface-2); color: var(--text-secondary);
+    cursor: pointer; white-space: nowrap;
+  }
+  .search-results { overflow-y: auto; display: flex; flex-direction: column; gap: 3px; max-height: 55vh; }
+  .search-hit {
+    display: flex; flex-direction: column; gap: 2px; padding: 9px 11px;
+    border-radius: var(--r-sm); text-decoration: none; color: inherit;
+    border: 1px solid transparent;
+  }
+  .search-hit:hover { background: var(--surface-2); border-color: var(--border); }
+  .search-hit-cat { font-size: 10px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; color: var(--text-muted); }
+  .search-hit-title { font-size: 13.5px; font-weight: 500; }
+  .search-empty { font-size: 13px; color: var(--text-muted); padding: 12px 6px; }
+
+  /* Topnav Search Bar */
+  .topnav-search {
+    display: flex; align-items: center; gap: 6px; margin-left: 6px;
+    padding: 5px 9px; border: 1px solid var(--border); border-radius: var(--r-sm);
+    background: var(--surface-2); flex: 0 1 180px; min-width: 60px; max-width: 180px;
+  }
+  .topnav-search svg {
+    width: 14px !important; height: 14px !important; min-width: 14px !important; max-width: 14px !important;
+    flex-shrink: 0; color: var(--text-muted);
+  }
+  .topnav-search input {
+    border: none; background: transparent; font-family: inherit;
+    font-size: 12px; color: var(--text-primary); width: 100%; min-width: 0; outline: none;
   }
 </style>
 </head>
@@ -593,7 +654,7 @@
       <a class="topnav-link" href="/simulation/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="m8 9 3 3-3 3M13.5 15H17"/></svg>Simulation</a>
       <span class="topnav-disabled" title="Geplant: einzelne Themen gezielt nachschlagen, unabhängig vom Wochenplan"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
       <div class="topnav-search">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
         <input type="search" id="navSearchInput" placeholder="Alle Bereiche durchsuchen …" autocomplete="off" aria-label="Bereichsübergreifende Suche">
       </div>
     </div>
@@ -638,14 +699,14 @@
 
       <div id="lbListContainer">
         <div class="empty-state">
-          <p><a href="/?konto=anmelden">Melde dich an</a>, um die Rangliste deiner Lerngruppe zu sehen.</p>
+          <p><a href="/?konto=anmelden" onclick="openAccountModal(); return false;">Melde dich an</a>, um die Rangliste deiner Lerngruppe zu sehen.</p>
         </div>
       </div>
 
       <div class="privacy-box">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
         <span>
-          <strong>Privatsphäre:</strong> Es werden nur Nutzer angezeigt, die in ihrem Profil die Freigabe für das Leaderboard aktiviert haben. Deinen Anzeigenamen und die Sichtbarkeit kannst du jederzeit im <a href="/?konto=anmelden" style="color:var(--brand-bright);text-decoration:underline;">Konto-Menü</a> anpassen.
+          <strong>Privatsphäre:</strong> Es werden nur Nutzer angezeigt, die in ihrem Profil die Freigabe für das Leaderboard aktiviert haben. Deinen Anzeigenamen und die Sichtbarkeit kannst du jederzeit im <a href="/?konto=anmelden" onclick="openAccountModal(); return false;" style="color:var(--brand-bright);text-decoration:underline;">Konto-Menü</a> anpassen.
         </span>
       </div>
     </section>
@@ -723,7 +784,7 @@
 <div class="search-overlay" id="searchOverlay" hidden>
   <div class="search-panel" role="dialog" aria-modal="true" aria-label="Bereichsübergreifende Suche">
     <div class="search-bar">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
       <input type="search" id="searchInput" placeholder="Suchbegriff eingeben …" autocomplete="off">
       <button type="button" id="searchClose" class="search-close" aria-label="Suche schließen">✕</button>
     </div>
@@ -824,8 +885,8 @@ function escapeHtml(str){
 // ---------------------------------------------------------------
 // 3. Supabase Cloud Setup
 // ---------------------------------------------------------------
-const SUPABASE_URL = 'https://nvjgbomdrxoygqbfxuhc.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52amdib21kcnhveWdxYmZ4dWhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEyMzgxNTksImV4cCI6MjA1NjgxNDE1OX0.c36e4f3a9df9cbf81b15c9d06b6ebcff1a6eb7fe5d8cc8015c7e3aa12d93e9ae';
+const SUPABASE_URL = 'https://snwkmwevqmqulmexgxxr.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable__EFtmQSsRJMyiWVYVNTGQA_rKx39rML';
 
 let sb = null;
 try {
@@ -856,7 +917,7 @@ function renderLeaderboard(){
   if (!cloudUser) {
     toggle.hidden = true;
     myRankBox.innerHTML = '';
-    container.innerHTML = '<div class="empty-state"><p><a href="/?konto=anmelden">Melde dich an</a>, um die Rangliste deiner Lerngruppe zu sehen.</p></div>';
+    container.innerHTML = '<div class="empty-state"><p><a href="/?konto=anmelden" onclick="openAccountModal(); return false;">Melde dich an</a>, um die Rangliste deiner Lerngruppe zu sehen.</p></div>';
     return;
   }
 
