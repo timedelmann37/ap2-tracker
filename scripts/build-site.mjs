@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { cp, mkdir, readFile, rm, stat } from 'node:fs/promises';
+import { cp, mkdir, readFile, readdir, rm, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -16,7 +16,7 @@ await rm(outputRoot, { recursive: true, force: true });
 await mkdir(outputRoot, { recursive: true });
 
 const assetExtensions = new Set(['.css', '.js', '.svg', '.png', '.jpg', '.jpeg', '.webp', '.gif', '.woff', '.woff2', '.ttf', '.txt', '.ico', '.webmanifest']);
-const pageRoots = ['uebersicht/', 'konzeption-administration/', 'netzwerke/', 'sowi/', 'lernpfad/', 'lernen/', 'simulation/', 'tracker/'];
+const pageRoots = ['leaderboard/', 'uebersicht/', 'konzeption-administration/', 'netzwerke/', 'sowi/', 'lernpfad/', 'lernen/', 'simulation/', 'tracker/'];
 
 function isRuntimePath(relative) {
   const normalized = relative.replaceAll('\\', '/');
@@ -25,8 +25,24 @@ function isRuntimePath(relative) {
   return pageRoots.some(root => normalized.startsWith(root)) && ['.html', '.js'].includes(path.extname(normalized).toLowerCase());
 }
 
-const trackedFiles = execFileSync('git', ['ls-files', '-z'], { cwd: repoRoot, encoding: 'utf8' })
-  .split('\0').filter(Boolean).filter(isRuntimePath);
+let trackedFiles = [];
+async function collectFiles(dir) {
+  const entries = await readdir(dir, { withFileTypes: true });
+  const results = [];
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    const relPath = path.relative(repoRoot, fullPath).replaceAll('\\', '/');
+    if (entry.isDirectory()) {
+      if (entry.name !== 'node_modules' && entry.name !== 'dist' && entry.name !== '.git') {
+        results.push(...await collectFiles(fullPath));
+      }
+    } else if (entry.isFile() && isRuntimePath(relPath)) {
+      results.push(relPath);
+    }
+  }
+  return results;
+}
+trackedFiles = await collectFiles(repoRoot);
 
 // Diese Dateien entstehen beziehungsweise werden erstmals Teil dieses Features.
 // Lernbilder werden nur übernommen, wenn eine generierte Seite sie tatsächlich referenziert.

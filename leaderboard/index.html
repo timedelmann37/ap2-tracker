@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leaderboard · AP2 Vorbereitung</title>
+<meta name="description" content="Rangliste und Lernfortschritt der Lerngruppe für die IHK-Abschlussprüfung AP2.">
+<meta property="og:title" content="Leaderboard · AP2 Vorbereitung">
+<meta property="og:description" content="Rangliste und Lernfortschritt der Lerngruppe für die IHK-Abschlussprüfung AP2.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<script src="/assets/ap2-theme.js?v=3.9.3"></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<script defer src="/assets/ap2-navigation.js?v=3.10.2"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+<style>
+  @view-transition { navigation: none; }
+
+  /* Deep Space Compact Page Layout */
+  .leaderboard-page {
+    min-height: 100vh;
+  }
+
+  .leaderboard-page .page {
+    padding: 32px clamp(16px, 4vw, 40px) 56px !important;
+    max-width: 1140px;
+    margin: 0 auto !important;
+  }
+
+  .leaderboard-page .header {
+    margin: 0 0 18px;
+  }
+
+  .leaderboard-page .page-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 6px;
+    color: var(--space-accent);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .leaderboard-page .page-kicker .section-symbol {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    display: grid;
+    place-items: center;
+    background: rgb(185 151 255 / 12%);
+    border: 1px solid rgb(185 151 255 / 24%);
+    color: var(--space-accent);
+    flex-shrink: 0;
+  }
+
+  .leaderboard-page .page-kicker .section-symbol svg {
+    width: 13px;
+    height: 13px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+  }
+
+  .leaderboard-page .header h1 {
+    font-family: var(--font-display);
+    font-size: clamp(22px, 3.2vw, 30px);
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+    margin: 0;
+    color: var(--text-primary);
+  }
+
+  .leaderboard-page .header p {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-secondary);
+    max-width: 58ch;
+    margin: 6px 0 0;
+  }
+
+  /* Compact 2-Column Responsive Grid */
+  .leaderboard-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 14px;
+    margin-bottom: 32px;
+    align-items: start;
+  }
+  @media (min-width: 900px) {
+    .leaderboard-grid {
+      grid-template-columns: minmax(0, 1.7fr) minmax(290px, 1fr);
+      gap: 18px;
+    }
+  }
+
+  /* Deep Space Glass Panels */
+  .panel {
+    background: var(--glass);
+    border: 1px solid var(--glass-edge);
+    border-radius: 16px;
+    padding: 16px 18px;
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    box-shadow: var(--glass-shine), 0 12px 36px rgb(6 4 16 / 16%);
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+
+  .panel-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+
+  .panel-icon {
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    display: grid;
+    place-items: center;
+    background: rgb(185 151 255 / 12%);
+    border: 1px solid rgb(185 151 255 / 24%);
+    color: var(--space-accent);
+    flex-shrink: 0;
+  }
+  .panel-icon svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .panel-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--text-muted);
+    margin: 0;
+  }
+
+  .panel-h2 {
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 1px 0 0;
+    letter-spacing: -0.01em;
+  }
+
+  /* Deep Space Segmented Toggle */
+  .seg {
+    display: inline-flex;
+    background: var(--refero-badge-surface);
+    border: 1px solid var(--refero-badge-edge);
+    padding: 2px;
+    border-radius: 9999px;
+    gap: 1px;
+  }
+  .seg-btn {
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: all .15s ease;
+    white-space: nowrap;
+  }
+  .seg-btn:hover {
+    color: var(--text-primary);
+  }
+  .seg-btn.is-active {
+    background: var(--glass-deep);
+    color: var(--text-primary);
+    border: 1px solid var(--glass-edge);
+    box-shadow: 0 2px 6px rgb(0 0 0 / 25%), inset 0 1px 0 rgb(255 255 255 / 15%);
+  }
+
+  /* Deep Space Compact User Hero Banner */
+  .my-rank-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 10px 16px;
+    background: var(--glass);
+    border: 1px solid var(--glass-edge);
+    border-radius: 12px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: var(--glass-shine), 0 8px 24px rgb(8 4 24 / 10%);
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .my-rank-info {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+  }
+  .my-rank-badge {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgb(164 71 255 / 35%), rgb(56 223 255 / 35%));
+    color: #fff;
+    border: 1px solid var(--laser-cyan);
+    display: grid;
+    place-items: center;
+    font-size: 12.5px;
+    font-weight: 700;
+    box-shadow: 0 0 10px rgb(56 223 255 / 25%);
+    flex-shrink: 0;
+  }
+  .my-rank-texts h3 {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .my-rank-texts p {
+    margin: 1px 0 0;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .my-rank-stats {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .my-stat-box {
+    text-align: right;
+  }
+  .my-stat-val {
+    font-variant-numeric: tabular-nums;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--laser-cyan);
+  }
+  .my-stat-lbl {
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+
+  /* Deep Space Leaderboard List & Items */
+  .lb-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .lb-item {
+    background: color-mix(in srgb, var(--surface-1) 50%, transparent);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    transition: transform .12s ease, border-color .12s ease, background .12s ease;
+  }
+  .lb-item:hover {
+    background: color-mix(in srgb, var(--surface-2) 75%, transparent);
+    border-color: var(--glass-edge);
+    transform: translateY(-1px);
+  }
+  .lb-item.is-me {
+    background: color-mix(in srgb, var(--space-accent) 9%, var(--surface-1));
+    border-color: rgb(185 151 255 / 45%);
+    box-shadow: inset 2px 0 0 var(--space-accent), 0 2px 12px rgb(185 151 255 / 12%);
+  }
+
+  .lb-row-top {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+
+  .lb-rank {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 10.5px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    background: var(--surface-2);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .lb-item:nth-child(1) .lb-rank {
+    background: rgb(245 158 11 / 18%);
+    color: #ffd15c;
+    border-color: rgb(245 158 11 / 50%);
+    box-shadow: 0 0 6px rgb(245 158 11 / 25%);
+  }
+  .lb-item:nth-child(2) .lb-rank {
+    background: rgb(56 223 255 / 15%);
+    color: #83e8ff;
+    border-color: rgb(56 223 255 / 45%);
+    box-shadow: 0 0 6px rgb(56 223 255 / 20%);
+  }
+  .lb-item:nth-child(3) .lb-rank {
+    background: rgb(217 119 6 / 16%);
+    color: #f59e0b;
+    border-color: rgb(217 119 6 / 40%);
+  }
+
+  .lb-name {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .lb-badge-you {
+    font-size: 8.5px;
+    font-weight: 600;
+    padding: 1px 4px;
+    border-radius: 3px;
+    background: rgb(185 151 255 / 20%);
+    color: var(--space-accent);
+    border: 1px solid rgb(185 151 255 / 35%);
+    letter-spacing: .03em;
+  }
+
+  .lb-activity {
+    font-size: 10.5px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+
+  .lb-score {
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: right;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .lb-score small {
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--text-muted);
+    margin-left: 3px;
+  }
+
+  /* Deep Space Laser Progress Beam */
+  .lb-progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding-left: 29px;
+  }
+  .lb-track {
+    flex: 1;
+    height: 5px;
+    overflow: visible;
+    border-radius: 999px;
+    border: 1px solid rgb(180 157 225 / 12%);
+    background: rgb(10 7 22 / 38%);
+    box-shadow: inset 0 1px 3px rgb(0 0 0 / 25%);
+    position: relative;
+  }
+  .lb-fill {
+    position: relative;
+    height: 100%;
+    overflow: hidden;
+    border-radius: inherit;
+    background:
+      linear-gradient(180deg, transparent 20%, rgb(255 255 255 / 85%) 44%, #fff 50%, rgb(255 255 255 / 85%) 56%, transparent 80%),
+      linear-gradient(90deg, #7432ff, #b53dff 60%, #38dfff) !important;
+    box-shadow: none;
+    filter: drop-shadow(0 0 3px var(--laser-violet)) drop-shadow(0 0 6px rgb(154 53 255 / 65%));
+    transition: width 850ms cubic-bezier(.16, 1, .3, 1) !important;
+  }
+  .lb-fill::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(90deg, transparent 35%, rgb(255 255 255 / 25%) 60%, #ffffff 75%, transparent 88%);
+    transform: translateX(-100%);
+    animation: progress-beam 2.8s cubic-bezier(.35, 0, .2, 1) infinite;
+  }
+  .lb-fill::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 2px;
+    border-radius: 999px;
+    background: #fff;
+    box-shadow: 0 0 5px 2px var(--laser-cyan);
+  }
+  .lb-pct-label {
+    font-variant-numeric: tabular-nums;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-muted);
+    width: 30px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  :root[data-theme="light"] .lb-track {
+    background: rgb(82 62 127 / 10%);
+  }
+  :root[data-theme="light"] .lb-fill {
+    filter: drop-shadow(0 0 2px var(--laser-violet)) drop-shadow(0 0 5px rgb(116 48 219 / 35%));
+  }
+
+  html[data-motion="paused"] .lb-fill::before { animation-play-state: paused; }
+  html[data-motion="paused"] .lb-fill { transition: none !important; }
+  @media (prefers-reduced-motion: reduce) {
+    .lb-fill::before { animation: none !important; }
+    .lb-fill { transition: none !important; }
+  }
+
+  /* Deep Space Zuletzt bearbeitet Cards */
+  .recent-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .recent-card {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 10px;
+    background: color-mix(in srgb, var(--surface-1) 50%, transparent);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    text-decoration: none;
+    color: inherit;
+    transition: transform .12s ease, border-color .12s ease, background .12s ease;
+  }
+  .recent-card:hover {
+    background: color-mix(in srgb, var(--surface-2) 75%, transparent);
+    border-color: var(--glass-edge);
+    transform: translateX(2px);
+  }
+  .recent-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    box-shadow: 0 0 5px currentColor;
+  }
+  .recent-content {
+    flex: 1;
+    min-width: 0;
+  }
+  .recent-title {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .recent-cat {
+    font-size: 9.5px;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+  .recent-time {
+    font-variant-numeric: tabular-nums;
+    font-size: 10px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+
+  /* Empty State */
+  .empty-state {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 22px 14px;
+    line-height: 1.5;
+    background: color-mix(in srgb, var(--surface-1) 40%, transparent);
+    border-radius: 10px;
+    border: 1px dashed var(--border);
+  }
+  .empty-state a {
+    color: var(--brand-bright);
+    text-decoration: underline;
+  }
+
+  /* Privacy Notice */
+  .privacy-box {
+    margin-top: 12px;
+    padding: 9px 11px;
+    background: color-mix(in srgb, var(--glass-deep) 60%, transparent);
+    border: 1px solid var(--glass-edge);
+    border-radius: 9px;
+    font-size: 10.5px;
+    color: var(--text-muted);
+    line-height: 1.45;
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+  }
+  .privacy-box svg {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+    color: var(--space-accent);
+    margin-top: 1px;
+  }
+
+  /* Topnav Active State for Leaderboard */
+  .topnav-link[href="/leaderboard/"] {
+    background: var(--glass);
+    border-color: var(--glass-edge);
+    color: var(--text-primary);
+  }
+
+  /* Mobile Bottom Navigation */
+  .bottomnav { display: none; }
+  .bottomnav-link svg { width: 20px; height: 20px; max-width: 20px; max-height: 20px; flex: 0 0 20px; }
+  @media (max-width: 820px) {
+    .bottomnav {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+      display: flex; align-items: stretch;
+      background: var(--page); border-top: 1px solid var(--border);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .bottomnav-link {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+      padding: 8px 4px 7px; min-height: 54px;
+      font-family: inherit; font-size: 10.5px; font-weight: 500; line-height: 1;
+      color: var(--text-muted); text-decoration: none;
+      background: transparent; border: none; cursor: pointer;
+    }
+    .bottomnav-link svg { width: 20px; height: 20px; display: block; }
+    .bottomnav-link.active { color: var(--brand); }
+    .bottomnav-link:active { background: var(--surface-2); }
+    .page { padding-bottom: 92px !important; }
+  }
+</style>
+</head>
+<body class="leaderboard-page">
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/">
+      <span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>
+      AP2 Vorbereitung
+    </a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a class="" href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a class="" href="/netzwerke/">Netzwerke</a>
+          <a class="" href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernpfad</a>
+      <a class="topnav-link active" href="/leaderboard/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.45 1-1 1H7v4h10v-4h-2c-.55 0-1-.45-1-1v-2.34c2.84-.7 5-3.26 5-6.32V4H6v4.34c0 3.06 2.16 5.62 5 6.32Z"/></svg>Leaderboard</a>
+      <a class="topnav-link" href="/simulation/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="m8 9 3 3-3 3M13.5 15H17"/></svg>Simulation</a>
+      <span class="topnav-disabled" title="Geplant: einzelne Themen gezielt nachschlagen, unabhängig vom Wochenplan"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+      <div class="topnav-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" id="navSearchInput" placeholder="Alle Bereiche durchsuchen …" autocomplete="off" aria-label="Bereichsübergreifende Suche">
+      </div>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="accountBtn" type="button" aria-label="Konto öffnen"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c1.4-3.6 4.4-5.5 7.5-5.5s6.1 1.9 7.5 5.5"/></svg><span id="accountBtnLabel">Anmelden</span></button>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<main class="page">
+
+  <div class="header">
+    <div>
+      <div class="page-kicker"><span class="section-symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.45 1-1 1H7v4h10v-4h-2c-.55 0-1-.45-1-1v-2.34c2.84-.7 5-3.26 5-6.32V4H6v4.34c0 3.06 2.16 5.62 5 6.32Z"/></svg></span>Lerngruppe &amp; Fortschritt</div>
+      <h1>Rangliste &amp; Aktivität</h1>
+      <p>Vergleiche deinen Lernfortschritt mit deiner Lerngruppe. Sieh auf einen Blick, welche User am meisten % abgeschlossen haben und was zuletzt gelernt wurde.</p>
+    </div>
+  </div>
+
+  <div id="myRankContainer"></div>
+
+  <div class="leaderboard-grid">
+    <!-- Main Leaderboard Panel -->
+    <section class="panel">
+      <div class="panel-header">
+        <div class="panel-title-wrap">
+          <div class="panel-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.45 1-1 1H7v4h10v-4h-2c-.55 0-1-.45-1-1v-2.34c2.84-.7 5-3.26 5-6.32V4H6v4.34c0 3.06 2.16 5.62 5 6.32Z"/></svg>
+          </div>
+          <div>
+            <div class="panel-label">Rangliste</div>
+            <h2 class="panel-h2">Abschlussfortschritt</h2>
+          </div>
+        </div>
+
+        <div class="seg" id="lbModeToggle" role="group" aria-label="Ansicht wechseln" hidden>
+          <button type="button" class="seg-btn is-active" data-mode="total" aria-pressed="true">Gesamtfortschritt (%)</button>
+          <button type="button" class="seg-btn" data-mode="week" aria-pressed="false">Diese Woche</button>
+        </div>
+      </div>
+
+      <div id="lbListContainer">
+        <div class="empty-state">
+          <p><a href="/?konto=anmelden">Melde dich an</a>, um die Rangliste deiner Lerngruppe zu sehen.</p>
+        </div>
+      </div>
+
+      <div class="privacy-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <span>
+          <strong>Privatsphäre:</strong> Es werden nur Nutzer angezeigt, die in ihrem Profil die Freigabe für das Leaderboard aktiviert haben. Deinen Anzeigenamen und die Sichtbarkeit kannst du jederzeit im <a href="/?konto=anmelden" style="color:var(--brand-bright);text-decoration:underline;">Konto-Menü</a> anpassen.
+        </span>
+      </div>
+    </section>
+
+    <!-- Side Panel: Zuletzt bearbeitet -->
+    <aside class="panel">
+      <div class="panel-header">
+        <div class="panel-title-wrap">
+          <div class="panel-icon" style="background:color-mix(in srgb, var(--cat-ga2) 14%, transparent); color:var(--cat-ga2);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div>
+            <div class="panel-label">Aktivität</div>
+            <h2 class="panel-h2">Zuletzt bearbeitet</h2>
+          </div>
+        </div>
+      </div>
+
+      <div class="recent-feed" id="recentFeed">
+        <div class="empty-state">Lädt Aktivitäten …</div>
+      </div>
+    </aside>
+  </div>
+
+</main>
+
+<!-- Mobile Bottom Navigation -->
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link active" href="/leaderboard/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.45 1-1 1H7v4h10v-4h-2c-.55 0-1-.45-1-1v-2.34c2.84-.7 5-3.26 5-6.32V4H6v4.34c0 3.06 2.16 5.62 5 6.32Z"/></svg>Rangliste</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <button type="button" class="bottomnav-link" id="bottomnavSearch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Suche</button>
+</nav>
+
+<!-- Account Modal -->
+<div class="account-overlay" id="accountOverlay" hidden>
+  <div class="account-modal" role="dialog" aria-modal="true" aria-label="Konto">
+    <div class="account-head">
+      <h3 id="accountTitle">Anmelden</h3>
+      <button type="button" id="accountClose" class="account-close" aria-label="Schließen">✕</button>
+    </div>
+    <div class="account-body">
+      <div id="accountLoggedOut">
+        <p>Melde dich an, um deinen Fortschritt zu speichern und auf dem Leaderboard zu erscheinen. Wir senden dir einen Magic Link per E-Mail.</p>
+        <input type="email" id="accountEmail" class="account-input" placeholder="deine@email.de" autocomplete="email">
+        <div class="account-actions">
+          <button type="button" id="accountSendLink" class="account-btn primary">Link senden</button>
+        </div>
+      </div>
+      <div id="accountLoggedIn" hidden>
+        <div class="account-user-row" id="accountUserRow"></div>
+        <div class="account-profile-fields">
+          <label class="account-field">
+            <span class="account-field-label">Anzeigename auf dem Leaderboard</span>
+            <input type="text" id="accountDisplayName" class="account-input" maxlength="40" placeholder="Dein Name">
+          </label>
+          <label class="account-checkbox">
+            <input type="checkbox" id="accountShowOnLeaderboard">
+            <span>Auf dem Leaderboard für andere anzeigen</span>
+          </label>
+        </div>
+        <p id="accountSyncStatus" role="status" aria-live="polite">Fortschritt wird abgeglichen …</p>
+        <div class="account-actions">
+          <button type="button" id="accountSignOut" class="account-btn">Abmelden</button>
+        </div>
+      </div>
+      <div class="account-status" id="accountStatus"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Search Overlay -->
+<div class="search-overlay" id="searchOverlay" hidden>
+  <div class="search-panel" role="dialog" aria-modal="true" aria-label="Bereichsübergreifende Suche">
+    <div class="search-bar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input type="search" id="searchInput" placeholder="Suchbegriff eingeben …" autocomplete="off">
+      <button type="button" id="searchClose" class="search-close" aria-label="Suche schließen">✕</button>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script>
+// ---------------------------------------------------------------
+// 1. DATA Catalog: Alle Themenblöcke zum Abgleich des Gesamtfortschritts
+// ---------------------------------------------------------------
+const DATA = [
+{ id:'ga1', name:'Konzeption und Administration von IT-Systemen', color:'var(--cat-ga1)', topics: [
+  { id:'ga1-1', title:'Block 1 - Server-, Client- und Hardwarekonzeption', items: new Array(12).fill('') },
+  { id:'ga1-2', title:'Block 2 - Virtualisierung, Cluster und Verfügbarkeit', items: new Array(13).fill('') },
+  { id:'ga1-3', title:'Block 3 - Speicherlösungen', items: new Array(13).fill('') },
+  { id:'ga1-4', title:'Block 4 - Backup, Recovery und Notfallvorsorge', items: new Array(10).fill('') },
+  { id:'ga1-5', title:'Block 5 - Cloud und Wirtschaftlichkeit', items: new Array(14).fill('') },
+  { id:'ga1-6', title:'Block 6 - Betriebssysteme und Administration', items: new Array(16).fill('') },
+  { id:'ga1-7', title:'Block 7 - Berechtigungskonzepte', items: new Array(9).fill('') },
+  { id:'ga1-8', title:'Block 8 - IT-Sicherheit und Datenschutz', items: new Array(16).fill('') },
+  { id:'ga1-9', title:'Block 9 - Programme zur automatisierten Systemverwaltung', items: new Array(15).fill('') },
+  { id:'ga1-10', title:'Block 10 - Betrieb, Monitoring und Prozesse', items: new Array(10).fill('') },
+  { id:'ga1-11', title:'Block 11 - Rechnen und Prüfungstechnik', items: new Array(22).fill('') },
+  { id:'ga1-12', title:'Block 12 - Simulation (Prüfungssimulation GA1)', items: new Array(6).fill('') },
+  { id:'ga1-13', title:'Block 13 - Querschnittsthemen (Projekt- & QM)', items: new Array(8).fill('') }
+]},
+{ id:'ga2', name:'Analyse und Entwicklung von Netzwerken', color:'var(--cat-ga2)', topics: [
+  { id:'ga2-1', title:'Block N1 - Grundlagen, Medien und Verkabelung', items: new Array(14).fill('') },
+  { id:'ga2-2', title:'Block N2 - IPv4 und Subnetting', items: new Array(8).fill('') },
+  { id:'ga2-3', title:'Block N3 - IPv6, DHCP und DNS', items: new Array(13).fill('') },
+  { id:'ga2-4', title:'Block N4 - Routing und NAT', items: new Array(11).fill('') },
+  { id:'ga2-5', title:'Block N5 - Switching und VLANs', items: new Array(13).fill('') },
+  { id:'ga2-6', title:'Block N6 - WLAN, WAN und VPN', items: new Array(15).fill('') },
+  { id:'ga2-7', title:'Block N7 - Netzwerksicherheit', items: new Array(13).fill('') },
+  { id:'ga2-8', title:'Block N8 - Verfügbarkeit, Monitoring und Fehlersuche', items: new Array(14).fill('') },
+  { id:'ga2-9', title:'Prüfungstechnik GA2', items: new Array(6).fill('') }
+]},
+{ id:'wiso', name:'Wirtschafts- und Sozialkunde', color:'var(--cat-wiso)', topics: [
+  { id:'wiso-1', title:'W1 - Berufsbildung und Arbeitswelt', items: new Array(14).fill('') },
+  { id:'wiso-2', title:'W2 - Arbeitsrecht I', items: new Array(14).fill('') },
+  { id:'wiso-3', title:'W3 - Arbeitsrecht II: Beendigung', items: new Array(8).fill('') },
+  { id:'wiso-4', title:'W4 - Mitbestimmung und Tarifrecht', items: new Array(9).fill('') },
+  { id:'wiso-5', title:'W5 - Sozialversicherung und Entgelt', items: new Array(14).fill('') },
+  { id:'wiso-6', title:'W6 - Betrieb, Organisation und Rechtsformen', items: new Array(13).fill('') },
+  { id:'wiso-7', title:'W7 - Markt und Vertragsrecht', items: new Array(14).fill('') },
+  { id:'wiso-8', title:'W8 - Recht, Datenschutz und Nachhaltigkeit', items: new Array(14).fill('') },
+  { id:'wiso-9', title:'Prüfungstechnik programmierte Prüfung', items: new Array(7).fill('') }
+]}
+];
+
+const GROUP_TOTAL_ITEMS = DATA.reduce((n, cat) => n + cat.topics.reduce((m, t) => m + t.items.length, 0), 0);
+const PAGE_FOR = { ga1: '/konzeption-administration/', ga2: '/netzwerke/', wiso: '/sowi/' };
+
+// ---------------------------------------------------------------
+// 2. State & Storage
+// ---------------------------------------------------------------
+const STORAGE_KEY = 'ap2-tracker-state-v1';
+function loadState(){
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    return {};
+  }
+}
+const state = loadState();
+
+function relTime(ts){
+  const diffMs = Date.now() - ts;
+  const min = Math.round(diffMs / 60000);
+  if (min < 1) return 'gerade eben';
+  if (min < 60) return 'vor ' + min + ' Min';
+  const h = Math.round(min / 60);
+  if (h < 24) return 'vor ' + h + ' Std';
+  const d = Math.round(h / 24);
+  if (d === 1) return 'gestern';
+  return 'vor ' + d + ' Tagen';
+}
+
+function relativeActivity(iso){
+  if (!iso) return 'noch nichts abgehakt';
+  const then = new Date(iso);
+  if (isNaN(then)) return '';
+  const startOf = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const days = Math.round((startOf(new Date()) - startOf(then)) / 86400000);
+  if (days <= 0) return 'heute aktiv';
+  if (days === 1) return 'gestern aktiv';
+  if (days < 14) return 'vor ' + days + ' Tagen aktiv';
+  return 'am ' + then.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
+}
+
+function escapeHtml(str){
+  return (str || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+// ---------------------------------------------------------------
+// 3. Supabase Cloud Setup
+// ---------------------------------------------------------------
+const SUPABASE_URL = 'https://nvjgbomdrxoygqbfxuhc.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52amdib21kcnhveWdxYmZ4dWhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEyMzgxNTksImV4cCI6MjA1NjgxNDE1OX0.c36e4f3a9df9cbf81b15c9d06b6ebcff1a6eb7fe5d8cc8015c7e3aa12d93e9ae';
+
+let sb = null;
+try {
+  if (window.supabase && SUPABASE_URL) {
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+} catch (e) {
+  console.error('Supabase init failed:', e);
+}
+
+let cloudUser = null;
+let cloudProfile = null;
+let cloudSyncTimer = null;
+let profileSaveTimer = null;
+let profileSaving = false;
+let groupRows = null;
+let groupMode = 'total'; // 'total' (most % done) or 'week'
+
+// ---------------------------------------------------------------
+// 4. Render Leaderboard & Progress Bars
+// ---------------------------------------------------------------
+function renderLeaderboard(){
+  const container = document.getElementById('lbListContainer');
+  const toggle = document.getElementById('lbModeToggle');
+  const myRankBox = document.getElementById('myRankContainer');
+  if (!container) return;
+
+  if (!cloudUser) {
+    toggle.hidden = true;
+    myRankBox.innerHTML = '';
+    container.innerHTML = '<div class="empty-state"><p><a href="/?konto=anmelden">Melde dich an</a>, um die Rangliste deiner Lerngruppe zu sehen.</p></div>';
+    return;
+  }
+
+  if (!groupRows) {
+    container.innerHTML = '<div class="empty-state">Lädt Rangliste …</div>';
+    return;
+  }
+
+  toggle.hidden = false;
+  toggle.querySelectorAll('.seg-btn').forEach(btn => {
+    const active = btn.dataset.mode === groupMode;
+    btn.classList.toggle('is-active', active);
+    btn.setAttribute('aria-pressed', String(active));
+  });
+
+  const sortKey = groupMode === 'total' ? 'done_count' : 'week_count';
+  const sorted = groupRows.slice().sort((a, b) =>
+    (b[sortKey] - a[sortKey]) ||
+    ((b.last_active_at ? Date.parse(b.last_active_at) : 0) - (a.last_active_at ? Date.parse(a.last_active_at) : 0)) ||
+    a.display_name.localeCompare(b.display_name, 'de')
+  );
+
+  // Current user's row
+  const myIndex = sorted.findIndex(r => r.user_id === cloudUser.id);
+  const myRow = myIndex >= 0 ? sorted[myIndex] : null;
+
+  if (myRow) {
+    const myPct = GROUP_TOTAL_ITEMS ? Math.round(myRow.done_count / GROUP_TOTAL_ITEMS * 100) : 0;
+    myRankBox.innerHTML = `
+      <div class="my-rank-banner">
+        <div class="my-rank-info">
+          <div class="my-rank-badge">#${myIndex + 1}</div>
+          <div class="my-rank-texts">
+            <h3>Dein Rang: Platz ${myIndex + 1} von ${sorted.length}</h3>
+            <p>${escapeHtml(myRow.display_name)} · Zuletzt aktiv: ${relativeActivity(myRow.last_active_at)}</p>
+          </div>
+        </div>
+        <div class="my-rank-stats">
+          <div class="my-stat-box">
+            <div class="my-stat-val">${myPct} %</div>
+            <div class="my-stat-lbl">${myRow.done_count} / ${GROUP_TOTAL_ITEMS} Themen</div>
+          </div>
+          <div class="my-stat-box">
+            <div class="my-stat-val">+${myRow.week_count}</div>
+            <div class="my-stat-lbl">diese Woche</div>
+          </div>
+        </div>
+      </div>
+    `;
+  } else {
+    myRankBox.innerHTML = '';
+  }
+
+  if (sorted.length === 0) {
+    container.innerHTML = '<div class="empty-state"><p>Noch keine Teilnehmer im Leaderboard sichtbar. Aktiviere dein Profil in den Kontoeinstellungen!</p></div>';
+    return;
+  }
+
+  const list = document.createElement('ol');
+  list.className = 'lb-list';
+
+  sorted.forEach((row, idx) => {
+    const isMe = row.user_id === cloudUser?.id;
+    const pct = GROUP_TOTAL_ITEMS ? Math.min(100, Math.round(row.done_count / GROUP_TOTAL_ITEMS * 100)) : 0;
+
+    const li = document.createElement('li');
+    li.className = 'lb-item' + (isMe ? ' is-me' : '');
+
+    const rowTop = document.createElement('div');
+    rowTop.className = 'lb-row-top';
+
+    const rankSpan = document.createElement('span');
+    rankSpan.className = 'lb-rank';
+    rankSpan.textContent = (idx + 1);
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'lb-name';
+    nameSpan.innerHTML = `${escapeHtml(row.display_name)} ${isMe ? '<span class="lb-badge-you">DU</span>' : ''}`;
+
+    const actSpan = document.createElement('span');
+    actSpan.className = 'lb-activity';
+    actSpan.textContent = relativeActivity(row.last_active_at);
+
+    const scoreSpan = document.createElement('span');
+    scoreSpan.className = 'lb-score';
+    if (groupMode === 'total') {
+      scoreSpan.innerHTML = `${pct} % <small>${row.done_count}/${GROUP_TOTAL_ITEMS}</small>`;
+    } else {
+      scoreSpan.innerHTML = `${row.week_count} <small>${row.week_count === 1 ? 'Thema' : 'Themen'}</small>`;
+    }
+
+    rowTop.append(rankSpan, nameSpan, actSpan, scoreSpan);
+
+    // Progress bar for the row
+    const barWrap = document.createElement('div');
+    barWrap.className = 'lb-progress-wrap';
+
+    const track = document.createElement('div');
+    track.className = 'lb-progress-track';
+
+    const fill = document.createElement('div');
+    fill.className = 'lb-progress-fill';
+    fill.style.width = pct + '%';
+    track.appendChild(fill);
+
+    const pctSpan = document.createElement('span');
+    pctSpan.className = 'lb-progress-pct';
+    pctSpan.textContent = pct + ' %';
+
+    barWrap.append(track, pctSpan);
+
+    li.append(rowTop, barWrap);
+    list.appendChild(li);
+  });
+
+  container.replaceChildren(list);
+
+  if (sorted.length < 2) {
+    const singleNote = document.createElement('p');
+    singleNote.className = 'group-note';
+    singleNote.style.color = 'var(--text-muted)';
+    singleNote.style.fontSize = '12px';
+    singleNote.style.marginTop = '12px';
+    singleNote.textContent = 'Bisher bist du allein in der Liste – sobald sich Lernpartner anmelden, erscheinen sie hier.';
+    container.appendChild(singleNote);
+  }
+}
+
+// ---------------------------------------------------------------
+// 5. Render Zuletzt Bearbeitet
+// ---------------------------------------------------------------
+function renderRecent(){
+  const container = document.getElementById('recentFeed');
+  if (!container) return;
+
+  const recent = [];
+  Object.keys(state).forEach(k => {
+    if (!k.startsWith('ts__')) return;
+    const parts = k.slice(4).split('__');
+    const topicId = parts[0];
+    let found = null, foundCat = null;
+    DATA.forEach(cat => cat.topics.forEach(t => {
+      if (t.id === topicId) { found = t; foundCat = cat; }
+    }));
+    if (!found) return;
+    const ts = state[k];
+    const existing = recent.find(r => r.topic.id === topicId);
+    if (existing) {
+      if (ts > existing.ts) existing.ts = ts;
+    } else {
+      recent.push({ topic: found, cat: foundCat, ts });
+    }
+  });
+
+  recent.sort((a, b) => b.ts - a.ts);
+
+  if (!recent.length) {
+    container.innerHTML = '<div class="empty-state">Noch keine Themen bearbeitet. Sobald du Themen in GA1, GA2 oder WiSo abhakst, erscheinen sie hier.</div>';
+    return;
+  }
+
+  container.innerHTML = recent.slice(0, 8).map(e => `
+    <a class="recent-card" href="${PAGE_FOR[e.cat.id]}#${encodeURIComponent(e.topic.id)}">
+      <span class="recent-dot" style="background:${e.cat.color}"></span>
+      <div class="recent-content">
+        <div class="recent-title">${escapeHtml(e.topic.title)}</div>
+        <div class="recent-cat">${escapeHtml(e.cat.name)}</div>
+      </div>
+      <span class="recent-time">${relTime(e.ts)}</span>
+    </a>
+  `).join('');
+}
+
+// ---------------------------------------------------------------
+// 6. Supabase Data Loading
+// ---------------------------------------------------------------
+async function loadLeaderboardData(){
+  if (!sb || !cloudUser) {
+    renderLeaderboard();
+    return;
+  }
+  const userId = cloudUser.id;
+  const { data, error } = await sb.from('leaderboard').select('user_id, display_name, done_count, week_count, last_active_at');
+  if (cloudUser?.id !== userId) return;
+  if (error) {
+    console.error('Leaderboard query error:', error.message);
+    const container = document.getElementById('lbListContainer');
+    if (container) container.innerHTML = '<div class="empty-state">Rangliste konnte nicht geladen werden. Bitte versuche es später erneut.</div>';
+    return;
+  }
+  groupRows = data || [];
+  renderLeaderboard();
+}
+
+async function loadProfile(){
+  if (!sb || !cloudUser) return;
+  const { data, error } = await sb.from('profiles').select('display_name, show_on_leaderboard').eq('user_id', cloudUser.id).maybeSingle();
+  if (error) { console.error('Profil laden fehlgeschlagen:', error.message); return; }
+  if (data) {
+    cloudProfile = data;
+    renderProfileUI();
+  }
+}
+
+function renderProfileUI(){
+  const els = accountEls();
+  if (!els.displayName) return;
+  if (cloudProfile) {
+    if (document.activeElement !== els.displayName) els.displayName.value = cloudProfile.display_name || '';
+    if (els.showOnLeaderboard) els.showOnLeaderboard.checked = !!cloudProfile.show_on_leaderboard;
+  }
+}
+
+function scheduleProfileSave(){
+  clearTimeout(profileSaveTimer);
+  profileSaveTimer = setTimeout(saveProfile, 700);
+}
+
+async function saveProfile(){
+  if (!sb || !cloudUser || !cloudProfile) return;
+  const els = accountEls();
+  const nextName = (els.displayName?.value || '').trim();
+  const next = {
+    display_name: nextName,
+    show_on_leaderboard: !!els.showOnLeaderboard?.checked
+  };
+  if (!next.display_name) {
+    setAccountStatus('Der Anzeigename darf nicht leer sein.', 'error');
+    return;
+  }
+  if (next.display_name === cloudProfile.display_name && next.show_on_leaderboard === cloudProfile.show_on_leaderboard) return;
+  if (profileSaving) { scheduleProfileSave(); return; }
+  profileSaving = true;
+  const userId = cloudUser.id;
+  setAccountStatus('Profil wird gespeichert …');
+  try {
+    const { error } = await sb.from('profiles').upsert(
+      { user_id: userId, display_name: next.display_name, show_on_leaderboard: next.show_on_leaderboard, updated_at: new Date().toISOString() },
+      { onConflict: 'user_id' }
+    );
+    if (error) throw error;
+    if (cloudUser?.id !== userId) return;
+    cloudProfile = next;
+    setAccountStatus(next.show_on_leaderboard ? 'Profil gespeichert.' : 'Profil gespeichert – du bist auf dem Leaderboard ausgeblendet.', 'ok');
+    loadLeaderboardData();
+  } catch (err) {
+    if (cloudUser?.id === userId) setAccountStatus('Profil konnte nicht gespeichert werden: ' + err.message, 'error');
+  } finally {
+    profileSaving = false;
+    renderProfileUI();
+  }
+}
+
+// ---------------------------------------------------------------
+// 7. Account Modal Wiring & Sync
+// ---------------------------------------------------------------
+function accountEls(){
+  return {
+    btn: document.getElementById('accountBtn'),
+    btnLabel: document.getElementById('accountBtnLabel'),
+    overlay: document.getElementById('accountOverlay'),
+    close: document.getElementById('accountClose'),
+    title: document.getElementById('accountTitle'),
+    loggedOut: document.getElementById('accountLoggedOut'),
+    loggedIn: document.getElementById('accountLoggedIn'),
+    email: document.getElementById('accountEmail'),
+    sendLink: document.getElementById('accountSendLink'),
+    userRow: document.getElementById('accountUserRow'),
+    displayName: document.getElementById('accountDisplayName'),
+    showOnLeaderboard: document.getElementById('accountShowOnLeaderboard'),
+    signOut: document.getElementById('accountSignOut'),
+    status: document.getElementById('accountStatus')
+  };
+}
+
+function openAccountModal(){
+  const els = accountEls();
+  if (!els.overlay) return;
+  els.overlay.hidden = false;
+  setAccountStatus('');
+}
+function closeAccountModal(){
+  const els = accountEls();
+  if (els.overlay) els.overlay.hidden = true;
+}
+
+function refreshAccountUI(){
+  const els = accountEls();
+  if (!els.btn) return;
+  els.btn.classList.toggle('is-signed-in', !!cloudUser);
+  if (cloudUser) {
+    if (els.btnLabel) els.btnLabel.textContent = 'Angemeldet';
+    if (els.title) els.title.textContent = 'Konto & Einstellungen';
+    if (els.loggedOut) els.loggedOut.hidden = true;
+    if (els.loggedIn) els.loggedIn.hidden = false;
+    if (els.userRow) els.userRow.textContent = cloudUser.email ? 'Angemeldet als ' + cloudUser.email : 'Angemeldet';
+    renderProfileUI();
+  } else {
+    if (els.btnLabel) els.btnLabel.textContent = 'Anmelden';
+    if (els.title) els.title.textContent = 'Anmelden';
+    if (els.loggedOut) els.loggedOut.hidden = false;
+    if (els.loggedIn) els.loggedIn.hidden = true;
+  }
+}
+
+function setAccountStatus(msg, kind){
+  const els = accountEls();
+  if (!els.status) return;
+  els.status.textContent = msg || '';
+  els.status.className = 'account-status' + (kind ? ' ' + kind : '');
+}
+
+async function sendMagicLink(){
+  const els = accountEls();
+  const email = els.email ? els.email.value.trim() : '';
+  if (!sb) { setAccountStatus('Supabase ist nicht erreichbar.', 'error'); return; }
+  if (!email || !email.includes('@')) { setAccountStatus('Bitte eine gültige E-Mail-Adresse angeben.', 'error'); return; }
+  if (els.sendLink) els.sendLink.disabled = true;
+  setAccountStatus('Link wird gesendet …');
+  const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.href } });
+  if (els.sendLink) els.sendLink.disabled = false;
+  if (error) setAccountStatus('Fehler: ' + error.message, 'error');
+  else setAccountStatus('Link verschickt – bitte Postfach und Spam-Ordner prüfen.', 'ok');
+}
+
+async function signOutCloud(){
+  if (!sb) return;
+  await sb.auth.signOut();
+  closeAccountModal();
+}
+
+function wireAccountUI(){
+  const els = accountEls();
+  if (!els.btn) return;
+  els.btn.addEventListener('click', openAccountModal);
+  if (els.close) els.close.addEventListener('click', closeAccountModal);
+  if (els.overlay) els.overlay.addEventListener('click', e => { if (e.target === els.overlay) closeAccountModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && els.overlay && !els.overlay.hidden) closeAccountModal(); });
+  if (els.sendLink) els.sendLink.addEventListener('click', sendMagicLink);
+  if (els.email) els.email.addEventListener('keydown', e => { if (e.key === 'Enter') sendMagicLink(); });
+  if (els.signOut) els.signOut.addEventListener('click', signOutCloud);
+
+  if (els.displayName) {
+    els.displayName.addEventListener('input', scheduleProfileSave);
+    els.displayName.addEventListener('blur', saveProfile);
+    els.displayName.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); saveProfile(); } });
+  }
+  if (els.showOnLeaderboard) {
+    els.showOnLeaderboard.addEventListener('change', saveProfile);
+  }
+
+  // Toggle mode buttons
+  const toggle = document.getElementById('lbModeToggle');
+  if (toggle) {
+    toggle.addEventListener('click', e => {
+      const btn = e.target.closest('.seg-btn');
+      if (!btn) return;
+      groupMode = btn.dataset.mode || 'total';
+      renderLeaderboard();
+    });
+  }
+}
+
+// ---------------------------------------------------------------
+// 8. Init Cloud & Page
+// ---------------------------------------------------------------
+async function initPage(){
+  wireAccountUI();
+  refreshAccountUI();
+  renderRecent();
+
+  if (new URLSearchParams(window.location.search).get('konto') === 'anmelden') {
+    openAccountModal();
+  }
+
+  if (!sb) {
+    renderLeaderboard();
+    return;
+  }
+
+  const { data: sessionData } = await sb.auth.getSession();
+  if (sessionData && sessionData.session) {
+    cloudUser = sessionData.session.user;
+    refreshAccountUI();
+    await loadProfile();
+    await loadLeaderboardData();
+  } else {
+    renderLeaderboard();
+  }
+
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      cloudUser = session.user;
+      refreshAccountUI();
+      await loadProfile();
+      await loadLeaderboardData();
+    } else if (event === 'SIGNED_OUT') {
+      cloudUser = null;
+      cloudProfile = null;
+      groupRows = null;
+      refreshAccountUI();
+      renderLeaderboard();
+    }
+  });
+}
+
+initPage();
+
+// ---------------------------------------------------------------
+// 9. Search Modal
+// ---------------------------------------------------------------
+(function(){
+  const overlay = document.getElementById('searchOverlay');
+  const input = document.getElementById('searchInput');
+  const closeBtn = document.getElementById('searchClose');
+  const deskInput = document.getElementById('navSearchInput');
+  const openBtn = document.getElementById('bottomnavSearch');
+  const results = document.getElementById('searchResults');
+  if (!overlay) return;
+
+  function run(q){
+    q = (q || '').trim().toLowerCase();
+    if (!q || !results) { if (results) results.innerHTML = ''; return; }
+    const hits = [];
+    DATA.forEach(cat => {
+      cat.topics.forEach(t => {
+        if (t.title.toLowerCase().includes(q)) {
+          hits.push({ cat, topic: t, match: t.title });
+        }
+      });
+    });
+    if (!hits.length) {
+      results.innerHTML = '<div class="search-empty">Keine Treffer für „' + escapeHtml(q) + '"</div>';
+      return;
+    }
+    results.innerHTML = hits.slice(0, 10).map(h => `
+      <a class="search-hit" href="${PAGE_FOR[h.cat.id]}#${encodeURIComponent(h.topic.id)}">
+        <span class="search-hit-cat">${escapeHtml(h.cat.name)}</span>
+        <span class="search-hit-title">${escapeHtml(h.topic.title)}</span>
+      </a>
+    `).join('');
+  }
+
+  function openSearch(){
+    overlay.hidden = false;
+    setTimeout(() => {
+      if (deskInput && deskInput.value && input) { input.value = deskInput.value; run(input.value); }
+      if (input) input.focus();
+    }, 20);
+  }
+  function closeSearch(){
+    overlay.hidden = true;
+    if (input) input.value = '';
+    if (deskInput) deskInput.value = '';
+    if (results) results.innerHTML = '';
+  }
+
+  if (openBtn) openBtn.addEventListener('click', openSearch);
+  if (closeBtn) closeBtn.addEventListener('click', closeSearch);
+  if (input) input.addEventListener('input', () => run(input.value));
+  if (deskInput) {
+    deskInput.addEventListener('focus', openSearch);
+    deskInput.addEventListener('input', () => {
+      if (overlay.hidden) openSearch();
+      if (input) { input.value = deskInput.value; run(input.value); }
+    });
+  }
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeSearch(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !overlay.hidden) closeSearch(); });
+})();
+</script>
+</body>
+</html>

@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const distRoot = path.join(repoRoot, 'dist');
 const assetExtensions = new Set(['.css', '.js', '.svg', '.png', '.jpg', '.jpeg', '.webp', '.gif', '.woff', '.woff2', '.ttf', '.txt', '.ico', '.webmanifest']);
-const pageRoots = ['uebersicht/', 'konzeption-administration/', 'netzwerke/', 'sowi/', 'lernpfad/', 'lernen/', 'simulation/', 'tracker/'];
+const pageRoots = ['leaderboard/', 'uebersicht/', 'konzeption-administration/', 'netzwerke/', 'sowi/', 'lernpfad/', 'lernen/', 'simulation/', 'tracker/'];
 
 function assert(value, message) {
   if (!value) throw new Error(message);

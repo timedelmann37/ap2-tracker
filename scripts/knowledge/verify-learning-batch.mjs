@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { access } from 'node:fs/promises';
 import {
   batchFileName,
   buildBatchPack,
@@ -16,6 +17,15 @@ import {
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const localRoot = path.resolve(scriptDir, '..', '..', 'knowledge-base', 'local');
+
+async function exists(target) {
+  try {
+    await access(target);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 function pass(message) {
   console.log(`PASS ${message}`);
@@ -70,7 +80,13 @@ expectError(() => parseArgs(['--group', 'ga1-1', '--limit', '1.5']), /--limit/, 
 expectError(() => parseArgs(['--group', 'ga1-1', '--other', '2']), /Unbekanntes Argument/, 'unbekannte Argumente werden abgelehnt');
 expectError(() => parseArgs(['--group', 'ga1-1', '--group', 'ga1-2']), /doppelt/, 'doppelte Argumente werden abgelehnt');
 
-const queue = await readJson(path.join(localRoot, 'learning-queue.json'));
+const queuePath = path.join(localRoot, 'learning-queue.json');
+if (!await exists(queuePath)) {
+  console.log('SKIP lokale Wissensbasis/Lernqueue ist in dieser Umgebung nicht importiert');
+  process.exit(0);
+}
+
+const queue = await readJson(queuePath);
 assert(Array.isArray(queue.groups) && queue.groups.length > 0);
 pass('private Lernqueue ist offline lesbar');
 
