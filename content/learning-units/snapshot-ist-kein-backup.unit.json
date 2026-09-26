@@ -1,0 +1,125 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "snapshot-ist-kein-backup",
+    "slug": "snapshot-ist-kein-backup",
+    "title": "Snapshot ist kein Backup – den Ausfall mitdenken",
+    "description": "Rücksprungpunkt und unabhängige Sicherung anhand von Patchfehler, Speicherdefekt und Restore-Test sauber abgrenzen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-2",
+    "groupLabel": "Virtualisierung, Cluster und Verfügbarkeit",
+    "itemId": "ga1-2__7",
+    "week": "KW 36",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "sources": ["snapshot-ms-checkpoints", "snapshot-vmware-overview", "snapshot-ms-troubleshooting"],
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    { "id": "abgrenzung", "label": "Snapshot und Backup nach Zweck, Abhängigkeiten und Fehlerfall unterscheiden" },
+    { "id": "entscheidung", "label": "Für Patchfehler und Datastore-Ausfall eine geeignete Wiederherstellung wählen und begründen" }
+  ],
+  "intro": "Vor einem Update erstellst du einen VM-Snapshot. Das Update scheitert; der Rücksprung klappt. Dann fällt das gesamte Speichersystem aus. Ist derselbe Snapshot jetzt noch eine Sicherung?",
+  "curation": {
+    "evidence": [
+      { "sourceId": "snapshot-ms-checkpoints", "sourceLocator": "Standard and production checkpoints; Exporting checkpoints", "use": "Checkpoints zum Rücksetzen, Konsistenzarten und Export als möglicher Sicherungsbaustein", "reviewStatus": "Am 26.09.2026 gelesen; eigenes Szenario" },
+      { "sourceId": "snapshot-vmware-overview", "sourceLocator": "Issue/Introduction; Child Disks and Disk Usage; The Disk Chain", "use": "Snapshot-Kette und gemeinsamer Speicher als Abhängigkeit", "reviewStatus": "Am 26.09.2026 gelesen; keine Herstellerabbildung übernommen" },
+      { "sourceId": "snapshot-ms-troubleshooting", "sourceLocator": "Summary; Checkpoint and AVHDX-related issues", "use": "Fehlgeschlagene Delta-Ketten, Platzmangel und Restore-Risiko", "reviewStatus": "Am 26.09.2026 gelesen" }
+    ],
+    "notes": [
+      "Private Batch ga1-2-007-007: ITLF10-12 PDF-Seite 58 enthält verwertbaren Kontext zu agentenlosem Backup und Snapshots. Das vorgeschlagene Layoutbild bleibt privat und ungeprüft; es wurde nicht übernommen. Andere Treffer sind fachfremd.",
+      "Die Aussage 'Snapshot ist kein Backup' betrifft den Snapshot allein. Ein Sicherungsprodukt kann einen Snapshot für einen konsistenten Erfassungspunkt nutzen und daraus eine unabhängig gespeicherte Sicherung erzeugen. Diese Differenz ist ausdrücklich erklärt.",
+      "Applikationskonsistenz ist nicht durch das Wort Snapshot garantiert; vor allem Datenbanken benötigen abgestimmte Verfahren. Menschliche Fachfreigabe offen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "speicherorte",
+      "type": "comparison",
+      "title": "Zwei Rückwege – zwei Ausfallgrenzen",
+      "description": "Dasselbe Updateproblem kann mit beiden Verfahren behebbar sein. Beim Verlust des Quellspeichers trennt sich ihr Nutzen.",
+      "items": [
+        { "label": "Snapshot auf demselben Datastore", "detail": "Schneller Rücksprung vor dem Patch. Basisdaten und Delta-Kette hängen jedoch am ursprünglichen Speicher. Ist er zerstört oder verschlüsselt, kann der Rücksprung mit ausfallen." },
+        { "label": "Separat gespeichertes Backup", "detail": "Eine unabhängige, geschützte Sicherung der benötigten Daten oder VM kann auch nach Verlust des Originals auf Ersatzspeicher wiederhergestellt werden – wenn Sicherung und Restore tatsächlich funktionieren." },
+        { "label": "Snapshot-gestütztes Backup", "detail": "Ein Backup-Tool kann einen Snapshot als kurzen Erfassungspunkt verwenden und danach eine eigenständige Kopie auf ein anderes Ziel übertragen. Der Snapshot allein ist nicht diese Kopie." }
+      ]
+    },
+    {
+      "id": "restorepfad",
+      "type": "flow",
+      "title": "Von der Datei zur belastbaren Wiederherstellung",
+      "description": "Eine Sicherungsdatei ist nur dann nützlich, wenn der gesamte Wiederanlaufpfad geprüft ist.",
+      "items": [
+        { "label": "Schutzbedarf festlegen", "detail": "Welche VM, Anwendung und Daten sind betroffen? Wie alt dürfen wiederhergestellte Daten sein?" },
+        { "label": "Unabhängig sichern", "detail": "Sicherungsziel und Zugriff so trennen, dass ein Verlust oder Angriff auf den Quellspeicher nicht dieselbe Kopie vernichtet." },
+        { "label": "Konsistenz prüfen", "detail": "Für aktive Anwendungen sicherstellen, dass gesicherte Daten zusammenpassen; Snapshot-Typ und Anwendungszustand beachten." },
+        { "label": "Restore testen", "detail": "Auf Ersatzumgebung zurückspielen und Anwendung, Datenstand und Wiederanlaufzeit verifizieren." }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Zuerst den Fehlerfall benennen",
+      "blocks": [
+        { "type": "quiz", "id": "snapshot-diagnose", "question": "Ein VM-Snapshot und alle virtuellen Festplatten liegen auf demselben Datastore. Der Datastore fällt vollständig aus. Welche Aussage ist richtig?", "options": [
+          { "text": "Der Snapshot kann ohne die Basisdaten die gesamte VM auf Ersatzspeicher wiederherstellen.", "rationale": "Ein lokaler Snapshot hängt typischerweise von Basisdaten und Speicher ab.", "correct": false },
+          { "text": "Der lokale Snapshot ist ebenfalls betroffen; für diesen Fehlerfall braucht es eine unabhängig gespeicherte Sicherung.", "rationale": "Richtig. Das gemeinsame Speichersystem ist eine gemeinsame Ausfallgrenze.", "correct": true },
+          { "text": "Ein Snapshot ist immer applikationskonsistent und ersetzt deshalb jeden Restore-Test.", "rationale": "Konsistenz und tatsächliche Wiederherstellbarkeit müssen geprüft werden.", "correct": false }
+        ], "diagnostic": true }
+      ]
+    },
+    {
+      "title": "Rücksprungpunkt oder unabhängige Kopie?",
+      "blocks": [
+        { "type": "figure", "diagramId": "speicherorte", "alt": "Vergleich: Lokaler Snapshot nutzt denselben Datastore und eignet sich zum Rücksprung. Separates Backup liegt außerhalb dieser Ausfallgrenze. Ein Backup-Tool darf einen Snapshot als Zwischenschritt verwenden.", "caption": "Eigenes Ausfallmodell; der entscheidende Unterschied ist nicht die Schaltfläche, sondern der Wiederherstellungspfad." },
+        { "type": "markdown", "markdown": "Ein **Snapshot/Checkpoint** hält einen Zustand fest, zu dem du eine VM zurücksetzen kannst – nützlich vor einem Update oder Konfigurationsversuch. Je nach Produkt entstehen Delta-Dateien, die mit der ursprünglichen virtuellen Festplatte eine Kette bilden. Der Rücksprung ist schnell, solange Basis, Kette und Speicher verfügbar sind. Das ist keine unabhängige Kopie gegen Verlust des gesamten Speichers. Lässt man Snapshots lange liegen, können Delta-Dateien wachsen, Platz verbrauchen und die Verwaltung erschweren.\n\nEin **Backup** ist für die Wiederherstellung nach definierten Schadensfällen geplant: Die benötigten Daten werden auf ein getrenntes, angemessen geschütztes Ziel übertragen, aufbewahrt und durch einen Restore-Test überprüft. Ein Backup kann sehr wohl *mithilfe* eines Snapshots erstellt werden. Erst die anschließend gesicherte, unabhängig nutzbare Kopie erfüllt den hier gemeinten Zweck. Deshalb lautet die saubere Prüfungsantwort: **Ein Snapshot allein ersetzt kein Backup, weil er meist von Originaldaten und demselben Speicher abhängt und deren Verlust nicht abdeckt.**" },
+        { "type": "quiz", "id": "snapshot-werkzeug", "question": "Ein Backup-Programm erzeugt kurzfristig einen konsistenten VM-Snapshot und überträgt anschließend die VM-Daten auf ein getrenntes, geschütztes Sicherungsziel. Wie ordnest du das ein?", "options": [
+          { "text": "Unmöglich: Sobald ein Snapshot beteiligt ist, kann kein Backup entstehen.", "rationale": "Snapshots können als Erfassungsschritt einer Backup-Kette dienen.", "correct": false },
+          { "text": "Snapshot-gestütztes Backup: Entscheidend sind die eigenständige Kopie und ein geprüfter Restore.", "rationale": "Richtig. Der Snapshot ist Hilfsmittel, nicht alleiniger Wiederherstellungspfad.", "correct": true },
+          { "text": "Der kurzlebige lokale Snapshot macht den Export und Restore-Test überflüssig.", "rationale": "Ohne unabhängige Kopie bleibt der Datastore ein gemeinsamer Ausfallort.", "correct": false }
+        ] }
+      ]
+    },
+    {
+      "title": "Konsistenz und Wiederanlauf nachweisen",
+      "blocks": [
+        { "type": "figure", "diagramId": "restorepfad", "alt": "Vier Schritte für belastbare Wiederherstellung: Schutzbedarf festlegen, unabhängig sichern, Konsistenz prüfen und Restore auf Ersatzumgebung testen.", "caption": "Eigener Prüfpfad; ein erfolgreich abgeschlossener Sicherungsjob ist noch kein Wiederanlaufnachweis." },
+        { "type": "markdown", "markdown": "Ein **Standard-Checkpoint** kann bei laufender VM Speicherzustand enthalten; ein **Produktions-Checkpoint** nutzt abgestimmte Mechanismen wie VSS oder Dateisystem-Freeze. Die Bezeichnungen unterscheiden sich zwischen Produkten. Ein Momentbild garantiert für sich allein keine konsistente Datenbank oder einen fehlerfreien Anwendungsstart. Prüfe, ob die konkrete Anwendung unterstützt wird und ob Logs, Transaktionen und abhängige Dienste zum gleichen Wiederherstellungspunkt passen.\n\nTeste nicht nur, ob eine Datei existiert. Spiele die Sicherung regelmäßig auf Ersatzspeicher zurück: Startet die VM, stimmen Datenstand und Anwendung, und ist die benötigte Wiederanlaufzeit erreichbar? Plane außerdem den Fehlerfall Ransomware: Wenn derselbe Administrationszugang Snapshot und Backup löschen kann, reicht ein anderer Ordner allein nicht als Schutz." },
+        { "type": "sequence", "id": "snapshot-restoretest", "title": "Restore-Nachweis ordnen", "prompt": "Ordne den Ablauf, wenn der ursprüngliche Datastore verloren ist.", "steps": [
+          { "id": "ziel", "label": "Ersatzspeicher und verfügbare unabhängige Sicherung identifizieren" },
+          { "id": "restore", "label": "VM oder Daten aus der Sicherung zurückspielen" },
+          { "id": "pruefen", "label": "Anwendung, Datenstand und Wiederanlaufzeit prüfen" }
+        ], "expected": ["ziel", "restore", "pruefen"], "correctFeedback": "Richtig: Ein Restore-Test endet erst mit einem geprüften Dienst und Datenstand.", "wrongFeedback": "Zuerst das unabhängige Ziel und die Sicherung wählen, dann zurückspielen, zuletzt den Dienst prüfen." },
+        { "type": "recall", "id": "snapshot-begruendung", "title": "Prüfungsantwort in eigenen Worten", "prompt": "Eine Firma hält vor jedem Update nur einen Snapshot auf demselben Datastore vor und nennt das ihr Backup. Begründe in zwei bis drei Sätzen, warum das nicht genügt, und ergänze eine geeignete Maßnahme.", "label": "Deine Begründung", "minLength": 100, "model": "Der Snapshot ist ein lokaler Rücksprungpunkt und hängt vom ursprünglichen Datastore beziehungsweise der Disk-Kette ab. Fällt dieser Speicher aus oder wird er verschlüsselt, kann der Snapshot ebenfalls unbrauchbar sein. Die Firma benötigt eine separat geschützte, anwendungskonsistente Sicherung und muss die Wiederherstellung auf Ersatzspeicher regelmäßig testen." }
+      ]
+    },
+    {
+      "title": "Abrufen und entscheiden",
+      "blocks": [
+        { "type": "flashcards", "cards": [
+          { "id": "snapshot-karte-0", "label": "Abruf 1", "front": "Wofür ist ein lokaler Snapshot stark?", "back": "Für einen schnellen Rücksprung nach einer Änderung, solange Basisdaten, Snapshot-Kette und Speicher verfügbar sind." },
+          { "id": "snapshot-karte-1", "label": "Abruf 2", "front": "Welcher Schaden widerlegt „Snapshot = Backup“?", "back": "Der Verlust oder die Verschlüsselung des gemeinsamen Datastores: Basisdaten und lokaler Snapshot können gemeinsam ausfallen." },
+          { "id": "snapshot-karte-2", "label": "Abruf 3", "front": "Darf ein Backup einen Snapshot nutzen?", "back": "Ja. Der Snapshot kann einen konsistenten Erfassungspunkt liefern; eine unabhängige Kopie plus erfolgreicher Restore macht daraus einen tragfähigen Sicherungsweg." }
+        ] },
+        { "type": "quiz", "id": "snapshot-transfer-a", "question": "Direkt nach einem fehlgeschlagenen Software-Patch sind Datastore und Snapshot-Kette intakt. Was ist ein sinnvoller erster Rückweg?", "options": [
+          { "text": "Den vorher getesteten Snapshot für den lokalen Rücksprung nutzen und danach den Anwendungszustand prüfen.", "rationale": "Richtig. Genau für solche kurzfristigen Änderungen ist der Snapshot geeignet.", "correct": true },
+          { "text": "Immer den Datastore löschen und nur das Offsite-Backup zurückspielen.", "rationale": "Das wäre für den reinen Patchfehler unnötig aufwendig und destruktiv.", "correct": false },
+          { "text": "Keinerlei Prüfung: Ein Snapshot garantiert korrekte Anwendungstransaktionen.", "rationale": "Nach dem Rücksprung muss die Anwendung überprüft werden.", "correct": false }
+        ], "requiredObjective": "abgrenzung" },
+        { "type": "quiz", "id": "snapshot-transfer-b", "question": "Der Datastore mit VM und lokalen Snapshots ist ausgefallen. Welche Planung deckt diesen Fall am besten ab?", "options": [
+          { "text": "Weitere Snapshots auf demselben Datastore erzeugen.", "rationale": "Sie teilen dieselbe Ausfallgrenze.", "correct": false },
+          { "text": "Eine unabhängig geschützte Sicherung auf Ersatzspeicher zurückspielen und Anwendung sowie Datenstand prüfen.", "rationale": "Richtig. Trennung und getesteter Restore adressieren den tatsächlichen Fehlerfall.", "correct": true },
+          { "text": "Nur den Hypervisor neu starten; der Snapshot enthält die vollständigen Daten auch ohne Basisdisk.", "rationale": "Ein Neustart ersetzt keine fehlenden Basisdaten und keinen unabhängigen Sicherungssatz.", "correct": false }
+        ], "requiredObjective": "entscheidung" }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        { "type": "markdown", "markdown": "[Microsoft Learn: Hyper-V-Checkpoints](https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/checkpoints), [Broadcom: vSphere-Snapshots](https://knowledge.broadcom.com/external/article/342618/overview-of-virtual-machine-snapshots-in.html) und [Microsoft Learn: Fehler bei Snapshot-Ketten](https://learn.microsoft.com/en-us/troubleshoot/windows-server/virtualization/hyper-v-snapshots-checkpoints-differencing-disks), am 26.09.2026 gelesen. Die Fälle und Grafiken sind eigene Lehrmodelle. Welche Sicherung anwendungskonsistent und wiederherstellbar ist, hängt von Produkt, Konfiguration und getesteter Anwendung ab. Menschliche Fachfreigabe offen." }
+      ]
+    }
+  ]
+}

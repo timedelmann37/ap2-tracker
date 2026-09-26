@@ -83,6 +83,7 @@ try {
   await import('./verify-live-migration-browser.mjs');
   await import('./verify-cluster-types-browser.mjs');
   await import('./verify-quorum-browser.mjs');
+  await import('./verify-snapshot-browser.mjs');
   await import('./verify-space-browser.mjs');
 } finally {
   await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
