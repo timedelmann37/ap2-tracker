@@ -109,6 +109,34 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "clients-fat-thin-zero-vdi-daas",
+    "slug": "clients-fat-thin-zero-vdi-daas",
+    "title": "Client-Konzepte: lokal arbeiten oder Desktop streamen?",
+    "description": "Fat, Thin und Zero Clients von VDI und DaaS trennen und anhand von Netzabhängigkeit und Betriebsverantwortung auswählen.",
+    "domain": "GA1",
+    "groupId": "ga1-1",
+    "groupLabel": "Server-, Client- und Hardwarekonzeption",
+    "itemId": "ga1-1__4",
+    "week": "KW 35",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "endpunkt",
+      "dienstmodell"
+    ],
+    "sources": [
+      "itlf10-12-2023",
+      "clients-hp-thin-zero",
+      "clients-microsoft-avd",
+      "clients-aws-daas",
+      "clients-ibm-local-remote"
+    ],
+    "contentHash": "b383c8bc8e7eefcdcf74038a28b7b6b79e335122b2bc49005d620fe900d3bf3e",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "storage-types",
     "slug": "storage-types",
     "title": "DAS, NAS und SAN sicher unterscheiden",
