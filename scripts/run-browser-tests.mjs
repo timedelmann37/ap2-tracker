@@ -99,6 +99,7 @@ try {
   await import('./verify-cloud-tradeoffs-browser.mjs');
   await import('./verify-scaling-browser.mjs');
   await import('./verify-load-balancer-algorithms-browser.mjs');
+  await import('./verify-cloud-dsgvo-browser.mjs');
   await import('./verify-space-browser.mjs');
 } finally {
   await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));

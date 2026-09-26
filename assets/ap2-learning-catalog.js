@@ -1394,6 +1394,33 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "cloud-dsgvo-avv-transfer-tom",
+    "slug": "cloud-dsgvo-avv-transfer-tom",
+    "title": "Cloud und DSGVO: vier Prüfspuren",
+    "description": "Auftragsverarbeitung, Datenorte, mögliche Drittlandübermittlung und technische sowie organisatorische Maßnahmen an einem Cloud-CRM unterscheiden.",
+    "domain": "GA1",
+    "groupId": "ga1-5",
+    "groupLabel": "Cloud und Wirtschaftlichkeit",
+    "itemId": "ga1-5__5",
+    "week": "KW 39",
+    "estimatedMinutes": 31,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "rollen-avv",
+      "datenwege-tom"
+    ],
+    "sources": [
+      "gdpr-eurlex-2016-679",
+      "cloud-edpb-controller-processor",
+      "edpb-international-transfers",
+      "edpb-secure-personal-data"
+    ],
+    "contentHash": "c0ad1637a8f95f1794f2b3f1fa339d1908261fd35749553cd9193591e31f96f6",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "slug": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "title": "Struktogramm und Programmablaufplan",
