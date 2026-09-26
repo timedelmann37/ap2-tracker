@@ -391,6 +391,31 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "generationenprinzip-grossvater-vater-sohn-medienrotation-benotigte-medie",
+    "slug": "generationenprinzip-grossvater-vater-sohn-medienrotation-benotigte-medie",
+    "title": "Generationenprinzip: Medienrotation richtig zählen",
+    "description": "Aufbewahrungsstufen planen und Medienbedarf aus klaren Regeln ableiten.",
+    "domain": "GA1",
+    "groupId": "ga1-4",
+    "groupLabel": "Backup, Recovery und Notfallvorsorge",
+    "itemId": "ga1-4__2",
+    "week": "KW 38",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-18.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "zaehlen",
+      "rotation"
+    ],
+    "sources": [
+      "gfs-veeam-tape",
+      "gfs-veeam-retention"
+    ],
+    "contentHash": "ebbe2dcf8f4365d9affd0bfeb3ca02a781e83c7853603a78e9dc1b96a2297671",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "rto-rpo-definition-abgrenzung-zuordnung-anforderungen",
     "slug": "rto-rpo-definition-abgrenzung-zuordnung-anforderungen",
     "title": "RTO und RPO: Ausfallzeit und Datenstand getrennt planen",
