@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Isolation, Ressourcen und Startverhalten ohne Pauschalurteil vergleichen und drei Einsatzfälle begründet lösen.">
+<title>Container oder VM? Die Grenze liegt beim Kernel – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-1">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="container-vs-vm-isolation-ressourcen-einsatz" data-progress-id="ga1-2__1" data-content-revision="2026-09-26.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-2">Virtualisierung, Cluster und Verfügbarkeit</a><span class="sep">›</span>
+    <span class="here">Container oder VM? Die Grenze liegt beim Kernel</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Container oder VM? Die Grenze liegt beim Kernel</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 30 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Ein Container ist keine „kleine VM“. Beide verpacken Workloads, aber sie ziehen die Isolationsgrenze an verschiedenen Stellen. Die wichtigste Frage lautet: Teilen die Workloads denselben Kernel, oder besitzt jeder Gast einen eigenen?</p>
+<section class="learning-goals" aria-labelledby="container-vs-vm-isolation-ressourcen-einsatz-goals">
+  <h2 id="container-vs-vm-isolation-ressourcen-einsatz-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Prozessisolierten Container und VM nach gemeinsamem beziehungsweise eigenem Kernel abgrenzen</li>
+    <li>Ressourcen-, Start- und Sicherheitsanforderungen für Container, VM oder Kombination begründet abwägen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Die Kernelfrage stellen</h2>
+<section class="quiz" data-quiz="container-vs-vm-isolation-ressourcen-einsatz-diagnose" data-correct="1">
+  <h3>Auf einem Linux-Host laufen drei prozessisolierte Container. Wie viele eigenständige Gast-Kernel enthalten diese drei Container?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Prozessisolierte Container teilen den Kernel des Hosts."><span class="m">A</span> Drei; jeder Container startet wie eine VM ein komplettes Betriebssystem.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Jeder Container hat isolierte Sichten, aber keinen eigenen Gast-Kernel."><span class="m">B</span> Keinen; die Container verwenden den gemeinsamen Host-Kernel.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein Image enthält Dateien und Metadaten, aber keinen laufenden Kernel."><span class="m">C</span> Einen pro Docker-Image, auch wenn kein Container läuft.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2"><span class="num">2</span>Zwei Schichtenmodelle lesen</h2>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Prozessisolierte Container: ein Kernel">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-layers" xmlns="http://www.w3.org/2000/svg" width="960" height="512" viewBox="0 0 960 512" role="img" aria-labelledby="diagram-container-schichten-title diagram-container-schichten-desc">
+  <title id="diagram-container-schichten-title">Prozessisolierte Container: ein Kernel</title>
+  <desc id="diagram-container-schichten-desc">Bei prozessisolierten Containern liegt unter der Container-Laufzeit ein gemeinsamer Host-Kernel. Die Anwendungen haben getrennte Sichten, aber keinen eigenen Gast-Kernel.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Prozessisolierte Container: ein Kernel</tspan></text>
+  <g><rect class="diagram-row" x="42" y="82" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="82" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="130" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Physische</tspan><tspan x="105" dy="25">Hardware</tspan><tspan x="105" dy="25">oder VM</tspan></text><text x="194" y="116" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Der Container-Host kann selbst auf einer VM laufen.</tspan></text></g><g><rect class="diagram-row" x="42" y="182" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="182" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="230" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Host-OS mit</tspan><tspan x="105" dy="25">Kernel</tspan></text><text x="194" y="216" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Gemeinsamer Kernel für die prozessisolierten Container auf</tspan><tspan x="194" dy="25">diesem Host.</tspan></text></g><g><rect class="diagram-row" x="42" y="282" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="282" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="330" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Container-Laufzeit</tspan></text><text x="194" y="316" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Startet und verwaltet isolierte Prozesse, Netz und</tspan><tspan x="194" dy="25">Ressourcenregeln.</tspan></text></g><g><rect class="diagram-row" x="42" y="382" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="382" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="430" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Anwendungen</tspan><tspan x="105" dy="25">in</tspan><tspan x="105" dy="25">Containern</tspan></text><text x="194" y="416" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Jeweils benötigte Dateien und Bibliotheken im Image; kein</tspan><tspan x="194" dy="25">eigener Gast-Kernel.</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigenes Lehrbild für klassische Prozessisolation; eine VM kann als Host darunterliegen.</figcaption>
+</figure><figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: VMs: ein Kernel pro Gast">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-layers" xmlns="http://www.w3.org/2000/svg" width="960" height="512" viewBox="0 0 960 512" role="img" aria-labelledby="diagram-vm-schichten-title diagram-vm-schichten-desc">
+  <title id="diagram-vm-schichten-title">VMs: ein Kernel pro Gast</title>
+  <desc id="diagram-vm-schichten-desc">Bei virtuellen Maschinen stellt der Hypervisor jeder VM virtuelle Hardware bereit. VM A und VM B besitzen jeweils einen eigenen Gast-Kernel.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">VMs: ein Kernel pro Gast</tspan></text>
+  <g><rect class="diagram-row" x="42" y="82" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="82" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="130" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Physische</tspan><tspan x="105" dy="25">Hardware</tspan></text><text x="194" y="116" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">CPU, RAM, Speicher und Netz des VM-Hosts.</tspan></text></g><g><rect class="diagram-row" x="42" y="182" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="182" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="230" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Hypervisor</tspan></text><text x="194" y="216" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Teilt und isoliert virtuelle Hardware für Gäste.</tspan></text></g><g><rect class="diagram-row" x="42" y="282" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="282" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="330" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">VM A mit</tspan><tspan x="105" dy="25">Gast-Kernel</tspan></text><text x="194" y="316" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Eigenes Betriebssystem und Anwendungen.</tspan></text></g><g><rect class="diagram-row" x="42" y="382" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="382" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="430" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">VM B mit</tspan><tspan x="105" dy="25">Gast-Kernel</tspan></text><text x="194" y="416" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Separates Betriebssystem; kann auch Container hosten.</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Ein VM-Gast kann wiederum einen Container-Host betreiben; es ist kein Entweder-oder.</figcaption>
+</figure><p>Ein <strong>prozessisolierter Container</strong> ist ein isolierter Anwendungsprozess mit den benötigten Dateien und Bibliotheken aus einem Image. Sein Kernel kommt vom Host. Isolation entsteht unter anderem durch getrennte Prozess-, Netzwerk- und Dateisystemsichten sowie Ressourcenbegrenzung. Das Image ist nicht die laufende Instanz: Erst beim Start entsteht ein Container.</p>
+<p>Eine <strong>VM</strong> erhält virtuelle Hardware und startet ein vollständiges Gastbetriebssystem mit eigenem Kernel. Das schafft eine andere, im Regelfall stärkere Trennungsgrenze und erlaubt unterschiedliche Gastbetriebssysteme, benötigt aber die Ressourcen der Gäste. Ein Container kann leichter sein und typischerweise schneller starten, weil kein eigenes Gast-OS bootet. Das ist kein Messwertversprechen: ein kaltes Image, Initialisierung oder Netzwerk-/Speicherzugriff können den Start dominieren. Eine kleine VM kann für bestimmte Lasten geeigneter sein als ein schlecht konfigurierter Container.</p>
+<section class="quiz" data-quiz="container-vs-vm-isolation-ressourcen-einsatz-architektur" data-correct="1">
+  <h3>Die Anwendung läuft als Linux-Container auf einem Windows-Laptop. Widerlegt das die Aussage „Container teilen einen Kernel“?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Ein klassischer Container bringt keinen vollständigen Gast-Kernel mit."><span class="m">A</span> Ja, Container emulieren immer eigenständig jeden beliebigen Kernel.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig: Zeichne die tatsächliche Host-Schicht mit, statt nur die Desktop-Oberfläche zu betrachten."><span class="m">B</span> Nein. Ein Linux-VM- oder ähnlicher Unterbau kann den Linux-Kernel bereitstellen; die Container teilen dann diesen Kernel.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Windows und Linux haben nicht denselben Kernel."><span class="m">C</span> Ja, weil Windows und Linux denselben Kernel besitzen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s3"><span class="num">3</span>Startzeit und Schutzbedarf abwägen</h2>
+<p><strong>Fall A – gleichartige Webdienste:</strong> Fünf kleine Dienste sollen regelmäßig neu gebaut und verteilt werden; der Host-Kernel passt zu allen. Container sind ein guter Kandidat für reproduzierbare Anwendungsumgebungen. Prüfe Image-Herkunft, Updates, Ressourcenlimits, Datenhaltung und Netzwerkrechte.</p>
+<p><strong>Fall B – anderer Kernel oder starke Mandantentrennung:</strong> Eine Anwendung benötigt ein eigenes Gastbetriebssystem; ein zweiter Workload stammt von einer nicht vertrauenswürdigen Partei. VMs sind als getrennte Gastumgebungen ein geeigneter Ausgangspunkt. Ein bloßer Container teilt den Host-Kernel; Fehlkonfiguration, privilegierte Rechte oder Kernel-Schwachstellen können diese Grenze schwächen.</p>
+<p><strong>Fall C – kombinieren:</strong> Mehrere Container laufen <em>in</em> einer VM. So lassen sich Anwendungsbereitstellung und eine zusätzliche VM-Grenze kombinieren. Windows bietet außerdem Hyper-V-isolierte Container, bei denen jeder Container in einer optimierten VM mit eigenem Kernel läuft. Deshalb muss bei konkreten Produkten der <strong>Isolationsmodus</strong> mitgenannt werden. Keine Variante ersetzt Backups, Patches oder Zugriffsregeln.</p>
+<section class="sequence-practice" data-sequence="container-vs-vm-isolation-ressourcen-einsatz-pruefweg" data-expected="bedarf,grenze,test" data-correct-feedback="Richtig: Zuerst Anforderungen, dann die echte Architektur, danach Messung und Test." data-wrong-feedback="Beginne mit Kernel- und Schutzbedarf, bevor du Container oder VM auswählst." aria-labelledby="container-vs-vm-isolation-ressourcen-einsatz-pruefweg-title">
+  <div class="lab-heading"><div><h3 id="container-vs-vm-isolation-ressourcen-einsatz-pruefweg-title">Auswahlprüfung ordnen</h3><p>Ordne den Entscheidungsweg für einen neuen Dienst.</p></div><span class="lab-tag">Ablauf</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="bedarf" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Kernel-, Sicherheits- und Betriebsanforderungen notieren</span></li>
+    <li data-step="grenze" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Isolationsgrenze und möglichen VM-Unterbau zeichnen</span></li>
+    <li data-step="test" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Ressourcen, Start, Wiederherstellung und Rechte im Zielsystem testen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><section class="quiz" data-quiz="container-vs-vm-isolation-ressourcen-einsatz-entscheidung" data-correct="1">
+  <h3>Zwei voneinander unabhängige Kunden liefern nicht vertrauenswürdigen Code. Welche Begründung ist tragfähig?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Der gemeinsame Kernel und mögliche Fehlkonfigurationen sind für feindliche Mandanten relevant."><span class="m">A</span> Prozessisolierte Container sind ohne Zusatzprüfung eine harte Mandantengrenze.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig: Die Sicherheitsgrenze und das Anwendungs-Paketmodell dürfen kombiniert werden."><span class="m">B</span> Eine VM- oder vergleichbar stärkere Sandbox-Grenze ist zu prüfen; Container können innerhalb der getrennten VMs genutzt werden.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Container können innerhalb einer geeigneten VM-/Sandbox-Grenze weiterhin nützlich sein."><span class="m">C</span> Container sind immer unmöglich, sobald Kundencode beteiligt ist.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Den Unterschied in eigenen Worten</h2>
+<section class="recall-practice" data-recall="container-vs-vm-isolation-ressourcen-einsatz-begruendung" data-min-length="100" aria-labelledby="container-vs-vm-isolation-ressourcen-einsatz-begruendung-title">
+  <div class="recall-prompt"><h3 id="container-vs-vm-isolation-ressourcen-einsatz-begruendung-title">Architektur und Fall verbinden</h3><p>Formuliere die Abgrenzung in drei Sätzen: Kernel, typische Ressourcen-/Startwirkung und ein Fall, in dem du VM und Container kombinierst.</p></div>
+  <label class="sr-only" for="container-vs-vm-isolation-ressourcen-einsatz-begruendung-answer">Deine Begründung</label>
+  <textarea id="container-vs-vm-isolation-ressourcen-einsatz-begruendung-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Prozessisolierte Container teilen den Host-Kernel, während jede VM ein Gastbetriebssystem mit eigenem Kernel ausführt. Container können deshalb weniger Gast-OS-Ressourcen benötigen und oft schneller starten; feste Zeit- oder Sicherheitsgarantien folgen daraus nicht. Bei nicht vertrauenswürdigen Mandanten kann ich getrennte VMs als Grenze vorsehen und in jeder VM Container für die Anwendungen betreiben.</div>
+</section><div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="container-vs-vm-isolation-ressourcen-einsatz-karte-0" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was teilen klassische prozessisolierte Container?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Den Kernel ihres tatsächlichen Hosts, gegebenenfalls einer darunterliegenden VM.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="container-vs-vm-isolation-ressourcen-einsatz-karte-1" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was bringt die VM zusätzlich mit?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Virtuelle Hardware und ein eigenes Gastbetriebssystem samt eigenem Kernel.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="container-vs-vm-isolation-ressourcen-einsatz-karte-2" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Können Container und VMs kombiniert werden?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Ja. Container laufen häufig in VMs; auch Hyper-V-isolierte Windows-Container verwenden eine optimierte VM.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Abruf 1“:</span><button type="button" data-card-id="container-vs-vm-isolation-ressourcen-einsatz-karte-0" data-card-rate="known">gewusst</button><button type="button" data-card-id="container-vs-vm-isolation-ressourcen-einsatz-karte-0" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="container-vs-vm-isolation-ressourcen-einsatz-karte-0"></span></div>
+<div class="card-rating"><span>Karte „Abruf 2“:</span><button type="button" data-card-id="container-vs-vm-isolation-ressourcen-einsatz-karte-1" data-card-rate="known">gewusst</button><button type="button" data-card-id="container-vs-vm-isolation-ressourcen-einsatz-karte-1" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="container-vs-vm-isolation-ressourcen-einsatz-karte-1"></span></div>
+<div class="card-rating"><span>Karte „Abruf 3“:</span><button type="button" data-card-id="container-vs-vm-isolation-ressourcen-einsatz-karte-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="container-vs-vm-isolation-ressourcen-einsatz-karte-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="container-vs-vm-isolation-ressourcen-einsatz-karte-2"></span></div><h2 class="sec" id="s5"><span class="num">5</span>Lernziel-Check</h2>
+<section class="quiz" data-quiz="container-vs-vm-isolation-ressourcen-einsatz-transfer-a" data-correct="1" data-required-objective="grenze">
+  <h3>Neuer Fall: Drei prozessisolierte Container laufen in einer Linux-VM. Welche Aussage über die Kernel stimmt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Die Container teilen den Kernel der Linux-VM."><span class="m">A</span> Jeder Container besitzt einen eigenen Linux-Gast-Kernel und braucht deshalb einen vollständigen OS-Boot.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig: Das Schichtenmodell erklärt die Kombination beider Techniken."><span class="m">B</span> Die drei Container teilen den Kernel der Linux-VM; die VM trennt diesen Kernel vom physischen Host.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Im Fall ist die Linux-VM der unmittelbare Container-Host."><span class="m">C</span> Die Container greifen ohne VM-Schicht direkt auf den physischen Host-Kernel zu.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="container-vs-vm-isolation-ressourcen-einsatz-transfer-b" data-correct="2" data-required-objective="einsatz">
+  <h3>Ein Dienst muss schnell reproduzierbar ausgerollt werden, verarbeitet aber Code verschiedener nicht vertrauenswürdiger Kunden. Welche Planung ist am besten begründet?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Startverhalten ist keine Sicherheitsgarantie gegen feindliche Mandanten."><span class="m">A</span> Nur prozessisolierte Container auf einem gemeinsamen Host; Geschwindigkeit garantiert eine ausreichende Sicherheitsgrenze.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Auch innerhalb einer gemeinsamen VM bleiben Mandanten und Anwendungen zu trennen."><span class="m">B</span> Nur eine riesige VM für alle Kunden, ohne weitere Trennung oder Paketierung.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Richtig: Sicherheitsgrenze und Deployment-Modell erfüllen unterschiedliche Anforderungen."><span class="m">C</span> Getrennte VM-/Sandbox-Grenzen prüfen und Container innerhalb dieser Grenzen für das reproduzierbare Deployment einsetzen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Quellen und Grenzen</h2>
+<p><a href="https://learn.microsoft.com/en-us/virtualization/windowscontainers/about/containers-vs-vm">Microsoft Learn: Container und VMs</a>, <a href="https://docs.docker.com/get-started/docker-concepts/the-basics/what-is-a-container/">Docker Docs: Container-Grundlagen</a> und <a href="https://learn.microsoft.com/en-us/virtualization/windowscontainers/manage-containers/hyperv-container">Microsoft Learn: Prozess- und Hyper-V-Isolation</a>, am 26.09.2026 gelesen. Diagramme und Fälle sind eigene Lehrmodelle. Ressourcen und Startzeit sind keine garantierten Zahlen; Sicherheitsgrenzen sind am konkreten Isolationsmodus zu prüfen. Menschliche Fachfreigabe offen.</p>
+
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-2"><span class="d">zurück zu</span><span class="t">Virtualisierung, Cluster und Verfügbarkeit</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Virtualisierung, Cluster und Verfügbarkeit</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Die Kernelfrage stellen</a></li>
+<li><a href="#s2" data-t="s2">Zwei Schichtenmodelle lesen</a></li>
+<li><a href="#s3" data-t="s3">Startzeit und Schutzbedarf abwägen</a></li>
+<li><a href="#s4" data-t="s4">Den Unterschied in eigenen Worten</a></li>
+<li><a href="#s5" data-t="s5">Lernziel-Check</a></li>
+<li><a href="#s6" data-t="s6">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-2">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>
