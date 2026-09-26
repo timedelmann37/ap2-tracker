@@ -26,6 +26,32 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "serverdimensionierung-anforderungen-begruenden",
+    "slug": "serverdimensionierung-anforderungen-begruenden",
+    "title": "Server dimensionieren: vom Bedarf zur Entscheidung",
+    "description": "Aus gemessenen Spitzenwerten, Reserven und Antwortzeitzielen eine nachvollziehbare Serverkonfiguration auswählen.",
+    "domain": "GA1",
+    "groupId": "ga1-1",
+    "groupLabel": "Server-, Client- und Hardwarekonzeption",
+    "itemId": "ga1-1__1",
+    "week": "KW 35",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "bedarf",
+      "entscheidung"
+    ],
+    "sources": [
+      "sizing-aws-rightsize",
+      "sizing-aws-metrics",
+      "server-io-dell"
+    ],
+    "contentHash": "a8e1edadfa724d651bc1f2099dd45f3cf5c2e843796d7128bd180b4150576bfb",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "storage-types",
     "slug": "storage-types",
     "title": "DAS, NAS und SAN sicher unterscheiden",

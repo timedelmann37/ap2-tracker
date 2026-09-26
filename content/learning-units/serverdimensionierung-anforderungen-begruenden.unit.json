@@ -1,0 +1,141 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "serverdimensionierung-anforderungen-begruenden",
+    "slug": "serverdimensionierung-anforderungen-begruenden",
+    "title": "Server dimensionieren: vom Bedarf zur Entscheidung",
+    "description": "Aus gemessenen Spitzenwerten, Reserven und Antwortzeitzielen eine nachvollziehbare Serverkonfiguration auswählen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-1",
+    "groupLabel": "Server-, Client- und Hardwarekonzeption",
+    "itemId": "ga1-1__1",
+    "week": "KW 35",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": ["sizing-aws-rightsize", "sizing-aws-metrics", "server-io-dell"],
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    { "id": "bedarf", "label": "Kapazität aus Spitzenlast und ausdrücklich festgelegter Reserve berechnen" },
+    { "id": "entscheidung", "label": "Kandidaten anhand aller Muss-Kriterien und einer Validierungsprobe begründet auswählen" }
+  ],
+  "intro": "Eine Konfiguration ist erst dann begründet, wenn Anforderungen, Messwerte und Annahmen sichtbar sind. Viel CPU allein hilft nicht, wenn RAM oder I/O das Antwortzeitziel verhindern.",
+  "curation": {
+    "evidence": [
+      { "sourceId": "sizing-aws-rightsize", "sourceLocator": "PERF02-BP04 Configure and right-size compute resources; anti-patterns and implementation", "use": "Passung zur Arbeitslast statt pauschaler Überdimensionierung", "reviewStatus": "Am 26.09.2026 gelesen; Grundsatz auf eigenes Papiermodell übertragen" },
+      { "sourceId": "sizing-aws-metrics", "sourceLocator": "PERF02-BP03 Collect compute-related metrics", "use": "Messung und spätere Neubewertung als Teil der Dimensionierung", "reviewStatus": "Am 26.09.2026 gelesen" },
+      { "sourceId": "server-io-dell", "sourceLocator": "PowerVault ME5 Administrator's Guide: Performance metrics", "use": "I/O-Last durch IOPS, Durchsatz und Latenz beschreiben", "reviewStatus": "Am 26.09.2026 gelesen; keine Produktbenchmarks übernommen" }
+    ],
+    "notes": [
+      "Batch ga1-1-000-002 lieferte für dieses Kernthema unpassende Prüfungsordnungs-, Mainframe- und Datenbanknormalisierungs-Treffer. Sie sind keine Belege für die Modellrechnung.",
+      "Alle Schwellen, Preise und Kandidaten sind eigene Übungsannahmen, keine universellen Dimensionierungsvorgaben. vCPU-Bedarfe gelten nur innerhalb des explizit vergleichbaren Modellprofils.",
+      "Menschliche Fach- und Verständlichkeitsfreigabe ausstehend. Der Lasttest im Modell ist eine geforderte Prüfung, kein behauptet durchgeführter Realtest."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "entscheidungspfad",
+      "type": "flow",
+      "title": "Vier Schritte zur begründeten Auswahl",
+      "description": "Jede Stufe liefert die Grundlage für die nächste; bei fehlenden Messwerten bleibt die Entscheidung vorläufig.",
+      "items": [
+        { "label": "1 · Anforderung", "detail": "Nutzerzahl, Spitzenlast, Antwortzeit, Wachstum und Betriebsgrenzen festhalten" },
+        { "label": "2 · Messung", "detail": "CPU, RAM, I/O und Lastprofil im gleichen relevanten Zeitraum erfassen" },
+        { "label": "3 · Kandidaten", "detail": "Alle Muss-Kriterien prüfen und Kosten nur bei geeigneten Lösungen vergleichen" },
+        { "label": "4 · Nachweis", "detail": "Mit realistischem Lasttest, Monitoring und Anpassung bestätigen" }
+      ]
+    },
+    {
+      "id": "kandidaten",
+      "type": "comparison",
+      "title": "Ein billiger Engpass bleibt ein Engpass",
+      "description": "Im Übungsfall muss jede einzelne Mindestanforderung erfüllt sein.",
+      "items": [
+        { "label": "Bedarf", "detail": "Mindestens 8 vCPU, 38 GiB RAM und 14.000 IOPS im definierten Lastprofil" },
+        { "label": "Angebot A · 400 €", "detail": "8 vCPU, 32 GiB, 12.000 IOPS: RAM und I/O zu knapp" },
+        { "label": "Angebot B · 520 €", "detail": "8 vCPU, 48 GiB, 18.000 IOPS: erfüllt die drei Modellgrenzen" }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        { "type": "quiz", "id": "serverdimensionierung-anforderungen-begruenden-diagnose", "question": "Ein Angebot hat doppelt so viele CPU-Kerne wie ein anderes. Ist es für den Datenbankdienst automatisch geeigneter?", "options": [
+          { "text": "Ja, Kernzahl entscheidet immer allein.", "rationale": "RAM, I/O, Antwortzeit und tatsächliche Parallelität sind noch unbekannt.", "correct": false },
+          { "text": "Nein, die Anforderungen und das gemessene Lastprofil müssen dazu passen.", "rationale": "Richtig: Eine Stückliste ohne Bedarf ist keine Dimensionierung.", "correct": true },
+          { "text": "Ja, wenn das größere Angebot mehr kostet.", "rationale": "Ein höherer Preis ist kein Leistungsnachweis.", "correct": false }
+        ], "diagnostic": true }
+      ]
+    },
+    {
+      "title": "Vom Auftrag zu messbaren Grenzen",
+      "blocks": [
+        { "type": "figure", "diagramId": "entscheidungspfad", "alt": "Anforderungen führen zur Lastmessung, daraus werden Kandidaten abgeleitet und anschließend per Test überprüft.", "caption": "Eigener Entscheidungsweg für den Übungsfall." },
+        { "type": "markdown", "markdown": "Ein fiktives Planungsbüro betreibt einen internen Datenbankdienst. Der Auftrag nennt: Antwortzeit bei Spitzenlast, erwartete Nutzerzahl, Wartungsfenster und Budget. Die Messung eines vergleichbaren bestehenden Systems ergibt im relevanten Spitzenfenster **6 vCPU Rechenbedarf**, **30 GiB aktiven RAM-Bedarf** und **14.000 IOPS** bei festgelegter I/O-Größe, Lese-/Schreibmischung und Parallelität. Die bisherige Storage-Antwortzeit ist am Grenzwert; der neue Kandidat muss im Test die geforderte Antwortzeit schaffen.\n\nDas Team setzt für dieses Übungsmodell höchstens **75 % CPU-Auslastung** und mindestens **20 % freien RAM** bei der gemessenen Spitze fest. Diese Prozentsätze sind Auftragannahmen, keine Normwerte. Ein vCPU-Vergleich ist hier nur zulässig, weil alle Angebote auf derselben angenommenen Prozessorplattform und mit vergleichbarer Zuteilung gemessen werden." }
+      ]
+    },
+    {
+      "title": "Reserve richtig berechnen",
+      "blocks": [
+        { "type": "math", "ariaLabel": "Sechs vCPU Bedarf geteilt durch null Komma fünfundsiebzig ergeben acht vCPU Mindestkapazität.", "mathml": "<math display=\"block\"><mrow><mfrac><mrow><mn>6</mn><mtext> vCPU Bedarf</mtext></mrow><mn>0,75</mn></mfrac><mo>=</mo><mn>8</mn><mtext> vCPU Kapazität</mtext></mrow></math>", "legend": ["75 % ist die erlaubte Belegung der bereitgestellten CPU-Kapazität, nicht ein pauschaler Aufschlag von 75 %."] },
+        { "type": "math", "ariaLabel": "Dreißig Gibibyte aktiver Bedarf geteilt durch null Komma acht ergeben siebenunddreißig Komma fünf Gibibyte Gesamtkapazität.", "mathml": "<math display=\"block\"><mrow><mfrac><mrow><mn>30</mn><mtext> GiB Bedarf</mtext></mrow><mn>0,8</mn></mfrac><mo>=</mo><mn>37,5</mn><mtext> GiB RAM</mtext></mrow></math>", "legend": ["Auf ganze GiB aufgerundet: mindestens 38 GiB. Eine käufliche Konfiguration kann größer sein; Bestückungsregeln müssen geprüft werden."] },
+        { "type": "markdown", "markdown": "**Rechenweg:** CPU-Bedarf durch den erlaubten Auslastungsanteil teilen. Für RAM: 20 % frei heißt, dass der aktive Bedarf höchstens 80 % der installierten Kapazität belegt. 30 ÷ 0,8 = 37,5 GiB; ganze GiB erfordern mindestens 38 GiB. Ein bloßer Aufschlag von 20 % auf 30 GiB ergäbe 36 GiB und ließe tatsächlich nur 16,7 % frei.\n\nDie 14.000 IOPS sind eine zusätzliche Muss-Grenze im **gleichen I/O-Profil**. Die Zahl allein beweist noch keine passende Latenz; sie wird im Lasttest kontrolliert." },
+        { "type": "numeric", "id": "serverdimensionierung-anforderungen-begruenden-zahl", "title": "Jetzt du: neue CPU-Grenze", "prompt": "Ein vergleichbares System benötigt im Spitzenfenster 5 vCPU Rechenleistung. Höchstens 50 % der bereitgestellten CPU-Kapazität sollen belegt sein. Wie viele vCPU sind im Modell mindestens nötig?", "label": "Mindestzahl vCPU", "expected": 10, "tolerance": 0, "correctFeedback": "5 ÷ 0,5 = 10 vCPU. Die Zahl gilt nur unter der angegebenen Vergleichbarkeitsannahme.", "wrongFeedback": "Teile den beobachteten Bedarf durch den erlaubten Belegungsanteil 0,5.", "misconceptions": [
+          { "value": 7.5, "feedback": "Ein Aufschlag von 50 % ist etwas anderes als eine Obergrenze von 50 % Auslastung." },
+          { "value": 5, "feedback": "5 vCPU sind der beobachtete Bedarf ohne freie CPU-Kapazität." }
+        ] }
+      ]
+    },
+    {
+      "title": "Kandidaten prüfen und Entscheidung begründen",
+      "blocks": [
+        { "type": "figure", "diagramId": "kandidaten", "alt": "Bedarf mindestens acht vCPU, 38 GiB RAM und 14.000 IOPS; Angebot A verfehlt RAM und IOPS, Angebot B erreicht alle drei Modellgrenzen.", "caption": "Preise und Leistungswerte sind erfundene Prüfungsdaten." },
+        { "type": "markdown", "markdown": "Angebot A kostet im Modell 400 € pro Monat: 8 vCPU, 32 GiB RAM, 12.000 IOPS bei vergleichbarem Profil. Angebot B kostet 520 €: 8 vCPU, 48 GiB RAM, 18.000 IOPS. **B ist der einzige der beiden geeigneten Kandidaten**, sofern die Antwortzeit im realistischen Test passt. A ist günstiger, unterschreitet aber RAM und I/O. Mehr CPU würde A nicht automatisch retten.\n\nDie Aussage bleibt vorläufig: Ein Test muss echte Daten, gleichzeitige Nutzer, Schreibmuster, Antwortzeiten einschließlich langer Ausreißer und Betriebsreserve nachbilden. Danach werden Messwerte, Annahmen und Kosten dokumentiert. Wachstum oder andere Hardware erfordern eine neue Bewertung." },
+        { "type": "quiz", "id": "serverdimensionierung-anforderungen-begruenden-uebung", "question": "Welches Argument erklärt die Auswahl von B im Modell?", "options": [
+          { "text": "B ist teurer und daher automatisch schneller.", "rationale": "Der Preis belegt weder Antwortzeit noch Eignung.", "correct": false },
+          { "text": "A verfehlt zwei Muss-Grenzen; B erfüllt die Zahlen und braucht noch den Antwortzeittest.", "rationale": "Richtig: Die Auswahl benennt Beleg und offene Prüfung.", "correct": true },
+          { "text": "A hat acht vCPU; daher sind RAM und I/O unwichtig.", "rationale": "Ein passender CPU-Wert gleicht andere Engpässe nicht aus.", "correct": false }
+        ] }
+      ]
+    },
+    {
+      "title": "Entscheidung aus dem Gedächtnis erklären",
+      "blocks": [
+        { "type": "sequence", "id": "serverdimensionierung-anforderungen-begruenden-reihenfolge", "title": "Nachweisfolge ordnen", "prompt": "Ordne die Schritte für eine belastbare Dimensionierung.", "steps": [
+          { "id": "auswahl", "label": "Passenden Kandidaten wählen und offene Risiken benennen" },
+          { "id": "anforderung", "label": "Muss-Kriterien, Lastprofil und Reserven festlegen" },
+          { "id": "vergleich", "label": "Bedarf berechnen und alle Kandidaten mit gleicher Messbasis vergleichen" }
+        ], "expected": ["anforderung", "vergleich", "auswahl"], "correctFeedback": "Richtig: Erst Anforderungen und Messbasis, dann Vergleich und begründete Wahl.", "wrongFeedback": "Beginne mit Anforderungen und Messbasis; eine Auswahl vor dem Vergleich wäre unbegründet." },
+        { "type": "recall", "id": "serverdimensionierung-anforderungen-begruenden-begruendung", "title": "Freie Begründung", "prompt": "Begründe B für das Planungsbüro in drei Sätzen: Bedarf, Ausschluss von A und offener Nachweis.", "label": "Deine Entscheidung", "minLength": 70, "model": "Die Spitzenlast verlangt im Übungsmodell mindestens 8 vCPU, 38 GiB RAM und 14.000 IOPS unter vergleichbaren Messbedingungen. A verfehlt RAM und I/O; B erfüllt diese Zahlen mit 8 vCPU, 48 GiB und 18.000 IOPS. Vor der endgültigen Freigabe muss B im realistischen Lasttest auch die verlangte Antwortzeit einhalten." },
+        { "type": "flashcards", "cards": [
+          { "id": "serverdimensionierung-anforderungen-begruenden-karte-0", "label": "Abruf 1", "front": "30 GiB Bedarf, 20 % frei: warum nicht 36 GiB?", "back": "20 % frei beziehen sich auf die Gesamtkapazität. Daher 30 ÷ 0,8 = 37,5 GiB, mindestens 38 GiB." },
+          { "id": "serverdimensionierung-anforderungen-begruenden-karte-1", "label": "Abruf 2", "front": "Was fehlt nach dem Zahlenvergleich?", "back": "Ein Lasttest mit der echten Anwendung und den geforderten Antwortzeiten sowie dokumentierte Messbedingungen." }
+        ] }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        { "type": "quiz", "id": "serverdimensionierung-anforderungen-begruenden-transfer-a", "question": "Neuer Fall: 5 vCPU Spitzenbedarf, höchstens 50 % CPU-Belegung. Wie leitest du die Mindestgröße im vergleichbaren Modell ab?", "options": [
+          { "text": "5 vCPU genügen, denn die Spitze ist bereits gemessen.", "rationale": "Dann bliebe keine der geforderten 50 % Kapazität frei.", "correct": false },
+          { "text": "Mindestens 10 vCPU, weil 5 ÷ 0,5 = 10.", "rationale": "Richtig: Der Bedarf darf nur die Hälfte der bereitgestellten Kapazität nutzen.", "correct": true },
+          { "text": "7,5 vCPU, weil 50 % auf 5 addiert werden.", "rationale": "Das ergäbe zwei Drittel Belegung, nicht höchstens 50 %.", "correct": false }
+        ], "requiredObjective": "bedarf" },
+        { "type": "quiz", "id": "serverdimensionierung-anforderungen-begruenden-transfer-b", "question": "Neuer Fall: Bedarf mindestens 10 vCPU, 28 GiB RAM und 9.000 IOPS. Kandidat C: 12/32/12.000; Kandidat D: 16/24/20.000. Gleicher Messmaßstab. Welche Entscheidung ist begründet?", "options": [
+          { "text": "D, weil die höchste CPU- und IOPS-Zahl die RAM-Grenze überstimmen.", "rationale": "D hat nur 24 GiB und verfehlt damit ein Muss-Kriterium.", "correct": false },
+          { "text": "C erfüllt alle drei Zahlen; Antwortzeit und echte Last noch testen.", "rationale": "Richtig: C erreicht jede Modellgrenze, und die Messprobe bleibt erforderlich.", "correct": true },
+          { "text": "Beide sind gleich geeignet, weil drei Werte sich ausgleichen.", "rationale": "Muss-Kriterien sind getrennt zu erfüllen und lassen sich nicht verrechnen.", "correct": false }
+        ], "requiredObjective": "entscheidung" }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        { "type": "markdown", "markdown": "[AWS Well-Architected: Right-sizing](https://docs.aws.amazon.com/wellarchitected/latest/framework/perf_compute_hardware_configure_and_right_size_compute_resources.html), [AWS: Compute-Metriken sammeln](https://docs.aws.amazon.com/wellarchitected/latest/framework/perf_compute_hardware_collect_compute_related_metrics.html) und [Dell: Performance metrics](https://www.dell.com/support/manuals/en-ca/powervault-me5084/me5_series_ag/performance-metrics?guid=guid-4ee88549-5f60-4c76-946e-d54f4ea41a58&lang=en-us), ausgewählte Abschnitte am 26.09.2026 gelesen. Die Quellen liefern Prinzipien und Metrikbegriffe; Fälle, Schwellen, Preise, Rechnung und Diagramme sind eigene Modelle. Menschliche Fachfreigabe offen." }
+      ]
+    }
+  ]
+}

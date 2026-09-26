@@ -65,6 +65,7 @@ try {
   await import('./verify-backup-choice-browser.mjs');
   await import('./verify-gfs-browser.mjs');
   await import('./verify-server-indicators-browser.mjs');
+  await import('./verify-server-sizing-browser.mjs');
   await import('./verify-space-browser.mjs');
 } finally {
   await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
