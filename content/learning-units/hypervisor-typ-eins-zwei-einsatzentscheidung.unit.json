@@ -1,0 +1,105 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "hypervisor-typ-eins-zwei-einsatzentscheidung",
+    "slug": "hypervisor-typ-eins-zwei-einsatzentscheidung",
+    "title": "Hypervisor Typ 1 oder Typ 2?",
+    "description": "Die Schichten bis zur Hardware zeichnen, Hyper-V richtig einordnen und für Labor oder Serverbetrieb begründet entscheiden.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-2",
+    "groupLabel": "Virtualisierung, Cluster und Verfügbarkeit",
+    "itemId": "ga1-2__0",
+    "week": "KW 36",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "sources": ["hypervisor-oracle-virtualbox-hosted", "hypervisor-microsoft-architecture", "hypervisor-vmware-esxi-target"],
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    { "id": "architektur", "label": "Typ-1- und Typ-2-Hypervisor an der tatsächlichen Schicht zwischen Hardware und Gästen unterscheiden" },
+    { "id": "entscheidung", "label": "Für Desktop-Labor und produktiven VM-Host anhand von Betrieb und Anforderungen eine begründete Wahl treffen" }
+  ],
+  "intro": "Die Typnummer beschreibt, wo der Hypervisor in der Architektur sitzt – nicht die Zahl der VMs und kein Qualitätsurteil. Zeichne für jede Variante den Weg von der Hardware bis zum Gastbetriebssystem; entscheide erst danach über das Einsatzszenario.",
+  "curation": {
+    "evidence": [
+      { "sourceId": "hypervisor-oracle-virtualbox-hosted", "sourceLocator": "Oracle VirtualBox Features: hosted/type 2 versus bare-metal/type 1", "use": "Typ-2-Schichtenfolge und VirtualBox als Beispiel", "reviewStatus": "Am 26.09.2026 gelesen; keine Produktgrafik übernommen" },
+      { "sourceId": "hypervisor-microsoft-architecture", "sourceLocator": "Hyper-V Type 1 and root partition", "use": "Windows-Managementpartition nicht mit einem vorgeschalteten Host-OS verwechseln", "reviewStatus": "Am 26.09.2026 gelesen" },
+      { "sourceId": "hypervisor-vmware-esxi-target", "sourceLocator": "Section 2.2: ESXi Type 1 with no host platform OS", "use": "ESXi als zweites Typ-1-Beispiel", "reviewStatus": "Am 26.09.2026 gelesen" }
+    ],
+    "notes": [
+      "Der private Batch ga1-2-000-000 enthielt keine belastbare Typ-1/Typ-2-Erklärung: ein VLAN-Abschnitt, eine benachbarte Backup-Aufgabe und ein IHK-Bearbeitungshinweis wurden nicht als Fachbelege benutzt. Die private Buchgrafik wurde nicht veröffentlicht.",
+      "Typ 1 und Typ 2 sind Architekturklassen, keine pauschalen Zusagen für Leistung, Sicherheit oder Verfügbarkeit. Beides hängt von Konfiguration, Hardware, Updates und Betriebsprozess ab.",
+      "Hyper-V wird trotz Windows-Root-Partition als Typ 1 eingeordnet. VirtualBox ist Typ 2, auch wenn Hardwarevirtualisierung genutzt wird. Konkrete Versionen und Lizenzmodelle müssen projektbezogen geprüft werden; menschliche Fachfreigabe offen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "typ-eins-schichten",
+      "type": "layers",
+      "title": "Typ 1: Hypervisor auf der Hardware",
+      "description": "Von unten nach oben: Hardware, Hypervisor, voneinander getrennte VMs mit Gastbetriebssystemen.",
+      "items": [
+        { "label": "Physische Hardware", "detail": "CPU, RAM, Netz und Speicher des Hosts" },
+        { "label": "Typ-1-Hypervisor", "detail": "Virtualisierungsschicht direkt auf der Hardware; Beispiele ESXi und Hyper-V" },
+        { "label": "Gast-VMs", "detail": "Jede VM hat eigene virtuelle Geräte und ein Gastbetriebssystem" }
+      ]
+    },
+    {
+      "id": "typ-zwei-schichten",
+      "type": "layers",
+      "title": "Typ 2: Hypervisor auf einem Host-OS",
+      "description": "Das vorhandene Hostbetriebssystem ist eine eigene Schicht unter dem gehosteten Hypervisor.",
+      "items": [
+        { "label": "Physische Hardware", "detail": "CPU, RAM, Netz und Speicher des Rechners" },
+        { "label": "Hostbetriebssystem", "detail": "Beispielsweise Windows oder Linux mit eigener Desktop- und Treiberumgebung" },
+        { "label": "Gehosteter Hypervisor", "detail": "VirtualBox läuft auf dem Host-OS; Hardwarevirtualisierung kann dennoch genutzt werden" },
+        { "label": "Gast-VMs", "detail": "Laborsysteme mit jeweils eigenem Gastbetriebssystem" }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Die erste Vermutung testen",
+      "blocks": [
+        { "type": "quiz", "id": "hypervisor-typ-eins-zwei-einsatzentscheidung-diagnose", "question": "Auf einem Windows-Server wird Hyper-V verwaltet. Ist es deshalb automatisch ein Typ-2-Hypervisor?", "options": [ { "text": "Ja, weil jede sichtbare Windows-Oberfläche unter dem Hypervisor liegen muss.", "rationale": "Bei Hyper-V liegt die Virtualisierungsschicht unter der Windows-Root-Partition.", "correct": false }, { "text": "Nein. Hyper-V hat Typ-1-Architektur; Windows läuft als Root-/Managementpartition.", "rationale": "Richtig: Eine Windows-Verwaltungsumgebung macht die Hypervisor-Schicht nicht zu einer gehosteten App.", "correct": true }, { "text": "Die Typnummer hängt nur davon ab, ob mindestens zwei Gäste laufen.", "rationale": "Die Anzahl der VMs klassifiziert den Hypervisor nicht.", "correct": false } ], "diagnostic": true }
+      ]
+    },
+    {
+      "title": "Schichten statt Produktnamen merken",
+      "blocks": [
+        { "type": "figure", "diagramId": "typ-eins-schichten", "alt": "Typ 1: Auf der physischen Hardware liegt direkt die Hypervisor-Schicht, darüber laufen getrennte Gast-VMs mit Betriebssystemen.", "caption": "ESXi ist ein Bare-Metal-Beispiel. Hyper-V nutzt zusätzlich eine Windows-Root-Partition für Management und Geräte-I/O." },
+        { "type": "figure", "diagramId": "typ-zwei-schichten", "alt": "Typ 2: Auf der Hardware liegt zuerst ein Hostbetriebssystem, darauf der gehostete Hypervisor und darüber die Gast-VMs.", "caption": "VirtualBox ist ein gehostetes Beispiel; VT-x/AMD-V-Nutzung ändert seine Typklasse nicht." },
+        { "type": "markdown", "markdown": "Ein **Hypervisor** teilt Hardware-Ressourcen so, dass mehrere virtuelle Maschinen (VMs) mit eigenem Gastbetriebssystem laufen können. Bei **Typ 1** sitzt die Hypervisor-Schicht direkt auf der Hardware. ESXi wird ohne vorgeschaltetes allgemeines Host-OS installiert. Microsoft Hyper-V ist ebenfalls Typ 1: Windows in der **Root-Partition** verwaltet VMs und Geräte, liegt aber nicht als fremdes Host-OS *unter* dem Hypervisor.\n\nBei **Typ 2** ist ein vorhandenes allgemeines Hostbetriebssystem die Grundlage, auf der ein gehosteter Hypervisor installiert wird. Oracle VirtualBox ist ein Beispiel: Der PC kann seine normalen Anwendungen weiter ausführen und daneben VMs starten. Dass auch VirtualBox CPU-Virtualisierungsfunktionen nutzt, macht es nicht zu Typ 1. Weder „Typ 1 ist immer sicherer“ noch „Typ 2 ist immer langsam“ folgt allein aus dem Schichtenbild; Betrieb, Version, Treiber, Updates und Lastprofil entscheiden mit." },
+        { "type": "quiz", "id": "hypervisor-typ-eins-zwei-einsatzentscheidung-zuordnung", "question": "Welche Schichtenfolge kennzeichnet im Lernmodell eindeutig Typ 2?", "options": [ { "text": "Hardware → Hypervisor → Gastbetriebssysteme", "rationale": "Das ist die vereinfachte Typ-1-Folge.", "correct": false }, { "text": "Hardware → Hostbetriebssystem → gehosteter Hypervisor → Gastbetriebssysteme", "rationale": "Richtig: Das allgemeine Host-OS ist die entscheidende zusätzliche Schicht unter dem Hypervisor.", "correct": true }, { "text": "Hardware → Gastbetriebssystem → Hostbetriebssystem → Hypervisor", "rationale": "Der Gast liegt nicht unter dem Host und Hypervisor.", "correct": false } ] }
+      ]
+    },
+    {
+      "title": "Eine Architektur auswählen",
+      "blocks": [
+        { "type": "markdown", "markdown": "**Fall A – Schulungslabor:** Auf bestehenden Notebooks sollen Kursteilnehmende zwei Test-VMs starten und gleichzeitig Browser und Office auf dem Host nutzen. Ein gehosteter Typ-2-Hypervisor ist hier ein naheliegender Kandidat. Prüfe freie RAM-/Speicher-Ressourcen, CPU-Virtualisierung, erlaubte Installation, Netzisolierung und Snapshot-/Rücksetzbedarf. Der produktive Dienst liegt nicht auf diesen Notebooks.\n\n**Fall B – produktive Fachanwendung:** Mehrere Dienste sollen auf einem dedizierten Server-Host mit zentralem Monitoring, Wartungsfenstern und geplanter Wiederherstellung laufen. Eine Typ-1-Plattform ist ein sinnvoller Ausgangspunkt. Die Typnummer allein erzeugt aber weder Hochverfügbarkeit noch Backup: Hostausfall, Speicherpfade, Netzwerk, Lizenzierung, Rechte und Restore-Test bleiben eigene Entwurfsentscheidungen. Auch ein Typ-2-Produkt kann in speziellen Server-Szenarien laufen; die Wahl wird aus Anforderungen begründet, nicht aus einem pauschalen Verbot." },
+        { "type": "sequence", "id": "hypervisor-typ-eins-zwei-einsatzentscheidung-pruefweg", "title": "Entscheidung ordnen", "prompt": "Ordne den Entscheidungsweg für einen neuen VM-Einsatz.", "steps": [ { "id": "ziel", "label": "Workload, Schutzbedarf und bestehende Hardware klären" }, { "id": "modell", "label": "Host-OS-Abhängigkeit und Betriebsmodell vergleichen" }, { "id": "nachweis", "label": "Kompatibilität, Ressourcen, Wiederherstellung und Lizenzierung testen" } ], "expected": ["ziel", "modell", "nachweis"], "correctFeedback": "Richtig: Der Einsatzzweck bestimmt, welche Architektur anschließend überprüft wird.", "wrongFeedback": "Beginne mit Workload und Schutzbedarf, nicht mit einem beliebten Produktnamen." },
+        { "type": "quiz", "id": "hypervisor-typ-eins-zwei-einsatzentscheidung-fall", "question": "Ein Team will auf zehn vorhandenen Büro-Laptops für einen eintägigen Kurs je eine isolierte Linux-Test-VM und weiterhin die normalen Host-Anwendungen nutzen. Was ist eine plausible Erstwahl?", "options": [ { "text": "Ein gehosteter Typ-2-Hypervisor wie VirtualBox, sofern Installation, Ressourcen und Isolation geprüft sind.", "rationale": "Richtig: Er ergänzt das vorhandene Host-OS für temporäre Test-VMs.", "correct": true }, { "text": "ESXi auf jedem Laptop installieren; das erhält alle vorhandenen Desktop-Anwendungen unverändert.", "rationale": "Eine Bare-Metal-Installation ersetzt gerade das bisherige Host-OS und passt hier nicht ohne Neuplanung.", "correct": false }, { "text": "Keine Virtualisierung ist möglich, weil ein Laptop kein Server ist.", "rationale": "Gehostete Virtualisierung ist gerade auf Desktop-/Laptop-Hosts üblich, wenn Hardware und Richtlinien passen.", "correct": false } ] }
+      ]
+    },
+    {
+      "title": "Begründung abrufen",
+      "blocks": [
+        { "type": "recall", "id": "hypervisor-typ-eins-zwei-einsatzentscheidung-begruendung", "title": "Zwei Fälle schriftlich abgrenzen", "prompt": "Warum ist ein vorhandener Laptop mit temporärer Test-VM eher ein Typ-2-Kandidat und ein dedizierter produktiver VM-Host eher ein Typ-1-Kandidat? Nenne je eine Bedingung oder Grenze.", "label": "Deine Begründung", "minLength": 100, "model": "Auf dem Laptop läuft bereits ein Host-OS mit Anwendungen; ein gehosteter Hypervisor kann daneben Test-VMs starten, sofern Ressourcen und Isolation reichen. Ein dedizierter produktiver Host kann mit Typ-1-Hypervisor betrieben werden, braucht aber zusätzlich Monitoring, Wiederherstellungsplanung, Updates und Lizenzprüfung. Hyper-V bleibt trotz Windows-Root-Partition ein Typ-1-Beispiel." },
+        { "type": "flashcards", "cards": [ { "id": "hypervisor-typ-eins-zwei-einsatzentscheidung-karte-0", "label": "Abruf 1", "front": "Welche Schicht unterscheidet Typ 2 im Lehrbild?", "back": "Ein allgemeines Hostbetriebssystem liegt zwischen Hardware und gehostetem Hypervisor." }, { "id": "hypervisor-typ-eins-zwei-einsatzentscheidung-karte-1", "label": "Abruf 2", "front": "Warum ist Hyper-V trotz Windows-Root-Partition Typ 1?", "back": "Die Hypervisor-Schicht läuft direkt auf Hardware; Windows verwaltet als Root-Partition darüber VMs und Geräte." }, { "id": "hypervisor-typ-eins-zwei-einsatzentscheidung-karte-2", "label": "Abruf 3", "front": "Bedeutet Typ 1 automatisch Hochverfügbarkeit?", "back": "Nein. Ausfallpfade, Cluster, Backup, Monitoring und Wiederherstellung müssen zusätzlich geplant und getestet werden." } ] }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        { "type": "quiz", "id": "hypervisor-typ-eins-zwei-einsatzentscheidung-transfer-a", "question": "Ein Administrator sieht die Windows-Root-Partition eines Hyper-V-Hosts. Welche Einordnung ist technisch richtig?", "options": [ { "text": "Typ 2, weil Windows sichtbar ist und die VM-Verwaltung anbietet.", "rationale": "Die sichtbare Root-Partition liegt nicht als Host-OS unter dem Hypervisor.", "correct": false }, { "text": "Typ 1; Hypervisor auf Hardware, Root-Partition für Management und Geräte-I/O.", "rationale": "Richtig: Die Lage der Hypervisor-Schicht entscheidet, nicht die Bedienoberfläche.", "correct": true }, { "text": "Kein Hypervisor, solange die Root-Partition läuft.", "rationale": "Gerade Hyper-V nutzt eine Root-Partition neben den Gastpartitionen.", "correct": false } ], "requiredObjective": "architektur" },
+        { "type": "quiz", "id": "hypervisor-typ-eins-zwei-einsatzentscheidung-transfer-b", "question": "Ein neuer dedizierter Host soll sechs geschäftskritische VMs tragen. Welche Antwort ist für die Entwurfsentscheidung am besten?", "options": [ { "text": "Typ 1 wählen und danach Hostausfall, Storage, Backup, Updates und Betrieb gesondert planen und testen.", "rationale": "Richtig: Die Architektur passt häufig, ersetzt aber keine Verfügbarkeits- oder Betriebsplanung.", "correct": true }, { "text": "Typ 1 garantiert ohne weitere Maßnahmen, dass keine VM ausfällt.", "rationale": "Ein einzelner Typ-1-Host kann ein gemeinsamer Ausfallpunkt sein.", "correct": false }, { "text": "Typ 2 ist zwingend, weil sechs VMs mehr als zwei sind.", "rationale": "Die VM-Anzahl ist kein Kriterium für die Typnummer.", "correct": false } ], "requiredObjective": "entscheidung" }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [ { "type": "markdown", "markdown": "[Oracle VirtualBox 7.2: gehostete Virtualisierung](https://docs.oracle.com/en/virtualization/virtualbox/7.2/user/Introduction.html), [Microsoft: Hyper-V-Typ-1-Architektur](https://learn.microsoft.com/en-us/windows-server/administration/performance-tuning/role/hyper-v-server/architecture) und [VMware: ESXi als Bare-Metal-Hypervisor](https://www.vmware.com/docs/vmware-esxi-8-0-update-3e-security-target), am 26.09.2026 gelesen. Diagramme und Fälle sind eigene Lernmodelle. Sie sind keine pauschale Leistungs-, Sicherheits- oder Lizenzgarantie; menschliche Fachfreigabe offen." } ]
+    }
+  ]
+}

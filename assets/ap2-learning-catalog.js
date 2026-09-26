@@ -324,6 +324,32 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "hypervisor-typ-eins-zwei-einsatzentscheidung",
+    "slug": "hypervisor-typ-eins-zwei-einsatzentscheidung",
+    "title": "Hypervisor Typ 1 oder Typ 2?",
+    "description": "Die Schichten bis zur Hardware zeichnen, Hyper-V richtig einordnen und für Labor oder Serverbetrieb begründet entscheiden.",
+    "domain": "GA1",
+    "groupId": "ga1-2",
+    "groupLabel": "Virtualisierung, Cluster und Verfügbarkeit",
+    "itemId": "ga1-2__0",
+    "week": "KW 36",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "architektur",
+      "entscheidung"
+    ],
+    "sources": [
+      "hypervisor-oracle-virtualbox-hosted",
+      "hypervisor-microsoft-architecture",
+      "hypervisor-vmware-esxi-target"
+    ],
+    "contentHash": "d84cfea0aeebb4c0d84d519bffe1c0c51715f910b36429cce1bfb9865cfd4751",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "storage-types",
     "slug": "storage-types",
     "title": "DAS, NAS und SAN sicher unterscheiden",

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Die Schichten bis zur Hardware zeichnen, Hyper-V richtig einordnen und für Labor oder Serverbetrieb begründet entscheiden.">
+<title>Hypervisor Typ 1 oder Typ 2? – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-1">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="hypervisor-typ-eins-zwei-einsatzentscheidung" data-progress-id="ga1-2__0" data-content-revision="2026-09-26.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-2">Virtualisierung, Cluster und Verfügbarkeit</a><span class="sep">›</span>
+    <span class="here">Hypervisor Typ 1 oder Typ 2?</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Hypervisor Typ 1 oder Typ 2?</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 25 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Die Typnummer beschreibt, wo der Hypervisor in der Architektur sitzt – nicht die Zahl der VMs und kein Qualitätsurteil. Zeichne für jede Variante den Weg von der Hardware bis zum Gastbetriebssystem; entscheide erst danach über das Einsatzszenario.</p>
+<section class="learning-goals" aria-labelledby="hypervisor-typ-eins-zwei-einsatzentscheidung-goals">
+  <h2 id="hypervisor-typ-eins-zwei-einsatzentscheidung-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Typ-1- und Typ-2-Hypervisor an der tatsächlichen Schicht zwischen Hardware und Gästen unterscheiden</li>
+    <li>Für Desktop-Labor und produktiven VM-Host anhand von Betrieb und Anforderungen eine begründete Wahl treffen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Die erste Vermutung testen</h2>
+<section class="quiz" data-quiz="hypervisor-typ-eins-zwei-einsatzentscheidung-diagnose" data-correct="1">
+  <h3>Auf einem Windows-Server wird Hyper-V verwaltet. Ist es deshalb automatisch ein Typ-2-Hypervisor?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Bei Hyper-V liegt die Virtualisierungsschicht unter der Windows-Root-Partition."><span class="m">A</span> Ja, weil jede sichtbare Windows-Oberfläche unter dem Hypervisor liegen muss.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig: Eine Windows-Verwaltungsumgebung macht die Hypervisor-Schicht nicht zu einer gehosteten App."><span class="m">B</span> Nein. Hyper-V hat Typ-1-Architektur; Windows läuft als Root-/Managementpartition.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die Anzahl der VMs klassifiziert den Hypervisor nicht."><span class="m">C</span> Die Typnummer hängt nur davon ab, ob mindestens zwei Gäste laufen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2"><span class="num">2</span>Schichten statt Produktnamen merken</h2>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Typ 1: Hypervisor auf der Hardware">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-layers" xmlns="http://www.w3.org/2000/svg" width="960" height="412" viewBox="0 0 960 412" role="img" aria-labelledby="diagram-typ-eins-schichten-title diagram-typ-eins-schichten-desc">
+  <title id="diagram-typ-eins-schichten-title">Typ 1: Hypervisor auf der Hardware</title>
+  <desc id="diagram-typ-eins-schichten-desc">Typ 1: Auf der physischen Hardware liegt direkt die Hypervisor-Schicht, darüber laufen getrennte Gast-VMs mit Betriebssystemen.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Typ 1: Hypervisor auf der Hardware</tspan></text>
+  <g><rect class="diagram-row" x="42" y="82" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="82" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="130" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Physische</tspan><tspan x="105" dy="25">Hardware</tspan></text><text x="194" y="116" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">CPU, RAM, Netz und Speicher des Hosts</tspan></text></g><g><rect class="diagram-row" x="42" y="182" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="182" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="230" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Typ-1-Hypervisor</tspan></text><text x="194" y="216" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Virtualisierungsschicht direkt auf der Hardware; Beispiele</tspan><tspan x="194" dy="25">ESXi und Hyper-V</tspan></text></g><g><rect class="diagram-row" x="42" y="282" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="282" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="330" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Gast-VMs</tspan></text><text x="194" y="316" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Jede VM hat eigene virtuelle Geräte und ein</tspan><tspan x="194" dy="25">Gastbetriebssystem</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>ESXi ist ein Bare-Metal-Beispiel. Hyper-V nutzt zusätzlich eine Windows-Root-Partition für Management und Geräte-I/O.</figcaption>
+</figure><figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Typ 2: Hypervisor auf einem Host-OS">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-layers" xmlns="http://www.w3.org/2000/svg" width="960" height="512" viewBox="0 0 960 512" role="img" aria-labelledby="diagram-typ-zwei-schichten-title diagram-typ-zwei-schichten-desc">
+  <title id="diagram-typ-zwei-schichten-title">Typ 2: Hypervisor auf einem Host-OS</title>
+  <desc id="diagram-typ-zwei-schichten-desc">Typ 2: Auf der Hardware liegt zuerst ein Hostbetriebssystem, darauf der gehostete Hypervisor und darüber die Gast-VMs.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Typ 2: Hypervisor auf einem Host-OS</tspan></text>
+  <g><rect class="diagram-row" x="42" y="82" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="82" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="130" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Physische</tspan><tspan x="105" dy="25">Hardware</tspan></text><text x="194" y="116" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">CPU, RAM, Netz und Speicher des Rechners</tspan></text></g><g><rect class="diagram-row" x="42" y="182" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="182" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="230" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Hostbetriebssystem</tspan></text><text x="194" y="216" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Beispielsweise Windows oder Linux mit eigener Desktop- und</tspan><tspan x="194" dy="25">Treiberumgebung</tspan></text></g><g><rect class="diagram-row" x="42" y="282" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="282" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="330" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Gehosteter</tspan><tspan x="105" dy="25">Hypervisor</tspan></text><text x="194" y="316" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">VirtualBox läuft auf dem Host-OS; Hardwarevirtualisierung</tspan><tspan x="194" dy="25">kann dennoch genutzt werden</tspan></text></g><g><rect class="diagram-row" x="42" y="382" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="382" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="430" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Gast-VMs</tspan></text><text x="194" y="416" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Laborsysteme mit jeweils eigenem Gastbetriebssystem</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>VirtualBox ist ein gehostetes Beispiel; VT-x/AMD-V-Nutzung ändert seine Typklasse nicht.</figcaption>
+</figure><p>Ein <strong>Hypervisor</strong> teilt Hardware-Ressourcen so, dass mehrere virtuelle Maschinen (VMs) mit eigenem Gastbetriebssystem laufen können. Bei <strong>Typ 1</strong> sitzt die Hypervisor-Schicht direkt auf der Hardware. ESXi wird ohne vorgeschaltetes allgemeines Host-OS installiert. Microsoft Hyper-V ist ebenfalls Typ 1: Windows in der <strong>Root-Partition</strong> verwaltet VMs und Geräte, liegt aber nicht als fremdes Host-OS <em>unter</em> dem Hypervisor.</p>
+<p>Bei <strong>Typ 2</strong> ist ein vorhandenes allgemeines Hostbetriebssystem die Grundlage, auf der ein gehosteter Hypervisor installiert wird. Oracle VirtualBox ist ein Beispiel: Der PC kann seine normalen Anwendungen weiter ausführen und daneben VMs starten. Dass auch VirtualBox CPU-Virtualisierungsfunktionen nutzt, macht es nicht zu Typ 1. Weder „Typ 1 ist immer sicherer“ noch „Typ 2 ist immer langsam“ folgt allein aus dem Schichtenbild; Betrieb, Version, Treiber, Updates und Lastprofil entscheiden mit.</p>
+<section class="quiz" data-quiz="hypervisor-typ-eins-zwei-einsatzentscheidung-zuordnung" data-correct="1">
+  <h3>Welche Schichtenfolge kennzeichnet im Lernmodell eindeutig Typ 2?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Das ist die vereinfachte Typ-1-Folge."><span class="m">A</span> Hardware → Hypervisor → Gastbetriebssysteme</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig: Das allgemeine Host-OS ist die entscheidende zusätzliche Schicht unter dem Hypervisor."><span class="m">B</span> Hardware → Hostbetriebssystem → gehosteter Hypervisor → Gastbetriebssysteme</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Der Gast liegt nicht unter dem Host und Hypervisor."><span class="m">C</span> Hardware → Gastbetriebssystem → Hostbetriebssystem → Hypervisor</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s3"><span class="num">3</span>Eine Architektur auswählen</h2>
+<p><strong>Fall A – Schulungslabor:</strong> Auf bestehenden Notebooks sollen Kursteilnehmende zwei Test-VMs starten und gleichzeitig Browser und Office auf dem Host nutzen. Ein gehosteter Typ-2-Hypervisor ist hier ein naheliegender Kandidat. Prüfe freie RAM-/Speicher-Ressourcen, CPU-Virtualisierung, erlaubte Installation, Netzisolierung und Snapshot-/Rücksetzbedarf. Der produktive Dienst liegt nicht auf diesen Notebooks.</p>
+<p><strong>Fall B – produktive Fachanwendung:</strong> Mehrere Dienste sollen auf einem dedizierten Server-Host mit zentralem Monitoring, Wartungsfenstern und geplanter Wiederherstellung laufen. Eine Typ-1-Plattform ist ein sinnvoller Ausgangspunkt. Die Typnummer allein erzeugt aber weder Hochverfügbarkeit noch Backup: Hostausfall, Speicherpfade, Netzwerk, Lizenzierung, Rechte und Restore-Test bleiben eigene Entwurfsentscheidungen. Auch ein Typ-2-Produkt kann in speziellen Server-Szenarien laufen; die Wahl wird aus Anforderungen begründet, nicht aus einem pauschalen Verbot.</p>
+<section class="sequence-practice" data-sequence="hypervisor-typ-eins-zwei-einsatzentscheidung-pruefweg" data-expected="ziel,modell,nachweis" data-correct-feedback="Richtig: Der Einsatzzweck bestimmt, welche Architektur anschließend überprüft wird." data-wrong-feedback="Beginne mit Workload und Schutzbedarf, nicht mit einem beliebten Produktnamen." aria-labelledby="hypervisor-typ-eins-zwei-einsatzentscheidung-pruefweg-title">
+  <div class="lab-heading"><div><h3 id="hypervisor-typ-eins-zwei-einsatzentscheidung-pruefweg-title">Entscheidung ordnen</h3><p>Ordne den Entscheidungsweg für einen neuen VM-Einsatz.</p></div><span class="lab-tag">Ablauf</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="ziel" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Workload, Schutzbedarf und bestehende Hardware klären</span></li>
+    <li data-step="modell" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Host-OS-Abhängigkeit und Betriebsmodell vergleichen</span></li>
+    <li data-step="nachweis" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Kompatibilität, Ressourcen, Wiederherstellung und Lizenzierung testen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><section class="quiz" data-quiz="hypervisor-typ-eins-zwei-einsatzentscheidung-fall" data-correct="0">
+  <h3>Ein Team will auf zehn vorhandenen Büro-Laptops für einen eintägigen Kurs je eine isolierte Linux-Test-VM und weiterhin die normalen Host-Anwendungen nutzen. Was ist eine plausible Erstwahl?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig: Er ergänzt das vorhandene Host-OS für temporäre Test-VMs."><span class="m">A</span> Ein gehosteter Typ-2-Hypervisor wie VirtualBox, sofern Installation, Ressourcen und Isolation geprüft sind.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Eine Bare-Metal-Installation ersetzt gerade das bisherige Host-OS und passt hier nicht ohne Neuplanung."><span class="m">B</span> ESXi auf jedem Laptop installieren; das erhält alle vorhandenen Desktop-Anwendungen unverändert.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Gehostete Virtualisierung ist gerade auf Desktop-/Laptop-Hosts üblich, wenn Hardware und Richtlinien passen."><span class="m">C</span> Keine Virtualisierung ist möglich, weil ein Laptop kein Server ist.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Begründung abrufen</h2>
+<section class="recall-practice" data-recall="hypervisor-typ-eins-zwei-einsatzentscheidung-begruendung" data-min-length="100" aria-labelledby="hypervisor-typ-eins-zwei-einsatzentscheidung-begruendung-title">
+  <div class="recall-prompt"><h3 id="hypervisor-typ-eins-zwei-einsatzentscheidung-begruendung-title">Zwei Fälle schriftlich abgrenzen</h3><p>Warum ist ein vorhandener Laptop mit temporärer Test-VM eher ein Typ-2-Kandidat und ein dedizierter produktiver VM-Host eher ein Typ-1-Kandidat? Nenne je eine Bedingung oder Grenze.</p></div>
+  <label class="sr-only" for="hypervisor-typ-eins-zwei-einsatzentscheidung-begruendung-answer">Deine Begründung</label>
+  <textarea id="hypervisor-typ-eins-zwei-einsatzentscheidung-begruendung-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Auf dem Laptop läuft bereits ein Host-OS mit Anwendungen; ein gehosteter Hypervisor kann daneben Test-VMs starten, sofern Ressourcen und Isolation reichen. Ein dedizierter produktiver Host kann mit Typ-1-Hypervisor betrieben werden, braucht aber zusätzlich Monitoring, Wiederherstellungsplanung, Updates und Lizenzprüfung. Hyper-V bleibt trotz Windows-Root-Partition ein Typ-1-Beispiel.</div>
+</section><div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="hypervisor-typ-eins-zwei-einsatzentscheidung-karte-0" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche Schicht unterscheidet Typ 2 im Lehrbild?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Ein allgemeines Hostbetriebssystem liegt zwischen Hardware und gehostetem Hypervisor.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="hypervisor-typ-eins-zwei-einsatzentscheidung-karte-1" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum ist Hyper-V trotz Windows-Root-Partition Typ 1?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Die Hypervisor-Schicht läuft direkt auf Hardware; Windows verwaltet als Root-Partition darüber VMs und Geräte.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="hypervisor-typ-eins-zwei-einsatzentscheidung-karte-2" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Bedeutet Typ 1 automatisch Hochverfügbarkeit?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Nein. Ausfallpfade, Cluster, Backup, Monitoring und Wiederherstellung müssen zusätzlich geplant und getestet werden.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Abruf 1“:</span><button type="button" data-card-id="hypervisor-typ-eins-zwei-einsatzentscheidung-karte-0" data-card-rate="known">gewusst</button><button type="button" data-card-id="hypervisor-typ-eins-zwei-einsatzentscheidung-karte-0" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="hypervisor-typ-eins-zwei-einsatzentscheidung-karte-0"></span></div>
+<div class="card-rating"><span>Karte „Abruf 2“:</span><button type="button" data-card-id="hypervisor-typ-eins-zwei-einsatzentscheidung-karte-1" data-card-rate="known">gewusst</button><button type="button" data-card-id="hypervisor-typ-eins-zwei-einsatzentscheidung-karte-1" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="hypervisor-typ-eins-zwei-einsatzentscheidung-karte-1"></span></div>
+<div class="card-rating"><span>Karte „Abruf 3“:</span><button type="button" data-card-id="hypervisor-typ-eins-zwei-einsatzentscheidung-karte-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="hypervisor-typ-eins-zwei-einsatzentscheidung-karte-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="hypervisor-typ-eins-zwei-einsatzentscheidung-karte-2"></span></div><h2 class="sec" id="s5"><span class="num">5</span>Lernziel-Check</h2>
+<section class="quiz" data-quiz="hypervisor-typ-eins-zwei-einsatzentscheidung-transfer-a" data-correct="1" data-required-objective="architektur">
+  <h3>Ein Administrator sieht die Windows-Root-Partition eines Hyper-V-Hosts. Welche Einordnung ist technisch richtig?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Die sichtbare Root-Partition liegt nicht als Host-OS unter dem Hypervisor."><span class="m">A</span> Typ 2, weil Windows sichtbar ist und die VM-Verwaltung anbietet.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig: Die Lage der Hypervisor-Schicht entscheidet, nicht die Bedienoberfläche."><span class="m">B</span> Typ 1; Hypervisor auf Hardware, Root-Partition für Management und Geräte-I/O.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Gerade Hyper-V nutzt eine Root-Partition neben den Gastpartitionen."><span class="m">C</span> Kein Hypervisor, solange die Root-Partition läuft.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="hypervisor-typ-eins-zwei-einsatzentscheidung-transfer-b" data-correct="0" data-required-objective="entscheidung">
+  <h3>Ein neuer dedizierter Host soll sechs geschäftskritische VMs tragen. Welche Antwort ist für die Entwurfsentscheidung am besten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig: Die Architektur passt häufig, ersetzt aber keine Verfügbarkeits- oder Betriebsplanung."><span class="m">A</span> Typ 1 wählen und danach Hostausfall, Storage, Backup, Updates und Betrieb gesondert planen und testen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Ein einzelner Typ-1-Host kann ein gemeinsamer Ausfallpunkt sein."><span class="m">B</span> Typ 1 garantiert ohne weitere Maßnahmen, dass keine VM ausfällt.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die VM-Anzahl ist kein Kriterium für die Typnummer."><span class="m">C</span> Typ 2 ist zwingend, weil sechs VMs mehr als zwei sind.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Quellen und Grenzen</h2>
+<p><a href="https://docs.oracle.com/en/virtualization/virtualbox/7.2/user/Introduction.html">Oracle VirtualBox 7.2: gehostete Virtualisierung</a>, <a href="https://learn.microsoft.com/en-us/windows-server/administration/performance-tuning/role/hyper-v-server/architecture">Microsoft: Hyper-V-Typ-1-Architektur</a> und <a href="https://www.vmware.com/docs/vmware-esxi-8-0-update-3e-security-target">VMware: ESXi als Bare-Metal-Hypervisor</a>, am 26.09.2026 gelesen. Diagramme und Fälle sind eigene Lernmodelle. Sie sind keine pauschale Leistungs-, Sicherheits- oder Lizenzgarantie; menschliche Fachfreigabe offen.</p>
+
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-2"><span class="d">zurück zu</span><span class="t">Virtualisierung, Cluster und Verfügbarkeit</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Virtualisierung, Cluster und Verfügbarkeit</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Die erste Vermutung testen</a></li>
+<li><a href="#s2" data-t="s2">Schichten statt Produktnamen merken</a></li>
+<li><a href="#s3" data-t="s3">Eine Architektur auswählen</a></li>
+<li><a href="#s4" data-t="s4">Begründung abrufen</a></li>
+<li><a href="#s5" data-t="s5">Lernziel-Check</a></li>
+<li><a href="#s6" data-t="s6">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-2">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>
