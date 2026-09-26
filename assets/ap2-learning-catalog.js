@@ -535,6 +535,31 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "verfuegbarkeit-ausfallzeit-jahr-monat",
+    "slug": "verfuegbarkeit-ausfallzeit-jahr-monat",
+    "title": "99,9 % klingt viel – wie lange darf es ausfallen?",
+    "description": "Verfügbarkeitsziele in Ausfallminuten pro Jahr und 30-Tage-Monat umrechnen und die Messperiode sauber benennen.",
+    "domain": "GA1",
+    "groupId": "ga1-2",
+    "groupLabel": "Virtualisierung, Cluster und Verfügbarkeit",
+    "itemId": "ga1-2__8",
+    "week": "KW 36",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "rechnen",
+      "einordnen"
+    ],
+    "sources": [
+      "availability-google-table",
+      "availability-google-risk"
+    ],
+    "contentHash": "d451c724de7793cefc4b835ce5170b1b4d4f4c9cb895634e43bbc322df85feb1",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "storage-types",
     "slug": "storage-types",
     "title": "DAS, NAS und SAN sicher unterscheiden",
