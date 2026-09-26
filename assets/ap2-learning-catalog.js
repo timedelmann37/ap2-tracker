@@ -1313,6 +1313,35 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "cloud-vorteile-nachteile-entscheiden",
+    "slug": "cloud-vorteile-nachteile-entscheiden",
+    "title": "Cloud oder eigener Betrieb? Sechs Hebel statt Bauchgefühl",
+    "description": "CapEx/OpEx, Elastizität, Lock-in, Datenschutz, Latenz und Betriebsaufwand anhand eines konkreten Falls gegeneinander abwägen.",
+    "domain": "GA1",
+    "groupId": "ga1-5",
+    "groupLabel": "Cloud und Wirtschaftlichkeit",
+    "itemId": "ga1-5__2",
+    "week": "KW 39",
+    "estimatedMinutes": 32,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "hebel",
+      "fall"
+    ],
+    "sources": [
+      "cloud-nist-sp800145",
+      "cloud-ms-cost-efficiency",
+      "cloud-ncsc-shared-responsibility",
+      "cloud-edpb-controller-processor",
+      "cloud-aws-portability",
+      "cloud-ms-hybrid-latency"
+    ],
+    "contentHash": "cfd5b9a011429f6afe6b107c75b92d0270466eec2b42f6643b77214fa76c7472",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "slug": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "title": "Struktogramm und Programmablaufplan",
