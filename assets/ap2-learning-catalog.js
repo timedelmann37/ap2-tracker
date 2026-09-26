@@ -1368,6 +1368,32 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "load-balancer-algorithmen-auswaehlen",
+    "slug": "load-balancer-algorithmen-auswaehlen",
+    "title": "Wohin mit der nächsten Anfrage?",
+    "description": "Round Robin, Least Connections und IP-Hashing anhand kurzer Anfragen, langer Verbindungen und Sitzungstreue auswählen und Grenzen erklären.",
+    "domain": "GA1",
+    "groupId": "ga1-5",
+    "groupLabel": "Cloud und Wirtschaftlichkeit",
+    "itemId": "ga1-5__4",
+    "week": "KW 39",
+    "estimatedMinutes": 29,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "verfahren",
+      "wahl"
+    ],
+    "sources": [
+      "nginx-http-load-balancing",
+      "nginx-session-persistence-limits",
+      "cloud-ms-lb-health"
+    ],
+    "contentHash": "5015af07e75e84e4c774f80a9cb860ad6d8d48c28ae2dee4959ee8b1e32048fc",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "slug": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "title": "Struktogramm und Programmablaufplan",
