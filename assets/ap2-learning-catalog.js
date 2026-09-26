@@ -52,6 +52,34 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "serverbauformen-tower-rack-blade",
+    "slug": "serverbauformen-tower-rack-blade",
+    "title": "Serverbauformen: Tower, Rack oder Blade?",
+    "description": "Bauformen anhand des Einsatzorts wählen und einen Rackeinbau über Höhe, Tiefe, Schienen und Traglast prüfen.",
+    "domain": "GA1",
+    "groupId": "ga1-1",
+    "groupLabel": "Server-, Client- und Hardwarekonzeption",
+    "itemId": "ga1-1__2",
+    "week": "KW 35",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "bauform",
+      "einbau"
+    ],
+    "sources": [
+      "europa-integratoren-2026",
+      "server-form-hpe-rack",
+      "server-form-hpe-blade",
+      "server-form-dell-rails",
+      "server-form-dell-u"
+    ],
+    "contentHash": "14750c0ff3c4f4afcbdf8e92b25055c9c8146a52d57b1f6eea2becc3eb124583",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "storage-types",
     "slug": "storage-types",
     "title": "DAS, NAS und SAN sicher unterscheiden",
