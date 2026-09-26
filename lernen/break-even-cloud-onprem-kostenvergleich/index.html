@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Zwei kumulierte Kostenfunktionen aufstellen, ihren Schnittpunkt berechnen und die Aussagegrenzen erklären.">
+<title>Cloud oder eigener Server: Kosten-Break-even – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-1">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="break-even-cloud-onprem-kostenvergleich" data-progress-id="ga1-5__9" data-content-revision="2026-09-26.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-5">Cloud und Wirtschaftlichkeit</a><span class="sep">›</span>
+    <span class="here">Cloud oder eigener Server: Kosten-Break-even</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Cloud oder eigener Server: Kosten-Break-even</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 32 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Werkstatt Kranich vergleicht denselben Serverdienst für einen festen Zeitraum. Ein eigener Server kostet zu Beginn mehr, aber pro Jahr weniger. Die Cloud startet günstiger, kostet im angenommenen Dauerbetrieb jährlich mehr. Ab wann sind die bis dahin angefallenen Kosten gleich hoch?</p>
+<section class="learning-goals" aria-labelledby="break-even-cloud-onprem-kostenvergleich-goals">
+  <h2 id="break-even-cloud-onprem-kostenvergleich-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Start- und Jahreskosten beider Varianten getrennt als Kostenfunktionen aufstellen</li>
+    <li>Den Kostenschnittpunkt berechnen und nur unter den Modellannahmen deuten</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>1 · Zwei Kostenverläufe statt zwei Preiszettel</h2>
+<section class="quiz" data-quiz="be-diagnose" data-correct="0">
+  <h3>Kranich sieht 14.000 € Startkosten lokal und nur 2.000 € in der Cloud. Folgt daraus, dass die Cloud über jede Laufzeit günstiger ist?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Der anfängliche Vorsprung kann durch höhere laufende Kosten aufgezehrt werden."><span class="m">A</span> Nein. Dazu müssen auch die kumulierten Jahreskosten derselben Leistung betrachtet werden.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die Kostendifferenz verändert sich mit jedem Betriebsjahr."><span class="m">B</span> Ja. Der niedrigere Startwert bestimmt die Gesamtkosten für immer.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Auch Cloud-Betrieb, Betreuung, Lizenzen und Datentransfer können Kosten verursachen."><span class="m">C</span> Ja. Betriebskosten zählen nur bei eigenem Server.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><p>Im <a href="/lernen/tco-vierjahresrechnung-kostenarten/">vorherigen TCO-Fall</a> hatte Kranich für einen <strong>neuen eigenen Server</strong> 14.000 € einmalig und 7.000 € pro Betriebsjahr angesetzt. Für die hier erfundene <strong>Cloud-Alternative</strong> setzen wir 2.000 € einmalige Umstellung sowie 10.000 € pro Jahr für denselben Dienst an. Die 10.000 € stehen im Fall für Rechenleistung samt Speicher/Backup, Datenübertragung, Support/Lizenzen und die verbleibende interne Betreuung. Das sind <strong>keine Anbieterpreise</strong>.</p>
+<p>Beide Varianten decken im Modell dieselbe benötigte Leistung und denselben Backup-Umfang ab. Die bereits im vorherigen TCO-Fall eingerechnete interne Arbeit wird nicht erneut hinzugerechnet. Wir zählen ab dem Entscheidungszeitpunkt: Kranich müsste den lokalen Server <strong>neu kaufen</strong>. Wäre er bereits vorhanden und bezahlt, müsste eine neue Entscheidung die noch vermeidbaren Kosten und den Restwert anders abgrenzen. Hier vereinfachen wir: unveränderte Last und Preise, keine Ersatzbeschaffung oder Abzinsung.</p>
+<div class="math-display" role="group" aria-label="Kumulierte lokale Kosten nach t Jahren gleich vierzehntausend Euro plus siebentausend Euro pro Jahr mal t Jahre. Kumulierte Cloud-Kosten gleich zweitausend Euro plus zehntausend Euro pro Jahr mal t Jahre."><math display="block" aria-label="Kumulierte lokale Kosten nach t Jahren gleich vierzehntausend Euro plus siebentausend Euro pro Jahr mal t Jahre. Kumulierte Cloud-Kosten gleich zweitausend Euro plus zehntausend Euro pro Jahr mal t Jahre."><mtable columnalign="left"><mtr><mtd><mrow><msub><mi>K</mi><mtext>lokal</mtext></msub><mo>(</mo><mi>t</mi><mo>)</mo><mo>=</mo><mn>14.000</mn><mo>+</mo><mn>7.000</mn><mi>t</mi></mrow></mtd></mtr><mtr><mtd><mrow><msub><mi>K</mi><mtext>Cloud</mtext></msub><mo>(</mo><mi>t</mi><mo>)</mo><mo>=</mo><mn>2.000</mn><mo>+</mo><mn>10.000</mn><mi>t</mi></mrow></mtd></mtr></mtable></math><div class="math-legend"><span>K in Euro, t in Jahren ab Start; Jahresbeträge sind im Modell konstant. Beispielsweise steht 7.000 t für 7.000 €/Jahr × t Jahre.</span></div></div><section class="quiz" data-quiz="be-startwert" data-correct="0">
+  <h3>Was bedeutet in der lokalen Kostenfunktion die Zahl 14.000?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Sie wird nicht mit der Zahl der Jahre multipliziert."><span class="m">A</span> Einmalige Anschaffung und Einrichtung zu Beginn des betrachteten Vorhabens.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Der jährliche Betrag ist im Modell 7.000 €."><span class="m">B</span> Die Kosten jedes einzelnen Betriebsjahres.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Hier werden nur Kosten verglichen, keine Erträge."><span class="m">C</span> Ein bereits erzielter Gewinn aus der Cloud-Migration.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2"><span class="num">2</span>2 · Gleichsetzen und nach Jahren lösen</h2>
+<p>Der <strong>Kosten-Break-even</strong> in diesem Vergleich ist der Zeitpunkt, an dem beide Varianten seit dem Start <strong>gleich viel gekostet</strong> haben. Er ist keine Umsatz- oder Gewinnschwelle. Du setzt daher die beiden Kostenfunktionen gleich. Zu Beginn ist Cloud um <strong>12.000 €</strong> günstiger. Pro Jahr kostet Cloud im Fall <strong>3.000 €</strong> mehr. Der Startvorsprung ist nach <strong>vier Jahren</strong> aufgezehrt.</p>
+<p>Rechne auch die Probe: Lokal 14.000 € + 4 × 7.000 € = 42.000 €. Cloud 2.000 € + 4 × 10.000 € = 42.000 €. Erst diese Einsetzung belegt, dass der algebraische Zeitpunkt zum Modell passt. Genau am Schnittpunkt gibt es nach Kosten keinen Vorsprung; andere Anforderungen können dennoch eine Variante bevorzugen.</p>
+<div class="math-display" role="group" aria-label="Break-even in Jahren gleich zwölf tausend Euro Startkostendifferenz geteilt durch drei tausend Euro pro Jahr Unterschied in laufenden Kosten, also vier Jahre."><math display="block" aria-label="Break-even in Jahren gleich zwölf tausend Euro Startkostendifferenz geteilt durch drei tausend Euro pro Jahr Unterschied in laufenden Kosten, also vier Jahre."><mtable columnalign="left"><mtr><mtd><mrow><mn>14.000</mn><mo>+</mo><mn>7.000</mn><mi>t</mi><mo>=</mo><mn>2.000</mn><mo>+</mo><mn>10.000</mn><mi>t</mi></mrow></mtd></mtr><mtr><mtd><mrow><mi>t</mi><mo>=</mo><mfrac><mrow><mn>12.000</mn><mtext> €</mtext></mrow><mrow><mn>3.000</mn><mtext> €/Jahr</mtext></mrow></mfrac><mo>=</mo><mn>4</mn><mtext> Jahre</mtext></mrow></mtd></mtr></mtable></math><div class="math-legend"><span>12.000 € = Startkostendifferenz; 3.000 €/Jahr = Unterschied der jährlichen Kosten. Euro geteilt durch Euro pro Jahr ergibt Jahre.</span></div></div><section class="numeric-practice transfer-number" data-numeric-practice="be-schnittpunkt" data-expected="4" data-tolerance="0.001" data-correct-feedback="Richtig: 12.000 € Startvorsprung geteilt durch 3.000 € zusätzliche Cloudkosten pro Jahr = 4 Jahre." data-wrong-feedback="Teile die Differenz der Startkosten durch die Differenz der jährlichen Kosten. Die Einheit des Ergebnisses ist Jahre.">
+  <h3>Kosten-Schnittpunkt berechnen</h3>
+  <p>Lokal: 14.000 € Start + 7.000 €/Jahr. Cloud: 2.000 € Start + 10.000 €/Jahr. Nach wie vielen Jahren sind die kumulierten Kosten gleich?</p>
+  <label for="be-schnittpunkt-answer">Jahre bis zum Schnittpunkt</label>
+  <div class="answer-row"><input id="be-schnittpunkt-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Ergebnis"><button type="button" class="lbtn" data-numeric-check>Antwort prüfen</button></div><p>  <template data-numeric-feedback-for="3">3.000 € ist die jährliche Kostendifferenz, nicht die Anzahl der Jahre. 12.000 ÷ 3.000 = 4.</template>
+  <template data-numeric-feedback-for="12">12.000 € ist der Startkostenvorsprung der Cloud. Teile ihn durch 3.000 €/Jahr.</template>
+  <template data-numeric-feedback-for="42">42.000 € sind die kumulierten Kosten beider Varianten im vierten Jahr, nicht der Zeitpunkt.</template>
+  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p></p>
+</section><figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Wer liegt zu welchem Zeitpunkt vorn?">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-zeitpunkte-title diagram-zeitpunkte-desc">
+  <title id="diagram-zeitpunkte-title">Wer liegt zu welchem Zeitpunkt vorn?</title>
+  <desc id="diagram-zeitpunkte-desc">Zu Beginn ist die Cloud um zwölftausend Euro günstiger, nach vier Jahren kosten beide Varianten zweiundvierzigtausend Euro, nach fünf Jahren ist der eigene Server im Fall um dreitausend Euro günstiger.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Wer liegt zu welchem Zeitpunkt vorn?</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">Start</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">Cloud 12.000 € günstiger.</tspan></text></g><g><rect class="diagram-row" x="340" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="362" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="362" dy="0">Jahr 4</tspan></text><text x="362" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="362" dy="0">Beide: 42.000 €.</tspan></text></g><g><rect class="diagram-row" x="638" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="660" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="660" dy="0">Jahr 5</tspan></text><text x="660" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="660" dy="0">Lokal 3.000 € günstiger.</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Zeitpunkt-Grafik. Der Kostenvorteil wechselt nur unter den gesetzten Annahmen.</figcaption>
+</figure><h2 class="sec" id="s3"><span class="num">3</span>3 · Vor und nach dem Schnittpunkt</h2>
+<p>Nach <strong>drei Jahren</strong> kostet der eigene Server 35.000 € und die Cloud 32.000 €: Im Modell ist die Cloud 3.000 € günstiger. Nach <strong>fünf Jahren</strong> kostet lokal 49.000 € und Cloud 52.000 €: Im Modell ist der eigene Server 3.000 € günstiger. Bei einem geplanten Betrieb von nur drei Jahren liegt der Schnittpunkt außerhalb des Betrachtungszeitraums. Eine bloße Aussage „ab Jahr vier immer lokal“ wäre dennoch zu stark: Preise, Last und Ersatzinvestitionen können den Verlauf ändern.</p>
+<p>Ändert sich beispielsweise nur der angenommene Cloud-Jahresbetrag von 10.000 € auf <strong>9.000 €</strong>, sinkt der jährliche Mehrbetrag gegenüber lokal auf 2.000 €. Dann läge der neue Schnittpunkt bei <strong>sechs Jahren</strong>. Für einen Fünfjahresvergleich gäbe es unter diesen neuen Annahmen noch keinen Kostenschnittpunkt. Der Vergleich darf daraus keine allgemeine Empfehlung ableiten; Datenschutz, Verfügbarkeit, Elastizität und die tatsächliche Vertragsgestaltung bleiben eigene Entscheidungsfragen.</p>
+<div class="math-display" role="group" aria-label="Bei neuntausend Euro Cloud-Jahreskosten ist der jährliche Unterschied zweitausend Euro. Zwölftausend Euro Startkostenvorsprung geteilt durch zweitausend Euro pro Jahr ergibt sechs Jahre."><math display="block" aria-label="Bei neuntausend Euro Cloud-Jahreskosten ist der jährliche Unterschied zweitausend Euro. Zwölftausend Euro Startkostenvorsprung geteilt durch zweitausend Euro pro Jahr ergibt sechs Jahre."><mtable columnalign="left"><mtr><mtd><mrow><mn>9.000</mn><mo>−</mo><mn>7.000</mn><mo>=</mo><mn>2.000</mn><mtext> €/Jahr</mtext></mrow></mtd></mtr><mtr><mtd><mrow><mi>t</mi><mo>=</mo><mfrac><mrow><mn>12.000</mn><mtext> €</mtext></mrow><mrow><mn>2.000</mn><mtext> €/Jahr</mtext></mrow></mfrac><mo>=</mo><mn>6</mn><mtext> Jahre</mtext></mrow></mtd></mtr></mtable></math><div class="math-legend"><span>Nur eine Annahme wurde geändert; alle anderen Kosten und der Leistungsumfang bleiben gleich.</span></div></div><section class="numeric-practice transfer-number" data-numeric-practice="be-drei-jahre" data-expected="3000" data-tolerance="0.01" data-correct-feedback="Richtig: Lokal 35.000 € minus Cloud 32.000 € = 3.000 € Cloud-Kostenvorteil nach drei Jahren." data-wrong-feedback="Setze t = 3 in beide Kostenfunktionen ein und bilde die Differenz der kumulierten Kosten.">
+  <h3>Dreijahresvergleich</h3>
+  <p>Wie viel Euro günstiger ist die Cloud im Kranich-Grundfall nach drei Jahren? Gib nur die positive Kostendifferenz an.</p>
+  <label for="be-drei-jahre-answer">Kostenvorteil Cloud nach drei Jahren, Euro</label>
+  <div class="answer-row"><input id="be-drei-jahre-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Ergebnis"><button type="button" class="lbtn" data-numeric-check>Antwort prüfen</button></div><p>  <template data-numeric-feedback-for="12000">12.000 € gilt nur unmittelbar am Start; drei Cloud-Jahresmehrkosten von je 3.000 € mindern den Vorsprung.</template>
+  <template data-numeric-feedback-for="0">Gleich hohe Kosten entstehen erst nach vier Jahren, nicht schon nach drei.</template>
+  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p></p>
+</section><section class="numeric-practice transfer-number" data-numeric-practice="be-sechs-jahre" data-expected="6" data-tolerance="0.001" data-correct-feedback="Richtig: 12.000 € Startvorsprung ÷ 2.000 €/Jahr jährlicher Mehrbetrag = 6 Jahre." data-wrong-feedback="Berechne den neuen Unterschied zwischen 9.000 € und 7.000 € pro Jahr. Der Startvorsprung bleibt 12.000 €.">
+  <h3>Annahme ändern</h3>
+  <p>Nur der Cloud-Jahresbetrag sinkt auf 9.000 €; Startwerte und lokale 7.000 €/Jahr bleiben gleich. Nach wie vielen Jahren wären die Kosten nun gleich?</p>
+  <label for="be-sechs-jahre-answer">Neuer Schnittpunkt in Jahren</label>
+  <div class="answer-row"><input id="be-sechs-jahre-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Ergebnis"><button type="button" class="lbtn" data-numeric-check>Antwort prüfen</button></div><p>  <template data-numeric-feedback-for="4">Vier Jahre galten bei 10.000 € Cloudkosten pro Jahr. Der neue Jahressatz verändert den Schnittpunkt.</template>
+  <template data-numeric-feedback-for="2">2.000 € sind die neuen jährlichen Mehrkosten, nicht die gesuchte Jahreszahl.</template>
+  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p></p>
+</section><figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Schnittpunkt mit Einheiten prüfen">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="434" viewBox="0 0 960 434" role="img" aria-labelledby="diagram-break-even-pruefpfad-title diagram-break-even-pruefpfad-desc">
+  <title id="diagram-break-even-pruefpfad-title">Schnittpunkt mit Einheiten prüfen</title>
+  <desc id="diagram-break-even-pruefpfad-desc">Für einen Kosten-Break-even werden erst gleicher Dienst und Zeitraum festgelegt, dann beide Kostenfunktionen aus Start- und Jahreskosten gebildet und schließlich der Schnittpunkt durch Einsetzen kontrolliert.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Schnittpunkt mit Einheiten prüfen</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Gleiche Grenze</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Gleicher Dienst und gleicher Zeitraum.</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Kostenlinien</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Startwert + Jahressatz × Jahre.</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Schnittpunkt</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Gleichsetzen und beide Seiten prüfen.</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigener Prüfpfad. Gleichsetzen ersetzt nicht die Prüfung, ob die Kostenmodelle wirklich vergleichbar sind.</figcaption>
+</figure><section class="recall-practice" data-recall="be-kranich-deutung" data-min-length="160" aria-labelledby="be-kranich-deutung-title">
+  <div class="recall-prompt"><h3 id="be-kranich-deutung-title">Ergebnis mit Grenzen formulieren</h3><p>Erkläre einer Kollegin den Vierjahres-Schnittpunkt in zwei bis vier Sätzen. Nenne eine Annahme, bei deren Änderung sich der Zeitpunkt verschiebt.</p></div>
+  <label class="sr-only" for="be-kranich-deutung-answer">Deine Kosten-Deutung</label>
+  <textarea id="be-kranich-deutung-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Im fiktiven Kranich-Fall sind die kumulierten Kosten beider Varianten nach vier Jahren mit jeweils 42.000 € gleich. Vorher ist die Cloud wegen der geringeren Startkosten günstiger, danach im konstanten Modell der eigene Server wegen der niedrigeren Jahreskosten. Das ist ein Kosten-Schnittpunkt, keine Gewinnschwelle und keine allgemeine Cloud-Empfehlung. Ändert sich etwa der Cloud-Jahresbetrag, die Last oder die Notwendigkeit einer Ersatzbeschaffung, verschiebt sich der Schnittpunkt; beide Varianten müssen denselben Dienst abdecken.</div>
+</section><h2 class="sec" id="s4"><span class="num">4</span>4 · Abruf und Lernziel-Check</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="be-karte-0" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was bedeutet der Schnittpunkt?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Zu diesem Zeitpunkt haben beide Varianten im Modell gleich hohe kumulierte Kosten, nicht denselben Gewinn.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="be-karte-1" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum 12.000 € durch 3.000 €/Jahr?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Der Cloud-Startvorsprung wird pro Jahr um den höheren Cloud-Jahresbetrag abgebaut; Ergebnis: vier Jahre.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="be-karte-2" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Weshalb kann die Kurve kippen?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Preis, Last, Personal, Ersatzhardware oder Leistungsumfang können sich ändern. Der Schnittpunkt gilt nur für die Annahmen.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Abruf 1“:</span><button type="button" data-card-id="be-karte-0" data-card-rate="known">gewusst</button><button type="button" data-card-id="be-karte-0" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="be-karte-0"></span></div>
+<div class="card-rating"><span>Karte „Abruf 2“:</span><button type="button" data-card-id="be-karte-1" data-card-rate="known">gewusst</button><button type="button" data-card-id="be-karte-1" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="be-karte-1"></span></div>
+<div class="card-rating"><span>Karte „Abruf 3“:</span><button type="button" data-card-id="be-karte-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="be-karte-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="be-karte-2"></span></div><section class="quiz" data-quiz="be-funktionen-gate" data-correct="0" data-required-objective="kostenfunktionen-aufstellen">
+  <h3>Welche beiden Kostenfunktionen bilden den Kranich-Grundfall korrekt ab (t in Jahren, K in Euro)?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Startwert und Jahressatz sind je Variante getrennt."><span class="m">A</span> Lokal: 14.000 + 7.000t; Cloud: 2.000 + 10.000t.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Einmalige und jährlich wiederkehrende Beträge sind vertauscht."><span class="m">B</span> Lokal: 7.000 + 14.000t; Cloud: 10.000 + 2.000t.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Dann fehlen alle laufenden Kosten und es kann kein zeitlicher Schnittpunkt berechnet werden."><span class="m">C</span> Lokal und Cloud: nur die jeweiligen Startpreise, ohne t.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="be-deutung-gate" data-correct="0" data-required-objective="schnittpunkt-deuten">
+  <h3>Was darf Kranich aus t = 4 im vereinfachten Modell ableiten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Kostenvergleich und Modellgrenzen gehören zusammen."><span class="m">A</span> Nach vier Jahren sind beide kumulierten Kosten 42.000 €; außerhalb der Annahmen ist das kein allgemeines Urteil.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Erträge kommen in den beiden Kostenfunktionen gar nicht vor."><span class="m">B</span> Nach vier Jahren beginnt Kranich sicher Gewinn zu erzielen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Das gilt nicht bei anderen Start-, Jahres- oder Ersatzkosten und nicht bei anderem Leistungsumfang."><span class="m">C</span> Ab vier Jahren ist ein eigener Server für jedes Unternehmen und jeden Workload immer günstiger.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Quellen und Grenzen</h2>
+<p>Für die Modellgrenze und Kostenarten: <a href="https://aws.amazon.com/blogs/aws-cloud-financial-management/five-things-you-should-do-to-create-an-accurate-on-premises-vs-cloud-comparison-model/">AWS zum Vergleich von On-Premises und Cloud</a>, <a href="https://aws.amazon.com/blogs/migration-and-modernization/unlocking-cloud-savings-a-rehost-migration-playbook-part-1-assess-explore-cost-components/">AWS zu IT-Kostenkategorien</a> und <a href="https://www.ibm.com/think/topics/total-cost-of-ownership">IBM zum TCO</a>, geprüft am 26.09.2026. Die private Europa-Aufgabe war nur Themenhinweis. Kranich, Kostenwerte, Formeln und Übungen sind eigenständige Lehrbeispiele. Sie ersetzen keine reale Wirtschaftlichkeitsrechnung oder fachliche Freigabe.</p>
+
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-5"><span class="d">zurück zu</span><span class="t">Cloud und Wirtschaftlichkeit</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Cloud und Wirtschaftlichkeit</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">1 · Zwei Kostenverläufe statt zwei Preiszettel</a></li>
+<li><a href="#s2" data-t="s2">2 · Gleichsetzen und nach Jahren lösen</a></li>
+<li><a href="#s3" data-t="s3">3 · Vor und nach dem Schnittpunkt</a></li>
+<li><a href="#s4" data-t="s4">4 · Abruf und Lernziel-Check</a></li>
+<li><a href="#s5" data-t="s5">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-5">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

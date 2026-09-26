@@ -103,6 +103,7 @@ try {
   await import('./verify-cloud-migration-browser.mjs');
   await import('./verify-blue-green-browser.mjs');
   await import('./verify-tco-browser.mjs');
+  await import('./verify-break-even-browser.mjs');
   await import('./verify-space-browser.mjs');
 } finally {
   await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));

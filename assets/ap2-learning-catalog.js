@@ -1497,6 +1497,32 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "break-even-cloud-onprem-kostenvergleich",
+    "slug": "break-even-cloud-onprem-kostenvergleich",
+    "title": "Cloud oder eigener Server: Kosten-Break-even",
+    "description": "Zwei kumulierte Kostenfunktionen aufstellen, ihren Schnittpunkt berechnen und die Aussagegrenzen erklären.",
+    "domain": "GA1",
+    "groupId": "ga1-5",
+    "groupLabel": "Cloud und Wirtschaftlichkeit",
+    "itemId": "ga1-5__9",
+    "week": "KW 39",
+    "estimatedMinutes": 32,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "kostenfunktionen-aufstellen",
+      "schnittpunkt-deuten"
+    ],
+    "sources": [
+      "aws-cloud-onprem-comparison-model",
+      "aws-it-tco-cost-components",
+      "ibm-total-cost-ownership"
+    ],
+    "contentHash": "4117eab1ba7ca82751b9557cbbeee6aea940838f5fc531b99f72e4151ea5e70d",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "slug": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "title": "Struktogramm und Programmablaufplan",
