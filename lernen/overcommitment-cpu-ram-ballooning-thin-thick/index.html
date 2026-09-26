@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Overcommitment, Ballooning und Thin/Thick Provisioning an drei Kapazitätsbudgets unterscheiden und sicher beurteilen.">
+<title>Mehr versprochen als vorhanden? CPU, RAM und Speicher – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-1">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="overcommitment-cpu-ram-ballooning-thin-thick" data-progress-id="ga1-2__3" data-content-revision="2026-09-26.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-2">Virtualisierung, Cluster und Verfügbarkeit</a><span class="sep">›</span>
+    <span class="here">Mehr versprochen als vorhanden? CPU, RAM und Speicher</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Mehr versprochen als vorhanden? CPU, RAM und Speicher</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 30 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Ein Host kann mehr virtuelle Ressourcen anzeigen, als er physisch gleichzeitig bereitstellen kann. Das funktioniert nur unter Bedingungen: Nicht alle Gäste dürfen zur selben Zeit ihr Maximum brauchen. CPU-Zeit, RAM und Speicherplatz verhalten sich dabei unterschiedlich.</p>
+<section class="learning-goals" aria-labelledby="overcommitment-cpu-ram-ballooning-thin-thick-goals">
+  <h2 id="overcommitment-cpu-ram-ballooning-thin-thick-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>vCPU- und RAM-Overcommitment samt Ballooning und Lastspitzenrisiko erklären</li>
+    <li>Thin und Thick Provisioning anhand logischer und physischer Speicherkapazität unterscheiden</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Eine Zahl ist noch keine Kapazität</h2>
+<section class="quiz" data-quiz="overcommitment-cpu-ram-ballooning-thin-thick-diagnose" data-correct="0">
+  <h3>Ein Host hat acht physische CPU-Kerne. Vier VMs erhalten je vier vCPUs. Welche Aussage ist sicher?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Virtuelle Kerne werden auf der physischen CPU eingeplant; eine 2:1-Zahl ist keine Leistungsgarantie."><span class="m">A</span> Es sind 16 vCPUs konfiguriert, aber ihre gleichzeitige Leistung hängt von der Last ab.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="vCPUs erzeugen keine zusätzlichen physischen Kerne."><span class="m">B</span> Der Host besitzt jetzt 16 physische Kerne.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Bei acht physischen Kernen können nicht 16 Kerne gleichzeitig exklusiv bereitstehen."><span class="m">C</span> Jede VM erhält jederzeit vier exklusive physische Kerne.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2"><span class="num">2</span>vCPUs teilen CPU-Zeit</h2>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Drei Budgets, drei Engpässe">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-drei-budgets-title diagram-drei-budgets-desc">
+  <title id="diagram-drei-budgets-title">Drei Budgets, drei Engpässe</title>
+  <desc id="diagram-drei-budgets-desc">Drei Gegenüberstellungen: 16 konfigurierte vCPUs auf acht Kernen, 48 Gigabyte möglicher Gast-RAM auf 32 Gigabyte physischem RAM und 300 Gigabyte logische Thin Disks auf 200 Gigabyte physischem Storage.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Drei Budgets, drei Engpässe</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">CPU: 16 vCPUs / 8 Kerne</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">Der Scheduler verteilt</tspan><tspan x="64" dy="30">Rechenzeit. Brauchen alle</tspan><tspan x="64" dy="30">Gäste zugleich volle CPU,</tspan></text></g><g><rect class="diagram-row" x="340" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="362" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="362" dy="0">RAM: 48 GB möglich / 32</tspan><tspan x="362" dy="25">GB physisch</tspan></text><text x="362" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="362" dy="0">Dynamische Zuteilung und</tspan><tspan x="362" dy="30">Rückgewinnung helfen nur,</tspan><tspan x="362" dy="30">wenn der tatsächliche Bedarf</tspan></text></g><g><rect class="diagram-row" x="638" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="660" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="660" dy="0">Disk: 300 GB logisch /</tspan><tspan x="660" dy="25">200 GB physisch</tspan></text><text x="660" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="660" dy="0">Thin Disks können anfangs</tspan><tspan x="660" dy="30">wenig belegen. Schreiben</tspan><tspan x="660" dy="30">alle Gäste mehr, als real</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene vereinfachte Zahlen; jedes Budget hat einen anderen Engpass und wird getrennt überwacht.</figcaption>
+</figure><p><strong>CPU-Overcommitment</strong> bedeutet, dass die Summe zugeteilter vCPUs größer ist als die Zahl betrachteter physischer Kerne. Im Modell sind vier VMs mit je vier vCPUs auf acht physischen Kernen konfiguriert: 16 ÷ 8 = 2 vCPUs je Kern. Die VMs bekommen Rechenzeit nacheinander beziehungsweise verteilt – keine 16 gleichzeitig exklusiven Kerne. Das kann bei wechselnder Last sinnvoll sein. Steigen mehrere Gäste zur selben Zeit auf Volllast, wachsen CPU-Wartezeit und Antwortzeit. Die Quote ist daher ein <strong>Hinweis zur Prüfung</strong>, keine allgemeine Freigabegrenze.</p>
+<p>Prüfe insbesondere Lastspitzen zur selben Zeit, Latenzanforderungen, CPU-Wartezeit und Hostreserve. Ein Mittelwert von 20 % CPU über den Tag kann einen gleichzeitigen Peak um 10 Uhr verdecken. Weniger vCPUs pro VM oder zusätzliche Hostkapazität können geeigneter sein als eine pauschal hohe Zuteilung.</p>
+<div class="math-display" role="group" aria-label="Vier virtuelle Maschinen mit je vier virtuellen CPUs ergeben 16 virtuelle CPUs. Geteilt durch acht physische Kerne ergibt das Verhältnis zwei zu eins."><math display="block" aria-label="Vier virtuelle Maschinen mit je vier virtuellen CPUs ergeben 16 virtuelle CPUs. Geteilt durch acht physische Kerne ergibt das Verhältnis zwei zu eins."><mrow><mfrac><mrow><mn>4</mn><mtext> VMs</mtext><mo>·</mo><mn>4</mn><mtext> vCPUs</mtext></mrow><mrow><mn>8</mn><mtext> physische Kerne</mtext></mrow></mfrac><mo>=</mo><mfrac><mn>16</mn><mn>8</mn></mfrac><mo>=</mo><mn>2</mn><mo>:</mo><mn>1</mn></mrow></math><div class="math-legend"><span>Konfigurationsverhältnis, keine Leistungsgarantie und kein allgemeiner Grenzwert.</span></div></div><section class="numeric-practice transfer-number" data-numeric-practice="overcommitment-cpu-ram-ballooning-thin-thick-cpu-quote" data-expected="2" data-tolerance="0.001" data-correct-feedback="Richtig: 3 × 4 ÷ 6 = 2. Ob das unter Last funktioniert, muss gemessen werden." data-wrong-feedback="Zähle zuerst alle zugeteilten vCPUs und teile dann durch die sechs physischen Kerne.">
+  <h3>vCPU-Verhältnis lesen</h3>
+  <p>Drei VMs erhalten je vier vCPUs auf einem Host mit sechs physischen Kernen. Wie viele vCPUs entfallen rechnerisch auf einen physischen Kern? Gib nur die Zahl vor dem „:1“ ein.</p>
+  <label for="overcommitment-cpu-ram-ballooning-thin-thick-cpu-quote-answer">vCPUs pro Kern</label>
+  <div class="answer-row"><input id="overcommitment-cpu-ram-ballooning-thin-thick-cpu-quote-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Ergebnis"><button type="button" class="lbtn" data-numeric-check>Antwort prüfen</button></div><p>  <template data-numeric-feedback-for="12">12 ist die Summe der vCPUs, gefragt ist das Verhältnis zu sechs Kernen.</template>
+  <template data-numeric-feedback-for="0.5">Das ist das umgekehrte Verhältnis sechs zu zwölf.</template>
+  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p></p>
+</section><section class="quiz" data-quiz="overcommitment-cpu-ram-ballooning-thin-thick-cpu-peak" data-correct="1">
+  <h3>Alle vier VMs des 16-vCPU/8-Kern-Modells benötigen plötzlich gleichzeitig ihre volle CPU-Leistung. Was ist die naheliegende Folge?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Virtuelle Zuteilung vermehrt die Hardware nicht."><span class="m">A</span> Der Scheduler kann zusätzliche physische Kerne erzeugen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Darum werden gleichzeitige Spitzen und Antwortzeiten getestet."><span class="m">B</span> CPU-Zeit muss geteilt werden; Wartezeiten und Latenz können steigen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Disk-Provisioning betrifft Speicherplatz, nicht CPU-Zeit."><span class="m">C</span> Die Thin Disks werden automatisch dicker und lösen das CPU-Problem.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s3"><span class="num">3</span>RAM lässt sich zurückgewinnen – mit Grenzen</h2>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Ballooning verschiebt keinen physischen Grenzwert">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="434" viewBox="0 0 960 434" role="img" aria-labelledby="diagram-balloon-pfad-title diagram-balloon-pfad-desc">
+  <title id="diagram-balloon-pfad-title">Ballooning verschiebt keinen physischen Grenzwert</title>
+  <desc id="diagram-balloon-pfad-desc">Bei RAM-Druck fordert der Host über einen Gasttreiber nicht genutzten RAM zurück. Benötigt der Gast ihn doch, drohen Gast-Auslagerung und geringere Leistung.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Ballooning verschiebt keinen physischen Grenzwert</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Host meldet RAM-Druck</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Freier physischer Speicher sinkt; die Plattform benötigt eine</tspan><tspan x="178" dy="25">Entlastung.</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Balloon im Gast wächst</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Ein Gasttreiber beansprucht Speicherseiten im Gast, damit sie</tspan><tspan x="178" dy="25">der Host zurückgewinnen kann.</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Gastbedarf entscheidet</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Sind die Seiten wirklich nötig, kann die Gastleistung sinken</tspan><tspan x="178" dy="25">oder der Gast auslagern. Kein kostenloses Extra-RAM.</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigenes Funktionsmodell; Ballooning und dynamischer RAM sind produktabhängig.</figcaption>
+</figure><p><strong>RAM-Overcommitment</strong> liegt vor, wenn mögliche beziehungsweise konfigurierte Gast-RAM-Anforderungen die physisch bereitstellbare Menge übersteigen. Manche Plattformen weisen RAM dynamisch zu, teilen freie Seiten oder gewinnen Speicher zurück. Beim <strong>Ballooning</strong> kooperiert ein Treiber im Gast: Er belegt dort Seiten, damit die Plattform entsprechende physische Seiten zurücknehmen kann. Das funktioniert nur innerhalb der jeweiligen Produkt- und Gastunterstützung und nur solange der Gast diese Seiten entbehren kann. Es entsteht kein neuer physischer Speicher.</p>
+<p>Im Lehrmodell können drei VMs jeweils auf 16 GB wachsen: zusammen 48 GB bei 32 GB physischem Host-RAM. Wenn alle gleichzeitig 16 GB wirklich brauchen, fehlen bereits 16 GB – noch ohne Hostbedarf und Reserve. Dann drohen Auslagerung, Verlangsamung, Startprobleme oder im Extremfall Speichermangel. Für harte Leistungsvorgaben plane reservierte Kapazität und teste Worst-Case-Last; bei dynamischem RAM beobachte Host und Gäste getrennt.</p>
+<section class="quiz" data-quiz="overcommitment-cpu-ram-ballooning-thin-thick-balloon" data-correct="1">
+  <h3>Ein Balloon-Treiber gewinnt 4 GB aus einer wenig genutzten VM zurück. Was bedeutet das?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Ballooning verschiebt nutzbaren vorhandenen RAM, es erzeugt keinen neuen."><span class="m">A</span> Der physische Host besitzt nun dauerhaft 4 GB zusätzliches RAM.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Daher sind Gastverhalten und gleichzeitige Spitzen entscheidend."><span class="m">B</span> Der Host kann die zurückgegebenen Seiten anders nutzen; fordert die VM sie später, kann Druck entstehen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="RAM-Rückgewinnung ist nicht dasselbe wie Disk-Provisioning."><span class="m">C</span> Die VM-Disk wird automatisch um 4 GB kleiner.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Thin spart zunächst Blöcke, nicht den Bedarf</h2>
+<p>Bei <strong>Thick Provisioning</strong> wird der Platz einer virtuellen Disk beim Anlegen auf der zugrunde liegenden Ebene reserviert. Bei <strong>Thin Provisioning</strong> kann die Disk dem Gast schon groß erscheinen, während physische Blöcke erst beim Schreiben belegt werden. Das nutzt anfangs freien Platz besser, verlagert aber das Risiko in die Zukunft.</p>
+<p>Übungsfall: Drei Thin Disks melden Gästen je 100 GB, also <strong>300 GB logisch</strong>. Tatsächlich belegen sie zunächst je 30 GB, also <strong>90 GB physisch</strong> auf einem 200-GB-Datastore. Es sind im Modell 110 GB frei; die Gäste könnten aber zusammen noch 210 GB schreiben. Wenn sie das tun, reicht der Datastore nicht. Snapshots, Metadaten, Reserven und anderes Storage sind in der Vereinfachung nicht enthalten. Thin braucht deshalb Grenzwerte, Alarmierung und rechtzeitige Erweiterung. Thick reserviert den Platz früher, macht aber weder Backup noch Performance pauschal besser.</p>
+<div class="math-display" role="group" aria-label="Drei Thin Disks mal 100 Gigabyte ergeben 300 Gigabyte logische Kapazität. Drei mal 30 Gigabyte belegen 90 Gigabyte physisch. Von 200 Gigabyte physischer Gesamtkapazität bleiben 110 Gigabyte frei."><math display="block" aria-label="Drei Thin Disks mal 100 Gigabyte ergeben 300 Gigabyte logische Kapazität. Drei mal 30 Gigabyte belegen 90 Gigabyte physisch. Von 200 Gigabyte physischer Gesamtkapazität bleiben 110 Gigabyte frei."><mrow><mn>3</mn><mo>·</mo><mn>100</mn><mtext> GB</mtext><mo>=</mo><mn>300</mn><mtext> GB logisch</mtext></mrow><mspace linebreak="newline"/><mrow><mn>200</mn><mtext> GB</mtext><mo>−</mo><mo>(</mo><mn>3</mn><mo>·</mo><mn>30</mn><mtext> GB</mtext><mo>)</mo><mo>=</mo><mn>110</mn><mtext> GB frei</mtext></mrow></math><div class="math-legend"><span>Logische Zusage und momentan physisch belegte Blöcke getrennt führen.</span></div></div><section class="numeric-practice transfer-number" data-numeric-practice="overcommitment-cpu-ram-ballooning-thin-thick-disk-frei" data-expected="200" data-tolerance="0.001" data-correct-feedback="Richtig: 500 − 4 × 75 = 200 GB physisch frei. Logisch sind bereits 800 GB zugesagt; Wachstum überwachen." data-wrong-feedback="Subtrahiere die aktuell belegten physischen Blöcke, nicht die logischen Maximalgrößen.">
+  <h3>Physischen Freiraum bestimmen</h3>
+  <p>Ein 500-GB-Datastore enthält vier Thin Disks. Jede meldet 200 GB logisch und belegt aktuell 75 GB physisch. Wie viele GB sind im vereinfachten Datastore jetzt noch physisch frei?</p>
+  <label for="overcommitment-cpu-ram-ballooning-thin-thick-disk-frei-answer">Aktuell freie GB</label>
+  <div class="answer-row"><input id="overcommitment-cpu-ram-ballooning-thin-thick-disk-frei-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Ergebnis"><button type="button" class="lbtn" data-numeric-check>Antwort prüfen</button></div><p>  <template data-numeric-feedback-for="-300">500 − 800 verwendet die logische Zusage. Aktuell belegen die Disks nur 300 GB physisch.</template>
+  <template data-numeric-feedback-for="425">Du hast nur eine der vier Disks abgezogen.</template>
+  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p></p>
+</section><section class="sequence-practice" data-sequence="overcommitment-cpu-ram-ballooning-thin-thick-pruefweg" data-expected="messen,spitzen,grenzen" data-correct-feedback="Richtig: Erst Ist- und Sollwerte trennen, dann das Wachstum planen und überwachen." data-wrong-feedback="Beginne mit den beiden Kapazitätsarten; erst danach kannst du Risiko und Alarmgrenzen sinnvoll festlegen." aria-labelledby="overcommitment-cpu-ram-ballooning-thin-thick-pruefweg-title">
+  <div class="lab-heading"><div><h3 id="overcommitment-cpu-ram-ballooning-thin-thick-pruefweg-title">Thin-Storage sicher betreiben</h3><p>Ordne die Prüfschritte für einen Thin-Datastore.</p></div><span class="lab-tag">Ablauf</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="messen" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Logische Zusagen und real belegte Blöcke erfassen</span></li>
+    <li data-step="spitzen" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Wachstum, Snapshots und Reserve als Risiko abschätzen</span></li>
+    <li data-step="grenzen" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Alarmgrenzen, Erweiterung und Reaktion testen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Drei Begriffe selbst abgrenzen</h2>
+<section class="recall-practice" data-recall="overcommitment-cpu-ram-ballooning-thin-thick-begruendung" data-min-length="100" aria-labelledby="overcommitment-cpu-ram-ballooning-thin-thick-begruendung-title">
+  <div class="recall-prompt"><h3 id="overcommitment-cpu-ram-ballooning-thin-thick-begruendung-title">Der 10-Uhr-Peak</h3><p>Um 10 Uhr steigen gleichzeitig CPU-Last, RAM-Bedarf und Schreibvolumen. Erkläre in eigenen Worten je eine mögliche Folge bei CPU-Overcommitment, RAM-Overcommitment und Thin Disks.</p></div>
+  <label class="sr-only" for="overcommitment-cpu-ram-ballooning-thin-thick-begruendung-answer">Deine Analyse</label>
+  <textarea id="overcommitment-cpu-ram-ballooning-thin-thick-begruendung-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Bei CPU-Overcommitment müssen vCPUs auf physische Rechenzeit warten; Latenz kann steigen. Bei gleichzeitigem RAM-Bedarf kann Ballooning ungenutzte Seiten nicht beliebig zurückholen; Auslagerung oder Speichermangel drohen. Thin Disks können den Datastore durch neue Schreibvorgänge füllen, obwohl sie anfangs wenig Platz brauchten. Ich überwache alle drei Budgets getrennt und teste den gemeinsamen Peak.</div>
+</section><div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="overcommitment-cpu-ram-ballooning-thin-thick-karte-0" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was misst die vCPU-Quote?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Konfigurierte vCPUs im Verhältnis zu physischen Kernen – nicht garantierte gleichzeitige Rechenleistung.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="overcommitment-cpu-ram-ballooning-thin-thick-karte-1" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was macht Ballooning?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Ein unterstützter Gasttreiber hilft, aktuell entbehrliche Speicherseiten für den Host zurückzugewinnen. Er erzeugt keinen RAM.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="overcommitment-cpu-ram-ballooning-thin-thick-karte-2" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was ist der Thin-Storage-Fehler?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Logische Zusagen mit momentan belegten physischen Blöcken verwechseln und Wachstum nicht überwachen.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Abruf 1“:</span><button type="button" data-card-id="overcommitment-cpu-ram-ballooning-thin-thick-karte-0" data-card-rate="known">gewusst</button><button type="button" data-card-id="overcommitment-cpu-ram-ballooning-thin-thick-karte-0" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="overcommitment-cpu-ram-ballooning-thin-thick-karte-0"></span></div>
+<div class="card-rating"><span>Karte „Abruf 2“:</span><button type="button" data-card-id="overcommitment-cpu-ram-ballooning-thin-thick-karte-1" data-card-rate="known">gewusst</button><button type="button" data-card-id="overcommitment-cpu-ram-ballooning-thin-thick-karte-1" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="overcommitment-cpu-ram-ballooning-thin-thick-karte-1"></span></div>
+<div class="card-rating"><span>Karte „Abruf 3“:</span><button type="button" data-card-id="overcommitment-cpu-ram-ballooning-thin-thick-karte-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="overcommitment-cpu-ram-ballooning-thin-thick-karte-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="overcommitment-cpu-ram-ballooning-thin-thick-karte-2"></span></div><h2 class="sec" id="s6"><span class="num">6</span>Lernziel-Check</h2>
+<section class="quiz" data-quiz="overcommitment-cpu-ram-ballooning-thin-thick-transfer-a" data-correct="1" data-required-objective="cpu-ram">
+  <h3>Sechs VMs erhalten je zwei vCPUs auf sechs physischen Kernen. Gleichzeitig fordern alle volle CPU und mehrere Gäste benötigen ihren maximalen RAM. Welcher Schluss ist fachlich tragfähig?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Gleichzeitige Last kann CPU-Wartezeit und RAM-Druck erzeugen."><span class="m">A</span> 2:1 bei vCPU und dynamischer RAM garantieren unveränderte Latenz.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Eine rechnerische Zuteilung ist keine Ressourcen- oder Leistungsgarantie."><span class="m">B</span> CPU-Wartezeit und RAM-Druck getrennt messen; Ballooning hilft nur bei entbehrlichen Gastseiten und passender Unterstützung.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Storageplatz ersetzt weder Kerne noch physischen RAM."><span class="m">C</span> Mehr Thin-Storage beseitigt CPU- und RAM-Engpässe automatisch.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="overcommitment-cpu-ram-ballooning-thin-thick-transfer-b" data-correct="0" data-required-objective="disk">
+  <h3>Vier Thin Disks melden je 200 GB, belegen je 75 GB und liegen auf einem 500-GB-Datastore. Welche Aussage stimmt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig: 500 − 4 × 75 = 200 GB. Die logischen 800 GB passen nicht gleichzeitig vollständig in 500 GB."><span class="m">A</span> Es sind aktuell 200 GB physisch frei, aber insgesamt 800 GB logisch zugesagt; weiteres Wachstum braucht Überwachung.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Thin belegt hier erst 300 GB physisch; 800 GB sind die logische Zusage."><span class="m">B</span> 800 GB sind schon physisch belegt, also muss der Datastore bereits ausgefallen sein.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Provisioning erzeugt keine physischen Blöcke."><span class="m">C</span> Thin sorgt automatisch für 300 GB zusätzliche physische Kapazität.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s7"><span class="num">7</span>Quellen und Grenzen</h2>
+<p><a href="https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/configuring_and_managing_virtualization/optimizing-virtual-machine-performance-in-rhel_configuring-and-managing-virtualization">Red Hat: VM-Performance und Overcommitment</a>, <a href="https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/dynamic-memory">Microsoft Learn: Hyper-V Dynamic Memory</a> und <a href="https://knowledge.broadcom.com/external/article/308992/types-of-supported-virtual-disks-on-esxi.html">Broadcom: ESXi-Disktypen</a>, am 26.09.2026 gelesen. Alle Zahlen und Grafiken sind eigene Lehrmodelle. Keine vCPU-Quote oder RAM-/Storage-Belegung ist eine pauschale Freigabe für reale Lasten; menschliche Fachfreigabe offen.</p>
+
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-2"><span class="d">zurück zu</span><span class="t">Virtualisierung, Cluster und Verfügbarkeit</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Virtualisierung, Cluster und Verfügbarkeit</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Eine Zahl ist noch keine Kapazität</a></li>
+<li><a href="#s2" data-t="s2">vCPUs teilen CPU-Zeit</a></li>
+<li><a href="#s3" data-t="s3">RAM lässt sich zurückgewinnen – mit Grenzen</a></li>
+<li><a href="#s4" data-t="s4">Thin spart zunächst Blöcke, nicht den Bedarf</a></li>
+<li><a href="#s5" data-t="s5">Drei Begriffe selbst abgrenzen</a></li>
+<li><a href="#s6" data-t="s6">Lernziel-Check</a></li>
+<li><a href="#s7" data-t="s7">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-2">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>
