@@ -1446,6 +1446,31 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "blue-green-deployment-traffic-switch",
+    "slug": "blue-green-deployment-traffic-switch",
+    "title": "Blue-Green Deployment: Verkehr sicher umschalten",
+    "description": "Zwei parallele Anwendungsumgebungen am Schaubild erklären, testen, umschalten und einen begrenzten Rollback begründen.",
+    "domain": "GA1",
+    "groupId": "ga1-5",
+    "groupLabel": "Cloud und Wirtschaftlichkeit",
+    "itemId": "ga1-5__7",
+    "week": "KW 39",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "verkehrsweg-erklaeren",
+      "release-absichern"
+    ],
+    "sources": [
+      "aws-blue-green-whitepaper",
+      "ms-blue-green-deployment"
+    ],
+    "contentHash": "b5cc3ba76c924aeb0aa6cde9ddd6d42dd1201453a12faf37f61a5dac5d99f6e9",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "slug": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "title": "Struktogramm und Programmablaufplan",
