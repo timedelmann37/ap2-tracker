@@ -73,6 +73,7 @@ try {
   await import('./verify-datacenter-operations-browser.mjs');
   await import('./verify-ups-sizing-browser.mjs');
   await import('./verify-ups-classes-browser.mjs');
+  await import('./verify-redundancy-levels-browser.mjs');
   await import('./verify-space-browser.mjs');
 } finally {
   await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
