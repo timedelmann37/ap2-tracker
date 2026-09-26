@@ -1079,6 +1079,32 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "backup-3-2-1-1-0-offsite-airgap-immutable",
+    "slug": "backup-3-2-1-1-0-offsite-airgap-immutable",
+    "title": "3-2-1-1-0: Kopien gegen denselben Angriff trennen",
+    "description": "Backup-Kopien, Offsite-Lagerung, Air Gap, Unveränderbarkeit und Restore-Prüfung an einem Ransomware-Fall planen.",
+    "domain": "GA1",
+    "groupId": "ga1-4",
+    "groupLabel": "Backup, Recovery und Notfallvorsorge",
+    "itemId": "ga1-4__3",
+    "week": "KW 38",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "kopien",
+      "angriff"
+    ],
+    "sources": [
+      "backup-cisa-ransomware-guide",
+      "backup-veeam-32110",
+      "backup-acsc-321"
+    ],
+    "contentHash": "9a0a5bb3ad380167f6dedbda50e51736bf04fbf3b172b9d2033117127808d2f5",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "rto-rpo-definition-abgrenzung-zuordnung-anforderungen",
     "slug": "rto-rpo-definition-abgrenzung-zuordnung-anforderungen",
     "title": "RTO und RPO: Ausfallzeit und Datenstand getrennt planen",

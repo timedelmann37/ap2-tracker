@@ -1,0 +1,138 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "backup-3-2-1-1-0-offsite-airgap-immutable",
+    "slug": "backup-3-2-1-1-0-offsite-airgap-immutable",
+    "title": "3-2-1-1-0: Kopien gegen denselben Angriff trennen",
+    "description": "Backup-Kopien, Offsite-Lagerung, Air Gap, Unveränderbarkeit und Restore-Prüfung an einem Ransomware-Fall planen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-4",
+    "groupLabel": "Backup, Recovery und Notfallvorsorge",
+    "itemId": "ga1-4__3",
+    "week": "KW 38",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": ["backup-cisa-ransomware-guide", "backup-veeam-32110", "backup-acsc-321"],
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    { "id": "kopien", "label": "Eine 3-2-1-1-0-Strategie mit getrennten Kopien und Standorten richtig zuordnen" },
+    { "id": "angriff", "label": "Offsite, Offline beziehungsweise Air Gap, Immutable und Restore-Test im Angriff unterscheiden" }
+  ],
+  "intro": "Ein Fileserver hat eine tägliche Sicherung auf einem NAS im selben Raum. Ransomware verschlüsselt den Server und erreicht auch das NAS. Welche Kopie fehlt – und warum genügt ein grünes Backup-Protokoll noch nicht?",
+  "curation": {
+    "evidence": [
+      { "sourceId": "backup-cisa-ransomware-guide", "sourceLocator": "Part 1: Maintain offline, encrypted backups; regularly test availability and integrity", "use": "Offline-Sicherung und regelmäßige Wiederherstellungsprüfung gegen Ransomware", "reviewStatus": "Offizielle CISA-Anleitung am 26.09.2026 gelesen" },
+      { "sourceId": "backup-veeam-32110", "sourceLocator": "3-2-1-1-0 Rule: three copies, two media, offsite, offline/air-gapped/immutable, zero verification errors", "use": "Ziffern der erweiterten Merkhilfe mit Anbieterherkunft", "reviewStatus": "Offizielle Veeam-Best-Practice-Seite am 26.09.2026 gelesen" },
+      { "sourceId": "backup-acsc-321", "sourceLocator": "Mitigations: offline backups, regular backup and restoration, 3-2-1 strategy", "use": "Unabhängige Bestätigung der 3-2-1-Grundregel", "reviewStatus": "Offizielle ACSC/CISA-Empfehlung am 26.09.2026 gelesen" }
+    ],
+    "notes": [
+      "Privater Batch ga1-4-003-003: Die Buchtreffer betreffen vor allem Sicherungsmethoden und GFS, nicht belastbar die erweiterte 3-2-1-1-0-Regel. Die private GFS-Abbildung wurde nicht übernommen; Szenario und Grafiken sind eigenständig.",
+      "3-2-1-1-0 ist eine Best-Practice-Merkhilfe, keine Garantie und keine universelle Rechtsnorm. Das zweite '1' kann dieselbe Kopie wie die Offsite-Kopie betreffen, wenn sie zugleich ausreichend getrennt/offline oder unveränderbar ist; nicht zwingend eine vierte Datenkopie.",
+      "Offline ist von Netz und zugänglichen Schreibpfaden getrennt; Offsite bedeutet anderer Standort. Immutable hängt von korrekter Retention, Rechten und Plattform ab und ist nicht automatisch ein physischer Air Gap. Das '0' meint erfolgreich geprüfte Wiederherstellbarkeit ohne Verifikationsfehler, nicht null Risiko. Menschliche Fachfreigabe offen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "regel",
+      "type": "comparison",
+      "title": "Die Ziffern sind Schutzfragen, keine Zauberformel",
+      "description": "3-2-1 ist die Grundregel; 1-0 ergänzt Schutz vor veränderbaren Sicherungen und den Nachweis der Rückspielbarkeit.",
+      "items": [
+        { "label": "3 · Kopien", "detail": "Produktivdaten plus zwei Sicherungskopien. Drei Dateien auf demselben NAS teilen eine Ausfallgrenze und sind keine sinnvolle Trennung." },
+        { "label": "2 · Medien oder Plattformen", "detail": "Zwei unterschiedliche Speicherarten beziehungsweise hinreichend unabhängige Plattformen, etwa lokales Disk-Backup und Band. Nicht nur zwei Ordner auf derselben Platte." },
+        { "label": "1 · Offsite", "detail": "Mindestens eine Kopie an einem anderen Standort, damit Brand oder Diebstahl am Hauptstandort nicht alle Kopien trifft." },
+        { "label": "1 · Offline, Air Gap oder Immutable", "detail": "Mindestens eine Kopie ist vom laufenden Angriffspfad getrennt oder für eine definierte Zeit unveränderbar. Das kann dieselbe Offsite-Kopie sein." },
+        { "label": "0 · Verifikationsfehler", "detail": "Sicherungen und Wiederherstellungen regelmäßig prüfen; Fehler beseitigen. Ein grüner Schreibjob allein beweist keinen funktionierenden Dienst." }
+      ]
+    },
+    {
+      "id": "schutzpfad",
+      "type": "flow",
+      "title": "Ein Beispiel mit drei Datenkopien",
+      "description": "Eigenes Lehrszenario: Produktions-Fileserver, separates lokales Disk-Backup und extern gelagertes, vom Netz getrenntes Band.",
+      "items": [
+        { "label": "1 · Produktivdaten", "detail": "Fileserver im Betrieb. Er kann durch Ransomware oder einen Standortschaden ausfallen." },
+        { "label": "2 · Lokales Disk-Backup", "detail": "Schneller Restore bei Einzeldateifehlern. Getrennte Rechte und eine eigene Sicherungsplattform senken gemeinsame Risiken, ersetzen aber Offsite nicht." },
+        { "label": "3 · Externes Band", "detail": "Anderer Standort und nach dem Schreiben physisch vom Netz getrennt: erfüllt im Beispiel Offsite und Offline zugleich. Transport und Aufbewahrung müssen gesichert sein." },
+        { "label": "Restore-Probe", "detail": "Band in einer isolierten Testumgebung einspielen; Datenstand, Integrität, Anwendung und benötigte Wiederanlaufzeit prüfen." }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Zähle Kopien, nicht Dateien",
+      "blocks": [
+        { "type": "quiz", "id": "backup321-diagnose", "question": "Produktivdaten und zwei Sicherungsordner liegen auf demselben NAS im selben Raum. Ist 3-2-1 damit sinnvoll erfüllt?", "options": [
+          { "text": "Nein. Kopien, Speicherplattformen und Standort haben hier gemeinsame Ausfallgrenzen.", "rationale": "Richtig. Drei Ordner schützen nicht vor Verlust oder Kompromittierung desselben NAS.", "correct": true },
+          { "text": "Ja. Drei Verzeichnisse sind automatisch drei unabhängig geschützte Kopien.", "rationale": "Die Daten hängen alle am selben Speicher und Standort.", "correct": false },
+          { "text": "Ja, wenn die Ordner unterschiedliche Namen tragen.", "rationale": "Namen ändern weder Medien noch Zugriffs- oder Standortgrenzen.", "correct": false }
+        ], "diagnostic": true },
+        { "type": "markdown", "markdown": "**3-2-1** ist eine Planungsregel: **drei Datenkopien** insgesamt (das Original plus zwei Sicherungen), **zwei unterschiedliche Medien/Plattformen**, **eine Kopie außerhalb des Hauptstandorts**. Entscheidend ist die Unabhängigkeit der Fehlerdomänen. Zwei Laufwerksbuchstaben auf derselben Platte erfüllen den Zweck der zweiten Plattform nicht. Ein anderes Gebäude schützt vor lokalen Schäden, aber nicht automatisch vor einem Angriff mit denselben Administrationsrechten.\n\nDie Erweiterung **3-2-1-1-0** ist eine vom Backup-Anbieter Veeam verbreitete Best Practice: Zusätzlich soll mindestens eine Kopie **offline, mit Air Gap oder unveränderbar** sein; die **0** steht für keine Fehler bei der Verifikation der Wiederherstellung. Diese zusätzliche geschützte Kopie darf zugleich die Offsite-Kopie sein. Die Ziffern verlangen daher nicht automatisch vier statt drei Datenkopien." },
+        { "type": "figure", "diagramId": "regel", "alt": "Die 3-2-1-1-0-Merkhilfe: drei Datenkopien, zwei Medien oder Plattformen, eine Offsite-Kopie, eine offline, air-gapped oder unveränderbare Kopie, null Fehler bei der Wiederherstellungsprüfung.", "caption": "Eigene Merkgrafik. Die Ziffern sind Prüffragen für einen konkreten Ausfall- und Angriffsweg." },
+        { "type": "quiz", "id": "backup321-kopien", "question": "Original auf dem Fileserver, lokales Disk-Backup und externes Offline-Band: Wie viele Datenkopien sind das?", "options": [
+          { "text": "Drei: Original und zwei Sicherungen.", "rationale": "Richtig. Das Band kann zugleich Offsite- und Offline-Anforderung abdecken.", "correct": true },
+          { "text": "Zwei: Das Original zählt nicht.", "rationale": "Bei 3-2-1 zählt die produktive Kopie mit.", "correct": false },
+          { "text": "Vier: Offsite und Offline müssen zwingend zwei verschiedene Zusatzkopien sein.", "rationale": "Dieselbe Kopie kann beide Eigenschaften erfüllen.", "correct": false }
+        ] }
+      ]
+    },
+    {
+      "title": "Angriffswege statt Schlagwörter prüfen",
+      "blocks": [
+        { "type": "markdown", "markdown": "**Offsite** beschreibt den Ort: Eine externe Kopie übersteht eher einen Brand am Hauptstandort. Sie kann aber über VPN oder identische Konten weiterhin veränderbar sein. **Offline** bedeutet, dass die Kopie im normalen Betrieb keinen zugänglichen Schreibpfad aus dem betroffenen Netz hat. Ein physisch entnommenes Band ist ein klares Beispiel für einen **Air Gap**; eine bloße Firewall-Regel ist kein gleichwertiger physischer Abstand.\n\n**Immutable** bedeutet, dass eine Sicherung während einer festgelegten Aufbewahrungsfrist nicht regulär verändert oder gelöscht werden kann. Das kann auch auf einem verbundenen Speicher funktionieren, ist aber kein Synonym für offline. Ob ein Angreifer die Schutzfrist verkürzen, Administratorrechte missbrauchen oder das Konto löschen kann, hängt von Plattform, Konfiguration und Rechten ab. Verschlüsselung schützt Vertraulichkeit, nicht automatisch vor Löschung. Plane außerdem Zugriffstrennung, geschützte Schlüssel und die Dauer der Aufbewahrung." },
+        { "type": "figure", "diagramId": "schutzpfad", "alt": "Drei getrennte Kopien: produktiver Fileserver, lokales Disk-Backup und extern gelagertes vom Netz getrenntes Band; anschließend Restore-Probe in isolierter Testumgebung.", "caption": "Eigene Beispielarchitektur. Der externe Bandstand kann Offsite und Offline zugleich erfüllen." },
+        { "type": "quiz", "id": "backup321-offsite", "question": "Eine Cloud-Sicherung liegt in einer anderen Region, ist aber mit demselben kompromittierten Administratorkonto löschbar. Welche Annahme musst du zurückweisen?", "options": [
+          { "text": "Offsite allein garantiert, dass Ransomware oder ein kompromittiertes Konto die Kopie nicht löschen können.", "rationale": "Richtig als falsche Behauptung erkannt: Standorttrennung ist keine Zugriffstrennung.", "correct": true },
+          { "text": "Die Kopie ist räumlich vom Hauptstandort getrennt.", "rationale": "Das ist genau die Offsite-Eigenschaft, reicht gegen diesen Zugriffsweg aber nicht.", "correct": false },
+          { "text": "Rechte und Unveränderbarkeit müssen zusätzlich geprüft werden.", "rationale": "Das ist eine sinnvolle Gegenmaßnahme, keine falsche Behauptung.", "correct": false }
+        ] },
+        { "type": "sequence", "id": "backup321-pruefweg", "title": "Die Kopien prüfen", "prompt": "Ordne die Prüfung für den beschriebenen Ransomware-Fall.", "steps": [
+          { "id": "inventar", "label": "Original und zwei echte Sicherungskopien samt Medien und Standort inventarisieren" },
+          { "id": "angriff", "label": "Für jede Kopie Löschrechte, Netzpfad, Air Gap und Retention gegen den Angriff prüfen" },
+          { "id": "restore", "label": "Geschützte Kopie isoliert zurückspielen und Daten sowie Dienst verifizieren" }
+        ], "expected": ["inventar", "angriff", "restore"], "correctFeedback": "Richtig: Zuerst weißt du, was existiert; dann, was den Angriff überlebt; zuletzt, ob es sich wiederherstellen lässt.", "wrongFeedback": "Ein Restore-Test ohne Kenntnis der Kopien und ihrer Angriffswege kann eine ungeschützte Sicherung fälschlich beruhigend wirken lassen." }
+      ]
+    },
+    {
+      "title": "Die Null muss nachgewiesen werden",
+      "blocks": [
+        { "type": "markdown", "markdown": "Ein erfolgreich beendeter Backup-Job beweist nur, dass der Schreibvorgang nach seinen Kriterien abgeschlossen wurde. Die **0** verlangt regelmäßige Verifikation ohne Fehler – einschließlich tatsächlicher Restore-Proben. Spiele eine geeignete Kopie in einer isolierten Umgebung ein, prüfe Datenintegrität, Anwendungsstart, Abhängigkeiten und den erreichten Datenstand. Fehler werden nicht als „fast null“ abgehakt, sondern behoben und erneut getestet.\n\nIm Beispiel liegt das externe Band wöchentlich vor. Der Schutz gegen Ransomware kann besser sein, doch bei einer Störung kurz vor dem nächsten Bandlauf fehlen möglicherweise Änderungen seit dem letzten Band. Die 3-2-1-1-0-Merkhilfe ersetzt deshalb keine **RPO-/RTO-Planung**: Häufigkeit, Transport, Wiederanlaufzeit und Testintervall müssen zum Geschäftsbedarf passen." },
+        { "type": "recall", "id": "backup321-beratung", "title": "Dem Betreiber widersprechen", "prompt": "Der Betreiber sagt: 'Das zweite NAS steht im Nachbargebäude, also haben wir 3-2-1-1-0. Beide NAS sind über dasselbe Admin-Konto erreichbar; Restore wurde nie getestet.' Nenne die zwei wichtigsten offenen Nachweise.", "label": "Deine Gegenprüfung", "minLength": 100, "model": "Offsite ist plausibel, aber das gemeinsame Administratorkonto kann beide NAS löschbar machen. Ich prüfe, ob mindestens eine Sicherung offline/air-gapped oder korrekt unveränderbar und mit getrennten Rechten geschützt ist. Zusätzlich fehlt die Null: Eine isolierte Wiederherstellungsprobe muss Daten, Anwendung und erreichbare Wiederanlaufzeit erfolgreich verifizieren." },
+        { "type": "quiz", "id": "backup321-null", "question": "Ein Backup-Job meldet Erfolg, aber es gab nie einen Restore-Test. Ist die '0' belastbar belegt?", "options": [
+          { "text": "Nein. Eine erfolgreich geprüfte Wiederherstellung mit beseitigten Fehlern fehlt.", "rationale": "Richtig. Schreibjob und betriebsfähiger Restore sind unterschiedliche Nachweise.", "correct": true },
+          { "text": "Ja. Der grüne Jobstatus beweist automatisch den vollständigen Anwendungsstart.", "rationale": "Ein Sicherungsprotokoll testet nicht automatisch alle Restore-Abhängigkeiten.", "correct": false },
+          { "text": "Ja, wenn die Sicherung verschlüsselt ist.", "rationale": "Verschlüsselung sagt nichts über Wiederherstellbarkeit aus.", "correct": false }
+        ] }
+      ]
+    },
+    {
+      "title": "Abruf und Lernziel-Check",
+      "blocks": [
+        { "type": "flashcards", "cards": [
+          { "id": "backup321-karte-0", "label": "Abruf 1", "front": "Was zählt die Drei?", "back": "Drei Datenkopien insgesamt: produktive Daten plus zwei Sicherungskopien." },
+          { "id": "backup321-karte-1", "label": "Abruf 2", "front": "Offsite gleich Air Gap?", "back": "Nein. Offsite ist ein anderer Standort; ein physischer Air Gap trennt das Medium vom Netzwerk. Eine Kopie kann beides erfüllen." },
+          { "id": "backup321-karte-2", "label": "Abruf 3", "front": "Was bedeutet die Null?", "back": "Keine Verifikationsfehler nach regelmäßiger Prüfung der Wiederherstellung. Ein grüner Sicherungsjob allein genügt nicht." }
+        ] },
+        { "type": "quiz", "id": "backup321-transfer-kopien", "question": "Fileserver, lokales Disk-Backup, extern gelagertes Offline-Band und erfolgreicher Restore-Test: Welche Zuordnung ist richtig?", "options": [
+          { "text": "Drei Kopien, Disk und Band, eine Offsite- und zugleich Offline-Kopie; Verifikation ist erfolgt.", "rationale": "Richtig. Das externe Band kann beide Einser abdecken.", "correct": true },
+          { "text": "Nur zwei Kopien; für die beiden Einser ist zwingend ein viertes Medium erforderlich.", "rationale": "Das Produktivoriginal zählt mit und dieselbe Kopie darf Offsite und Offline sein.", "correct": false },
+          { "text": "Drei Kopien genügen, auch wenn alle auf demselben Datenträger liegen.", "rationale": "Die Zwei und die Offsite-Trennung fehlen dann.", "correct": false }
+        ], "requiredObjective": "kopien" },
+        { "type": "quiz", "id": "backup321-transfer-angriff", "question": "Eine externe Cloud-Kopie ist mit gestohlenen Admin-Zugangsdaten löschbar; alle Jobs sind grün, Restore nie geprobt. Was fehlt?", "options": [
+          { "text": "Eine gegen den Angriffsweg geschützte Kopie und eine erfolgreiche Wiederherstellungsprüfung.", "rationale": "Richtig. Offsite und Jobstatus allein decken die zusätzlichen Anforderungen nicht ab.", "correct": true },
+          { "text": "Nur ein weiterer Dateiname auf demselben Cloud-Konto.", "rationale": "Ein anderer Name trennt keine Löschrechte und prüft keinen Restore.", "correct": false },
+          { "text": "Nichts: Offsite bedeutet automatisch immutable und getestet.", "rationale": "Standort, Veränderbarkeit und Verifikation sind eigenständige Eigenschaften.", "correct": false }
+        ], "requiredObjective": "angriff" }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        { "type": "markdown", "markdown": "[CISA: #StopRansomware Guide](https://www.cisa.gov/stopransomware/ransomware-guide), [Veeam: 3-2-1-1-0-Best-Practice](https://bp.veeam.com/vb365/guide/design/3-2-1.html) und [ACSC/CISA: 3-2-1-Grundregel](https://www.cyber.gov.au/about-us/view-all-content/alerts-and-advisories/stopransomware-bianlian-ransomware-group), am 26.09.2026 gelesen. Die erweiterte Ziffernfolge stammt aus einer Anbieter-Best-Practice, nicht aus einer allgemeinen Norm. Fall und Grafiken sind eigene Lehrbeispiele; tatsächlicher Schutz hängt von Architektur, Rechten, Aufbewahrung und Tests ab. Menschliche Fachfreigabe offen." }
+      ]
+    }
+  ]
+}
