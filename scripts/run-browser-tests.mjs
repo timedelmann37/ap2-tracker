@@ -70,6 +70,7 @@ try {
   await import('./verify-hardware-redundancy-browser.mjs');
   await import('./verify-client-models-browser.mjs');
   await import('./verify-appliances-browser.mjs');
+  await import('./verify-datacenter-operations-browser.mjs');
   await import('./verify-space-browser.mjs');
 } finally {
   await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
