@@ -1,0 +1,393 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "hardware-redundanz-hot-swap-hot-spare-bonding-ecc",
+    "slug": "hardware-redundanz-hot-swap-hot-spare-bonding-ecc",
+    "title": "Hardware-Redundanz: welcher Ausfall ist wirklich abgedeckt?",
+    "description": "Netzteile, austauschbare Komponenten, Ersatzplatten, Netzwerkpfade und ECC nach ihrer tatsächlichen Schutzwirkung unterscheiden.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-1",
+    "groupLabel": "Server-, Client- und Hardwarekonzeption",
+    "itemId": "ga1-1__3",
+    "week": "KW 35",
+    "estimatedMinutes": 32,
+    "relevance": "hoch",
+    "sources": [
+      "europa-integratoren-2026",
+      "redundancy-dell-psu",
+      "redundancy-dell-spare",
+      "redundancy-linux-bond",
+      "redundancy-kingston-ecc"
+    ],
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "strom",
+      "label": "Redundante Netzteile von bloßer Hot-Swap-Fähigkeit und gemeinsamer Stromzufuhr abgrenzen"
+    },
+    {
+      "id": "speicher",
+      "label": "Hot-Spare, Hot-Swap und ECC den richtigen Fehlerarten zuordnen"
+    },
+    {
+      "id": "netz",
+      "label": "NIC-Teaming als Pfadschutz beurteilen und gemeinsame Ausfallpunkte erkennen"
+    }
+  ],
+  "intro": "Ein zweites Bauteil beweist noch keine Ausfallsicherheit. Entscheidend ist, ob der verbleibende Pfad die Last trägt, automatisch übernimmt und nicht dieselbe Fehlerquelle teilt.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Textchunk europa-integratoren-2026:01018, Zeilen 9683–9690; PDF-Seite im Text-Export nicht belegt",
+        "use": "Begriffe redundantes Netzteil und Austausch im Betrieb als Themenbezug",
+        "reviewStatus": "Privaten Textausschnitt am 26.09.2026 gelesen; keine Buchaufgabe oder Formulierung übernommen"
+      },
+      {
+        "sourceId": "redundancy-dell-psu",
+        "sourceLocator": "Installing a power supply unit; Hinweise zu 1+1, 2+0 und Hot-Swap",
+        "use": "Anzahl von Netzteilen nicht mit Lasttragfähigkeit verwechseln",
+        "reviewStatus": "Am 26.09.2026 gelesen; Lastwerte der Übung sind eigene Annahmen"
+      },
+      {
+        "sourceId": "redundancy-dell-spare",
+        "sourceLocator": "Using replace member and revertible hot spares",
+        "use": "Automatischen Rebuild mit zugewiesener Reserveplatte erklären",
+        "reviewStatus": "Am 26.09.2026 gelesen"
+      },
+      {
+        "sourceId": "redundancy-linux-bond",
+        "sourceLocator": "Bonding modes: active-backup; link monitoring",
+        "use": "Aktiven und passiven Netzwerkpfad unterscheiden",
+        "reviewStatus": "Am 26.09.2026 gelesen; keine distributionsspezifische Konfiguration abgeleitet"
+      },
+      {
+        "sourceId": "redundancy-kingston-ecc",
+        "sourceLocator": "How ECC works; platform support",
+        "use": "Bitfehlerkorrektur nicht mit Ersatz-RAM oder Backup gleichsetzen",
+        "reviewStatus": "Am 26.09.2026 gelesen"
+      }
+    ],
+    "notes": [
+      "Batch ga1-1-003-003 enthielt einen passenden Netzteil-Text. Der historische NAS-Tabellentreffer belegt keine aktuellen Hardwareeigenschaften. Der automatisch vorgeschlagene RAID-5-Buchausschnitt behandelt ein anderes Lernziel und wurde nicht verwendet.",
+      "Unaufgelöste ITLF10–12-Seiten- und Grafikreferenzen wurden nicht als geprüfte Belege ausgegeben. Originalgrafiken bleiben privat.",
+      "Alle Gerätewerte, Leitungen, Störungen und Orte sind eigene Übungsmodelle. Ob ein Hot-Swap sicher zulässig ist, bestimmt die konkrete Herstelleranleitung; ein Rebuild ist kein Backup und ein Bond keine Ende-zu-Ende-Garantie.",
+      "Menschliche Fach- und Verständlichkeitsfreigabe ausstehend."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "schutzklassen",
+      "type": "comparison",
+      "title": "Welches Mittel schützt wovor?",
+      "description": "Die gleiche Silbe „hot“ bezeichnet unterschiedliche Funktionen.",
+      "items": [
+        {
+          "label": "Redundantes Netzteil",
+          "detail": "Ein zweites, ausreichend dimensioniertes Netzteil hält den Server nach Ausfall eines Moduls versorgt"
+        },
+        {
+          "label": "Hot-Swap",
+          "detail": "Ein dafür ausgelegtes Modul kann nach Herstellerverfahren im laufenden Betrieb ersetzt werden"
+        },
+        {
+          "label": "Hot-Spare",
+          "detail": "Eine vorbereitete Ersatzplatte kann nach Datenträgerausfall automatisch einen Rebuild übernehmen"
+        },
+        {
+          "label": "ECC",
+          "detail": "Erkennt und korrigiert bestimmte Speicher-Bitfehler; ersetzt kein ausgefallenes Speichermodul"
+        },
+        {
+          "label": "NIC-Bond",
+          "detail": "Mehrere Schnittstellen bilden einen logischen Pfad; Schutz hängt von Modus und getrennten Wegen ab"
+        }
+      ]
+    },
+    {
+      "id": "ausfallkette",
+      "type": "flow",
+      "title": "Ein Fehler – und was danach passieren muss",
+      "description": "Redundanz ist erst nach Kapazitäts-, Pfad- und Failover-Test belegt.",
+      "items": [
+        {
+          "label": "1 · Fehler benennen",
+          "detail": "Fällt ein Netzteil, eine Platte, ein Link oder ein ganzer Switch aus?"
+        },
+        {
+          "label": "2 · Ersatzpfad finden",
+          "detail": "Welches verbleibende Bauteil übernimmt tatsächlich?"
+        },
+        {
+          "label": "3 · Kapazität prüfen",
+          "detail": "Trägt der verbleibende Pfad die Last allein?"
+        },
+        {
+          "label": "4 · Wiederherstellen",
+          "detail": "Alarm, Ersatz, Rebuild und Failback kontrolliert testen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "hardware-redundanz-hot-swap-hot-spare-bonding-ecc-diagnose",
+          "question": "Ein Server hat zwei Netzteile. Ist damit der Ausfall eines Netzteils immer überbrückt?",
+          "options": [
+            {
+              "text": "Ja, die Stückzahl allein genügt.",
+              "rationale": "Wenn beide für die aktuelle Last gebraucht werden, kann eines sie nicht allein tragen.",
+              "correct": false
+            },
+            {
+              "text": "Nur wenn ein verbleibendes Netzteil die Last übernehmen kann und der Pfad funktioniert.",
+              "rationale": "Richtig: Anzahl, Kapazität und Pfad gehören zusammen.",
+              "correct": true
+            },
+            {
+              "text": "Nein, zwei Netzteile können grundsätzlich nie redundant sein.",
+              "rationale": "Eine echte 1+1-Auslegung kann den Ausfall eines Netzteils abfangen.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Schutzwirkung statt Bauteilliste",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "schutzklassen",
+          "alt": "Netzteil-Redundanz trägt die Last bei Modulausfall; Hot-Swap beschreibt Austauschbarkeit; Hot-Spare startet einen Rebuild; ECC schützt vor bestimmten Bitfehlern; Bonding verbindet Netzwerkpfade.",
+          "caption": "Eigene Gegenüberstellung: fünf Begriffe, fünf verschiedene Schutzwirkungen."
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Redundanz** bedeutet, dass bei einem definierten Ausfall ein zweiter funktionsfähiger Weg übrig bleibt. **Hot-Swap** beschreibt hingegen nur den zulässigen Austausch eines dafür vorgesehenen Moduls bei laufendem System. Ein einzelnes hot-swap-fähiges Netzteil ist noch nicht redundant. Zwei Netzteile an derselben Steckdosenleiste schützen nicht gegen deren Ausfall.\n\n**Hot-Spare** bezeichnet hier eine zugewiesene Reserveplatte: Fällt ein Mitglied eines geeigneten RAID-Verbunds aus, kann der Controller mit ihr den Wiederaufbau beginnen. Bis dieser abgeschlossen ist, bleibt der Verbund je nach RAID-Level und Fehlerfall gefährdet; der Hot-Spare ist keine zusätzliche Datenkopie außerhalb des Systems. **ECC-RAM** erkennt und korrigiert bestimmte Bitfehler, wenn Plattform und Speicher es unterstützen. Es ist weder ein Ersatz-RAM-Modul noch Schutz vor Strom-, Controller- oder Softwarefehlern."
+        }
+      ]
+    },
+    {
+      "title": "Netzteile: Kapazität im Fehlerfall",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "ausfallkette",
+          "alt": "Von der definierten Störung über den Ersatzpfad und dessen Kapazität bis zur kontrollierten Wiederherstellung.",
+          "caption": "Diese Prüfkette gilt ebenso für Strom, Speicher und Netzwerk."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Ein fiktiver Server benötigt unter der vereinbarten Spitzenlast **620 W**. Zwei Netzteile können je **500 W** liefern. Zusammen reicht die Nennleistung, aber nach Ausfall eines Netzteils stehen nur 500 W zur Verfügung. Das ist für diese Last keine 1+1-Redundanz. Zwei geeignete Netzteile mit je 800 W könnten die Last einzeln tragen – vorausgesetzt, das konkrete System unterstützt die Konfiguration und die Zuleitungen sind passend geplant.\n\nFür einen unabhängigen Versorgungsweg müssen auch Steckdosen, PDU/USV und vorgeschaltete Stromkreise betrachtet werden. Ein Modulwechsel darf nur nach Herstelleranleitung erfolgen; Hot-Swap erlaubt keinen beliebigen Eingriff."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Nach einem Netzteilausfall sind 500 Watt kleiner als 620 Watt Spitzenlast. Der einzelne Pfad reicht nicht.",
+          "mathml": "<math display=\"block\"><mrow><mn>500</mn><mtext> W verbleibend</mtext><mo>&lt;</mo><mn>620</mn><mtext> W Spitzenlast</mtext></mrow></math>",
+          "legend": [
+            "Die zweite 500-W-Einheit macht dieses Modell nicht 1+1-redundant."
+          ]
+        },
+        {
+          "type": "numeric",
+          "id": "hardware-redundanz-hot-swap-hot-spare-bonding-ecc-zahl",
+          "title": "Reserve im Fehlerfall",
+          "prompt": "Neuer Modellfall: Spitzenlast 700 W; jedes der zwei Netzteile kann einzeln 900 W liefern. Wie viel Leistungsreserve bleibt nach Ausfall eines Netzteils?",
+          "label": "Reserve in W",
+          "expected": 200,
+          "tolerance": 0,
+          "correctFeedback": "900 − 700 = 200 W. Die Strompfade und Systemfreigabe sind zusätzlich zu prüfen.",
+          "wrongFeedback": "Ziehe die Spitzenlast von der Kapazität nur eines verbleibenden Netzteils ab.",
+          "misconceptions": [
+            {
+              "value": 1100,
+              "feedback": "Nach dem Ausfall darfst du nicht mehr beide Netzteile zusammenzählen."
+            },
+            {
+              "value": 900,
+              "feedback": "900 W sind die gesamte Leistung des verbleibenden Netzteils, nicht die freie Reserve."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Netzwerk und Speicher: den Pfad zu Ende denken",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Im **active-backup-Bond** arbeitet zunächst eine NIC; die andere übernimmt bei erkanntem Ausfall des aktiven Links. Zwei NICs am selben Switch schützen gegen einen einzelnen Adapter- oder Portfehler, aber nicht gegen den Ausfall dieses Switches. Für Switch-Redundanz braucht es passend konfigurierte, tatsächlich getrennte Wege bis zum benötigten Netz. Andere Bonding-Modi können Last verteilen und erfordern teils eine abgestimmte Switch-Konfiguration; „zwei Kabel“ beweist weder doppelten Durchsatz noch unterbrechungsfreies Failover.\n\nEin **Hot-Spare** muss dem passenden Verbund zugewiesen und technisch geeignet sein. Nach Aktivierung ist der Rebuild zu überwachen; die Ersatzplatte ist nun nicht mehr einfach eine unbenutzte Reserve. Hot-Swap und Hot-Spare sind damit verschieden: Das eine erleichtert den Austausch, das andere startet eine Ersatzfunktion. Backups und Restore-Tests bleiben unabhängig davon nötig."
+        },
+        {
+          "type": "quiz",
+          "id": "hardware-redundanz-hot-swap-hot-spare-bonding-ecc-uebung",
+          "question": "Ein aktiver Bond-Link und sein Reserve-Link stecken am selben Switch. Welche Störung bleibt offen?",
+          "options": [
+            {
+              "text": "Der Ausfall des gemeinsamen Switches.",
+              "rationale": "Richtig: Beide Leitungen enden in derselben Ausfall-Domäne.",
+              "correct": true
+            },
+            {
+              "text": "Der Ausfall einer einzelnen NIC kann prinzipiell nie abgefangen werden.",
+              "rationale": "Genau für den einzelnen Adapter- oder Linkausfall ist active-backup vorgesehen.",
+              "correct": false
+            },
+            {
+              "text": "Ein Speicher-Bitfehler wird automatisch durch Bonding korrigiert.",
+              "rationale": "Bonding betrifft Netzwerkpfade, nicht RAM-Daten.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "sequence",
+          "id": "hardware-redundanz-hot-swap-hot-spare-bonding-ecc-reihenfolge",
+          "title": "Fehleranalyse ordnen",
+          "prompt": "Welche Reihenfolge liefert eine belastbare Redundanz-Aussage?",
+          "steps": [
+            {
+              "id": "test",
+              "label": "Failover und Wiederherstellung überwachen und testen"
+            },
+            {
+              "id": "fehler",
+              "label": "Konkreten Einzelfehler und Ausfallbereich benennen"
+            },
+            {
+              "id": "pfad",
+              "label": "Ersatzpfad, seine Kapazität und gemeinsame Abhängigkeiten prüfen"
+            }
+          ],
+          "expected": ["fehler", "pfad", "test"],
+          "correctFeedback": "Richtig: Ohne benannten Fehler und tragfähigen Ersatzpfad ist ein Test nicht aussagekräftig.",
+          "wrongFeedback": "Beginne mit einem konkreten Fehler, prüfe den Ersatzpfad und teste erst danach."
+        },
+        {
+          "type": "recall",
+          "id": "hardware-redundanz-hot-swap-hot-spare-bonding-ecc-begruendung",
+          "title": "Freie Erklärung",
+          "prompt": "Erkläre in drei Sätzen den Unterschied zwischen Hot-Swap, Hot-Spare und ECC.",
+          "label": "Deine Erklärung",
+          "minLength": 70,
+          "model": "Hot-Swap ist die vom Hersteller erlaubte Austauschbarkeit eines Moduls im laufenden Betrieb. Ein Hot-Spare ist eine vorbereitete Ersatzplatte, die nach einem Laufwerksausfall für einen Rebuild aktiviert werden kann. ECC erkennt und korrigiert bestimmte Bitfehler im Arbeitsspeicher bei unterstützter Plattform, ersetzt aber weder Platte noch Speichermodul."
+        },
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "hardware-redundanz-hot-swap-hot-spare-bonding-ecc-karte-0",
+              "label": "Abruf 1",
+              "front": "Wann sind zwei Netzteile nicht 1+1-redundant?",
+              "back": "Wenn eines allein die vereinbarte Spitzenlast nicht tragen kann oder ein gemeinsamer Versorgungsfehler beide trifft."
+            },
+            {
+              "id": "hardware-redundanz-hot-swap-hot-spare-bonding-ecc-karte-1",
+              "label": "Abruf 2",
+              "front": "Was tut ein Hot-Spare nach Laufwerksausfall?",
+              "back": "Er übernimmt in einem dafür konfigurierten Verbund den Rebuild; er ersetzt kein Backup."
+            },
+            {
+              "id": "hardware-redundanz-hot-swap-hot-spare-bonding-ecc-karte-2",
+              "label": "Abruf 3",
+              "front": "Warum schützen zwei NICs am selben Switch nicht gegen Switchausfall?",
+              "back": "Beide Pfade teilen den Switch als gemeinsamen Ausfallpunkt."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "hardware-redundanz-hot-swap-hot-spare-bonding-ecc-transfer-a",
+          "question": "Neuer Server: 750 W Spitzenlast, zwei hot-swap-fähige Netzteile mit je 600 W am selben Stromkreis. Welche Aussage stimmt?",
+          "options": [
+            {
+              "text": "Hot-Swap macht ihn trotz 600 W je Netzteil ausfallsicher.",
+              "rationale": "Austauschbarkeit ersetzt weder Kapazität noch getrennte Stromzufuhr.",
+              "correct": false
+            },
+            {
+              "text": "Weder 1+1-Kapazität noch Schutz gegen den gemeinsamen Stromkreis sind belegt.",
+              "rationale": "Richtig: Nach einem Modulausfall reichen 600 W nicht für 750 W Last.",
+              "correct": true
+            },
+            {
+              "text": "Beide 600-W-Einheiten liefern nach Ausfall einer Einheit weiterhin zusammen 1200 W.",
+              "rationale": "Die ausgefallene Einheit trägt dann keine Leistung mehr.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "strom"
+        },
+        {
+          "type": "quiz",
+          "id": "hardware-redundanz-hot-swap-hot-spare-bonding-ecc-transfer-b",
+          "question": "Ein RAID-Verbund verliert ein Laufwerk; ein passender Hot-Spare ist zugewiesen. Gleichzeitig meldet ECC korrigierte Speicherfehler. Welche Einordnung ist korrekt?",
+          "options": [
+            {
+              "text": "Der Hot-Spare kann den Rebuild übernehmen; ECC betrifft RAM-Bitfehler. Beides ersetzt kein Backup.",
+              "rationale": "Richtig: Die Maßnahmen wirken an unterschiedlichen Stellen und haben Grenzen.",
+              "correct": true
+            },
+            {
+              "text": "ECC übernimmt den Platten-Rebuild, der Hot-Spare korrigiert RAM.",
+              "rationale": "Hier wurden die Schutzbereiche vertauscht.",
+              "correct": false
+            },
+            {
+              "text": "Hot-Swap und Hot-Spare sind dasselbe; ein Backup ist damit überflüssig.",
+              "rationale": "Austauschbarkeit, Rebuild und Datensicherung sind drei verschiedene Funktionen.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "speicher"
+        },
+        {
+          "type": "quiz",
+          "id": "hardware-redundanz-hot-swap-hot-spare-bonding-ecc-transfer-c",
+          "question": "Neuer Standort: zwei NICs mit active-backup-Bond, beide Kabel enden an Switch A. Gefordert ist auch Schutz gegen Ausfall von Switch A. Was fehlt?",
+          "options": [
+            {
+              "text": "Nur ein schnelleres Kabel; die Switch-Anbindung ist schon redundant.",
+              "rationale": "Beide Kabel teilen weiterhin Switch A.",
+              "correct": false
+            },
+            {
+              "text": "Ein zweiter, passend angebundener Switch-Pfad samt geprüftem Failover.",
+              "rationale": "Richtig: Der gemeinsame Switch ist bisher ein Single Point of Failure.",
+              "correct": true
+            },
+            {
+              "text": "Ein weiterer Hot-Spare im RAID.",
+              "rationale": "Ein Plattenersatz löst keinen Netzwerk-Switchausfall.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "netz"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "[Dell: Netzteilwechsel](https://www.dell.com/support/manuals/en-us/poweredge-r450/per450_ism_pub/replace-the-psu?guid=guid-6abce3b5-1b85-4832-8619-74acd384950f), [Dell: Hot-Spare](https://www.dell.com/support/manuals/en-us/perc-h745/perc10_ug/using-replace-member-and-revertible-hot-spares?guid=guid-776d6593-5918-4eeb-af8f-adaceff9c2c5), [Linux-Kernel: Bonding](https://docs.kernel.org/5.10/networking/bonding.html) und [Kingston: ECC](https://www.kingston.com/en/blog/servers-and-data-centers/what-is-ecc-memory-ssd-enterprise), ausgewählte Abschnitte am 26.09.2026 gelesen. Ein privater Buchtreffer diente nur der Themenabgrenzung. Diagramme, Fälle und Zahlen sind eigene Übungsmodelle. Herstellerfreigaben und Betriebsverfahren sind systemspezifisch; menschliche Fachprüfung offen."
+        }
+      ]
+    }
+  ]
+}
