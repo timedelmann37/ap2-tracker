@@ -376,6 +376,34 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation",
+    "slug": "vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation",
+    "title": "Virtualisierung abwägen: vier VMs, ein Host",
+    "description": "Konsolidierung, Prüfpunkte und Isolation nutzen, ohne Hostausfall, Ressourcenbedarf oder Lizenzen zu übersehen.",
+    "domain": "GA1",
+    "groupId": "ga1-2",
+    "groupLabel": "Virtualisierung, Cluster und Verfügbarkeit",
+    "itemId": "ga1-2__2",
+    "week": "KW 36",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "konsolidierung",
+      "entscheidung"
+    ],
+    "sources": [
+      "virt-ms-checkpoints",
+      "virt-ms-host-requirements",
+      "virt-ms-dc-host-failure",
+      "virt-nist-hypervisor-security",
+      "license-microsoft-ws2025"
+    ],
+    "contentHash": "107aa02f42cbf5dd13d7f8c645a74769016828bc471ea7025cd6c623317d90c0",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "storage-types",
     "slug": "storage-types",
     "title": "DAS, NAS und SAN sicher unterscheiden",
