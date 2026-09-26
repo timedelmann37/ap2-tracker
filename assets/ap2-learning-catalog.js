@@ -611,6 +611,32 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "sla-servicezeiten-reaktion-wiederherstellung",
+    "slug": "sla-servicezeiten-reaktion-wiederherstellung",
+    "title": "SLA lesen: Antwort ist noch keine Lösung",
+    "description": "Reaktions- und Wiederherstellungszeit, Servicefenster, Messdefinitionen und vertragliche Folgen an einem Störfall unterscheiden.",
+    "domain": "GA1",
+    "groupId": "ga1-2",
+    "groupLabel": "Virtualisierung, Cluster und Verfügbarkeit",
+    "itemId": "ga1-2__11",
+    "week": "KW 36",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "zeiten",
+      "vertrag"
+    ],
+    "sources": [
+      "sla-ms-overview",
+      "sla-ibm-business-hours",
+      "sla-aws-ec2"
+    ],
+    "contentHash": "e7f49b8958aba153d1b18c14f7b41fe254c8cad4345a2129a3ecf6f78a8ce309",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "storage-types",
     "slug": "storage-types",
     "title": "DAS, NAS und SAN sicher unterscheiden",
