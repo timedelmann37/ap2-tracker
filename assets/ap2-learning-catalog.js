@@ -430,6 +430,33 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "live-migration-voraussetzungen-wartung-shared-nothing",
+    "slug": "live-migration-voraussetzungen-wartung-shared-nothing",
+    "title": "Live-Migration: Wartung ohne VM-Neustart planen",
+    "description": "Hosts, CPU, Netz und Storage-Muster prüfen; geplanten Umzug von automatischem Failover unterscheiden.",
+    "domain": "GA1",
+    "groupId": "ga1-2",
+    "groupLabel": "Virtualisierung, Cluster und Verfügbarkeit",
+    "itemId": "ga1-2__4",
+    "week": "KW 36",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "voraussetzungen",
+      "wartung"
+    ],
+    "sources": [
+      "migration-ms-overview",
+      "migration-ms-with-storage",
+      "migration-ms-cpu-compat",
+      "migration-ms-network"
+    ],
+    "contentHash": "4587262f32ca9b28c1888ebaff78643807b76d0d36650cb37e2030b2403c93ab",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "storage-types",
     "slug": "storage-types",
     "title": "DAS, NAS und SAN sicher unterscheiden",

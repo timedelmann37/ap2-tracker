@@ -80,6 +80,7 @@ try {
   await import('./verify-container-vs-vm-browser.mjs');
   await import('./verify-virtualization-tradeoffs-browser.mjs');
   await import('./verify-overcommitment-browser.mjs');
+  await import('./verify-live-migration-browser.mjs');
   await import('./verify-space-browser.mjs');
 } finally {
   await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));

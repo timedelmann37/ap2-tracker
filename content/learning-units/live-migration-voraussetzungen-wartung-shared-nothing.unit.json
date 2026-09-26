@@ -1,0 +1,132 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "live-migration-voraussetzungen-wartung-shared-nothing",
+    "slug": "live-migration-voraussetzungen-wartung-shared-nothing",
+    "title": "Live-Migration: Wartung ohne VM-Neustart planen",
+    "description": "Hosts, CPU, Netz und Storage-Muster prüfen; geplanten Umzug von automatischem Failover unterscheiden.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-2",
+    "groupLabel": "Virtualisierung, Cluster und Verfügbarkeit",
+    "itemId": "ga1-2__4",
+    "week": "KW 36",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": ["migration-ms-overview", "migration-ms-with-storage", "migration-ms-cpu-compat", "migration-ms-network"],
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    { "id": "voraussetzungen", "label": "Zielkapazität, CPU-Kompatibilität, Migrationnetz und Storage-Modell vor dem Umzug prüfen" },
+    { "id": "wartung", "label": "Geplante Live-Migration von automatischem Wiederanlauf nach Hostausfall unterscheiden" }
+  ],
+  "intro": "Host A braucht ein Firmware-Update, während eine wichtige VM läuft. Live-Migration verschiebt die laufende VM auf Host B, damit A gewartet werden kann. Sie ist ein geplanter Umzug – kein Zauberknopf, der einen bereits ausgefallenen Host repariert.",
+  "curation": {
+    "evidence": [
+      { "sourceId": "migration-ms-overview", "sourceLocator": "Overview and maintenance benefit", "use": "Live-Migration als geplanter Hostwechsel ohne wahrgenommene Unterbrechung; Failover als getrenntes Konzept", "reviewStatus": "Am 26.09.2026 gelesen" },
+      { "sourceId": "migration-ms-with-storage", "sourceLocator": "Prerequisites and Move-VM example with IncludeStorage", "use": "Migration ohne Cluster und mit Mitnahme des Storage als Gegenbeispiel zur pauschalen Shared-Storage-Pflicht", "reviewStatus": "Am 26.09.2026 gelesen" },
+      { "sourceId": "migration-ms-cpu-compat", "sourceLocator": "Processor compatibility mode and prerequisites", "use": "CPU-Features vor Migration zwischen Generationen prüfen", "reviewStatus": "Am 26.09.2026 gelesen" },
+      { "sourceId": "migration-ms-network", "sourceLocator": "Live migration traffic; storage traffic", "use": "Netzverbindung und Bandbreite sowie gemeinsamer Zugriff im HA-Cluster unterscheiden", "reviewStatus": "Am 26.09.2026 gelesen" }
+    ],
+    "notes": [
+      "Privater Batch ga1-2-004-004 lieferte überwiegend fachfremde Netz- und Storage-Treffer; die vorgeschlagene Abbildung behandelt iSCSI, nicht Live-Migration. Sie wurden nicht als Beleg oder Grafik übernommen.",
+      "Die im Themenplan genannte Shared-Storage-Voraussetzung gilt für bestimmte Cluster-/Migrationsarchitekturen, nicht pauschal für jede Live-Migration. Hyper-V erlaubt auch eine Migration mit Storage-Übertragung; das Ziel muss dafür ausreichend Speicher und Bandbreite haben.",
+      "‚Ohne wahrgenommene Unterbrechung‘ ist ein Ziel bei funktionierender Konfiguration, kein SLA-Versprechen. Die Zahlen im Kapazitätsbeispiel und beide Diagramme sind eigene Lehrmodelle. Menschliche Fachfreigabe offen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "migrationspfade",
+      "type": "comparison",
+      "title": "Zwei Wege für die VM-Daten",
+      "description": "Bei Shared Storage bleibt die virtuelle Disk gemeinsam erreichbar; bei Shared-Nothing-Migration muss ihr Inhalt zum Ziel übertragen werden.",
+      "items": [
+        { "label": "Gemeinsamer Storage", "detail": "Host A und Host B erreichen den VM-Zustand. Laufender Speicher und Ausführungszustand wechseln den Host; der Datenspeicher bleibt erreichbar." },
+        { "label": "Ohne Shared Storage", "detail": "Zusätzlich zum laufenden Zustand werden VM-Dateien auf Storage bei Host B übertragen. Platz und Migrationsbandbreite sind einzuplanen." },
+        { "label": "Nicht dasselbe wie HA", "detail": "Geplanter Umzug benötigt funktionierende Ausgangs- und Zielhosts. Automatischer Neustart nach Ausfall erfordert weitere Cluster-/Failover-Architektur." }
+      ]
+    },
+    {
+      "id": "wartungsablauf",
+      "type": "flow",
+      "title": "Erst Ziel prüfen, dann Host A warten",
+      "description": "Ein Wartungsablauf mit sichtbarem Rückweg und Erfolgskontrolle.",
+      "items": [
+        { "label": "Vorprüfung", "detail": "Host B: freie CPU-/RAM-Kapazität, kompatible CPU-Features, Storage-Zugriff oder Zielplatz, Migrationnetz und Berechtigungen." },
+        { "label": "Live migrieren", "detail": "VM-Zustand übertragen; Anwendung und Netzwerkpfad auf Host B nach dem Wechsel prüfen." },
+        { "label": "A warten", "detail": "Erst nach erfolgreichem Umzug und Kontrolle den Quellhost in Wartung nehmen; Rückweg für Abbruch planen." }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Geplant oder ungeplant?",
+      "blocks": [
+        { "type": "quiz", "id": "live-migration-voraussetzungen-wartung-shared-nothing-diagnose", "question": "Host A ist bereits stromlos. Kann eine Live-Migration die darauf laufende VM jetzt noch regulär zu Host B verschieben?", "options": [
+          { "text": "Ja, Live-Migration kopiert den aktiven RAM auch von einem ausgeschalteten Host.", "rationale": "Ohne laufenden Quellhost kann dessen aktueller VM-Zustand nicht mehr live übertragen werden.", "correct": false },
+          { "text": "Nein. Ein Ausfall braucht einen vorher geplanten Wiederanlauf-/Failover-Weg; Live-Migration dient dem geplanten Umzug.", "rationale": "Richtig. Live-Migration und automatisches Failover lösen unterschiedliche Ereignisse.", "correct": true },
+          { "text": "Ja, sobald die VM einen Snapshot besitzt; weitere Architektur ist nicht nötig.", "rationale": "Ein Snapshot ersetzt weder einen laufenden Quellhost noch eine Failover-Lösung.", "correct": false }
+        ], "diagnostic": true }
+      ]
+    },
+    {
+      "title": "Der Pfad der Daten bestimmt die Vorprüfung",
+      "blocks": [
+        { "type": "figure", "diagramId": "migrationspfade", "alt": "Mit Shared Storage bleibt die VM-Disk für beide Hosts erreichbar. Ohne Shared Storage wird sie mit dem laufenden Zustand zum Ziel übertragen. Beides ist vom automatischen Failover zu unterscheiden.", "caption": "Eigenes Lehrbild anhand von Hyper-V; konkrete Funktionen anderer Plattformen prüfen." },
+        { "type": "markdown", "markdown": "Bei einer **Live-Migration** wechselt eine laufende VM von Host A zu Host B. Geeignete Plattformen übertragen dazu den Ausführungszustand und schalten die Ausführung am Ende um. Der geplante Hostwechsel soll für Nutzer möglichst unbemerkt bleiben; die tatsächliche Unterbrechung hängt von Konfiguration, Netzwerk und Last ab.\n\n**Shared Storage** ist ein häufiges Modell: Beide Hosts können die VM-Daten erreichen. Für hochverfügbare Hyper-V-Cluster ist der gemeinsame Zugriff auf den VM-Zustand Voraussetzung. Daraus folgt aber **nicht**, dass jede Live-Migration Shared Storage braucht: Hyper-V kann bei einer Migration ohne Cluster auch den Storage zum Ziel mitnehmen. Dann sind Zielplatz, Übertragungszeit und Netzlast zusätzlich relevant. ‚Shared Nothing‘ heißt nicht ‚ohne Speicher‘, sondern ohne denselben gemeinsam erreichbaren Datenspeicher.\n\nUnabhängig vom Storage-Muster braucht Host B genug freie Ressourcen für die VM. Die Host-/VM-Versionen, Berechtigungen und Netzverbindung für Migration und fortgesetzten Gastbetrieb müssen passen. Eine große VM kann das Migrationsnetz belasten; die Datenmenge und Last beeinflussen die Dauer. Prüfe die Möglichkeiten der **konkreten** Hypervisor-Version, statt ein Schema blind zu übertragen." },
+        { "type": "quiz", "id": "live-migration-voraussetzungen-wartung-shared-nothing-storage", "question": "Zwei Hyper-V-Hosts nutzen nur lokalen Storage. Welche Aussage ist fachlich richtig?", "options": [
+          { "text": "Live-Migration ist grundsätzlich unmöglich, weil Shared Storage immer zwingend ist.", "rationale": "Hyper-V kann eine VM einschließlich ihres Storage übertragen, wenn die Voraussetzungen erfüllt sind.", "correct": false },
+          { "text": "Eine Migration mit Storage-Übertragung ist möglich; Zielplatz und Netzwerk sind zusätzlich zu prüfen.", "rationale": "Richtig. Shared Storage ist nicht für jede Live-Migration Pflicht, wohl aber eine übliche Cluster-Architektur.", "correct": true },
+          { "text": "Die VM braucht am Ziel weder Platz noch einen erreichbaren Netzwerkpfad.", "rationale": "Ohne Shared Storage müssen VM-Dateien am Ziel liegen können, und die Hosts müssen für den Transfer verbunden sein.", "correct": false }
+        ] }
+      ]
+    },
+    {
+      "title": "CPU und Platz vor dem Klick prüfen",
+      "blocks": [
+        { "type": "figure", "diagramId": "wartungsablauf", "alt": "Vor dem Wartungsfenster wird Host B auf Ressourcen, CPU-Features, Storage und Netzwerk geprüft. Dann folgt der Live-Umzug mit Funktionstest; erst danach wird Host A gewartet.", "caption": "Eigener Ablauf mit Freigabepunkt zwischen Migration und Wartung." },
+        { "type": "markdown", "markdown": "Unterschiedliche **CPU-Generationen** können verschiedene Befehlssätze anbieten. Eine laufende VM darf am Ziel nicht plötzlich benötigte CPU-Features verlieren. Prüfe die Prozessor-Kompatibilität und den produktspezifischen Kompatibilitätsmodus **vor** der Migration. Bei Hyper-V kann ein erforderlicher Modus nicht einfach während des VM-Betriebs umgestellt werden; die Dokumentation fordert dafür eine ausgeschaltete VM. Das gehört deshalb in die Vorbereitung des Wartungsfensters.\n\nDie Zielkapazität darf nicht nur auf dem Papier reichen. Im Übungsfall hat B 64 GB physisches RAM, 28 GB sind bereits für Host und laufende Gäste verplant, die zu migrierende VM benötigt 20 GB, und 8 GB bleiben als festgelegte zusätzliche Reserve. Danach sind 8 GB übrig. Das ist nur eine RAM-Rechnung; CPU, Netz, Storage und Lastspitzen bleiben separat zu prüfen. Auch die Anwendung selbst kann Hostnamen, Lizenzen oder Netzpfade voraussetzen – nach dem Umzug funktional testen." },
+        { "type": "math", "ariaLabel": "64 Gigabyte physisches RAM minus 28 Gigabyte bestehende Last minus 20 Gigabyte migrierende VM minus acht Gigabyte Reserve gleich acht Gigabyte verbleibender Spielraum im Lehrmodell.", "mathml": "<math display=\"block\"><mrow><mn>64</mn><mtext> GB</mtext><mo>−</mo><mn>28</mn><mtext> GB</mtext><mo>−</mo><mn>20</mn><mtext> GB</mtext><mo>−</mo><mn>8</mn><mtext> GB</mtext><mo>=</mo><mn>8</mn><mtext> GB</mtext></mrow></math>", "legend": ["Nur RAM-Modell; keine Freigabe ohne CPU-, Storage-, Netzwerk- und Lastprüfung."] },
+        { "type": "numeric", "id": "live-migration-voraussetzungen-wartung-shared-nothing-ziel-ram", "title": "Ziel-RAM mit Reserve", "prompt": "Host B hat 96 GB physisches RAM. 40 GB sind schon verplant, die VM benötigt 24 GB, und 16 GB sollen als zusätzliche Reserve ungenutzt bleiben. Wie viel GB Spielraum bleiben danach im Modell?", "label": "Spielraum in GB", "expected": 16, "tolerance": 0.001, "correctFeedback": "Richtig: 96 − 40 − 24 − 16 = 16 GB. Weitere Engpässe trotzdem testen.", "wrongFeedback": "Ziehe bestehende Last, VM-Bedarf und die bewusst freizuhaltende Reserve vom physischen RAM ab.", "misconceptions": [ { "value": 32, "feedback": "32 GB sind nach der VM noch frei, aber die 16 GB Zusatzreserve wurden nicht abgezogen." }, { "value": 56, "feedback": "56 GB sind vor der neuen VM und vor der Reserve verfügbar." } ] },
+        { "type": "sequence", "id": "live-migration-voraussetzungen-wartung-shared-nothing-ablauf", "title": "Hostwartung ordnen", "prompt": "Ordne die Schritte vor dem Firmware-Update von A.", "steps": [
+          { "id": "pruefen", "label": "B auf CPU, Kapazität, Storage und Netz prüfen" },
+          { "id": "umziehen", "label": "VM live nach B verschieben und Dienst testen" },
+          { "id": "warten", "label": "Erst jetzt A in Wartung nehmen" }
+        ], "expected": ["pruefen", "umziehen", "warten"], "correctFeedback": "Richtig: A erst abschalten, wenn die VM nachweislich auf B arbeitet.", "wrongFeedback": "Zuerst das Ziel absichern, dann migrieren und prüfen, zuletzt den Quellhost warten." }
+      ]
+    },
+    {
+      "title": "Den Wartungsplan begründen",
+      "blocks": [
+        { "type": "recall", "id": "live-migration-voraussetzungen-wartung-shared-nothing-plan", "title": "Ein Plan ohne pauschale Shared-Storage-Regel", "prompt": "Host A soll gewartet werden, Host B nutzt eine ältere CPU und lokalen Storage. Formuliere die nötigen Prüfungen und grenze den Plan von automatischem Failover ab.", "label": "Dein Wartungsplan", "minLength": 100, "model": "Ich prüfe die kompatiblen CPU-Features beider Hosts und konfiguriere einen nötigen Kompatibilitätsmodus vorab nach Produktvorgabe. B braucht freie CPU-/RAM-Kapazität und genug Ziel-Storage, wenn die VM-Dateien mitwandern. Das Migrationsnetz und der Gast-Netzpfad müssen passen. Nach dem Live-Umzug teste ich den Dienst und beginne erst dann mit der Wartung. Bei ungeplantem Hostausfall brauche ich eine separate Failover-/Wiederanlaufarchitektur." },
+        { "type": "flashcards", "cards": [
+          { "id": "live-migration-voraussetzungen-wartung-shared-nothing-karte-0", "label": "Abruf 1", "front": "Was ermöglicht Live-Migration bei Wartung?", "back": "Die laufende VM geplant auf einen geeigneten Zielhost verschieben und erst danach den Quellhost warten." },
+          { "id": "live-migration-voraussetzungen-wartung-shared-nothing-karte-1", "label": "Abruf 2", "front": "Ist Shared Storage immer nötig?", "back": "Nein. Es ist ein häufiges Muster und für bestimmte HA-Cluster nötig; Hyper-V kann bei geeigneter Konfiguration auch Storage mitmigrieren." },
+          { "id": "live-migration-voraussetzungen-wartung-shared-nothing-karte-2", "label": "Abruf 3", "front": "Was löst Live-Migration nicht?", "back": "Sie ersetzt kein automatisches Failover nach einem schon eingetretenen Hostausfall." }
+        ] }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        { "type": "quiz", "id": "live-migration-voraussetzungen-wartung-shared-nothing-transfer-a", "question": "Ein laufender Dienst soll von A nach B. B hat genügend CPU/RAM, aber eine ältere CPU-Generation und nur lokalen Storage. Welche Vorprüfung ist vollständig?", "options": [
+          { "text": "Nur die IP-Adresse von B notieren; CPU und Storage sind bei Live-Migration irrelevant.", "rationale": "CPU-Feature-Kompatibilität und der Storage-Transfer sind zentrale Vorbedingungen.", "correct": false },
+          { "text": "CPU-Features und nötigen Kompatibilitätsmodus vorab prüfen, Platz für VM-Dateien auf B sowie Migrations- und Gastnetz nachweisen.", "rationale": "Richtig. Ein passendes Ziel braucht mehr als nominell freien RAM.", "correct": true },
+          { "text": "Shared Storage nachrüsten, denn ohne ihn ist jede Live-Migration ausgeschlossen.", "rationale": "Eine passende Shared-Nothing-Migration kann VM-Dateien mitnehmen; das ist produkt- und konfigurationsabhängig.", "correct": false }
+        ], "requiredObjective": "voraussetzungen" },
+        { "type": "quiz", "id": "live-migration-voraussetzungen-wartung-shared-nothing-transfer-b", "question": "Eine VM wurde vor geplanter Wartung erfolgreich von A nach B verschoben. Welche Schlussfolgerung ist gerechtfertigt?", "options": [
+          { "text": "Die geplante Wartung von A kann nach einem Diensttest beginnen; automatisches Failover für künftige Ausfälle ist damit nicht bewiesen.", "rationale": "Richtig. Wartungsumzug und Ausfallreaktion getrennt nachweisen.", "correct": true },
+          { "text": "A darf schon vor dem Funktionstest stromlos geschaltet werden, weil der Migrationsdialog genügt.", "rationale": "Die Dienstfunktion und Netz-Erreichbarkeit müssen am Ziel geprüft werden.", "correct": false },
+          { "text": "Das beweist, dass jede VM bei einem plötzlichen Ausfall von B ohne Unterbrechung weiterläuft.", "rationale": "Ein erfolgreicher geplanter Umzug ist kein Test der Failover-Architektur.", "correct": false }
+        ], "requiredObjective": "wartung" }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        { "type": "markdown", "markdown": "[Microsoft Learn: Live-Migration im Überblick](https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/manage/live-migration-overview), [Live-Migration ohne Cluster einschließlich Storage-Transfer](https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/manage/use-live-migration-without-failover-clustering-to-move-a-virtual-machine), [CPU-Kompatibilität](https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/configure-processor-compatibility-mode) und [Netzempfehlungen](https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/failover-cluster-network-recommendations), am 26.09.2026 gelesen. Alle Zahlen, Fälle und Grafiken sind eigene Lehrmodelle. Voraussetzungen und Unterbrechung müssen für die konkrete Plattform getestet werden; menschliche Fachfreigabe offen." }
+      ]
+    }
+  ]
+}
