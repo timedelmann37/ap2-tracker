@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Restore-Test, Wiederanlaufplan und Notfallhandbuch an einem Ausfall eines Bestellsystems mit BSI-BCM-Begriffen unterscheiden.">
+<title>Restore beweisen: vom Backup zum Notbetrieb – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-1">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="restore-test-wiederanlauf-notfallhandbuch" data-progress-id="ga1-4__7" data-content-revision="2026-09-26.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-4">Backup, Recovery und Notfallvorsorge</a><span class="sep">›</span>
+    <span class="here">Restore beweisen: vom Backup zum Notbetrieb</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Restore beweisen: vom Backup zum Notbetrieb</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 32 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Das nächtliche Backup des Bestellsystems ist grün. Beim Test startet die Datenbank, aber niemand kann sich anmelden: DNS und Identitätsdienst fehlen. Ist das RTO-Ziel erreicht? Wer entscheidet über den Notbetrieb – und wo steht die Reihenfolge?</p>
+<section class="learning-goals" aria-labelledby="restore-test-wiederanlauf-notfallhandbuch-goals">
+  <h2 id="restore-test-wiederanlauf-notfallhandbuch-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Einen Restore-Test bis zur nutzbaren Geschäftsprozessfunktion nachweisen</li>
+    <li>Wiederanlaufplan, Wiederherstellungsplan und Notfallhandbuch im BSI-BCM-Kontext zuordnen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Der grüne Job ist nur der Anfang</h2>
+<section class="quiz" data-quiz="restore-diagnose" data-correct="0">
+  <h3>Ein Backup-Job war erfolgreich und die Datenbank wurde zurückgespielt. Nutzer können sich wegen fehlendem DNS nicht am Bestellsystem anmelden. Ist der Wiederanlauf des Geschäftsprozesses belegt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Daten und nutzbarer Geschäftsprozess sind verschiedene Prüfebenen."><span class="m">A</span> Nein. Ohne Anmeldung und einen geprüften Bestellvorgang ist die vereinbarte Mindestfunktion nicht nachgewiesen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Der Job testet weder DNS noch Anmeldung oder Bestellung."><span class="m">B</span> Ja. Ein grüner Backup-Job beweist automatisch die Anwendung und alle Abhängigkeiten.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Dateilesbarkeit sagt nichts über Datenstand und Prozessfunktion aus."><span class="m">C</span> Ja, sobald irgendeine Datenbankdatei lesbar ist.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><p>Ein <strong>Restore-Test</strong> beantwortet eine andere Frage als das Backup-Protokoll: Lässt sich der benötigte Stand in der vorgesehenen Umgebung <em>nutzbar</em> wiederherstellen? Beginne mit einer sicheren, isolierten Testumgebung und einem geeigneten Wiederherstellungspunkt. Prüfe nicht nur Dateianzahl oder Prüfsumme, sondern auch Datenbankkonsistenz, abhängige Dienste, Anmeldung und den entscheidenden Nutzerablauf. Bei Verdacht auf Schadsoftware muss vor dem Rückspielen in ein produktives Netz geklärt sein, dass Quelle und Ziel sauber sind.</p>
+<p>Für das Bestellsystem ist der Nachweis erst stark, wenn ein Testnutzer sich anmelden, eine Probe-Bestellung erfassen und den erwarteten Datenstand sehen kann. Protokolliere Sicherungsstand, Beginn/Ende, tatsächlich erreichte Funktion, Fehler und verantwortliche Person. Vergleiche den ermittelten Datenverlust und die verstrichene Zeit mit den vereinbarten RPO-/RTO-Zielen. Ein bestandener Dateirestore kann als Teiltest nützlich sein, ersetzt aber keinen Prozess-Test.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Drei grüne Haken – aber erst der letzte zeigt den Dienst">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-nachweiskette-title diagram-nachweiskette-desc">
+  <title id="diagram-nachweiskette-title">Drei grüne Haken – aber erst der letzte zeigt den Dienst</title>
+  <desc id="diagram-nachweiskette-desc">Drei Prüfebenen: erfolgreicher Backup-Job, isolierter Daten-Restore mit Integritätskontrolle und nutzbarer Geschäftsprozess mit DNS, Anmeldung, Datenbank und Bestellvorgang.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Drei grüne Haken – aber erst der letzte zeigt den Dienst</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">Backup-Job</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">Die Sicherung wurde nach</tspan><tspan x="64" dy="30">Jobkriterien geschrieben.</tspan><tspan x="64" dy="30">Das ist noch kein Nachweis,</tspan></text></g><g><rect class="diagram-row" x="340" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="362" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="362" dy="0">Daten-Restore</tspan></text><text x="362" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="362" dy="0">Dateien oder Datenbank</tspan><tspan x="362" dy="30">werden in isolierter</tspan><tspan x="362" dy="30">Testumgebung eingelesen und</tspan></text></g><g><rect class="diagram-row" x="638" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="660" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="660" dy="0">Dienst-/Prozess-Test</tspan></text><text x="660" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="660" dy="0">DNS, Anmeldung, Datenbank,</tspan><tspan x="660" dy="30">Anwendung und ein echter</tspan><tspan x="660" dy="30">Bestellvorgang funktionieren</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Nachweiskette. Das Erfolgskriterium muss zur priorisierten Geschäftsprozessfunktion passen.</figcaption>
+</figure><section class="quiz" data-quiz="restore-testniveau" data-correct="0">
+  <h3>Welcher Nachweis ist für das fiktive Ziel 'Bestellungen im Notbetrieb erfassen' der stärkste?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Er prüft die benötigte Mindestfunktion und den Wiederanlaufweg."><span class="m">A</span> Ein isolierter Test mit Anmeldung, Probe-Bestellung, erwarteten Daten und gemessener Zeit.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Der Jobstatus sagt nichts über die Nutzbarkeit des Bestellprozesses."><span class="m">B</span> Nur 'Backup erfolgreich' im Jobprotokoll.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Größe ist kein Beleg für Konsistenz, Datenstand oder Anwendungsstart."><span class="m">C</span> Nur das Vorhandensein einer großen Sicherungsdatei.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2"><span class="num">2</span>Notbetrieb ist nicht Normalbetrieb</h2>
+<p>Der <strong>BSI-Standard 200-4</strong> betrachtet den Wiederanlauf im Rahmen des Business Continuity Management (BCM). Eine <strong>Business Impact Analyse (BIA)</strong> priorisiert zeitkritische Geschäftsprozesse und nötige Ressourcen. Bei einem schweren Ereignis bewertet die zuständige Organisation die Lage, alarmiert und koordiniert die Notfallbewältigung. <strong>Wiederanlauf</strong> heißt: ein vorab festgelegter, eventuell eingeschränkter <strong>Notbetrieb</strong> wird möglich. <strong>Wiederherstellung</strong> führt später zum <strong>Normalbetrieb</strong> zurück. Beides kann zeitlich überlappen, ist aber nicht dasselbe.</p>
+<p>Im Fall darf der Notbetrieb vielleicht nur Bestellungen erfassen, während Auswertungen warten. DNS, Identitätsdienst und Datenbank bleiben trotzdem kritische Abhängigkeiten. Ein Wiederanlaufplan beschreibt für genau diesen Prozess Reihenfolge, Mindestfunktion, Verantwortliche, Ersatzressourcen, Kontaktwege, Prüf- und Abbruchkriterien. Ein Wiederherstellungsplan ergänzt den Weg zur vollständigen Normalfunktion. Das <strong>Notfallhandbuch</strong> bündelt die für die Bewältigung benötigten Informationen und Pläne, darunter Alarmierung, Kommunikation, Wiederanlauf und Wiederherstellung. Es muss auch zugänglich sein, wenn das Primärnetz ausfällt.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Von der Vorbereitung zurück zum Normalbetrieb">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="542" viewBox="0 0 960 542" role="img" aria-labelledby="diagram-bcm-pfad-title diagram-bcm-pfad-desc">
+  <title id="diagram-bcm-pfad-title">Von der Vorbereitung zurück zum Normalbetrieb</title>
+  <desc id="diagram-bcm-pfad-desc">BSI-BCM-Ablauf als eigene Grafik: Vorbereitung mit BIA und Übungen, Ereignisbewertung und Alarmierung, Wiederanlauf in einen Notbetrieb, Wiederherstellung des Normalbetriebs.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Von der Vorbereitung zurück zum Normalbetrieb</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Vorher: BIA, Rollen, Pläne, Übung</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Kritische Geschäftsprozesse und Ressourcen priorisieren,</tspan><tspan x="178" dy="25">Wiederanlaufziel und Notbetriebsniveau festlegen, Zuständige</tspan><tspan x="178" dy="25">und Stellvertretung benennen.</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Ereignis: melden, bewerten, alarmieren</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Lage und Sicherheitsrisiko prüfen; die zuständige</tspan><tspan x="178" dy="25">Entscheidungsinstanz aktiviert nach Plan die</tspan><tspan x="178" dy="25">Bewältigungsorganisation und Kommunikation.</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Wiederanlauf: gesicherter Notbetrieb</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Sauberen Wiederherstellungspunkt und benötigte Abhängigkeiten</tspan><tspan x="178" dy="25">bereitstellen; der Bestellprozess läuft auf vereinbartem</tspan><tspan x="178" dy="25">Mindestniveau.</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Wiederherstellung: Normalbetrieb</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Ausgefallene Ressourcen nachhaltig ersetzen, Datenabgleich und</tspan><tspan x="178" dy="25">Rückführung koordinieren, Funktion prüfen und Erfahrungen in</tspan><tspan x="178" dy="25">die Pläne übernehmen.</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Vereinfachung des BCM-Gedankens; technische Wiederherstellung und Notbetrieb können parallel verlaufen.</figcaption>
+</figure><section class="quiz" data-quiz="restore-notbetrieb" data-correct="0">
+  <h3>Der Bestellprozess funktioniert wieder eingeschränkt, alle Auswertungen sind noch aus. Welche Aussage passt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Wiederanlauf und Wiederherstellung sind unterschiedliche Zielzustände."><span class="m">A</span> Der geplante Notbetrieb kann erreicht sein; der Normalbetrieb ist noch nicht wiederhergestellt.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Ein Notbetrieb kann bewusst auf eine Mindestfunktion begrenzt sein."><span class="m">B</span> Notbetrieb und Normalbetrieb sind Synonyme; jede Funktion muss schon laufen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die Bewertung folgt dem vorab festgelegten Notbetriebsniveau."><span class="m">C</span> Ohne Auswertungen hat noch kein Wiederanlauf stattgefunden, selbst wenn das definierte Mindestniveau erreicht ist.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="sequence-practice" data-sequence="restore-wiederanlauf" data-expected="lage,sichern,basis,prozess,freigabe" data-correct-feedback="Richtig: Erst Lage und Schutz, dann Abhängigkeiten, dann die Geschäftsfunktion und die dokumentierte Freigabe." data-wrong-feedback="Ein isolierter Restore und die Abhängigkeiten müssen vor dem Nutzertest und der Freigabe des Notbetriebs stehen." aria-labelledby="restore-wiederanlauf-title">
+  <div class="lab-heading"><div><h3 id="restore-wiederanlauf-title">Den Wiederanlauf planen</h3><p>Ordne die Schritte für den fiktiven Bestellprozess nach einem verdächtigen Ausfall.</p></div><span class="lab-tag">Ablauf</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="lage" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Ereignis melden, Lage bewerten und Zuständige nach Plan alarmieren</span></li>
+    <li data-step="sichern" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Betroffene Umgebung isolieren und sauberen Wiederherstellungspunkt bestimmen</span></li>
+    <li data-step="basis" tabindex="-1"><span class="step-position" data-step-position>3</span><span>DNS, Identitätsdienst und Datenbank auf Ersatzumgebung bereitstellen</span></li>
+    <li data-step="prozess" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Anmeldung und Probe-Bestellung samt Datenstand und Zeit prüfen</span></li>
+    <li data-step="freigabe" tabindex="-1"><span class="step-position" data-step-position>5</span><span>Notbetrieb freigeben, kommunizieren und Normalbetrieb wiederherstellen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s3"><span class="num">3</span>Ein Plan, den jemand anderes ausführen kann</h2>
+<p>Ein Notfallhandbuch ist keine bloße Adressliste und kein einmal geschriebenes PDF. Es braucht aktuelle Rollen und Stellvertretungen, Alarmierungs- und Eskalationswege, Verweise auf priorisierte Prozesse und Ressourcen, konkrete Wiederanlauf-/Wiederherstellungspläne, sichere Zugänglichkeit und Regeln für Lageprotokoll sowie Kommunikation. Geheimnisse gehören nicht ungeschützt in das Handbuch; der Zugriff auf Schlüssel muss im Notfall dennoch geregelt sein. Die zuständige Stelle muss das Dokument versionieren und nach Änderungen erneut prüfen.</p>
+<p>Teste verschiedene Ebenen: Eine <strong>Tabletop-Übung</strong> prüft Rollen und Entscheidungen; ein <strong>technischer Restore-Test</strong> prüft Daten und Abhängigkeiten; eine umfassendere <strong>Notfallübung</strong> prüft Zusammenspiel und Kommunikation. Umfang und Häufigkeit werden risikoorientiert festgelegt, nicht pauschal aus einem Buchbeispiel kopiert. Das BSI nennt regelmäßige und anlassbezogene Tests/Übungen sowie Dokumentation und Auswertung. Notiere Abweichungen, behebe sie und wiederhole den relevanten Test.</p>
+<section class="recall-practice" data-recall="restore-runbook" data-min-length="130" aria-labelledby="restore-runbook-title">
+  <div class="recall-prompt"><h3 id="restore-runbook-title">Mini-Runbook formulieren</h3><p>Schreibe für den Bestellprozess eine kurze Wiederanlauf-Checkliste: Wer wird alarmiert, was muss vor der App wieder funktionieren, wie wird die Mindestfunktion nachgewiesen, was wird dokumentiert?</p></div>
+  <label class="sr-only" for="restore-runbook-answer">Dein Plan</label>
+  <textarea id="restore-runbook-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Störung melden und verantwortliche Entscheidungsinstanz sowie IT-/Fachbereich nach Alarmierungsplan informieren. Bei Angriffsverdacht betroffene Systeme isolieren; sauberen Wiederherstellungspunkt wählen. In der Ersatzumgebung zuerst DNS und Identitätsdienst, dann Datenbank und Bestellanwendung bereitstellen. Testnutzer meldet sich an und legt eine Probe-Bestellung mit erwarteten Daten an. Datenstand, Uhrzeiten, Fehler, Freigabe des Notbetriebs und verbleibende Schritte zum Normalbetrieb im Lageprotokoll festhalten.</div>
+</section><section class="quiz" data-quiz="restore-handbuch" data-correct="0">
+  <h3>Der gesamte Notfallplan liegt nur im ausgefallenen Intranet. Was ist die wichtigste Korrektur?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Ein Handbuch muss im Ereignis nutzbar sein; Zugriff und Aktualität gehören zusammen."><span class="m">A</span> Eine aktuelle, geschützte und auch beim Primärnetzausfall zugängliche Fassung mit Rollen, Kontakten und Plänen vorhalten und üben.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Ein unerreichbarer Plan kann die Bewältigung nicht anleiten."><span class="m">B</span> Nur den Titel des Dokuments ändern; der Speicherort spielt keine Rolle.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Notfallzugriff planen, aber Geheimnisse nicht ungeschützt verteilen."><span class="m">C</span> Alle geheimen Passwörter unverschlüsselt im Handbuch abdrucken.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Abruf und Lernziel-Check</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="restore-karte-0" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Backup-Job grün: Was fehlt?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Ein isolierter, dokumentierter Restore mit Daten- und Anwendungsprüfung gegen RPO/RTO und Mindestfunktion.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="restore-karte-1" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wiederanlauf oder Wiederherstellung?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Wiederanlauf ermöglicht den geplanten Notbetrieb; Wiederherstellung führt zum Normalbetrieb zurück.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="restore-karte-2" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was bündelt das Notfallhandbuch?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Für die Notfallbewältigung nötige Informationen und Pläne, unter anderem Alarmierung, Kommunikation, Geschäftsfortführung, Wiederanlauf und Wiederherstellung.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Abruf 1“:</span><button type="button" data-card-id="restore-karte-0" data-card-rate="known">gewusst</button><button type="button" data-card-id="restore-karte-0" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="restore-karte-0"></span></div>
+<div class="card-rating"><span>Karte „Abruf 2“:</span><button type="button" data-card-id="restore-karte-1" data-card-rate="known">gewusst</button><button type="button" data-card-id="restore-karte-1" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="restore-karte-1"></span></div>
+<div class="card-rating"><span>Karte „Abruf 3“:</span><button type="button" data-card-id="restore-karte-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="restore-karte-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="restore-karte-2"></span></div><section class="quiz" data-quiz="restore-transfer-nachweis" data-correct="0" data-required-objective="nachweis">
+  <h3>Nach einem Test sind Datenbankdateien vorhanden, aber DNS, Login und Probe-Bestellung wurden nicht geprüft. Was ist belegt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Die Geschäftsprozessfunktion braucht eigene Nachweise."><span class="m">A</span> Nur ein Teil des Daten-Restores; die nutzbare Mindestfunktion und RTO-Erfüllung sind nicht belegt.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Ohne Abhängigkeiten und Nutzertest ist das Ziel nicht gezeigt."><span class="m">B</span> Der gesamte Wiederanlauf, weil Dateien existieren.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Jobstatus und Normalbetrieb sind weit voneinander entfernt."><span class="m">C</span> Der Normalbetrieb, weil der Backup-Job grün ist.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="restore-transfer-plan" data-correct="0" data-required-objective="plan">
+  <h3>Nach Alarmierung läuft die Bestellung eingeschränkt wieder, Berichte folgen später. Wo gehören die Schritte und Ziele hin?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Die Pläne sind Teil eines organisatorischen BCM-Rahmens."><span class="m">A</span> In einen konkreten Wiederanlaufplan zum Notbetrieb; im Notfallhandbuch mit Alarmierung und Wiederherstellungsplan zum Normalbetrieb zusammengeführt.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Technischer Sicherungsstatus ersetzt keine Notfallkoordination."><span class="m">B</span> Nur in das Backup-Jobprotokoll; Rollen und Kommunikation sind nicht nötig.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ungeplante Abhängigkeiten verlängern den Ausfall; dokumentierte Pläne und Übungen sind der Zweck der Vorsorge."><span class="m">C</span> Gar nicht; jedes Team kann die Reihenfolge erst im Ereignis entscheiden.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Quellen und Grenzen</h2>
+<p><a href="https://www.bsi.bund.de/SharedDocs/Downloads/DE/BSI/Grundschutz/BSI_Standards/standard_200_4.pdf?__blob=publicationFile&amp;v=8">BSI-Standard 200-4: BCM</a>, <a href="https://www.bsi.bund.de/SharedDocs/Downloads/DE/BSI/Grundschutz/Hilfsmittel/Standard200_4_BCM/Standard_200-4_BCM_Glossar.pdf?__blob=publicationFile&amp;v=4">BSI-Glossar zu 200-4</a>, <a href="https://www.bsi.bund.de/SharedDocs/Downloads/DE/BSI/Grundschutz/IT-GS-Kompendium_Einzel_PDFs_2021/05_DER_Detektion_und_Reaktion/DER_4_Notfallmanagement_Edition_2021.pdf?__blob=publicationFile&amp;v=2">BSI IT-Grundschutz DER.4, Edition 2021</a> und <a href="https://learn.microsoft.com/en-us/security/benchmark/azure/mcsb-v2-backup-recovery">Microsoft: Backup and Recovery Testing</a>, am 26.09.2026 geprüft. Bestellsystem, Rollen, Grafiken und Prüfablauf sind eigene Lehrbeispiele. Ein echter Notfallplan muss für die jeweilige Institution erstellt, freigegeben und geübt werden; menschliche Fachfreigabe offen.</p>
+
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-4"><span class="d">zurück zu</span><span class="t">Backup, Recovery und Notfallvorsorge</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Backup, Recovery und Notfallvorsorge</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Der grüne Job ist nur der Anfang</a></li>
+<li><a href="#s2" data-t="s2">Notbetrieb ist nicht Normalbetrieb</a></li>
+<li><a href="#s3" data-t="s3">Ein Plan, den jemand anderes ausführen kann</a></li>
+<li><a href="#s4" data-t="s4">Abruf und Lernziel-Check</a></li>
+<li><a href="#s5" data-t="s5">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-4">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

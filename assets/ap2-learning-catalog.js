@@ -1182,6 +1182,33 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "restore-test-wiederanlauf-notfallhandbuch",
+    "slug": "restore-test-wiederanlauf-notfallhandbuch",
+    "title": "Restore beweisen: vom Backup zum Notbetrieb",
+    "description": "Restore-Test, Wiederanlaufplan und Notfallhandbuch an einem Ausfall eines Bestellsystems mit BSI-BCM-Begriffen unterscheiden.",
+    "domain": "GA1",
+    "groupId": "ga1-4",
+    "groupLabel": "Backup, Recovery und Notfallvorsorge",
+    "itemId": "ga1-4__7",
+    "week": "KW 38",
+    "estimatedMinutes": 32,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "nachweis",
+      "plan"
+    ],
+    "sources": [
+      "bsi-200-4-bcm",
+      "bsi-200-4-glossar",
+      "bsi-der4-notfall",
+      "ms-backup-recovery-test"
+    ],
+    "contentHash": "125e1e16b6d05a889d484da8cf792d89ab03ec2fa52752b51ef175d800e4c6fc",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "slug": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "title": "Struktogramm und Programmablaufplan",
