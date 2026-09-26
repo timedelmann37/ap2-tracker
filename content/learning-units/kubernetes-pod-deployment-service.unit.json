@@ -1,0 +1,137 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "kubernetes-pod-deployment-service",
+    "slug": "kubernetes-pod-deployment-service",
+    "title": "Kubernetes: Wer startet Pods, wer findet sie?",
+    "description": "Pod, Deployment, Service und Replikate an einem Ausfall verstehen, ohne Erreichbarkeit mit Datensicherung zu verwechseln.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-2",
+    "groupLabel": "Virtualisierung, Cluster und Verfügbarkeit",
+    "itemId": "ga1-2__12",
+    "week": "KW 36",
+    "estimatedMinutes": 28,
+    "relevance": "mittel",
+    "sources": ["k8s-pods", "k8s-deployments", "k8s-services"],
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    { "id": "rollen", "label": "Pod, Deployment und Service im Daten- und Steuerungsweg unterscheiden" },
+    { "id": "ausfall", "label": "Einen Pod-Ausfall mit Soll-Replikaten, erreichbaren Endpunkten und Grenzen erklären" }
+  ],
+  "intro": "Ein Webdienst hat drei Replikate. Ein Pod fällt aus und erhält beim Ersatz eine andere IP-Adresse. Warum können Anfragen trotzdem weiterlaufen – und warum sind drei Replikate noch kein Backup?",
+  "curation": {
+    "evidence": [
+      { "sourceId": "k8s-pods", "sourceLocator": "Pods; Pod lifecycle; Pods and controllers", "use": "Pod als kleinste bereitstellbare Einheit, vergängliche Instanzen und gemeinsame Ressourcen", "reviewStatus": "Offizielle Kubernetes-Dokumentation am 26.09.2026 gelesen" },
+      { "sourceId": "k8s-deployments", "sourceLocator": "Deployments; scaling; ReplicaSets", "use": "Gewünschte Replikatzahl und Ersatz eines ausgefallenen Pods über Controller", "reviewStatus": "Offizielle Kubernetes-Dokumentation am 26.09.2026 gelesen" },
+      { "sourceId": "k8s-services", "sourceLocator": "Service; selectors; ClusterIP; EndpointSlices", "use": "Stabile Service-Adresse und Auswahl passender Pod-Endpunkte", "reviewStatus": "Offizielle Kubernetes-Dokumentation am 26.09.2026 gelesen" }
+    ],
+    "notes": [
+      "Der private Batch ga1-2-012-012 enthält Buchkontext aus ITLF10-12, Seiten 84–85. Text und Abbildung wurden nicht übernommen; beide Grafiken und der Störfall sind eigenständig.",
+      "Im Buch-OCR wirkt es, als bekäme jeder Pod durch einen Service eine feste IP. Die offizielle Dokumentation stützt stattdessen die stabile Service-Abstraktion vor wechselnden Pod-Endpunkten. Diese Unterscheidung wurde bewusst korrigiert.",
+      "Vereinfachtes Lehrszenario: Der Service selektiert Pods mit passenden Labels; nur bereite Endpunkte sollen regulären Verkehr empfangen. Erreichbarkeit hängt zusätzlich von Cluster, Kapazität, Netz und Readiness-Konfiguration ab. Menschliche Fachfreigabe offen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "rollenbild",
+      "type": "comparison",
+      "title": "Drei Objekte, drei Aufgaben",
+      "description": "Der Datenweg und der Steuerungsweg dürfen nicht verwechselt werden.",
+      "items": [
+        { "label": "Pod · läuft", "detail": "Kleinste bereitstellbare Einheit mit einem oder mehreren eng gekoppelten Containern. Eine Pod-Instanz kann ersetzt werden; ihre IP ist nicht die dauerhafte Anwendungsadresse." },
+        { "label": "Deployment · hält das Soll", "detail": "Beschreibt den gewünschten Zustand einer meist zustandslosen Anwendung, etwa drei Replikate. Controller und ReplicaSet sorgen für Erzeugung und Ersatz von Pods." },
+        { "label": "Service · macht auffindbar", "detail": "Bietet eine stabile Zugriffsabstraktion vor passenden Pod-Endpunkten. Ein Service startet keine Pods und speichert keine Nutzdaten." }
+      ]
+    },
+    {
+      "id": "ausfallpfad",
+      "type": "flow",
+      "title": "Ein Pod weg: Was passiert mit Soll und Verkehr?",
+      "description": "Vereinfachter Ablauf bei drei gewünschten Replikaten und ausreichender freier Kapazität.",
+      "items": [
+        { "label": "Soll: 3 Pods", "detail": "Das Deployment legt drei Replikate fest; bei gesunden Pods sind drei Endpunkte bereit." },
+        { "label": "Pod B fällt aus", "detail": "Vorübergehend sind nur zwei Pods bereit. Der Service soll keine Anfragen an einen nicht bereiten Endpunkt senden." },
+        { "label": "Controller gleicht ab", "detail": "Über ReplicaSet und Scheduler wird ein Ersatz-Pod angestrebt. Das dauert und setzt verfügbare Ressourcen voraus." },
+        { "label": "Ersatz ist bereit", "detail": "Der neue Pod kann eine andere IP haben. Der Service bietet weiterhin denselben Zugang zu den nun wieder drei bereiten Endpunkten." }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Erst die Rollen trennen",
+      "blocks": [
+        { "type": "quiz", "id": "k8s-diagnose", "question": "Ein ausgefallener Pod soll ersetzt werden. Welches Objekt beschreibt im Beispiel die gewünschte Replikatzahl?", "options": [
+          { "text": "Deployment", "rationale": "Richtig: Das Deployment beschreibt das Soll; Controller sorgen für dessen Angleichung.", "correct": true },
+          { "text": "Service", "rationale": "Ein Service macht passende Endpunkte erreichbar, erstellt aber keine Replikate.", "correct": false },
+          { "text": "Der einzelne Pod selbst", "rationale": "Ein einzelner Pod verwaltet nicht die gewünschte Anzahl anderer Pods.", "correct": false }
+        ], "diagnostic": true },
+        { "type": "markdown", "markdown": "Kubernetes verwaltet Anwendungen als **gewünschten Zustand**. Ein **Pod** ist die kleinste Einheit, die Kubernetes bereitstellt: Er enthält einen oder mehrere eng gekoppelte Container, die Netzwerk- und Speicherressourcen teilen können. Pods sind austauschbare Instanzen; ein Ersatz-Pod ist nicht derselbe Pod mit garantiert gleicher IP.\n\nFür einen typischen zustandslosen Webdienst beschreibt ein **Deployment**, welches Container-Image und wie viele **Replikate** laufen sollen. Es verwaltet ReplicaSets, die die passenden Pods erhalten. Ein **Service** ist die stabile Zugriffsabstraktion davor: Er findet über Labels passende Pods und stellt ihnen einen gemeinsamen Zugang gegenüber. Bei einem üblichen ClusterIP-Service ist dieser Zugang clusterintern. Der Service ist keine eigene Kopie der Anwendung." },
+        { "type": "figure", "diagramId": "rollenbild", "alt": "Vergleich der Kubernetes-Rollen: Pod führt Container aus, Deployment hält die gewünschte Replikatzahl, Service bietet einen stabilen Zugang zu passenden Pod-Endpunkten.", "caption": "Eigene Übersicht. Deployment und Service wirken auf unterschiedliche Wege: Steuerung versus Anfragen." },
+        { "type": "quiz", "id": "k8s-adresse", "question": "Ein Ersatz-Pod bekommt eine andere IP. Welche Aussage über den Service ist richtig?", "options": [
+          { "text": "Der Service bietet einen stabilen Zugang vor wechselnden passenden Pod-Endpunkten.", "rationale": "Richtig. Die Service-Abstraktion entkoppelt Clients von einzelnen Pod-IPs.", "correct": true },
+          { "text": "Der Service verleiht jedem Pod dauerhaft dieselbe IP.", "rationale": "Pod-Instanzen und ihre IPs können wechseln; stabil ist die Service-Abstraktion.", "correct": false },
+          { "text": "Der Service erstellt den Ersatz-Pod und speichert alle Nutzerdaten.", "rationale": "Der Ersatz ist Controller-Arbeit; Datenspeicherung ist ein eigenes Thema.", "correct": false }
+        ] }
+      ]
+    },
+    {
+      "title": "Den Ausfall durchspielen",
+      "blocks": [
+        { "type": "markdown", "markdown": "Im Lehrfall sind **drei Replikate gewünscht und zunächst drei Pods bereit**. Fällt einer aus, sind zeitweise nur zwei bereit. Der Deployment-Controller gleicht den beobachteten Zustand an das Soll an und lässt einen Ersatz erzeugen. Erst wenn dieser gestartet und bereit ist, kann er regulär Anfragen erhalten. Das geschieht nicht augenblicklich und nicht garantiert: Ressourcenmangel, fehlerhaftes Image oder ein größeres Clusterproblem können den Sollzustand verhindern.\n\nDer Service hält Clients von wechselnden Pod-Adressen fern und leitet Verkehr zu geeigneten Endpunkten. Passende Labels allein reichen für eine tatsächlich nutzbare Anwendung nicht; Start und Bereitschaft müssen ebenfalls stimmen. Drei Replikate bedeuten außerdem nicht automatisch drei unabhängige Nodes oder Ausfallzonen." },
+        { "type": "figure", "diagramId": "ausfallpfad", "alt": "Ablauf: Drei gewünschte Pods, einer fällt aus, vorübergehend zwei bereite Pods, Controller strebt Ersatz an, nach dessen Bereitschaft wieder drei Endpunkte am Service.", "caption": "Eigener Störfall. Soll, aktuelle Bereitstellung und erreichbare Endpunkte sind verschiedene Größen." },
+        { "type": "quiz", "id": "k8s-zwei", "question": "Drei Replikate sind gewünscht, ein Pod fällt aus. Was ist unmittelbar danach im vereinfachten Fall richtig?", "options": [
+          { "text": "Soll bleibt drei; vorübergehend sind nur zwei Pods bereit, bis ein Ersatz erfolgreich bereit wird.", "rationale": "Richtig. Der Controller versucht die Differenz auszugleichen, benötigt dafür aber Zeit und Ressourcen.", "correct": true },
+          { "text": "Das Deployment ändert sein Soll automatisch auf zwei.", "rationale": "Ein Ausfall ändert nicht von selbst die gewünschte Replikatzahl.", "correct": false },
+          { "text": "Der Service garantiert ohne Verzögerung einen dritten bereiten Pod.", "rationale": "Der Service bietet Zugang, ist aber weder Controller noch Kapazitätsgarantie.", "correct": false }
+        ] },
+        { "type": "sequence", "id": "k8s-stoerfall", "title": "Den Steuerungsweg ordnen", "prompt": "Ordne den vereinfachten Ablauf eines Pod-Ausfalls.", "steps": [
+          { "id": "soll", "label": "Deployment beschreibt drei gewünschte Replikate" },
+          { "id": "ausfall", "label": "Ein Pod fällt aus; zwei bleiben bereit" },
+          { "id": "ersatz", "label": "Controller veranlasst einen Ersatz-Pod" },
+          { "id": "bereit", "label": "Ersatz-Pod wird bereit und zum passenden Service-Endpunkt" }
+        ], "expected": ["soll", "ausfall", "ersatz", "bereit"], "correctFeedback": "Richtig: Soll und aktuell bereite Endpunkte fallen beim Ausfall zunächst auseinander.", "wrongFeedback": "Trenne das dauerhafte Soll, den vorübergehenden Ausfall, die Controller-Reaktion und erst danach die Bereitschaft des Ersatzes." }
+      ]
+    },
+    {
+      "title": "Was Replikate nicht leisten",
+      "blocks": [
+        { "type": "markdown", "markdown": "Replikate verbessern die Möglichkeit, **Anfragen trotz eines einzelnen Pod-Ausfalls** zu bedienen. Sie sind aber **kein Backup**: Ein versehentlich gelöschter Datensatz kann genauso an allen Replikaten fehlen. Container-Dateisysteme sind für dauerhafte Nutzdaten kein Ersatz für bewusst geplante persistente Speicherung, Sicherung und Wiederherstellung. Für zustandsbehaftete Anwendungen können andere Workload- und Speicherbausteine nötig sein.\n\nAuch hohe Verfügbarkeit ist keine automatische Eigenschaft der Zahl `replicas: 3`. Werden alle Pods auf denselben Node platziert oder ist die Control Plane beziehungsweise das Netzwerk gestört, bleibt ein gemeinsamer Ausfallpunkt. Für einen echten Betriebsentwurf prüfst du Verteilung über Nodes/Zonen, Readiness, Ressourcen, persistente Daten, Backups und Tests des Wiederanlaufs. Bei einer IHK-Aufgabe reicht zunächst die klare Zuordnung: **Pod führt aus, Deployment hält das Soll, Service vermittelt den Zugang**." },
+        { "type": "recall", "id": "k8s-entscheidung", "title": "Architekturentscheidung begründen", "prompt": "Eine kleine Webanwendung hat drei Replikate und einen Service. Der Betreiber behauptet: 'Damit sind unsere Kundendaten gesichert und jeder Node-Ausfall abgefangen.' Was prüfst du?", "label": "Deine Gegenprüfung", "minLength": 95, "model": "Drei Replikate halten nur mehrere laufende Pod-Instanzen vor. Ich prüfe, ob die Pods über unabhängige Nodes oder Zonen verteilt sind und ob ein Ersatz bei Ressourcenmangel überhaupt starten kann. Der Service bietet einen stabilen Zugang, sichert aber keine Daten. Für Kundendaten brauche ich geplante Persistenz, Backups und einen getesteten Wiederherstellungsweg." },
+        { "type": "quiz", "id": "k8s-backup", "question": "Ein Datenbankeintrag wird versehentlich gelöscht. Was leisten drei Web-Pod-Replikate und ein Service hierfür?", "options": [
+          { "text": "Sie ersetzen kein Backup; Datenwiederherstellung muss separat geplant und getestet werden.", "rationale": "Richtig. Replikate für einen Webdienst und Service-Routing schützen keine gelöschten Daten.", "correct": true },
+          { "text": "Das Deployment rekonstruiert den gelöschten Eintrag aus der Replikatzahl.", "rationale": "Die Replikatzahl beschreibt Pods, keine Versionierung der Nutzdaten.", "correct": false },
+          { "text": "Die stabile Service-IP enthält automatisch eine Sicherung der Daten.", "rationale": "Eine Zugriffsadresse ist kein Sicherungsspeicher.", "correct": false }
+        ] }
+      ]
+    },
+    {
+      "title": "Abruf und Lernziel-Check",
+      "blocks": [
+        { "type": "flashcards", "cards": [
+          { "id": "k8s-karte-0", "label": "Abruf 1", "front": "Was ist ein Pod?", "back": "Die kleinste bereitstellbare Kubernetes-Einheit mit einem oder mehreren eng gekoppelten Containern. Eine Pod-Instanz ist ersetzbar." },
+          { "id": "k8s-karte-1", "label": "Abruf 2", "front": "Deployment versus Service?", "back": "Deployment beschreibt und hält den gewünschten Replikat-Zustand; Service bietet einen stabilen Zugang zu passenden Pod-Endpunkten." },
+          { "id": "k8s-karte-2", "label": "Abruf 3", "front": "Sind drei Replikate drei Backups?", "back": "Nein. Mehrere Pods ersetzen weder persistente Speicherung noch eine geprüfte Datensicherung." }
+        ] },
+        { "type": "quiz", "id": "k8s-transfer-rollen", "question": "Ein neuer Pod hat eine neue IP. Was muss der Client im üblichen Muster adressieren, und welches Objekt hält das Soll von drei Kopien?", "options": [
+          { "text": "Service für den Zugang; Deployment für die drei gewünschten Replikate.", "rationale": "Richtig: Datenweg und Steuerungsweg sind getrennt.", "correct": true },
+          { "text": "Deployment als Netzwerkadresse; Service als Pod-Erzeuger.", "rationale": "Die Rollen sind vertauscht.", "correct": false },
+          { "text": "Die alte Pod-IP; Kubernetes vergibt sie dem Ersatz-Pod erneut.", "rationale": "Pod-IPs sind keine dauerhafte Anwendungsadresse.", "correct": false }
+        ], "requiredObjective": "rollen" },
+        { "type": "quiz", "id": "k8s-transfer-ausfall", "question": "Drei Replikate sind gewünscht, ein Pod und zugleich ein Kundendatensatz gehen verloren. Welche Aussage ist fachlich tragfähig?", "options": [
+          { "text": "Der Controller strebt einen Ersatz-Pod an; Datenwiederherstellung braucht einen separaten, geprüften Weg.", "rationale": "Richtig. Replikate und Datensicherung lösen verschiedene Probleme.", "correct": true },
+          { "text": "Der Service stellt den Datensatz aus seiner festen IP wieder her.", "rationale": "Der Service speichert keine Kundendaten.", "correct": false },
+          { "text": "Mit replicas: 3 sind Ersatz und Datenverlustfreiheit sofort garantiert.", "rationale": "Sollzustand braucht Zeit und Ressourcen; Replikation ist kein Backup.", "correct": false }
+        ], "requiredObjective": "ausfall" }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        { "type": "markdown", "markdown": "[Kubernetes: Pods](https://kubernetes.io/docs/concepts/workloads/pods/), [Deployments](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) und [Services](https://kubernetes.io/docs/concepts/services-networking/service/), am 26.09.2026 gelesen. Der Störfall und beide Grafiken sind eigene Lehrbeispiele; Cluster-Konfiguration und Ausfallverhalten können abweichen. Menschliche Fachfreigabe offen." }
+      ]
+    }
+  ]
+}

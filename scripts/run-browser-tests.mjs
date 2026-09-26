@@ -88,6 +88,7 @@ try {
   await import('./verify-mtbf-browser.mjs');
   await import('./verify-series-parallel-browser.mjs');
   await import('./verify-sla-browser.mjs');
+  await import('./verify-kubernetes-browser.mjs');
   await import('./verify-space-browser.mjs');
 } finally {
   await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
