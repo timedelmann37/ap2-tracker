@@ -585,6 +585,32 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "reihen-und-parallelschaltung-verfuegbarkeit",
+    "slug": "reihen-und-parallelschaltung-verfuegbarkeit",
+    "title": "Reihe oder parallel? Verfügbarkeit der Dienstkette",
+    "description": "Harte Abhängigkeiten und unabhängige Redundanz unterscheiden, Gesamtverfügbarkeit berechnen und gemeinsame Ausfälle erkennen.",
+    "domain": "GA1",
+    "groupId": "ga1-2",
+    "groupLabel": "Virtualisierung, Cluster und Verfügbarkeit",
+    "itemId": "ga1-2__10",
+    "week": "KW 36",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "rechnen",
+      "grenzen"
+    ],
+    "sources": [
+      "availability-aws-reliability-pillar",
+      "availability-aws-dependencies",
+      "availability-aws-redundancy"
+    ],
+    "contentHash": "f2ba08b20bbd20ed4b2006af2e5cdc72820a48558387bfa4274d209bd78fd856",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "storage-types",
     "slug": "storage-types",
     "title": "DAS, NAS und SAN sicher unterscheiden",

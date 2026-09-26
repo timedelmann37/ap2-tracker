@@ -1,0 +1,130 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "reihen-und-parallelschaltung-verfuegbarkeit",
+    "slug": "reihen-und-parallelschaltung-verfuegbarkeit",
+    "title": "Reihe oder parallel? Verfügbarkeit der Dienstkette",
+    "description": "Harte Abhängigkeiten und unabhängige Redundanz unterscheiden, Gesamtverfügbarkeit berechnen und gemeinsame Ausfälle erkennen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-2",
+    "groupLabel": "Virtualisierung, Cluster und Verfügbarkeit",
+    "itemId": "ga1-2__10",
+    "week": "KW 36",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": ["availability-aws-reliability-pillar", "availability-aws-dependencies", "availability-aws-redundancy"],
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    { "id": "rechnen", "label": "Für zwei harte Abhängigkeiten und zwei unabhängige redundante Pfade die theoretische Verfügbarkeit berechnen" },
+    { "id": "grenzen", "label": "Gemeinsame Ausfallursachen, Kapazität und Umschaltung als Grenzen der Parallelformel erklären" }
+  ],
+  "intro": "Zwei Server klingen nach mehr Verfügbarkeit. Das gilt aber nur, wenn einer allein den Dienst tragen kann und nicht beide an derselben Datenbank, Stromversorgung oder Netzwerkkomponente scheitern.",
+  "curation": {
+    "evidence": [
+      { "sourceId": "availability-aws-reliability-pillar", "sourceLocator": "Calculating availability with hard dependencies; Calculating availability with redundant components", "use": "Reihen- und Parallelformeln sowie Unabhängigkeitsannahme", "reviewStatus": "Am 26.09.2026 gelesen; eigene Zahlen, Fälle und Grafiken" },
+      { "sourceId": "availability-aws-dependencies", "sourceLocator": "Availability with dependencies; Equation 4", "use": "Alle harten Komponenten müssen laufen; Produkt der Verfügbarkeiten als theoretisches Modell", "reviewStatus": "Am 26.09.2026 gelesen" },
+      { "sourceId": "availability-aws-redundancy", "sourceLocator": "Availability with redundancy, zwei unabhängige Subsysteme", "use": "Nur gleichzeitiger Ausfall beider vollständiger Pfade stoppt den Dienst", "reviewStatus": "Am 26.09.2026 gelesen" }
+    ],
+    "notes": [
+      "Der private Batch ga1-2-010-010 enthält keine belastbare fachliche Erklärung; die Treffer und das Dekorationsbild wurden nicht verwendet. Die Lerneinheit nutzt eigenständige Beispiele und öffentlich prüfbare Primärquellen.",
+      "Die Multiplikation der Verfügbarkeiten setzt im Lehrmodell statistisch unabhängige Fehler voraus. Ein gemeinsames Rack, Netz, Storage, eine Datenbank oder fehlerhafte Umschaltung kann diese Annahme aufheben.",
+      "Die Formeln beschreiben theoretische Wahrscheinlichkeiten über dieselbe Messperiode und denselben nutzbaren Dienst. Sie sind keine SLA-Garantie und ignorieren im Zahlenbeispiel Umschaltzeit und degradierte Leistung. Menschliche Fachfreigabe offen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "topologien",
+      "type": "comparison",
+      "title": "Zwei Knoten, zwei verschiedene Logiken",
+      "description": "Entscheidend ist, welche Komponenten für dieselbe Nutzerfunktion gleichzeitig gebraucht werden.",
+      "items": [
+        { "label": "Reihe: Web → Datenbank", "detail": "Die Nutzerfunktion braucht beide Komponenten. Fällt eine aus, steht der Dienst; bei unabhängigen Fehlern multiplizieren sich ihre Verfügbarkeiten." },
+        { "label": "Parallel: Web A oder Web B", "detail": "Jeder Pfad kann dieselbe Nutzerfunktion vollständig tragen. Bei unabhängigen Fehlern fällt der redundante Teil nur aus, wenn A und B zugleich ausfallen." },
+        { "label": "Gemeinsame Datenbank", "detail": "Zwei Webserver bleiben an einer einzigen Datenbank hängen. Der Webteil ist redundant, die gesamte Dienstkette aber nicht vollständig." }
+      ]
+    },
+    {
+      "id": "annahmen",
+      "type": "flow",
+      "title": "Bevor du multiplizierst, prüfe die Architektur",
+      "description": "Die mathematische Parallelformel ist nur so gut wie ihre Voraussetzungen.",
+      "items": [
+        { "label": "Vollständige Pfade?", "detail": "Kann jeder Pfad allein die definierte Nutzerfunktion und die Ziel-Last tragen?" },
+        { "label": "Unabhängige Fehler?", "detail": "Teilen die Pfade Rack, Strom, Netzwerk, Storage, Softwarefehler oder Bedienfehler?" },
+        { "label": "Umschaltung nutzbar?", "detail": "Erkennt das System den Fehler, lenkt Anfragen um und bewahrt nötigen Zustand?" },
+        { "label": "Ende-zu-Ende messen", "detail": "Prüfe den tatsächlichen Dienst, nicht nur den Status einzelner Server." }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Was muss gleichzeitig funktionieren?",
+      "blocks": [
+        { "type": "quiz", "id": "reihen-parallel-diagnose", "question": "Eine Webanwendung benötigt für jede Anfrage sowohl den Webserver als auch die einzige Datenbank. Welche Beziehung besteht für diese Funktion?", "options": [
+          { "text": "Harte Abhängigkeit in Reihe: Fällt eine Komponente aus, ist die Funktion nicht nutzbar.", "rationale": "Richtig. Beide müssen gleichzeitig funktionieren.", "correct": true },
+          { "text": "Parallele Redundanz: Es genügt, wenn irgendeine der beiden Komponenten läuft.", "rationale": "Webserver und Datenbank ersetzen sich nicht gegenseitig.", "correct": false },
+          { "text": "Die Verfügbarkeit ist automatisch die höhere der beiden Einzelwerte.", "rationale": "Eine harte Abhängigkeit kann die Gesamtverfügbarkeit senken.", "correct": false }
+        ], "diagnostic": true },
+        { "type": "figure", "diagramId": "topologien", "alt": "Reihe: Webserver und Datenbank sind beide erforderlich. Parallel: Webserver A oder B kann die Funktion vollständig tragen. Eine gemeinsame Datenbank bleibt trotz Webredundanz eine harte Abhängigkeit.", "caption": "Eigene Architektur-Skizze; Reihe und parallel beschreiben die Nutzerfunktion, nicht bloß Kabel oder Serveranzahl." },
+        { "type": "markdown", "markdown": "In einer **Reihenschaltung** braucht der Dienst alle betrachteten Komponenten gleichzeitig. Sind ihre Fehler im Lehrmodell unabhängig, ist die theoretische Verfügbarkeit das Produkt ihrer Dezimalwerte. Zwei harte Komponenten mit je 99 % ergeben **0,99 × 0,99 = 0,9801 = 98,01 %**. Der Dienst ist nicht 99 % verfügbar, weil jede Komponente einen zusätzlichen Ausfallweg eröffnet.\n\nIn einer **Parallelschaltung** genügen alternative, vollständig funktionsfähige Pfade. Bei zwei *unabhängigen* Pfaden mit je 99 % fallen beide nur mit 1 % × 1 % = 0,01 % Wahrscheinlichkeit gleichzeitig aus. Die theoretische Verfügbarkeit beträgt **99,99 %**. Entscheidend: Jeder Pfad muss die geforderte Last allein tragen können und eine wirksame Umschaltung besitzen." },
+        { "type": "math", "ariaLabel": "Zwei unabhängige harte Abhängigkeiten in Reihe: A gesamt gleich 0 Komma 99 mal 0 Komma 99 gleich 0 Komma 9801 gleich 98 Komma 01 Prozent.", "mathml": "<math display=\"block\"><mrow><msub><mi>A</mi><mtext>Reihe</mtext></msub><mo>=</mo><msub><mi>A</mi><mn>1</mn></msub><mo>·</mo><msub><mi>A</mi><mn>2</mn></msub><mo>=</mo><mn>0,99</mn><mo>·</mo><mn>0,99</mn><mo>=</mo><mn>98,01</mn><mo>%</mo></mrow></math>", "legend": ["Beide Komponenten sind für dieselbe Funktion nötig; unabhängige Fehler angenommen."] },
+        { "type": "numeric", "id": "reihen-verfuegbarkeit", "title": "Harte Dienstkette", "prompt": "Webserver und Datenbank werden beide benötigt und haben je 99 % Verfügbarkeit. Wie hoch ist die theoretische Gesamtverfügbarkeit in Prozent?", "label": "Gesamtverfügbarkeit in Prozent", "expected": 98.01, "tolerance": 0.001, "correctFeedback": "Richtig: 0,99 × 0,99 × 100 = 98,01 %.", "wrongFeedback": "Bei zwei harten Abhängigkeiten multiplizierst du ihre Dezimalwerte: 0,99 × 0,99.", "misconceptions": [ { "value": 99, "feedback": "99 % gilt für jede Komponente einzeln; beide müssen gleichzeitig funktionieren." }, { "value": 99.99, "feedback": "99,99 % wäre das Ergebnis zweier unabhängiger alternativer Pfade, nicht einer Reihe." } ] }
+      ]
+    },
+    {
+      "title": "Wann hilft die zweite Komponente?",
+      "blocks": [
+        { "type": "math", "ariaLabel": "Zwei unabhängige alternative Pfade: A parallel gleich eins minus Klammer eins minus A eins Klammer mal Klammer eins minus A zwei Klammer, gleich eins minus 0 Komma 01 mal 0 Komma 01 gleich 99 Komma 99 Prozent.", "mathml": "<math display=\"block\"><mrow><msub><mi>A</mi><mtext>parallel</mtext></msub><mo>=</mo><mn>1</mn><mo>−</mo><mo>(</mo><mn>1</mn><mo>−</mo><msub><mi>A</mi><mn>1</mn></msub><mo>)</mo><mo>·</mo><mo>(</mo><mn>1</mn><mo>−</mo><msub><mi>A</mi><mn>2</mn></msub><mo>)</mo><mo>=</mo><mn>99,99</mn><mo>%</mo></mrow></math>", "legend": ["Beide Pfade fallen nur gleichzeitig aus; Fehlerunabhängigkeit, volle Restkapazität und funktionierende Umschaltung angenommen."] },
+        { "type": "numeric", "id": "parallel-verfuegbarkeit", "title": "Zwei echte Ersatzpfade", "prompt": "Zwei unabhängige, vollständig ersetzbare Pfade haben je 99 % Verfügbarkeit. Wie hoch ist ihre theoretische Gesamtverfügbarkeit in Prozent?", "label": "Gesamtverfügbarkeit in Prozent", "expected": 99.99, "tolerance": 0.001, "correctFeedback": "Richtig: 1 − (0,01 × 0,01) = 0,9999 = 99,99 %.", "wrongFeedback": "Rechne zuerst die gleichzeitige Ausfallwahrscheinlichkeit beider Pfade: 0,01 × 0,01.", "misconceptions": [ { "value": 98.01, "feedback": "98,01 % gehört zur Reihe, in der beide Komponenten nötig sind." }, { "value": 198, "feedback": "Verfügbarkeiten addiert man nicht; 198 % kann keine Wahrscheinlichkeit sein." } ] },
+        { "type": "figure", "diagramId": "annahmen", "alt": "Vier Fragen vor einer Parallelrechnung: vollständige Pfade, unabhängige Fehler, nutzbare Umschaltung, Ende-zu-Ende-Messung.", "caption": "Die Formel ist ein Modell für unabhängige Fehler – keine Garantie aus der Anzahl der Server." },
+        { "type": "markdown", "markdown": "Der Haken steckt oft in **gemeinsamen Ausfallursachen**. A und B im selben Rack teilen möglicherweise Strom, Netz oder Storage. Ein Softwarefehler kann beide Instanzen gleichzeitig treffen. Auch ein einzelner Load Balancer oder eine einzige Datenbank bleibt ein harter Engpass. Solche korrelierten Ausfälle darfst du nicht als unabhängig multiplizieren.\n\nBeispiel: Der redundante Webteil erreicht theoretisch 99,99 %. Die einzige Datenbank erreicht 99 %. Für die gesamte Nutzerfunktion müssen *Webteil und Datenbank* laufen. Selbst unter der Modellannahme unabhängiger Fehler ergibt das **0,9999 × 0,99 = 0,989901 = 98,9901 %**. Mehr Webserver beheben nicht den Datenbankausfall. Und selbst diese Zahl gilt nur, wenn Failover und Lastverteilung tatsächlich funktionieren." },
+        { "type": "quiz", "id": "reihen-parallel-engpass", "question": "Zwei Webserver sind redundant, aber beide brauchen dieselbe einzelne Datenbank. Welche Aussage ist tragfähig?", "options": [
+          { "text": "Der Webteil kann redundant sein; die Datenbank bleibt eine harte gemeinsame Abhängigkeit.", "rationale": "Richtig. Die gesamte Dienstkette muss betrachtet werden.", "correct": true },
+          { "text": "Zwei Webserver verdoppeln automatisch die Verfügbarkeit der Datenbank.", "rationale": "Die Datenbank hat dadurch keinen Ersatzpfad.", "correct": false },
+          { "text": "Die Formel für zwei unabhängige Webserver beschreibt ohne weitere Prüfung den gesamten Dienst.", "rationale": "Sie ignoriert Datenbank, Umschaltung und mögliche gemeinsame Ausfälle.", "correct": false }
+        ] }
+      ]
+    },
+    {
+      "title": "Architektur vor Arithmetik",
+      "blocks": [
+        { "type": "sequence", "id": "reihen-parallel-pruefweg", "title": "Modellgrenzen zuerst prüfen", "prompt": "Ordne den Prüfweg vor einer belastbaren Verfügbarkeitsaussage.", "steps": [
+          { "id": "funktion", "label": "Nutzerfunktion und harte Abhängigkeiten zeichnen" },
+          { "id": "alternativen", "label": "Ersatzpfade, Unabhängigkeit und Restkapazität prüfen" },
+          { "id": "rechnung", "label": "Passende Formel rechnen und Ergebnis als theoretisch kennzeichnen" },
+          { "id": "test", "label": "Ausfälle und Umschaltung am echten Dienst testen" }
+        ], "expected": ["funktion", "alternativen", "rechnung", "test"], "correctFeedback": "Richtig: Erst Dienststruktur und Annahmen, dann Formel, zuletzt der praktische Nachweis.", "wrongFeedback": "Zeichne zuerst die Nutzerfunktion; ohne Abhängigkeiten und Fehlergrenzen ist die Zahl irreführend." },
+        { "type": "recall", "id": "reihen-parallel-begruendung", "title": "Warum reichen zwei Server nicht?", "prompt": "Erkläre, warum zwei Webserver mit je 99 % rechnerisch 99,99 % ergeben können, die gesamte Anwendung mit einer einzigen Datenbank aber deutlich darunter liegen kann.", "label": "Deine Begründung", "minLength": 110, "model": "99,99 % ist nur die theoretische Verfügbarkeit des Webteils, falls die beiden Pfade unabhängig sind, jeder die volle Last trägt und die Umschaltung funktioniert. Die Anwendung braucht zusätzlich die einzelne Datenbank als harte Abhängigkeit. Bei deren Ausfall hilft kein zweiter Webserver; außerdem können gemeinsame Fehler die Unabhängigkeitsannahme widerlegen." }
+      ]
+    },
+    {
+      "title": "Abruf und Lernziel-Check",
+      "blocks": [
+        { "type": "flashcards", "cards": [
+          { "id": "reihen-parallel-karte-0", "label": "Abruf 1", "front": "Wann ist es eine Reihe?", "back": "Wenn alle betrachteten Komponenten für dieselbe Nutzerfunktion nötig sind; im unabhängigen Modell A gesamt = Produkt der Einzelverfügbarkeiten." },
+          { "id": "reihen-parallel-karte-1", "label": "Abruf 2", "front": "Wann ist es parallel?", "back": "Wenn jeder unabhängige Pfad den Dienst vollständig tragen kann; A gesamt = 1 − Produkt ihrer Ausfallwahrscheinlichkeiten." },
+          { "id": "reihen-parallel-karte-2", "label": "Abruf 3", "front": "Was bricht die einfache Parallelformel?", "back": "Gemeinsame Ausfallursachen, unzureichende Restkapazität, fehlgeschlagenes Failover oder harte gemeinsame Abhängigkeiten." }
+        ] },
+        { "type": "quiz", "id": "reihen-parallel-transfer-a", "question": "Zwei unabhängige, vollständig ersetzbare Pfade erreichen jeweils 99 %. Welche theoretische Verfügbarkeit folgt für diesen redundanten Teil?", "options": [
+          { "text": "98,01 %", "rationale": "Das wäre die Reihe aus zwei harten Abhängigkeiten.", "correct": false },
+          { "text": "99,99 %", "rationale": "Richtig: Nur 0,01 × 0,01 = 0,0001 der Zeit fallen beide gleichzeitig aus.", "correct": true },
+          { "text": "198 %", "rationale": "Wahrscheinlichkeiten werden hier nicht einfach addiert.", "correct": false }
+        ], "requiredObjective": "rechnen" },
+        { "type": "quiz", "id": "reihen-parallel-transfer-b", "question": "Beide Ersatzpfade stehen am selben Switch. Welche Folgerung ist fachlich richtig?", "options": [
+          { "text": "Der Switch ist ein gemeinsamer Ausfallort; die unabhängige Parallelrechnung darf nicht unbesehen für den gesamten Dienst gelten.", "rationale": "Richtig. Ein Switchfehler kann beide Pfade gleichzeitig unerreichbar machen.", "correct": true },
+          { "text": "Der gemeinsame Switch verbessert die Verfügbarkeit über den errechneten Wert hinaus.", "rationale": "Er ist ein zusätzlicher gemeinsamer Fehlerpfad.", "correct": false },
+          { "text": "Die Formel beweist, dass Hardware und Umschaltung keine Rolle spielen.", "rationale": "Die Formel setzt unabhängige und funktionsfähige Pfade voraus.", "correct": false }
+        ], "requiredObjective": "grenzen" }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        { "type": "markdown", "markdown": "[AWS Well-Architected: Availability](https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/availability.html), [AWS: Availability with dependencies](https://docs.aws.amazon.com/whitepapers/latest/availability-and-beyond-improving-resilience/availability-with-dependencies.html) und [AWS: Availability with redundancy](https://docs.aws.amazon.com/whitepapers/latest/availability-and-beyond-improving-resilience/availability-with-redundancy.html), am 26.09.2026 gelesen. Zahlen, Szenario und Grafiken sind eigene vereinfachte Modelle. Alle Formeln setzen klar definierte Nutzerfunktion, gleiche Messperiode und unabhängige Fehler voraus; Umschaltzeit und reale gemeinsame Ausfälle sind gesondert zu prüfen. Menschliche Fachfreigabe offen." }
+      ]
+    }
+  ]
+}
