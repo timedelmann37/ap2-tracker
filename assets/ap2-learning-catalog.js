@@ -1549,6 +1549,32 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "nutzwertanalyse-kriterien-gewichten-entscheiden",
+    "slug": "nutzwertanalyse-kriterien-gewichten-entscheiden",
+    "title": "Nutzwertanalyse: gewichten und begründen",
+    "description": "Eine Bewertungsmatrix für IT-Alternativen aufstellen, Teilnutzen rechnen und das Ergebnis kritisch prüfen.",
+    "domain": "GA1",
+    "groupId": "ga1-5",
+    "groupLabel": "Cloud und Wirtschaftlichkeit",
+    "itemId": "ga1-5__11",
+    "week": "KW 39",
+    "estimatedMinutes": 34,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "matrix-rechnen",
+      "entscheidung-pruefen"
+    ],
+    "sources": [
+      "ihk-bonn",
+      "ihk-regensburg-ideenbewertung-nutzwertanalyse",
+      "vmodell-bund-bewertungsmatrix"
+    ],
+    "contentHash": "1422269a6231438bce8079ebd7ec57c4e150e369a437f42f01136334a617dff3",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "slug": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "title": "Struktogramm und Programmablaufplan",
