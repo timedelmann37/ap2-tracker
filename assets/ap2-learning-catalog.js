@@ -1471,6 +1471,32 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "tco-vierjahresrechnung-kostenarten",
+    "slug": "tco-vierjahresrechnung-kostenarten",
+    "title": "TCO über vier Jahre sauber aufstellen",
+    "description": "Einmalige und laufende IT-Kosten abgrenzen, eine Vierjahresrechnung aufstellen und Annahmen prüfen.",
+    "domain": "GA1",
+    "groupId": "ga1-5",
+    "groupLabel": "Cloud und Wirtschaftlichkeit",
+    "itemId": "ga1-5__8",
+    "week": "KW 39",
+    "estimatedMinutes": 34,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "kostenarten-trennen",
+      "tco-berechnen"
+    ],
+    "sources": [
+      "itlf10-12-2023",
+      "aws-it-tco-cost-components",
+      "ibm-total-cost-ownership"
+    ],
+    "contentHash": "f9af6db90edd90adc29952463a0b8115c2984456f467394d4ba7d8142ff77848",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "slug": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "title": "Struktogramm und Programmablaufplan",
