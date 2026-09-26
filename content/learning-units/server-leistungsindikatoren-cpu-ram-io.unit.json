@@ -1,0 +1,136 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "server-leistungsindikatoren-cpu-ram-io",
+    "slug": "server-leistungsindikatoren-cpu-ram-io",
+    "title": "Serverleistung richtig lesen: CPU, RAM und I/O",
+    "description": "Messwerte einem Engpass zuordnen und IOPS, Durchsatz und Latenz aus einem Lastprofil begründet unterscheiden.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-1",
+    "groupLabel": "Server-, Client- und Hardwarekonzeption",
+    "itemId": "ga1-1__0",
+    "week": "KW 35",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": ["server-cpu-intel", "server-memory-kingston", "server-io-dell"],
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    { "id": "cpu-ram", "label": "CPU- und RAM-Kennzahlen ohne falsche Gleichsetzung für ein Serverprofil einordnen" },
+    { "id": "io-metriken", "label": "IOPS, Durchsatz und Latenz mit Einheiten berechnen und passend zur Last deuten" }
+  ],
+  "intro": "Ein Datenblatt mit vielen Kernen und hohen IOPS sagt noch nicht, ob eine Anwendung schnell reagiert. Entscheidend sind die Last, die Messbedingungen und der tatsächlich begrenzende Teil des Systems.",
+  "curation": {
+    "evidence": [
+      { "sourceId": "server-cpu-intel", "sourceLocator": "Factors to Consider in Choosing a Server CPU; Cores, Clock Speed, Threads, and Motherboards", "use": "Sockel, Kerne, Threads und Takt als getrennte Merkmale", "reviewStatus": "Am 26.09.2026 gelesen; Produktbeispiele nicht übernommen" },
+      { "sourceId": "server-memory-kingston", "sourceLocator": "Server Memory FAQ: registered, unbuffered, and ECC memory", "use": "ECC und Registered DIMM unterscheiden; Plattformkompatibilität", "reviewStatus": "Am 26.09.2026 gelesen" },
+      { "sourceId": "server-io-dell", "sourceLocator": "PowerVault ME5 Administrator's Guide: Performance metrics", "use": "IOPS, Bytes pro Sekunde und Antwortzeit getrennt messen", "reviewStatus": "Am 26.09.2026 gelesen; Metrikbegriffe, keine Produktleistungswerte" }
+    ],
+    "notes": [
+      "Eigenständige Szenarien, Zahlen und Diagramme; menschliche Fachfreigabe offen.",
+      "Batch ga1-1-000-002 enthielt für dieses Kernthema unpassende QoS-, Proxy- und SAN-Treffer. Sie werden nicht als CPU-/RAM-/Storage-Beleg ausgegeben; der Grafikkandidat auf PDF-Seite 190 ist eine Proxy-Logtabelle und wurde ausgeschlossen.",
+      "Die Multiplikation IOPS × mittlere I/O-Größe gilt nur für dieselbe Beobachtungsperiode und eine einheitlich definierte Byteeinheit. Takt, Kernzahl oder Threadzahl sind keine pauschalen Leistungsfaktoren."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "engpass-kette",
+      "type": "flow",
+      "title": "Eine Anfrage durchläuft mehrere Grenzen",
+      "description": "Die langsamste relevante Stufe kann die Antwortzeit dominieren; ein Einzelwert beweist keinen Engpass.",
+      "items": [
+        { "label": "CPU", "detail": "Berechnen: Kerne, Takt und tatsächliche Auslastung im Lastprofil prüfen" },
+        { "label": "RAM", "detail": "Daten bereithalten: Kapazität, Belegung und Paging beobachten" },
+        { "label": "Storage", "detail": "I/O bedienen: Operationen, Datenmenge, Antwortzeit und Warteschlange messen" }
+      ]
+    },
+    {
+      "id": "io-vergleich",
+      "type": "comparison",
+      "title": "Drei Größen für dieselbe Storage-Last",
+      "description": "IOPS zählt Vorgänge, Durchsatz zählt Daten, Latenz misst die Dauer eines Vorgangs.",
+      "items": [
+        { "label": "IOPS", "detail": "Wie viele Lese- und Schreiboperationen pro Sekunde?" },
+        { "label": "Durchsatz", "detail": "Wie viele MB oder MiB pro Sekunde werden übertragen?" },
+        { "label": "Latenz", "detail": "Wie lange wartet eine einzelne Operation, etwa in ms?" }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "server-leistungsindikatoren-cpu-ram-io-diagnose",
+          "question": "Zwei Server haben beide 20.000 IOPS. Ist ihre Leistung für eine Anwendung damit gleich?",
+          "options": [
+            { "text": "Ja, IOPS beschreiben jede Art von Serverleistung vollständig.", "rationale": "IOPS zählen nur I/O-Vorgänge; Größe und Antwortzeit fehlen.", "correct": false },
+            { "text": "Nein, I/O-Größe, Latenz und Lastprofil müssen verglichen werden.", "rationale": "Richtig: Erst vergleichbare Messbedingungen machen die Zahl brauchbar.", "correct": true },
+            { "text": "Ja, solange beide Server gleich viel RAM haben.", "rationale": "Gleiche RAM-Kapazität beweist keine gleiche Storage-Antwortzeit.", "correct": false }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "CPU und RAM lesen, ohne Werte zu vermischen",
+      "blocks": [
+        { "type": "figure", "diagramId": "engpass-kette", "alt": "Eine Anfrage beansprucht nacheinander Rechenzeit, Arbeitsspeicher und Speicherzugriff; jede Stufe besitzt andere Messgrößen.", "caption": "Eigenes Denkmodell, keine feste Ausführungsreihenfolge für jede Anwendung." },
+        { "type": "markdown", "markdown": "Ein **Sockel** nimmt einen Prozessor auf. Ein Prozessor enthält **physische Kerne**. Ein Kern kann abhängig von Architektur und Konfiguration mehrere **logische Threads** bereitstellen. Zusätzliche Threads sind keine zusätzlichen physischen Kerne. Der **Takt** beschreibt Zyklen pro Sekunde, nicht direkt erledigte Arbeit pro Sekunde: Architektur, Instruktionen, Cache, Boost-Verhalten und Last ändern den Vergleich.\n\n**RAM-Kapazität** begrenzt unter anderem, wie viele aktive Daten im Speicher bleiben. Bei Speicherdruck kann Paging die Antwortzeit stark verändern. **ECC** dient der Erkennung und Korrektur bestimmter Speicherfehler. **Registered/RDIMM** bezeichnet einen Registerbaustein für Signale zwischen Controller und DRAM; das ist eine andere Eigenschaft. CPU, Mainboard und Bestückungsregeln müssen zum Modultyp passen. ECC-RDIMM ist nicht mit beliebigem ECC-UDIMM austauschbar." },
+        { "type": "quiz", "id": "server-leistungsindikatoren-cpu-ram-io-uebung-cpu", "question": "Datenblatt: zwei Sockel, je acht Kerne, je zwei logische Threads pro Kern. Welche Aussage ist sicher?", "options": [
+          { "text": "16 physische Kerne und 32 logische Threads.", "rationale": "Richtig: 2 × 8 Kerne und 16 × 2 Threads. Das ist keine Verdopplung der Rechenleistung.", "correct": true },
+          { "text": "32 physische Kerne, weil Threads immer Kerne sind.", "rationale": "Logische Threads sind keine weiteren physischen Kerne.", "correct": false },
+          { "text": "16 Kerne bedeuten bei jedem Programm exakt doppelte Leistung gegenüber acht Kernen.", "rationale": "Skalierung hängt von Parallelisierbarkeit und weiteren Engpässen ab.", "correct": false }
+        ] }
+      ]
+    },
+    {
+      "title": "I/O: zählen, messen, deuten",
+      "blocks": [
+        { "type": "figure", "diagramId": "io-vergleich", "alt": "IOPS zählt Vorgänge je Sekunde, Durchsatz die Datenmenge je Sekunde und Latenz die Antwortzeit eines Vorgangs.", "caption": "Die Kennzahlen beantworten unterschiedliche Fragen." },
+        { "type": "markdown", "markdown": "Bei vielen kleinen zufälligen Datenbankzugriffen sind Vorgänge pro Sekunde und deren Antwortzeit wichtig. Bei großen sequenziellen Dateien zählt auch der Datendurchsatz. Schreibe I/O-Größe, Lese-/Schreibanteil, Parallelität und Messpunkt dazu: Host, Controller und Anwendung können unterschiedliche Werte sehen. Eine niedrige durchschnittliche Latenz allein schließt seltene lange Wartezeiten nicht aus.\n\nBeispiel mit **eigenen Modellwerten**: 8.000 abgeschlossene I/O-Vorgänge pro Sekunde, durchschnittlich 16 KiB je Vorgang, gleiche Beobachtungsperiode. Die übertragene Menge beträgt 128.000 KiB/s = 125 MiB/s. Bei 4 KiB je Vorgang wären es trotz derselben IOPS nur 31,25 MiB/s. Die Antwortzeit lässt sich aus diesen beiden Angaben allein nicht bestimmen." },
+        { "type": "math", "ariaLabel": "Achttausend Operationen pro Sekunde mal sechzehn Kibibyte je Operation ergeben hundertachtundzwanzigtausend Kibibyte pro Sekunde oder hundertfünfundzwanzig Mebibyte pro Sekunde.", "mathml": "<math display=\"block\"><mrow><mn>8000</mn><mfrac><mtext>IO</mtext><mtext>s</mtext></mfrac><mo>·</mo><mn>16</mn><mfrac><mtext>KiB</mtext><mtext>IO</mtext></mfrac><mo>=</mo><mn>125</mn><mfrac><mtext>MiB</mtext><mtext>s</mtext></mfrac></mrow></math>", "legend": ["Umrechnung: 128.000 KiB ÷ 1024 = 125 MiB. Nur vergleichbare Zeitfenster und gleiche I/O-Größendefinition verrechnen."] },
+        { "type": "numeric", "id": "server-leistungsindikatoren-cpu-ram-io-zahl", "title": "Jetzt du: andere Blockgröße", "prompt": "Ein Messfenster zeigt 12.000 IOPS bei durchschnittlich 8 KiB pro Vorgang. Wie groß ist der rechnerische Durchsatz in MiB/s? Runde auf zwei Nachkommastellen.", "label": "MiB pro Sekunde", "expected": 93.75, "tolerance": 0.01, "correctFeedback": "12.000 × 8 KiB/s = 96.000 KiB/s; 96.000 ÷ 1024 = 93,75 MiB/s.", "wrongFeedback": "Multipliziere Vorgänge pro Sekunde mit KiB je Vorgang und teile für MiB durch 1024.", "misconceptions": [
+          { "value": 96, "feedback": "96 wäre das Ergebnis bei Division durch 1000. Für KiB zu MiB gilt 1024." },
+          { "value": 12000, "feedback": "Das ist die Zahl der Vorgänge, noch keine Datenmenge." }
+        ] }
+      ]
+    },
+    {
+      "title": "Einen Engpass begründet vermuten",
+      "blocks": [
+        { "type": "markdown", "markdown": "Papierfall: Eine Datenbank antwortet zeitweise langsam. CPU-Auslastung während der Lastspitzen: 28 %, freier RAM: 40 %. Storage: 95 % Schreibanteil, stark steigende Antwortzeit und Warteschlange bei gleicher I/O-Größe. Das spricht **zunächst** für eine Storage-Untersuchung, beweist aber keine Ursache. Als nächsten Schritt I/O-Zeitverlauf mit den langsamen Anfragen korrelieren, Messpunkt und Schreibmuster prüfen und einen reproduzierbaren Lasttest durchführen. Ein schnellerer CPU-Takt wäre aus diesen Daten nicht begründet." },
+        { "type": "recall", "id": "server-leistungsindikatoren-cpu-ram-io-begruendung", "title": "Aus dem Gedächtnis erklären", "prompt": "Warum reichen eine Kernzahl und eine IOPS-Zahl nicht für die Serverauswahl? Nenne mindestens zwei fehlende Bedingungen.", "label": "Deine Begründung", "minLength": 60, "model": "Kernzahl und Threads verraten nicht, wie gut die konkrete Software parallelisiert oder ob CPU überhaupt der Engpass ist. IOPS gelten nur für ein bestimmtes I/O-Profil; Blockgröße, Lese-/Schreibanteil, Parallelität und Latenz müssen zur Anforderung passen. RAM-Bedarf und Plattformkompatibilität sind separat zu prüfen." },
+        { "type": "flashcards", "cards": [
+          { "id": "server-leistungsindikatoren-cpu-ram-io-karte-0", "label": "Abruf 1", "front": "Sind zwei logische Threads zwei physische Kerne?", "back": "Nein. Threads teilen sich Ressourcen eines physischen Kerns; der Leistungsgewinn hängt von der Last ab." },
+          { "id": "server-leistungsindikatoren-cpu-ram-io-karte-1", "label": "Abruf 2", "front": "Ist ECC dasselbe wie Registered RAM?", "back": "Nein. ECC betrifft Fehlererkennung und -korrektur; Registered beschreibt die Signalpufferung des Moduls." },
+          { "id": "server-leistungsindikatoren-cpu-ram-io-karte-2", "label": "Abruf 3", "front": "Welche Angabe fehlt bei einer nackten IOPS-Zahl?", "back": "Mindestens I/O-Größe und Lastprofil; Latenz und Messpunkt sind für die Bewertung ebenso wichtig." }
+        ] }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        { "type": "quiz", "id": "server-leistungsindikatoren-cpu-ram-io-transfer-a", "question": "Neuer Fall: Ein Webdienst bleibt bei Lastspitzen CPU-begrenzt; 90 % CPU, RAM ohne Druck, Storage-Latenz stabil. Welcher Schluss ist am besten begründet?", "options": [
+          { "text": "Mehr RAM ist zwingend die erste Maßnahme, weil ECC fehlt.", "rationale": "Weder RAM-Druck noch fehlendes ECC sind durch die Messung belegt.", "correct": false },
+          { "text": "CPU-Profil und Parallelisierbarkeit prüfen, dann Kernzahl und Takt passend vergleichen.", "rationale": "Richtig: Die beobachtete Last lenkt die nächste Prüfung, ohne aus einer Zahl eine fertige Kaufentscheidung zu machen.", "correct": true },
+          { "text": "Doppelte Threadzahl garantiert doppelten Durchsatz.", "rationale": "Logische Threads skalieren nicht pauschal linear.", "correct": false }
+        ], "requiredObjective": "cpu-ram" },
+        { "type": "quiz", "id": "server-leistungsindikatoren-cpu-ram-io-transfer-b", "question": "Neuer Fall: Zwei Storage-Angebote nennen je 10.000 IOPS. Angebot A misst 4 KiB zufällige Lesezugriffe bei 1 ms, B 64 KiB sequenzielle Zugriffe bei 8 ms. Was ist für eine latenzempfindliche Datenbank zulässig?", "options": [
+          { "text": "Die Angebote sind gleich schnell, weil die IOPS identisch sind.", "rationale": "I/O-Größe, Zugriffsmuster und Latenz unterscheiden sich.", "correct": false },
+          { "text": "B ist immer besser, weil 64 KiB größer sind.", "rationale": "Mehr Daten pro Vorgang kann Durchsatz erhöhen, sagt aber wenig über kurze Datenbankantworten.", "correct": false },
+          { "text": "Erst mit gleichem Datenbankprofil und passender Antwortzeit vergleichen.", "rationale": "Richtig: IOPS ohne vergleichbare Last und Latenz entscheiden diese Anforderung nicht.", "correct": true }
+        ], "requiredObjective": "io-metriken" }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        { "type": "markdown", "markdown": "[Intel: Server Processors](https://www.intel.com/content/www/us/en/products/docs/processors/xeon/server-processor-overview.html), [Kingston: Server Memory FAQ](https://www.kingston.com/en/support/technical/products/server-memory) und [Dell: Performance metrics](https://www.dell.com/support/manuals/en-ca/powervault-me5084/me5_series_ag/performance-metrics?guid=guid-4ee88549-5f60-4c76-946e-d54f4ea41a58&lang=en-us), jeweils am 26.09.2026 gelesen. Szenarien, Zahlen, Aufgaben und Grafiken sind eigene Modelle. Die genannten Messungen ersetzen keinen Test mit der echten Anwendung; menschliche Fachfreigabe steht noch aus." }
+      ]
+    }
+  ]
+}

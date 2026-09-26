@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Messwerte einem Engpass zuordnen und IOPS, Durchsatz und Latenz aus einem Lastprofil begründet unterscheiden.">
+<title>Serverleistung richtig lesen: CPU, RAM und I/O – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.1">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-1">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="server-leistungsindikatoren-cpu-ram-io" data-progress-id="ga1-1__0" data-content-revision="2026-09-26.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-1">Server-, Client- und Hardwarekonzeption</a><span class="sep">›</span>
+    <span class="here">Serverleistung richtig lesen: CPU, RAM und I/O</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Serverleistung richtig lesen: CPU, RAM und I/O</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 30 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Ein Datenblatt mit vielen Kernen und hohen IOPS sagt noch nicht, ob eine Anwendung schnell reagiert. Entscheidend sind die Last, die Messbedingungen und der tatsächlich begrenzende Teil des Systems.</p>
+<section class="learning-goals" aria-labelledby="server-leistungsindikatoren-cpu-ram-io-goals">
+  <h2 id="server-leistungsindikatoren-cpu-ram-io-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>CPU- und RAM-Kennzahlen ohne falsche Gleichsetzung für ein Serverprofil einordnen</li>
+    <li>IOPS, Durchsatz und Latenz mit Einheiten berechnen und passend zur Last deuten</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Vorwissen aktivieren</h2>
+<section class="quiz" data-quiz="server-leistungsindikatoren-cpu-ram-io-diagnose" data-correct="1">
+  <h3>Zwei Server haben beide 20.000 IOPS. Ist ihre Leistung für eine Anwendung damit gleich?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="IOPS zählen nur I/O-Vorgänge; Größe und Antwortzeit fehlen."><span class="m">A</span> Ja, IOPS beschreiben jede Art von Serverleistung vollständig.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig: Erst vergleichbare Messbedingungen machen die Zahl brauchbar."><span class="m">B</span> Nein, I/O-Größe, Latenz und Lastprofil müssen verglichen werden.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Gleiche RAM-Kapazität beweist keine gleiche Storage-Antwortzeit."><span class="m">C</span> Ja, solange beide Server gleich viel RAM haben.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2"><span class="num">2</span>CPU und RAM lesen, ohne Werte zu vermischen</h2>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Eine Anfrage durchläuft mehrere Grenzen">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="434" viewBox="0 0 960 434" role="img" aria-labelledby="diagram-engpass-kette-title diagram-engpass-kette-desc">
+  <title id="diagram-engpass-kette-title">Eine Anfrage durchläuft mehrere Grenzen</title>
+  <desc id="diagram-engpass-kette-desc">Eine Anfrage beansprucht nacheinander Rechenzeit, Arbeitsspeicher und Speicherzugriff; jede Stufe besitzt andere Messgrößen.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Eine Anfrage durchläuft mehrere Grenzen</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">CPU</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Berechnen: Kerne, Takt und tatsächliche Auslastung im</tspan><tspan x="178" dy="25">Lastprofil prüfen</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">RAM</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Daten bereithalten: Kapazität, Belegung und Paging beobachten</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Storage</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">I/O bedienen: Operationen, Datenmenge, Antwortzeit und</tspan><tspan x="178" dy="25">Warteschlange messen</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigenes Denkmodell, keine feste Ausführungsreihenfolge für jede Anwendung.</figcaption>
+</figure><p>Ein <strong>Sockel</strong> nimmt einen Prozessor auf. Ein Prozessor enthält <strong>physische Kerne</strong>. Ein Kern kann abhängig von Architektur und Konfiguration mehrere <strong>logische Threads</strong> bereitstellen. Zusätzliche Threads sind keine zusätzlichen physischen Kerne. Der <strong>Takt</strong> beschreibt Zyklen pro Sekunde, nicht direkt erledigte Arbeit pro Sekunde: Architektur, Instruktionen, Cache, Boost-Verhalten und Last ändern den Vergleich.</p>
+<p><strong>RAM-Kapazität</strong> begrenzt unter anderem, wie viele aktive Daten im Speicher bleiben. Bei Speicherdruck kann Paging die Antwortzeit stark verändern. <strong>ECC</strong> dient der Erkennung und Korrektur bestimmter Speicherfehler. <strong>Registered/RDIMM</strong> bezeichnet einen Registerbaustein für Signale zwischen Controller und DRAM; das ist eine andere Eigenschaft. CPU, Mainboard und Bestückungsregeln müssen zum Modultyp passen. ECC-RDIMM ist nicht mit beliebigem ECC-UDIMM austauschbar.</p>
+<section class="quiz" data-quiz="server-leistungsindikatoren-cpu-ram-io-uebung-cpu" data-correct="0">
+  <h3>Datenblatt: zwei Sockel, je acht Kerne, je zwei logische Threads pro Kern. Welche Aussage ist sicher?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig: 2 × 8 Kerne und 16 × 2 Threads. Das ist keine Verdopplung der Rechenleistung."><span class="m">A</span> 16 physische Kerne und 32 logische Threads.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Logische Threads sind keine weiteren physischen Kerne."><span class="m">B</span> 32 physische Kerne, weil Threads immer Kerne sind.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Skalierung hängt von Parallelisierbarkeit und weiteren Engpässen ab."><span class="m">C</span> 16 Kerne bedeuten bei jedem Programm exakt doppelte Leistung gegenüber acht Kernen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s3"><span class="num">3</span>I/O: zählen, messen, deuten</h2>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Drei Größen für dieselbe Storage-Last">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-io-vergleich-title diagram-io-vergleich-desc">
+  <title id="diagram-io-vergleich-title">Drei Größen für dieselbe Storage-Last</title>
+  <desc id="diagram-io-vergleich-desc">IOPS zählt Vorgänge je Sekunde, Durchsatz die Datenmenge je Sekunde und Latenz die Antwortzeit eines Vorgangs.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Drei Größen für dieselbe Storage-Last</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">IOPS</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">Wie viele Lese- und</tspan><tspan x="64" dy="30">Schreiboperationen pro</tspan><tspan x="64" dy="30">Sekunde?</tspan></text></g><g><rect class="diagram-row" x="340" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="362" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="362" dy="0">Durchsatz</tspan></text><text x="362" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="362" dy="0">Wie viele MB oder MiB pro</tspan><tspan x="362" dy="30">Sekunde werden übertragen?</tspan></text></g><g><rect class="diagram-row" x="638" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="660" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="660" dy="0">Latenz</tspan></text><text x="660" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="660" dy="0">Wie lange wartet eine</tspan><tspan x="660" dy="30">einzelne Operation, etwa in</tspan><tspan x="660" dy="30">ms?</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Die Kennzahlen beantworten unterschiedliche Fragen.</figcaption>
+</figure><p>Bei vielen kleinen zufälligen Datenbankzugriffen sind Vorgänge pro Sekunde und deren Antwortzeit wichtig. Bei großen sequenziellen Dateien zählt auch der Datendurchsatz. Schreibe I/O-Größe, Lese-/Schreibanteil, Parallelität und Messpunkt dazu: Host, Controller und Anwendung können unterschiedliche Werte sehen. Eine niedrige durchschnittliche Latenz allein schließt seltene lange Wartezeiten nicht aus.</p>
+<p>Beispiel mit <strong>eigenen Modellwerten</strong>: 8.000 abgeschlossene I/O-Vorgänge pro Sekunde, durchschnittlich 16 KiB je Vorgang, gleiche Beobachtungsperiode. Die übertragene Menge beträgt 128.000 KiB/s = 125 MiB/s. Bei 4 KiB je Vorgang wären es trotz derselben IOPS nur 31,25 MiB/s. Die Antwortzeit lässt sich aus diesen beiden Angaben allein nicht bestimmen.</p>
+<div class="math-display" role="group" aria-label="Achttausend Operationen pro Sekunde mal sechzehn Kibibyte je Operation ergeben hundertachtundzwanzigtausend Kibibyte pro Sekunde oder hundertfünfundzwanzig Mebibyte pro Sekunde."><math display="block" aria-label="Achttausend Operationen pro Sekunde mal sechzehn Kibibyte je Operation ergeben hundertachtundzwanzigtausend Kibibyte pro Sekunde oder hundertfünfundzwanzig Mebibyte pro Sekunde."><mrow><mn>8000</mn><mfrac><mtext>IO</mtext><mtext>s</mtext></mfrac><mo>·</mo><mn>16</mn><mfrac><mtext>KiB</mtext><mtext>IO</mtext></mfrac><mo>=</mo><mn>125</mn><mfrac><mtext>MiB</mtext><mtext>s</mtext></mfrac></mrow></math><div class="math-legend"><span>Umrechnung: 128.000 KiB ÷ 1024 = 125 MiB. Nur vergleichbare Zeitfenster und gleiche I/O-Größendefinition verrechnen.</span></div></div><section class="numeric-practice transfer-number" data-numeric-practice="server-leistungsindikatoren-cpu-ram-io-zahl" data-expected="93.75" data-tolerance="0.01" data-correct-feedback="12.000 × 8 KiB/s = 96.000 KiB/s; 96.000 ÷ 1024 = 93,75 MiB/s." data-wrong-feedback="Multipliziere Vorgänge pro Sekunde mit KiB je Vorgang und teile für MiB durch 1024.">
+  <h3>Jetzt du: andere Blockgröße</h3>
+  <p>Ein Messfenster zeigt 12.000 IOPS bei durchschnittlich 8 KiB pro Vorgang. Wie groß ist der rechnerische Durchsatz in MiB/s? Runde auf zwei Nachkommastellen.</p>
+  <label for="server-leistungsindikatoren-cpu-ram-io-zahl-answer">MiB pro Sekunde</label>
+  <div class="answer-row"><input id="server-leistungsindikatoren-cpu-ram-io-zahl-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Ergebnis"><button type="button" class="lbtn" data-numeric-check>Antwort prüfen</button></div><p>  <template data-numeric-feedback-for="96">96 wäre das Ergebnis bei Division durch 1000. Für KiB zu MiB gilt 1024.</template>
+  <template data-numeric-feedback-for="12000">Das ist die Zahl der Vorgänge, noch keine Datenmenge.</template>
+  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p></p>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Einen Engpass begründet vermuten</h2>
+<p>Papierfall: Eine Datenbank antwortet zeitweise langsam. CPU-Auslastung während der Lastspitzen: 28 %, freier RAM: 40 %. Storage: 95 % Schreibanteil, stark steigende Antwortzeit und Warteschlange bei gleicher I/O-Größe. Das spricht <strong>zunächst</strong> für eine Storage-Untersuchung, beweist aber keine Ursache. Als nächsten Schritt I/O-Zeitverlauf mit den langsamen Anfragen korrelieren, Messpunkt und Schreibmuster prüfen und einen reproduzierbaren Lasttest durchführen. Ein schnellerer CPU-Takt wäre aus diesen Daten nicht begründet.</p>
+<section class="recall-practice" data-recall="server-leistungsindikatoren-cpu-ram-io-begruendung" data-min-length="60" aria-labelledby="server-leistungsindikatoren-cpu-ram-io-begruendung-title">
+  <div class="recall-prompt"><h3 id="server-leistungsindikatoren-cpu-ram-io-begruendung-title">Aus dem Gedächtnis erklären</h3><p>Warum reichen eine Kernzahl und eine IOPS-Zahl nicht für die Serverauswahl? Nenne mindestens zwei fehlende Bedingungen.</p></div>
+  <label class="sr-only" for="server-leistungsindikatoren-cpu-ram-io-begruendung-answer">Deine Begründung</label>
+  <textarea id="server-leistungsindikatoren-cpu-ram-io-begruendung-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Kernzahl und Threads verraten nicht, wie gut die konkrete Software parallelisiert oder ob CPU überhaupt der Engpass ist. IOPS gelten nur für ein bestimmtes I/O-Profil; Blockgröße, Lese-/Schreibanteil, Parallelität und Latenz müssen zur Anforderung passen. RAM-Bedarf und Plattformkompatibilität sind separat zu prüfen.</div>
+</section><div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="server-leistungsindikatoren-cpu-ram-io-karte-0" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Sind zwei logische Threads zwei physische Kerne?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Nein. Threads teilen sich Ressourcen eines physischen Kerns; der Leistungsgewinn hängt von der Last ab.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="server-leistungsindikatoren-cpu-ram-io-karte-1" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Ist ECC dasselbe wie Registered RAM?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Nein. ECC betrifft Fehlererkennung und -korrektur; Registered beschreibt die Signalpufferung des Moduls.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="server-leistungsindikatoren-cpu-ram-io-karte-2" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche Angabe fehlt bei einer nackten IOPS-Zahl?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Mindestens I/O-Größe und Lastprofil; Latenz und Messpunkt sind für die Bewertung ebenso wichtig.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Abruf 1“:</span><button type="button" data-card-id="server-leistungsindikatoren-cpu-ram-io-karte-0" data-card-rate="known">gewusst</button><button type="button" data-card-id="server-leistungsindikatoren-cpu-ram-io-karte-0" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="server-leistungsindikatoren-cpu-ram-io-karte-0"></span></div>
+<div class="card-rating"><span>Karte „Abruf 2“:</span><button type="button" data-card-id="server-leistungsindikatoren-cpu-ram-io-karte-1" data-card-rate="known">gewusst</button><button type="button" data-card-id="server-leistungsindikatoren-cpu-ram-io-karte-1" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="server-leistungsindikatoren-cpu-ram-io-karte-1"></span></div>
+<div class="card-rating"><span>Karte „Abruf 3“:</span><button type="button" data-card-id="server-leistungsindikatoren-cpu-ram-io-karte-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="server-leistungsindikatoren-cpu-ram-io-karte-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="server-leistungsindikatoren-cpu-ram-io-karte-2"></span></div><h2 class="sec" id="s5"><span class="num">5</span>Lernziel-Check</h2>
+<section class="quiz" data-quiz="server-leistungsindikatoren-cpu-ram-io-transfer-a" data-correct="1" data-required-objective="cpu-ram">
+  <h3>Neuer Fall: Ein Webdienst bleibt bei Lastspitzen CPU-begrenzt; 90 % CPU, RAM ohne Druck, Storage-Latenz stabil. Welcher Schluss ist am besten begründet?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Weder RAM-Druck noch fehlendes ECC sind durch die Messung belegt."><span class="m">A</span> Mehr RAM ist zwingend die erste Maßnahme, weil ECC fehlt.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig: Die beobachtete Last lenkt die nächste Prüfung, ohne aus einer Zahl eine fertige Kaufentscheidung zu machen."><span class="m">B</span> CPU-Profil und Parallelisierbarkeit prüfen, dann Kernzahl und Takt passend vergleichen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Logische Threads skalieren nicht pauschal linear."><span class="m">C</span> Doppelte Threadzahl garantiert doppelten Durchsatz.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="server-leistungsindikatoren-cpu-ram-io-transfer-b" data-correct="2" data-required-objective="io-metriken">
+  <h3>Neuer Fall: Zwei Storage-Angebote nennen je 10.000 IOPS. Angebot A misst 4 KiB zufällige Lesezugriffe bei 1 ms, B 64 KiB sequenzielle Zugriffe bei 8 ms. Was ist für eine latenzempfindliche Datenbank zulässig?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="I/O-Größe, Zugriffsmuster und Latenz unterscheiden sich."><span class="m">A</span> Die Angebote sind gleich schnell, weil die IOPS identisch sind.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Mehr Daten pro Vorgang kann Durchsatz erhöhen, sagt aber wenig über kurze Datenbankantworten."><span class="m">B</span> B ist immer besser, weil 64 KiB größer sind.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Richtig: IOPS ohne vergleichbare Last und Latenz entscheiden diese Anforderung nicht."><span class="m">C</span> Erst mit gleichem Datenbankprofil und passender Antwortzeit vergleichen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Quellen und Grenzen</h2>
+<p><a href="https://www.intel.com/content/www/us/en/products/docs/processors/xeon/server-processor-overview.html">Intel: Server Processors</a>, <a href="https://www.kingston.com/en/support/technical/products/server-memory">Kingston: Server Memory FAQ</a> und <a href="https://www.dell.com/support/manuals/en-ca/powervault-me5084/me5_series_ag/performance-metrics?guid=guid-4ee88549-5f60-4c76-946e-d54f4ea41a58&amp;lang=en-us">Dell: Performance metrics</a>, jeweils am 26.09.2026 gelesen. Szenarien, Zahlen, Aufgaben und Grafiken sind eigene Modelle. Die genannten Messungen ersetzen keinen Test mit der echten Anwendung; menschliche Fachfreigabe steht noch aus.</p>
+
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-1"><span class="d">zurück zu</span><span class="t">Server-, Client- und Hardwarekonzeption</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Server-, Client- und Hardwarekonzeption</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Vorwissen aktivieren</a></li>
+<li><a href="#s2" data-t="s2">CPU und RAM lesen, ohne Werte zu vermischen</a></li>
+<li><a href="#s3" data-t="s3">I/O: zählen, messen, deuten</a></li>
+<li><a href="#s4" data-t="s4">Einen Engpass begründet vermuten</a></li>
+<li><a href="#s5" data-t="s5">Lernziel-Check</a></li>
+<li><a href="#s6" data-t="s6">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-1">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

@@ -1,5 +1,31 @@
 window.AP2_LEARNING_TOPICS = Object.freeze([
   {
+    "id": "server-leistungsindikatoren-cpu-ram-io",
+    "slug": "server-leistungsindikatoren-cpu-ram-io",
+    "title": "Serverleistung richtig lesen: CPU, RAM und I/O",
+    "description": "Messwerte einem Engpass zuordnen und IOPS, Durchsatz und Latenz aus einem Lastprofil begründet unterscheiden.",
+    "domain": "GA1",
+    "groupId": "ga1-1",
+    "groupLabel": "Server-, Client- und Hardwarekonzeption",
+    "itemId": "ga1-1__0",
+    "week": "KW 35",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "cpu-ram",
+      "io-metriken"
+    ],
+    "sources": [
+      "server-cpu-intel",
+      "server-memory-kingston",
+      "server-io-dell"
+    ],
+    "contentHash": "0c7148b336730db131a8d88e9937bedf6f8563c18ad7d609c542cfdbdba6e84f",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "storage-types",
     "slug": "storage-types",
     "title": "DAS, NAS und SAN sicher unterscheiden",
