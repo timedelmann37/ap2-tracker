@@ -1,0 +1,139 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "backup-ziele-lto-d2d2t-cloud",
+    "slug": "backup-ziele-lto-d2d2t-cloud",
+    "title": "Backup-Ziele wählen: Disk, Band und Cloud",
+    "description": "LTO-Kapazität ohne Werbefaktor planen, D2D2T verstehen und Backup-Server sowie Cloud-Kopie in einem Restore-Pfad verorten.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-4",
+    "groupLabel": "Backup, Recovery und Notfallvorsorge",
+    "itemId": "ga1-4__6",
+    "week": "KW 38",
+    "estimatedMinutes": 32,
+    "relevance": "hoch",
+    "sources": ["lto-ibm-capacity", "d2d2t-veeam-tape", "cloud-aws-backup-copy", "backup-ms-dpm-recovery"],
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    { "id": "kapazitaet", "label": "LTO-Bandbedarf mit nativer statt ungeprüft komprimierter Kapazität berechnen" },
+    { "id": "architektur", "label": "Disk, Band, Cloud und Backup-Server einem vollständigen Sicherungs- und Restore-Weg zuordnen" }
+  ],
+  "intro": "Eine Firma muss 27 TB bereits komprimierte Daten sichern. Im Angebot steht für ein LTO-9-Band „18 TB nativ / 45 TB komprimiert“. Genügt ein Band? Und welcher Teil der Architektur stellt nach Verlust des Backup-Servers die Sicherung wieder her?",
+  "curation": {
+    "evidence": [
+      { "sourceId": "lto-ibm-capacity", "sourceLocator": "Table 1: LTO-9 cartridge native 18 TB, compressed 45 TB at 2.5:1", "use": "Kapazitätsbeispiel und Kompressionsannahme", "reviewStatus": "Offizielle IBM-Dokumentation am 26.09.2026 gelesen; LTO-9 ist ein explizites Beispiel, keine aktuelle Generationsempfehlung" },
+      { "sourceId": "d2d2t-veeam-tape", "sourceLocator": "Backup to Tape; backup repository as source; copies existing backups", "use": "Disk-Backup zuerst, danach Bandkopie im D2D2T-Muster", "reviewStatus": "Offizielle Veeam-Dokumentation am 26.09.2026 gelesen; Produktablauf nicht als universelle Implementierung verallgemeinert" },
+      { "sourceId": "cloud-aws-backup-copy", "sourceLocator": "Backup plan options; copy to Regions; destination account and Region", "use": "Cloud als zusätzlicher Kopier- und Aufbewahrungsort", "reviewStatus": "Offizielle AWS-Dokumentation am 26.09.2026 gelesen" },
+      { "sourceId": "backup-ms-dpm-recovery", "sourceLocator": "Recover the database; tape labels, compatible drive and encryption certificate", "use": "Backup-Server-Katalog und Schlüssel als Teile des Restore-Pfads", "reviewStatus": "Offizielle Microsoft-Dokumentation am 26.09.2026 gelesen; DPM-spezifisches Beispiel" }
+    ],
+    "notes": [
+      "Privater Batch ga1-4-006-006 war für LTO/D2D2T nur schwach relevant und bot eine fachfremde WiSo-Abbildung. Keine Buchtexte oder Buchgrafiken veröffentlicht; Fall und Diagramme sind eigenständig.",
+      "Die 45 TB sind eine rechnerische Angabe bei 2,5:1-Kompression, keine garantierte Bandkapazität für bereits komprimierte oder verschlüsselte Daten. Das Beispiel benutzt dezimale TB, ignoriert Rotations- und Reservebänder und berechnet nur das theoretische Minimum der Datenmenge.",
+      "D2D2T beschreibt einen Architekturweg, nicht zwingend direkte Sicherung vom Produktivsystem auf Band. Produkte unterscheiden sich im tatsächlichen Datenpfad. Cloud-Kopie und Tape-Kopie müssen bezüglich Aufbewahrung, Zugriffsrechten, Transportzeit und Restore getestet werden. Menschliche Fachfreigabe offen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "zielvergleich",
+      "type": "comparison",
+      "title": "Drei Zielarten, unterschiedliche Stärken",
+      "description": "Kein Ziel ist für jede Wiederherstellung allein optimal.",
+      "items": [
+        { "label": "Disk-Repository", "detail": "Schneller Zugriff auf jüngere Sicherungen. Eigene Kapazität, Rechte und Schutz gegen Löschung sind nötig; dieselbe Serverplatte wäre keine unabhängige Kopie." },
+        { "label": "LTO-Band", "detail": "Transportierbare Kopie für längere Aufbewahrung und physische Trennung. Laufwerk, Bandgeneration, Rotation, Katalog und Schlüssel gehören zum Restore-Pfad." },
+        { "label": "Cloud-Backup", "detail": "Kopie an anderem Standort/Konto oder in anderer Region möglich. Upload und Rückweg brauchen Bandbreite, Berechtigungen, Schlüssel, Kosten- und Aufbewahrungsplanung." }
+      ]
+    },
+    {
+      "id": "d2d2t-pfad",
+      "type": "flow",
+      "title": "D2D2T: Disk → Disk → Tape",
+      "description": "Vereinfachtes Muster; Backup-Server koordiniert den Job, ist aber nicht automatisch der alleinige Speicherort der Nutzdaten.",
+      "items": [
+        { "label": "Produktivsystem · erste Disk", "detail": "Die Anwendung und ihre Daten sind die Quelle. Konsistenz der gesicherten Anwendung muss geklärt sein." },
+        { "label": "Backup-Server + Disk-Repository · zweite Disk", "detail": "Der Server plant Jobs und verwaltet Metadaten/Katalog; die erste Sicherung landet auf einem separaten Disk-Repository." },
+        { "label": "Bandjob · Tape", "detail": "Eine vorhandene Sicherung wird zusätzlich auf Band kopiert; der Tape-Job erzeugt in diesem Muster nicht die ursprüngliche Produktivsicherung neu." },
+        { "label": "Rückweg · Restore", "detail": "Benötigtes Band finden, kompatibles Laufwerk und Schlüssel bereitstellen, Katalog wiederherstellen oder neu einlesen, Daten isoliert testen." }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Nativ ist der Planungsanker",
+      "blocks": [
+        { "type": "quiz", "id": "lto-diagnose", "question": "27 TB bereits komprimierte Daten sollen auf LTO-9-Bänder mit 18 TB nativ / 45 TB bei angenommener 2,5:1-Kompression. Wie planst du das theoretische Minimum?", "options": [
+          { "text": "Zwei Bänder, weil die Daten kaum weiter komprimierbar sind und 27 TB über 18 TB liegen.", "rationale": "Richtig. Der ausgewiesene Kompressionsfaktor ist keine Garantie für diesen Datenbestand.", "correct": true },
+          { "text": "Ein Band, weil 27 TB unter den beworbenen 45 TB liegen.", "rationale": "45 TB setzen die angenommene 2,5:1-Kompression voraus; bereits komprimierte Daten liefern sie nicht verlässlich.", "correct": false },
+          { "text": "Null Bänder, weil der Backup-Server die Daten selbst speichert.", "rationale": "Ein Katalog oder Jobserver ersetzt nicht die geplante Zielkapazität.", "correct": false }
+        ], "diagnostic": true },
+        { "type": "markdown", "markdown": "**LTO (Linear Tape-Open)** bezeichnet ein Bandformat mit Generationen. Bei **LTO-9** nennt die IBM-Dokumentation **18 TB native** und **45 TB komprimierte** Kapazität je Band. Die zweite Zahl setzt ein Verhältnis von **2,5:1** voraus. Schon komprimierte Archive, verschlüsselte Dateien oder Videos können deutlich weniger zusätzlichen Kompressionsgewinn liefern. Für eine konservative Prüfung rechnest du daher mit der nativen Kapazität und prüfst danach reale Komprimierbarkeit, Metadaten, Reserve und Aufbewahrungsrotation.\n\nIm Lehrfall sind 27 TB Daten bereits komprimiert. Teile die Datenmenge durch 18 TB native Kapazität und **runde auf ganze Bänder auf**. Das Ergebnis ist nur die theoretische Untergrenze für *eine* Sicherung, nicht der Medienbedarf eines vollständigen Backup-Plans." },
+        { "type": "math", "ariaLabel": "Mindestanzahl LTO-9-Bänder gleich aufgerundete 27 Terabyte geteilt durch 18 Terabyte pro Band gleich 2 Bänder.", "mathml": "<math display=\"block\"><mrow><msub><mi>N</mi><mtext>Band</mtext></msub><mo>=</mo><mo>⌈</mo><mfrac><mrow><mn>27</mn><mtext> TB</mtext></mrow><mrow><mn>18</mn><mtext> TB/Band</mtext></mrow></mfrac><mo>⌉</mo><mo>=</mo><mn>2</mn><mtext> Bänder</mtext></mrow></math>", "legend": ["Dezimale TB; bereits komprimierte Daten; keine Reserve oder Rotation enthalten."] },
+        { "type": "numeric", "id": "lto-bandzahl", "title": "Konservativen Bandbedarf berechnen", "prompt": "27 TB bereits komprimierte Daten, 18 TB native Kapazität pro LTO-9-Band: Wie viele ganze Bänder brauchst du mindestens für genau eine Sicherung?", "label": "Bänder", "expected": 2, "tolerance": 0.001, "correctFeedback": "Richtig: 27 ÷ 18 = 1,5; auf ganze Bänder aufgerundet sind es mindestens zwei. Reserve und Rotation kommen hinzu.", "wrongFeedback": "Nutze die native Kapazität von 18 TB, teile 27 TB dadurch und runde nach oben auf.", "misconceptions": [
+          { "value": 1, "feedback": "Ein Band wäre nur mit der hier nicht belegten Kompressionswirkung ausreichend. Die Daten sind bereits komprimiert." },
+          { "value": 1.5, "feedback": "1,5 ist der Rechenquotient, aber ein halbes zusätzliches Band lässt sich für die Planung nicht bereitstellen: auf zwei runden." },
+          { "value": 3, "feedback": "Drei können als Reserve oder Rotation sinnvoll sein; gefragt ist nur das theoretische Minimum für eine Sicherung." }
+        ] },
+        { "type": "figure", "diagramId": "zielvergleich", "alt": "Vergleich von Disk-Repository, LTO-Band und Cloud-Backup nach Zugriff, Trennung und Restore-Anforderungen.", "caption": "Eigener Zielvergleich. Die richtige Kombination folgt aus Datenstand, Rückspielzeit und Ausfallgrenzen." }
+      ]
+    },
+    {
+      "title": "D2D2T als Kopierkette lesen",
+      "blocks": [
+        { "type": "markdown", "markdown": "**Disk-to-Disk-to-Tape (D2D2T)** beschreibt eine Sicherungskette: vom produktiven Datenträger auf ein separates Disk-Repository und danach als zusätzliche Kopie auf Band. Das Disk-Ziel ist für häufige, schnelle Restores nützlich; das Band kann transportiert oder offline gelagert werden. Im dokumentierten Veeam-Beispiel kopiert der Tape-Job bereits vorhandene Backups aus dem Repository; er erstellt dabei nicht die ursprüngliche Sicherung der VM neu. Andere Produkte können anders arbeiten.\n\nEin **Backup-Server** plant und überwacht Jobs, hält Konfiguration, Katalog und oft Schlüssel-/Zugriffsinformationen. Datenbewegung kann zusätzlich über Agents, Proxies oder Repository-Komponenten laufen. Bei der Architekturprüfung zeichnest du deshalb **Steuerung, Datenpfad und Ziel** getrennt. Fällt der Backup-Server aus, müssen Katalog, Jobkonfiguration, Medieninventar, Schlüssel/Zertifikate und kompatible Laufwerke für einen Wiederanlauf verfügbar sein. Die konkrete Produkt-Dokumentation bestimmt, wie der Katalog aus Band oder einer Server-Sicherung zurückkommt." },
+        { "type": "figure", "diagramId": "d2d2t-pfad", "alt": "D2D2T-Ablauf: produktive Disk, separater Disk-Sicherungsspeicher mit Backup-Server-Steuerung, zusätzliche Bandkopie und geprüfter Rückweg mit Katalog, Laufwerk und Schlüsseln.", "caption": "Eigener Ablauf. Ein Tape-Job braucht die erste Sicherung bereits; ein Band allein ist noch kein erfolgreicher Restore." },
+        { "type": "sequence", "id": "d2d2t-reihenfolge", "title": "Sicherung und Rückweg ordnen", "prompt": "Ordne den vereinfachten D2D2T-Ablauf einschließlich des Restore-Nachweises.", "steps": [
+          { "id": "quelle", "label": "Produktivdaten und Konsistenzanforderung bestimmen" },
+          { "id": "disk", "label": "Backup-Job schreibt einen Wiederherstellungspunkt auf separates Disk-Repository" },
+          { "id": "tape", "label": "Tape-Job kopiert den vorhandenen Wiederherstellungspunkt auf Band" },
+          { "id": "test", "label": "Band samt Katalog und Schlüsseln in Testumgebung zurückspielen" }
+        ], "expected": ["quelle", "disk", "tape", "test"], "correctFeedback": "Richtig: Erst eine konsistente Disk-Sicherung, dann die Bandkopie, dann die Rückspielprobe.", "wrongFeedback": "Beim D2D2T-Muster ist das Band die Kopie einer vorhandenen Disk-Sicherung; der Restore-Nachweis folgt nach dem Schreiben." },
+        { "type": "quiz", "id": "d2d2t-server", "question": "Der Backup-Server ist zerstört, die Bänder sind vorhanden. Was kann für einen Restore zusätzlich nötig sein?", "options": [
+          { "text": "Katalog/Medienzuordnung, kompatibles Laufwerk und gegebenenfalls Verschlüsselungsschlüssel oder Zertifikate.", "rationale": "Richtig. Ein Band ohne lesbaren und entschlüsselbaren Rückweg reicht nicht.", "correct": true },
+          { "text": "Nur ein neuer Servername; jedes Band ist ohne Laufwerk lesbar.", "rationale": "Bandgeneration und Laufwerk sowie Katalog und Schlüssel können entscheidend sein.", "correct": false },
+          { "text": "Nichts: Der Bandjob startet die Produktivanwendung automatisch.", "rationale": "Sichern und Wiederanlauf der Anwendung sind getrennte Prozesse.", "correct": false }
+        ] }
+      ]
+    },
+    {
+      "title": "Cloud ist ein Ziel, kein Freifahrtschein",
+      "blocks": [
+        { "type": "markdown", "markdown": "Eine **Cloud-Backup-Kopie** kann Standorttrennung und zusätzliche Aufbewahrung ermöglichen. Der Rückweg braucht jedoch Netzwerk und Zeit: Wie viel muss zurückgeladen werden, mit welcher verfügbaren Bandbreite und welchen möglichen Abrufkosten? Ebenso wichtig sind Konto- und Schlüsselzugriff, Löschschutz, Aufbewahrungsfristen, Region und ein getesteter Restore. Ein Backup in derselben Region und unter denselben kompromittierbaren Rechten ist nicht automatisch unabhängig.\n\nIn einer hybriden Lösung kann die jüngste Sicherung lokal auf Disk für schnelle Einzeldatei-Restores liegen, während eine weitere Kopie extern auf Band oder in einer anderen Cloud-Region/einem getrennten Konto liegt. D2D2T und Cloud sind Alternativen oder ergänzende Wege, keine Pflichtkombination. Entscheide anhand von RPO/RTO, Datenmenge, Transport, gesetzlichen/vertraglichen Vorgaben und Ausfallgrenzen; der Zielname allein beantwortet keine dieser Fragen." },
+        { "type": "recall", "id": "ziele-beratung", "title": "Wiederanlauf mitdenken", "prompt": "Ein Kunde will nur Cloud-Backup, weil vor Ort wenig Platz ist. 27 TB müssen im Notfall vollständig zurück. Welche vier Fragen stellst du vor der Entscheidung?", "label": "Deine Fragen", "minLength": 100, "model": "Ich frage nach maximal toleriertem Datenverlust (RPO) und Wiederanlaufzeit (RTO). Ich prüfe Upload- und vor allem Restore-Bandbreite sowie mögliche Abrufkosten für 27 TB. Außerdem kläre ich Zielregion, getrennte Zugriffsrechte, Schlüssel und Aufbewahrung. Schließlich fordere ich einen realistischen Restore-Test der Anwendung und ihrer Abhängigkeiten." },
+        { "type": "quiz", "id": "ziele-cloud", "question": "Welche Aussage zu einer Kopie in einer zweiten Cloud-Region ist tragfähig?", "options": [
+          { "text": "Sie kann Standorttrennung bieten; Rechte, Schlüssel, Löschschutz und Rückspielzeit müssen trotzdem geprüft werden.", "rationale": "Richtig. Die Region löst nur einen Teil des Ausfallproblems.", "correct": true },
+          { "text": "Sie macht den lokalen Backup-Server-Katalog und alle Schlüssel überflüssig.", "rationale": "Wiederherstellung kann weiterhin von Konfiguration, Identitäten und Schlüsseln abhängen.", "correct": false },
+          { "text": "Sie garantiert unabhängig von 27 TB Datenmenge und Leitung einen sofortigen Restore.", "rationale": "Datenmenge und Rückübertragungsweg begrenzen die Wiederanlaufzeit.", "correct": false }
+        ] }
+      ]
+    },
+    {
+      "title": "Abruf und Lernziel-Check",
+      "blocks": [
+        { "type": "flashcards", "cards": [
+          { "id": "ziele-karte-0", "label": "Abruf 1", "front": "18 TB nativ / 45 TB komprimiert: Was ist der konservative Planungswert?", "back": "Die native Kapazität ist der konservative Ausgangspunkt. 45 TB setzen angenommene 2,5:1-Kompression voraus; Reserve und Metadaten sind zusätzlich zu prüfen." },
+          { "id": "ziele-karte-1", "label": "Abruf 2", "front": "Wofür steht D2D2T?", "back": "Produktiv-Disk → separates Disk-Backup → zusätzliche Tape-Kopie. Der Rückweg muss ebenso geplant werden." },
+          { "id": "ziele-karte-2", "label": "Abruf 3", "front": "Was braucht der Restore nach Backup-Server-Ausfall?", "back": "Je nach Produkt Katalog/Medienzuordnung, Jobkonfiguration, kompatibles Laufwerk und gegebenenfalls Schlüssel oder Zertifikate." }
+        ] },
+        { "type": "quiz", "id": "ziele-transfer-kapazitaet", "question": "27 TB bereits komprimierte Daten, LTO-9 mit 18 TB nativ/45 TB unter Kompressionsannahme: Welches Mindest-Ergebnis ist belastbar?", "options": [
+          { "text": "Mindestens zwei Bänder für eine Sicherung; Rotation und Reserve kommen zusätzlich hinzu.", "rationale": "Richtig: 27 ÷ 18 wird auf zwei ganze Bänder aufgerundet.", "correct": true },
+          { "text": "Ein Band, weil 45 TB in jeder Umgebung garantiert sind.", "rationale": "Der angenommene Kompressionsfaktor gilt nicht garantiert für bereits komprimierte Daten.", "correct": false },
+          { "text": "Drei Bänder sind rechnerisch zwingend für genau diese eine Sicherung.", "rationale": "Drei könnten für Reserve oder Rotation sinnvoll sein, sind aber nicht das Minimum der Datenmenge.", "correct": false }
+        ], "requiredObjective": "kapazitaet" },
+        { "type": "quiz", "id": "ziele-transfer-architektur", "question": "Eine Firma plant Disk-Backup mit Bandkopie und eventuell Cloud. Welcher Entwurf ist am ehesten vollständig?", "options": [
+          { "text": "Jobs, Datenpfad, getrennte Ziele, Offsite-/Rechte-Schutz und Restore von Katalog, Schlüsseln und Nutzdaten festhalten und testen.", "rationale": "Richtig. Zielmedien und Rückweg gehören zusammen.", "correct": true },
+          { "text": "Nur die größte beworbene Bandkapazität notieren; Katalog und Laufwerk sind nachrangig.", "rationale": "Eine Kapazitätszahl ersetzt keinen lesbaren Wiederherstellungspfad.", "correct": false },
+          { "text": "Cloud als zweites Ziel eintragen; dadurch sind RPO, RTO und Rechte automatisch erfüllt.", "rationale": "Diese Anforderungen brauchen eine konkrete Auslegung und Tests.", "correct": false }
+        ], "requiredObjective": "architektur" }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        { "type": "markdown", "markdown": "[IBM: LTO-Kartuschenkapazität](https://www.ibm.com/docs/en/storage-deep-archive?topic=cartridges-capacity-supported-lto-tape), [Veeam: Backup to Tape](https://helpcenter.veeam.com/docs/vbr/userguide/backup_to_tape_jobs.html), [AWS Backup: Kopien in andere Regionen](https://docs.aws.amazon.com/aws-backup/latest/devguide/plan-options-and-configuration.html) und [Microsoft DPM: Backup-Server wiederherstellen](https://learn.microsoft.com/en-us/system-center/dpm/back-up-the-dpm-server?view=sc-dpm-2019), am 26.09.2026 gelesen. LTO-9, Datenmenge, Zielkette und Diagramme sind ein eigenes Lehrbeispiel; die tatsächliche Kapazität, Kompatibilität und Restore-Fähigkeit sind produkt- und datenabhängig. Menschliche Fachfreigabe offen." }
+      ]
+    }
+  ]
+}

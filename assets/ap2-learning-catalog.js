@@ -1155,6 +1155,33 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "legacy-markdown"
   },
   {
+    "id": "backup-ziele-lto-d2d2t-cloud",
+    "slug": "backup-ziele-lto-d2d2t-cloud",
+    "title": "Backup-Ziele wählen: Disk, Band und Cloud",
+    "description": "LTO-Kapazität ohne Werbefaktor planen, D2D2T verstehen und Backup-Server sowie Cloud-Kopie in einem Restore-Pfad verorten.",
+    "domain": "GA1",
+    "groupId": "ga1-4",
+    "groupLabel": "Backup, Recovery und Notfallvorsorge",
+    "itemId": "ga1-4__6",
+    "week": "KW 38",
+    "estimatedMinutes": 32,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "kapazitaet",
+      "architektur"
+    ],
+    "sources": [
+      "lto-ibm-capacity",
+      "d2d2t-veeam-tape",
+      "cloud-aws-backup-copy",
+      "backup-ms-dpm-recovery"
+    ],
+    "contentHash": "2a97dd09f1948f5efa0cea14765f96da15ea3f0556364bfba372de4a29ed7554",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "slug": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "title": "Struktogramm und Programmablaufplan",

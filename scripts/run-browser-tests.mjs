@@ -90,6 +90,7 @@ try {
   await import('./verify-sla-browser.mjs');
   await import('./verify-kubernetes-browser.mjs');
   await import('./verify-backup-321-browser.mjs');
+  await import('./verify-backup-targets-browser.mjs');
   await import('./verify-space-browser.mjs');
 } finally {
   await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
