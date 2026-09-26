@@ -106,6 +106,7 @@ try {
   await import('./verify-break-even-browser.mjs');
   await import('./verify-amortisation-roi-browser.mjs');
   await import('./verify-nutzwertanalyse-browser.mjs');
+  await import('./verify-angebotsvergleich-browser.mjs');
   await import('./verify-space-browser.mjs');
 } finally {
   await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
