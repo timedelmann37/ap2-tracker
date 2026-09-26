@@ -1680,6 +1680,32 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "patch-updatemanagement-wsus-testring-rollback",
+    "slug": "patch-updatemanagement-wsus-testring-rollback",
+    "title": "Patchmanagement: WSUS, Testring und Rückfallplan",
+    "description": "Updates risikobewusst freigeben, im Wartungsfenster prüfen und eine realistische Rückfallstrategie festlegen.",
+    "domain": "GA1",
+    "groupId": "ga1-6",
+    "groupLabel": "Betriebssysteme und Administration",
+    "itemId": "ga1-6__2",
+    "week": "KW 40",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "patch-ringe-planen",
+      "wartung-rueckfall-pruefen"
+    ],
+    "sources": [
+      "microsoft-wsus-deprecation",
+      "microsoft-wsus-computer-groups",
+      "microsoft-wsus-operations"
+    ],
+    "contentHash": "98757ab558baa3bfaadc259cf7d58746ab69a863623339a8db4a02174db9a030",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "slug": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "title": "Struktogramm und Programmablaufplan",

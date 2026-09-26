@@ -110,6 +110,7 @@ try {
   await import('./verify-make-or-buy-browser.mjs');
   await import('./verify-active-directory-browser.mjs');
   await import('./verify-gruppenrichtlinien-browser.mjs');
+  await import('./verify-patch-browser.mjs');
   await import('./verify-space-browser.mjs');
 } finally {
   await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
