@@ -1706,6 +1706,33 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "clientbereitstellung-images-deployment-mdm",
+    "slug": "clientbereitstellung-images-deployment-mdm",
+    "title": "Clientbereitstellung: Image, Deployment und MDM",
+    "description": "Passende Bereitstellungswege für Schulungs-PCs und mobile Geräte wählen, testen und betreiben.",
+    "domain": "GA1",
+    "groupId": "ga1-6",
+    "groupLabel": "Betriebssysteme und Administration",
+    "itemId": "ga1-6__3",
+    "week": "KW 40",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "bereitstellungsweg-waehlen",
+      "rollout-absichern"
+    ],
+    "sources": [
+      "itlf10-12-2023",
+      "microsoft-autopilot-overview",
+      "microsoft-configmgr-osd",
+      "microsoft-intune-ios-guide"
+    ],
+    "contentHash": "9a7f360bf5bade46e98e44afeeaad61abb727f908aa25cda908eab7c919bda15",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "slug": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "title": "Struktogramm und Programmablaufplan",
