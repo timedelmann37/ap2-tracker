@@ -75,6 +75,7 @@ try {
   await import('./verify-ups-classes-browser.mjs');
   await import('./verify-redundancy-levels-browser.mjs');
   await import('./verify-green-it-browser.mjs');
+  await import('./verify-licensing-browser.mjs');
   await import('./verify-space-browser.mjs');
 } finally {
   await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));

@@ -296,6 +296,34 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "windows-server-core-cal-open-source-lizenzen",
+    "slug": "windows-server-core-cal-open-source-lizenzen",
+    "title": "Lizenzen planen: Cores, CALs und Open Source",
+    "description": "Windows-Server-2025-Kernlizenzen und Zugriffsrechte im Fall trennen und Open-Source-Pflichten differenziert prüfen.",
+    "domain": "GA1",
+    "groupId": "ga1-1",
+    "groupLabel": "Server-, Client- und Hardwarekonzeption",
+    "itemId": "ga1-1__11",
+    "week": "KW 35",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "cores",
+      "zugriff",
+      "offen"
+    ],
+    "sources": [
+      "license-microsoft-ws2025",
+      "license-osi-faq",
+      "license-osi-mit",
+      "license-gnu-gpl3"
+    ],
+    "contentHash": "93447810ff5d04511f2007c3547993fd8096432f22969cc755b775f4f2c00ca5",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "storage-types",
     "slug": "storage-types",
     "title": "DAS, NAS und SAN sicher unterscheiden",
