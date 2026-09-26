@@ -1236,6 +1236,32 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "backup-konzept-planen-pruefen-testen",
+    "slug": "backup-konzept-planen-pruefen-testen",
+    "title": "Ein Backup-Konzept, das den Ernstfall besteht",
+    "description": "Für einen fiktiven Betrieb Umfang, Takt, Ziel, Aufbewahrung, Zuständigkeit und Restore-Prüfung in einem schriftlichen Plan verbinden.",
+    "domain": "GA1",
+    "groupId": "ga1-4",
+    "groupLabel": "Backup, Recovery und Notfallvorsorge",
+    "itemId": "ga1-4__9",
+    "week": "KW 38",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "anforderungen",
+      "konzept"
+    ],
+    "sources": [
+      "bsi-con3-backup-concept",
+      "ms-backup-recovery-test",
+      "ms-redundancy-replication-backup"
+    ],
+    "contentHash": "265a6f26b80f4275b42c513557dda96b253cc2244f9d362a244a576756cecb7c",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "slug": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "title": "Struktogramm und Programmablaufplan",

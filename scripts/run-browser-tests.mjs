@@ -93,6 +93,7 @@ try {
   await import('./verify-backup-targets-browser.mjs');
   await import('./verify-restore-plan-browser.mjs');
   await import('./verify-backup-boundaries-browser.mjs');
+  await import('./verify-backup-concept-browser.mjs');
   await import('./verify-space-browser.mjs');
 } finally {
   await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
