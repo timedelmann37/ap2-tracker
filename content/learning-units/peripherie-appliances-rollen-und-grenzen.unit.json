@@ -1,0 +1,322 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "peripherie-appliances-rollen-und-grenzen",
+    "slug": "peripherie-appliances-rollen-und-grenzen",
+    "title": "Appliances und Peripherie: wer erledigt welche Aufgabe?",
+    "description": "Hardware-Firewall, Load Balancer, NAS und Multifunktionsgerät einem Datenfluss zuordnen und falsche Sicherheitsannahmen erkennen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-1",
+    "groupLabel": "Server-, Client- und Hardwarekonzeption",
+    "itemId": "ga1-1__5",
+    "week": "KW 35",
+    "estimatedMinutes": 27,
+    "relevance": "hoch",
+    "sources": [
+      "appliance-fortinet-policy",
+      "appliance-nginx-health",
+      "appliance-synology-nas",
+      "appliance-hp-mfp"
+    ],
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "rollen",
+      "label": "Firewall, Load Balancer, NAS und Multifunktionsgerät nach Aufgabe und Datenfluss unterscheiden"
+    },
+    {
+      "id": "grenzen",
+      "label": "Eine passende Gerätekombination wählen und ihre offenen Sicherheits- und Ausfallgrenzen benennen"
+    }
+  ],
+  "intro": "Vier Geräte im gleichen Netzwerk übernehmen nicht dieselbe Arbeit. Die Firewall entscheidet über erlaubte Verbindungen, der Load Balancer verteilt geeignete Anfragen, das NAS stellt Dateien bereit und das Multifunktionsgerät erzeugt oder verarbeitet Dokumente.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "appliance-fortinet-policy",
+        "sourceLocator": "Firewall policy: Verkehrsmerkmale und Regelentscheidung",
+        "use": "Rolle einer Firewall im Verkehrsweg von Lastverteilung trennen",
+        "reviewStatus": "Am 26.09.2026 gelesen; keine gerätespezifische Regelreihenfolge abgeleitet"
+      },
+      {
+        "sourceId": "appliance-nginx-health",
+        "sourceLocator": "HTTP Health Checks: passive und aktive Prüfungen",
+        "use": "Backend-Auswahl und Health Check als Lastverteilungsaufgabe erklären",
+        "reviewStatus": "Am 26.09.2026 gelesen; NGINX Plus und Open Source nicht gleichgesetzt"
+      },
+      {
+        "sourceId": "appliance-synology-nas",
+        "sourceLocator": "What is Synology NAS? File sharing",
+        "use": "NAS als netzgebundenen Dateidienst im internen Datenfluss einordnen",
+        "reviewStatus": "Am 26.09.2026 gelesen; keine Backup-Zusage übernommen"
+      },
+      {
+        "sourceId": "appliance-hp-mfp",
+        "sourceLocator": "Scan to network folder: Ziel und Anmeldung",
+        "use": "MFP als aktiven Netzwerkendpunkt mit Scan-Ziel und Zugriffen darstellen",
+        "reviewStatus": "Am 26.09.2026 gelesen"
+      }
+    ],
+    "notes": [
+      "Batch ga1-1-005-005 lieferte nur einen alten Peripherie-Überschriftentreffer, einen themenfremden Rack-/Blade-Ausschnitt und einen partiellen Cloud-Sicherheits-Text. Keiner davon trägt die Fachaussagen dieser Einheit.",
+      "Die vorgeschlagene Buchgrafik zeigt SDN-Kontrollschichten und passt nicht zur einfachen Geräte-Rollenklärung; sie blieb privat und wurde nicht nachgezeichnet. Die hier genutzten Diagramme sind eigenständig.",
+      "„Hardware-Firewall“ benennt in diesem Lernfall eine dedizierte Plattform; die Firewall-Funktion kann auch anders bereitgestellt werden. Ein Load Balancer kann ebenfalls Software statt eigenständige Hardware sein. Produktform und Funktion sind getrennt zu prüfen.",
+      "Alle Szenarien und Adressen sind eigene Modelle. Reale Sicherheitsregeln, Health-Check-Ziele, NAS-Berechtigungen und Scan-Zugriffe müssen konfigurationsabhängig geprüft werden. Menschliche Fachfreigabe offen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "rollenkarte",
+      "type": "comparison",
+      "title": "Vier Rollen im selben Netzwerk",
+      "description": "Ordne die Arbeit dem Gerät zu, nicht seinem Gehäuse.",
+      "items": [
+        {
+          "label": "Firewall",
+          "detail": "Prüft erlaubte Verbindungen nach Sicherheitsregeln; verteilt nicht automatisch Weblast"
+        },
+        {
+          "label": "Load Balancer",
+          "detail": "Leitet Anfragen an geeignete Anwendungsinstanzen; ersetzt keine gesamte Sicherheitsrichtlinie"
+        },
+        {
+          "label": "NAS",
+          "detail": "Stellt gemeinsame Dateien über das Netz bereit; Berechtigungen und separate Sicherung bleiben nötig"
+        },
+        {
+          "label": "Multifunktionsgerät",
+          "detail": "Druckt, kopiert und scannt; beim Scan an Freigaben wird es selbst zum Netzteilnehmer"
+        }
+      ]
+    },
+    {
+      "id": "wege",
+      "type": "flow",
+      "title": "Zwei Datenflüsse, zwei Schutzziele",
+      "description": "Webanfrage und gescanntes Dokument nutzen unterschiedliche Ziele.",
+      "items": [
+        {
+          "label": "Web · Eingang",
+          "detail": "Externe Anfrage wird an der Firewall nach erlaubtem Ziel und Dienst geprüft"
+        },
+        {
+          "label": "Web · Verteilung",
+          "detail": "Load Balancer wählt einen geeigneten App-Server; Backend-Gesundheit prüfen"
+        },
+        {
+          "label": "Scan · Erfassung",
+          "detail": "MFP liest ein Dokument und sendet es als Netzwerkclient an ein konfiguriertes Ziel"
+        },
+        {
+          "label": "Scan · Ablage",
+          "detail": "NAS-Freigabe prüft Zugang und speichert die Datei; Berechtigungen und Backup prüfen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "peripherie-appliances-rollen-und-grenzen-diagnose",
+          "question": "Eine Webseite läuft auf drei App-Servern. Welche Komponente wählt für neue Anfragen ein geeignetes Backend?",
+          "options": [
+            {
+              "text": "Das NAS, weil es alle Dateien enthält.",
+              "rationale": "Gemeinsamer Speicher ist nicht die Instanzwahl für Webanfragen.",
+              "correct": false
+            },
+            {
+              "text": "Der Load Balancer.",
+              "rationale": "Richtig: Er verteilt Anfragen an konfigurierte Backends.",
+              "correct": true
+            },
+            {
+              "text": "Das Multifunktionsgerät.",
+              "rationale": "Drucken und Scannen steuern keine Webserver-Auswahl.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Geräterollen sauber trennen",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "rollenkarte",
+          "alt": "Firewall prüft Verbindungen; Load Balancer wählt App-Server; NAS stellt Dateien bereit; Multifunktionsgerät druckt und scannt.",
+          "caption": "Eigener Rollenvergleich für eine kleine Büroumgebung."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Eine **Hardware-Firewall** ist in diesem Fall ein dediziertes Gerät, das Verbindungen nach konfigurierten Regeln bewertet. „Hardware“ beschreibt die Bereitstellung, nicht eine andere Grundfunktion als bei einer Software-Firewall. Ein **Load Balancer** nimmt passende Anfragen entgegen und verteilt sie auf konfigurierte Anwendungsinstanzen. Er kann ebenfalls als Software oder dedizierte Appliance betrieben werden. Ein Health Check kann verhindern, dass eine erkannte ausgefallene Instanz weiterhin Anfragen erhält; die konkrete Art der Prüfung ist produktabhängig.\n\nEin **NAS** (Network Attached Storage) stellt über das Netz Dateien und Freigaben bereit. Es ist kein Ersatz für einen Load Balancer oder eine externe Datensicherung. Ein **Multifunktionsgerät** (MFP) kombiniert etwa Druck, Kopie und Scan. Beim Scan in einen Netzordner benötigt es ein korrektes Ziel und geeignete Zugriffsrechte. Es ist damit kein „passives Kabelende“, sondern ein zu verwaltender Netzwerkendpunkt."
+        },
+        {
+          "type": "quiz",
+          "id": "peripherie-appliances-rollen-und-grenzen-uebung",
+          "question": "Ein Team möchte Papierdokumente in einem gemeinsamen Ordner ablegen. Welche Rollen passen zusammen?",
+          "options": [
+            {
+              "text": "MFP scannt, NAS stellt die berechtigte Freigabe bereit.",
+              "rationale": "Richtig: Quelle und Ziel des Dokumentflusses sind getrennt.",
+              "correct": true
+            },
+            {
+              "text": "Load Balancer scannt, Firewall speichert die Datei dauerhaft.",
+              "rationale": "Beide Komponenten haben andere Hauptaufgaben.",
+              "correct": false
+            },
+            {
+              "text": "NAS scannt Papier, MFP ist nur ein Router.",
+              "rationale": "Die Funktionen sind vertauscht.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Den Datenfluss nachvollziehen",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "wege",
+          "alt": "Webanfrage: Firewall prüft, Load Balancer verteilt an App-Server. Dokument: MFP scannt und sendet an berechtigte NAS-Freigabe.",
+          "caption": "Die beiden Flüsse sind eigene Modelle und keine konkrete Netzkonfiguration."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Fiktiver Fall: Eine interne Webanwendung hat zwei App-Server. Die Sicherheitsregel erlaubt extern nur HTTPS zum veröffentlichten Einstiegspunkt. Dahinter verteilt der Load Balancer Anfragen auf funktionsfähige App-Server. Die Firewall entscheidet, **ob** der Verkehrsfluss erlaubt ist; der Load Balancer entscheidet innerhalb seiner Konfiguration, **wohin** eine erlaubte Anfrage geht. Keines der Geräte beweist allein die Verfügbarkeit der Gesamtstrecke: Auch Firewall, Load Balancer, DNS oder Backends können ausfallen.\n\nIm gleichen Büro scannt das MFP vertrauliche Verträge auf eine NAS-Freigabe. Dafür braucht das Gerät ein Ziel und einen geeigneten Zugriff. Ein offener Sammelordner wäre eine schlechte Annahme; Berechtigungen, lokale Gerätekonfiguration, Aktualisierungen und eine vom NAS getrennte Sicherung müssen geplant werden. Die bloße Existenz des NAS macht den Scan weder vertraulich noch wiederherstellbar."
+        },
+        {
+          "type": "sequence",
+          "id": "peripherie-appliances-rollen-und-grenzen-reihenfolge",
+          "title": "Webpfad ordnen",
+          "prompt": "Ordne den modellhaften Weg einer externen Webanfrage.",
+          "steps": [
+            {
+              "id": "app",
+              "label": "Ein geeigneter App-Server verarbeitet die Anfrage"
+            },
+            {
+              "id": "firewall",
+              "label": "Die Firewall prüft den erlaubten Verkehrsfluss"
+            },
+            {
+              "id": "balancer",
+              "label": "Der Load Balancer wählt ein verfügbares Backend"
+            }
+          ],
+          "expected": ["firewall", "balancer", "app"],
+          "correctFeedback": "Richtig: erst Freigabe des Flusses, dann Backend-Wahl, dann Verarbeitung.",
+          "wrongFeedback": "Beginne mit der Verkehrsprüfung vor dem Verteilungsschritt."
+        }
+      ]
+    },
+    {
+      "title": "Grenzen aus dem Gedächtnis erklären",
+      "blocks": [
+        {
+          "type": "recall",
+          "id": "peripherie-appliances-rollen-und-grenzen-begruendung",
+          "title": "Freie Begründung",
+          "prompt": "Beschreibe den Scan-in-NAS-Weg und nenne zwei offene Sicherheits- oder Betriebsprüfungen.",
+          "label": "Deine Erklärung",
+          "minLength": 70,
+          "model": "Das Multifunktionsgerät erfasst das Dokument und sendet es mit einem geeigneten Zugriff an eine NAS-Freigabe. Ich prüfe, wer am Gerät scannen darf und welche Rechte das Scan-Konto auf dem Zielordner besitzt. Zusätzlich teste ich eine separate Sicherung samt Wiederherstellung sowie Netz- und Geräteupdates."
+        },
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "peripherie-appliances-rollen-und-grenzen-karte-0",
+              "label": "Abruf 1",
+              "front": "Firewall oder Load Balancer: wer entscheidet über erlaubte Verbindungen?",
+              "back": "Die Firewall anhand ihrer Regeln. Der Load Balancer verteilt geeignete Anfragen auf Backends."
+            },
+            {
+              "id": "peripherie-appliances-rollen-und-grenzen-karte-1",
+              "label": "Abruf 2",
+              "front": "Ist ein NAS automatisch ein Backup?",
+              "back": "Nein. NAS ist ein Netzspeicher; separate Sicherung und Restore-Test müssen geplant werden."
+            },
+            {
+              "id": "peripherie-appliances-rollen-und-grenzen-karte-2",
+              "label": "Abruf 3",
+              "front": "Warum ist ein MFP beim Scan-to-Folder ein Netzwerkendpunkt?",
+              "back": "Es initiiert die Verbindung zu einem Zielordner und benötigt konfigurierte Zugriffe, Pflege und Schutz."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "peripherie-appliances-rollen-und-grenzen-transfer-a",
+          "question": "Neuer Fall: Eine Filiale will Papierbelege scannen und Beschäftigten einen gemeinsamen Dateizugriff geben. Welche Zuordnung ist richtig?",
+          "options": [
+            {
+              "text": "MFP erfasst, NAS speichert und stellt berechtigte Dateien bereit.",
+              "rationale": "Richtig: Quelle und Dateidienst sind klar getrennt.",
+              "correct": true
+            },
+            {
+              "text": "Firewall erfasst, Load Balancer ist der Dateispeicher.",
+              "rationale": "Diese Geräte haben andere Rollen.",
+              "correct": false
+            },
+            {
+              "text": "Load Balancer liest Papier, MFP verteilt SMB-Freigaben.",
+              "rationale": "Die Aufgaben sind vertauscht.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "rollen"
+        },
+        {
+          "type": "quiz",
+          "id": "peripherie-appliances-rollen-und-grenzen-transfer-b",
+          "question": "Neue Anwendung: HTTPS ist an der Firewall erlaubt; ein Load Balancer hat zwei Backends. Beide Backends sind ausgefallen. Welche Aussage ist begründet?",
+          "options": [
+            {
+              "text": "Die Firewall-Freigabe allein garantiert weiterhin eine funktionierende Anwendung.",
+              "rationale": "Eine erlaubte Verbindung ersetzt keinen funktionsfähigen App-Server.",
+              "correct": false
+            },
+            {
+              "text": "Der Load Balancer braucht erreichbare, geeignete Backends; Health Checks und Ausfallkonzept sind zu prüfen.",
+              "rationale": "Richtig: Verteilung erzeugt keinen funktionsfähigen Backend-Dienst.",
+              "correct": true
+            },
+            {
+              "text": "Ein NAS ersetzt automatisch beide App-Server.",
+              "rationale": "Dateispeicher ist nicht automatisch eine laufende Anwendung.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "grenzen"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "[Fortinet: Firewall-Regeln](https://docs.fortinet.com/document/fortigate/7.6.6/administration-guide/656084/firewall-policy), [NGINX: Health Checks](https://docs.nginx.com/nginx/admin-guide/load-balancer/http-health-check/), [Synology: NAS-Dateifreigaben](https://www.synology.com/en-us/dsm/solution/filesync) und [HP: MFP-Scan in Netzordner](https://support.hp.com/in-en/document/c05451706), ausgewählte Abschnitte am 26.09.2026 gelesen. Das lokale Quellenpaket enthielt für dieses Kernthema keine tragfähige Gesamtquelle. Fälle und Diagramme sind eigene Modelle; konkrete Herstellerfunktionen und Einstellungen variieren. Menschliche Fachfreigabe offen."
+        }
+      ]
+    }
+  ]
+}
