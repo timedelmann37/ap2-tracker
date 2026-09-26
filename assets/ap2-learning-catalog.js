@@ -1523,6 +1523,32 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "amortisation-roi-kostenvergleich-it-investition",
+    "slug": "amortisation-roi-kostenvergleich-it-investition",
+    "title": "IT-Investition: Kosten, Amortisation und ROI",
+    "description": "Drei Kennzahlen am selben IT-Fall getrennt berechnen, deuten und ihre Grenzen erklären.",
+    "domain": "GA1",
+    "groupId": "ga1-5",
+    "groupLabel": "Cloud und Wirtschaftlichkeit",
+    "itemId": "ga1-5__10",
+    "week": "KW 39",
+    "estimatedMinutes": 36,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "kosten-und-amortisation-rechnen",
+      "roi-einordnen"
+    ],
+    "sources": [
+      "itlf10-12-2023",
+      "microsoft-azure-business-case-metrics",
+      "aws-directional-business-case"
+    ],
+    "contentHash": "3cff57415858aeeb42ae2ee65d6ecad608cba214a8691009935e3628e7b67248",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "slug": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "title": "Struktogramm und Programmablaufplan",
