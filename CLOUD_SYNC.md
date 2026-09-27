@@ -105,10 +105,10 @@ für `auth.users`, `auth.uid()` und die Rollen).
    Magic-Link-Flow stören — Standardeinstellung passt.
 2. **Authentication** → **URL Configuration**:
    - **Site URL**: die Live-Domain der Seite eintragen, z. B.
-     `https://<eure-netlify-domain>.netlify.app`
+     `https://<eure-domain>`
    - **Redirect URLs**: dieselbe Domain (und ggf. `http://localhost:*` für
      lokales Testen) hinzufügen, z. B.
-     `https://<eure-netlify-domain>.netlify.app/**`
+     `https://<eure-domain>/**`
 
    Ohne diesen Schritt landet der Magic-Link-Klick aus der E-Mail auf einer
    Supabase-eigenen Fehlerseite statt zurück auf dem Tracker.

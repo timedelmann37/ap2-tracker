@@ -10,13 +10,14 @@ Merge-Konflikte zu bescheren.
 - Du arbeitest ausschließlich in `/simulation/`. Die Bedienstruktur richtet
   sich nach der Prüfungssimulation; die Gestaltung folgt `DESIGN.md`.
 - Die anderen Ordner (`/uebersicht/`, `/konzeption-administration/`,
-  `/netzwerke/`, `/sowi/`), die root `index.html`, `netlify.toml`,
+  `/netzwerke/`, `/sowi/`), die root `index.html`, `nginx/default.conf`,
   `README.md` und dieses Dokument fasst du nicht an, außer wir sprechen es
   ab.
 - Einstiegspunkt ist `/simulation/index.html` — dort landet, wer auf der
   Startseite auf "Prüfungssimulation" klickt.
 - Die statische Ausgabe wird über den gemeinsamen Build veröffentlicht.
-  Befehle und Deployment-Konfiguration stehen in `package.json` und `netlify.toml`.
+  Befehle und Deployment-Konfiguration stehen in `package.json`,
+  `docker-compose.yml` und `nginx/default.conf`.
 
 ## Warum diese Struktur
 
@@ -35,16 +36,16 @@ Die ersten vier Ordner waren früher ein einzelner `/tracker/`-Ordner und
 wurden zwischenzeitlich in eigene Themenbereiche aufgeteilt — für dich
 ändert das nichts, du bleibst weiterhin nur in `/simulation/`.
 
-Netlify liefert jeden Ordner mit eigener `index.html` automatisch unter dem
-passenden Pfad aus (`meineseite.netlify.app/simulation/`), ganz ohne
-Server-Konfiguration. Solange du innerhalb von `/simulation/` bleibst,
+nginx liefert jeden Ordner mit eigener `index.html` unter dem passenden
+Pfad aus (`<domain>/simulation/`), ohne dass du dafür etwas konfigurieren
+musst. Solange du innerhalb von `/simulation/` bleibst,
 kannst du committen und pushen, ohne dass es mit meiner Arbeit an den
 anderen Bereichen kollidiert — wir fassen im Normalfall nie dieselbe Datei
 an.
 
 ## Technische Leitplanken
 
-**Gemeinsamer Build.** Netlify veröffentlicht die statische Build-Ausgabe.
+**Gemeinsamer Build.** Veröffentlicht wird die statische Build-Ausgabe (`dist/`).
 Frameworks und eigene Build-Schritte sind erlaubt, wenn sie in den gemeinsamen
 Build integriert werden und die bestehenden Seiten lauffähig bleiben.
 Änderungen an gemeinsam genutzter Konfiguration mit der anderen Arbeit abstimmen.
@@ -92,25 +93,25 @@ Zählungen.
 1. Branch von `main` abzweigen, z. B. `feature/simulation-grundgeruest`.
 2. In `/simulation/` committen, so oft wie es für dich sinnvoll ist.
 3. Push auf den Branch, dann Pull Request gegen `main` öffnen.
-4. Netlify baut automatisch eine Deploy-Preview für den PR — den Link
-   findest du als Check unten im PR. Darüber testest du live, ob
-   `/simulation/` sauber ausgeliefert wird, bevor überhaupt gemergt wird.
+4. Lokal prüfen: `npm run build && npm run test:site` und die Seite über
+   `python -m http.server` aus `dist/` öffnen (siehe README, „Lokal
+   öffnen"). Es gibt keine automatische Vorschau pro PR.
 5. Kurzer Blick von mir drüber (nur der Vollständigkeit halber, nicht als
    Gatekeeping — bei getrennten Ordnern gibt es normalerweise nichts
    Inhaltliches zu diskutieren), dann Merge.
 
 Bitte nicht direkt auf `main` pushen, auch wenn's nur `/simulation/`
-betrifft — der PR-Umweg gibt uns beiden die Deploy-Preview zum Testen und
-eine Historie, an der man nachvollziehen kann, wann was warum passiert ist.
+betrifft — der PR-Umweg gibt uns eine Historie, an der man nachvollziehen
+kann, wann was warum passiert ist.
 
 ## Was du NICHT brauchst
 
 - Du musst niemanden um Schreibrechte für ein fremdes Repo bitten — wir
   arbeiten im selben Repo, du bist als Collaborator eingeladen und hast
   direkt Push-Rechte auf eigene Branches.
-- Du musst nichts am `netlify.toml` ändern, auch nicht für eigene Redirects
-  innerhalb von `/simulation/` — falls du doch mal einen brauchst, sag
-  kurz Bescheid, dann ergänzen wir das gemeinsam, statt dass zwei Leute
+- Du musst nichts an `nginx/default.conf` ändern, auch nicht für eigene
+  Redirects innerhalb von `/simulation/` — falls du doch mal einen brauchst,
+  sag kurz Bescheid, dann ergänzen wir das gemeinsam, statt dass zwei Leute
   zeitgleich an derselben Konfigurationsdatei schrauben.
 
 ## Fragen
