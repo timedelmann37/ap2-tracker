@@ -1,0 +1,138 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "sla-servicezeiten-reaktion-wiederherstellung",
+    "slug": "sla-servicezeiten-reaktion-wiederherstellung",
+    "title": "SLA lesen: Antwort ist noch keine Lösung",
+    "description": "Reaktions- und Wiederherstellungszeit, Servicefenster, Messdefinitionen und vertragliche Folgen an einem Störfall unterscheiden.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-2",
+    "groupLabel": "Virtualisierung, Cluster und Verfügbarkeit",
+    "itemId": "ga1-2__11",
+    "week": "KW 36",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": ["sla-ms-overview", "sla-ibm-business-hours", "sla-aws-ec2"],
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    { "id": "zeiten", "label": "Reaktion, Wiederherstellung und Servicezeit anhand eines Tickets zeitlich trennen" },
+    { "id": "vertrag", "label": "Ein SLA auf Messdefinition, Ausnahmen, Eskalation und ausdrücklich vereinbarte Folgen prüfen" }
+  ],
+  "intro": "Ein kritischer Dienst fällt Freitag um 17:30 Uhr aus. Der Vertrag nennt zwei Stunden Reaktionszeit und acht Stunden Wiederherstellungszeit – aber Support nur Montag bis Freitag von 08:00 bis 18:00 Uhr. Was bedeutet das wirklich?",
+  "curation": {
+    "evidence": [
+      { "sourceId": "sla-ms-overview", "sourceLocator": "Features of service-level agreements; SLA KPIs", "use": "Getrennte Kennzahlen für erste Reaktion und Lösung", "reviewStatus": "Am 26.09.2026 gelesen; eigener Ticketfall" },
+      { "sourceId": "sla-ibm-business-hours", "sourceLocator": "Service-level agreements; work hours; example response deadline", "use": "Servicezeitfenster für vertragliche Uhren", "reviewStatus": "Am 26.09.2026 gelesen" },
+      { "sourceId": "sla-aws-ec2", "sourceLocator": "Region-Level SLA; SLA Definitions; Service Credits; exclusions", "use": "Messperiode, Ausnahmen und mögliche vertragliche Servicegutschrift", "reviewStatus": "Am 26.09.2026 gelesen; keine AWS-Konditionen in den Lehrvertrag übertragen" }
+    ],
+    "notes": [
+      "Der private Batch ga1-2-011-011 enthält passenden Kontext aus ITLF6-9 zu Service- und Reaktionszeiten. Das private Bild ist für dieses Lernziel nicht nötig und wurde nicht übernommen; Fall, Beträge und Grafiken sind eigenständig.",
+      "Die fiktive SLA definiert beide Fristen ausdrücklich ab dokumentiertem Ticketzugang in Servicezeitstunden; Feiertage sind für den Fall ausgeschlossen. Andere Verträge starten Uhren anders oder pausieren sie unter anderen Bedingungen.",
+      "Pönale/Vertragsstrafe und Servicegutschrift sind nicht dasselbe; beide folgen nur aus konkreter Vereinbarung. Die Einheit ist keine Rechtsberatung. Menschliche Fachfreigabe offen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "stoehrungsuhr",
+      "type": "flow",
+      "title": "Freitag 17:30 Uhr – welche Uhr läuft?",
+      "description": "Fiktives SLA: Mo–Fr 08:00–18:00, Reaktion spätestens nach 2 Servicezeitstunden, Wiederherstellung spätestens nach 8 Servicezeitstunden; beide ab Ticketzugang.",
+      "items": [
+        { "label": "Fr 17:30: Ticket", "detail": "Der Dienst fällt aus und das Ticket geht ein. Bis 18:00 verbraucht jede SLA-Uhr 30 Minuten." },
+        { "label": "Wochenende: SLA-Uhren pausieren", "detail": "Außerhalb der vereinbarten Servicezeiten zählt keine weitere Servicezeit. Nutzer können den Ausfall trotzdem durchgehend erleben." },
+        { "label": "Mo 09:30: Reaktionsfrist", "detail": "Nach weiteren 90 Minuten Servicezeit ist die Zwei-Stunden-Frist erreicht. Eine bestätigte Bearbeitungsaufnahme ist noch keine Lösung." },
+        { "label": "Mo 15:30: Wiederherstellungsfrist", "detail": "Nach weiteren 7,5 Stunden ab Montag 08:00 sind insgesamt acht Servicezeitstunden seit Ticketzugang verstrichen." }
+      ]
+    },
+    {
+      "id": "sla-prueffelder",
+      "type": "comparison",
+      "title": "Ein SLA besteht nicht nur aus einer Prozentzahl",
+      "description": "Jede Zahl braucht einen Geltungsbereich und einen Nachweisweg.",
+      "items": [
+        { "label": "Leistung und Messung", "detail": "Welcher Dienst, welcher Nutzerpfad, welche Messperiode, welcher Start-/Endpunkt der Störung und welches Verfügbarkeitsziel?" },
+        { "label": "Support und Wiederanlauf", "detail": "Kontaktkanal, Priorität, Reaktions- und Wiederherstellungsfrist, Servicezeiten, Eskalation und Wartungsregeln getrennt festhalten." },
+        { "label": "Abweichung und Folge", "detail": "Messdaten, Meldefristen, Ausnahmen und ausdrücklich vereinbarte Gutschrift oder Vertragsstrafe prüfen – keine automatische Zahlung allein aus einer Prozentzahl." }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Die erste Antwort löst den Fehler nicht",
+      "blocks": [
+        { "type": "quiz", "id": "sla-diagnose", "question": "Der Support bestätigt ein Störungsticket innerhalb der vereinbarten Reaktionszeit, der Dienst ist aber weiter ausgefallen. Was ist damit nachgewiesen?", "options": [
+          { "text": "Die Reaktionsfrist kann erfüllt sein; über Wiederherstellung und Verfügbarkeit sagt das allein nichts.", "rationale": "Richtig. Antwort und wieder nutzbarer Dienst sind getrennte Ereignisse.", "correct": true },
+          { "text": "Mit der Bestätigung ist automatisch auch die Wiederherstellungsfrist erfüllt.", "rationale": "Der Dienst ist laut Fall weiter gestört.", "correct": false },
+          { "text": "Jede Reaktion beendet sofort die gemessene Ausfallzeit.", "rationale": "Eine Antwort macht den Dienst nicht wieder nutzbar.", "correct": false }
+        ], "diagnostic": true },
+        { "type": "markdown", "markdown": "Ein **Service Level Agreement (SLA)** legt für einen beschriebenen Dienst messbare Zusagen fest: etwa Verfügbarkeit, Supportfenster, erste Reaktion und Wiederherstellung. **Reaktionszeit** endet bei der im Vertrag definierten Bearbeitungsaufnahme oder ersten qualifizierten Antwort. **Wiederherstellungszeit** endet erst, wenn der vereinbarte Dienst wieder nutzbar ist. Ein schneller Ticketkommentar kann daher die Reaktionsfrist erfüllen, während die Wiederherstellungsfrist später verletzt wird.\n\nBeide Fristen benötigen einen Startpunkt: Ticketzugang, Alarm, bestätigte Priorisierung oder Ausfallbeginn sind nicht automatisch dasselbe. Im folgenden Lehrvertrag starten *beide* Uhren beim dokumentierten Ticketzugang. Entscheidend sind außerdem Priorität und vereinbarter Kontaktkanal. Ein falsch klassifiziertes Ticket oder eine nicht erreichbare Hotline kann die Bewertung verändern; das muss im SLA stehen." },
+        { "type": "figure", "diagramId": "stoehrungsuhr", "alt": "Fiktive Servicezeituhr: Ticket Freitag 17:30, bis 18:00 zählen 30 Minuten; am Wochenende pausiert die SLA-Uhr; Montag 09:30 ist die Reaktionsfrist und Montag 15:30 die Wiederherstellungsfrist erreicht.", "caption": "Eigene Zeitachse ohne Feiertag. Die Kundennutzung kann außerhalb des Supportfensters trotzdem ausfallen." },
+        { "type": "quiz", "id": "sla-reaktion-zeitpunkt", "question": "Im beschriebenen SLA (Mo–Fr 08–18 Uhr, zwei Servicezeitstunden ab Ticket Fr 17:30): Wann endet die Reaktionsfrist?", "options": [
+          { "text": "Freitag 19:30 Uhr", "rationale": "Nach 18:00 Uhr zählt im Fall keine Servicezeit mehr.", "correct": false },
+          { "text": "Montag 09:30 Uhr", "rationale": "Richtig: Freitag 0,5 h und Montag weitere 1,5 h.", "correct": true },
+          { "text": "Montag 10:00 Uhr", "rationale": "Die 30 Minuten vom Freitag zählen bereits zur Frist.", "correct": false }
+        ] },
+        { "type": "quiz", "id": "sla-wiederherstellung-zeitpunkt", "question": "Dasselbe SLA verspricht acht Servicezeitstunden Wiederherstellung ab Ticket Fr 17:30. Wann endet diese Frist?", "options": [
+          { "text": "Samstag 01:30 Uhr", "rationale": "Außerhalb Mo–Fr 08–18 Uhr zählen hier keine Servicezeitstunden.", "correct": false },
+          { "text": "Montag 15:30 Uhr", "rationale": "Richtig: Freitag 0,5 h plus Montag 7,5 h.", "correct": true },
+          { "text": "Montag 16:00 Uhr", "rationale": "Die halbe Stunde vom Freitag wurde übersehen.", "correct": false }
+        ] }
+      ]
+    },
+    {
+      "title": "Das Servicefenster ist ein Produktmerkmal",
+      "blocks": [
+        { "type": "markdown", "markdown": "Der Fall zeigt einen möglichen Widerspruch: Die Anwendung soll vielleicht **24/7** genutzt werden, während der Support nur zu Bürozeiten arbeitet. Die SLA-Uhr pausiert am Wochenende, der reale Nutzerausfall nicht. Wer einen kritischen Wochenenddienst betreibt, muss deshalb das Supportfenster, Rufbereitschaft, Eskalation und Wiederanlauf ausdrücklich passend einkaufen oder selbst vorhalten.\n\nAuch „99,95 % verfügbar“ ist ohne Definition unvollständig: Ist die Messperiode ein Kalendermonat oder Jahr? Werden Wartungen ausgenommen? Zählt nur ein Infrastruktur-Ping oder ein erfolgreicher Nutzerzugriff? Wer misst, wie wird protokolliert und wie werden Teilausfälle gezählt? Prüfe immer die tatsächlich vereinbarte Nutzerfunktion statt nur eines Serverzustands." },
+        { "type": "figure", "diagramId": "sla-prueffelder", "alt": "SLA-Prüffelder: Dienst und Messung, Support und Wiederanlauf, Abweichungen und ausdrücklich vereinbarte Folgen.", "caption": "Eigene Prüfliste für ein Serviceangebot; konkrete Ansprüche ergeben sich nur aus dem jeweiligen Vertrag." },
+        { "type": "sequence", "id": "sla-pruefweg", "title": "Angebot prüfen", "prompt": "Ordne die Schritte, bevor du zwei SLA-Angebote vergleichst.", "steps": [
+          { "id": "dienst", "label": "Vereinbarte Nutzerfunktion und Messmethode klären" },
+          { "id": "zeiten", "label": "Servicezeiten, Startpunkte und Fristen für Reaktion und Wiederherstellung prüfen" },
+          { "id": "folgen", "label": "Ausnahmen, Nachweisweg, Eskalation und vertragliche Folgen lesen" }
+        ], "expected": ["dienst", "zeiten", "folgen"], "correctFeedback": "Richtig: Erst definieren, was geleistet und gemessen wird; dann Uhren und Folgen prüfen.", "wrongFeedback": "Ohne Dienst- und Messdefinition lassen sich Zeitversprechen und vertragliche Folgen nicht sinnvoll vergleichen." },
+        { "type": "recall", "id": "sla-begruendung", "title": "Kritischer Wochenenddienst", "prompt": "Eine Kundin erwartet 24/7-Nutzung. Im Angebot steht 99,95 % Verfügbarkeit, aber Support Mo–Fr 08–18 Uhr. Welche drei Punkte sprichst du vor Vertragsabschluss an?", "label": "Deine Fragen", "minLength": 110, "model": "Ich kläre, ob die 99,95 % für die 24/7-Nutzerfunktion oder nur für Servicezeiten gelten und wie Ausfälle gemessen werden. Ich frage nach Rufbereitschaft und Fristen am Wochenende; sonst pausiert die Supportuhr trotz Nutzerausfall. Außerdem prüfe ich Eskalation, Wartungsausnahmen und die ausdrücklich vereinbarten Folgen bei Zielverfehlung." }
+      ]
+    },
+    {
+      "title": "Wenn das Ziel verfehlt wird",
+      "blocks": [
+        { "type": "markdown", "markdown": "Ein SLA kann für Zielverfehlungen **Servicegutschriften** oder eine **Vertragsstrafe/Pönale** vorsehen. Das sind unterschiedliche vertragliche Regelungen; keine entsteht automatisch aus einer hohen Verfügbarkeitszahl. Entscheidend sind die konkret vereinbarten Voraussetzungen, Ausnahmen, Nachweise, Meldefristen und Berechnungsgrundlagen. Manche Angebote sehen nur einen begrenzten Gutschriftbetrag vor, nicht den Ersatz aller tatsächlich entstandenen Schäden.\n\nFiktiver Rechenfall, **nur wenn** der Vertrag es so vorsieht: Bei nachgewiesener Unterschreitung des Monatsziels gibt es 10 % Gutschrift auf die betroffene Monatsgebühr von 800 €. Das wären 80 € Gutschrift. Der Betrag sagt nichts über die wirtschaftlichen Folgen des Dienstausfalls und ist keine Aussage zu einem realen Anbieter." },
+        { "type": "math", "ariaLabel": "Fiktive vertragliche Servicegutschrift gleich 800 Euro betroffene Monatsgebühr mal 10 Prozent gleich 80 Euro.", "mathml": "<math display=\"block\"><mrow><mn>800</mn><mtext> €</mtext><mo>·</mo><mn>0,10</mn><mo>=</mo><mn>80</mn><mtext> € Gutschrift</mtext></mrow></math>", "legend": ["Nur eine vertraglich vereinbarte Beispielregel; keine automatische gesetzliche Pönale."] },
+        { "type": "numeric", "id": "sla-gutschrift", "title": "Fiktive Gutschrift berechnen", "prompt": "Ein fiktives SLA sagt für einen nachgewiesenen Verstoß ausdrücklich 10 % Gutschrift auf die betroffene Monatsgebühr von 800 € zu. Wie hoch ist die Gutschrift in Euro?", "label": "Gutschrift in Euro", "expected": 80, "tolerance": 0.001, "correctFeedback": "Richtig: 800 € × 0,10 = 80 €. Ob eine solche Gutschrift anfällt, bestimmt allein die vereinbarte Klausel.", "wrongFeedback": "10 % entsprechen dem Dezimalfaktor 0,10. Multipliziere ihn mit der vertraglich betroffenen Gebühr.", "misconceptions": [ { "value": 800, "feedback": "800 € ist die Monatsgebühr; die vereinbarte Gutschrift beträgt nur 10 % davon." }, { "value": 8, "feedback": "8 € wären 1 % von 800 €, nicht 10 %." } ] },
+        { "type": "quiz", "id": "sla-ponale", "question": "Ein Vertrag nennt nur 99,95 % Verfügbarkeit, aber keine Regel zu Gutschrift oder Vertragsstrafe. Was darfst du daraus allein ableiten?", "options": [
+          { "text": "Bei Unterschreitung entsteht automatisch genau 10 % Servicegutschrift.", "rationale": "Höhe und Voraussetzungen müssen konkret vereinbart sein.", "correct": false },
+          { "text": "Die Zielzahl allein legt weder eine bestimmte Gutschrift noch eine Pönale fest; Vertragsklauseln sind zu prüfen.", "rationale": "Richtig. Eine Prozentzahl ist keine vollständige Regel über Folgen einer Abweichung.", "correct": true },
+          { "text": "Ohne Strafklausel ist die Messdefinition der Verfügbarkeit unwichtig.", "rationale": "Ohne Messdefinition ist schon unklar, ob das Ziel erfüllt wurde.", "correct": false }
+        ] }
+      ]
+    },
+    {
+      "title": "Abruf und Lernziel-Check",
+      "blocks": [
+        { "type": "flashcards", "cards": [
+          { "id": "sla-karte-0", "label": "Abruf 1", "front": "Reaktionszeit oder Wiederherstellungszeit?", "back": "Reaktion: qualifizierte Bearbeitungsaufnahme/Antwort laut Vertrag. Wiederherstellung: vereinbarter Dienst ist wieder nutzbar." },
+          { "id": "sla-karte-1", "label": "Abruf 2", "front": "Was bedeutet Servicezeit?", "back": "Das vertragliche Zeitfenster, in dem eine Frist läuft oder Support geleistet wird. Außerhalb kann der Nutzer trotzdem einen Ausfall erleben." },
+          { "id": "sla-karte-2", "label": "Abruf 3", "front": "Ist Pönale gleich Servicegutschrift?", "back": "Nein. Das sind unterschiedliche mögliche Vertragsfolgen. Art, Höhe und Voraussetzungen müssen ausdrücklich geprüft werden." }
+        ] },
+        { "type": "quiz", "id": "sla-transfer-a", "question": "Ticket Fr 17:30, Support Mo–Fr 08–18 Uhr. Zwei Servicezeitstunden Reaktion ab Ticket: Welche Frist gilt im Lehrvertrag?", "options": [
+          { "text": "Freitag 19:30 Uhr", "rationale": "Die SLA-Uhr pausiert Freitag ab 18:00.", "correct": false },
+          { "text": "Montag 09:30 Uhr", "rationale": "Richtig: 30 Minuten Freitag, 90 Minuten Montag.", "correct": true },
+          { "text": "Montag 15:30 Uhr", "rationale": "Das ist im Fall die separate Acht-Servicezeitstunden-Frist zur Wiederherstellung.", "correct": false }
+        ], "requiredObjective": "zeiten" },
+        { "type": "quiz", "id": "sla-transfer-b", "question": "Ein Anbieter verspricht 99,95 % und erwähnt 'Entschädigung'. Was prüfst du vor einer belastbaren Entscheidung zuerst?", "options": [
+          { "text": "Messperiode und Ausfalldefinition, Servicefenster, Ausnahmen sowie die konkrete vertragliche Folge und deren Voraussetzungen.", "rationale": "Richtig. Erst diese Angaben machen Ziel und mögliche Folge prüfbar.", "correct": true },
+          { "text": "Nur die Prozentzahl; alle Anbieter messen und entschädigen gleich.", "rationale": "Messmethode und Regel bei Abweichung unterscheiden sich zwischen Verträgen.", "correct": false },
+          { "text": "Nur die Hotline-Nummer; ein erreichbarer Support garantiert automatisch Wiederherstellung.", "rationale": "Erreichbarkeit und tatsächliche Lösung sind verschiedene Zusagen.", "correct": false }
+        ], "requiredObjective": "vertrag" }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        { "type": "markdown", "markdown": "[Microsoft Learn: SLA-Überblick](https://learn.microsoft.com/en-us/dynamics365/customer-service/use/overview-service-level-agreements), [IBM: Servicezeiten in SLAs](https://www.ibm.com/docs/en/content-cortex/5.5.12?topic=workflows-service-level-agreements) und [AWS: Beispiel eines Compute-SLA](https://aws.amazon.com/compute/sla/), am 26.09.2026 gelesen. Alle Termine, Vertragsregeln, Beträge und Grafiken sind eigene Lehrbeispiele; echte Ansprüche hängen vom konkreten Vertrag und geltendem Recht ab. Menschliche Fachfreigabe offen." }
+      ]
+    }
+  ]
+}

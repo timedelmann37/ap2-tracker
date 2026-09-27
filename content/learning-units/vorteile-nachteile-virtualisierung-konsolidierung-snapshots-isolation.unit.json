@@ -1,0 +1,139 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation",
+    "slug": "vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation",
+    "title": "Virtualisierung abwägen: vier VMs, ein Host",
+    "description": "Konsolidierung, Prüfpunkte und Isolation nutzen, ohne Hostausfall, Ressourcenbedarf oder Lizenzen zu übersehen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-2",
+    "groupLabel": "Virtualisierung, Cluster und Verfügbarkeit",
+    "itemId": "ga1-2__2",
+    "week": "KW 36",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": ["virt-ms-checkpoints", "virt-ms-host-requirements", "virt-ms-dc-host-failure", "virt-nist-hypervisor-security", "license-microsoft-ws2025"],
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    { "id": "konsolidierung", "label": "Konsolidierungsnutzen und gemeinsames Ausfallrisiko anhand eines Hostmodells erklären" },
+    { "id": "entscheidung", "label": "Prüfpunkt, Isolation, Overhead und Lizenzprüfung in einer Betriebsentscheidung abwägen" }
+  ],
+  "intro": "Vier physische Server auf einen Virtualisierungshost zusammenzulegen kann Platz und Betrieb vereinfachen. Aber vier getrennte VMs sind nicht automatisch vier getrennte Ausfallorte. Hier planst du den Nutzen und den gemeinsamen Fehlerpunkt zusammen.",
+  "curation": {
+    "evidence": [
+      { "sourceId": "virt-ms-checkpoints", "sourceLocator": "Einleitung sowie Standard and Production Checkpoints", "use": "Rücksetzpunkt vor Änderungen und klare Abgrenzung zum unabhängigen Backup", "reviewStatus": "Am 26.09.2026 gelesen; kein Herstellerbild übernommen" },
+      { "sourceId": "virt-ms-host-requirements", "sourceLocator": "Hardware requirements for Hyper-V", "use": "Hostressourcen und Gastlast gemeinsam dimensionieren", "reviewStatus": "Am 26.09.2026 gelesen" },
+      { "sourceId": "virt-ms-dc-host-failure", "sourceLocator": "Virtualized domain controller deployment guidance", "use": "Konsolidierung kritischer Rollen und physische Ausfallorte unterscheiden", "reviewStatus": "Am 26.09.2026 gelesen" },
+      { "sourceId": "virt-nist-hypervisor-security", "sourceLocator": "Abstract and hypervisor security recommendations", "use": "VM-Isolation als Schutzschicht, Hypervisor als gemeinsame Vertrauensbasis", "reviewStatus": "Am 26.09.2026 gelesen" },
+      { "sourceId": "license-microsoft-ws2025", "sourceLocator": "Windows Server 2025 licensing guidance", "use": "Virtualisierungsrechte müssen für konkrete Produkte und Verträge geprüft werden", "reviewStatus": "Am 26.09.2026 gelesen; keine allgemeine Lizenzzahl abgeleitet" }
+    ],
+    "notes": [
+      "Privater Batch ga1-2-002-002 nennt Konsolidierung und Isolation in einem OCR-gestörten IHK-Bonn-Abschnitt. Die unklare Buchgrafik wurde weder übernommen noch als Fachbeleg verwendet.",
+      "Das Vier-VM-Beispiel, die Zahlen und beide Diagramme sind eigens erstellt und stark vereinfacht. Fix zugeteilte RAM-Werte sind keine Messung des realen Workloads; CPU, I/O, Storage, Netz, Lastspitzen und Reserve sind zusätzlich zu prüfen.",
+      "Ein Prüfpunkt ist ein kurzfristiger Rückweg und kein unabhängig gelagertes, getestetes Backup. Isolations- und Lizenzbedingungen hängen vom Produkt, der Konfiguration und dem Vertrag ab. Menschliche Fachfreigabe offen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "konsolidierung",
+      "type": "comparison",
+      "title": "Weniger Hardware, gemeinsamer Ausfallort",
+      "description": "Vier Dienste werden auf vier VMs eines Hosts konsolidiert; die Dienste bleiben logisch getrennt, teilen aber physische Abhängigkeiten.",
+      "items": [
+        { "label": "Vorher: vier Server", "detail": "Jeder Dienst hat einen eigenen physischen Rechner. Das ist kein automatisches Hochverfügbarkeitskonzept, aber kein einzelner Host stoppt alle vier." },
+        { "label": "Nachher: ein Host, vier VMs", "detail": "Weniger physische Systeme zu betreiben; jede VM hat ein Gast-OS und ihre eigene Konfiguration." },
+        { "label": "Gemeinsame Basis", "detail": "Host, Hypervisor, lokale Stromversorgung und gemeinsam genutzter Speicher können alle vier VMs zugleich betreffen." }
+      ]
+    },
+    {
+      "id": "ausfallpfad",
+      "type": "flow",
+      "title": "Fehlerpfad statt Sicherheitsgefühl",
+      "description": "Eine VM-Störung und ein Hostausfall haben einen unterschiedlichen Wirkungsradius.",
+      "items": [
+        { "label": "VM A fällt aus", "detail": "Die anderen Gäste können weiterlaufen, sofern die gemeinsame Plattform gesund und Ressourcen sauber begrenzt sind." },
+        { "label": "Host fällt aus", "detail": "Alle vier VMs auf diesem Host stehen still; Isolation der Gäste behebt den physischen Fehler nicht." },
+        { "label": "Gegenmaßnahmen", "detail": "Unabhängiger zweiter Host, geeignetes Failover, Backup und Wiederanlauf testen; auch gemeinsame Speicher- und Strompfade prüfen." }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Der erste Denkfehler",
+      "blocks": [
+        { "type": "quiz", "id": "vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-diagnose", "question": "Vier geschäftskritische VMs laufen auf demselben physischen Host. Wie viele unabhängige physische Host-Ausfallorte haben sie?", "options": [
+          { "text": "Vier, denn jede VM ist ein eigener physischer Rechner.", "rationale": "VMs sind logisch getrennt, teilen sich hier aber genau einen physischen Host.", "correct": false },
+          { "text": "Einen; ein Hostdefekt kann alle vier gleichzeitig treffen.", "rationale": "Richtig. VM-Isolation und physische Redundanz sind unterschiedliche Eigenschaften.", "correct": true },
+          { "text": "Keinen, denn virtuelle Systeme können nicht ausfallen.", "rationale": "Auch VMs, Hypervisor, Speicher und Hosthardware können ausfallen.", "correct": false }
+        ], "diagnostic": true }
+      ]
+    },
+    {
+      "title": "Konsolidierung mit offenen Augen",
+      "blocks": [
+        { "type": "figure", "diagramId": "konsolidierung", "alt": "Vorher vier physische Server, danach vier logisch getrennte VMs auf einem Host. Der Host bildet nun einen gemeinsamen Ausfallort.", "caption": "Eigenes vereinfachtes Lehrbild; Strom-, Platz- und Kostenvorteile müssen im konkreten Betrieb gemessen werden." },
+        { "type": "markdown", "markdown": "**Konsolidierung** bündelt mehrere Workloads auf weniger physischer Hardware. Das kann ungenutzte Kapazität besser auslasten und die Zahl zu wartender Geräte senken. Es ist aber keine automatische Ersparnis: Der neue Host muss die gleichzeitige Last tragen; Gastbetriebssysteme, Hypervisor, Management, Storage und Netz brauchen ebenfalls Ressourcen. Ob Energie oder Kosten wirklich sinken, hängt von Auslastung, Hardware, Lizenzen und Betriebsmodell ab.\n\nIm Übungsmodell bekommen vier VMs je **8 GB festen RAM**, und der Host reserviert **8 GB** für Betrieb und Virtualisierung. Bereits ohne zusätzliche Reserve werden **40 GB** benötigt. Ein 32-GB-Host ist damit unzureichend. Ein 40-GB-Host wäre rechnerisch genau ausgeschöpft und für Lastspitzen oder Wachstum nicht vernünftig dimensioniert. CPU, I/O, Storage und Netz müssen getrennt geprüft werden; diese einfache RAM-Rechnung beweist keine Gesamt-Eignung." },
+        { "type": "math", "ariaLabel": "Vier virtuelle Maschinen mal acht Gigabyte zugeteilter Arbeitsspeicher plus acht Gigabyte Hostreserve gleich vierzig Gigabyte Mindestbedarf im vereinfachten Modell.", "mathml": "<math display=\"block\"><mrow><msub><mi>RAM</mi><mtext>Modell</mtext></msub><mo>=</mo><mn>4</mn><mo>·</mo><mn>8</mn><mtext> GB</mtext><mo>+</mo><mn>8</mn><mtext> GB</mtext><mo>=</mo><mn>40</mn><mtext> GB</mtext></mrow></math>", "legend": ["Vier feste VM-Zuteilungen plus Hostbedarf; zusätzlich Kapazitätsreserve und andere Ressourcen prüfen."] },
+        { "type": "numeric", "id": "vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-ram", "title": "Nur den Mindest-RAM berechnen", "prompt": "Ein anderer Host soll drei VMs mit je 10 GB festem RAM tragen. Für Host und Hypervisor sind 6 GB vorgesehen. Wie viel GB benötigt das vereinfachte Modell mindestens, noch ohne Zusatzreserve?", "label": "Mindestbedarf in GB", "expected": 36, "tolerance": 0.001, "correctFeedback": "Richtig: 3 × 10 GB + 6 GB = 36 GB. Für den echten Host noch Reserve und andere Ressourcen planen.", "wrongFeedback": "Addiere zuerst die festen RAM-Zuteilungen aller Gäste, dann den Hostbedarf. Die Kapazitätsreserve ist noch nicht eingerechnet.", "misconceptions": [ { "value": 30, "feedback": "30 GB decken nur die drei VMs; die 6 GB Hostbedarf fehlen." }, { "value": 16, "feedback": "Du hast offenbar nur eine VM und den Host addiert. Es sind drei VMs." } ] },
+        { "type": "quiz", "id": "vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-ressourcen", "question": "Ein 40-GB-Host soll exakt die 40 GB aus dem Modell tragen. Ist damit die Beschaffung freigegeben?", "options": [
+          { "text": "Ja, RAM ist die einzige relevante Ressource.", "rationale": "Es fehlen Reserve, reale Spitzenlast und Prüfungen von CPU, I/O, Storage und Netz.", "correct": false },
+          { "text": "Nein; das Modell liefert nur eine Untergrenze, keine vollständige Dimensionierung.", "rationale": "Richtig. Gerade Konsolidierung bündelt Lastspitzen und gemeinsame Engpässe.", "correct": true },
+          { "text": "Ja, der Hypervisor macht die 40 GB durch Virtualisierung automatisch größer.", "rationale": "Virtualisierung erzeugt keinen physischen RAM. Dynamische Zuteilung wäre separat zu planen und zu messen.", "correct": false }
+        ] }
+      ]
+    },
+    {
+      "title": "Isolation schützt nicht vor dem Hostausfall",
+      "blocks": [
+        { "type": "figure", "diagramId": "ausfallpfad", "alt": "Fällt nur VM A aus, können die übrigen Gäste weiterlaufen. Fällt der gemeinsame Host aus, stoppt er alle vier. Ein zweiter unabhängiger Host mit geplantem Wiederanlauf verringert diesen gemeinsamen Ausfallpfad.", "caption": "Eigenes Fehlerpfad-Modell; ein zweiter Host hilft nur mit geeigneter Architektur und geprüftem Failover." },
+        { "type": "markdown", "markdown": "Eine VM kapselt ihren Gast gegenüber anderen Gästen. Ein Fehler in **einer** VM muss nicht alle treffen. Die Trennung ist aber nicht absolut: Hypervisor und Host bilden eine gemeinsame Vertrauensbasis, Ressourcen können sich beeinflussen, und Fehlkonfigurationen oder Sicherheitslücken bleiben möglich. Deshalb: Hypervisor patchen, Rechte begrenzen, Ressourcen beobachten und Gäste getrennt absichern.\n\nDer **Single Point of Failure (SPOF)** entsteht hier durch den einzigen physischen Host. Wenn er ausfällt, stehen alle vier VMs still. Für geschäftskritische Rollen müssen Ausfallorte bewusst verteilt werden. Ein zweiter Host allein garantiert noch keine Hochverfügbarkeit: Kapazität, gemeinsamer Speicher oder Replikation, Netz, Strom, Failover-Verfahren und Wiederanlauf sind zu planen und zu testen." },
+        { "type": "sequence", "id": "vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-entscheidung", "title": "Betriebsentscheidung ordnen", "prompt": "Ordne den Weg vor der Konsolidierung eines kritischen Dienstes.", "steps": [
+          { "id": "bedarf", "label": "Last, Verfügbarkeit und Wiederanlaufziel ermitteln" },
+          { "id": "architektur", "label": "Hostkapazität, Ausfallorte und Lizenzen planen" },
+          { "id": "nachweis", "label": "Backup, Failover und Wiederanlauf praktisch testen" }
+        ], "expected": ["bedarf", "architektur", "nachweis"], "correctFeedback": "Richtig: Anforderungen vor Architektur, Test vor Freigabe.", "wrongFeedback": "Beginne mit der Anforderung, plane danach die technische und rechtliche Basis und teste sie zuletzt." }
+      ]
+    },
+    {
+      "title": "Prüfpunkt, Backup und Lizenz nicht verwechseln",
+      "blocks": [
+        { "type": "markdown", "markdown": "Ein **Prüfpunkt/Snapshot** hält einen VM-Zustand zum Rücksetzen fest – praktisch vor einer kontrollierten Änderung. Beim Standardprüfpunkt kann auch Arbeitsspeicher enthalten sein; ein Produktionsprüfpunkt zielt auf konsistente Daten. Das genaue Verhalten hängt vom System ab. Rücksetzen verwirft spätere Änderungen. Ein Prüfpunkt auf derselben Plattform ist **kein unabhängiges Backup**: Ein Defekt des Hostspeichers kann beides treffen. Für Schutz gegen Datenverlust brauchst du ein getrenntes Backup mit geeignetem Wiederherstellungstest.\n\n**Lizenzen** verschwinden durch VMs nicht. Hypervisor, Hostbetriebssystem, Gastbetriebssysteme, Anwendungen und gegebenenfalls Zugriffe können eigene Regeln haben. Bei Windows Server hängen Virtualisierungsrechte unter anderem von Edition, Core-Lizenzierung und konkretem Lizenzprogramm ab. Deshalb im Angebot die tatsächlich eingesetzten Produkte, VM-Zahlen und Nutzungsrechte prüfen – keine pauschale Regel wie „eine VM = eine Lizenz“ annehmen." },
+        { "type": "quiz", "id": "vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-snapshot", "question": "Vor einem Update wird ein Prüfpunkt auf demselben Storage wie die VM erstellt. Am Folgetag fällt dieses Storage aus. Welche Aussage stimmt?", "options": [
+          { "text": "Der Prüfpunkt ist ein unabhängiges Backup und rettet die VM sicher.", "rationale": "Prüfpunkt und VM teilen hier denselben Ausfallort; eine getrennte Sicherung ist nicht belegt.", "correct": false },
+          { "text": "Ein Prüfpunkt erleichtert das Rücksetzen nach einem Updatefehler, ersetzt aber kein getrenntes und getestetes Backup.", "rationale": "Richtig: Rückweg bei Änderung und Wiederherstellung nach Storageverlust sind verschiedene Aufgaben.", "correct": true },
+          { "text": "Prüfpunkte dürfen nur bei physischen Servern angelegt werden.", "rationale": "Prüfpunkte sind gerade eine Funktion virtueller Maschinen.", "correct": false }
+        ] },
+        { "type": "recall", "id": "vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-begruendung", "title": "Ein Angebot kritisch lesen", "prompt": "Ein Anbieter verspricht mit vier VMs auf einem Host „vierfach abgesichert und ohne Zusatzkosten“. Erkläre in eigenen Worten drei Prüfungen: Ausfallort, Sicherung und Lizenz beziehungsweise Ressourcen.", "label": "Deine Prüfung", "minLength": 100, "model": "Die vier VMs sind logisch getrennt, teilen aber einen physischen Host und möglicherweise Speicher, Strom und Netz. Ich fordere ein unabhängiges Backup mit Restore-Test statt nur lokaler Snapshots. Außerdem prüfe ich reale Hostkapazität samt Reserve und die konkreten Gast-, Host- und Anwendungslizenzen; aus der VM-Zahl allein folgt weder Verfügbarkeit noch Kostenfreiheit." },
+        { "type": "flashcards", "cards": [
+          { "id": "vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-karte-0", "label": "Abruf 1", "front": "Was ist der Nutzen der Konsolidierung?", "back": "Mehrere Workloads teilen weniger physische Hardware; Auslastung und Gerätebetrieb können günstiger werden, müssen aber konkret gemessen werden." },
+          { "id": "vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-karte-1", "label": "Abruf 2", "front": "Was ist hier der gemeinsame Ausfallort?", "back": "Der einzelne physische Host und gegebenenfalls gemeinsame Speicher-, Strom- und Netzwerkkomponenten." },
+          { "id": "vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-karte-2", "label": "Abruf 3", "front": "Wann hilft ein Prüfpunkt – und wann nicht?", "back": "Beim Rücksetzen nach einer Änderung; nicht als unabhängiger Ersatz für ein getrenntes, getestetes Backup." }
+        ] }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        { "type": "quiz", "id": "vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-transfer-a", "question": "Ein Unternehmen verlagert vier Anwendungen von vier Servern auf vier VMs eines einzigen Hosts. Was muss es für die zugesagte Verfügbarkeit besonders prüfen?", "options": [
+          { "text": "Nur die VM-Namen; vier Namen bedeuten vier physische Ausfallorte.", "rationale": "Die VM-Namen ändern nichts am gemeinsamen Host.", "correct": false },
+          { "text": "Host- und Infrastruktur-Ausfallpfade, ausreichende Reserve sowie getesteten Wiederanlauf oder Failover.", "rationale": "Richtig. Konsolidierung und Verfügbarkeit müssen gemeinsam entworfen werden.", "correct": true },
+          { "text": "Nichts; Konsolidierung macht Hardwareausfälle unmöglich.", "rationale": "Ein Hostausfall kann alle auf ihm laufenden Gäste treffen.", "correct": false }
+        ], "requiredObjective": "konsolidierung" },
+        { "type": "quiz", "id": "vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-transfer-b", "question": "Vor dem Rollout einer kritischen VM liegt nur ein lokaler Prüfpunkt vor. Der Anbieter nennt außerdem keine Lizenzannahmen und keinen Kapazitätstest. Was ist die beste Reaktion?", "options": [
+          { "text": "Freigeben; der Prüfpunkt deckt Storageausfall, Kapazität und Lizenz vollständig ab.", "rationale": "Ein Prüfpunkt ist kein unabhängiges Backup und sagt nichts über Kapazität oder Nutzungsrechte aus.", "correct": false },
+          { "text": "Getrenntes Backup samt Restore, Ressourcen unter Last und konkrete Produkt-/Gastlizenzen nachweisen lassen.", "rationale": "Richtig. Jede der drei Lücken hat eine eigene Prüfung.", "correct": true },
+          { "text": "Nur einen zweiten Prüfpunkt auf demselben Storage anlegen.", "rationale": "Das beseitigt weder gemeinsamen Storageausfall noch Ressourcen- und Lizenzfragen.", "correct": false }
+        ], "requiredObjective": "entscheidung" }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        { "type": "markdown", "markdown": "[Microsoft Learn: Hyper-V-Prüfpunkte](https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/checkpoints), [Host-Hardware-Anforderungen](https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/host-hardware-requirements), [virtualisierte Domänencontroller](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/virtualized-domain-controllers-hyper-v), [NIST: Hypervisor-Sicherheit](https://www.nist.gov/publications/security-recommendations-hypervisor-deployment-servers) und [Microsoft: Windows-Server-Lizenzierung](https://www.microsoft.com/licensing/guidance/Windows-Server-2025), am 26.09.2026 gelesen. Zahlen, Diagramme und Fälle sind eigene Lehrmodelle. Keine Kapazitäts-, Verfügbarkeits- oder Lizenzfreigabe für eine reale Umgebung; menschliche Fachfreigabe offen." }
+      ]
+    }
+  ]
+}

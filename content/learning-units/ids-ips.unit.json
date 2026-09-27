@@ -1,0 +1,320 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "ids-ips",
+    "slug": "ids-ips",
+    "title": "IDS und IPS mit Fehlalarmen sinnvoll betreiben",
+    "description": "Erkennung und Blockierung, Netz- und Hostsensoren sowie False Positives in einem Betriebsfall beurteilen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-7",
+    "groupLabel": "Block N7 · Netzwerksicherheit",
+    "itemId": "ga2-7__5",
+    "week": "KW 42",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "sensorwahl",
+      "label": "IDS, IPS sowie netz- und hostbasierte Sensoren nach Sichtbarkeit und Eingriff unterscheiden"
+    },
+    {
+      "id": "alarmbewertung",
+      "label": "bestätigte Treffer und Fehlalarme quantitativ einordnen und daraus begrenzte Tuningmaßnahmen ableiten"
+    }
+  ],
+  "intro": "Ein Alarm ist eine Hypothese, kein abgeschlossener Vorfallnachweis. Ein IPS kann darüber hinaus legitimen Verkehr blockieren. Sensorplatzierung, Belegprüfung und kontrolliertes Tuning sind deshalb ebenso wichtig wie Erkennung.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seiten 262, 186 und 234",
+        "use": "IDS/IPS, host- und netzbasierte Sicht und Integration",
+        "reviewStatus": "OCR-Ausschnitte geprüft; IPS nicht auf dynamische Firewallregeln reduziert"
+      }
+    ],
+    "notes": [
+      "Ergänzender Primärabgleich: Suricata 8.0.1 IPS Concept, https://docs.suricata.io/en/suricata-8.0.1/ips/ips-concept.html, abgerufen 2026-09-12.",
+      "Der Abbildungskandidat zu Seite 185 zeigt hauptsächlich SPI und TCP; für IDS/IPS werden eigene Modelle verwendet.",
+      "Präzision ist nicht die False-Positive-Rate. Diese benötigt alle tatsächlich gutartigen Fälle als Nenner; ein Alarmstapel allein liefert diesen nicht.",
+      "Eigene Fälle und Diagramme; keine privaten Buchabbildungen veröffentlicht. Fach- und Verständlichkeitsfreigabe durch einen Menschen steht aus."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "ids-ips-modell",
+      "type": "layers",
+      "title": "Erkennen und handeln",
+      "description": "Netzsensor und Hostsensor liefern unterschiedliche Belege; IDS alarmiert, IPS kann aktiv blockieren.",
+      "items": [
+        {
+          "label": "Netzsensor",
+          "detail": "Pakete am Messpunkt"
+        },
+        {
+          "label": "Hostsensor",
+          "detail": "Lokale Prozesse und Ereignisse"
+        },
+        {
+          "label": "IDS",
+          "detail": "Erkennen und melden"
+        },
+        {
+          "label": "IPS",
+          "detail": "Nach aktiver Regel unterbinden"
+        }
+      ]
+    },
+    {
+      "id": "ids-ips-ablauf",
+      "type": "flow",
+      "title": "Vom Alarm zur gezielten Änderung",
+      "description": "Kontext und Belege werden geprüft, bevor eine enge Regelanpassung getestet wird.",
+      "items": [
+        {
+          "label": "Alarm",
+          "detail": "Zeit, Ziel und Regel-ID erfassen"
+        },
+        {
+          "label": "Belege",
+          "detail": "Anwendung und Hostdaten abgleichen"
+        },
+        {
+          "label": "Entscheidung",
+          "detail": "Angriff oder Fehlalarm begründen"
+        },
+        {
+          "label": "Tuning",
+          "detail": "Eng begrenzen und erneut testen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "ids-ips-diagnose",
+          "question": "Ein passives IDS meldet verdächtigen Verkehr. Welche Wirkung folgt allein aus diesem Modus?",
+          "options": [
+            {
+              "text": "Es verwirft zwangsläufig das gemeldete Paket.",
+              "rationale": "Passiver Mitschnitt liegt nicht notwendigerweise im Weiterleitungspfad.",
+              "correct": false
+            },
+            {
+              "text": "Es erzeugt eine Erkennung/Meldung; die Blockierung ist nicht dadurch garantiert.",
+              "rationale": "Richtig: Dafür braucht es eine zusätzliche Reaktion oder einen eingreifenden Betrieb.",
+              "correct": true
+            },
+            {
+              "text": "Jeder Alarm ist bereits ein bestätigter Angriff.",
+              "rationale": "Regeln können legitimen Verkehr treffen.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Leitgedanke",
+          "markdown": "Sichtbarkeit erklärt, was erkannt werden kann. Betriebsmodus erklärt, was bei einem Treffer passiert."
+        }
+      ]
+    },
+    {
+      "title": "Sensor, Entscheidung und Reaktion trennen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein **IDS** erkennt und alarmiert. Ein **IPS** kann Verkehr aktiv unterbinden, häufig inline im Datenpfad. Ein Produkt kann beide Modi bieten; eine reine Alert-Regel wird nicht allein durch den IPS-Modus zur Blockregel.\n\nEin **Netzsensor** sieht den Verkehr an seinem Messpunkt. Verschlüsselung, nicht gespiegelte Pfade und Überlast begrenzen seine Sicht. Ein **Hostsensor** kann lokale Ereignisse wie Prozesse, Dateien oder Logs erfassen; seine Sicht hängt vom Agenten und den verfügbaren Daten ab.\n\n**False Positive:** Gutartiges Verhalten wird als Angriff gemeldet. **False Negative:** Ein tatsächlicher Angriff bleibt unerkannt. Auch viele richtige Alarme beweisen deshalb keine vollständige Erkennung. Beim IPS haben Fehlalarme zusätzlich unmittelbare Folgen für die Verfügbarkeit."
+        },
+        {
+          "type": "figure",
+          "diagramId": "ids-ips-modell",
+          "alt": "Netzsensor und Hostsensor liefern unterschiedliche Belege; IDS alarmiert, IPS kann aktiv blockieren.",
+          "caption": "Erkennen und handeln – eigenes Lernmodell."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Präzision ist die Zahl bestätigter richtiger Alarme geteilt durch alle Alarme",
+          "mathml": "<math display=\"block\"><mrow><mtext>Präzision</mtext><mo>=</mo><mfrac><mi>TP</mi><mrow><mi>TP</mi><mo>+</mo><mi>FP</mi></mrow></mfrac><mo>·</mo><mn>100</mn><mo>%</mo></mrow></math>",
+          "legend": [
+            "TP: Alarm bestätigt einen echten Angriff",
+            "FP: Alarm betrifft gutartiges Verhalten",
+            "Übersehene Angriffe stehen nicht im Alarmstapel"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Sensor meldet in einem kontrollierten Test 50 Alarme. Die Untersuchung bestätigt 10 echte Treffer, 40 betreffen einen erlaubten Scanner. Die Präzision beträgt 20 Prozent: 10 von 50 Alarmen waren echte Treffer. Daraus folgt weder, dass 80 Prozent aller gutartigen Verbindungen alarmiert wurden, noch dass keine Angriffe übersehen wurden.\n\nEine pauschale Abschaltung des Sensors wäre zu breit. Prüfe stattdessen die betreffende Signatur, den genehmigten Scanner, Zielbereich und Zeitraum. Eine eng begrenzte Ausnahme wird mit gutartigem Scan und einem kontrollierten Angriffstest erneut geprüft. Für Inline-Betrieb werden außerdem Latenz, Überlast und Ausfallverhalten festgelegt."
+        },
+        {
+          "type": "figure",
+          "diagramId": "ids-ips-ablauf",
+          "alt": "Kontext und Belege werden geprüft, bevor eine enge Regelanpassung getestet wird.",
+          "caption": "Vom Alarm zur gezielten Änderung – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Selbst entscheiden",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "ids-ips-uebung",
+          "question": "Warum lässt sich aus den 50 Alarmen keine False-Negative-Rate bestimmen?",
+          "options": [
+            {
+              "text": "Weil False Negatives dasselbe wie False Positives sind.",
+              "rationale": "Die Begriffe beschreiben unterschiedliche Fehlentscheidungen.",
+              "correct": false
+            },
+            {
+              "text": "Weil ein IDS grundsätzlich keine Angriffe übersehen kann.",
+              "rationale": "Sichtbarkeit und Erkennung sind begrenzt.",
+              "correct": false
+            },
+            {
+              "text": "Die Zahl aller tatsächlichen Angriffe einschließlich übersehener fehlt.",
+              "rationale": "Richtig: Unerkannte Ereignisse tauchen im Alarmstapel gerade nicht auf.",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "type": "sequence",
+          "id": "ids-ips-reihenfolge",
+          "title": "Einen Fehlalarm untersuchen",
+          "prompt": "Ordne den kontrollierten Tuningprozess.",
+          "steps": [
+            {
+              "id": "s2",
+              "label": "Begrenzte Korrektur mit Verantwortlichem festlegen"
+            },
+            {
+              "id": "s0",
+              "label": "Regel-ID, Zeit, Quelle und Ziel sichern"
+            },
+            {
+              "id": "s3",
+              "label": "Legitimen und unerwünschten Fall erneut testen"
+            },
+            {
+              "id": "s1",
+              "label": "Mit Anwendungseigentümer und unabhängigen Belegen abgleichen"
+            }
+          ],
+          "expected": [
+            "s0",
+            "s1",
+            "s2",
+            "s3"
+          ],
+          "correctFeedback": "Richtig: Erst Beleg und Einordnung, dann begrenzte Änderung samt Gegenprobe.",
+          "wrongFeedback": "Gehe vom belegten Bedarf über die Entscheidung zum Nachweis. Prüfe die erste abweichende Position."
+        }
+      ]
+    },
+    {
+      "title": "Aus dem Gedächtnis erklären",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "ids-ips-karte-0",
+              "label": "Abruf 1",
+              "front": "False Positive?",
+              "back": "Ein Alarm für tatsächlich gutartiges Verhalten."
+            },
+            {
+              "id": "ids-ips-karte-1",
+              "label": "Abruf 2",
+              "front": "False Negative?",
+              "back": "Ein tatsächlicher Angriff ohne passende Erkennung."
+            },
+            {
+              "id": "ids-ips-karte-2",
+              "label": "Abruf 3",
+              "front": "Was beweist hohe Präzision nicht?",
+              "back": "Dass alle Angriffe erkannt werden; dafür fehlen die übersehenen Fälle."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "ids-ips-abruf",
+          "title": "Deine Begründung",
+          "prompt": "Ein IPS blockiert legitime Backups. Erkläre, welche Belege und welche begrenzte Änderung du prüfen würdest. Nenne eine Sichtbarkeitsgrenze.",
+          "label": "Eigene Erklärung",
+          "placeholder": "Meine Entscheidung und ihre Grenze …",
+          "minLength": 100,
+          "model": "Ich sichere Regel-ID, Zeiten, Endpunkte und Anwendungsergebnis und bestätige den legitimen Backupzweck. Dann teste ich eine auf diese Signatur und diese Kommunikation begrenzte Korrektur. Gegenproben sichern die verbleibende Erkennung. Verschlüsselung oder ein nicht erfasster Pfad kann die Netzsicht weiterhin begrenzen."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "ids-ips-transfer-a",
+          "question": "Welche Lösung kann am Netzpfad aktiv Pakete blockieren und welche ergänzende Sicht kann ein Hostagent liefern?",
+          "options": [
+            {
+              "text": "Ein passend konfiguriertes Inline-IPS blockiert; ein Hostagent kann lokale Prozess- und Ereignisdaten ergänzen.",
+              "rationale": "Richtig: Eingriff und Datenquelle sind getrennte Eigenschaften.",
+              "correct": true
+            },
+            {
+              "text": "Jeder passive SPAN-Mitschnitt blockiert automatisch.",
+              "rationale": "Eine Kopie des Pakets steuert nicht automatisch die Weiterleitung.",
+              "correct": false
+            },
+            {
+              "text": "Ein Netzsensor sieht grundsätzlich alle Prozesse des Endgeräts.",
+              "rationale": "Lokale Prozesse sind ohne weitere Telemetrie nicht aus jedem Paket erkennbar.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "sensorwahl"
+        },
+        {
+          "type": "numeric",
+          "id": "ids-ips-transfer-b",
+          "requiredObjective": "alarmbewertung",
+          "prompt": "Neuer Testfall: 80 Alarme wurden vollständig untersucht. 20 sind bestätigte echte Treffer, 60 Fehlalarme. Wie hoch ist die Präzision in Prozent? Gib eine ganze Prozentzahl ein.",
+          "expected": 25,
+          "tolerance": 0,
+          "label": "Präzision in Prozent",
+          "correctFeedback": "25 Prozent: 20 bestätigte Treffer von insgesamt 80 Alarmen. Die Aussage betrifft Alarme, nicht die Gesamtheit aller Verbindungen.",
+          "wrongFeedback": "Teile bestätigte echte Alarme durch alle Alarme: 20 von 80. Übersehene Angriffe sind in diesen Daten nicht enthalten."
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Buchgrundlage: ITLF10–12, PDF-Seiten 262, 186 und 234. Ergänzung zum aktiven Datenpfad: [Suricata 8.0.1 – IPS Concept](https://docs.suricata.io/en/suricata-8.0.1/ips/ips-concept.html). Eigene Alarmzahlen; das Rechenmodell unterscheidet Präzision ausdrücklich von Fehlalarm- und Erkennungsrate."
+        }
+      ]
+    }
+  ]
+}

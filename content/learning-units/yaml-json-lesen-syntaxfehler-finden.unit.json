@@ -1,0 +1,345 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "yaml-json-lesen-syntaxfehler-finden",
+    "slug": "yaml-json-lesen-syntaxfehler-finden",
+    "title": "YAML und JSON lesen und Fehler eingrenzen",
+    "description": "Datenstruktur, Syntax und fachliche Gültigkeit trennen und Konfigurationsfehler gezielt korrigieren.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-9",
+    "groupLabel": "Programme zur automatisierten Systemverwaltung",
+    "itemId": "ga1-9__12",
+    "week": "KW 43",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "sources": [
+      "rfc8259",
+      "yaml-1-2-2"
+    ],
+    "contentRevision": "2026-09-17.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "struktur",
+      "label": "Verschachtelung und Datentypen in YAML und JSON lesen"
+    },
+    {
+      "id": "fehler",
+      "label": "Syntaxfehler von Vertragsverletzungen unterscheiden"
+    }
+  ],
+  "intro": "Ein Konfigurationsdokument kann fehlerfrei eingelesen werden und trotzdem das Falsche beschreiben. Du liest hier dieselben Daten in zwei Schreibweisen und prüfst zuerst die Struktur, dann die Anforderungen. Es werden keine echten Dienste verändert.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "rfc8259",
+        "sourceLocator": "RFC 8259, Abschnitte 2–7",
+        "use": "JSON-Syntax, Datentypen und eindeutige Namen",
+        "reviewStatus": "Am 17.09.2026 gelesen"
+      },
+      {
+        "sourceId": "yaml-1-2-2",
+        "sourceLocator": "YAML 1.2.2, Kapitel 2, 6.1 und 10.3.2",
+        "use": "Mappings, Sequenzen, Einrückung und Core-Schema",
+        "reviewStatus": "Am 17.09.2026 ausgewählte Abschnitte gelesen"
+      }
+    ],
+    "notes": [
+      "Buch-Batch ga1-9-012-012 liefert Java-/Arduino-Treffer, keine verwendbaren YAML-/JSON-Belege. Nicht als Fachbelege übernommen.",
+      "Eigene Beispiele; eingeschränkter YAML-Core-Ausschnitt, kein vollständiger Parserkurs. Menschliche Freigabe offen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "struktur",
+      "type": "layers",
+      "title": "Vom Schlüssel zum Wert",
+      "description": "Drei Schritte durch die Beispieldaten.",
+      "items": [
+        {
+          "label": "Wurzel",
+          "detail": "Mapping mit Schlüssel dienst"
+        },
+        {
+          "label": "dienst",
+          "detail": "Mapping: name, aktiv, ports"
+        },
+        {
+          "label": "ports",
+          "detail": "Liste mit zwei Zahlen: 8080, 8443"
+        }
+      ]
+    },
+    {
+      "id": "pruefen",
+      "type": "flow",
+      "title": "Lesbar ist noch nicht richtig",
+      "description": "Getrennte Prüfungen für eine Konfiguration.",
+      "items": [
+        {
+          "label": "Syntax",
+          "detail": "Kann der Parser das Dokument lesen?"
+        },
+        {
+          "label": "Vertrag",
+          "detail": "Stimmen Schlüssel, Typen und Werte?"
+        },
+        {
+          "label": "Wirkung",
+          "detail": "Erfüllt die Konfiguration den Zweck?"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "yaml-json-lesen-syntaxfehler-finden-diagnose",
+          "question": "JSON enthält \"aktiv\": \"false\". Welchen Typ hat der Wert?",
+          "options": [
+            {
+              "text": "Wahrheitswert falsch.",
+              "rationale": "Die Anführungszeichen machen ihn zu Text.",
+              "correct": false
+            },
+            {
+              "text": "Text.",
+              "rationale": "Richtig: Der Wahrheitswert würde ohne Anführungszeichen stehen.",
+              "correct": true
+            },
+            {
+              "text": "Ungültige Syntax.",
+              "rationale": "Ein Textwert ist syntaktisch zulässig.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Dieselben Daten, zwei Schreibweisen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "JSON und YAML beschreiben strukturierte Daten, nicht von sich aus einen Programmablauf. Lies zuerst die Behälter, dann die Werte. JSON-Objekte enthalten benannte Werte; Arrays geordnete Elemente. YAML nennt diese Behälter Mapping und Sequenz.\n\nUnser fiktiver Vertrag: `dienst` enthält `name` als Text, `aktiv` als Wahrheitswert und `ports` als Liste ganzer Zahlen. Die folgenden Dokumente beschreiben denselben Lernfall; sie sind keine fertige Compose-Konfiguration.\n\n```json\n{\n  \"dienst\": {\n    \"name\": \"lernserver\",\n    \"aktiv\": false,\n    \"ports\": [8080, 8443]\n  }\n}\n```\n\n```yaml\ndienst:\n  name: \"lernserver\"\n  aktiv: false\n  ports:\n    - 8080\n    - 8443\n```"
+        },
+        {
+          "type": "figure",
+          "diagramId": "struktur",
+          "alt": "Unter dienst liegen name, aktiv und ports. ports enthält zwei Zahlen.",
+          "caption": "Eigene Darstellung für das Lernbeispiel."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Schrittweise gelesen: An der Wurzel gibt es `dienst`. Darin liegen drei Schlüssel. `ports` enthält zwei Elemente; das zweite ist 8443. `aktiv` ist in beiden Beispielen ein Wahrheitswert. Die Reihenfolge der Listenelemente zählt; verlasse dich bei JSON-Objektschlüsseln nicht auf eine Reihenfolge."
+        }
+      ]
+    },
+    {
+      "title": "Schreibregeln gezielt prüfen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "In JSON stehen Schlüssel und Texte in doppelten Anführungszeichen. Zwischen Einträgen steht ein Komma, nach dem letzten nicht. `true`, `false` und `null` werden kleingeschrieben. Kommentare sind nicht Teil der JSON-Grammatik. Nutze eindeutige Objektnamen: Doppelte Namen können von Empfängern unterschiedlich behandelt werden.\n\nIm hier verwendeten YAML-Blockstil kennzeichnet Einrückung die Zuordnung. Verwende Leerzeichen, keine Tabs zur Einrückung. Zwei Leerzeichen pro Ebene sind unsere Konvention, keine allgemeine Pflichtzahl. `- ` beginnt ein Listenelement, `#` kann einen Kommentar einleiten. Mit Anführungszeichen machst du Textwerte wie `\"false\"` ausdrücklich als Text kenntlich.\n\nWir verwenden YAML 1.2 mit Core-Schema. Parser-Version und Schema beeinflussen die Typauflösung; übertrage Regeln nicht ungeprüft auf ältere Werkzeuge. Die Beispiele verwenden deshalb klare Wahrheitswerte und ausdrücklich markierten Text."
+        }
+      ]
+    },
+    {
+      "title": "Fehler finden und reparieren",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Sage zuerst voraus: Wird dieses JSON gelesen? Welche einzelne Stelle würdest du ändern?\n\n```json\n{\"dienst\": {\"aktiv\": false,}}\n```\n\nDas Komma nach `false` kündigt einen weiteren Eintrag an, der fehlt. Entferne nur dieses Komma. Die reparierte Syntax lautet `{\"dienst\": {\"aktiv\": false}}`. Unser Vertrag ist damit noch nicht erfüllt: `name` und `ports` fehlen. Eine Syntaxreparatur ergänzt fehlende Anforderungen nicht automatisch."
+        },
+        {
+          "type": "quiz",
+          "id": "yaml-json-lesen-syntaxfehler-finden-uebung",
+          "question": "Der Vertrag verlangt eine Zahl. Die Syntax \"port\": \"8080\" ist gültig. Was ist zu korrigieren?",
+          "options": [
+            {
+              "text": "Ein zusätzliches Komma einsetzen.",
+              "rationale": "Das ändert den Texttyp nicht.",
+              "correct": false
+            },
+            {
+              "text": "Den Wert als Zahl statt als Text angeben.",
+              "rationale": "Richtig: 8080 ohne Anführungszeichen erfüllt die Typanforderung.",
+              "correct": true
+            },
+            {
+              "text": "Alle Schlüssel ohne Anführungszeichen schreiben.",
+              "rationale": "Das verletzt JSON-Syntax.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "Auch Einrückung kann die Bedeutung ändern, ohne die Syntax zu zerstören:\n\n```yaml\ndienst:\n  name: \"lernserver\"\naktiv: false\n```\n\n`aktiv` liegt hier neben `dienst` an der Wurzel, nicht darin. Wenn es zum Dienst gehören soll, rücke die Zeile wie `name` ein. Prüfe also den entstandenen Datenbaum, nicht nur die Meldung „gültiges YAML“."
+        },
+        {
+          "type": "numeric",
+          "id": "yaml-json-lesen-syntaxfehler-finden-anzahl",
+          "title": "Listeninhalt lesen",
+          "prompt": "Die Liste ports lautet [8080, 8443, 9000]. Wie viele Elemente enthält sie?",
+          "label": "Anzahl der Elemente",
+          "expected": 3,
+          "tolerance": 0,
+          "wrongFeedback": "Zähle die Einträge, nicht die Ziffern oder ihren Zahlenwert.",
+          "correctFeedback": "Drei Zahlenwerte sind drei Listenelemente.",
+          "misconceptions": [
+            {
+              "value": 2,
+              "feedback": "Zwei ist bei nullbasierter Indizierung der letzte Index, nicht die Anzahl."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Systematisch statt auf Verdacht",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "pruefen",
+          "alt": "Syntaxprüfung, Vertragsprüfung und Wirkungsprüfung beantworten unterschiedliche Fragen.",
+          "caption": "Eigene Darstellung für das Lernbeispiel."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Unser Prüfablauf: Dokument zunächst ohne Ausführung einlesen. Danach die erwarteten Schlüssel, Verschachtelungen und Typen vergleichen. Schließlich die beabsichtigte Wirkung in einer geeigneten Testumgebung prüfen. Ein erfolgreicher Parserlauf ist keine Deployment-Freigabe."
+        },
+        {
+          "type": "sequence",
+          "id": "yaml-json-lesen-syntaxfehler-finden-reihenfolge",
+          "title": "Prüfablauf ordnen",
+          "prompt": "Ordne unseren Ablauf von der Lesbarkeit zur Wirkung.",
+          "steps": [
+            {
+              "id": "wirkung",
+              "label": "Beabsichtigte Wirkung kontrolliert testen"
+            },
+            {
+              "id": "syntax",
+              "label": "Dokument auf lesbare Syntax prüfen"
+            },
+            {
+              "id": "vertrag",
+              "label": "Struktur, Typen und Anforderungen vergleichen"
+            }
+          ],
+          "expected": [
+            "syntax",
+            "vertrag",
+            "wirkung"
+          ],
+          "correctFeedback": "Erst lesbar machen, dann Anforderungen prüfen, schließlich Wirkung testen.",
+          "wrongFeedback": "Ohne verlässlich gelesene Struktur fehlt die Grundlage für die weiteren Prüfungen."
+        },
+        {
+          "type": "recall",
+          "id": "yaml-json-lesen-syntaxfehler-finden-begruendung",
+          "title": "Eigenes JSON schreiben",
+          "prompt": "Schreibe aus dem Gedächtnis ein JSON-Objekt mit name als Text, aktiv als Wahrheitswert false und ports als leerem Array. Erkläre, warum \"false\" und false nicht austauschbar sind.",
+          "label": "Dein Dokument und deine Erklärung",
+          "minLength": 60,
+          "model": "{\"name\":\"test\",\"aktiv\":false,\"ports\":[]} enthält Text, Wahrheitswert und leeres Array. \"false\" wäre ein Text, false ist ein Wahrheitswert. Eine leere Liste ist syntaktisch gültig; ob sie erlaubt ist, legt der Vertrag fest. Der Vergleich ist eine Selbstprüfung, kein Parser für deine Eingabe."
+        }
+      ]
+    },
+    {
+      "title": "Aus dem Gedächtnis abrufen",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "yaml-json-lesen-syntaxfehler-finden-karte-0",
+              "label": "Typ",
+              "front": "Was unterscheidet false und \"false\"?",
+              "back": "Wahrheitswert und Text. Gleiche sichtbare Buchstaben bedeuten nicht denselben Datentyp."
+            },
+            {
+              "id": "yaml-json-lesen-syntaxfehler-finden-karte-1",
+              "label": "Struktur",
+              "front": "Was kann falsche YAML-Einrückung bewirken?",
+              "back": "Einen Syntaxfehler oder einen gültigen, aber anders verschachtelten Datenbaum."
+            },
+            {
+              "id": "yaml-json-lesen-syntaxfehler-finden-karte-2",
+              "label": "Prüfung",
+              "front": "Was beweist erfolgreiches Parsen nicht?",
+              "back": "Dass Pflichtfelder, fachliche Anforderungen und die beabsichtigte Wirkung erfüllt sind."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "yaml-json-lesen-syntaxfehler-finden-transfer-a",
+          "question": "JSON: {\"gruppe\":{\"namen\":[\"alpha\",\"beta\"],\"aktiv\":false}}. Welche Aussage stimmt?",
+          "options": [
+            {
+              "text": "aktiv ist Text.",
+              "rationale": "Ohne Anführungszeichen ist false ein Wahrheitswert.",
+              "correct": false
+            },
+            {
+              "text": "namen liegt direkt an der Wurzel.",
+              "rationale": "Es liegt innerhalb von gruppe.",
+              "correct": false
+            },
+            {
+              "text": "namen ist eine Liste aus zwei Texten innerhalb von gruppe.",
+              "rationale": "Die Klammern und Verschachtelung zeigen genau diese Struktur.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "struktur"
+        },
+        {
+          "type": "quiz",
+          "id": "yaml-json-lesen-syntaxfehler-finden-transfer-b",
+          "question": "Ein Dokument enthält {\"versuche\": \"3\"}. Der Vertrag verlangt eine ganze Zahl. Welche Diagnose stimmt?",
+          "options": [
+            {
+              "text": "Syntax gültig, geforderter Typ verletzt.",
+              "rationale": "Die Anführungszeichen erzeugen einen Textwert.",
+              "correct": true
+            },
+            {
+              "text": "Syntaxfehler wegen des Schlüssels.",
+              "rationale": "Der Schlüssel ist korrekt als Text geschrieben.",
+              "correct": false
+            },
+            {
+              "text": "Vollständig korrekt, weil der Text wie eine Zahl aussieht.",
+              "rationale": "Ein numerisch aussehender Text erfüllt nicht automatisch die Typanforderung.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "fehler"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Primärquellen: [RFC 8259, Abschnitte 2–7](https://www.rfc-editor.org/rfc/rfc8259) und [YAML 1.2.2, insbesondere 6.1 und 10.3.2](https://yaml.org/spec/1.2.2/), ausgewählte Abschnitte am 17.09.2026 gelesen. Eigene Aufgaben und Grafiken. Die automatischen Buchtreffer waren fachlich unpassend und wurden nicht übernommen.\n\nKein vollständiger YAML-Kurs: Tags, Aliase und mehrzeilige Skalare bleiben außerhalb dieser Einheit. Übungen führen keine Konfiguration aus. Der Schreibauftrag wird durch Selbstvergleich geprüft, nicht automatisch auf Syntax analysiert."
+        }
+      ]
+    }
+  ]
+}

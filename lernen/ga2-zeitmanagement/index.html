@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="einen anpassbaren Zeitplan statt starrer Minutenregeln beurteilen; aus Gesamtzeit, Reserve und Aufgabengewicht ein Zeitbudget berechnen.">
+<title>Prüfungszeit nach Aufgaben und Reserve planen – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga2 learning-page" data-topic-id="ga2-zeitmanagement" data-progress-id="ga2-9__4" data-content-revision="2026-09-14.2" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/netzwerke/">Netzwerke</a><span class="sep">›</span>
+    <a href="/netzwerke/#ga2-9">Prüfungstechnik GA2</a><span class="sep">›</span>
+    <span class="here">Prüfungszeit nach Aufgaben und Reserve planen</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA2 · Kernthema</span>
+      <h1 class="title">Prüfungszeit nach Aufgaben und Reserve planen</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 28 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Ein Zeitplan soll Entscheidungen erleichtern, nicht zum starren Korsett werden. Du verteilst die verfügbare Zeit und erkennst rechtzeitig, wann ein Wechsel sinnvoll ist.</p>
+<section class="learning-goals" aria-labelledby="ga2-zeitmanagement-goals">
+  <h2 id="ga2-zeitmanagement-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>einen anpassbaren Zeitplan statt starrer Minutenregeln beurteilen</li>
+    <li>aus Gesamtzeit, Reserve und Aufgabengewicht ein Zeitbudget berechnen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Vorwissen aktivieren</h2>
+<section class="quiz" data-quiz="ga2-zeitmanagement-diagnose" data-correct="0">
+  <h3>Sind 20 Minuten je Handlungsschritt immer die richtige Vorgabe?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Eine pauschale Zahl ersetzt keinen Blick auf den Aufgabensatz."><span class="m">A</span> Nein, Anzahl, Gewicht und Schwierigkeit der Aufgaben können variieren.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die Summe könnte die verfügbare Zeit überschreiten."><span class="m">B</span> Ja, unabhängig von der Gesamtzeit.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Gewichtung ist eine nützliche Planungsinformation."><span class="m">C</span> Ja, die Punktwerte sind unwichtig.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout merk"><span class="lbl">Leitgedanke</span><p>Ein Zeitplan soll Entscheidungen erleichtern, nicht zum starren Korsett werden. Du verteilst die verfügbare Zeit und erkennst rechtzeitig, wann ein Wechsel sinnvoll ist.</p></aside><h2 class="sec" id="s2"><span class="num">2</span>Modell und Grenzen</h2>
+<p>Für Analyse und Entwicklung von Netzwerken nennt die aktuelle IHK-Prüfungsübersicht 90 Minuten. Maßgeblich bleiben deine konkreten Prüfungsunterlagen und gegebenenfalls individuell bestätigte Bedingungen. Daraus folgt keine feste Zahl gleich langer Handlungsschritte.</p>
+<p>Plane bewusst Zeit für Überblick und Schlusskontrolle ein. Verteile die verbleibende Bearbeitungszeit als erste Näherung nach Aufgabengewicht und passe sie an Schwierigkeit und Abhängigkeiten an. Eine Regel wie „20 Minuten pro Handlungsschritt“ passt nur zufällig zu bestimmten Aufgabensätzen. Auch zehn Minuten Reserve sind eine Übungsannahme, keine allgemeine Vorschrift.</p>
+<p>Setze Zwischenmarken. Wenn eine Aufgabe ihr Budget verbraucht und kein sinnvoller nächster Schritt erkennbar ist, notiere Ansatz und offene Stelle, markiere die Rückkehr und bearbeite eine andere zulässige Aufgabe. Die Schlusskontrolle prüft Zuordnung, fehlende Antworten, Einheiten und offensichtliche Widersprüche.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Beispielbudget für 90 Minuten">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-layers" xmlns="http://www.w3.org/2000/svg" width="960" height="512" viewBox="0 0 960 512" role="img" aria-labelledby="diagram-modell-title diagram-modell-desc">
+  <title id="diagram-modell-title">Beispielbudget für 90 Minuten</title>
+  <desc id="diagram-modell-desc">Überblick: 5 Minuten: Auftrag und Umfang; Bearbeiten: 75 Minuten: Aufgaben lösen; Kontrolle: 10 Minuten: Lücken und Einheiten; Anpassen: Zwischenmarken bewusst nutzen.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Beispielbudget für 90 Minuten</tspan></text>
+  <g><rect class="diagram-row" x="42" y="82" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="82" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="130" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Überblick</tspan></text><text x="194" y="116" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">5 Minuten: Auftrag und Umfang</tspan></text></g><g><rect class="diagram-row" x="42" y="182" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="182" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="230" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Bearbeiten</tspan></text><text x="194" y="216" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">75 Minuten: Aufgaben lösen</tspan></text></g><g><rect class="diagram-row" x="42" y="282" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="282" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="330" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Kontrolle</tspan></text><text x="194" y="316" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">10 Minuten: Lücken und Einheiten</tspan></text></g><g><rect class="diagram-row" x="42" y="382" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="382" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="430" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Anpassen</tspan></text><text x="194" y="416" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Zwischenmarken bewusst nutzen</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Beispielbudget für 90 Minuten – eigene Lernskizze.</figcaption>
+</figure><div class="math-display" role="group" aria-label="Bearbeitungszeit ist Gesamtzeit minus Überblick minus Reserve. Aufgabenbudget ist Bearbeitungszeit mal Anteil der Aufgabenpunkte."><math display="block" aria-label="Bearbeitungszeit ist Gesamtzeit minus Überblick minus Reserve. Aufgabenbudget ist Bearbeitungszeit mal Anteil der Aufgabenpunkte."><mtable><mtr><mtd><mi>B</mi><mo>=</mo><mi>T</mi><mo>−</mo><mi>U</mi><mo>−</mo><mi>R</mi></mtd></mtr><mtr><mtd><msub><mi>t</mi><mi>i</mi></msub><mo>=</mo><mi>B</mi><mo>·</mo><mfrac><msub><mi>P</mi><mi>i</mi></msub><mi>P</mi></mfrac></mtd></mtr></mtable></math><div class="math-legend"><span>T: Gesamtzeit, U: Überblick, R: Reserve; Zeiten in Minuten</span><span>Pᵢ: Punkte der Aufgabe, P: Gesamtpunkte</span><span>Proportionale Planungshilfe, keine Prüfungsvorschrift</span></div></div><h2 class="sec" id="s3"><span class="num">3</span>Durchgearbeitetes Beispiel</h2>
+<p>Eigene Übung: Von 90 Minuten reservierst du fünf für Überblick und zehn für Kontrolle. Für das Bearbeiten bleiben 75 Minuten. Ein Aufgabenteil mit 20 von insgesamt 100 Punkten erhält proportional zunächst 15 Minuten. Das ist eine Planungshilfe, keine zugesagte Bearbeitungsdauer.</p>
+<p>Nach 15 Minuten ist der Teil noch nicht fertig. Sind nur eine kurze Prüfung und ein Eintrag offen, kann ein kleiner bewusst begrenzter Zuschlag sinnvoll sein. Fehlt dagegen weiterhin der Ansatz, hältst du den Zwischenstand fest und wechselst. Die verbleibenden Aufgaben dürfen nicht unbemerkt ihr gesamtes Budget verlieren.</p>
+<p>In einer Probeklausur protokollierst du nachher, wo Zeit verloren ging: langes Lesen, fehlende Grundlagen oder wiederholtes Nachrechnen? Nur so verbessert sich der nächste Plan. Ein schnelleres Tempo allein behebt keinen fachlichen Engpass.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Ein nachvollziehbarer Bearbeitungsweg">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="542" viewBox="0 0 960 542" role="img" aria-labelledby="diagram-ablauf-title diagram-ablauf-desc">
+  <title id="diagram-ablauf-title">Ein nachvollziehbarer Bearbeitungsweg</title>
+  <desc id="diagram-ablauf-desc">Gesamtzeit und tatsächlichen Aufgabenumfang lesen → Überblick und Kontrollreserve festlegen → Bearbeitungsbudgets und Zwischenmarken planen → Während der Bearbeitung begründet nachsteuern.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Ein nachvollziehbarer Bearbeitungsweg</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Einordnen</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Gesamtzeit und tatsächlichen Aufgabenumfang lesen</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Vorbereiten</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Überblick und Kontrollreserve festlegen</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Bearbeiten</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Bearbeitungsbudgets und Zwischenmarken planen</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Prüfen</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Während der Bearbeitung begründet nachsteuern</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Ein nachvollziehbarer Bearbeitungsweg – eigene Lernskizze.</figcaption>
+</figure><h2 class="sec" id="s4"><span class="num">4</span>Selbst entscheiden</h2>
+<section class="quiz" data-quiz="ga2-zeitmanagement-uebung" data-correct="1">
+  <h3>Das Budget einer Aufgabe ist verbraucht, ein Ansatz fehlt. Was ist sinnvoll?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Andere Aufgaben verlieren dadurch ihre Bearbeitungszeit."><span class="m">A</span> Bis zum Prüfungsende ausschließlich daran bleiben.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="So bleibt verbleibende Zeit nutzbar."><span class="m">B</span> Zwischenstand notieren, Rückkehr markieren und eine andere zulässige Aufgabe bearbeiten.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Nützliche Ansätze und Rückkehrhinweise gehen verloren."><span class="m">C</span> Die gesamte Antwort ohne Markierung streichen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="sequence-practice" data-sequence="ga2-zeitmanagement-reihenfolge" data-expected="s0,s1,s2,s3" data-correct-feedback="Richtig: Gesamtzeit und tatsächlichen Aufgabenumfang lesen → Überblick und Kontrollreserve festlegen → Bearbeitungsbudgets und Zwischenmarken planen → Während der Bearbeitung begründet nachsteuern." data-wrong-feedback="Prüfe die erste abweichende Position. Voraussetzungen müssen vor der darauf aufbauenden Bearbeitung geklärt sein." aria-labelledby="ga2-zeitmanagement-reihenfolge-title">
+  <div class="lab-heading"><div><h3 id="ga2-zeitmanagement-reihenfolge-title">Bearbeitungsweg ordnen</h3><p>Bringe die Schritte in eine nachvollziehbare Reihenfolge.</p></div><span class="lab-tag">Ablauf</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="s2" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Bearbeitungsbudgets und Zwischenmarken planen</span></li>
+    <li data-step="s0" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Gesamtzeit und tatsächlichen Aufgabenumfang lesen</span></li>
+    <li data-step="s3" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Während der Bearbeitung begründet nachsteuern</span></li>
+    <li data-step="s1" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Überblick und Kontrollreserve festlegen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Praxisfall: Aus Fehlern eine nächste Übung machen</h2>
+<p>Eigener Rückblick nach einer Übungsprüfung: Du hast drei korrekte Vorteile genannt, verlangt waren aber zwei begründete Nachteile. Die Fachbegriffe kannst du anschließend ohne Hilfe erklären. Du planst nun, sämtliche Karten des Themas erneut zu lesen.</p>
+<p>Prüfe zuerst die Fehlerursache. Hier sprechen die Beobachtungen für einen übersehenen Auftrag, nicht automatisch für fehlendes Fachwissen. Eine passende nächste Übung wäre: Operator und geforderte Anzahl markieren, die verlangte Perspektive benennen und anschließend zwei begründete Nachteile formulieren. Mit einer neuen Aufgabe prüfst du später, ob das auch ohne Hinweis gelingt.</p>
+<section class="quiz" data-quiz="ga2-zeitmanagement-quellenfall" data-correct="0">
+  <h3>Welche Wiederholung passt am besten zum beobachteten Fehler?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Die Übung richtet sich auf den beobachteten Fehler und prüft die Übertragung."><span class="m">A</span> Einen neuen Auftrag ohne Hinweis bearbeiten und vor der Antwort Operator, Anzahl und Perspektive prüfen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Das übt den hier übersehenen Auftrag nicht gezielt."><span class="m">B</span> Alle Begriffe abschreiben, ohne den Aufgabenauftrag erneut zu betrachten.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Mehr Tempo behebt die falsche Antwortperspektive nicht."><span class="m">C</span> Nur schneller schreiben.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="recall-practice" data-recall="ga2-zeitmanagement-quellenbegruendung" data-min-length="80" aria-labelledby="ga2-zeitmanagement-quellenbegruendung-title">
+  <div class="recall-prompt"><h3 id="ga2-zeitmanagement-quellenbegruendung-title">Begründe deinen nächsten Schritt</h3><p>Übertrage den Rückblick auf einen eigenen oder erfundenen Fehler. Notiere: beobachteter Fehler, vermutete Ursache, passende nächste Übung und woran du bei einer neuen Aufgabe eine Verbesserung erkennen würdest. Trenne Vermutung und Nachweis.</p></div>
+  <label class="sr-only" for="ga2-zeitmanagement-quellenbegruendung-answer">Deine Fallbegründung</label>
+  <textarea id="ga2-zeitmanagement-quellenbegruendung-answer" data-recall-input rows="4" placeholder="Beobachtung … Vermutung … nächster Schritt …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Fehler: Ich nannte Vorteile statt verlangter Nachteile. Vermutung: Den Auftrag zu schnell gelesen; fehlendes Wissen ist noch nicht belegt. Nächste Übung: Einen anderen Auftrag in Operator, Anzahl und Perspektive zerlegen und passend beantworten. Nachweis: Bei einer späteren neuen Aufgabe ohne Hinweis liefere ich die verlangte Art und Anzahl begründeter Aussagen. Misslingt das fachlich, prüfe ich zusätzlich die Wissensgrundlage.</div>
+</section><aside class="callout merk"><span class="lbl">Selbst prüfen</span><p>Vergleiche deine Begründung mit dem Muster. Die Textlänge ist keine fachliche Bewertung; diese Zusatzübung ersetzt keinen Pflichtnachweis.</p></aside><h2 class="sec" id="s6"><span class="num">6</span>Aus dem Gedächtnis erklären</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="ga2-zeitmanagement-karte-0" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Ist zehn Minuten Reserve Pflicht?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Nein, hier eine Übungsannahme; wähle einen passenden Plan.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="ga2-zeitmanagement-karte-1" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was bei fehlendem Ansatz?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Zwischenstand und Rückkehr markieren, dann kontrolliert wechseln.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="ga2-zeitmanagement-karte-2" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wozu Probeklausuren auswerten?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Um echte Zeitfresser und fachliche Lücken statt bloßer Vermutungen zu erkennen.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Abruf 1“:</span><button type="button" data-card-id="ga2-zeitmanagement-karte-0" data-card-rate="known">gewusst</button><button type="button" data-card-id="ga2-zeitmanagement-karte-0" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ga2-zeitmanagement-karte-0"></span></div>
+<div class="card-rating"><span>Karte „Abruf 2“:</span><button type="button" data-card-id="ga2-zeitmanagement-karte-1" data-card-rate="known">gewusst</button><button type="button" data-card-id="ga2-zeitmanagement-karte-1" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ga2-zeitmanagement-karte-1"></span></div>
+<div class="card-rating"><span>Karte „Abruf 3“:</span><button type="button" data-card-id="ga2-zeitmanagement-karte-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="ga2-zeitmanagement-karte-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ga2-zeitmanagement-karte-2"></span></div><section class="recall-practice" data-recall="ga2-zeitmanagement-abruf" data-min-length="80" aria-labelledby="ga2-zeitmanagement-abruf-title">
+  <div class="recall-prompt"><h3 id="ga2-zeitmanagement-abruf-title">Deine Begründung</h3><p>Warum sollte die Kontrollreserve nicht stillschweigend von der ersten schwierigen Aufgabe verbraucht werden?</p></div>
+  <label class="sr-only" for="ga2-zeitmanagement-abruf-answer">Eigene Erklärung</label>
+  <textarea id="ga2-zeitmanagement-abruf-answer" data-recall-input rows="4" placeholder="Mein Ansatz und seine Grenzen …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Dann fehlen Zeit für andere Aufgaben und abschließende Korrekturen. Ich entscheide bewusst über einen begrenzten Zuschlag und halte Zwischenmarken ein, statt unbemerkt weiterzuarbeiten.</div>
+</section><h2 class="sec" id="s7"><span class="num">7</span>Lernziel-Check</h2>
+<section class="quiz" data-quiz="ga2-zeitmanagement-transfer-a" data-correct="2" data-required-objective="ziel-0">
+  <h3>Ein neuer Aufgabensatz hat stark unterschiedliche Gewichte. Welche Planung passt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Unterschiedliche Umfänge bleiben unberücksichtigt."><span class="m">A</span> Jede Aufgabe erhält blind dieselbe Zeit.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Zuordnung und Flüchtigkeitsfehler bleiben ungeprüft."><span class="m">B</span> Keine Kontrollzeit einplanen, weil Kontrolle nie hilft.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die Verteilung passt sich den tatsächlichen Aufgaben an."><span class="m">C</span> Überblick und Reserve einplanen, Bearbeitungszeit nach Gewicht und Schwierigkeit verteilen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="numeric-practice transfer-number" data-numeric-practice="ga2-zeitmanagement-transfer-b" data-required-objective="ziel-1" data-expected="22.5" data-tolerance="0" data-correct-feedback="75 Minuten Bearbeitungszeit; davon 30 Prozent ergeben 22,5 Minuten. Das ist eine Planungsnäherung." data-wrong-feedback="Ziehe zunächst beide Reserven von 90 Minuten ab. 27 Minuten wären 30 Prozent der ungekürzten Gesamtzeit.">
+  <h3>Berechne das Ergebnis</h3>
+  <p>Eine Übung dauert 90 Minuten. Sechs Minuten sind für Überblick, neun für Kontrolle reserviert. Ein Teil hat 30 von insgesamt 100 Punkten. Wie viele Minuten erhält er bei proportionaler Verteilung der reinen Bearbeitungszeit? Eine Dezimalstelle genügt.</p>
+  <label for="ga2-zeitmanagement-transfer-b-answer">Zeitbudget in Minuten</label>
+  <div class="answer-row"><input id="ga2-zeitmanagement-transfer-b-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Ergebnis"><button type="button" class="lbtn primary" data-numeric-check>Antwort prüfen</button></div>  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s8"><span class="num">8</span>Quellen und Grenzen</h2>
+<p>Ergänzung zum Praxisfall: <a href="https://ausbildung-in-der-it.de/pruefung/alte-ihk-pruefungen">Ausbildung in der IT</a> lieferte den didaktischen Impuls. Szenario, Fragen und Rückmeldungen sind eigenständig erstellt. Die Fehlerauswertung ist eine Lernhilfe, keine verbindliche Prüfungsvorgabe. Quellenabschnitte geprüft am 14.09.2026.</p>
+<p>Buchkontext: PrüfVorb IHK Bonn, Markdown-Chunk 00025 (beispielhafte Bearbeitungshinweise). Alle Szenarien sind eigene Lernbeispiele. Für die echte Prüfung gelten die aktuellen Aufgaben- und Bearbeitungshinweise. Diese Einheit verspricht keine bestimmte Bewertung und schreibt keine allgemeine Bearbeitungsstrategie vor. Prüfungsdauer ergänzend geprüft: <a href="https://www.ihk.de/hagen/bildung/abschlusspruefungen/it-berufe-index-812540">SIHK Hagen – IT-Prüfungsvorgaben</a>, abgerufen am 14.09.2026.</p>
+
+      <div class="pager">
+        <a href="/netzwerke/#ga2-9"><span class="d">zurück zu</span><span class="t">Prüfungstechnik GA2</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Prüfungstechnik GA2</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Vorwissen aktivieren</a></li>
+<li><a href="#s2" data-t="s2">Modell und Grenzen</a></li>
+<li><a href="#s3" data-t="s3">Durchgearbeitetes Beispiel</a></li>
+<li><a href="#s4" data-t="s4">Selbst entscheiden</a></li>
+<li><a href="#s5" data-t="s5">Praxisfall: Aus Fehlern eine nächste Übung machen</a></li>
+<li><a href="#s6" data-t="s6">Aus dem Gedächtnis erklären</a></li>
+<li><a href="#s7" data-t="s7">Lernziel-Check</a></li>
+<li><a href="#s8" data-t="s8">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/netzwerke/#ga2-9">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

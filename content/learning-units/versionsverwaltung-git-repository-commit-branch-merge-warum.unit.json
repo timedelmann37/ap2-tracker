@@ -1,0 +1,346 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "versionsverwaltung-git-repository-commit-branch-merge-warum",
+    "slug": "versionsverwaltung-git-repository-commit-branch-merge-warum",
+    "title": "Git: Änderungen nachvollziehbar sichern",
+    "description": "Repository, Commit, Branch und Merge unterscheiden und den tatsächlich gesicherten Skriptstand bestimmen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-9",
+    "groupLabel": "Programme zur automatisierten Systemverwaltung",
+    "itemId": "ga1-9__13",
+    "week": "KW 43",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "sources": [
+      "itlf10-12-2023",
+      "git-book-basics",
+      "git-book-merge"
+    ],
+    "contentRevision": "2026-09-17.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "stand",
+      "label": "Arbeitsstand, Staging und Commit korrekt unterscheiden"
+    },
+    {
+      "id": "merge",
+      "label": "Zusammenführung von Branches fachlich prüfen"
+    }
+  ],
+  "intro": "Repository, Commit, Branch und Merge unterscheiden und den tatsächlich gesicherten Skriptstand bestimmen. Du bearbeitest eigene Papierfälle; es werden keine echten Systeme verändert.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seite 124, OCR-Batch-Ausschnitt zu add/commit/status",
+        "use": "Buchkontext Versionsverwaltung; unpräzise Zustandsdarstellung korrigiert",
+        "reviewStatus": "Begrenzter Abschnitt am 17.09.2026 gelesen und abgeglichen"
+      },
+      {
+        "sourceId": "git-book-basics",
+        "sourceLocator": "Abschnitte Snapshots und The Three States",
+        "use": "Commit als Snapshot, Staging als ausgewählter Stand",
+        "reviewStatus": "Begrenzter Abschnitt am 17.09.2026 gelesen und abgeglichen"
+      },
+      {
+        "sourceId": "git-book-merge",
+        "sourceLocator": "Basic Merging und Basic Merge Conflicts",
+        "use": "Merge und Konfliktbehandlung",
+        "reviewStatus": "Begrenzter Abschnitt am 17.09.2026 gelesen und abgeglichen"
+      }
+    ],
+    "notes": [
+      "Eigene Beispiele, Aufgaben und Grafiken. Menschliche Fach- und Verständlichkeitsfreigabe offen.",
+      "OCR-Begriffe .git, untracked und unstaged nicht ungeprüft übernommen: Untracked-Dateien können im Arbeitsverzeichnis liegen; Commit sichert den Index, nicht beliebige spätere Bearbeitungen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "staende",
+      "title": "Welcher Stand wird gesichert?",
+      "type": "flow",
+      "items": [
+        {
+          "label": "Arbeitsdatei",
+          "detail": "Hier bearbeitest du das Skript"
+        },
+        {
+          "label": "Staging / Index",
+          "detail": "Ausgewählter Stand für den Commit"
+        },
+        {
+          "label": "Repository",
+          "detail": "Commit hält diesen Stand fest"
+        }
+      ]
+    },
+    {
+      "id": "merge",
+      "title": "Zusammenführen braucht Prüfung",
+      "type": "flow",
+      "items": [
+        {
+          "label": "Gemeinsamer Stand",
+          "detail": "Beide Branches starten bei A"
+        },
+        {
+          "label": "Getrennte Änderungen",
+          "detail": "main: B; pruefung: C"
+        },
+        {
+          "label": "Zusammenführung",
+          "detail": "Ergebnis fachlich testen, dann sichern"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "versionsverwaltung-git-repository-commit-branch-merge-warum-diagnose",
+          "question": "Du speicherst eine Datei im Editor. Ist damit schon ein Git-Commit entstanden?",
+          "options": [
+            {
+              "text": "Ja, Speichern und Commit sind dasselbe.",
+              "rationale": "Der Editor verändert zunächst nur die Arbeitsdatei.",
+              "correct": false
+            },
+            {
+              "text": "Nein, dazu ist ein eigener Git-Schritt nötig.",
+              "rationale": "Richtig: Ein Commit sichert den vorgesehenen Stand im Repository.",
+              "correct": true
+            },
+            {
+              "text": "Nur wenn die Datei ein Skript ist.",
+              "rationale": "Der Dateityp ändert diese Trennung nicht.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Drei Orte statt einer Dateikopie",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Repository enthält versionierte Projektstände und ihre Historie. Ein Commit benennt einen gespeicherten Snapshot mit Metadaten und Vorgängern. Im Arbeitsverzeichnis bearbeitest du Dateien. Der Index, oft Staging-Bereich genannt, hält den für den nächsten Commit ausgewählten Stand.\n\n`git add bericht.ps1` übernimmt den aktuellen Inhalt dieser Datei in den Index. `git commit` sichert den Index. Spätere Bearbeitungen werden nicht automatisch mitgenommen. `git status` unterscheidet vorgemerkte, nicht vorgemerkte und unversionierte Änderungen. `git diff` zeigt Änderungen zwischen Arbeitsdatei und Index; `git diff --cached` zwischen Index und letztem Commit."
+        },
+        {
+          "type": "figure",
+          "diagramId": "staende",
+          "alt": "Arbeitsdatei, Index und Repository enthalten unterscheidbare Stände.",
+          "caption": "Eigene Darstellung des Lernmodells."
+        }
+      ]
+    },
+    {
+      "title": "Den gesicherten Inhalt vorhersagen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Eigener Papierfall: Im letzten Commit steht `grenze = 5`. Du änderst auf 8 und führst `git add` aus. Danach änderst du auf 12, ohne erneut vorzumerken. Sage zuerst voraus: Welche Zahl wird beim folgenden Commit gesichert?\n\n| Ort vor dem Commit | Wert |\n| --- | --- |\n| Letzter Commit | 5 |\n| Index | 8 |\n| Arbeitsdatei | 12 |\n\nDer Commit erhält **8**, weil dies der vorgemerkte Stand ist. Die Arbeitsdatei bleibt bei **12**; diese spätere Änderung bleibt uncommitted. Für 12 müsstest du erneut gezielt vormerken und prüfen."
+        },
+        {
+          "type": "numeric",
+          "id": "versionsverwaltung-git-repository-commit-branch-merge-warum-zahl",
+          "title": "Neuer Staging-Fall",
+          "prompt": "Letzter Commit: 3. Auf 6 geändert und vorgemerkt. Danach auf 9 geändert, nicht erneut vorgemerkt. Welcher Wert landet im normalen Commit?",
+          "label": "Gesicherter Wert",
+          "expected": 6,
+          "tolerance": 0,
+          "correctFeedback": "Sechs war vorgemerkt. Neun bleibt eine zusätzliche Arbeitsänderung.",
+          "wrongFeedback": "Entscheidend ist der Index, nicht der neueste Editorstand.",
+          "misconceptions": [
+            {
+              "value": 9,
+              "feedback": "Neun wurde nicht erneut vorgemerkt."
+            },
+            {
+              "value": 3,
+              "feedback": "Drei ist der alte Commit, nicht der aktualisierte Index."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Branch und Merge",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Branch ist ein beweglicher Verweis auf einen Commit, keine vollständige unabhängige Ordnerkopie. Neue Commits entwickeln den aktuellen Branch weiter. Ein Merge führt Historien zusammen. Bei einem Fast-forward wird der Zielverweis vorgeschoben; bei auseinanderentwickelten Historien kann ein Merge-Commit entstehen.\n\nEigener Fall: main erhöht eine Wartezeit, ein zweiter Branch ergänzt eine Eingabeprüfung. Git kann die Texte möglicherweise automatisch zusammenführen. Ob beide Änderungen zusammen richtig funktionieren, entscheidet ein Test. Bearbeiten beide dieselbe Stelle unterschiedlich, kann ein Konflikt entstehen. Dann die beabsichtigte Gesamtfunktion klären, Ergebnis bearbeiten, prüfen und erst danach den Merge abschließen."
+        },
+        {
+          "type": "figure",
+          "diagramId": "merge",
+          "alt": "Zwei Änderungen nach einem gemeinsamen Stand werden zu einem geprüften Ergebnis zusammengeführt.",
+          "caption": "Eigene Darstellung des Lernmodells."
+        },
+        {
+          "type": "quiz",
+          "id": "versionsverwaltung-git-repository-commit-branch-merge-warum-uebung",
+          "question": "Git meldet eine konfliktfreie Zusammenführung. Was ist damit belegt?",
+          "options": [
+            {
+              "text": "Das Skript ist fachlich fehlerfrei.",
+              "rationale": "Textintegration beweist nicht die fachliche Wirkung.",
+              "correct": false
+            },
+            {
+              "text": "Git konnte die Änderungen automatisch zusammenführen.",
+              "rationale": "Richtig; anschließend bleibt die Funktionsprüfung nötig.",
+              "correct": true
+            },
+            {
+              "text": "Der Stand ist bereits auf einem Remote-Server.",
+              "rationale": "Merge und Übertragung sind unterschiedliche Vorgänge.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Warum auch kleine Skripte?",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Änderungsgrund und betroffene Dateien gehören zusammen in einen überschaubaren Commit. So lässt sich später erklären, welche Prüfregel wann geändert wurde. Ein lokaler Commit ist noch kein Push und ein Push noch kein erfolgreicher Betrieb. Versionsverwaltung ersetzt keine Datensicherung. Zugangsdaten gehören nicht in die Historie.\n\nEin Branch für einen Versuch schützt nicht vor allen Fehlern: Vor dem Wechsel ungesicherte Änderungen prüfen. Diese Einheit führt keine Git-Befehle aus und beschreibt keine Lösch- oder Zurücksetzroutine."
+        }
+      ]
+    },
+    {
+      "title": "Selbst ordnen und erklären",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "versionsverwaltung-git-repository-commit-branch-merge-warum-reihenfolge",
+          "title": "Ablauf ordnen",
+          "prompt": "Ordne den Abschluss einer bereits bearbeiteten Änderung.",
+          "steps": [
+            {
+              "id": "abschluss",
+              "label": "Den geprüften Stand committen"
+            },
+            {
+              "id": "start",
+              "label": "Gewünschte Änderung gezielt vormerken"
+            },
+            {
+              "id": "pruefen",
+              "label": "Vorgemerkten Unterschied prüfen"
+            }
+          ],
+          "expected": [
+            "start",
+            "pruefen",
+            "abschluss"
+          ],
+          "correctFeedback": "Richtig: Voraussetzungen, Prüfung und Abschluss stehen in der vorgesehenen Reihenfolge.",
+          "wrongFeedback": "Prüfe die Voraussetzungen: Der letzte Schritt darf die vorherige Prüfung nicht überspringen."
+        },
+        {
+          "type": "recall",
+          "id": "versionsverwaltung-git-repository-commit-branch-merge-warum-begruendung",
+          "title": "Aus dem Gedächtnis erklären",
+          "prompt": "Erkläre den Fall mit 5, 8 und 12: Was sichert der Commit, was bleibt offen, und warum wäre das bei einem Administrationsskript wichtig?",
+          "label": "Deine Erklärung",
+          "minLength": 70,
+          "model": "Der Index enthält 8, also sichert der Commit 8. Die Arbeitsdatei enthält weiterhin 12 als nicht vorgemerkte Änderung. Sonst könnte ich glauben, die neueste Prüfregel sei bereits dokumentiert oder geteilt, obwohl nur ein älterer Stand gesichert wurde."
+        },
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "versionsverwaltung-git-repository-commit-branch-merge-warum-karte-0",
+              "label": "Abruf 1",
+              "front": "Ist Commit gleich Push?",
+              "back": "Nein. Commit sichert lokal; Push überträgt Commits und aktualisiert Remote-Verweise, sofern erlaubt."
+            },
+            {
+              "id": "versionsverwaltung-git-repository-commit-branch-merge-warum-karte-1",
+              "label": "Abruf 2",
+              "front": "Beweist ein Merge ohne Konflikt die Korrektheit?",
+              "back": "Nein. Zusammengeführter Text muss fachlich getestet werden."
+            },
+            {
+              "id": "versionsverwaltung-git-repository-commit-branch-merge-warum-karte-2",
+              "label": "Abruf 3",
+              "front": "Warum kleine begründete Commits?",
+              "back": "Damit zusammengehörige Änderungen später nachvollziehbar bleiben."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "versionsverwaltung-git-repository-commit-branch-merge-warum-transfer-a",
+          "question": "Eine Datei ist vorgemerkt. Danach wird nur die Arbeitsdatei erneut bearbeitet. Was sichert ein normaler Commit?",
+          "options": [
+            {
+              "text": "Immer die letzte Editorversion.",
+              "rationale": "Spätere Änderungen sind nicht automatisch vorgemerkt.",
+              "correct": false
+            },
+            {
+              "text": "Gar nichts, weil sich die Datei erneut änderte.",
+              "rationale": "Der Index bleibt als vorgemerkter Stand vorhanden.",
+              "correct": false
+            },
+            {
+              "text": "Den zuletzt vorgemerkten Stand.",
+              "rationale": "Dieser ist vom danach bearbeiteten Arbeitsstand getrennt.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "stand"
+        },
+        {
+          "type": "quiz",
+          "id": "versionsverwaltung-git-repository-commit-branch-merge-warum-transfer-b",
+          "question": "Zwei Branches ändern dieselbe Grenzprüfung unterschiedlich. Git hält mit einem Konflikt an. Was ist sinnvoll?",
+          "options": [
+            {
+              "text": "Anforderung klären, Gesamtprüfung herstellen, testen und dann abschließen.",
+              "rationale": "Die fachliche Entscheidung kann Git nicht abnehmen.",
+              "correct": true
+            },
+            {
+              "text": "Beliebig eine Seite wählen, Hauptsache der Konflikt verschwindet.",
+              "rationale": "Das kann eine erforderliche Änderung verlieren.",
+              "correct": false
+            },
+            {
+              "text": "Nur die Konfliktmarker entfernen, beide Bedingungen ungeprüft lassen.",
+              "rationale": "Syntaktische Bereinigung garantiert keine sinnvolle Logik.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "merge"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Buchkontext: ITLF10–12, PDF-Seite 124, ausgewählter OCR-Ausschnitt. Präzisierung: [Pro Git – Grundmodell](https://git-scm.com/book/en/v2/Getting-Started-What-is-Git%3F) und [Zusammenführen](https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging), Grundlagenabschnitte am 17.09.2026 gelesen. Eigene Beispiele. Keine vollständige Git-Befehlsreferenz und keine Änderung am echten Repository durch die Übungen."
+        }
+      ]
+    }
+  ]
+}

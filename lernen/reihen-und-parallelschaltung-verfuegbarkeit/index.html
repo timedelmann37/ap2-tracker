@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Harte Abhängigkeiten und unabhängige Redundanz unterscheiden, Gesamtverfügbarkeit berechnen und gemeinsame Ausfälle erkennen.">
+<title>Reihe oder parallel? Verfügbarkeit der Dienstkette – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="reihen-und-parallelschaltung-verfuegbarkeit" data-progress-id="ga1-2__10" data-content-revision="2026-09-26.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-2">Virtualisierung, Cluster und Verfügbarkeit</a><span class="sep">›</span>
+    <span class="here">Reihe oder parallel? Verfügbarkeit der Dienstkette</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Reihe oder parallel? Verfügbarkeit der Dienstkette</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 30 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Zwei Server klingen nach mehr Verfügbarkeit. Das gilt aber nur, wenn einer allein den Dienst tragen kann und nicht beide an derselben Datenbank, Stromversorgung oder Netzwerkkomponente scheitern.</p>
+<section class="learning-goals" aria-labelledby="reihen-und-parallelschaltung-verfuegbarkeit-goals">
+  <h2 id="reihen-und-parallelschaltung-verfuegbarkeit-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Für zwei harte Abhängigkeiten und zwei unabhängige redundante Pfade die theoretische Verfügbarkeit berechnen</li>
+    <li>Gemeinsame Ausfallursachen, Kapazität und Umschaltung als Grenzen der Parallelformel erklären</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Was muss gleichzeitig funktionieren?</h2>
+<section class="quiz" data-quiz="reihen-parallel-diagnose" data-correct="0">
+  <h3>Eine Webanwendung benötigt für jede Anfrage sowohl den Webserver als auch die einzige Datenbank. Welche Beziehung besteht für diese Funktion?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Beide müssen gleichzeitig funktionieren."><span class="m">A</span> Harte Abhängigkeit in Reihe: Fällt eine Komponente aus, ist die Funktion nicht nutzbar.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Webserver und Datenbank ersetzen sich nicht gegenseitig."><span class="m">B</span> Parallele Redundanz: Es genügt, wenn irgendeine der beiden Komponenten läuft.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Eine harte Abhängigkeit kann die Gesamtverfügbarkeit senken."><span class="m">C</span> Die Verfügbarkeit ist automatisch die höhere der beiden Einzelwerte.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Zwei Knoten, zwei verschiedene Logiken">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-topologien-title diagram-topologien-desc">
+  <title id="diagram-topologien-title">Zwei Knoten, zwei verschiedene Logiken</title>
+  <desc id="diagram-topologien-desc">Reihe: Webserver und Datenbank sind beide erforderlich. Parallel: Webserver A oder B kann die Funktion vollständig tragen. Eine gemeinsame Datenbank bleibt trotz Webredundanz eine harte Abhängigkeit.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Zwei Knoten, zwei verschiedene Logiken</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">Reihe: Web → Datenbank</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">Die Nutzerfunktion braucht</tspan><tspan x="64" dy="30">beide Komponenten. Fällt</tspan><tspan x="64" dy="30">eine aus, steht der Dienst;</tspan></text></g><g><rect class="diagram-row" x="340" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="362" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="362" dy="0">Parallel: Web A oder Web</tspan><tspan x="362" dy="25">B</tspan></text><text x="362" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="362" dy="0">Jeder Pfad kann dieselbe</tspan><tspan x="362" dy="30">Nutzerfunktion vollständig</tspan><tspan x="362" dy="30">tragen. Bei unabhängigen</tspan></text></g><g><rect class="diagram-row" x="638" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="660" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="660" dy="0">Gemeinsame Datenbank</tspan></text><text x="660" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="660" dy="0">Zwei Webserver bleiben an</tspan><tspan x="660" dy="30">einer einzigen Datenbank</tspan><tspan x="660" dy="30">hängen. Der Webteil ist</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Architektur-Skizze; Reihe und parallel beschreiben die Nutzerfunktion, nicht bloß Kabel oder Serveranzahl.</figcaption>
+</figure><p>In einer <strong>Reihenschaltung</strong> braucht der Dienst alle betrachteten Komponenten gleichzeitig. Sind ihre Fehler im Lehrmodell unabhängig, ist die theoretische Verfügbarkeit das Produkt ihrer Dezimalwerte. Zwei harte Komponenten mit je 99 % ergeben <strong>0,99 × 0,99 = 0,9801 = 98,01 %</strong>. Der Dienst ist nicht 99 % verfügbar, weil jede Komponente einen zusätzlichen Ausfallweg eröffnet.</p>
+<p>In einer <strong>Parallelschaltung</strong> genügen alternative, vollständig funktionsfähige Pfade. Bei zwei <em>unabhängigen</em> Pfaden mit je 99 % fallen beide nur mit 1 % × 1 % = 0,01 % Wahrscheinlichkeit gleichzeitig aus. Die theoretische Verfügbarkeit beträgt <strong>99,99 %</strong>. Entscheidend: Jeder Pfad muss die geforderte Last allein tragen können und eine wirksame Umschaltung besitzen.</p>
+<div class="math-display" role="group" aria-label="Zwei unabhängige harte Abhängigkeiten in Reihe: A gesamt gleich 0 Komma 99 mal 0 Komma 99 gleich 0 Komma 9801 gleich 98 Komma 01 Prozent."><math display="block" aria-label="Zwei unabhängige harte Abhängigkeiten in Reihe: A gesamt gleich 0 Komma 99 mal 0 Komma 99 gleich 0 Komma 9801 gleich 98 Komma 01 Prozent."><mrow><msub><mi>A</mi><mtext>Reihe</mtext></msub><mo>=</mo><msub><mi>A</mi><mn>1</mn></msub><mo>·</mo><msub><mi>A</mi><mn>2</mn></msub><mo>=</mo><mn>0,99</mn><mo>·</mo><mn>0,99</mn><mo>=</mo><mn>98,01</mn><mo>%</mo></mrow></math><div class="math-legend"><span>Beide Komponenten sind für dieselbe Funktion nötig; unabhängige Fehler angenommen.</span></div></div><section class="numeric-practice transfer-number" data-numeric-practice="reihen-verfuegbarkeit" data-expected="98.01" data-tolerance="0.001" data-correct-feedback="Richtig: 0,99 × 0,99 × 100 = 98,01 %." data-wrong-feedback="Bei zwei harten Abhängigkeiten multiplizierst du ihre Dezimalwerte: 0,99 × 0,99.">
+  <h3>Harte Dienstkette</h3>
+  <p>Webserver und Datenbank werden beide benötigt und haben je 99 % Verfügbarkeit. Wie hoch ist die theoretische Gesamtverfügbarkeit in Prozent?</p>
+  <label for="reihen-verfuegbarkeit-answer">Gesamtverfügbarkeit in Prozent</label>
+  <div class="answer-row"><input id="reihen-verfuegbarkeit-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Ergebnis"><button type="button" class="lbtn" data-numeric-check>Antwort prüfen</button></div><p>  <template data-numeric-feedback-for="99">99 % gilt für jede Komponente einzeln; beide müssen gleichzeitig funktionieren.</template>
+  <template data-numeric-feedback-for="99.99">99,99 % wäre das Ergebnis zweier unabhängiger alternativer Pfade, nicht einer Reihe.</template>
+  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p></p>
+</section><h2 class="sec" id="s2"><span class="num">2</span>Wann hilft die zweite Komponente?</h2>
+<div class="math-display" role="group" aria-label="Zwei unabhängige alternative Pfade: A parallel gleich eins minus Klammer eins minus A eins Klammer mal Klammer eins minus A zwei Klammer, gleich eins minus 0 Komma 01 mal 0 Komma 01 gleich 99 Komma 99 Prozent."><math display="block" aria-label="Zwei unabhängige alternative Pfade: A parallel gleich eins minus Klammer eins minus A eins Klammer mal Klammer eins minus A zwei Klammer, gleich eins minus 0 Komma 01 mal 0 Komma 01 gleich 99 Komma 99 Prozent."><mrow><msub><mi>A</mi><mtext>parallel</mtext></msub><mo>=</mo><mn>1</mn><mo>−</mo><mo>(</mo><mn>1</mn><mo>−</mo><msub><mi>A</mi><mn>1</mn></msub><mo>)</mo><mo>·</mo><mo>(</mo><mn>1</mn><mo>−</mo><msub><mi>A</mi><mn>2</mn></msub><mo>)</mo><mo>=</mo><mn>99,99</mn><mo>%</mo></mrow></math><div class="math-legend"><span>Beide Pfade fallen nur gleichzeitig aus; Fehlerunabhängigkeit, volle Restkapazität und funktionierende Umschaltung angenommen.</span></div></div><section class="numeric-practice transfer-number" data-numeric-practice="parallel-verfuegbarkeit" data-expected="99.99" data-tolerance="0.001" data-correct-feedback="Richtig: 1 − (0,01 × 0,01) = 0,9999 = 99,99 %." data-wrong-feedback="Rechne zuerst die gleichzeitige Ausfallwahrscheinlichkeit beider Pfade: 0,01 × 0,01.">
+  <h3>Zwei echte Ersatzpfade</h3>
+  <p>Zwei unabhängige, vollständig ersetzbare Pfade haben je 99 % Verfügbarkeit. Wie hoch ist ihre theoretische Gesamtverfügbarkeit in Prozent?</p>
+  <label for="parallel-verfuegbarkeit-answer">Gesamtverfügbarkeit in Prozent</label>
+  <div class="answer-row"><input id="parallel-verfuegbarkeit-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Ergebnis"><button type="button" class="lbtn" data-numeric-check>Antwort prüfen</button></div><p>  <template data-numeric-feedback-for="98.01">98,01 % gehört zur Reihe, in der beide Komponenten nötig sind.</template>
+  <template data-numeric-feedback-for="198">Verfügbarkeiten addiert man nicht; 198 % kann keine Wahrscheinlichkeit sein.</template>
+  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p></p>
+</section><figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Bevor du multiplizierst, prüfe die Architektur">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="542" viewBox="0 0 960 542" role="img" aria-labelledby="diagram-annahmen-title diagram-annahmen-desc">
+  <title id="diagram-annahmen-title">Bevor du multiplizierst, prüfe die Architektur</title>
+  <desc id="diagram-annahmen-desc">Vier Fragen vor einer Parallelrechnung: vollständige Pfade, unabhängige Fehler, nutzbare Umschaltung, Ende-zu-Ende-Messung.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Bevor du multiplizierst, prüfe die Architektur</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Vollständige Pfade?</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Kann jeder Pfad allein die definierte Nutzerfunktion und die</tspan><tspan x="178" dy="25">Ziel-Last tragen?</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Unabhängige Fehler?</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Teilen die Pfade Rack, Strom, Netzwerk, Storage,</tspan><tspan x="178" dy="25">Softwarefehler oder Bedienfehler?</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Umschaltung nutzbar?</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Erkennt das System den Fehler, lenkt Anfragen um und bewahrt</tspan><tspan x="178" dy="25">nötigen Zustand?</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Ende-zu-Ende messen</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Prüfe den tatsächlichen Dienst, nicht nur den Status einzelner</tspan><tspan x="178" dy="25">Server.</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Die Formel ist ein Modell für unabhängige Fehler – keine Garantie aus der Anzahl der Server.</figcaption>
+</figure><p>Der Haken steckt oft in <strong>gemeinsamen Ausfallursachen</strong>. A und B im selben Rack teilen möglicherweise Strom, Netz oder Storage. Ein Softwarefehler kann beide Instanzen gleichzeitig treffen. Auch ein einzelner Load Balancer oder eine einzige Datenbank bleibt ein harter Engpass. Solche korrelierten Ausfälle darfst du nicht als unabhängig multiplizieren.</p>
+<p>Beispiel: Der redundante Webteil erreicht theoretisch 99,99 %. Die einzige Datenbank erreicht 99 %. Für die gesamte Nutzerfunktion müssen <em>Webteil und Datenbank</em> laufen. Selbst unter der Modellannahme unabhängiger Fehler ergibt das <strong>0,9999 × 0,99 = 0,989901 = 98,9901 %</strong>. Mehr Webserver beheben nicht den Datenbankausfall. Und selbst diese Zahl gilt nur, wenn Failover und Lastverteilung tatsächlich funktionieren.</p>
+<section class="quiz" data-quiz="reihen-parallel-engpass" data-correct="0">
+  <h3>Zwei Webserver sind redundant, aber beide brauchen dieselbe einzelne Datenbank. Welche Aussage ist tragfähig?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Die gesamte Dienstkette muss betrachtet werden."><span class="m">A</span> Der Webteil kann redundant sein; die Datenbank bleibt eine harte gemeinsame Abhängigkeit.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die Datenbank hat dadurch keinen Ersatzpfad."><span class="m">B</span> Zwei Webserver verdoppeln automatisch die Verfügbarkeit der Datenbank.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Sie ignoriert Datenbank, Umschaltung und mögliche gemeinsame Ausfälle."><span class="m">C</span> Die Formel für zwei unabhängige Webserver beschreibt ohne weitere Prüfung den gesamten Dienst.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s3"><span class="num">3</span>Architektur vor Arithmetik</h2>
+<section class="sequence-practice" data-sequence="reihen-parallel-pruefweg" data-expected="funktion,alternativen,rechnung,test" data-correct-feedback="Richtig: Erst Dienststruktur und Annahmen, dann Formel, zuletzt der praktische Nachweis." data-wrong-feedback="Zeichne zuerst die Nutzerfunktion; ohne Abhängigkeiten und Fehlergrenzen ist die Zahl irreführend." aria-labelledby="reihen-parallel-pruefweg-title">
+  <div class="lab-heading"><div><h3 id="reihen-parallel-pruefweg-title">Modellgrenzen zuerst prüfen</h3><p>Ordne den Prüfweg vor einer belastbaren Verfügbarkeitsaussage.</p></div><span class="lab-tag">Ablauf</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="funktion" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Nutzerfunktion und harte Abhängigkeiten zeichnen</span></li>
+    <li data-step="alternativen" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Ersatzpfade, Unabhängigkeit und Restkapazität prüfen</span></li>
+    <li data-step="rechnung" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Passende Formel rechnen und Ergebnis als theoretisch kennzeichnen</span></li>
+    <li data-step="test" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Ausfälle und Umschaltung am echten Dienst testen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><section class="recall-practice" data-recall="reihen-parallel-begruendung" data-min-length="110" aria-labelledby="reihen-parallel-begruendung-title">
+  <div class="recall-prompt"><h3 id="reihen-parallel-begruendung-title">Warum reichen zwei Server nicht?</h3><p>Erkläre, warum zwei Webserver mit je 99 % rechnerisch 99,99 % ergeben können, die gesamte Anwendung mit einer einzigen Datenbank aber deutlich darunter liegen kann.</p></div>
+  <label class="sr-only" for="reihen-parallel-begruendung-answer">Deine Begründung</label>
+  <textarea id="reihen-parallel-begruendung-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> 99,99 % ist nur die theoretische Verfügbarkeit des Webteils, falls die beiden Pfade unabhängig sind, jeder die volle Last trägt und die Umschaltung funktioniert. Die Anwendung braucht zusätzlich die einzelne Datenbank als harte Abhängigkeit. Bei deren Ausfall hilft kein zweiter Webserver; außerdem können gemeinsame Fehler die Unabhängigkeitsannahme widerlegen.</div>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Abruf und Lernziel-Check</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="reihen-parallel-karte-0" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wann ist es eine Reihe?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Wenn alle betrachteten Komponenten für dieselbe Nutzerfunktion nötig sind; im unabhängigen Modell A gesamt = Produkt der Einzelverfügbarkeiten.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="reihen-parallel-karte-1" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wann ist es parallel?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Wenn jeder unabhängige Pfad den Dienst vollständig tragen kann; A gesamt = 1 − Produkt ihrer Ausfallwahrscheinlichkeiten.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="reihen-parallel-karte-2" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was bricht die einfache Parallelformel?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Gemeinsame Ausfallursachen, unzureichende Restkapazität, fehlgeschlagenes Failover oder harte gemeinsame Abhängigkeiten.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Abruf 1“:</span><button type="button" data-card-id="reihen-parallel-karte-0" data-card-rate="known">gewusst</button><button type="button" data-card-id="reihen-parallel-karte-0" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="reihen-parallel-karte-0"></span></div>
+<div class="card-rating"><span>Karte „Abruf 2“:</span><button type="button" data-card-id="reihen-parallel-karte-1" data-card-rate="known">gewusst</button><button type="button" data-card-id="reihen-parallel-karte-1" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="reihen-parallel-karte-1"></span></div>
+<div class="card-rating"><span>Karte „Abruf 3“:</span><button type="button" data-card-id="reihen-parallel-karte-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="reihen-parallel-karte-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="reihen-parallel-karte-2"></span></div><section class="quiz" data-quiz="reihen-parallel-transfer-a" data-correct="1" data-required-objective="rechnen">
+  <h3>Zwei unabhängige, vollständig ersetzbare Pfade erreichen jeweils 99 %. Welche theoretische Verfügbarkeit folgt für diesen redundanten Teil?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Das wäre die Reihe aus zwei harten Abhängigkeiten."><span class="m">A</span> 98,01 %</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig: Nur 0,01 × 0,01 = 0,0001 der Zeit fallen beide gleichzeitig aus."><span class="m">B</span> 99,99 %</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Wahrscheinlichkeiten werden hier nicht einfach addiert."><span class="m">C</span> 198 %</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="reihen-parallel-transfer-b" data-correct="0" data-required-objective="grenzen">
+  <h3>Beide Ersatzpfade stehen am selben Switch. Welche Folgerung ist fachlich richtig?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Ein Switchfehler kann beide Pfade gleichzeitig unerreichbar machen."><span class="m">A</span> Der Switch ist ein gemeinsamer Ausfallort; die unabhängige Parallelrechnung darf nicht unbesehen für den gesamten Dienst gelten.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Er ist ein zusätzlicher gemeinsamer Fehlerpfad."><span class="m">B</span> Der gemeinsame Switch verbessert die Verfügbarkeit über den errechneten Wert hinaus.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die Formel setzt unabhängige und funktionsfähige Pfade voraus."><span class="m">C</span> Die Formel beweist, dass Hardware und Umschaltung keine Rolle spielen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Quellen und Grenzen</h2>
+<p><a href="https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/availability.html">AWS Well-Architected: Availability</a>, <a href="https://docs.aws.amazon.com/whitepapers/latest/availability-and-beyond-improving-resilience/availability-with-dependencies.html">AWS: Availability with dependencies</a> und <a href="https://docs.aws.amazon.com/whitepapers/latest/availability-and-beyond-improving-resilience/availability-with-redundancy.html">AWS: Availability with redundancy</a>, am 26.09.2026 gelesen. Zahlen, Szenario und Grafiken sind eigene vereinfachte Modelle. Alle Formeln setzen klar definierte Nutzerfunktion, gleiche Messperiode und unabhängige Fehler voraus; Umschaltzeit und reale gemeinsame Ausfälle sind gesondert zu prüfen. Menschliche Fachfreigabe offen.</p>
+
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-2"><span class="d">zurück zu</span><span class="t">Virtualisierung, Cluster und Verfügbarkeit</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Virtualisierung, Cluster und Verfügbarkeit</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Was muss gleichzeitig funktionieren?</a></li>
+<li><a href="#s2" data-t="s2">Wann hilft die zweite Komponente?</a></li>
+<li><a href="#s3" data-t="s3">Architektur vor Arithmetik</a></li>
+<li><a href="#s4" data-t="s4">Abruf und Lernziel-Check</a></li>
+<li><a href="#s5" data-t="s5">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-2">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

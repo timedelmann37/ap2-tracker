@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Rollen und Features einordnen, Forest, Domain, OU und Site unterscheiden und einen DC-Ausfall mit DNS-Abhängigkeit durchdenken.">
+<title>Windows Server und Active Directory: Struktur, DNS, Redundanz – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="windows-server-active-directory-struktur-dns-dc" data-progress-id="ga1-6__0" data-content-revision="2026-09-26.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-6">Betriebssysteme und Administration</a><span class="sep">›</span>
+    <span class="here">Windows Server und Active Directory: Struktur, DNS, Redundanz</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Windows Server und Active Directory: Struktur, DNS, Redundanz</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 35 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Die Werkstatt Kranich betreibt eine AD-Domäne für zwei Standorte. In Berlin fällt ein Server aus; gleichzeitig können einige Clients keinen Domain Controller finden. Wo liegt die Ursache: in der OU, im Standort, im DNS oder bei fehlender Redundanz? Du trennst zuerst die Begriffe und leitest dann einen überprüfbaren Ausfallplan ab.</p>
+<section class="learning-goals" aria-labelledby="windows-server-active-directory-struktur-dns-dc-goals">
+  <h2 id="windows-server-active-directory-struktur-dns-dc-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Rolle/Feature und Forest, Domain, OU, Site im Szenario richtig unterscheiden</li>
+    <li>DNS-Abhängigkeit und DC-Redundanz mit konkreten Prüfungen begründen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>1 · Welche Schicht ist gemeint?</h2>
+<section class="quiz" data-quiz="ad-einstieg" data-correct="0">
+  <h3>Kranich will Benutzerkonten zentral verwalten. Was wird dazu auf einem Windows Server eingerichtet?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. AD DS ist eine Serverrolle. Das bloße Auswählen der Rolle ist noch kein fertiger, geprüfter Verzeichnisdienst."><span class="m">A</span> Die Serverrolle Active Directory Domain Services (AD DS); danach wird die Domäne bzw. der DC konfiguriert.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="OU ist ein Container im Verzeichnis, keine installierbare Serverfunktion und kein DC."><span class="m">B</span> Eine OU als Windows-Feature, die automatisch einen Domain Controller erzeugt.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="DNS hilft beim Auffinden der Dienste, speichert aber nicht selbst die AD-Identitäten."><span class="m">C</span> Nur einen DNS-Alias; damit entstehen Benutzerkonten und Gruppen von selbst.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><p>Eine <strong>Serverrolle</strong> beschreibt eine Hauptaufgabe des Servers. Für eine Windows-Domäne installierst du die Rolle <strong>Active Directory Domain Services (AD DS)</strong> und konfigurierst anschließend den Server als Domain Controller (DC). <strong>Features</strong> ergänzen Funktionen; sie sind nicht dasselbe wie Forest, Domäne oder OU. Die Rollen-/Feature-Auswahl ist ein Installationsschritt, noch kein Nachweis, dass Anmeldung, DNS und Replikation funktionieren.</p>
+<p>Kranich legt eine AD-Gesamtstruktur an. Der <strong>Forest</strong> ist die oberste logische Grenze mit gemeinsamem Schema und Konfiguration. Darin liegt die <strong>Domäne</strong> <code>ad.kranich.example</code>: Sie enthält unter anderem Benutzer, Computer und Gruppen; ihre DCs halten die Domänendaten und authentisieren. Innerhalb der Domäne ordnet die <strong>OU</strong> <code>Werkstatt</code> Benutzer und Geräte für delegierte Verwaltung und spätere Richtlinien. Eine OU ist <strong>keine</strong> neue Domäne und keine eigene physische Niederlassung.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Logik ist nicht Standort">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-struktur-und-standort-title diagram-struktur-und-standort-desc">
+  <title id="diagram-struktur-und-standort-title">Logik ist nicht Standort</title>
+  <desc id="diagram-struktur-und-standort-desc">Forest enthält Domäne und darunter Organisationseinheiten als logische Struktur. Site ist dagegen ein separates Modell von IP-Subnetzen und Netzwerkverbindungen.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Logik ist nicht Standort</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">Forest</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">Gemeinsame</tspan><tspan x="64" dy="30">AD-Struktur; enthält</tspan><tspan x="64" dy="30">Domänen.</tspan></text></g><g><rect class="diagram-row" x="265" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="287" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="287" dy="0">Domäne</tspan></text><text x="287" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="287" dy="0">Identitäten und DCs</tspan><tspan x="287" dy="30">einer</tspan><tspan x="287" dy="30">Verwaltungseinheit.</tspan></text></g><g><rect class="diagram-row" x="488" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="510" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="510" dy="0">OU</tspan></text><text x="510" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="510" dy="0">Objekte ordnen und</tspan><tspan x="510" dy="30">Verwaltung</tspan><tspan x="510" dy="30">delegieren.</tspan></text></g><g><rect class="diagram-row" x="711" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="733" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="733" dy="0">Site</tspan></text><text x="733" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="733" dy="0">Subnetze und</tspan><tspan x="733" dy="30">Netzwege – keine</tspan><tspan x="733" dy="30">Unter-OU.</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Merkgrafik: Die Site steht nicht unter der OU. Sie beschreibt die Netzseite derselben AD-Umgebung.</figcaption>
+</figure><section class="quiz" data-quiz="ad-ou-site" data-correct="0">
+  <h3>Kranich eröffnet einen zweiten Standort mit eigenem IP-Subnetz. Für eine standortnahe DC-Auswahl und Replikationswege wird vor allem was modelliert?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Sites bilden Netz- und Standortbeziehungen für DC-Auswahl und Replikation ab."><span class="m">A</span> Eine AD-Site mit zugeordnetem Subnetz und geeigneter Site-Verbindung.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Eine OU ordnet Verzeichnisobjekte. Der Client wird über sein IP-Subnetz einer Site zugeordnet, nicht über seinen OU-Namen."><span class="m">B</span> Nur eine OU namens Zweigstelle; der Client erkennt dadurch seinen Netzstandort.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein Forest kann mehrere Sites und Domänen umfassen. Ein zweiter Standort erzwingt keinen neuen Forest."><span class="m">C</span> Zwingend einen zweiten Forest; ein Forest darf nur einen Standort besitzen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2"><span class="num">2</span>2 · DNS finden, DC erreichen</h2>
+<p>Im Fall gibt es <strong>Berlin</strong> (<code>192.0.2.0/24</code>) und <strong>Leipzig</strong> (<code>198.51.100.0/24</code>) als Sites. In der einzigen Domäne <code>ad.kranich.example</code> läuft je ein beschreibbarer DC: <strong>DC-BER</strong> und <strong>DC-LEI</strong>. Die Sites gruppieren die jeweiligen Subnetze, damit Clients passende DCs finden und die Replikation über die Verbindung geplant werden kann. Das ist eine andere Perspektive als die OU-Struktur.</p>
+<p>Ein Domänenclient sucht einen DC nicht durch Raten seiner IP-Adresse: Die DNS-basierte DC-Suche fragt nach <strong>SRV-Einträgen</strong> für AD-Dienste, löst anschließend Zielnamen auf und prüft erreichbare Kandidaten. Für eine LDAP-Suche ist <code>_ldap._tcp.ad.kranich.example</code> ein anschaulicher Abfragebegriff. <strong>Wenn DNS fehlschlägt, hilft ein gesunder zweiter DC dem Client beim Auffinden zunächst nicht.</strong> Andersherum kann ein korrekter DNS-Eintrag auf einen nicht erreichbaren DC zeigen. Beobachtung und Test müssen diese Fehler trennen.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Anmeldung braucht mehr als zwei DCs">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="542" viewBox="0 0 960 542" role="img" aria-labelledby="diagram-anmeldung-abhaengigkeiten-title diagram-anmeldung-abhaengigkeiten-desc">
+  <title id="diagram-anmeldung-abhaengigkeiten-title">Anmeldung braucht mehr als zwei DCs</title>
+  <desc id="diagram-anmeldung-abhaengigkeiten-desc">Ein Client nutzt konfigurierte DNS-Server für AD-SRV-Einträge und Adressauflösung, erreicht dann einen Domain Controller und benötigt für konsistente Daten eine geprüfte Replikation.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Anmeldung braucht mehr als zwei DCs</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Client</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Welche DNS-Server nutzt er?</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">DNS</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Liefert AD-SRV- und Adressdatensätze?</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">DC</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Erreichbar, passend, gesund?</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Replikation</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Daten und SYSVOL geprüft?</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Fehlerkette: DNS-Auflösung, Erreichbarkeit und Replikation getrennt testen.</figcaption>
+</figure><section class="quiz" data-quiz="ad-dns-diagnose" data-correct="0">
+  <h3>DC-BER ist ausgefallen. DC-LEI läuft, aber die Berliner Clients nutzen ausschließlich den ebenfalls ausgefallenen DNS-Dienst auf DC-BER. Was prüfst du zuerst?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Ohne nutzbare Namensauflösung kann die DNS-basierte DC-Suche DC-LEI nicht zuverlässig finden."><span class="m">A</span> Die DNS-Konfiguration der Clients und einen erreichbaren DNS-Dienst mit korrekten AD-SRV-/Adressdatensätzen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Ein OU-Name repariert keine DNS-Abfrage und macht keinen DC erreichbar."><span class="m">B</span> Die OU aller Berliner Benutzer in Leipzig umbenennen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Zusätzliche DCs beheben den konkreten DNS-Ausfall nicht von selbst."><span class="m">C</span> Einen dritten DC installieren, ohne die DNS-Einstellungen der Clients zu ändern.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="recall-practice" data-recall="ad-fehlerkette" data-min-length="180" aria-labelledby="ad-fehlerkette-title">
+  <div class="recall-prompt"><h3 id="ad-fehlerkette-title">Störung begründen</h3><p>Kranich meldet: „Der zweite DC ist doch da – warum klappt die Anmeldung nicht?“ Erkläre in mindestens drei Sätzen die Prüfkette vom Client bis zum DC. Unterscheide einen DNS-Fehler von einem DC-/Replikationsfehler.</p></div>
+  <label class="sr-only" for="ad-fehlerkette-answer">Deine Diagnose</label>
+  <textarea id="ad-fehlerkette-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Zuerst prüfe ich, welche DNS-Server der Client tatsächlich nutzt und ob ein erreichbarer DNS-Dienst die AD-SRV- und Zieladressdatensätze liefert. Danach prüfe ich, ob der gefundene DC erreichbar ist und ob der Client einer passenden Site zugeordnet ist. Zuletzt prüfe ich die Gesundheit der DCs, insbesondere Replikation und SYSVOL. Ein zweiter DC allein hilft nicht, wenn der einzige eingetragene DNS-Dienst ausfällt; korrekte DNS-Antworten allein beweisen umgekehrt noch keine gesunde Anmeldung.</div>
+</section><h2 class="sec" id="s3"><span class="num">3</span>3 · Redundanz ist ein geprüfter Betriebszustand</h2>
+<p><strong>Zwei DCs</strong> in derselben Domäne können einen einzelnen DC-Ausfall abfedern: Domänendaten werden zwischen ihnen repliziert, und der Client kann einen erreichbaren DC auswählen. Dazu braucht Kranich aber die passenden Voraussetzungen: erreichbare DNS-Dienste mit korrekten Einträgen, erreichbare Netzwege, sinnvolle Site-/Subnetz-Zuordnung und eine überwachte Replikation. Wenn ein Standort bei WAN-Ausfall weiter lokal anmelden können muss, gehört auch diese Anforderung in die Platzierungsentscheidung.</p>
+<p>Ein DC ist <strong>kein passiver Klon</strong>, der nur bei Fehlern eingeschaltet wird. Ebenso ist „zwei DCs vorhanden“ noch kein Restore-Konzept. Kranich plant ein separates, getestetes Wiederherstellungsverfahren und prüft bei einer Störung die tatsächlichen Symptome: Kann ein Client die SRV-Einträge abfragen? Welchen DC wählt er? Erreichen Anmeldungen beide DCs? Werden Änderungen repliziert? Sind die Richtliniendateien in SYSVOL verfügbar? Diese Prüfungen machen aus einer Architekturzeichnung einen belastbaren Betriebsnachweis.</p>
+<p><strong>Prüfauftrag:</strong> Formuliere bei jeder Architekturentscheidung <em>Annahme → erwarteter Nutzen → prüfbarer Test</em>. Beispiel: „DC-LEI ist für Berliner Clients erreichbar → bei Ausfall von DC-BER ist eine Domänenanmeldung möglich → Ausfall in einer Testumgebung simulieren, DNS-Suche und Anmeldung protokollieren.“ Das Ergebnis hängt von Netz, DNS und Clientzustand ab; eine pauschale Garantie wäre falsch.</p>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="ad-karte-0" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Forest, Domain, OU: Welche Ebene ist wofür da?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Forest: gemeinsame oberste AD-Struktur. Domäne: Identitäten, Authentisierung und Domänendaten. OU: Objekte gruppieren und Verwaltung delegieren.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="ad-karte-1" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum ist eine Site keine OU?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Die Site beschreibt Subnetze und Netzverbindungen für DC-Auswahl und Replikation. Die OU ordnet Verzeichnisobjekte für Verwaltung und Richtlinien.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="ad-karte-2" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welcher Engpass bleibt trotz zweitem DC?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Wenn Clients keinen erreichbaren DNS-Dienst mit den passenden AD-Einträgen nutzen, finden sie den zweiten DC nicht zuverlässig.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Abruf 1“:</span><button type="button" data-card-id="ad-karte-0" data-card-rate="known">gewusst</button><button type="button" data-card-id="ad-karte-0" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ad-karte-0"></span></div>
+<div class="card-rating"><span>Karte „Abruf 2“:</span><button type="button" data-card-id="ad-karte-1" data-card-rate="known">gewusst</button><button type="button" data-card-id="ad-karte-1" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ad-karte-1"></span></div>
+<div class="card-rating"><span>Karte „Abruf 3“:</span><button type="button" data-card-id="ad-karte-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="ad-karte-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ad-karte-2"></span></div><section class="quiz" data-quiz="ad-struktur-gate" data-correct="0" data-required-objective="ad-struktur-unterscheiden">
+  <h3>Welche Zuordnung im Kranich-Fall stimmt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Das trennt logische Verwaltung und physische Netztopologie."><span class="m">A</span> OU ordnet Objekte; Site ordnet Subnetze; beide können zur selben Domäne gehören.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Eine OU ist ein Container innerhalb einer Domäne, kein Forest."><span class="m">B</span> Eine OU ist immer ein eigener Forest mit eigener DNS-Zone.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Server-Features und AD-Sites sind keine austauschbaren Begriffe; Replikation muss geplant und geprüft werden."><span class="m">C</span> Ein Feature namens Berlin repliziert automatisch alle DCs.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="ad-ausfall-gate" data-correct="0" data-required-objective="dns-dc-ausfall-pruefen">
+  <h3>Welche Ausfallprüfung belegt die Redundanz am besten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. So werden die kritischen Abhängigkeiten und der Nutzerpfad sichtbar."><span class="m">A</span> DC-BER in einer Testumgebung gezielt ausfallen lassen; von einem Berliner Client DNS-SRV-Suche, DC-Erreichbarkeit, Anmeldung und Replikationszustand prüfen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Installierte Rollen beweisen weder DNS noch Erreichbarkeit, Anmeldung oder Replikation."><span class="m">B</span> Nur im Server Manager nachsehen, ob auf beiden Geräten AD DS installiert ist.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Eine OU-Änderung testet die DC-Suche und Anmeldung beim Ausfall nicht."><span class="m">C</span> Nur die OU verschieben und daraus auf funktionierendes Failover schließen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Quellen und Grenzen</h2>
+<p>Technische Grundlage: <a href="https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/plan/understanding-the-active-directory-logical-model">Microsoft zur logischen AD-Struktur</a>, <a href="https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/replication/active-directory-replication-concepts">zu Sites und Replikation</a>, <a href="https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/dc-locator">zur DNS-basierten DC-Suche</a> und <a href="https://learn.microsoft.com/en-us/windows-server/administration/server-manager/add-remove-roles-features">zu Rollen/Features</a>, geprüft am 26.09.2026. Die private Buchquelle lieferte nur Themenanker. Kranich und alle Aufgaben/Grafiken sind eigene Lehrbeispiele. Konkrete Domänenplanung und Ausfallsimulation müssen in der jeweiligen Umgebung überprüft werden; die Einheit bleibt ein Entwurf.</p>
+
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-6"><span class="d">zurück zu</span><span class="t">Betriebssysteme und Administration</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Betriebssysteme und Administration</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">1 · Welche Schicht ist gemeint?</a></li>
+<li><a href="#s2" data-t="s2">2 · DNS finden, DC erreichen</a></li>
+<li><a href="#s3" data-t="s3">3 · Redundanz ist ein geprüfter Betriebszustand</a></li>
+<li><a href="#s4" data-t="s4">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-6">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

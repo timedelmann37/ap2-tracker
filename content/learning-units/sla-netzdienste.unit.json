@@ -1,0 +1,326 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "sla-netzdienste",
+    "slug": "sla-netzdienste",
+    "title": "Netzdienste mit messbaren SLA-Zielen vereinbaren",
+    "description": "Verfügbarkeit, Reaktionszeit, Wiederherstellung und vereinbarte Folgen einer Abweichung getrennt beurteilen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__5",
+    "week": "KW 44",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "sources": [
+      "itlf6-9-2022",
+      "europa-integratoren-2026"
+    ],
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "zeiten",
+      "label": "Reaktionszeit und Wiederherstellzeit anhand eines Ereignisverlaufs unterscheiden"
+    },
+    {
+      "id": "budget",
+      "label": "das Ausfallbudget aus Servicefenster und vereinbarter Verfügbarkeit berechnen"
+    }
+  ],
+  "intro": "„Support innerhalb einer Stunde“ kann eine Antwort versprechen, ohne eine Reparatur innerhalb dieser Stunde zuzusagen. Ein brauchbares SLA trennt diese Ziele ausdrücklich.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf6-9-2022",
+        "sourceLocator": "Markdown-Chunk 00243",
+        "use": "SLA-Dienstgüte und Verfügbarkeit",
+        "reviewStatus": "Relevanten SLA-Absatz geprüft; Lizenzaufgaben ausgelassen"
+      },
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Markdown-Chunk 00740",
+        "use": "Reaktionszeit und Leistungsumfang",
+        "reviewStatus": "Text geprüft; eigene Ereigniszeiten formuliert"
+      }
+    ],
+    "notes": [
+      "Pönale nur als Begriff eingeordnet; keine konkrete Vertragsklausel freigegeben. BGB § 339 ergänzend geprüft am 2026-09-13.",
+      "Eigene SLA-Zeiten und Servicefenster; keine allgemeine Branchenfrist behauptet.",
+      "Eigene Beispiele und Grafiken. Private Buchabbildungen werden nicht veröffentlicht. Menschliche Fachfreigabe steht aus."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "modell",
+      "type": "layers",
+      "title": "Drei Uhren, drei Aussagen",
+      "description": "Servicefenster definiert die Quote; Reaktion und Wiederherstellung messen unterschiedliche Ereignisse.",
+      "items": [
+        {
+          "label": "Servicezeit",
+          "detail": "Bezugszeit für Verfügbarkeit"
+        },
+        {
+          "label": "Reaktion",
+          "detail": "Definierte Bearbeitung beginnt"
+        },
+        {
+          "label": "Restore",
+          "detail": "Dienst wieder nutzbar"
+        },
+        {
+          "label": "Nachweis",
+          "detail": "Messpunkt und Zeitstempel"
+        }
+      ]
+    },
+    {
+      "id": "ablauf",
+      "type": "flow",
+      "title": "Vom Ereignis zum SLA-Nachweis",
+      "description": "Startzeit, qualifizierte Reaktion, Wiederherstellung und getrennte Zielprüfung ergeben den Nachweis.",
+      "items": [
+        {
+          "label": "Beginn",
+          "detail": "Vereinbarten Start erfassen"
+        },
+        {
+          "label": "Reaktion",
+          "detail": "Qualifizierte Antwort erfassen"
+        },
+        {
+          "label": "Dienst",
+          "detail": "Nutzbarkeit wiederherstellen"
+        },
+        {
+          "label": "Vergleich",
+          "detail": "Jedes Ziel separat prüfen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "sla-netzdienste-diagnose",
+          "question": "Eine Reaktionszeit von 30 Minuten wurde zugesagt. Bedeutet das sicher, dass die Störung nach 30 Minuten behoben ist?",
+          "options": [
+            {
+              "text": "Ja, beide Begriffe sind gleichbedeutend.",
+              "rationale": "Ein Bearbeitungsbeginn ist noch keine Wiederherstellung.",
+              "correct": false
+            },
+            {
+              "text": "Nein. Wiederherstellung ist ein anderes Ziel und muss gesondert definiert sein.",
+              "rationale": "Richtig: Reaktion und nutzbarer Dienst sind verschiedene Ereignisse.",
+              "correct": true
+            },
+            {
+              "text": "Ja, sofern das Ticket eine Nummer hat.",
+              "rationale": "Die Ticketnummer belegt keinen funktionierenden Dienst.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Leitgedanke",
+          "markdown": "Ein SLA braucht Dienstgrenze, Messregel und Konsequenz – nicht nur eine hohe Prozentzahl."
+        }
+      ]
+    },
+    {
+      "title": "Was wird wann gemessen?",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein **Service Level Agreement** beschreibt vereinbarte Dienstgüte zwischen Beteiligten. Für Netzdienste gehören Leistungsumfang, Servicezeiten, Zuständigkeiten, Prioritäten, Messpunkt und Eskalation zusammen. Die prozentuale Verfügbarkeit benötigt einen festgelegten Nenner und eine Definition, wann der Dienst als ausgefallen gilt.\n\n**Reaktionszeit** misst bis zu einer definierten qualifizierten Reaktion, **Wiederherstellzeit** bis zum vereinbarten wieder nutzbaren Zustand. Ob der Zeitlauf beim Monitoringereignis, Ticket oder Eingang beim Dienstleister startet, muss festgelegt sein. Ein Workaround kann Wiederherstellung erfüllen, wenn genau das vereinbart ist; endgültige Ursachenbehebung kann später erfolgen.\n\nWartungsfenster, Servicekalender und Ausnahmen sind keine frei nachträglich abziehbaren Zeiten. Vergleiche SLAs nur mit gleicher Dienst- und Messgrundlage. Eine Monatsquote kann eingehalten sein, obwohl ein einzelnes Wiederherstellungsziel verletzt wurde.\n\nEine **Pönale** ist eine vereinbarte Vertragsstrafe. Ob und wie sie greift, ist keine automatische Folge irgendeiner Prozentabweichung. Voraussetzungen, Nachweis, Berechnung und Grenzen gehören in die Vereinbarung und benötigen rechtliche Prüfung. Eine Servicegutschrift ist nicht ohne Weiteres dasselbe wie eine Vertragsstrafe. Diese Einheit trainiert Messlogik, nicht die Wirksamkeit einer konkreten Klausel."
+        },
+        {
+          "type": "figure",
+          "diagramId": "modell",
+          "alt": "Servicefenster definiert die Quote; Reaktion und Wiederherstellung messen unterschiedliche Ereignisse.",
+          "caption": "Drei Uhren, drei Aussagen – eigenes Lernmodell."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Erlaubte Ausfallzeit ist vereinbarte Servicezeit mal eins minus Zielverfügbarkeit",
+          "mathml": "<math display=\"block\"><mrow><msub><mi>t</mi><mtext>Budget</mtext></msub><mo>=</mo><msub><mi>T</mi><mtext>Service</mtext></msub><mo>·</mo><mo>(</mo><mn>1</mn><mo>−</mo><msub><mi>A</mi><mtext>Ziel</mtext></msub><mo>)</mo></mrow></math>",
+          "legend": [
+            "Zeiten in gleicher Einheit",
+            "A Ziel als Dezimalanteil",
+            "Ausnahmen nur gemäß vereinbarter Messregel"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein fiktives SLA definiert Ticketannahme als Start, eine qualifizierte Reaktion innerhalb von 30 Minuten und Wiederherstellung innerhalb von 120 Minuten. Ticket: 09:00, Reaktion: 09:20, Dienst wieder nutzbar: 11:15. Reaktion dauert 20 Minuten und erfüllt das Ziel. Wiederherstellung dauert 135 Minuten und überschreitet das zweite Ziel um 15 Minuten. Eine schnelle erste Antwort heilt diese Überschreitung nicht.\n\nSeparater Monatsfall: Ein 30-Tage-Monat mit 24/7 hat 43.200 Minuten. Bei 99,9 Prozent bleiben 43,2 Minuten Ausfallbudget. Diese Rechnung verwendet keine Wartungsausnahme. Wird im selben Vertrag nur werktags eine begrenzte Servicezeit betrachtet, muss der Nenner aus diesem Kalender stammen; das Jahresmodell darf dann nicht einfach übernommen werden.\n\nDie Meldung an den Kunden nennt tatsächliche Zeiten, angewandte Definitionen, Dienstwirkung und nächste Schritte. Vereinbarte Konsequenzen werden anhand der konkreten Regel geprüft, nicht aus einer selbst erfundenen „Standardstrafe“ abgeleitet."
+        },
+        {
+          "type": "figure",
+          "diagramId": "ablauf",
+          "alt": "Startzeit, qualifizierte Reaktion, Wiederherstellung und getrennte Zielprüfung ergeben den Nachweis.",
+          "caption": "Vom Ereignis zum SLA-Nachweis – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Selbst entscheiden",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "sla-netzdienste-uebung",
+          "question": "Ein Dienst erfüllt die Monatsverfügbarkeit, aber ein einzelner Vorfall dauerte länger als die zugesagte Wiederherstellzeit. Wie bewertest du das?",
+          "options": [
+            {
+              "text": "Alle SLA-Ziele sind automatisch erfüllt.",
+              "rationale": "Ein erfülltes Ziel ersetzt kein anderes.",
+              "correct": false
+            },
+            {
+              "text": "Nur die längste Reaktionszeit zählt für die Monatsquote.",
+              "rationale": "Die Quote folgt der vereinbarten Dienst-Ausfalldauer.",
+              "correct": false
+            },
+            {
+              "text": "Die Ziele getrennt prüfen; die Monatsquote kann erfüllt und das Einzelziel verletzt sein.",
+              "rationale": "Richtig: Aggregat und einzelne Störung messen unterschiedliche Eigenschaften.",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "type": "sequence",
+          "id": "sla-netzdienste-reihenfolge",
+          "title": "Einen Vorfall bewerten",
+          "prompt": "Ordne den Nachweisprozess.",
+          "steps": [
+            {
+              "id": "s2",
+              "label": "Reaktion, Wiederherstellung und Quote getrennt berechnen"
+            },
+            {
+              "id": "s0",
+              "label": "Vereinbarte Dienst- und Zeitdefinitionen heranziehen"
+            },
+            {
+              "id": "s3",
+              "label": "Abweichungen und vereinbarte Folgeschritte dokumentieren"
+            },
+            {
+              "id": "s1",
+              "label": "Tatsächliche Ereignisse mit Zeitstempeln erfassen"
+            }
+          ],
+          "expected": [
+            "s0",
+            "s1",
+            "s2",
+            "s3"
+          ],
+          "correctFeedback": "Richtig: Ohne Definitionen sind die Zeitstempel noch kein SLA-Urteil.",
+          "wrongFeedback": "Prüfe die erste abweichende Position. Erst Grundlagen klären, dann entscheiden und nachweisen."
+        }
+      ]
+    },
+    {
+      "title": "Aus dem Gedächtnis erklären",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "sla-netzdienste-karte-0",
+              "label": "Abruf 1",
+              "front": "Reaktion gleich Wiederherstellung?",
+              "back": "Nein. Bearbeitungsreaktion und wieder nutzbarer Dienst sind getrennte Ziele."
+            },
+            {
+              "id": "sla-netzdienste-karte-1",
+              "label": "Abruf 2",
+              "front": "Wann darf Wartung aus der Quote herausfallen?",
+              "back": "Nur entsprechend der vereinbarten Messregel, nicht nachträglich nach Belieben."
+            },
+            {
+              "id": "sla-netzdienste-karte-2",
+              "label": "Abruf 3",
+              "front": "Pönale automatisch bei jeder Abweichung?",
+              "back": "Nein. Vertragliche Voraussetzungen und rechtliche Wirksamkeit sind gesondert zu prüfen."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "sla-netzdienste-abruf",
+          "title": "Deine Begründung",
+          "prompt": "Zwei Angebote nennen 99,9 Prozent. Welche Angaben brauchst du für einen fairen Vergleich?",
+          "label": "Eigene Erklärung",
+          "placeholder": "Meine Begründung und ihre Grenzen …",
+          "minLength": 80,
+          "model": "Ich vergleiche Dienstgrenze, Messpunkt, Servicekalender, Ausfalldefinition, Wartungsausnahmen und Nachweisverfahren. Zusätzlich betrachte ich Reaktions-/Wiederherstellziele und geregelte Konsequenzen."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "sla-netzdienste-transfer-a",
+          "question": "Ticketbeginn 10:00, qualifizierte Reaktion 10:10, Wiederherstellung 12:20. Ziele: 15 Minuten Reaktion und 120 Minuten Wiederherstellung ab Ticket. Was stimmt?",
+          "options": [
+            {
+              "text": "Reaktion erfüllt, Wiederherstellung um 20 Minuten überschritten.",
+              "rationale": "Richtig: 10 Minuten Reaktion stehen 140 Minuten bis zur Wiederherstellung gegenüber.",
+              "correct": true
+            },
+            {
+              "text": "Beides erfüllt, weil die Reaktion schnell genug war.",
+              "rationale": "Eine schnelle Reaktion verkürzt die tatsächlichen 140 Minuten nicht.",
+              "correct": false
+            },
+            {
+              "text": "Reaktion verletzt, Wiederherstellung erfüllt.",
+              "rationale": "Die gemessenen Zeitspannen zeigen genau das Gegenteil.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "zeiten"
+        },
+        {
+          "type": "numeric",
+          "id": "sla-netzdienste-transfer-b",
+          "requiredObjective": "budget",
+          "prompt": "Ein SLA betrachtet genau 200 Service-Stunden im Monat und verlangt 99,5 Prozent Verfügbarkeit. Es gibt in diesem Modell keine Ausnahmen. Wie viele Ausfallminuten sind erlaubt?",
+          "expected": 60,
+          "tolerance": 0,
+          "label": "Ausfallbudget in Minuten",
+          "correctFeedback": "60 Minuten: 200 Stunden × 0,005 = 1 Stunde. Die Servicezeit ist der Nenner, nicht der ganze Kalendermonat.",
+          "wrongFeedback": "Berechne 0,5 Prozent von 200 Stunden und wandle Stunden in Minuten um. 1 wäre eine Stunde, nicht eine Minute."
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Buchgrundlage: ITLF6–9, Chunk 00243; EUROPA, Chunk 00740. Zur Begriffseinordnung: [§ 339 BGB](https://www.gesetze-im-internet.de/bgb/__339.html). Die tatsächliche Klauselgestaltung und Anwendbarkeit benötigen gesonderte rechtliche Prüfung."
+        }
+      ]
+    }
+  ]
+}

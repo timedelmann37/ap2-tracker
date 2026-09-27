@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Wiederanlaufziele in messbare Anforderungen übersetzen und mit einem Ausfallprotokoll vergleichen.">
+<title>RTO und RPO: Ausfallzeit und Datenstand getrennt planen – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="rto-rpo-definition-abgrenzung-zuordnung-anforderungen" data-progress-id="ga1-4__4" data-content-revision="2026-09-18.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-4">Backup, Recovery und Notfallvorsorge</a><span class="sep">›</span>
+    <span class="here">RTO und RPO: Ausfallzeit und Datenstand getrennt planen</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">RTO und RPO: Ausfallzeit und Datenstand getrennt planen</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 30 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Wiederanlaufziele in messbare Anforderungen übersetzen und mit einem Ausfallprotokoll vergleichen. Du untersuchst eigene Zeitmodelle, ohne echte Sicherungen zu verändern.</p>
+<section class="learning-goals" aria-labelledby="rto-rpo-definition-abgrenzung-zuordnung-anforderungen-goals">
+  <h2 id="rto-rpo-definition-abgrenzung-zuordnung-anforderungen-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>RTO und RPO einer Geschäftsanforderung zuordnen</li>
+    <li>Zielwerte getrennt mit nachgewiesenen Ergebnissen vergleichen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Vorwissen aktivieren</h2>
+<section class="quiz" data-quiz="rto-rpo-definition-abgrenzung-zuordnung-anforderungen-diagnose" data-correct="1">
+  <h3>Ein Shop darf höchstens zwei Stunden ausfallen. Welche Vorgabe ist das?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="RPO beschreibt den geforderten Datenstand, nicht die Unterbrechungsdauer."><span class="m">A</span> RPO.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig: Hier geht es um die Zeit bis zum vereinbarten Wiederanlauf."><span class="m">B</span> RTO.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Aufbewahrung beschreibt, wie lange Sicherungen behalten werden."><span class="m">C</span> Backup-Aufbewahrungsfrist.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2"><span class="num">2</span>Zwei Fragen an den Fachbereich</h2>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Zwei Ziele, zwei Fragen">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-fragen-title diagram-fragen-desc">
+  <title id="diagram-fragen-title">Zwei Ziele, zwei Fragen</title>
+  <desc id="diagram-fragen-desc">RPO fragt nach dem tolerierbaren Rückstand der Daten, RTO nach der zulässigen Zeit bis zum Wiederanlauf.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Zwei Ziele, zwei Fragen</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="429" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">RPO: Datenstand</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">Wie viel Zeit darf fehlen?</tspan></text></g><g><rect class="diagram-row" x="489" y="92" width="429" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="511" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="511" dy="0">RTO: Wiederanlauf</tspan></text><text x="511" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="511" dy="0">Wie lange darf es dauern?</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Modellgrafik; Ziele und Messergebnisse getrennt betrachten.</figcaption>
+</figure><p><strong>Recovery Point Objective (RPO)</strong> legt fest, auf welchen Datenstand nach einer Störung zurückgekehrt werden können muss. Als Zeitspanne ausgedrückt beschreibt es die tolerierte Datenlücke vor dem Ausfall. <strong>Recovery Time Objective (RTO)</strong> ist die Zielzeit für den Wiederanlauf. Grundlage sind die Auswirkungen auf den Geschäftsprozess, nicht allein vorhandene Hardware.</p>
+<p>„Maximal 30 Minuten neue Aufträge verlieren“ betrifft RPO. „Nach spätestens zwei Stunden wieder Aufträge bearbeiten können“ betrifft RTO. Beide Ziele müssen getrennt vereinbart werden. Ein älterer Datenstand kann schnell verfügbar sein; ein sehr aktueller Datenstand kann lange zur Wiederherstellung brauchen.</p>
+<h2 class="sec" id="s3"><span class="num">3</span>Ziele sind noch keine Messergebnisse</h2>
+<p>Die Abkürzung enthält <strong>Objective</strong>, also Ziel. Nenne eine gemessene Wiederanlaufdauer nicht einfach „das RTO“, wenn du eigentlich das Ergebnis meinst. Vergleiche Soll und Ist.</p>
+<p>Für unsere Fälle beginnt die Zeitmessung beim Dienstausfall und endet erst, wenn die vereinbarte Funktion wieder geprüft nutzbar ist. Dadurch werden Erkennung, Entscheidung, Wiederherstellung und Prüfung innerhalb dieses Fensters berücksichtigt. In echten Vereinbarungen müssen Start, Ende, Mindestfunktion und Abhängigkeiten genauso eindeutig festgelegt sein. Ein erfolgreich beendeter Kopierjob beweist weder Anwendungskonsistenz noch fachliche Nutzbarkeit.</p>
+<h2 class="sec" id="s4"><span class="num">4</span>Ein Ereignis sauber auswerten</h2>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Ein Ausfall, zwei Zeitabstände">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="434" viewBox="0 0 960 434" role="img" aria-labelledby="diagram-zeit-title diagram-zeit-desc">
+  <title id="diagram-zeit-title">Ein Ausfall, zwei Zeitabstände</title>
+  <desc id="diagram-zeit-desc">Datenstand 09:45, Ausfall 10:00, bestätigter Wiederanlauf 11:10. Die Datenlücke beträgt 15 Minuten, die Wiederanlaufdauer 70 Minuten.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Ein Ausfall, zwei Zeitabstände</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">09:45 Datenstand</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Nachweislich restaurierbar</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">10:00 Ausfall</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Datenlücke: 15 Minuten</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">11:10 nutzbar</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Wiederanlauf: 70 Minuten</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Modellgrafik; Ziele und Messergebnisse getrennt betrachten.</figcaption>
+</figure><p>Eigener Fall: RPO höchstens 30 Minuten, RTO höchstens 60 Minuten. Der letzte nachweislich wiederherstellbare konsistente Datenstand ist 09:45. Ausfall: 10:00. Bestätigte Nutzbarkeit: 11:10. Alle Zeiten liegen am selben Tag.</p>
+<div class="math-display" role="group" aria-label="Datenlücke: zehn Uhr minus neun Uhr fünfundvierzig gleich 15 Minuten."><math display="block" aria-label="Datenlücke: zehn Uhr minus neun Uhr fünfundvierzig gleich 15 Minuten."><mrow><mtext>10:00</mtext><mo>−</mo><mtext>09:45</mtext><mo>=</mo><mn>15</mn><mtext> min</mtext></mrow></math><div class="math-legend"><span>15 Minuten liegen innerhalb des RPO-Ziels von 30 Minuten.</span></div></div><div class="math-display" role="group" aria-label="Wiederanlauf: elf Uhr zehn minus zehn Uhr gleich 70 Minuten."><math display="block" aria-label="Wiederanlauf: elf Uhr zehn minus zehn Uhr gleich 70 Minuten."><mrow><mtext>11:10</mtext><mo>−</mo><mtext>10:00</mtext><mo>=</mo><mn>70</mn><mtext> min</mtext></mrow></math><div class="math-legend"><span>70 Minuten überschreiten das RTO-Ziel von 60 Minuten um zehn Minuten.</span></div></div><p><strong>Ergebnis:</strong> RPO im betrachteten Ereignis eingehalten, RTO verfehlt. Ein bestandener Teil gleicht den anderen nicht aus. Ein einzelner Test belegt zudem nicht jedes mögliche Ausfallszenario.</p>
+<section class="numeric-practice transfer-number" data-numeric-practice="rto-rpo-definition-abgrenzung-zuordnung-anforderungen-zahl" data-expected="45" data-tolerance="0" data-correct-feedback="Von 13:35 bis 14:00 sind es 25 Minuten, danach weitere 20: insgesamt 45." data-wrong-feedback="Berechne die Zeit zwischen dem verfügbaren Datenstand und dem Ausfall, nicht die spätere Wiederherstellung.">
+  <h3>Jetzt du: Datenlücke</h3>
+  <p>Neuer Fall am selben Tag: Ausfall 14:20, nachweislich wiederherstellbarer Datenstand 13:35. Wie viele Minuten Datenlücke ergeben sich?</p>
+  <label for="rto-rpo-definition-abgrenzung-zuordnung-anforderungen-zahl-answer">Datenlücke in Minuten</label>
+  <div class="answer-row"><input id="rto-rpo-definition-abgrenzung-zuordnung-anforderungen-zahl-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Ergebnis"><button type="button" class="lbtn" data-numeric-check>Antwort prüfen</button></div><p>  <template data-numeric-feedback-for="85">Uhrzeiten sind kein Dezimalsystem: Eine Stunde hat 60 Minuten.</template>
+  <template data-numeric-feedback-for="25">Das reicht nur bis 14:00; die letzten 20 Minuten fehlen.</template>
+  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p></p>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Sicherungsintervall ist keine Garantie</h2>
+<p>Eigene Probe: Backups sind alle 15 Minuten geplant. Der Lauf um 09:45 schlägt fehl. Beim Ausfall um 09:58 ist nur ein konsistenter Datenstand von 09:30 nutzbar. Die Datenlücke beträgt 28 Minuten – trotz 15-Minuten-Zeitplan.</p>
+<p>Es zählt der tatsächlich verfügbare Datenstand. Auch das Abschlussdatum einer Sicherung ist nicht zwingend der Zeitpunkt der enthaltenen Daten. Transaktionsprotokolle können einen neueren konsistenten Wiederherstellungspunkt ermöglichen, wenn die benötigte Kette vollständig und geprüft ist.</p>
+<pre><code class="language-text">09:30  Datenstand verfügbar
+09:45  Sicherung fehlgeschlagen
+09:58  Dienstausfall
+Lücke: 28 Minuten
+</code></pre>
+<p>Häufigeres Sichern verbessert nicht automatisch die Wiederherstellungsdauer. Für einen schnellen Wiederanlauf zählen auch Zielsystem, Datenmenge, Restore-Kette, Netzwerk, Abhängigkeiten und Prüfung.</p>
+<section class="quiz" data-quiz="rto-rpo-definition-abgrenzung-zuordnung-anforderungen-uebung" data-correct="1">
+  <h3>Im Protokoll ist ein RPO von höchstens 15 Minuten vereinbart. Was ist belegt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Der ausgefallene Lauf macht den Zeitplan als Nachweis unzureichend."><span class="m">A</span> RPO erfüllt, weil der Zeitplan 15 Minuten vorsieht.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig: Maßgeblich ist der nachgewiesene Wiederherstellungspunkt."><span class="m">B</span> RPO verfehlt: Der verfügbare Stand liegt 28 Minuten zurück.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Dazu fehlt die Zeit der bestätigten Nutzbarkeit."><span class="m">C</span> RTO beträgt 28 Minuten.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Eine prüfbare Anforderung formulieren</h2>
+<p>Eigener Auftrag für ein Ticketsystem: „Nach dem betrachteten Serverausfall sollen berechtigte Mitarbeitende innerhalb von 90 Minuten wieder Tickets lesen und anlegen können. Der konsistent wiederhergestellte Stand darf höchstens 20 Minuten vor dem Ausfall liegen.“</p>
+<p>Dokumentiere im Test Ausfallzeit, Datenstand und bestätigte Nutzbarkeit. Halte fest, ob Anmeldung, Datenbank und andere benötigte Dienste verfügbar waren. RPO null oder sehr kurze RTO-Werte sind anspruchsvolle Ziele, keine automatische Folge von RAID oder Replikation. Eine replizierte Fehländerung bleibt eine Fehländerung; unabhängige Wiederherstellungswege sind weiterhin zu planen.</p>
+<h2 class="sec" id="s7"><span class="num">7</span>Selbst ordnen und erklären</h2>
+<section class="sequence-practice" data-sequence="rto-rpo-definition-abgrenzung-zuordnung-anforderungen-reihenfolge" data-expected="start,pruefen,abschluss" data-correct-feedback="Richtig: Voraussetzungen, Prüfung und Abschluss stehen in der vorgesehenen Reihenfolge." data-wrong-feedback="Prüfe die Voraussetzungen: Der letzte Schritt darf die vorherige Prüfung nicht überspringen." aria-labelledby="rto-rpo-definition-abgrenzung-zuordnung-anforderungen-reihenfolge-title">
+  <div class="lab-heading"><div><h3 id="rto-rpo-definition-abgrenzung-zuordnung-anforderungen-reihenfolge-title">Ablauf ordnen</h3><p>Ordne die Planung und Prüfung von Wiederanlaufzielen.</p></div><span class="lab-tag">Ablauf</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="abschluss" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Wiederherstellung testen und beide Ergebnisse mit den Zielen vergleichen</span></li>
+    <li data-step="start" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Zulässige Unterbrechung und Datenlücke mit dem Fachbereich bestimmen</span></li>
+    <li data-step="pruefen" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Sicherung, Wiederanlauf und Messgrenzen darauf auslegen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><section class="recall-practice" data-recall="rto-rpo-definition-abgrenzung-zuordnung-anforderungen-begruendung" data-min-length="70" aria-labelledby="rto-rpo-definition-abgrenzung-zuordnung-anforderungen-begruendung-title">
+  <div class="recall-prompt"><h3 id="rto-rpo-definition-abgrenzung-zuordnung-anforderungen-begruendung-title">Aus dem Gedächtnis erklären</h3><p>„Wir sichern alle 15 Minuten, also ist unser RTO 15 Minuten.“ Erkläre zwei Fehler dieser Aussage.</p></div>
+  <label class="sr-only" for="rto-rpo-definition-abgrenzung-zuordnung-anforderungen-begruendung-answer">Deine Erklärung</label>
+  <textarea id="rto-rpo-definition-abgrenzung-zuordnung-anforderungen-begruendung-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Das Sicherungsintervall betrifft zunächst die mögliche Datenlücke, also das RPO, nicht die Dauer des Wiederanlaufs. Auch ein RPO von 15 Minuten ist durch den Zeitplan allein nicht bewiesen: Sicherungen können fehlschlagen oder unbrauchbar sein. Für das RTO müssen Wiederherstellung, Abhängigkeiten und Funktionsprüfung innerhalb der vereinbarten Messgrenzen tatsächlich getestet werden.</div>
+</section><div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="rto-rpo-definition-abgrenzung-zuordnung-anforderungen-karte-0" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Objective heißt?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Zielvorgabe, nicht automatisch gemessenes oder garantiert erreichtes Ergebnis.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="rto-rpo-definition-abgrenzung-zuordnung-anforderungen-karte-1" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>RPO von 30 Minuten?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Im vereinbarten Ausfallszenario darf der wiederherstellbare Datenstand höchstens 30 Minuten zurückliegen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="rto-rpo-definition-abgrenzung-zuordnung-anforderungen-karte-2" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Restore fertig gleich Dienst nutzbar?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Nicht zwingend. Anwendung, Abhängigkeiten und fachliche Prüfung können noch fehlen.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Abruf 1“:</span><button type="button" data-card-id="rto-rpo-definition-abgrenzung-zuordnung-anforderungen-karte-0" data-card-rate="known">gewusst</button><button type="button" data-card-id="rto-rpo-definition-abgrenzung-zuordnung-anforderungen-karte-0" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="rto-rpo-definition-abgrenzung-zuordnung-anforderungen-karte-0"></span></div>
+<div class="card-rating"><span>Karte „Abruf 2“:</span><button type="button" data-card-id="rto-rpo-definition-abgrenzung-zuordnung-anforderungen-karte-1" data-card-rate="known">gewusst</button><button type="button" data-card-id="rto-rpo-definition-abgrenzung-zuordnung-anforderungen-karte-1" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="rto-rpo-definition-abgrenzung-zuordnung-anforderungen-karte-1"></span></div>
+<div class="card-rating"><span>Karte „Abruf 3“:</span><button type="button" data-card-id="rto-rpo-definition-abgrenzung-zuordnung-anforderungen-karte-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="rto-rpo-definition-abgrenzung-zuordnung-anforderungen-karte-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="rto-rpo-definition-abgrenzung-zuordnung-anforderungen-karte-2"></span></div><h2 class="sec" id="s8"><span class="num">8</span>Lernziel-Check</h2>
+<section class="quiz" data-quiz="rto-rpo-definition-abgrenzung-zuordnung-anforderungen-transfer-a" data-correct="2" data-required-objective="zuordnen">
+  <h3>Ein Ticketsystem darf höchstens 20 Minuten neue Daten verlieren und muss binnen 90 Minuten wieder nutzbar sein. Welche Zuordnung stimmt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Hier sind Datenlücke und Wiederanlauf vertauscht."><span class="m">A</span> RTO 20 Minuten, RPO 90 Minuten.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Keine der beiden Angaben nennt die Dauer der Sicherungsaufbewahrung."><span class="m">B</span> Beides beschreibt die Aufbewahrung.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Richtig: Datenstand und Wiederanlauf werden getrennt vorgegeben."><span class="m">C</span> RPO 20 Minuten, RTO 90 Minuten.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="rto-rpo-definition-abgrenzung-zuordnung-anforderungen-transfer-b" data-correct="0" data-required-objective="pruefen">
+  <h3>Ziele: RPO 20 Minuten, RTO 90 Minuten. Ausfall 16:00, verfügbarer Datenstand 15:30, bestätigter Wiederanlauf 17:00. Was folgt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="30 Minuten Datenlücke überschreiten 20; 60 Minuten Wiederanlauf liegen innerhalb von 90."><span class="m">A</span> RPO verfehlt, RTO eingehalten.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Der schnelle Wiederanlauf behebt die zu große Datenlücke nicht."><span class="m">B</span> Beide eingehalten, weil der Dienst nach einer Stunde läuft.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein erlaubter Datenrückstand und eine erlaubte Dauer sind getrennte Kriterien."><span class="m">C</span> Beide verfehlt, weil Daten fehlen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s9"><span class="num">9</span>Quellen und Grenzen</h2>
+<p><a href="https://csrc.nist.gov/glossary/term/recovery_point_objective">NIST CSRC: RPO</a> und <a href="https://csrc.nist.gov/glossary/term/recovery_time_objective">RTO</a>, Definitionen aus SP 800-34 Rev. 1, gelesen am 18.09.2026. Alle Zeitfälle, Grafiken und Testszenarien sind eigene Beispiele. Unpassende Buchtreffer und WLAN-Abbildung nicht übernommen. Messgrenzen sind explizite Modellannahmen. Menschliche Fachfreigabe offen.</p>
+
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-4"><span class="d">zurück zu</span><span class="t">Backup, Recovery und Notfallvorsorge</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Backup, Recovery und Notfallvorsorge</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Vorwissen aktivieren</a></li>
+<li><a href="#s2" data-t="s2">Zwei Fragen an den Fachbereich</a></li>
+<li><a href="#s3" data-t="s3">Ziele sind noch keine Messergebnisse</a></li>
+<li><a href="#s4" data-t="s4">Ein Ereignis sauber auswerten</a></li>
+<li><a href="#s5" data-t="s5">Sicherungsintervall ist keine Garantie</a></li>
+<li><a href="#s6" data-t="s6">Eine prüfbare Anforderung formulieren</a></li>
+<li><a href="#s7" data-t="s7">Selbst ordnen und erklären</a></li>
+<li><a href="#s8" data-t="s8">Lernziel-Check</a></li>
+<li><a href="#s9" data-t="s9">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-4">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

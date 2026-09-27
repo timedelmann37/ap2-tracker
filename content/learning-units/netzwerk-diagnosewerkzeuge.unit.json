@@ -1,0 +1,320 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "netzwerk-diagnosewerkzeuge",
+    "slug": "netzwerk-diagnosewerkzeuge",
+    "title": "Für jede Netzwerkfrage das passende Werkzeug",
+    "description": "Konfiguration, Namensauflösung, Pfad, Nachbarn und Dienstverbindungen mit passenden Werkzeugen untersuchen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__10",
+    "week": "KW 44",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": [
+      "it-basiswissen-2012"
+    ],
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "ziel-0",
+      "label": "Werkzeuge nach ihrer konkreten Aussage auswählen"
+    },
+    {
+      "id": "ziel-1",
+      "label": "aus Testergebnissen zulässige Schlüsse und Grenzen ableiten"
+    }
+  ],
+  "intro": "Ein Kommando ist nur so hilfreich wie die Frage davor. Du wählst gezielte Tests und vermeidest den Fehlschluss: Ping geht, also funktioniert alles.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "it-basiswissen-2012",
+        "sourceLocator": "Markdown-Chunk 00175, Handlungsaufgaben",
+        "use": "Aufgaben zu ping, tracert, ipconfig und netstat; aktuelle Syntax ergänzend abgeglichen",
+        "reviewStatus": "Quellenausschnitte geprüft; eigener Lernfall, menschliche Freigabe offen"
+      }
+    ],
+    "notes": [
+      "Eigene Texte, Aufgaben und Grafiken. Originalabbildungen bleiben privat.",
+      "Verlinkte Primärdokumentationen am 2026-09-13 geprüft; menschliche Fach- und Verständlichkeitsfreigabe steht aus."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "modell",
+      "type": "layers",
+      "title": "Welche Frage beantwortet der Test?",
+      "description": "Lokal: ipconfig / ip: Konfiguration; Name: nslookup / dig: DNS-Antwort; Pfad: ping / tracert: eigene Probes; Socket: ss / netstat / nc: Transport.",
+      "items": [
+        {
+          "label": "Lokal",
+          "detail": "ipconfig / ip: Konfiguration"
+        },
+        {
+          "label": "Name",
+          "detail": "nslookup / dig: DNS-Antwort"
+        },
+        {
+          "label": "Pfad",
+          "detail": "ping / tracert: eigene Probes"
+        },
+        {
+          "label": "Socket",
+          "detail": "ss / netstat / nc: Transport"
+        }
+      ]
+    },
+    {
+      "id": "ablauf",
+      "type": "flow",
+      "title": "Gezielter Test statt Werkzeugliste",
+      "description": "Frage: Erwartete Aussage benennen; Werkzeug: Passenden Test auswählen; Befund: Ausgabe und Kontext sichern; Grenze: Nicht getestete Ebene nennen.",
+      "items": [
+        {
+          "label": "Frage",
+          "detail": "Erwartete Aussage benennen"
+        },
+        {
+          "label": "Werkzeug",
+          "detail": "Passenden Test auswählen"
+        },
+        {
+          "label": "Befund",
+          "detail": "Ausgabe und Kontext sichern"
+        },
+        {
+          "label": "Grenze",
+          "detail": "Nicht getestete Ebene nennen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "netzwerk-diagnosewerkzeuge-diagnose",
+          "question": "Ein Ping auf 127.0.0.1 gelingt. Ist das Netzwerkkabel geprüft?",
+          "options": [
+            {
+              "text": "Ja, jedes Pingpaket geht über das Kabel.",
+              "rationale": "Loopback ist gerade die lokale Ausnahme.",
+              "correct": false
+            },
+            {
+              "text": "Nein, der Test bleibt im lokalen IP-Stack.",
+              "rationale": "Loopback durchläuft weder Kabel noch Switch.",
+              "correct": true
+            },
+            {
+              "text": "Ja, damit ist auch DNS geprüft.",
+              "rationale": "Die numerische Loopbackadresse benötigt keine DNS-Auflösung.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Leitgedanke",
+          "markdown": "Ein Kommando ist nur so hilfreich wie die Frage davor. Du wählst gezielte Tests und vermeidest den Fehlschluss: Ping geht, also funktioniert alles."
+        }
+      ]
+    },
+    {
+      "title": "Konfiguration, Pfad und Dienst getrennt prüfen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**ipconfig /all** zeigt unter Windows unter anderem Adressen, DNS-Server und DHCP-Informationen. Unter Linux zeigt **ip a** Interface-Adressen, **ip route** die IPv4-Routen; **ip -6 route** betrachtet IPv6. Eine Adresse allein beweist weder ein passendes Gateway noch Erreichbarkeit. **arp -a** zeigt den IPv4-Nachbarcache, **ip neigh** auch Nachbarzustände; IPv6 verwendet Neighbor Discovery statt ARP.\n\n**ping** prüft ICMP-Echo und misst die Round-Trip-Zeit seiner Pakete. `ping 127.0.0.1` prüft den lokalen IP-Stack, nicht Kabel oder Switch. **tracert** unter Windows und **traceroute** unter Linux erkunden mit begrenzter TTL beziehungsweise Hop Limit den Weg. Probearten und Optionen unterscheiden sich. Ein Stern bedeutet fehlende Antwort auf eine Probe, nicht automatisch fehlende Weiterleitung.\n\n**nslookup portal.example 10.44.0.53** fragt gezielt einen DNS-Server. Mit **dig @10.44.0.53 portal.example A** lässt sich eine bestimmte Recordart prüfen. Das Ergebnis ist nicht zwangsläufig identisch mit dem Auflösungsweg einer Anwendung mit Cache, VPN oder eigenem Resolver.\n\n**ss -lnt** zeigt unter Linux lauschende TCP-Sockets numerisch; **netstat -ano** zeigt unter Windows Verbindungen, Listener und Prozess-IDs. Ein Listener auf Loopback ist nicht automatisch aus dem Netz erreichbar. **nc -vz -w 3 10.44.0.20 443** ist ein gezielter TCP-Verbindungstest in der OpenBSD-Variante; andere nc-Versionen unterscheiden sich. Erfolg beweist keinen TLS-Handshake und keine funktionierende Webanwendung. Nutze aktive Tests nur für freigegebene Ziele, nicht als unkontrollierten Netzscan."
+        },
+        {
+          "type": "figure",
+          "diagramId": "modell",
+          "alt": "Lokal: ipconfig / ip: Konfiguration; Name: nslookup / dig: DNS-Antwort; Pfad: ping / tracert: eigene Probes; Socket: ss / netstat / nc: Transport.",
+          "caption": "Welche Frage beantwortet der Test? – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Im freigegebenen Labor öffnet portal.example nicht. `ipconfig /all` zeigt den vorgesehenen Resolver; `nslookup portal.example 10.44.0.53` liefert 10.44.0.20. Ein TCP-Test zu Port 443 gelingt. Damit sind eine DNS-Antwort und ein TCP-Verbindungsaufbau aus diesem Testkontext belegt.\n\nDer Browser meldet trotzdem einen Zertifikatsfehler. Statt Router und Kabel auszutauschen, prüfst du nun Hostname, Systemzeit, Zertifikatskette und den tatsächlich erreichten Dienst. Ein erfolgreicher TCP-Test bestätigt nicht diese höheren Ebenen.\n\nEin zweiter Fall: `tracert` zeigt bei Hop 3 einen Stern, aber das Ziel antwortet später. Hop 3 kann Probes filtern oder nachrangig behandeln, während Nutzdaten weitergeleitet werden. Dokumentiere den gesamten Pfad und Zielbefund; beschuldige nicht allein anhand eines Sterns diesen Router."
+        },
+        {
+          "type": "figure",
+          "diagramId": "ablauf",
+          "alt": "Frage: Erwartete Aussage benennen; Werkzeug: Passenden Test auswählen; Befund: Ausgabe und Kontext sichern; Grenze: Nicht getestete Ebene nennen.",
+          "caption": "Gezielter Test statt Werkzeugliste – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Selbst entscheiden",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "netzwerk-diagnosewerkzeuge-uebung",
+          "question": "Du suchst den unter Linux lauschenden TCP-Port. Was passt?",
+          "options": [
+            {
+              "text": "arp -a auf einem beliebigen Client.",
+              "rationale": "Der Nachbarcache ist keine Liste von Dienstports.",
+              "correct": false
+            },
+            {
+              "text": "tracert zum Standardgateway.",
+              "rationale": "Der Pfadtest zeigt keine lokalen Listener.",
+              "correct": false
+            },
+            {
+              "text": "ss -lnt auf dem betreffenden Host.",
+              "rationale": "Der Befehl zeigt TCP-Listener numerisch.",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "type": "sequence",
+          "id": "netzwerk-diagnosewerkzeuge-reihenfolge",
+          "title": "Vorgehen ordnen",
+          "prompt": "Ordne die Schritte für diesen Lernfall.",
+          "steps": [
+            {
+              "id": "s2",
+              "label": "Ausgabe mit Zeitpunkt und Quellhost erfassen"
+            },
+            {
+              "id": "s0",
+              "label": "Freigegebenes Ziel und konkrete Testfrage bestimmen"
+            },
+            {
+              "id": "s3",
+              "label": "Befund samt Aussagegrenze dokumentieren"
+            },
+            {
+              "id": "s1",
+              "label": "Werkzeug und betriebssystemspezifische Optionen wählen"
+            }
+          ],
+          "expected": [
+            "s0",
+            "s1",
+            "s2",
+            "s3"
+          ],
+          "correctFeedback": "Richtig: Freigegebenes Ziel und konkrete Testfrage bestimmen → Werkzeug und betriebssystemspezifische Optionen wählen → Ausgabe mit Zeitpunkt und Quellhost erfassen → Befund samt Aussagegrenze dokumentieren.",
+          "wrongFeedback": "Prüfe die erste abweichende Position. Kläre zunächst die Voraussetzungen, bevor du Ergebnisse bewertest."
+        }
+      ]
+    },
+    {
+      "title": "Aus dem Gedächtnis erklären",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "netzwerk-diagnosewerkzeuge-karte-0",
+              "label": "Abruf 1",
+              "front": "Was beweist ein Traceroute-Stern?",
+              "back": "Nur, dass die Probe innerhalb der Frist keine erwartete Antwort lieferte."
+            },
+            {
+              "id": "netzwerk-diagnosewerkzeuge-karte-1",
+              "label": "Abruf 2",
+              "front": "ARP bei IPv6?",
+              "back": "IPv6 verwendet Neighbor Discovery; ARP ist für IPv4."
+            },
+            {
+              "id": "netzwerk-diagnosewerkzeuge-karte-2",
+              "label": "Abruf 3",
+              "front": "Offener TCP-Port gleich gesunder Dienst?",
+              "back": "Nein. TLS, Protokollantwort und eigentliche Benutzerfunktion bleiben zu testen."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "netzwerk-diagnosewerkzeuge-abruf",
+          "title": "Deine Begründung",
+          "prompt": "Ein Socket lauscht nur auf 127.0.0.1. Warum kann ein entfernter Client trotz erfolgreichem lokalen Test scheitern?",
+          "label": "Eigene Erklärung",
+          "placeholder": "Meine Begründung und ihre Grenzen …",
+          "minLength": 80,
+          "model": "Loopback ist lokal. Der Dienst lauscht damit nicht automatisch auf der Netzadresse. Ich prüfe Bindeadresse und freigegebenen Zugriff; lokaler Erfolg sagt nichts über Firewall, Routing oder externe Erreichbarkeit aus."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "netzwerk-diagnosewerkzeuge-transfer-a",
+          "question": "Du willst einen bestimmten DNS-Server auf einen A-Record prüfen. Welche Auswahl passt?",
+          "options": [
+            {
+              "text": "dig @10.44.0.53 portal.example A.",
+              "rationale": "Server, Name und Recordart sind explizit angegeben.",
+              "correct": true
+            },
+            {
+              "text": "ping 127.0.0.1.",
+              "rationale": "Loopback beantwortet keine DNS-Frage.",
+              "correct": false
+            },
+            {
+              "text": "ss -lnt.",
+              "rationale": "Die lokale Socketliste enthält keine DNS-Abfrageantwort.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "ziel-0"
+        },
+        {
+          "type": "quiz",
+          "id": "netzwerk-diagnosewerkzeuge-transfer-b",
+          "question": "Ein gezielter TCP-Test auf 443 gelingt, HTTPS scheitert. Was ist belegt?",
+          "options": [
+            {
+              "text": "TCP-Verbindungsaufbau gelang; TLS und Anwendung müssen gesondert geprüft werden.",
+              "rationale": "Transporterfolg ist kein Ende-zu-Ende-Nachweis.",
+              "correct": true
+            },
+            {
+              "text": "Die Anmeldung muss funktionieren.",
+              "rationale": "Zugangsdaten werden beim reinen TCP-Aufbau nicht geprüft.",
+              "correct": false
+            },
+            {
+              "text": "Jeder Zertifikatsfehler ist ausgeschlossen.",
+              "rationale": "Zertifikate gehören zu TLS, nicht zum TCP-Verbindungsaufbau.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "ziel-1"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Buchgrundlage: IT-Basiswissen, Markdown-Chunk 00175. Ergänzung: [Microsoft ping](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/ping), [tracert](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/tracert), [nslookup](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/nslookup), [Linux ip](https://man7.org/linux/man-pages/man8/ip.8.html), [ss](https://man7.org/linux/man-pages/man8/ss.8.html), [OpenBSD nc](https://man.openbsd.org/nc). Syntax und verfügbare Optionen sind plattformabhängig. Die Befehle sind Lernbeispiele und wurden nicht gegen fremde Systeme ausgeführt."
+        }
+      ]
+    }
+  ]
+}

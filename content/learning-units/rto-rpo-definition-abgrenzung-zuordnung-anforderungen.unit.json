@@ -1,0 +1,369 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "rto-rpo-definition-abgrenzung-zuordnung-anforderungen",
+    "slug": "rto-rpo-definition-abgrenzung-zuordnung-anforderungen",
+    "title": "RTO und RPO: Ausfallzeit und Datenstand getrennt planen",
+    "description": "Wiederanlaufziele in messbare Anforderungen übersetzen und mit einem Ausfallprotokoll vergleichen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-4",
+    "groupLabel": "Backup, Recovery und Notfallvorsorge",
+    "itemId": "ga1-4__4",
+    "week": "KW 38",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": [
+      "recovery-nist-rto",
+      "recovery-nist-rpo"
+    ],
+    "contentRevision": "2026-09-18.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "zuordnen",
+      "label": "RTO und RPO einer Geschäftsanforderung zuordnen"
+    },
+    {
+      "id": "pruefen",
+      "label": "Zielwerte getrennt mit nachgewiesenen Ergebnissen vergleichen"
+    }
+  ],
+  "intro": "Wiederanlaufziele in messbare Anforderungen übersetzen und mit einem Ausfallprotokoll vergleichen. Du untersuchst eigene Zeitmodelle, ohne echte Sicherungen zu verändern.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "recovery-nist-rto",
+        "sourceLocator": "Definition aus SP 800-34 Rev. 1 im CSRC-Glossar",
+        "use": "RTO als Wiederherstellungsziel",
+        "reviewStatus": "Am 18.09.2026 gelesen"
+      },
+      {
+        "sourceId": "recovery-nist-rpo",
+        "sourceLocator": "Definition aus SP 800-34 Rev. 1 im CSRC-Glossar",
+        "use": "RPO als geforderter Wiederherstellungspunkt",
+        "reviewStatus": "Am 18.09.2026 gelesen"
+      }
+    ],
+    "notes": [
+      "Eigene Zeitfälle und Grafiken; menschliche Fachfreigabe offen.",
+      "Batch ga1-4-004-004 enthält überwiegend themenfremde Netzwerk-/Organisationsauszüge. SLA-Soll-Ist-Vergleich nur als didaktischer Anschluss, keine MTTR-Gleichsetzung. WLAN-Grafik ausgeschlossen; offene Bildreferenz bleibt offen.",
+      "Im Modell beginnt die RTO-Messung beim Dienstausfall und endet bei bestätigter fachlicher Nutzbarkeit. Alle Zeiten am selben Tag. Datenstände bezeichnen nachweislich wiederherstellbare konsistente Inhalte, nicht das Ende eines Kopierjobs."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "fragen",
+      "title": "Zwei Ziele, zwei Fragen",
+      "type": "comparison",
+      "items": [
+        {
+          "label": "RPO: Datenstand",
+          "detail": "Wie viel Zeit darf fehlen?"
+        },
+        {
+          "label": "RTO: Wiederanlauf",
+          "detail": "Wie lange darf es dauern?"
+        }
+      ]
+    },
+    {
+      "id": "zeit",
+      "title": "Ein Ausfall, zwei Zeitabstände",
+      "type": "flow",
+      "items": [
+        {
+          "label": "09:45 Datenstand",
+          "detail": "Nachweislich restaurierbar"
+        },
+        {
+          "label": "10:00 Ausfall",
+          "detail": "Datenlücke: 15 Minuten"
+        },
+        {
+          "label": "11:10 nutzbar",
+          "detail": "Wiederanlauf: 70 Minuten"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "rto-rpo-definition-abgrenzung-zuordnung-anforderungen-diagnose",
+          "question": "Ein Shop darf höchstens zwei Stunden ausfallen. Welche Vorgabe ist das?",
+          "options": [
+            {
+              "text": "RPO.",
+              "rationale": "RPO beschreibt den geforderten Datenstand, nicht die Unterbrechungsdauer.",
+              "correct": false
+            },
+            {
+              "text": "RTO.",
+              "rationale": "Richtig: Hier geht es um die Zeit bis zum vereinbarten Wiederanlauf.",
+              "correct": true
+            },
+            {
+              "text": "Backup-Aufbewahrungsfrist.",
+              "rationale": "Aufbewahrung beschreibt, wie lange Sicherungen behalten werden.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Zwei Fragen an den Fachbereich",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "fragen",
+          "alt": "RPO fragt nach dem tolerierbaren Rückstand der Daten, RTO nach der zulässigen Zeit bis zum Wiederanlauf.",
+          "caption": "Eigene Modellgrafik; Ziele und Messergebnisse getrennt betrachten."
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Recovery Point Objective (RPO)** legt fest, auf welchen Datenstand nach einer Störung zurückgekehrt werden können muss. Als Zeitspanne ausgedrückt beschreibt es die tolerierte Datenlücke vor dem Ausfall. **Recovery Time Objective (RTO)** ist die Zielzeit für den Wiederanlauf. Grundlage sind die Auswirkungen auf den Geschäftsprozess, nicht allein vorhandene Hardware.\n\n„Maximal 30 Minuten neue Aufträge verlieren“ betrifft RPO. „Nach spätestens zwei Stunden wieder Aufträge bearbeiten können“ betrifft RTO. Beide Ziele müssen getrennt vereinbart werden. Ein älterer Datenstand kann schnell verfügbar sein; ein sehr aktueller Datenstand kann lange zur Wiederherstellung brauchen."
+        }
+      ]
+    },
+    {
+      "title": "Ziele sind noch keine Messergebnisse",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Die Abkürzung enthält **Objective**, also Ziel. Nenne eine gemessene Wiederanlaufdauer nicht einfach „das RTO“, wenn du eigentlich das Ergebnis meinst. Vergleiche Soll und Ist.\n\nFür unsere Fälle beginnt die Zeitmessung beim Dienstausfall und endet erst, wenn die vereinbarte Funktion wieder geprüft nutzbar ist. Dadurch werden Erkennung, Entscheidung, Wiederherstellung und Prüfung innerhalb dieses Fensters berücksichtigt. In echten Vereinbarungen müssen Start, Ende, Mindestfunktion und Abhängigkeiten genauso eindeutig festgelegt sein. Ein erfolgreich beendeter Kopierjob beweist weder Anwendungskonsistenz noch fachliche Nutzbarkeit."
+        }
+      ]
+    },
+    {
+      "title": "Ein Ereignis sauber auswerten",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "zeit",
+          "alt": "Datenstand 09:45, Ausfall 10:00, bestätigter Wiederanlauf 11:10. Die Datenlücke beträgt 15 Minuten, die Wiederanlaufdauer 70 Minuten.",
+          "caption": "Eigene Modellgrafik; Ziele und Messergebnisse getrennt betrachten."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Eigener Fall: RPO höchstens 30 Minuten, RTO höchstens 60 Minuten. Der letzte nachweislich wiederherstellbare konsistente Datenstand ist 09:45. Ausfall: 10:00. Bestätigte Nutzbarkeit: 11:10. Alle Zeiten liegen am selben Tag."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Datenlücke: zehn Uhr minus neun Uhr fünfundvierzig gleich 15 Minuten.",
+          "mathml": "<math display=\"block\"><mrow><mtext>10:00</mtext><mo>−</mo><mtext>09:45</mtext><mo>=</mo><mn>15</mn><mtext> min</mtext></mrow></math>",
+          "legend": [
+            "15 Minuten liegen innerhalb des RPO-Ziels von 30 Minuten."
+          ]
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Wiederanlauf: elf Uhr zehn minus zehn Uhr gleich 70 Minuten.",
+          "mathml": "<math display=\"block\"><mrow><mtext>11:10</mtext><mo>−</mo><mtext>10:00</mtext><mo>=</mo><mn>70</mn><mtext> min</mtext></mrow></math>",
+          "legend": [
+            "70 Minuten überschreiten das RTO-Ziel von 60 Minuten um zehn Minuten."
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Ergebnis:** RPO im betrachteten Ereignis eingehalten, RTO verfehlt. Ein bestandener Teil gleicht den anderen nicht aus. Ein einzelner Test belegt zudem nicht jedes mögliche Ausfallszenario."
+        },
+        {
+          "type": "numeric",
+          "id": "rto-rpo-definition-abgrenzung-zuordnung-anforderungen-zahl",
+          "title": "Jetzt du: Datenlücke",
+          "prompt": "Neuer Fall am selben Tag: Ausfall 14:20, nachweislich wiederherstellbarer Datenstand 13:35. Wie viele Minuten Datenlücke ergeben sich?",
+          "label": "Datenlücke in Minuten",
+          "expected": 45,
+          "tolerance": 0,
+          "correctFeedback": "Von 13:35 bis 14:00 sind es 25 Minuten, danach weitere 20: insgesamt 45.",
+          "wrongFeedback": "Berechne die Zeit zwischen dem verfügbaren Datenstand und dem Ausfall, nicht die spätere Wiederherstellung.",
+          "misconceptions": [
+            {
+              "value": 85,
+              "feedback": "Uhrzeiten sind kein Dezimalsystem: Eine Stunde hat 60 Minuten."
+            },
+            {
+              "value": 25,
+              "feedback": "Das reicht nur bis 14:00; die letzten 20 Minuten fehlen."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Sicherungsintervall ist keine Garantie",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Eigene Probe: Backups sind alle 15 Minuten geplant. Der Lauf um 09:45 schlägt fehl. Beim Ausfall um 09:58 ist nur ein konsistenter Datenstand von 09:30 nutzbar. Die Datenlücke beträgt 28 Minuten – trotz 15-Minuten-Zeitplan.\n\nEs zählt der tatsächlich verfügbare Datenstand. Auch das Abschlussdatum einer Sicherung ist nicht zwingend der Zeitpunkt der enthaltenen Daten. Transaktionsprotokolle können einen neueren konsistenten Wiederherstellungspunkt ermöglichen, wenn die benötigte Kette vollständig und geprüft ist."
+        },
+        {
+          "type": "markdown",
+          "markdown": "```text\n09:30  Datenstand verfügbar\n09:45  Sicherung fehlgeschlagen\n09:58  Dienstausfall\nLücke: 28 Minuten\n```\n\nHäufigeres Sichern verbessert nicht automatisch die Wiederherstellungsdauer. Für einen schnellen Wiederanlauf zählen auch Zielsystem, Datenmenge, Restore-Kette, Netzwerk, Abhängigkeiten und Prüfung."
+        },
+        {
+          "type": "quiz",
+          "id": "rto-rpo-definition-abgrenzung-zuordnung-anforderungen-uebung",
+          "question": "Im Protokoll ist ein RPO von höchstens 15 Minuten vereinbart. Was ist belegt?",
+          "options": [
+            {
+              "text": "RPO erfüllt, weil der Zeitplan 15 Minuten vorsieht.",
+              "rationale": "Der ausgefallene Lauf macht den Zeitplan als Nachweis unzureichend.",
+              "correct": false
+            },
+            {
+              "text": "RPO verfehlt: Der verfügbare Stand liegt 28 Minuten zurück.",
+              "rationale": "Richtig: Maßgeblich ist der nachgewiesene Wiederherstellungspunkt.",
+              "correct": true
+            },
+            {
+              "text": "RTO beträgt 28 Minuten.",
+              "rationale": "Dazu fehlt die Zeit der bestätigten Nutzbarkeit.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Eine prüfbare Anforderung formulieren",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Eigener Auftrag für ein Ticketsystem: „Nach dem betrachteten Serverausfall sollen berechtigte Mitarbeitende innerhalb von 90 Minuten wieder Tickets lesen und anlegen können. Der konsistent wiederhergestellte Stand darf höchstens 20 Minuten vor dem Ausfall liegen.“\n\nDokumentiere im Test Ausfallzeit, Datenstand und bestätigte Nutzbarkeit. Halte fest, ob Anmeldung, Datenbank und andere benötigte Dienste verfügbar waren. RPO null oder sehr kurze RTO-Werte sind anspruchsvolle Ziele, keine automatische Folge von RAID oder Replikation. Eine replizierte Fehländerung bleibt eine Fehländerung; unabhängige Wiederherstellungswege sind weiterhin zu planen."
+        }
+      ]
+    },
+    {
+      "title": "Selbst ordnen und erklären",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "rto-rpo-definition-abgrenzung-zuordnung-anforderungen-reihenfolge",
+          "title": "Ablauf ordnen",
+          "prompt": "Ordne die Planung und Prüfung von Wiederanlaufzielen.",
+          "steps": [
+            {
+              "id": "abschluss",
+              "label": "Wiederherstellung testen und beide Ergebnisse mit den Zielen vergleichen"
+            },
+            {
+              "id": "start",
+              "label": "Zulässige Unterbrechung und Datenlücke mit dem Fachbereich bestimmen"
+            },
+            {
+              "id": "pruefen",
+              "label": "Sicherung, Wiederanlauf und Messgrenzen darauf auslegen"
+            }
+          ],
+          "expected": [
+            "start",
+            "pruefen",
+            "abschluss"
+          ],
+          "correctFeedback": "Richtig: Voraussetzungen, Prüfung und Abschluss stehen in der vorgesehenen Reihenfolge.",
+          "wrongFeedback": "Prüfe die Voraussetzungen: Der letzte Schritt darf die vorherige Prüfung nicht überspringen."
+        },
+        {
+          "type": "recall",
+          "id": "rto-rpo-definition-abgrenzung-zuordnung-anforderungen-begruendung",
+          "title": "Aus dem Gedächtnis erklären",
+          "prompt": "„Wir sichern alle 15 Minuten, also ist unser RTO 15 Minuten.“ Erkläre zwei Fehler dieser Aussage.",
+          "label": "Deine Erklärung",
+          "minLength": 70,
+          "model": "Das Sicherungsintervall betrifft zunächst die mögliche Datenlücke, also das RPO, nicht die Dauer des Wiederanlaufs. Auch ein RPO von 15 Minuten ist durch den Zeitplan allein nicht bewiesen: Sicherungen können fehlschlagen oder unbrauchbar sein. Für das RTO müssen Wiederherstellung, Abhängigkeiten und Funktionsprüfung innerhalb der vereinbarten Messgrenzen tatsächlich getestet werden."
+        },
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "rto-rpo-definition-abgrenzung-zuordnung-anforderungen-karte-0",
+              "label": "Abruf 1",
+              "front": "Objective heißt?",
+              "back": "Zielvorgabe, nicht automatisch gemessenes oder garantiert erreichtes Ergebnis."
+            },
+            {
+              "id": "rto-rpo-definition-abgrenzung-zuordnung-anforderungen-karte-1",
+              "label": "Abruf 2",
+              "front": "RPO von 30 Minuten?",
+              "back": "Im vereinbarten Ausfallszenario darf der wiederherstellbare Datenstand höchstens 30 Minuten zurückliegen."
+            },
+            {
+              "id": "rto-rpo-definition-abgrenzung-zuordnung-anforderungen-karte-2",
+              "label": "Abruf 3",
+              "front": "Restore fertig gleich Dienst nutzbar?",
+              "back": "Nicht zwingend. Anwendung, Abhängigkeiten und fachliche Prüfung können noch fehlen."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "rto-rpo-definition-abgrenzung-zuordnung-anforderungen-transfer-a",
+          "question": "Ein Ticketsystem darf höchstens 20 Minuten neue Daten verlieren und muss binnen 90 Minuten wieder nutzbar sein. Welche Zuordnung stimmt?",
+          "options": [
+            {
+              "text": "RTO 20 Minuten, RPO 90 Minuten.",
+              "rationale": "Hier sind Datenlücke und Wiederanlauf vertauscht.",
+              "correct": false
+            },
+            {
+              "text": "Beides beschreibt die Aufbewahrung.",
+              "rationale": "Keine der beiden Angaben nennt die Dauer der Sicherungsaufbewahrung.",
+              "correct": false
+            },
+            {
+              "text": "RPO 20 Minuten, RTO 90 Minuten.",
+              "rationale": "Richtig: Datenstand und Wiederanlauf werden getrennt vorgegeben.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "zuordnen"
+        },
+        {
+          "type": "quiz",
+          "id": "rto-rpo-definition-abgrenzung-zuordnung-anforderungen-transfer-b",
+          "question": "Ziele: RPO 20 Minuten, RTO 90 Minuten. Ausfall 16:00, verfügbarer Datenstand 15:30, bestätigter Wiederanlauf 17:00. Was folgt?",
+          "options": [
+            {
+              "text": "RPO verfehlt, RTO eingehalten.",
+              "rationale": "30 Minuten Datenlücke überschreiten 20; 60 Minuten Wiederanlauf liegen innerhalb von 90.",
+              "correct": true
+            },
+            {
+              "text": "Beide eingehalten, weil der Dienst nach einer Stunde läuft.",
+              "rationale": "Der schnelle Wiederanlauf behebt die zu große Datenlücke nicht.",
+              "correct": false
+            },
+            {
+              "text": "Beide verfehlt, weil Daten fehlen.",
+              "rationale": "Ein erlaubter Datenrückstand und eine erlaubte Dauer sind getrennte Kriterien.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "pruefen"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "[NIST CSRC: RPO](https://csrc.nist.gov/glossary/term/recovery_point_objective) und [RTO](https://csrc.nist.gov/glossary/term/recovery_time_objective), Definitionen aus SP 800-34 Rev. 1, gelesen am 18.09.2026. Alle Zeitfälle, Grafiken und Testszenarien sind eigene Beispiele. Unpassende Buchtreffer und WLAN-Abbildung nicht übernommen. Messgrenzen sind explizite Modellannahmen. Menschliche Fachfreigabe offen."
+        }
+      ]
+    }
+  ]
+}

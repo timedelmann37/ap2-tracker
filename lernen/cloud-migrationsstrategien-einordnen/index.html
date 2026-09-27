@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Drei Migrationsstrategien am selben Anwendungssystem unterscheiden, auswählen und ihre Grenzen begründen.">
+<title>Cloud-Migration: Rehost, Replatform oder Refactor? – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="cloud-migrationsstrategien-einordnen" data-progress-id="ga1-5__6" data-content-revision="2026-09-26.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-5">Cloud und Wirtschaftlichkeit</a><span class="sep">›</span>
+    <span class="here">Cloud-Migration: Rehost, Replatform oder Refactor?</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Cloud-Migration: Rehost, Replatform oder Refactor?</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 29 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Das fiktive Ersatzteillager Nordwerk betreibt eine Bestellanwendung auf einer eigenen VM. Datenbank, Anwendung und Sitzungsdaten laufen auf demselben Server. Der Rechenzentrumsvertrag endet in sechs Monaten. Muss für den Umzug sofort alles neu programmiert werden?</p>
+<section class="learning-goals" aria-labelledby="cloud-migrationsstrategien-einordnen-goals">
+  <h2 id="cloud-migrationsstrategien-einordnen-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Rehost, Replatform und Refactor an konkreten Änderungen erkennen</li>
+    <li>Eine Strategie anhand von Ziel, Aufwand und Risiko begründen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>1 · Drei Wege am selben System</h2>
+<section class="quiz" data-quiz="migration-diagnose" data-correct="0">
+  <h3>Nordwerk kopiert die bestehende VM nahezu unverändert zu einem Cloud-VM-Dienst. Wie heißt der Ansatz?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Der Ort und die Infrastruktur ändern sich, nicht die Architektur der Anwendung."><span class="m">A</span> Rehost (Lift-and-Shift): Die Anwendung bleibt weitgehend gleich.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Ein reiner VM-Umzug verändert den Anwendungscode nicht wesentlich."><span class="m">B</span> Refactor: Jede VM-Verschiebung ist bereits ein Codeumbau.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Das ist hier nicht beschrieben. Eine Cloud-VM allein ist noch keine neue Datenbankplattform."><span class="m">C</span> Replatform: Eine verwaltete Datenbank wird automatisch verwendet.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><p><strong>Rehost (Lift-and-Shift):</strong> Nordwerk verlegt die vorhandene VM mit Betriebssystem und Anwendung weitgehend unverändert auf eine Cloud-VM. Das kann einen knappen Auszugstermin erleichtern. Der Umzug beseitigt aber weder alte Softwareabhängigkeiten noch den Aufwand für Betriebssystem, Patches und Datenbankpflege.</p>
+<p><strong>Replatform:</strong> Nordwerk behält die fachliche Anwendung weitgehend bei, verlagert aber beispielsweise die selbst betriebene Datenbank auf einen verwalteten Datenbankdienst. Das kann Eigenbetrieb reduzieren. Vorher müssen Treiber, SQL-Funktionen, Schnittstellen, Datenübernahme und Backup-Verhalten geprüft werden. „Wenig Codeänderung“ heißt nicht „ohne Tests“.</p>
+<p><strong>Refactor:</strong> Nordwerk ändert Anwendungscode gezielt, etwa indem Sitzungsdaten aus dem einzelnen Webserver herausgelöst und Aufträge über eine Warteschlange verarbeitet werden. Das kann Skalierung und Ausfallsicherheit unterstützen, erfordert jedoch Entwicklungszeit, Regressionstests und eine saubere Umstellung. Eine komplette Neuentwicklung ist nicht automatisch gemeint; ein tiefer Architekturumbau wird in manchen Rahmenwerken gesondert als <strong>Rearchitect</strong> bezeichnet.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Was ändert sich beim Umzug?">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-drei-wege-title diagram-drei-wege-desc">
+  <title id="diagram-drei-wege-title">Was ändert sich beim Umzug?</title>
+  <desc id="diagram-drei-wege-desc">Rehost verschiebt die VM weitgehend unverändert, Replatform wechselt mit wenig Codeänderung die Betriebsplattform, Refactor ändert den Anwendungscode gezielt.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Was ändert sich beim Umzug?</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">Rehost</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">VM umziehen; Anwendung</tspan><tspan x="64" dy="30">weitgehend unverändert.</tspan></text></g><g><rect class="diagram-row" x="340" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="362" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="362" dy="0">Replatform</tspan></text><text x="362" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="362" dy="0">Neue Plattform; wenig Code</tspan><tspan x="362" dy="30">ändern.</tspan></text></g><g><rect class="diagram-row" x="638" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="660" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="660" dy="0">Refactor</tspan></text><text x="660" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="660" dy="0">Anwendungscode für neue</tspan><tspan x="660" dy="30">Eigenschaften umbauen.</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Vergleichsgrafik. Entscheidend ist, was tatsächlich geändert wird – nicht der Werbename des Cloudprodukts.</figcaption>
+</figure><section class="quiz" data-quiz="migration-plattform" data-correct="0">
+  <h3>Nordwerk ersetzt die selbst betriebene Datenbank durch einen verwalteten Dienst. Die Anwendung benötigt nur kleine Anpassungen. Was passt am besten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Der neue Betriebsdienst ist der Kern der Änderung."><span class="m">A</span> Replatform, weil die Betriebsplattform wechselt und der Code weitgehend erhalten bleibt.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die Datenbankplattform und die Betriebsverantwortung ändern sich deutlich."><span class="m">B</span> Rehost, weil jede Anwendung nach dem Umzug weiterhin Daten speichert.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Eine neue Geschäftslogik ist im Fall nicht beschrieben; kleine Anpassungen sind möglich."><span class="m">C</span> Refactor, weil ein verwalteter Dienst zwangsläufig eine neue Geschäftslogik erfordert.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2"><span class="num">2</span>2 · Strategie ist eine Entscheidung pro Komponente</h2>
+<p>Die drei Namen sind <strong>keine Pflichtreihenfolge</strong> und keine Qualitätsrangliste. Eine schnelle Rehost-Migration kann für einen festen Auszugstermin sinnvoll sein; danach lässt sich gezielt modernisieren. Ein Team kann die Webanwendung zunächst rehosten, die Datenbank replatformen und einen einzelnen Engpass später refactoren. Maßgeblich sind Abhängigkeiten, Ziel, Aufwand, Risiko und verfügbare Fähigkeiten.</p>
+<p>Vor der Entscheidung erfasst Nordwerk, welche Systeme miteinander sprechen, wo Daten liegen, wie Sitzungen gespeichert sind und welche Verfügbarkeitsanforderungen gelten. Danach definiert es den Zielzustand: nur fristgerechter Standortwechsel oder auch weniger Betriebsaufwand und elastische Verarbeitung? Erst damit wird die Strategie begründbar. Ein Wechsel ohne Datenkonsistenzprüfung, Test und Rückfallplan ist noch kein belastbarer Migrationsplan.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Erst Ziel und Abhängigkeiten, dann Strategie">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="434" viewBox="0 0 960 434" role="img" aria-labelledby="diagram-nordwerk-entscheidung-title diagram-nordwerk-entscheidung-desc">
+  <title id="diagram-nordwerk-entscheidung-title">Erst Ziel und Abhängigkeiten, dann Strategie</title>
+  <desc id="diagram-nordwerk-entscheidung-desc">Der Entscheidungsweg beginnt mit Abhängigkeiten, gewichtet Ziele und wählt dann für jede Komponente einen getesteten Migrationsweg mit Rückfallplan.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Erst Ziel und Abhängigkeiten, dann Strategie</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Inventar</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">VM, Datenbank, Sitzungen und Schnittstellen prüfen.</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Ziel</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Termin, Betriebsaufwand und Skalierung gewichten.</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Weg</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Je Komponente wählen, testen und Rückweg planen.</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigener Entscheidungsweg. Die Reihenfolge hilft beim Denken; sie legt keine bestimmte Cloudplattform fest.</figcaption>
+</figure><section class="sequence-practice" data-sequence="migration-pruefweg" data-expected="inventar,ziel,strategie,test" data-correct-feedback="Richtig: Erst Abhängigkeiten kennen, dann Ziele gewichten, Strategie wählen und die Umstellung prüfen." data-wrong-feedback="Beginne mit dem Ist-System und seinen Abhängigkeiten. Ohne dieses Inventar ist die Strategie nur ein Etikett." aria-labelledby="migration-pruefweg-title">
+  <div class="lab-heading"><div><h3 id="migration-pruefweg-title">Umzug vorbereiten</h3><p>Ordne die vier Arbeitsschritte für Nordwerk in eine begründbare Reihenfolge.</p></div><span class="lab-tag">Ablauf</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="ziel" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Umzugstermin und gewünschte Betriebsverbesserung festlegen</span></li>
+    <li data-step="inventar" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Anwendung, Daten und Abhängigkeiten erfassen</span></li>
+    <li data-step="strategie" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Strategie je Komponente auswählen und begründen</span></li>
+    <li data-step="test" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Datenübernahme, Funktion und Rückfallweg testen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s3"><span class="num">3</span>3 · Trade-offs statt Schlagwörter</h2>
+<p>Nordwerk hat nur sechs Monate bis zum Rechenzentrumsauszug. <strong>Rehost</strong> könnte den Termin entlasten, lässt aber den alten Softwarebetrieb bestehen. <strong>Replatform</strong> kann den Datenbankbetrieb vereinfachen, wenn Kompatibilität und Datenmigration nachgewiesen sind. <strong>Refactor</strong> könnte das Engpassproblem der Sitzungen lösen, ist aber als Komplettumbau während des knappen Umzugs riskanter. Eine vertretbare Empfehlung wäre deshalb: zuerst die Abhängigkeiten belegen, die Web-VM gegebenenfalls rehosten und die Datenbank nur bei bestandenem Kompatibilitätstest replatformen; den Sitzungsumbau als eigenes, getestetes Vorhaben planen. Das ist keine universelle Lösung: Wenn die alte Software auf Cloud-VMs nicht lauffähig ist, fällt genau diese Empfehlung weg.</p>
+<p>Achte bei Prüfungsantworten auf die <strong>Änderung</strong>, den <strong>Nutzen</strong> und die <strong>offene Prüfung</strong>. „Lift-and-Shift ist immer billig“ wäre unbegründet: laufende Kosten, Lizenzen, Betriebsarbeit und spätere Modernisierung müssen erst verglichen werden. Ebenso ist „Refactor ist immer besser“ kein technisches Argument.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Gewinn und offene Arbeit">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-risiko-tradeoff-title diagram-risiko-tradeoff-desc">
+  <title id="diagram-risiko-tradeoff-title">Gewinn und offene Arbeit</title>
+  <desc id="diagram-risiko-tradeoff-desc">Rehost ermöglicht schnellen Umzug, erhält aber Altlasten; Replatform kann Eigenbetrieb senken, verlangt Kompatibilitätstests; Refactor schafft Gestaltungsspielraum mit mehr Umbau- und Testaufwand.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Gewinn und offene Arbeit</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">Rehost</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">Schneller Umzug; alter</tspan><tspan x="64" dy="30">Betriebsaufwand bleibt.</tspan></text></g><g><rect class="diagram-row" x="340" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="362" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="362" dy="0">Replatform</tspan></text><text x="362" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="362" dy="0">Weniger Eigenbetrieb;</tspan><tspan x="362" dy="30">Kompatibilität testen.</tspan></text></g><g><rect class="diagram-row" x="638" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="660" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="660" dy="0">Refactor</tspan></text><text x="660" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="660" dy="0">Mehr Gestaltung; höherer</tspan><tspan x="660" dy="30">Umbau- und Testaufwand.</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Trade-off-Grafik. Der passende Weg hängt von Ziel und Randbedingungen ab.</figcaption>
+</figure><section class="recall-practice" data-recall="migration-nordwerk-entscheidung" data-min-length="160" aria-labelledby="migration-nordwerk-entscheidung-title">
+  <div class="recall-prompt"><h3 id="migration-nordwerk-entscheidung-title">Empfehlung in drei Sätzen</h3><p>Nordwerk muss in sechs Monaten ausziehen und will künftig weniger Datenbankbetrieb. Empfiehl eine mögliche Kombination der drei Strategien. Nenne für jeden gewählten Schritt mindestens eine offene Prüfung.</p></div>
+  <label class="sr-only" for="migration-nordwerk-entscheidung-answer">Deine begründete Empfehlung</label>
+  <textarea id="migration-nordwerk-entscheidung-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Ich erfasse zuerst die Abhängigkeiten und prüfe, ob die bisherige Web-VM in der Zielumgebung funktionsfähig ist. Für den festen Termin kann ich die Webanwendung zunächst rehosten; Patches, Lizenzen und Betriebsaufwand bleiben dabei offen. Die Datenbank kann ich replatformen, wenn Treiber, SQL-Funktionen, Datenübernahme und Backup-Verhalten getestet sind. Den Umbau der servergebundenen Sitzungen plane ich als gesondertes Refactoring mit Regressionstests und Rückfallweg. Die Kombination ist nur unter diesen Annahmen sinnvoll, nicht automatisch für jedes System.</div>
+</section><h2 class="sec" id="s4"><span class="num">4</span>4 · Abruf und Lernziel-Check</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="migration-karte-0" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Lift-and-Shift: Was wird nicht automatisch besser?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Der Anwendungscode, technische Altlasten und die eigene Betriebsverantwortung bleiben weitgehend bestehen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="migration-karte-1" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Verwaltete Datenbank mit wenig Codeänderung?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Typischer Replatform-Fall: Betriebsplattform und Verantwortlichkeiten ändern sich; Kompatibilität prüfen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="migration-karte-2" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wann spricht man von Refactor?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Wenn Anwendungscode gezielt verändert wird, etwa um Sitzungen aus einem Einzelserver zu lösen; Aufwand und Tests steigen.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Abruf 1“:</span><button type="button" data-card-id="migration-karte-0" data-card-rate="known">gewusst</button><button type="button" data-card-id="migration-karte-0" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="migration-karte-0"></span></div>
+<div class="card-rating"><span>Karte „Abruf 2“:</span><button type="button" data-card-id="migration-karte-1" data-card-rate="known">gewusst</button><button type="button" data-card-id="migration-karte-1" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="migration-karte-1"></span></div>
+<div class="card-rating"><span>Karte „Abruf 3“:</span><button type="button" data-card-id="migration-karte-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="migration-karte-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="migration-karte-2"></span></div><section class="quiz" data-quiz="migration-begriffe-gate" data-correct="0" data-required-objective="strategien-unterscheiden">
+  <h3>Welche Zuordnung ist für Nordwerk korrekt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Die Art der tatsächlichen Änderung trennt die Strategien."><span class="m">A</span> VM nahezu unverändert verschieben = Rehost; verwaltete Datenbank mit wenig Codeänderung = Replatform; Sitzungslogik im Code umbauen = Refactor.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die Begriffe sind vertauscht: Infrastrukturverschiebung ist kein Codeumbau."><span class="m">B</span> VM verschieben = Refactor; verwaltete Datenbank = Rehost; Sitzungslogik ändern = Replatform.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Das Ziel Cloud allein bestimmt nicht die Migrationsstrategie."><span class="m">C</span> Alle drei Fälle heißen Lift-and-Shift, weil sie in die Cloud führen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="migration-entscheidung-gate" data-correct="0" data-required-objective="strategie-begruenden">
+  <h3>Welcher Satz begründet unter Nordwerks Zeitdruck eine mögliche Strategie am besten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Der Vorschlag nennt Ziel, Annahmen und Prüfbedarf statt eine pauschale Rangliste."><span class="m">A</span> Web-VM zunächst rehosten, falls sie kompatibel ist; Datenbank-Replatforming und späteres Refactoring getrennt testen und je einen Rückfallweg planen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Codeumbau benötigt Entwicklung und Tests; der enge Termin erhöht das Risiko."><span class="m">B</span> Alles sofort refactoren, weil diese Strategie immer schneller und günstiger ist.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Auch Rehost braucht Daten- und Funktionstests sowie einen Rückfallplan."><span class="m">C</span> Nur den Server kopieren; Daten, Schnittstellen und Rollback müssen nicht betrachtet werden.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Quellen und Grenzen</h2>
+<p>Begriffe und Abgrenzung: <a href="https://docs.aws.amazon.com/prescriptive-guidance/latest/large-migration-guide/migration-strategies.html">AWS Prescriptive Guidance zu Migrationsstrategien</a> und <a href="https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/modernize/modernization-cloud-replatform-refactor-rearchitect">Microsoft Cloud Adoption Framework zu Replatform, Refactor und Rearchitect</a>, gelesen am 26.09.2026. Die Anbieter gliedern Strategien nicht in jedem Detail gleich. Nordwerk, Grafiken und Aufgaben sind eigene Lehrbeispiele; der private Buchbestand diente nur als Themenhinweis. Die konkrete Migrationsentscheidung benötigt Inventar, Tests und fachliche Freigabe.</p>
+
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-5"><span class="d">zurück zu</span><span class="t">Cloud und Wirtschaftlichkeit</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Cloud und Wirtschaftlichkeit</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">1 · Drei Wege am selben System</a></li>
+<li><a href="#s2" data-t="s2">2 · Strategie ist eine Entscheidung pro Komponente</a></li>
+<li><a href="#s3" data-t="s3">3 · Trade-offs statt Schlagwörter</a></li>
+<li><a href="#s4" data-t="s4">4 · Abruf und Lernziel-Check</a></li>
+<li><a href="#s5" data-t="s5">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-5">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

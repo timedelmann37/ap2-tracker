@@ -120,6 +120,16 @@ assert.equal(pack.private, true);
 assert.equal(pack.kind, 'private-learning-batch');
 pass('Batch-Pack wird ohne Netzwerk aus der lokalen Queue und den lokalen Indizes gebaut');
 
+const rejected = selection.topics[0].textCandidates[0];
+const rejectionMap = new Map([[selection.topics[0].itemId, curatedCandidates({
+  chunks: [rejected], excludedChunkIds: [rejected.chunkId]
+}, queue.sources)]]);
+const filteredPack = buildBatchPack(queue, options, indexes, rejectionMap);
+assert(!filteredPack.topics[0].textCandidates.some(candidate => candidate.chunkId === rejected.chunkId));
+assert.equal(validateBatchPack(filteredPack), true);
+assert.deepEqual(filteredPack.topics[1], pack.topics[1]);
+pass('ausgeschlossene Fundstelle kehrt weder über Mapping noch Queue-Fallback zurück; andere Themen bleiben unverändert');
+
 for (const [topicIndex, exportedTopic] of pack.topics.entries()) {
   const queuedTopic = selection.topics[topicIndex];
   assert.equal(exportedTopic.metadata.itemId, queuedTopic.itemId);

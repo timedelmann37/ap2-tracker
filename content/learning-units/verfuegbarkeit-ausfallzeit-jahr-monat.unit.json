@@ -1,0 +1,128 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "verfuegbarkeit-ausfallzeit-jahr-monat",
+    "slug": "verfuegbarkeit-ausfallzeit-jahr-monat",
+    "title": "99,9 % klingt viel – wie lange darf es ausfallen?",
+    "description": "Verfügbarkeitsziele in Ausfallminuten pro Jahr und 30-Tage-Monat umrechnen und die Messperiode sauber benennen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-2",
+    "groupLabel": "Virtualisierung, Cluster und Verfügbarkeit",
+    "itemId": "ga1-2__8",
+    "week": "KW 36",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": ["availability-google-table", "availability-google-risk"],
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    { "id": "rechnen", "label": "Aus einer zeitbasierten Verfügbarkeit die zulässige Ausfallzeit für Jahr oder 30-Tage-Monat berechnen" },
+    { "id": "einordnen", "label": "Messperiode, Servicezeit und Messdefinition als Grenzen der Zahl erklären" }
+  ],
+  "intro": "Ein Angebot verspricht 99,95 % Verfügbarkeit. Für die Planung zählt nicht nur die Prozentzahl: Wie viele Ausfallminuten bleiben tatsächlich, und gilt der Wert pro Monat oder pro Jahr?",
+  "curation": {
+    "evidence": [
+      { "sourceId": "availability-google-table", "sourceLocator": "Availability Table, Werte je year und month", "use": "Abgleich der 99,9-/99,95-/99,99-Prozent-Rechenwerte", "reviewStatus": "Am 26.09.2026 gelesen; Rechenwege und Grafiken eigenständig" },
+      { "sourceId": "availability-google-risk", "sourceLocator": "Measuring Service Risk; Time-based availability; Aggregate availability", "use": "Unterschied zwischen Zeitanteil und Anteil erfolgreicher Anfragen", "reviewStatus": "Am 26.09.2026 gelesen" }
+    ],
+    "notes": [
+      "Der private Batch ga1-2-008-008 enthält überwiegend fachfremde Treffer. Die Buchabbildung behandelt Stundensatz statt Verfügbarkeit und wurde nicht verwendet. Das Lernbeispiel ist eigenständig.",
+      "Alle Beispiele rechnen ohne Schaltjahr und mit einem ausdrücklich 30 Tage langen Modellmonat. Ein Kalendermonat hat 28 bis 31 Tage; SLA-Messperioden und Ausnahmen müssen aus dem Vertrag gelesen werden.",
+      "Die Jahreszahl ist ein Jahresbudget, die Monatszahl ein eigener 30-Tage-Betrachtungswert; nicht als beliebig umverteilbare zwölf Monatsbudgets verstehen. Menschliche Fachfreigabe offen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "verfuegbarkeitsstufen",
+      "type": "comparison",
+      "title": "Drei Ziele, ein Jahr mit 365 Tagen",
+      "description": "Je höher die Zielverfügbarkeit, desto kleiner der erlaubte Zeitanteil ohne Dienst.",
+      "items": [
+        { "label": "99,9 %", "detail": "0,1 % Ausfallanteil: 525,6 Minuten im Jahr (8 h 45 min 36 s); 43,2 Minuten in einem 30-Tage-Monat." },
+        { "label": "99,95 %", "detail": "0,05 % Ausfallanteil: 262,8 Minuten im Jahr (4 h 22 min 48 s); 21,6 Minuten in einem 30-Tage-Monat." },
+        { "label": "99,99 %", "detail": "0,01 % Ausfallanteil: 52,56 Minuten im Jahr (52 min 33,6 s); 4,32 Minuten in einem 30-Tage-Monat." }
+      ]
+    },
+    {
+      "id": "messweg",
+      "type": "flow",
+      "title": "Eine Prozentzahl braucht einen Nenner",
+      "description": "Die Rechenformel ist einfach; eine belastbare Zusage braucht zusätzliche Definitionen.",
+      "items": [
+        { "label": "Periode festlegen", "detail": "Kalenderjahr, Kalendermonat oder modellhafte 30 Tage? Die Minutenbasis ändert sich." },
+        { "label": "Dienst definieren", "detail": "Woran gilt er als verfügbar: erfolgreicher Nutzerzugriff, API-Antwort oder nur Server-Ping?" },
+        { "label": "Servicezeit prüfen", "detail": "24/7 oder nur Geschäftszeiten? Geplante Wartung einbezogen oder ausgenommen?" },
+        { "label": "Ausfallbudget prüfen", "detail": "Gemessene Ausfälle derselben Periode und Definition mit der zulässigen Zeit vergleichen." }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Prozent in Zeit übersetzen",
+      "blocks": [
+        { "type": "quiz", "id": "verfuegbarkeit-diagnose", "question": "Ein Dienst ist zu 99,9 % verfügbar. Welcher Anteil der betrachteten Zeit darf im vereinfachten zeitbasierten Modell ausfallen?", "options": [
+          { "text": "10 %", "rationale": "Das wäre deutlich mehr als die Differenz zu 100 %.", "correct": false },
+          { "text": "0,1 %", "rationale": "Richtig: 100 % minus 99,9 % ergibt 0,1 %.", "correct": true },
+          { "text": "0,01 %", "rationale": "Das gehört zu 99,99 % Verfügbarkeit.", "correct": false }
+        ], "diagnostic": true },
+        { "type": "markdown", "markdown": "Rechne immer in drei Schritten: **(1)** Verfügbarkeit von 100 % abziehen, **(2)** den Ausfallanteil in eine Dezimalzahl umwandeln, **(3)** mit den Minuten der ausdrücklich genannten Periode multiplizieren. Für ein normales 365-Tage-Jahr sind das 525 600 Minuten. Ein Modellmonat mit genau 30 Tagen hat 43 200 Minuten.\n\nBeispiel: 99,95 % verfügbar bedeutet 0,05 % Ausfallanteil, also 0,0005 als Dezimalzahl. Im Jahr sind das 262,8 Minuten; im 30-Tage-Modellmonat 21,6 Minuten. Die Einheiten gehören in jeden Rechenschritt. 99,95 % ist hier ein *zeitbasiertes Ziel* – ob eine konkrete SLA Ausfallzeit anders definiert, musst du im Vertrag nachlesen." },
+        { "type": "math", "ariaLabel": "Ausfallzeit in Minuten gleich Periodenminuten mal Klammer auf eins minus Verfügbarkeit als Dezimalzahl Klammer zu. Für 99 Komma 95 Prozent im Jahr: 525600 Minuten mal 0 Komma 0005 gleich 262 Komma 8 Minuten.", "mathml": "<math display=\"block\"><mrow><msub><mi>t</mi><mtext>Ausfall</mtext></msub><mo>=</mo><msub><mi>t</mi><mtext>Periode</mtext></msub><mo>·</mo><mo>(</mo><mn>1</mn><mo>−</mo><mi>A</mi><mo>)</mo><mo>=</mo><mn>525600</mn><mtext> min</mtext><mo>·</mo><mn>0,0005</mn><mo>=</mo><mn>262,8</mn><mtext> min</mtext></mrow></math>", "legend": ["A = 0,9995 für 99,95 %; Beispielperiode: 365 Tage ohne Schaltjahr."] }
+      ]
+    },
+    {
+      "title": "Jahr und Monat nicht vermischen",
+      "blocks": [
+        { "type": "figure", "diagramId": "verfuegbarkeitsstufen", "alt": "Für 365 Tage ergeben sich bei 99,9 Prozent 525,6 Ausfallminuten, bei 99,95 Prozent 262,8 Minuten und bei 99,99 Prozent 52,56 Minuten. Für genau 30 Tage sind es 43,2, 21,6 und 4,32 Minuten.", "caption": "Eigene Umrechnung mit 365-Tage-Jahr und 30-Tage-Modellmonat; keine allgemeingültigen Kalendermonatswerte." },
+        { "type": "math", "ariaLabel": "Bei 99 Komma 99 Prozent Verfügbarkeit in 30 Tagen: 43200 Minuten mal 0 Komma 0001 gleich 4 Komma 32 Minuten Ausfallzeit.", "mathml": "<math display=\"block\"><mrow><mn>43200</mn><mtext> min</mtext><mo>·</mo><mo>(</mo><mn>1</mn><mo>−</mo><mn>0,9999</mn><mo>)</mo><mo>=</mo><mn>4,32</mn><mtext> min</mtext></mrow></math>", "legend": ["30 Tage × 24 Stunden × 60 Minuten; 99,99 % = 0,9999."] },
+        { "type": "numeric", "id": "verfuegbarkeit-monat", "title": "Monatsbudget berechnen", "prompt": "Ein Dienst soll in einem ausdrücklich 30 Tage langen Monat zeitbasiert 99,95 % verfügbar sein. Wie viele Ausfallminuten sind maximal zulässig?", "label": "Ausfallminuten im 30-Tage-Monat", "expected": 21.6, "tolerance": 0.001, "correctFeedback": "Richtig: 43 200 min × 0,0005 = 21,6 min.", "wrongFeedback": "30 Tage sind 43 200 Minuten. Der Ausfallanteil ist 100 % − 99,95 % = 0,05 % = 0,0005.", "misconceptions": [ { "value": 262.8, "feedback": "262,8 Minuten ist der Wert für ein 365-Tage-Jahr, nicht für 30 Tage." }, { "value": 216, "feedback": "0,05 % ist 0,0005, nicht 0,005. Prüfe die Prozentumwandlung." } ] },
+        { "type": "numeric", "id": "verfuegbarkeit-jahr", "title": "Jahresbudget berechnen", "prompt": "Wie viele Ausfallminuten erlaubt 99,99 % zeitbasierte Verfügbarkeit in einem 365-Tage-Jahr?", "label": "Ausfallminuten im Jahr", "expected": 52.56, "tolerance": 0.001, "correctFeedback": "Richtig: 525 600 min × 0,0001 = 52,56 min.", "wrongFeedback": "Nutze 365 × 24 × 60 = 525 600 Minuten und 0,01 % = 0,0001.", "misconceptions": [ { "value": 4.32, "feedback": "4,32 Minuten gehören zum 30-Tage-Monat, nicht zum Jahr." }, { "value": 525.6, "feedback": "525,6 Minuten gehören zu 99,9 %, nicht zu 99,99 %." } ] },
+        { "type": "quiz", "id": "verfuegbarkeit-periodenfalle", "question": "Kann man 4,32 Minuten für einen 30-Tage-Monat einfach mit zwölf multiplizieren und als exaktes Kalenderjahr mit 99,99 % ausgeben?", "options": [
+          { "text": "Ja, zwölf Modellmonate entsprechen immer einem Kalenderjahr.", "rationale": "Zwölf mal 30 Tage sind nur 360 Tage.", "correct": false },
+          { "text": "Nein. Zwölf mal 30 sind 360 Tage; für 365 Tage muss die Jahresperiode separat berechnet werden.", "rationale": "Richtig. 12 × 4,32 = 51,84 min; das 365-Tage-Jahr ergibt 52,56 min.", "correct": true },
+          { "text": "Nein, weil Verfügbarkeit grundsätzlich nie als Zeitanteil gerechnet werden darf.", "rationale": "Zeitbasierte Verfügbarkeit ist ein gültiges Modell, wenn der Dienst und die Periode klar definiert sind.", "correct": false }
+        ] }
+      ]
+    },
+    {
+      "title": "Was die Zusage tatsächlich meint",
+      "blocks": [
+        { "type": "figure", "diagramId": "messweg", "alt": "Prüfweg für Verfügbarkeit: Messperiode bestimmen, nutzbaren Dienst definieren, Servicezeiten und Wartung regeln, gemessene Ausfälle mit dem Budget vergleichen.", "caption": "Eine Prozentzahl ohne Messdefinition ist keine belastbare Betriebszusage." },
+        { "type": "markdown", "markdown": "99,99 % klingt präzise, lässt aber Fragen offen: Geht es um **24/7** oder nur um Geschäftszeiten? Zählen angekündigte Wartungen? Gilt die Messung je Kalendermonat, je rollierenden 30 Tagen oder je Jahr? Ab wann ist ein Dienst „ausgefallen“ – wenn ein Server nicht pingbar ist oder wenn Nutzer keine gültige Antwort erhalten? Bei teilweise verfügbaren Diensten kann der Anteil erfolgreicher Anfragen aussagekräftiger sein als reine Ausfallminuten.\n\nFür Prüfungsaufgaben gilt: Wenn ausdrücklich ein **365-Tage-Jahr** und eine **zeitbasierte Verfügbarkeit** gefordert sind, rechne mit 525 600 Minuten. Bei einem **30-Tage-Monat** rechne mit 43 200 Minuten. Steht nur „Monat“ da, benenne deine Annahme oder nutze die angegebene Monatslänge. Ein höherer Zielwert allein verrät noch nichts über Architektur, Messmethode oder Vertragspönalen." },
+        { "type": "sequence", "id": "verfuegbarkeit-rechenweg", "title": "Rechenweg ordnen", "prompt": "Ordne die Schritte für die Ausfallzeit einer klar definierten Periode.", "steps": [
+          { "id": "periode", "label": "Messperiode und deren Minuten festlegen" },
+          { "id": "anteil", "label": "100 % minus Verfügbarkeitsziel als Dezimalanteil berechnen" },
+          { "id": "produkt", "label": "Periodenminuten mit Ausfallanteil multiplizieren und Einheit angeben" }
+        ], "expected": ["periode", "anteil", "produkt"], "correctFeedback": "Richtig: Erst der Nenner, dann der Ausfallanteil, zuletzt Minuten mal Anteil.", "wrongFeedback": "Die Zeitbasis muss feststehen, bevor du die Prozentzahl in Ausfallminuten übersetzt." },
+        { "type": "recall", "id": "verfuegbarkeit-begruendung", "title": "Eine SLA-Zahl prüfen", "prompt": "Ein Anbieter wirbt mit 99,95 % Verfügbarkeit, ohne weitere Angaben. Nenne drei Fragen, die du vor einem Vergleich mit einem anderen Angebot stellen würdest.", "label": "Deine Fragen", "minLength": 90, "model": "Ich frage nach der Messperiode (Monat oder Jahr), der Servicezeit (24/7 oder Geschäftszeiten) und danach, wann der Dienst als nicht verfügbar gilt. Zusätzlich kläre ich, ob Wartung ausgenommen ist und ob nur der Anbieter-Service oder die gesamte Nutzerstrecke gemessen wird." }
+      ]
+    },
+    {
+      "title": "Abruf und Lernziel-Check",
+      "blocks": [
+        { "type": "flashcards", "cards": [
+          { "id": "verfuegbarkeit-karte-0", "label": "Abruf 1", "front": "99,9 %: Wie groß ist der Ausfallanteil?", "back": "0,1 % = 0,001 der definierten Periode." },
+          { "id": "verfuegbarkeit-karte-1", "label": "Abruf 2", "front": "99,95 %: Wie viele Minuten pro 30 Tage?", "back": "43 200 × 0,0005 = 21,6 Minuten." },
+          { "id": "verfuegbarkeit-karte-2", "label": "Abruf 3", "front": "99,99 %: Wie viele Minuten pro 365 Tage?", "back": "525 600 × 0,0001 = 52,56 Minuten." }
+        ] },
+        { "type": "quiz", "id": "verfuegbarkeit-transfer-a", "question": "Welches Ausfallbudget gehört zu 99,99 % zeitbasierter Verfügbarkeit in einem 365-Tage-Jahr?", "options": [
+          { "text": "52,56 Minuten", "rationale": "Richtig: 0,01 % von 525 600 Minuten.", "correct": true },
+          { "text": "525,6 Minuten", "rationale": "Das gehört zu 99,9 % im Jahr.", "correct": false },
+          { "text": "4,32 Minuten", "rationale": "Das gehört zu einem 30-Tage-Monat.", "correct": false }
+        ], "requiredObjective": "rechnen" },
+        { "type": "quiz", "id": "verfuegbarkeit-transfer-b", "question": "Zwei Angebote nennen beide 99,95 %, eines pro Kalendermonat und eines pro Jahr. Welche Aussage ist sachgerecht?", "options": [
+          { "text": "Die Prozentzahl reicht; Messperiode, Servicezeit und Ausfalldefinition sind irrelevant.", "rationale": "Ohne Nenner und Messdefinition lassen sich Ausfallbudget und Erfüllung nicht sauber vergleichen.", "correct": false },
+          { "text": "Die Messperiode und Definition des verfügbaren Dienstes prüfen; erst dann Ausfallbudgets vergleichen.", "rationale": "Richtig. Dieselbe Prozentzahl kann in unterschiedlichen Perioden und Messmodellen anders wirken.", "correct": true },
+          { "text": "Das Jahresangebot erlaubt immer exakt zwölfmal das Ausfallbudget eines Monatsangebots.", "rationale": "Monate haben verschieden viele Tage; auch die vertragliche Messmethode kann abweichen.", "correct": false }
+        ], "requiredObjective": "einordnen" }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        { "type": "markdown", "markdown": "[Google SRE: Availability Table](https://sre.google/sre-book/availability-table/) und [Google SRE: Embracing Risk](https://sre.google/sre-book/embracing-risk/), am 26.09.2026 gelesen. Die Rechnungen und Grafiken sind eigene Lehrmodelle. Hier gilt zeitbasierte Verfügbarkeit ohne Wartungsausnahme, ein 365-Tage-Jahr und ein ausdrücklich 30 Tage langer Modellmonat. Konkrete SLAs können anders messen. Menschliche Fachfreigabe offen." }
+      ]
+    }
+  ]
+}

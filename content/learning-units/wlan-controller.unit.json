@@ -1,0 +1,332 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "wlan-controller",
+    "slug": "wlan-controller",
+    "title": "WLAN-Controller und Standalone-APs passend betreiben",
+    "description": "Aufgaben von Access Point und WLAN-Controller trennen sowie für kleine und größere Funknetze eine begründete Betriebsarchitektur wählen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__3",
+    "week": "KW 40",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "sources": [
+      "europa-integratoren-2026",
+      "itlf6-9-2022"
+    ],
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "controller-functions",
+      "label": "Datenpfad, Funkzugang und zentrale Steuerungsaufgaben zwischen Access Point und WLAN-Controller korrekt abgrenzen"
+    },
+    {
+      "id": "controller-selection",
+      "label": "Standalone-, lokal controllerbasierte und cloudverwaltete WLAN-Architekturen nach Betrieb, Ausfallwirkung und Skalierung bewerten"
+    }
+  ],
+  "intro": "Ein Controller ist weder automatisch der gesamte Datenpfad noch automatisch ein Single Point of Failure. Architektur und Betriebsmodus entscheiden, welche Funktionen zentral sind und was bei einer Unterbrechung weiterläuft.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunks europa-integratoren-2026:00497 und :01071",
+        "use": "Aufgaben eines WLAN-Controllers und datenbasierte Optimierung mehrerer Access Points",
+        "reviewStatus": "Direkte Aufgaben- und Lösungstexte geprüft"
+      },
+      {
+        "sourceId": "itlf6-9-2022",
+        "sourceLocator": "Chunk itlf6-9-2022:00240",
+        "use": "Mehrere Access Points als ESS und Zuordnung von AP- und WLC-Funktionen",
+        "reviewStatus": "Privates Produktbild ausgeschlossen; Funktionsfall übernommen"
+      }
+    ],
+    "notes": [
+      "Der gemappte Chunk europa-integratoren-2026:00499 behandelt überwiegend PoE und wurde nicht als Controller-Beleg verwendet.",
+      "Ob Nutzdaten zentral getunnelt oder lokal weitergeleitet werden und welche Funktionen bei Controllerverlust bestehen bleiben, ist architektur- und herstellerabhängig.",
+      "Private Buchabbildungen wurden nicht veröffentlicht oder nachgezeichnet; beide Diagramme sind eigenständige, reduzierte Lernmodelle.",
+      "Hersteller-, Tarif- und versionsabhängige Werte sind als solche markiert und müssen vor einer realen Umsetzung gegen aktuelle Dokumentation geprüft werden."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "wlan-control-models",
+      "type": "comparison",
+      "title": "Drei Betriebsmodelle",
+      "description": "Standalone, lokaler Controller und Cloudverwaltung werden nach Betriebslogik verglichen.",
+      "items": [
+        {
+          "label": "Standalone",
+          "detail": "Wenig zentrale Abhängigkeit, aber Konfiguration und Überwachung je AP werden mit wachsender Zahl aufwendig."
+        },
+        {
+          "label": "Lokaler Controller",
+          "detail": "Konsistente zentrale Policy und Telemetrie; Redundanz und Datenpfad müssen explizit geplant werden."
+        },
+        {
+          "label": "Cloudverwaltet",
+          "detail": "Zentrale Oberfläche als Dienst; Internetabhängigkeit, Datenschutz, Lizenzen und lokales Weiterlaufen prüfen."
+        },
+        {
+          "label": "Verteilter Betrieb",
+          "detail": "Je nach Produkt zentrale Policy mit lokalem Forwarding; tatsächliches Verhalten im Architekturhandbuch prüfen."
+        }
+      ]
+    },
+    {
+      "id": "controller-policy-flow",
+      "type": "flow",
+      "title": "Von der Richtlinie zur Funkzelle",
+      "description": "Eine Richtlinie wird zentral definiert, verteilt, lokal umgesetzt und über Telemetrie überprüft.",
+      "items": [
+        {
+          "label": "Policy",
+          "detail": "SSID, Sicherheit, VLAN, Kanal- und Leistungsgrenzen."
+        },
+        {
+          "label": "Verteilung",
+          "detail": "Controller oder Cloud übermittelt versionierte Konfiguration."
+        },
+        {
+          "label": "AP",
+          "detail": "Radio und lokaler Datenpfad setzen die Vorgaben um."
+        },
+        {
+          "label": "Clients",
+          "detail": "Verbinden, authentisieren und roamen gemäß Fähigkeiten."
+        },
+        {
+          "label": "Telemetrie",
+          "detail": "Ereignisse und Messwerte fließen zur Betriebsentscheidung zurück."
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Einstieg: Wer steuert – und wer funkt?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "wlan-controller-diagnostic",
+          "diagnostic": true,
+          "question": "Welche Aufgabe gehört typischerweise zur zentralen WLAN-Steuerung?",
+          "options": [
+            {
+              "text": "Gemeinsame SSID-, Sicherheits-, Kanal- und Leistungsrichtlinien für mehrere APs verwalten.",
+              "rationale": "Richtig. Zentrale Konsistenz ist ein Hauptnutzen der Steuerung.",
+              "correct": true
+            },
+            {
+              "text": "Jedes einzelne Funkbit ausschließlich im Controller erzeugen.",
+              "rationale": "Die Funkübertragung erfolgt am Radio des Access Points.",
+              "correct": false
+            },
+            {
+              "text": "Den Internetvertrag des Standorts automatisch ersetzen.",
+              "rationale": "Ein Controller ist kein WAN-Anschluss.",
+              "correct": false
+            },
+            {
+              "text": "Alle Clients ohne Authentisierung freischalten.",
+              "rationale": "Zentrale Steuerung kann Authentisierung durchsetzen, nicht abschaffen.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "ENTSCHEIDUNGSGRENZE",
+          "markdown": "Managementpfad, Kontrollpfad und Nutzdatenpfad getrennt zeichnen. Erst dann lässt sich die Ausfallwirkung eines Controllers fachlich bewerten."
+        }
+      ]
+    },
+    {
+      "title": "AP- und Controllerrollen sauber trennen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Der **Access Point** stellt Funkzellen bereit, sendet und empfängt Frames und setzt lokale Funkparameter um. Eine zentrale Steuerung verteilt Konfigurationen, koordiniert Richtlinien, sammelt Telemetrie und kann Roaming- oder Funkoptimierung unterstützen.\n\nBei manchen Architekturen laufen Nutzdaten durch einen zentralen Tunnel, bei anderen werden sie lokal am AP ausgekoppelt. Cloudverwaltung kann die Managementebene auslagern, ändert aber nicht automatisch den physischen Datenpfad. Deshalb muss jedes Design dokumentieren, was bei Ausfall von Controller, Cloudzugang oder WAN geschieht."
+        },
+        {
+          "type": "figure",
+          "diagramId": "wlan-control-models",
+          "alt": "Vier Vergleichskarten stellen Standalone, lokalen Controller, Cloudverwaltung und verteilten Betrieb gegenüber.",
+          "caption": "Eigene Architekturkarte: Zentral heißt nicht automatisch zentraler Nutzdatenpfad."
+        }
+      ]
+    },
+    {
+      "title": "Beispiel: zwei Büros oder 80 Filial-APs",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Für zwei APs in einem kleinen Büro kann Standalone-Betrieb vertretbar sein, wenn Konfiguration und Backup sauber dokumentiert sind. Bei 80 APs an vielen Standorten gewinnen zentrale Templates, Rollen, Monitoring und konsistente Sicherheitsprofile deutlich an Wert. Die Entscheidung bleibt unvollständig, solange Lizenzmodell, Datenschutz, WAN-Ausfall und lokales Weiterlaufen nicht bewertet wurden."
+        },
+        {
+          "type": "figure",
+          "diagramId": "controller-policy-flow",
+          "alt": "Ein Ablauf zeigt Policy, Verteilung, Access Point, Clients und rückfließende Telemetrie.",
+          "caption": "Eigener Regelkreis: Eine Policy ist erst wirksam, wenn AP-Zustand und Clientergebnis geprüft sind."
+        }
+      ]
+    },
+    {
+      "title": "Geführte Architekturentscheidung",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "controller-selection-sequence",
+          "title": "Controllerbedarf bestimmen",
+          "prompt": "Ordne die Entscheidungsschritte.",
+          "tag": "Übung",
+          "steps": [
+            {
+              "id": "scope",
+              "label": "Anzahl, Standorte, SSIDs, Rollen und Änderungsrate erfassen"
+            },
+            {
+              "id": "paths",
+              "label": "Management-, Kontroll- und Nutzdatenpfad des Kandidaten klären"
+            },
+            {
+              "id": "failure",
+              "label": "Controller-, Cloud- und WAN-Ausfall mit gewünschtem Weiterbetrieb bewerten"
+            },
+            {
+              "id": "operations",
+              "label": "Templates, Monitoring, Rechte, Updates und Lizenzkosten vergleichen"
+            },
+            {
+              "id": "pilot",
+              "label": "Konfiguration, Roaming und Ausfallverhalten in einem Pilot testen"
+            }
+          ],
+          "expected": [
+            "scope",
+            "paths",
+            "failure",
+            "operations",
+            "pilot"
+          ],
+          "correctFeedback": "Richtig: Die Reihenfolge bildet den belastbaren technischen Entscheidungsweg ab.",
+          "wrongFeedback": "Prüfe zuerst Anforderungen und Grenzen, wähle dann die Technik und verifiziere zuletzt die Wirkung."
+        }
+      ]
+    },
+    {
+      "title": "Karteikarten und freier Abruf",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "wlan-controller-card-1",
+              "label": "AP",
+              "front": "Welche Kernaufgabe bleibt am Access Point?",
+              "back": "Er stellt das Funkradio bereit, sendet und empfängt Frames und setzt Funkparameter vor Ort um."
+            },
+            {
+              "id": "wlan-controller-card-2",
+              "label": "Controller",
+              "front": "Was ist ein typischer Controllernutzen?",
+              "back": "Konsistente zentrale Richtlinien, Konfigurationsverteilung, Telemetrie und koordinierte Betriebsentscheidungen."
+            },
+            {
+              "id": "wlan-controller-card-3",
+              "label": "Ausfall",
+              "front": "Warum ist Controllerausfall nicht pauschal gleich WLAN-Ausfall?",
+              "back": "Datenpfad und lokale Weiterlauffunktionen unterscheiden sich je Architektur."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "wlan-controller-recall",
+          "title": "Ein Betriebsmodell begründen",
+          "prompt": "Vergleiche für 50 APs Standalone, lokalen Controller und Cloudverwaltung. Nenne Pfade, Betriebsvorteile und Ausfallfragen.",
+          "label": "Deine Erklärung",
+          "placeholder": "Bei 50 APs …",
+          "minLength": 150,
+          "model": "Bei 50 APs sind zentrale Templates, Rollen, Monitoring und Updates wertvoll. Ich trenne Management-, Kontroll- und Nutzdatenpfad. Ein lokaler Controller kann zentrale Funktionen im eigenen Netz bereitstellen; Cloudverwaltung vereinfacht standortübergreifenden Betrieb, verlangt aber Prüfung von WAN, Datenschutz und Lizenzen. Entscheidend ist, welche Dienste bei Verlust der Steuerung lokal weiterlaufen."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "wlan-controller-transfer-a",
+          "requiredObjective": "controller-functions",
+          "question": "Welche Aussage ist korrekt?",
+          "options": [
+            {
+              "text": "Ein Controller kann zentrale Policy und Telemetrie liefern; ob Nutzdaten zentral oder lokal laufen, hängt von der Architektur ab.",
+              "rationale": "Richtig. Steuerung und Datenpfad werden nicht gleichgesetzt.",
+              "correct": true
+            },
+            {
+              "text": "Jeder controllerbasierte AP stoppt bei jedem Internetpaketverlust sofort den gesamten Funkbetrieb.",
+              "rationale": "Weiterlaufverhalten ist architekturabhängig.",
+              "correct": false
+            },
+            {
+              "text": "Ein Standalone-AP benötigt keine Sicherheitsupdates.",
+              "rationale": "Auch dezentrale Geräte brauchen Lifecycle und Patchmanagement.",
+              "correct": false
+            },
+            {
+              "text": "Cloudverwaltung bedeutet, dass die Funkwellen aus dem Rechenzentrum kommen.",
+              "rationale": "Das Radio befindet sich weiterhin am lokalen AP.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "wlan-controller-transfer-b",
+          "requiredObjective": "controller-selection",
+          "question": "Was ist für 80 Filial-APs die belastbarste Auswahlmethode?",
+          "options": [
+            {
+              "text": "Zentrale Betriebsanforderungen, Pfade, Ausfallverhalten, Datenschutz, Lizenzen und Pilotbetrieb gemeinsam bewerten.",
+              "rationale": "Richtig. Das deckt Technik und Betrieb ab.",
+              "correct": true
+            },
+            {
+              "text": "Nur den niedrigsten Stückpreis des AP vergleichen.",
+              "rationale": "Betriebs- und Lizenzkosten sowie Risiken fehlen.",
+              "correct": false
+            },
+            {
+              "text": "Immer Standalone wählen, weil zentrale Systeme grundsätzlich unsicher sind.",
+              "rationale": "Pauschalaussagen ersetzen keine Schutz- und Betriebsanalyse.",
+              "correct": false
+            },
+            {
+              "text": "Immer Cloud wählen, ohne WAN-Ausfall zu prüfen.",
+              "rationale": "Lokales Weiterlaufen und Abhängigkeiten müssen bekannt sein.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "- **EUROPA Prüfungsvorbereitung, Chunks 00497 und 01071:** WLC-Aufgaben und Optimierungsdaten.\n- **IT-Berufe Lernfelder 6–9, Chunk 00240:** ESS mit mehreren APs sowie AP-/WLC-Funktionszuordnung.\n\nDie veröffentlichten Erklärgrafiken und Übungsfälle sind eigenständig erstellt. Quellenlücken und technische Grenzen bleiben im Kurationsartefakt sichtbar."
+        }
+      ]
+    }
+  ]
+}

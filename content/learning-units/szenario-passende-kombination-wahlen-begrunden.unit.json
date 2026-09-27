@@ -1,0 +1,376 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "szenario-passende-kombination-wahlen-begrunden",
+    "slug": "szenario-passende-kombination-wahlen-begrunden",
+    "title": "Backup-Verfahren im Szenario begründet auswählen",
+    "description": "Sicherungsfenster, Restore-Kette und Wiederanlaufziel gemeinsam prüfen statt pauschal ein Verfahren zu bevorzugen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-4",
+    "groupLabel": "Backup, Recovery und Notfallvorsorge",
+    "itemId": "ga1-4__1",
+    "week": "KW 38",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": [
+      "backup-choice-ibm"
+    ],
+    "contentRevision": "2026-09-18.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "auswahl",
+      "label": "Eine Kombination anhand mehrerer Randbedingungen auswählen"
+    },
+    {
+      "id": "grenzen",
+      "label": "Eine geänderte Anforderung neu bewerten"
+    }
+  ],
+  "intro": "Sicherungsfenster, Restore-Kette und Wiederanlaufziel gemeinsam prüfen statt pauschal ein Verfahren zu bevorzugen. Alle Mengen, Messzeiten und Betriebsfälle sind eigene vereinfachte Modelle.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "backup-choice-ibm",
+        "sourceLocator": "Strategy and planning; Common methods: Full-image only, Incremental, Differential",
+        "use": "Anforderungsbezug und klassische Restore-Abhängigkeiten",
+        "reviewStatus": "Ausgewählte Abschnitte am 18.09.2026 gelesen"
+      }
+    ],
+    "notes": [
+      "Eigene Aufgaben und Grafiken; menschliche Fachfreigabe offen.",
+      "Buchbatch ga1-4-001-001: Schutzbedarfsauszug als Themenanschluss, Nextcloud-/VPN-/Outsourcing-Treffer ausgeschlossen. Offene Referenzen bleiben offen; keine Buchgrafik übernommen.",
+      "Nur klassische Voll-/Inkremental-/Differenzialmodelle. Produktspezifische Begriffe und optimierte Restore-Verfahren können abweichen.",
+      "Pauschale IBM-Aussagen zu Tape-Eignung, Restore-Geschwindigkeit und Null-RTO/RPO nicht übernommen. Auswahl beruht auf ausdrücklich vorgegebenen eigenen Messwerten."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "ketten",
+      "title": "Freitag wiederherstellen",
+      "type": "comparison",
+      "items": [
+        {
+          "label": "Inkrementell",
+          "detail": "Sonntag plus Mo bis Fr"
+        },
+        {
+          "label": "Differenziell",
+          "detail": "Sonntag plus Freitag"
+        }
+      ]
+    },
+    {
+      "id": "pruefung",
+      "title": "Erst Anforderungen, dann Auswahl",
+      "type": "flow",
+      "items": [
+        {
+          "label": "Ziele klären",
+          "detail": "RPO, RTO und Fenster"
+        },
+        {
+          "label": "Kandidaten prüfen",
+          "detail": "Sicherung und Restore"
+        },
+        {
+          "label": "Begründen",
+          "detail": "Grenzen und Testnachweis"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "szenario-passende-kombination-wahlen-begrunden-diagnose",
+          "question": "Eine inkrementelle Sicherung ist kleiner als eine differenzielle. Reicht das für die Auswahl?",
+          "options": [
+            {
+              "text": "Ja, kleiner ist immer besser.",
+              "rationale": "Der Wiederanlauf und weitere Anforderungen fehlen.",
+              "correct": false
+            },
+            {
+              "text": "Nein, Sicherungsfenster und Wiederherstellung müssen gemeinsam passen.",
+              "rationale": "Richtig: Ein einzelner Vorteil entscheidet nicht das ganze Szenario.",
+              "correct": true
+            },
+            {
+              "text": "Nein, differenziell ist grundsätzlich immer besser.",
+              "rationale": "Auch dieses Verfahren kann ein zu kleines Fenster überschreiten.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Das klassische Modell kurz auffrischen",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "ketten",
+          "alt": "Inkrementell benötigt für Freitag die Vollsicherung und alle Tagesinkremente; differenziell die Vollsicherung und nur den Freitag-Differenzialstand.",
+          "caption": "Eigene Darstellung des klassischen Modells."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Im hier verwendeten **klassischen Modell** enthält ein Inkrement die Änderungen seit der vorherigen Sicherung. Für den vollständigen Freitag-Stand brauchst du die Sonntags-Vollsicherung und die lückenlose Folge Montag bis Freitag. Ein Differenzialstand enthält dagegen die Änderungen seit der Vollsicherung; für Freitag reichen diese Vollsicherung und der Freitag-Differenzialstand.\n\nProdukte können andere Begriffe oder optimierte Verfahren verwenden. Prüfe daher die tatsächlichen Abhängigkeiten, nicht nur die Beschriftung. Grundlagen kannst du unter [Backup-Verfahren](/lernen/backup-methods/) wiederholen."
+        }
+      ]
+    },
+    {
+      "title": "Eigener Fall: Planungsbüro",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Sonntag: 400 GB Vollsicherung. Montag bis Freitag ändern sich jeden Tag **30 GB andere Datenbereiche**, keine Überschneidung und kein Wachstum des Gesamtbestands. Keine Kompression, Deduplizierung oder Metadatenzuschläge. Gemessener effektiver Sicherungsdurchsatz: 100 GB pro Stunde.\n\nFenster: sonntags sechs Stunden, werktags zwei Stunden. Datenverlust bis zum letzten erfolgreichen Tagesstand ist für diesen Fall akzeptiert. Geforderter vollständiger Wiederanlauf: höchstens **150 Minuten**. Alle Sicherungen im Vergleich sind konsistent und erfolgreich. Ziele werden nicht allein aus der Methode abgeleitet.\n\nDie Vollsicherung braucht vier Stunden und passt sonntags. Eine tägliche Vollsicherung würde das werktägliche Fenster überschreiten."
+        }
+      ]
+    },
+    {
+      "title": "Sichern: die letzte Tagesstufe prüfen",
+      "blocks": [
+        {
+          "type": "math",
+          "ariaLabel": "Freitags-Differenzialstand: fünf mal 30 gleich 150 Gigabyte.",
+          "mathml": "<math display=\"block\"><mrow><mn>5</mn><mo>·</mo><mn>30</mn><mo>=</mo><mn>150</mn><mtext> GB</mtext></mrow></math>",
+          "legend": [
+            "Nur weil täglich andere Datenbereiche geändert werden, addieren sich die Mengen im Modell."
+          ]
+        },
+        {
+          "type": "math",
+          "ariaLabel": "150 Gigabyte geteilt durch 100 Gigabyte pro Stunde mal 60 ergibt 90 Minuten.",
+          "mathml": "<math display=\"block\"><mrow><mfrac><mn>150</mn><mn>100</mn></mfrac><mo>·</mo><mn>60</mn><mo>=</mo><mn>90</mn><mtext> min</mtext></mrow></math>",
+          "legend": [
+            "Differenziell Freitag: 90 Minuten. Inkrementell täglich: 30 / 100 Stunden = 18 Minuten."
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "Beide Ergänzungen passen in die 120 Minuten am Freitag. Prüfe beim wachsenden Differenzialstand nicht nur den Montag. Bei mehrfach geänderten gleichen Bereichen ist die einfache Summe der Tagesmengen nicht allgemein der Differenzialumfang."
+        },
+        {
+          "type": "numeric",
+          "id": "szenario-passende-kombination-wahlen-begrunden-zahl",
+          "title": "Jetzt du: Donnerstag",
+          "prompt": "Unter denselben Modellannahmen wurden von Montag bis Donnerstag viermal 30 GB unterschiedliche Bereiche geändert. Wie viele Minuten dauert der Donnerstag-Differenzialstand bei 100 GB/h?",
+          "label": "Dauer in Minuten",
+          "expected": 72,
+          "tolerance": 0,
+          "correctFeedback": "Vier mal 30 = 120 GB; 120 / 100 Stunden = 1,2 Stunden = 72 Minuten.",
+          "wrongFeedback": "Zuerst den kumulierten Umfang seit Sonntag bestimmen, dann Stunden in Minuten umrechnen.",
+          "misconceptions": [
+            {
+              "value": 18,
+              "feedback": "Das wäre ein einzelnes Tagesinkrement, nicht der kumulierte Donnerstag-Stand."
+            },
+            {
+              "value": 120,
+              "feedback": "120 ist hier die Datenmenge in GB, nicht die Dauer in Minuten."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Wiederanlauf: mit eigenen Messwerten entscheiden",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Eine separate Restore-Probe im Modell liefert: Vollsicherung einspielen 100 Minuten; jedes Tagesinkrement anwenden 12 Minuten; Freitag-Differenzialstand anwenden 25 Minuten. Weitere 20 Minuten decken alle übrigen Schritte vom Ausfall bis zur bestätigten Nutzbarkeit ab. Schritte laufen nacheinander. Das sind vorgegebene Messwerte, keine allgemeinen Geschwindigkeitsregeln."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Inkrementeller Wiederanlauf: 100 plus fünf mal zwölf plus 20 gleich 180 Minuten.",
+          "mathml": "<math display=\"block\"><mrow><mn>100</mn><mo>+</mo><mn>5</mn><mo>·</mo><mn>12</mn><mo>+</mo><mn>20</mn><mo>=</mo><mn>180</mn></mrow></math>",
+          "legend": [
+            "Differenziell: 100 + 25 + 20 = 145 Minuten. Ziel: höchstens 150 Minuten."
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "```text\nFreitag:              Ink   Diff\nSicherung (Minuten):   18    90\nWiederanlauf (Min.):   180   145\nRTO 150 eingehalten:   nein  ja\n```\n\n**Begründete Auswahl im Hauptfall:** Sonntags Vollsicherung, werktags differenzielle Ergänzung. Beide Fenster passen und die Restore-Probe erfüllt das RTO. Das inkrementelle Verfahren spart hier Sicherungszeit, verfehlt aber das Wiederanlaufziel."
+        },
+        {
+          "type": "quiz",
+          "id": "szenario-passende-kombination-wahlen-begrunden-uebung",
+          "question": "Warum genügt im Hauptfall die inkrementelle Variante nicht?",
+          "options": [
+            {
+              "text": "Weil 18 Minuten nicht in zwei Stunden passen.",
+              "rationale": "18 Minuten passen deutlich in das Fenster.",
+              "correct": false
+            },
+            {
+              "text": "Weil der vollständige Wiederanlauf 180 statt höchstens 150 Minuten benötigt.",
+              "rationale": "Richtig: Das ist der ausschlaggebende Nachteil im vorgegebenen Fall.",
+              "correct": true
+            },
+            {
+              "text": "Weil Inkremente niemals wiederherstellbar sind.",
+              "rationale": "Mit vollständiger gültiger Kette sind sie wiederherstellbar.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Eine Änderung kann die Entscheidung umkehren",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "pruefung",
+          "alt": "Ziele klären, Sicherung und Restore prüfen, dann eine begründete Auswahl mit Grenzen treffen.",
+          "caption": "Eigene Darstellung des klassischen Modells."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Wird das werktägliche Fenster auf 60 Minuten verkürzt, passt die 90-Minuten-Differenzialsicherung am Freitag nicht mehr. Bleibt das RTO bei 150 Minuten, erfüllt **keiner der beiden geprüften Kandidaten** beide Bedingungen. Nicht schönrechnen: Zusätzliche Vollpunkte, synthetische Verfahren oder eine andere technische Auslegung wären neu zu planen und zu testen.\n\nWird dagegen zusätzlich das RTO auf 200 Minuten geändert, passt die inkrementelle Variante mit 18 Minuten Sicherung und 180 Minuten Wiederanlauf. Das ist eine neue Entscheidung für neue Anforderungen, kein Widerspruch."
+        }
+      ]
+    },
+    {
+      "title": "Was die Auswahl noch nicht beweist",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Der Mengenvergleich beantwortet nicht Standortverlust, Ransomware-Schutz, Aufbewahrung oder Datenbankkonsistenz. Ein vollständiges Konzept muss auch diese Anforderungen erfüllen. Eine fehlende erforderliche Sicherung darf nicht einfach aus einer klassischen Restore-Kette gestrichen werden.\n\nDokumentiere deine Begründung in vier Teilen: Anforderung, geeignete Kombination, Nachweis durch Zahlen oder Test, verbleibende Grenze. Verweise auf den nachweislich erreichbaren Datenstand statt pauschal zu versprechen, dass ein Zeitplan jedes RPO garantiert."
+        }
+      ]
+    },
+    {
+      "title": "Selbst ordnen und erklären",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "szenario-passende-kombination-wahlen-begrunden-reihenfolge",
+          "title": "Ablauf ordnen",
+          "prompt": "Ordne eine nachvollziehbare Auswahl.",
+          "steps": [
+            {
+              "id": "abschluss",
+              "label": "Kandidaten auswählen, Grenzen benennen und Wiederherstellung nachweisen"
+            },
+            {
+              "id": "start",
+              "label": "RPO, RTO, Datenmengen und Sicherungsfenster klären"
+            },
+            {
+              "id": "pruefen",
+              "label": "Sicherungsdauer und vollständigen Wiederanlauf vergleichen"
+            }
+          ],
+          "expected": [
+            "start",
+            "pruefen",
+            "abschluss"
+          ],
+          "correctFeedback": "Richtig: Voraussetzungen, Prüfung und Abschluss stehen in der vorgesehenen Reihenfolge.",
+          "wrongFeedback": "Prüfe die Voraussetzungen: Der letzte Schritt darf die vorherige Prüfung nicht überspringen."
+        },
+        {
+          "type": "recall",
+          "id": "szenario-passende-kombination-wahlen-begrunden-begruendung",
+          "title": "Aus dem Gedächtnis erklären",
+          "prompt": "Begründe für den Hauptfall eine differenzielle Ergänzung. Nenne zwei Zahlen und eine Grenze der Entscheidung.",
+          "label": "Deine Erklärung",
+          "minLength": 70,
+          "model": "Die differenzielle Sicherung braucht am Freitag 90 Minuten und passt in das 120-Minuten-Fenster. Der gemessene Wiederanlauf benötigt einschließlich Prüfung 145 Minuten und passt zum RTO von 150 Minuten. Inkrementell wäre die Sicherung kleiner, der Wiederanlauf mit 180 Minuten aber zu langsam. Die Entscheidung gilt nur für die angenommenen Mengen und Messwerte; Wachstum oder ein kürzeres Fenster erfordern eine neue Prüfung."
+        },
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "szenario-passende-kombination-wahlen-begrunden-karte-0",
+              "label": "Abruf 1",
+              "front": "Warum nicht nur Backup-Dauer vergleichen?",
+              "back": "Eine kurze Sicherung kann eine längere Restore-Kette und damit ein verfehltes Wiederanlaufziel verursachen."
+            },
+            {
+              "id": "szenario-passende-kombination-wahlen-begrunden-karte-1",
+              "label": "Abruf 2",
+              "front": "Differenzieller Freitag-Restore benötigt?",
+              "back": "Die passende Vollsicherung und den Freitag-Differenzialstand; nicht alle früheren Differenzialstände."
+            },
+            {
+              "id": "szenario-passende-kombination-wahlen-begrunden-karte-2",
+              "label": "Abruf 3",
+              "front": "Beweist der Verfahrensname ein RPO?",
+              "back": "Nein. Häufigkeit, Erfolg, Konsistenz und tatsächlich erreichbarer Datenstand müssen passen."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "szenario-passende-kombination-wahlen-begrunden-transfer-a",
+          "question": "Hauptfall: werktags 120 Minuten Fenster, RTO 150 Minuten. Welche Begründung ist vollständig?",
+          "options": [
+            {
+              "text": "Inkrementell, weil 18 kleiner als 90 ist.",
+              "rationale": "Dabei wird der zu lange Wiederanlauf ignoriert.",
+              "correct": false
+            },
+            {
+              "text": "Differenziell, weil immer nur ein Backup nötig ist.",
+              "rationale": "Die passende Vollsicherung wird ebenfalls benötigt.",
+              "correct": false
+            },
+            {
+              "text": "Voll plus differenziell: 90 Minuten Sicherung und 145 Minuten Wiederanlauf passen.",
+              "rationale": "Richtig: Beide relevanten Grenzen sind mit Modellwerten geprüft.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "auswahl"
+        },
+        {
+          "type": "quiz",
+          "id": "szenario-passende-kombination-wahlen-begrunden-transfer-b",
+          "question": "Neuer Fall, gleiche Messwerte: werktags 60 Minuten Fenster, RTO 200 Minuten. Was passt unter den sonst unveränderten Annahmen?",
+          "options": [
+            {
+              "text": "Voll plus inkrementell: 18 Minuten Sicherung, 180 Minuten Wiederanlauf.",
+              "rationale": "Richtig: Beide neuen Grenzen werden eingehalten.",
+              "correct": true
+            },
+            {
+              "text": "Voll plus differenziell: 90 Minuten Sicherung, 145 Minuten Wiederanlauf.",
+              "rationale": "Das Sicherungsfenster wird überschritten.",
+              "correct": false
+            },
+            {
+              "text": "Tägliches Vollbackup: vier Stunden Sicherung.",
+              "rationale": "Vier Stunden überschreiten eine Stunde.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "grenzen"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "[IBM: Backup and restore](https://www.ibm.com/think/topics/backup-and-restore), ausgewählte Abschnitte zu Planung und klassischen Verfahren am 18.09.2026 gelesen. Pauschale Produkt-/Medienaussagen nicht übernommen. Zahlen, Messzeiten, Bürofall und Grafiken sind eigene Modelle. Unpassende Buchtreffer ausgeschlossen. Menschliche Fachfreigabe offen."
+        }
+      ]
+    }
+  ]
+}

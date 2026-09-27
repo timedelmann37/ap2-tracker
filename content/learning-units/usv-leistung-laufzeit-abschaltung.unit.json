@@ -1,0 +1,256 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "usv-leistung-laufzeit-abschaltung",
+    "slug": "usv-leistung-laufzeit-abschaltung",
+    "title": "USV auslegen: VA, Watt und sichere Abschaltung",
+    "description": "Leistungsfaktor, USV-Grenzen, Batterielaufzeit und Topologie in einer Beschaffungsentscheidung zusammenführen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-1",
+    "groupLabel": "Server-, Client- und Hardwarekonzeption",
+    "itemId": "ga1-1__7",
+    "week": "KW 35",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": ["ups-eaton-sizing", "ups-schneider-transfer", "ups-eaton-shutdown", "europa-integratoren-2026"],
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "dimensionierung",
+      "label": "Wirkleistung, Scheinleistung und Laufzeit als drei getrennte Auswahlprüfungen anwenden"
+    },
+    {
+      "id": "betriebsfall",
+      "label": "USV-Bauart und geordneten Shutdown passend zu einem Ausfallfall begründen"
+    }
+  ],
+  "intro": "Eine USV mit 1.200 VA ist nicht automatisch für 1.200 W geeignet und ihre Batterielaufzeit steht nicht in der VA-Zahl. Eine belastbare Auswahl prüft Last, Laufzeit und Reaktion auf einen längeren Ausfall getrennt.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Markdown-Chunks 00218 und 00725: USV-Bauarten und Abschaltsignal",
+        "use": "Bauarten und Shutdown als Prüfgegenstände auswählen, nicht Zahlen oder Formulierungen übernehmen",
+        "reviewStatus": "Privates Batch ga1-1-007-007 am 26.09.2026 geprüft; konkrete Umschaltzeit-Angaben nicht übernommen"
+      },
+      {
+        "sourceId": "ups-eaton-sizing",
+        "sourceLocator": "Capacity and runtime",
+        "use": "VA- und W-Grenze sowie Laufzeit unter der tatsächlichen Last getrennt beurteilen",
+        "reviewStatus": "Am 26.09.2026 gelesen"
+      },
+      {
+        "sourceId": "ups-schneider-transfer",
+        "sourceLocator": "Transfer time: line-interactive and double-conversion online",
+        "use": "Unterschied der Versorgungstopologien ohne pauschale Millisekundenwerte erklären",
+        "reviewStatus": "Am 26.09.2026 gelesen; Angaben nicht auf alle Hersteller übertragen"
+      },
+      {
+        "sourceId": "ups-eaton-shutdown",
+        "sourceLocator": "Step 4: Graceful shutdown of equipment on power outages",
+        "use": "Längeren Ausfall und geordnetes Abschalten als Prozess darstellen",
+        "reviewStatus": "Am 26.09.2026 gelesen"
+      }
+    ],
+    "notes": [
+      "Die beiden im privaten Quellenpaket referenzierten Buchgrafiken sind nicht für diese Einheit freigegeben. Der automatisch vorgeschlagene PDF-Ausschnitt zeigt eine technisch-organisatorische Maßnahmenliste, keine USV-Schaltung; er wurde ausgeschlossen.",
+      "GA2-Einheit /lernen/usv-technikraum/ behandelt den gesamten Netzwerk-Dienstpfad. Diese GA1-Einheit vertieft stattdessen Leistungsfaktor, zwei Gerätegrenzen, Laufzeitnachweis und Beschaffungsentscheidung.",
+      "Die Leistungsfaktoren, Lasten, Gerätegrenzen und Zeitwerte sind eigene didaktische Annahmen. Ein reales Gerät verlangt Datenblatt, Lastprofil, Hersteller-Laufzeitkurve und Tests unter kontrollierten Bedingungen.",
+      "Topologie-Überblick ohne die IEC-62040-3-Klassifizierung; diese ist das folgende Kernthema ga1-1__8. Arbeiten an elektrischen Anlagen sind Fachpersonal vorbehalten. Menschliche Fachfreigabe offen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "drei-nachweise",
+      "type": "layers",
+      "title": "Drei getrennte Hürden für dieselbe USV",
+      "description": "Die kleinste nicht erfüllte Anforderung verwirft die Auswahl.",
+      "items": [
+        { "label": "Watt", "detail": "Wirkleistung der geschützten Last darf die Ausgangsgrenze nicht übersteigen" },
+        { "label": "VA", "detail": "Scheinleistung der Last muss innerhalb der VA-Grenze bleiben" },
+        { "label": "Minuten", "detail": "Laufzeit bei dieser Last muss Abschaltung oder Überbrückung erlauben" }
+      ]
+    },
+    {
+      "id": "ausfallkette",
+      "type": "flow",
+      "title": "Was beim langen Netzausfall geschehen muss",
+      "description": "Batteriebetrieb allein sichert keine geordnet beendeten Dienste.",
+      "items": [
+        { "label": "Netz gestört", "detail": "USV erkennt Ereignis; Topologie und Betriebsmodus bestimmen das Verhalten" },
+        { "label": "Signal", "detail": "Management meldet Batteriebetrieb und verbleibende Laufzeit" },
+        { "label": "Dienste", "detail": "Anwendungen und Systeme fahren in festgelegter Reihenfolge herunter" },
+        { "label": "Reserve", "detail": "Zeit für Meldung, Shutdown und Sicherheitsabstand bleibt" }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Die erste Falle erkennen",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "usv-leistung-laufzeit-abschaltung-diagnose",
+          "question": "Eine USV ist mit 1.200 VA und 700 W angegeben. Eine Last benötigt 720 W. Reicht die USV, wenn ihr VA-Wert groß genug ist?",
+          "options": [
+            { "text": "Ja, 1.200 ist größer als 720.", "rationale": "VA und W dürfen nicht direkt verglichen werden; die 700-W-Grenze ist überschritten.", "correct": false },
+            { "text": "Nein, die 700-W-Ausgangsgrenze wird bereits überschritten.", "rationale": "Richtig. Beide Grenzwerte müssen unabhängig eingehalten werden.", "correct": true },
+            { "text": "Ja, sobald die Batterie 15 Minuten hält.", "rationale": "Laufzeit behebt keine zu geringe Ausgangsleistung.", "correct": false }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "VA, Watt und Leistungsfaktor",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "drei-nachweise",
+          "alt": "Die USV-Auswahl verlangt eine passende Wattgrenze, eine passende VA-Grenze und eine ausreichende Laufzeit bei der geplanten Last.",
+          "caption": "Diese drei Nachweise sind nicht austauschbar."
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Watt (W)** ist die Wirkleistung. **Voltampere (VA)** ist die Scheinleistung. Der **Leistungsfaktor** ist im vereinfachten einphasigen Modell das Verhältnis W/VA; er ist dimensionslos und höchstens 1. Für eine im Fall vorgegebene Last von 720 W bei gemessenem Gesamtleistungsfaktor 0,8 ergeben sich 900 VA. Die USV muss mindestens beide Lastwerte in ihren jeweiligen Ausgangsgrenzen tragen. Eine USV mit 1.200 VA, aber nur 700 W scheidet aus. Eine mit 1.200 VA und 900 W besteht nur diese **Leistungsprüfung**; Überlastspitzen, Reserve, Anschlüsse und Laufzeit sind noch offen.\n\nDer Leistungsfaktor der Last ist nicht automatisch der aufgedruckte W/VA-Quotient der USV. Für mehrere unterschiedliche Geräte sollte die kombinierte Last gemessen oder nach geeigneten Angaben bestimmt werden; nicht jedem Gerät willkürlich denselben Faktor zuschreiben. Netzteil-Nennwerte sind keine Messung der realen Dauerlast."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Scheinleistung ist Wirkleistung geteilt durch Leistungsfaktor. 720 Watt geteilt durch 0,8 ergeben 900 Voltampere.",
+          "mathml": "<math display=\"block\"><mrow><mi>S</mi><mo>=</mo><mfrac><mi>P</mi><mi>PF</mi></mfrac><mo>=</mo><mfrac><mrow><mn>720</mn><mtext> W</mtext></mrow><mn>0,8</mn></mfrac><mo>=</mo><mn>900</mn><mtext> VA</mtext></mrow></math>",
+          "legend": ["P: Wirkleistung in W · S: Scheinleistung in VA · PF: Leistungsfaktor der betrachteten Last."]
+        },
+        {
+          "type": "numeric",
+          "id": "usv-leistung-laufzeit-abschaltung-zahl",
+          "title": "VA selbst bestimmen",
+          "prompt": "Die gesamte zu schützende Last ist mit 540 W und einem gemessenen Gesamtleistungsfaktor von 0,9 angegeben. Wie viel VA beansprucht sie im Modell?",
+          "label": "Scheinleistung in VA",
+          "expected": 600,
+          "tolerance": 0.1,
+          "correctFeedback": "540 W ÷ 0,9 = 600 VA. Prüfe zusätzlich die W-Grenze und die Laufzeit der USV.",
+          "wrongFeedback": "Teile die Wirkleistung durch den gegebenen Gesamtleistungsfaktor.",
+          "misconceptions": [
+            { "value": 486, "feedback": "486 entsteht durch Multiplikation; für VA teilst du W durch den Leistungsfaktor." },
+            { "value": 540, "feedback": "540 ist der Wattwert, nicht die gesuchte Scheinleistung." }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Minuten sind eine eigene Frage",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Die **Überbrückungszeit** hängt von der konkreten Batterie, dem tatsächlichen Lastniveau, Temperatur, Alter und Betriebszustand ab. VA geteilt durch Watt ergibt keine Minuten. Verwende die Laufzeitkurve des Herstellers für die gewählte Batteriekonfiguration und die geplante Last; prüfe anschließend die gealterte Batterie und den Betrieb praktisch.\n\nEigenes Beispiel: Nach Netzausfall braucht das Erkennen und Melden höchstens 2 Minuten, das Herunterfahren von Anwendungen und Servern höchstens 8 Minuten und die Planung verlangt 5 Minuten Reserve. Der Nachweis muss also mindestens **15 Minuten** bei der angesetzten Last tragen. Ein Datenblatt mit 12 Minuten bei genau dieser Last reicht nicht. Das Verfahren muss auch definieren, was bei Netzwiederkehr während des Shutdowns passiert und wie die Dienste danach geordnet starten."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Zwei Minuten Erkennen und Melden plus acht Minuten Herunterfahren plus fünf Minuten Reserve ergeben mindestens fünfzehn Minuten erforderliche Überbrückungszeit.",
+          "mathml": "<math display=\"block\"><mrow><mn>2</mn><mtext> min</mtext><mo>+</mo><mn>8</mn><mtext> min</mtext><mo>+</mo><mn>5</mn><mtext> min</mtext><mo>=</mo><mn>15</mn><mtext> min</mtext></mrow></math>",
+          "legend": ["Die Zeitwerte sind Annahmen für diesen Übungsfall, keine allgemeingültige USV-Vorgabe."]
+        },
+        {
+          "type": "quiz",
+          "id": "usv-leistung-laufzeit-abschaltung-uebung",
+          "question": "Eine USV hält laut Herstellerkurve bei der geplanten Last 12 Minuten. Dein Shutdown-Plan braucht 15 Minuten inklusive Reserve. Was folgt?",
+          "options": [
+            { "text": "Die Leistungswerte können passen, aber die Laufzeit-Anforderung ist nicht erfüllt.", "rationale": "Richtig: Eine bestandene W-/VA-Prüfung sagt noch nichts über die nötige Zeit.", "correct": true },
+            { "text": "Die 1.200-VA-Angabe garantiert automatisch 20 Minuten.", "rationale": "VA beschreibt die Leistungsgrenze, nicht Batteriekapazität oder Minuten.", "correct": false },
+            { "text": "Ohne Shutdown reicht jede positive Laufzeit.", "rationale": "Dann endet der Betrieb abrupt, wenn Batterie oder Versorgung ausfallen.", "correct": false }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Bauart und Abschaltfolge wählen",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "ausfallkette",
+          "alt": "Ein Netzausfall führt zum USV-Batteriebetrieb, danach zur Meldung, zum geordneten Beenden der Dienste und zu einer eingeplanten Zeitreserve.",
+          "caption": "Ein Signal muss die richtigen Hosts und Anwendungen tatsächlich erreichen."
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Offline/Standby** versorgt die Last im Normalbetrieb im Wesentlichen aus dem Netz und schaltet bei Netzausfall auf Batterieversorgung um. **Line-Interactive** kann bestimmte Spannungsschwankungen im Normalbetrieb ausgleichen, benötigt beim Übergang zur Batterie aber ebenfalls eine gerätespezifische Umschaltung. **Online-Doppelwandler** versorgt die Last im vorgesehenen Doppelwandlungsbetrieb ständig über den Wechselrichter; beim Netzausfall entsteht dann keine Umschaltlücke am Ausgang. Bypass- und ECO-Betrieb müssen gesondert betrachtet werden. Nicht jedes Szenario braucht dieselbe Bauart: Prüfe Empfindlichkeit der Last, Stromqualität, Wirkungsgrad, Kosten und die echte Gerätekompatibilität. Die normierten Kürzel und Schaltbilder folgen im nächsten Kernthema.\n\nEine **Notabschaltung** ist hier ein geordneter Betriebsprozess bei längerem Ausfall, kein Ersatz für vorgeschriebene elektrische Not-Aus-Funktionen. Monitoring meldet den Batteriebetrieb; zuerst werden abhängige Anwendungen und Daten sauber beendet, dann Hosts und weitere Komponenten nach geplantem Ablauf. Auch Netzwerk und Managementweg müssen für die Meldung lange genug versorgt sein. Teste den Ablauf autorisiert und ohne riskantes Trennen produktiver Strompfade."
+        },
+        {
+          "type": "sequence",
+          "id": "usv-leistung-laufzeit-abschaltung-reihenfolge",
+          "title": "Shutdown-Reaktion ordnen",
+          "prompt": "Ordne die modellhafte Reaktion auf einen länger dauernden Netzausfall.",
+          "steps": [
+            { "id": "batterie", "label": "Die USV meldet Batteriebetrieb und Restlaufzeit" },
+            { "id": "host", "label": "Der Host wird nach den Anwendungen geordnet heruntergefahren" },
+            { "id": "apps", "label": "Anwendungen und Daten werden geordnet beendet" }
+          ],
+          "expected": ["batterie", "apps", "host"],
+          "correctFeedback": "Richtig: Meldung, Anwendungen, Host – mit Zeitreserve.",
+          "wrongFeedback": "Beende Anwendungen vor dem Host; die Meldung löst den Ablauf aus."
+        }
+      ]
+    },
+    {
+      "title": "Die Entscheidung selbst begründen",
+      "blocks": [
+        {
+          "type": "recall",
+          "id": "usv-leistung-laufzeit-abschaltung-begruendung",
+          "title": "Beschaffungsnotiz",
+          "prompt": "Eine USV erfüllt VA, aber nicht Watt; eine andere erfüllt beide, hält jedoch zu kurz. Begründe, warum keine gewählt wird und was du nachforderst.",
+          "label": "Deine Entscheidung",
+          "minLength": 80,
+          "model": "Die erste USV scheidet aus, weil ihre Wirkleistungsgrenze überschritten ist. Die zweite scheidet aus, weil sie bei der geplanten Last die Zeit für Meldung, geordneten Shutdown und Reserve nicht erreicht. Ich fordere die W- und VA-Grenzen, die Laufzeitkurve bei der tatsächlichen Last und einen getesteten Abschaltablauf samt passender Batteriekonfiguration nach."
+        },
+        {
+          "type": "flashcards",
+          "cards": [
+            { "id": "usv-leistung-laufzeit-abschaltung-karte-0", "label": "Abruf 1", "front": "540 W bei PF 0,9: mehr oder weniger als 540 VA?", "back": "Mehr: 540 ÷ 0,9 = 600 VA. Beide Grenzen der USV prüfen." },
+            { "id": "usv-leistung-laufzeit-abschaltung-karte-1", "label": "Abruf 2", "front": "Sagt 1.200 VA eine Batterielaufzeit aus?", "back": "Nein. Laufzeit hängt von Last und Batteriekonfiguration ab; Herstellerkurve und Test prüfen." },
+            { "id": "usv-leistung-laufzeit-abschaltung-karte-2", "label": "Abruf 3", "front": "Welche Bauart versorgt im Doppelwandlungsbetrieb ständig über den Wechselrichter?", "back": "Online-Doppelwandler. Bypass und ECO sind gesonderte Betriebsarten." }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "usv-leistung-laufzeit-abschaltung-transfer-a",
+          "question": "Neuer Fall: 800 W bei gemessenem Gesamt-PF 0,8, USV A 1.100 VA/900 W, USV B 1.200 VA/750 W. Welche Aussage stimmt?",
+          "options": [
+            { "text": "A erfüllt die beiden Leistungsgrenzen; B überschreitet die W-Grenze. Laufzeit ist noch offen.", "rationale": "Richtig: Die Last beträgt 1.000 VA und 800 W.", "correct": true },
+            { "text": "B ist sicher geeignet, weil 1.200 VA größer als 800 W ist.", "rationale": "B liefert höchstens 750 W und ist damit ungeeignet.", "correct": false },
+            { "text": "Beide sind ungeeignet, weil 800 W immer 1.600 VA bedeuten.", "rationale": "Bei PF 0,8 sind es 800 ÷ 0,8 = 1.000 VA.", "correct": false }
+          ],
+          "requiredObjective": "dimensionierung"
+        },
+        {
+          "type": "quiz",
+          "id": "usv-leistung-laufzeit-abschaltung-transfer-b",
+          "question": "Neue Anforderung: Ein empfindliches System darf beim Netzausfall im Normalmodus keine Umschaltlücke erleben; bei langem Ausfall muss es sauber herunterfahren. Was prüfst du?",
+          "options": [
+            { "text": "Nur die VA-Zahl; sie garantiert lückenlosen Betrieb und Shutdown.", "rationale": "Kapazität, Topologie, Laufzeit und Shutdown sind getrennte Prüfungen.", "correct": false },
+            { "text": "Online-Doppelwandlungsbetrieb, passende Last-/Laufzeitwerte und einen getesteten Shutdown samt Signalweg.", "rationale": "Richtig: Betriebsmodus und Prozess müssen zur Anforderung passen.", "correct": true },
+            { "text": "Eine beliebige Offline-USV; Umschaltverhalten ist grundsätzlich identisch.", "rationale": "Offline-Topologie besitzt eine Umschaltung, die der Anforderung widersprechen kann.", "correct": false }
+          ],
+          "requiredObjective": "betriebsfall"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "[Eaton: UPS sizing guide](https://www.eaton.com/us/en-us/products/backup-power-ups-surge-it-power-distribution/backup-power-ups/ups-sizing-guide.html), [Schneider Electric: Transfer time](https://www.se.com/us/en/faqs/FAQ000268416/) und [Eaton: Power Management Guide](https://www.eaton.com/content/dam/eaton/markets/data-center/documents/power_managment_fundamentals_eGuide_020616.pdf), am 26.09.2026 gelesen. Private Buchauszüge dienten nur der Themenprüfung. Fälle, Zahlen, Fragen und Diagramme sind eigenständig. Auswahl und Test einer realen USV benötigen Fachplanung und Herstellerdaten; menschliche Fachfreigabe offen."
+        }
+      ]
+    }
+  ]
+}

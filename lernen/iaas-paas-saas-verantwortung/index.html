@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="IaaS, PaaS und SaaS anhand von Hardware, Gast-OS, Runtime, Anwendung und Daten zuordnen – mit Shared-Responsibility-Fallstricken.">
+<title>Cloud-Modelle: Wer betreibt welche Schicht? – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="iaas-paas-saas-verantwortung" data-progress-id="ga1-5__0" data-content-revision="2026-09-26.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-5">Cloud und Wirtschaftlichkeit</a><span class="sep">›</span>
+    <span class="here">Cloud-Modelle: Wer betreibt welche Schicht?</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Cloud-Modelle: Wer betreibt welche Schicht?</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 28 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Ein Team betreibt dieselbe Bestellanwendung einmal auf einer gemieteten VM, einmal auf einer verwalteten App-Plattform und nutzt alternativ eine fertige SaaS-Lösung. Wer patcht das Betriebssystem? Wer behebt einen Fehler in eigenem Anwendungscode? Und wer entzieht ausgeschiedenen Mitarbeitenden den Zugang?</p>
+<section class="learning-goals" aria-labelledby="iaas-paas-saas-verantwortung-goals">
+  <h2 id="iaas-paas-saas-verantwortung-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Hardware, Gast-OS, Runtime, Anwendung und Daten den drei Servicemodellen zuordnen</li>
+    <li>Aus einer konkreten Aufgabe die verbleibende Kundenverantwortung ableiten</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>1 · Drei Angebote für denselben Zweck</h2>
+<section class="quiz" data-quiz="cloud-diagnose" data-correct="0">
+  <h3>Der Provider stellt eine VM bereit. Wer installiert Sicherheitsupdates im Gast-Betriebssystem, sofern kein zusätzlicher Managed-Service vereinbart wurde?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Der Anbieter betreibt den physischen Host und Hypervisor, der Kunde das Gast-OS."><span class="m">A</span> Das Kundenteam: Die VM ist ein typischer IaaS-Fall.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Hardware- und Gast-OS-Verantwortung liegen bei IaaS auf verschiedenen Seiten."><span class="m">B</span> Der Cloudanbieter, weil er auch die Hardware besitzt.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Auch eine Cloud-VM braucht Patch- und Konfigurationsverantwortung."><span class="m">C</span> Niemand, weil Cloud-VMs automatisch sicher bleiben.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><p>Die drei <strong>Service-Modelle</strong> beschreiben, <em>welche Ebene als Dienst geliefert wird</em>; sie sagen noch nicht, ob die Infrastruktur Public, Private oder Hybrid Cloud ist. <strong>IaaS</strong> liefert grundlegende Rechen-, Netz- und Speicherressourcen. Auf einer gemieteten VM kontrolliert der Kunde das Gast-OS und seine Software. <strong>PaaS</strong> stellt eine verwaltete Plattform für eigene Anwendungen bereit: Der Kunde liefert Code und Daten, ohne den darunterliegenden Server und typischerweise die Runtime selbst zu pflegen. <strong>SaaS</strong> liefert eine fertige Anwendung, die der Kunde benutzt und konfiguriert.</p>
+<p>Die Grenze verläuft nicht einfach zwischen „sicher“ und „unsicher“. Der Anbieter übernimmt bestimmte Betriebs- und Sicherheitsaufgaben <em>der Cloud</em>; der Kunde behält Aufgaben <em>in seiner Nutzung</em>, etwa Datenklassifizierung, Konten, Zugriffe und Einstellungen. Die genaue Aufteilung ist produktabhängig. Ein zusätzlicher Managed-Service kann auch bei einer VM Aufgaben übernehmen – das muss konkret vereinbart sein.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Je weiter rechts, desto mehr Betriebsaufgaben wandern zum Anbieter">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="434" viewBox="0 0 960 434" role="img" aria-labelledby="diagram-abstraktion-title diagram-abstraktion-desc">
+  <title id="diagram-abstraktion-title">Je weiter rechts, desto mehr Betriebsaufgaben wandern zum Anbieter</title>
+  <desc id="diagram-abstraktion-desc">Lernleiter von IaaS-VM über PaaS-App-Plattform bis zur fertigen SaaS-Anwendung; pro Stufe übernimmt der Anbieter mehr technische Betriebsaufgaben.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Je weiter rechts, desto mehr Betriebsaufgaben wandern zum</tspan><tspan x="42" dy="25">Anbieter</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">IaaS · gemietete VM</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Anbieter stellt Infrastruktur. Team betreibt Gast-OS,</tspan><tspan x="178" dy="25">Laufzeit, eigene App, Daten und Zugriffe.</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">PaaS · verwaltete App-Plattform</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Anbieter betreibt Infrastruktur, OS und Runtime. Team liefert</tspan><tspan x="178" dy="25">und schützt eigenen Anwendungscode, Daten und Konfiguration.</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">SaaS · fertige Bestellsoftware</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Anbieter betreibt auch die Anwendung. Team organisiert Daten,</tspan><tspan x="178" dy="25">Benutzer, Rollen, Einstellungen und fachliche Prozesse.</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Lernleiter. Das Servicemodell ist unabhängig vom Bereitstellungsmodell Public oder Private Cloud.</figcaption>
+</figure><section class="quiz" data-quiz="cloud-modell" data-correct="0">
+  <h3>Das Team lädt seinen eigenen Bestellcode hoch. Der Dienst betreibt OS und Runtime. Welches Referenzmodell passt am besten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Plattformbetrieb und eigener Code sind die typische PaaS-Grenze."><span class="m">A</span> PaaS: eigener Anwendungscode auf verwalteter Plattform.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Eigener Code kann auf PaaS laufen, ohne dass das Team das OS patcht."><span class="m">B</span> IaaS, weil eigener Code immer ein selbstverwaltetes Gast-OS erfordert.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Webzugriff allein bestimmt das Servicemodell nicht."><span class="m">C</span> SaaS, weil jede über das Web erreichbare App SaaS ist.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2"><span class="num">2</span>2 · Die Matrix wirklich lesen</h2>
+<p>Lies jede Zeile von <strong>IaaS / PaaS / SaaS</strong> nach rechts. <strong>Hardware:</strong> A / A / A. <strong>Gast-OS:</strong> K / A / A. <strong>Runtime und Middleware:</strong> K / A / A. <strong>Eigene Anwendung:</strong> K / K / A. <strong>Daten, Benutzer und kundenseitige Einstellungen:</strong> K / K / K. K bedeutet hier: Der Kunde trägt die Entscheidung und die Aufgaben in seinem Verantwortungsbereich. Bei SaaS betreibt der Anbieter die Anwendungssoftware, aber der Kunde verwaltet seine Nutzer, Rollen und Datenrichtlinien.</p>
+<p>Achte auf die Wortwahl: „Der Kunde ist für Daten verantwortlich“ bedeutet <strong>nicht</strong>, dass er bei SaaS den physischen Datenträger oder die Datenbank-Engine selbst betreibt. Umgekehrt macht Providerbetrieb der Engine keine Freigabe, korrekte Rechte oder Löschentscheidung für den Kunden. Bei PaaS ist „Anwendung = Kunde“ die vereinfachte Regel für selbst geschriebenen Code; der Anbieter kann Plattformkomponenten der Anwendung mitbetreiben.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Die Verantwortungsmatrix als fünf Schichten">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-schichtenmatrix-title diagram-schichtenmatrix-desc">
+  <title id="diagram-schichtenmatrix-title">Die Verantwortungsmatrix als fünf Schichten</title>
+  <desc id="diagram-schichtenmatrix-desc">Fünfzeilige Verantwortungsmatrix für IaaS, PaaS und SaaS: Hardware Anbieter in allen; Gast-OS und Runtime Kunde nur bei IaaS; eigene Anwendung Kunde bei IaaS und PaaS; Daten, Konten und Einstellungen Kundenthema in allen.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Die Verantwortungsmatrix als fünf Schichten</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="160" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">Hardware &amp;</tspan><tspan x="64" dy="25">Rechenzentrum</tspan><tspan x="64" dy="25">· A / A / A</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">Bei IaaS, PaaS und</tspan><tspan x="64" dy="30">SaaS betreibt der</tspan><tspan x="64" dy="30">Cloudanbieter</tspan></text></g><g><rect class="diagram-row" x="220" y="92" width="160" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="242" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="242" dy="0">Gast-Betriebssystem</tspan><tspan x="242" dy="25">· K / A / A</tspan></text><text x="242" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="242" dy="0">IaaS: Kunde patcht</tspan><tspan x="242" dy="30">und härtet das OS</tspan><tspan x="242" dy="30">seiner VM. PaaS und</tspan></text></g><g><rect class="diagram-row" x="398" y="92" width="160" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="420" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="420" dy="0">Runtime &amp;</tspan><tspan x="420" dy="25">Middleware · K</tspan><tspan x="420" dy="25">/ A / A</tspan></text><text x="420" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="420" dy="0">IaaS: Kunde pflegt</tspan><tspan x="420" dy="30">zum Beispiel</tspan><tspan x="420" dy="30">Webserver und</tspan></text></g><g><rect class="diagram-row" x="576" y="92" width="160" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="598" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="598" dy="0">Anwendung · K</tspan><tspan x="598" dy="25">/ K / A</tspan></text><text x="598" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="598" dy="0">IaaS und PaaS:</tspan><tspan x="598" dy="30">eigener Code,</tspan><tspan x="598" dy="30">Deployment und</tspan></text></g><g><rect class="diagram-row" x="754" y="92" width="160" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="776" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="776" dy="0">Daten, Konten,</tspan><tspan x="776" dy="25">Einstellungen</tspan><tspan x="776" dy="25">· K / K / K</tspan></text><text x="776" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="776" dy="0">Der Kunde</tspan><tspan x="776" dy="30">entscheidet in allen</tspan><tspan x="776" dy="30">drei Modellen über</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene, mobile Lesematrix. K = Kunde, A = Anbieter; tatsächliche Produkt- und Vertragsgrenzen prüfen.</figcaption>
+</figure><section class="quiz" data-quiz="cloud-saas-falle" data-correct="0">
+  <h3>Ein SaaS-Anbieter patcht seine Anwendung. Ein ausgeschiedener Mitarbeiter hat noch Zugriff. Wer muss im Referenzmodell handeln?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Identitäten und Zugriffe in der eigenen Nutzung bleiben Kundenthemen."><span class="m">A</span> Der Kunde muss sein Konto beziehungsweise die Berechtigung entziehen; technische Anbieterfunktionen unterstützen dabei.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="SaaS delegiert den App-Betrieb, nicht die Entscheidung über eigene Nutzer und Daten."><span class="m">B</span> Niemand: SaaS überträgt sämtliche Daten- und Kontenverantwortung an den Anbieter.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Physische Hosts und Rechenzentrum bleiben Anbieteraufgabe."><span class="m">C</span> Der Kunde muss dafür das physische Rechenzentrum patchen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="sequence-practice" data-sequence="cloud-abstraktion-sortieren" data-expected="iaas,paas,saas" data-correct-feedback="Richtig: IaaS → PaaS → SaaS. Daten- und Zugriffsentscheidungen bleiben in allen Modellen." data-wrong-feedback="Bei IaaS verwaltet das Team mehr technische Schichten als bei PaaS; SaaS liefert bereits die fertige Anwendung." aria-labelledby="cloud-abstraktion-sortieren-title">
+  <div class="lab-heading"><div><h3 id="cloud-abstraktion-sortieren-title">Von viel Eigenbetrieb zu wenig Eigenbetrieb</h3><p>Ordne die drei Angebote nach abnehmender technischer Betriebsverantwortung des Kunden.</p></div><span class="lab-tag">Ablauf</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="iaas" tabindex="-1"><span class="step-position" data-step-position>1</span><span>IaaS: eigene VM samt Gast-OS und Anwendung pflegen</span></li>
+    <li data-step="paas" tabindex="-1"><span class="step-position" data-step-position>2</span><span>PaaS: eigenen Code auf verwalteter Plattform deployen</span></li>
+    <li data-step="saas" tabindex="-1"><span class="step-position" data-step-position>3</span><span>SaaS: fertige Anwendung nutzen und eigene Konten/Daten verwalten</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s3"><span class="num">3</span>3 · Verantwortung im echten Angebot prüfen</h2>
+<p>Eine Prüfungs-Matrix ist ein <strong>Orientierungsmodell</strong>. Reale Dienste liegen oft dazwischen: Ein Containerdienst kann nur Knoten verwalten oder auch Betrieb und Runtime übernehmen; ein gemanagter Datenbankdienst nimmt OS- und Engine-Pflege ab, nicht automatisch Datenmodell und Berechtigungen. Prüfe daher für jedes Produkt die Leistungsbeschreibung: Wer patcht <em>welche</em> Schicht? Wer konfiguriert Netzregeln? Wer sichert und stellt Daten wieder her? Wer überwacht, eskaliert und besitzt Schlüssel?</p>
+<p>Das britische NCSC betont, dass die Aufgabenteilung nach Dienst und Anbieter variiert. Ein Managed-Service-Partner kann als dritte Partei hinzukommen. Die NIST-Begriffe sind eine Taxonomie für Vergleiche, keine Zusage, dass jedes Produkt exakt die Lehrmatrix abbildet. In einer Architekturentscheidung dokumentierst du deshalb die konkrete Verantwortungsgrenze und die offenen Übergaben.</p>
+<section class="recall-practice" data-recall="cloud-rollenfall" data-min-length="130" aria-labelledby="cloud-rollenfall-title">
+  <div class="recall-prompt"><h3 id="cloud-rollenfall-title">Die Übergabe erklären</h3><p>Schreibe für den Bestellfall je einen Satz zu IaaS, PaaS und SaaS: Wer pflegt Gast-OS, Runtime und Anwendung? Nenne eine Kundenaufgabe, die in allen drei Varianten bleibt.</p></div>
+  <label class="sr-only" for="cloud-rollenfall-answer">Deine Zuordnung</label>
+  <textarea id="cloud-rollenfall-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> IaaS: Der Anbieter stellt die physische Infrastruktur, das Team patcht Gast-OS und Runtime und betreibt die eigene App. PaaS: Der Anbieter betreibt OS und Runtime, das Team entwickelt, deployt und sichert seinen eigenen Anwendungscode. SaaS: Der Anbieter betreibt die fertige Anwendung samt Plattform, das Team konfiguriert sie für seine Organisation. In allen drei Fällen bleibt das Team für seine Daten, Benutzerkonten und Zugriffsentscheidungen verantwortlich. Die konkrete Produktdokumentation kann diese vereinfachte Grenzziehung verändern.</div>
+</section><h2 class="sec" id="s4"><span class="num">4</span>4 · Abruf und Lernziel-Check</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="cloud-karte-0" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Gast-OS: IaaS / PaaS / SaaS?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Typisch Kunde / Anbieter / Anbieter. Die IaaS-VM ist nicht automatisch vom Provider im Gast-OS gepatcht.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="cloud-karte-1" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Eigener Anwendungscode: IaaS / PaaS / SaaS?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Typisch Kunde / Kunde / nicht als eigener Code vorhanden; bei SaaS betreibt der Anbieter die fertige App, der Kunde konfiguriert seine Nutzung.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="cloud-karte-2" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Daten und Konten: Wer entscheidet?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Der Kunde in allen Modellen. Der Provider kann Speicherung und technische Funktionen übernehmen, aber nicht automatisch Auswahl, Rollen oder Richtlinien.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Schicht 1“:</span><button type="button" data-card-id="cloud-karte-0" data-card-rate="known">gewusst</button><button type="button" data-card-id="cloud-karte-0" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="cloud-karte-0"></span></div>
+<div class="card-rating"><span>Karte „Schicht 2“:</span><button type="button" data-card-id="cloud-karte-1" data-card-rate="known">gewusst</button><button type="button" data-card-id="cloud-karte-1" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="cloud-karte-1"></span></div>
+<div class="card-rating"><span>Karte „Schicht 3“:</span><button type="button" data-card-id="cloud-karte-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="cloud-karte-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="cloud-karte-2"></span></div><section class="quiz" data-quiz="cloud-transfer-schichten" data-correct="0" data-required-objective="schichten">
+  <h3>Welche Zuordnung passt für eine eigene App auf einer verwalteten PaaS-Plattform?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Das ist die typische PaaS-Grenze der Lehrmatrix."><span class="m">A</span> Provider betreibt physische Hosts, OS und Runtime; Kunde liefert eigenen Code und verantwortet Daten, Konten und Konfiguration.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die physische Infrastruktur liegt beim Anbieter, eigener Code beim Kunden."><span class="m">B</span> Kunde patcht immer die physischen Hosts, Provider schreibt seinen Anwendungscode.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Daten- und Zugriffsentscheidungen bleiben Kundenthemen."><span class="m">C</span> Provider entscheidet allein über Datenzugriff und löscht Nutzerkonten des Kunden automatisch.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="cloud-transfer-fall" data-correct="0" data-required-objective="transfer">
+  <h3>Ein SaaS-Dienst veröffentlicht ein neues App-Update; zugleich ist ein Ex-Mitarbeiter noch berechtigt. Welche Reaktion passt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. SaaS delegiert App-Betrieb, nicht die eigene Zugriffsverwaltung."><span class="m">A</span> Der Anbieter betreibt das App-Update; der Kunde entzieht den Zugang und prüft seine Einstellungen und Datenfreigaben.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Das vertauscht Infrastruktur- und Kundenaufgaben."><span class="m">B</span> Der Kunde patcht den Hypervisor; der Anbieter entscheidet über die Personalliste.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Verantwortung wird geteilt, nicht aufgehoben."><span class="m">C</span> Bei SaaS sind weder Anbieter noch Kunde für Sicherheit zuständig.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Quellen und Grenzen</h2>
+<p><a href="https://nvlpubs.nist.gov/nistpubs/legacy/sp/nistspecialpublication800-145.pdf">NIST SP 800-145, Service Models</a>, <a href="https://learn.microsoft.com/en-us/azure/security/fundamentals/shared-responsibility">Microsoft: Shared Responsibility</a> und <a href="https://www.ncsc.gov.uk/collection/cloud/understanding-cloud-services/cloud-security-shared-responsibility-model">UK NCSC: Cloud Shared Responsibility</a>, am 26.09.2026 geprüft. Bestellfall, Matrix-Grafik und Übungen sind eigene Lehrmaterialien. Die Matrix ist eine Vereinfachung; konkrete Verantwortlichkeiten aus Produkt und Vertrag ermitteln. Menschliche Fachfreigabe offen.</p>
+
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-5"><span class="d">zurück zu</span><span class="t">Cloud und Wirtschaftlichkeit</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Cloud und Wirtschaftlichkeit</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">1 · Drei Angebote für denselben Zweck</a></li>
+<li><a href="#s2" data-t="s2">2 · Die Matrix wirklich lesen</a></li>
+<li><a href="#s3" data-t="s3">3 · Verantwortung im echten Angebot prüfen</a></li>
+<li><a href="#s4" data-t="s4">4 · Abruf und Lernziel-Check</a></li>
+<li><a href="#s5" data-t="s5">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-5">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

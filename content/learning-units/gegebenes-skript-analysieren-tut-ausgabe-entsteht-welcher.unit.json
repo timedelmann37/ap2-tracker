@@ -1,0 +1,357 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "gegebenes-skript-analysieren-tut-ausgabe-entsteht-welcher",
+    "slug": "gegebenes-skript-analysieren-tut-ausgabe-entsteht-welcher",
+    "title": "Skripte analysieren: Ausgabe, Fehler und Ergänzung",
+    "description": "Ein fremdes Skript Zeile für Zeile verfolgen, eine falsche Zählung erklären und eine gezielte Korrektur mit Grenzfällen absichern.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-9",
+    "groupLabel": "Programme zur automatisierten Systemverwaltung",
+    "itemId": "ga1-9__9",
+    "week": "KW 43",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "sources": [
+      "ps-foreach",
+      "ps-comparisons"
+    ],
+    "contentRevision": "2026-09-17.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "trace",
+      "label": "Die tatsächliche Ausgabe aus den Zustandsänderungen ableiten"
+    },
+    {
+      "id": "korrektur",
+      "label": "Einen logischen Fehler korrigieren und mit Gegenproben prüfen"
+    }
+  ],
+  "intro": "Ein fremdes Skript Zeile für Zeile verfolgen, eine falsche Zählung erklären und eine gezielte Korrektur mit Grenzfällen absichern. Du bearbeitest eigene Papierfälle; es werden keine echten Systeme verändert.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "ps-foreach",
+        "sourceLocator": "Syntax und einfache Beispiele",
+        "use": "Schleifendurchläufe und Veränderung einer Variablen",
+        "reviewStatus": "Begrenzter Abschnitt am 17.09.2026 gelesen und abgeglichen"
+      },
+      {
+        "sourceId": "ps-comparisons",
+        "sourceLocator": "Equality operators",
+        "use": "Vergleich einzelner Statuswerte",
+        "reviewStatus": "Begrenzter Abschnitt am 17.09.2026 gelesen und abgeglichen"
+      }
+    ],
+    "notes": [
+      "Eigene Beispiele, Aufgaben und Grafiken. Menschliche Fach- und Verständlichkeitsfreigabe offen.",
+      "Batch 008–009: IoT-, Berufsbild- und TCP-Treffer nicht als Belege für Skriptsemantik übernommen. Eigener Fehlerfall mit statischen Daten; keine realen Dienste abgefragt."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "trace",
+      "title": "Absicht und tatsächliche Wirkung trennen",
+      "type": "flow",
+      "items": [
+        {
+          "label": "Soll",
+          "detail": "Alle gestoppten Einträge zählen"
+        },
+        {
+          "label": "Ist",
+          "detail": "Zähler wird pro Durchlauf gelöscht"
+        },
+        {
+          "label": "Beleg",
+          "detail": "Mehrere Treffer als Gegenprobe"
+        }
+      ]
+    },
+    {
+      "id": "test",
+      "title": "Korrektur überprüfen",
+      "type": "flow",
+      "items": [
+        {
+          "label": "Normalfall",
+          "detail": "Mehrere gestoppte Einträge"
+        },
+        {
+          "label": "Grenzfall",
+          "detail": "Kein Treffer und leere Liste"
+        },
+        {
+          "label": "Ergänzung",
+          "detail": "Weitere Statuswerte unterscheiden"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "gegebenes-skript-analysieren-tut-ausgabe-entsteht-welcher-diagnose",
+          "question": "Ein Skript läuft ohne Fehlermeldung. Ist das Ergebnis damit fachlich richtig?",
+          "options": [
+            {
+              "text": "Ja, sonst würde es abbrechen.",
+              "rationale": "Ein logischer Fehler kann gültigen Code verwenden.",
+              "correct": false
+            },
+            {
+              "text": "Nein, die Ausgabe muss zum Auftrag passen.",
+              "rationale": "Richtig: Syntax und fachliches Ergebnis sind unterschiedliche Prüfungen.",
+              "correct": true
+            },
+            {
+              "text": "Nur der Kommentar entscheidet.",
+              "rationale": "Kommentare werden nicht als Programmlogik ausgeführt.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Vier Fragen vor jeder Änderung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Lies ein fremdes Skript in vier Schritten: Welche Eingaben gibt es? Welche Werte ändern sich? Wann entsteht eine Ausgabe? Was wäre laut Auftrag richtig?\n\nUnser Auftrag: Zähle alle Einträge mit Status `Stopped`. Für jeden Treffer soll die laufende Trefferzahl erscheinen; am Schluss die Gesamtzahl. Eingaben sind **vorgegebene Textwerte**, keine Abfragen echter Dienste. Der Code ist absichtlich fehlerhaft. Kommentiere zuerst seinen tatsächlichen Ablauf, bevor du ihn verbesserst."
+        },
+        {
+          "type": "figure",
+          "diagramId": "trace",
+          "alt": "Soll ist die Gesamtzahl; tatsächlich setzt der Code den Zähler in jedem Durchlauf zurück. Mehrere Treffer zeigen den Unterschied.",
+          "caption": "Eigene Darstellung des Fehlerfalls."
+        }
+      ]
+    },
+    {
+      "title": "Erst vorhersagen, dann verfolgen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Notiere alle Ausgabezeilen in der richtigen Reihenfolge. Achte besonders darauf, welche Zeilen innerhalb der Schleife stehen.\n\n```powershell\n$statusListe = @(\n  'Stopped', 'Running', 'Stopped'\n)\n$anzahl = 0\nforeach ($status in $statusListe) {\n  $anzahl = 0\n  if ($status -eq 'Stopped') {\n    $anzahl = $anzahl + 1\n    \"Treffer: $anzahl\"\n  }\n}\n\"Gesamt: $anzahl\"\n```\n\nDie Initialisierung vor der Schleife setzt den Anfangszustand. Die zweite Zuweisung innerhalb der Schleife überschreibt dagegen jedes Mal den bisherigen Zähler. `$status -eq 'Stopped'` prüft den aktuellen einzelnen Textwert.\n\n| Durchlauf | Status | Nach Zurücksetzen | Nach Bedingung | Ausgabe |\n| --- | --- | --- | --- | --- |\n| 1 | Stopped | 0 | 1 | Treffer: 1 |\n| 2 | Running | 0 | 0 | keine |\n| 3 | Stopped | 0 | 1 | Treffer: 1 |\n\nDanach folgt `Gesamt: 1`. Die vollständige Ausgabe lautet also:\n\n```text\nTreffer: 1\nTreffer: 1\nGesamt: 1\n```\n\nDer Auftrag verlangt zwei Treffer insgesamt. Das Programm liefert aber den Zustand nach dem **letzten** Durchlauf. Bei einem letzten `Running` wäre die Gesamtzahl sogar null. Der Fehler ist logisch, nicht syntaktisch."
+        },
+        {
+          "type": "numeric",
+          "id": "gegebenes-skript-analysieren-tut-ausgabe-entsteht-welcher-zahl",
+          "title": "Neuer Trace",
+          "prompt": "Im unveränderten fehlerhaften Skript stehen jetzt Stopped, Stopped, Running. Welcher Zahlenwert erscheint hinter Gesamt?",
+          "label": "Tatsächlicher Gesamtwert",
+          "expected": 0,
+          "tolerance": 0,
+          "correctFeedback": "Der letzte Durchlauf setzt auf null zurück; Running erhöht den Wert nicht.",
+          "wrongFeedback": "Gefragt ist der fehlerhafte Ist-Wert, nicht die gewünschte Anzahl.",
+          "misconceptions": [
+            {
+              "value": 2,
+              "feedback": "Zwei wäre das richtige Soll-Ergebnis, aber der Code verliert frühere Treffer."
+            },
+            {
+              "value": 1,
+              "feedback": "Der letzte Eintrag ist Running und hinterlässt nach dem Reset null."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Die kleinste sinnvolle Korrektur",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "gegebenes-skript-analysieren-tut-ausgabe-entsteht-welcher-uebung",
+          "question": "Welche einzelne Änderung behebt die verlorene Gesamtzählung?",
+          "options": [
+            {
+              "text": "Den Vergleich immer wahr machen.",
+              "rationale": "Dann würden auch laufende Einträge gezählt.",
+              "correct": false
+            },
+            {
+              "text": "Nur die Zähler-Initialisierung innerhalb der Schleife entfernen.",
+              "rationale": "Richtig: Der Anfangswert bleibt vor der Schleife erhalten.",
+              "correct": true
+            },
+            {
+              "text": "Nur Gesamt in Ergebnis umbenennen.",
+              "rationale": "Der Variablenwert ändert sich dadurch nicht.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "Die Korrektur lässt die einmalige Initialisierung stehen. Der Zähler wächst nur bei einem Treffer und behält sonst seinen Wert.\n\n```powershell\n$statusListe = @(\n  'Stopped', 'Running', 'Stopped'\n)\n$anzahl = 0\nforeach ($status in $statusListe) {\n  if ($status -eq 'Stopped') {\n    $anzahl = $anzahl + 1\n    \"Treffer: $anzahl\"\n  }\n}\n\"Gesamt: $anzahl\"\n```\n\nFür die ursprüngliche Liste entsteht `Treffer: 1`, dann `Treffer: 2`, dann `Gesamt: 2`. Die Folge der Zählerwerte nach den drei Durchläufen ist 1, 1, 2. Die fachliche Invariante lautet: Nach jedem Durchlauf entspricht der Zähler der Zahl der bisher gesehenen `Stopped`-Einträge. Diese Aussage hilft dir auch bei anderen Zählaufgaben."
+        }
+      ]
+    },
+    {
+      "title": "Nicht nur den einen Beispieldatensatz testen",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "test",
+          "alt": "Die korrigierte Zählung wird mit mehreren Treffern, ohne Treffer, leerer Liste und weiteren Zuständen geprüft.",
+          "caption": "Eigene Teststrategie."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Leite Tests aus dem Fehler ab. Ein einziger gestoppter Eintrag hätte den Fehler verdeckt: Auch die fehlerhafte Version meldet dafür eins. Mehrere Treffer und ein letzter Nichttreffer machen ihn sichtbar.\n\n| Eingabe | Soll nach Korrektur | Warum wichtig? |\n| --- | --- | --- |\n| Stopped, Stopped | Gesamt: 2 | Frühere Treffer müssen erhalten bleiben |\n| Stopped, Running | Gesamt: 1 | Nichttreffer darf Zähler nicht löschen |\n| Running | Gesamt: 0 | Kein Treffer |\n| leere Liste | Gesamt: 0 | Schleife läuft keinmal |\n\nBei leerer Liste ist die Initialisierung vor der Schleife weiterhin nötig. Entferne also nicht beide Zuweisungen. Ein Testprotokoll hält Eingabe, erwartete Ausgabe, beobachtete Ausgabe und Ergebnis getrennt fest."
+        }
+      ]
+    },
+    {
+      "title": "Gezielt ergänzen statt alles umschreiben",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Neuer Auftrag: Zusätzlich `Running` zählen und **alle übrigen gelieferten Statuswerte** als `andere` ausweisen. Ein Zustand wie `Paused` ist nicht dasselbe wie `Stopped`. Der folgende Pseudocode beschreibt nur die Datenverarbeitung:\n\n```text\ngestoppt := 0\nlaufend := 0\nandere := 0\nFÜR JEDEN status IN statusListe\n  WENN status = \"Stopped\"\n    erhöhe gestoppt um 1\n  SONST WENN status = \"Running\"\n    erhöhe laufend um 1\n  SONST\n    erhöhe andere um 1\nGIB gestoppt, laufend, andere AUS\n```\n\nFür `Running, Paused, Stopped, Running` erhältst du laufend 2, gestoppt 1 und andere 1. Jeder Datensatz landet in genau einem Zweig. Ein Fehler beim Abrufen wäre dagegen ein eigener Fehlerfall außerhalb dieser Liste; er darf nicht als tatsächlich gelieferter Dienststatus erfunden werden."
+        },
+        {
+          "type": "recall",
+          "id": "gegebenes-skript-analysieren-tut-ausgabe-entsteht-welcher-ergaenzen",
+          "title": "Ergänzung selbst schreiben",
+          "prompt": "Schreibe die drei Zähler und die Verzweigung in PowerShell oder eindeutigem Pseudocode. Verwende die Liste Running, Paused, Stopped, Running als Gegenprobe. Wo stehen die Anfangswerte?",
+          "label": "Deine Ergänzung",
+          "minLength": 70,
+          "model": "Initialisiere gestoppt, laufend und andere vor der Schleife mit null. Vergleiche jeden Status zuerst mit Stopped, andernfalls mit Running; alle übrigen Werte gehen in andere. Erhöhe genau einen Zähler pro Eintrag. Gib nach der Schleife alle Zähler aus: laufend 2, gestoppt 1, andere 1. Eine leere Liste liefert dreimal null."
+        }
+      ]
+    },
+    {
+      "title": "Selbst ordnen und erklären",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "gegebenes-skript-analysieren-tut-ausgabe-entsteht-welcher-reihenfolge",
+          "title": "Ablauf ordnen",
+          "prompt": "Ordne die Analyse eines fremden Skripts.",
+          "steps": [
+            {
+              "id": "abschluss",
+              "label": "Gezielt korrigieren und Grenzfälle nachtesten"
+            },
+            {
+              "id": "start",
+              "label": "Auftrag und erwartete Ausgabe notieren"
+            },
+            {
+              "id": "pruefen",
+              "label": "Tatsächliche Zustände Zeile für Zeile verfolgen"
+            }
+          ],
+          "expected": [
+            "start",
+            "pruefen",
+            "abschluss"
+          ],
+          "correctFeedback": "Richtig: Voraussetzungen, Prüfung und Abschluss stehen in der vorgesehenen Reihenfolge.",
+          "wrongFeedback": "Prüfe die Voraussetzungen: Der letzte Schritt darf die vorherige Prüfung nicht überspringen."
+        },
+        {
+          "type": "recall",
+          "id": "gegebenes-skript-analysieren-tut-ausgabe-entsteht-welcher-begruendung",
+          "title": "Aus dem Gedächtnis erklären",
+          "prompt": "Erkläre, warum das Zurücksetzen in der Schleife falsch ist und warum ein Test mit genau einem Treffer nicht genügt. Nenne eine bessere Gegenprobe.",
+          "label": "Deine Erklärung",
+          "minLength": 70,
+          "model": "Das Zurücksetzen verliert die vorherigen Treffer. Mit genau einem Treffer am Ende kann trotzdem die richtige Gesamtzahl erscheinen. Zwei gestoppte Einträge müssen zwei ergeben; ein anschließendes Running darf den Zähler nicht löschen. Zusätzlich prüfe ich eine leere Liste, bei der der Anfangswert vor der Schleife benötigt wird."
+        },
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "gegebenes-skript-analysieren-tut-ausgabe-entsteht-welcher-karte-0",
+              "label": "Abruf 1",
+              "front": "Was ist ein logischer Fehler?",
+              "back": "Der Code läuft, erfüllt aber den fachlichen Auftrag nicht."
+            },
+            {
+              "id": "gegebenes-skript-analysieren-tut-ausgabe-entsteht-welcher-karte-1",
+              "label": "Abruf 2",
+              "front": "Was muss beim Zählen erhalten bleiben?",
+              "back": "Die Anzahl aller bisher gefundenen Treffer."
+            },
+            {
+              "id": "gegebenes-skript-analysieren-tut-ausgabe-entsteht-welcher-karte-2",
+              "label": "Abruf 3",
+              "front": "Warum eine leere Liste testen?",
+              "back": "Sie zeigt, ob ein sinnvoller Anfangswert auch ohne Schleifendurchlauf vorhanden ist."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "gegebenes-skript-analysieren-tut-ausgabe-entsteht-welcher-transfer-a",
+          "question": "Das fehlerhafte Original erhält Running, Stopped, Stopped. Welche Gesamtzahl zeigt es tatsächlich?",
+          "options": [
+            {
+              "text": "2, weil zwei Einträge passen.",
+              "rationale": "Das ist der Soll-Wert; der Reset verwirft frühere Treffer.",
+              "correct": false
+            },
+            {
+              "text": "0, weil Running vorkommt.",
+              "rationale": "Die späteren Durchläufe ändern den Wert wieder.",
+              "correct": false
+            },
+            {
+              "text": "1, weil der letzte Durchlauf zurücksetzt und einmal erhöht.",
+              "rationale": "Das beschreibt die tatsächliche letzte Zustandsänderung.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "trace"
+        },
+        {
+          "type": "quiz",
+          "id": "gegebenes-skript-analysieren-tut-ausgabe-entsteht-welcher-transfer-b",
+          "question": "Die korrigierte Version soll jetzt Stopped, Running und andere unterscheiden. Welche Struktur passt?",
+          "options": [
+            {
+              "text": "Drei Anfangswerte vor der Schleife; je Eintrag genau einen passenden Zähler erhöhen.",
+              "rationale": "Damit bleibt jede bisherige Anzahl erhalten.",
+              "correct": true
+            },
+            {
+              "text": "Alle drei Zähler in jedem Durchlauf zurücksetzen.",
+              "rationale": "Das wiederholt den ursprünglichen Fehler.",
+              "correct": false
+            },
+            {
+              "text": "Jeden nicht laufenden Status automatisch als Stopped zählen.",
+              "rationale": "Damit würden andere Zustände falsch klassifiziert.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "korrektur"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Sprachsemantik nach Microsoft Learn: [foreach](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_foreach) und [Vergleichsoperatoren](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_comparison_operators), ausgewählte Abschnitte geprüft am 17.09.2026. Fehlerfall, Trace und Tests sind eigene Aufgaben. Die Codebeispiele werden mit statischen Eingaben geprüft; keine Dienstabfrage oder Systemänderung. Freitextlösungen dienen dem Selbstvergleich."
+        }
+      ]
+    }
+  ]
+}

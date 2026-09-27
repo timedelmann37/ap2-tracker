@@ -1,0 +1,320 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "wireshark",
+    "slug": "wireshark",
+    "title": "Paketmitschnitte lesen, filtern und begründet auswerten",
+    "description": "Capture- und Displayfilter unterscheiden und aus einer Paketfolge nur belegbare Aussagen ableiten.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__11",
+    "week": "KW 44",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "ziel-0",
+      "label": "einen passenden Displayfilter wählen und seine Wirkung erklären"
+    },
+    {
+      "id": "ziel-1",
+      "label": "Paketfolgen mit Messpunkt und Analysegrenzen interpretieren"
+    }
+  ],
+  "intro": "Ein Mitschnitt ist eine Beobachtung an einem Ort – nicht die allwissende Sicht auf das Netz. Du lernst, daraus nachvollziehbare Befunde zu formulieren.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seiten 185, 240 und 257",
+        "use": "ICMP-Analyse, NAT-Messpunkte und Wireshark-Ansichten",
+        "reviewStatus": "Quellenausschnitte geprüft; eigener Lernfall, menschliche Freigabe offen"
+      }
+    ],
+    "notes": [
+      "Eigene Texte, Aufgaben und Grafiken. Originalabbildungen bleiben privat.",
+      "Verlinkte Primärdokumentationen am 2026-09-13 geprüft; menschliche Fach- und Verständlichkeitsfreigabe steht aus."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "modell",
+      "type": "layers",
+      "title": "Von der Datei zur Aussage",
+      "description": "Erfassung: Interface, Zeit und Drops; Auswahl: Filter begrenzt die Sicht; Protokoll: Flags und Stream prüfen; Befund: Beobachtung, nicht Vermutung.",
+      "items": [
+        {
+          "label": "Erfassung",
+          "detail": "Interface, Zeit und Drops"
+        },
+        {
+          "label": "Auswahl",
+          "detail": "Filter begrenzt die Sicht"
+        },
+        {
+          "label": "Protokoll",
+          "detail": "Flags und Stream prüfen"
+        },
+        {
+          "label": "Befund",
+          "detail": "Beobachtung, nicht Vermutung"
+        }
+      ]
+    },
+    {
+      "id": "ablauf",
+      "type": "flow",
+      "title": "Beispiel: beobachteter TCP-Aufbau",
+      "description": "0 ms: A → B: SYN; 20 ms: B → A: SYN/ACK; 21 ms: A → B: ACK; Danach: TLS und Anwendung separat.",
+      "items": [
+        {
+          "label": "0 ms",
+          "detail": "A → B: SYN"
+        },
+        {
+          "label": "20 ms",
+          "detail": "B → A: SYN/ACK"
+        },
+        {
+          "label": "21 ms",
+          "detail": "A → B: ACK"
+        },
+        {
+          "label": "Danach",
+          "detail": "TLS und Anwendung separat"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "wireshark-diagnose",
+          "question": "Ein Displayfilter blendet DNS aus. Sind DNS-Pakete aus der Datei gelöscht?",
+          "options": [
+            {
+              "text": "Ja, ausgeblendete Pakete werden gelöscht.",
+              "rationale": "Anzeige und Dateiinhalt sind getrennt.",
+              "correct": false
+            },
+            {
+              "text": "Ja, außer wenn TCP verwendet wurde.",
+              "rationale": "Die Protokollart ändert diese Filterwirkung nicht.",
+              "correct": false
+            },
+            {
+              "text": "Nein, der Filter ändert nur die Anzeige.",
+              "rationale": "Die gespeicherten Pakete bleiben erhalten.",
+              "correct": true
+            }
+          ],
+          "diagnostic": true
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Leitgedanke",
+          "markdown": "Ein Mitschnitt ist eine Beobachtung an einem Ort – nicht die allwissende Sicht auf das Netz. Du lernst, daraus nachvollziehbare Befunde zu formulieren."
+        }
+      ]
+    },
+    {
+      "title": "Messpunkt zuerst, Filter danach",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Die **Paketliste** zeigt die zeitliche Folge; die **Paketdetails** zerlegen das ausgewählte Paket in Protokollfelder. Die **Byteansicht** ordnet Rohdaten zu. Notiere Interface, Messpunkt, Zeitbasis, Filter und eventuelle Capture-Drops. Ohne diesen Kontext ist ein fehlendes Paket mehrdeutig.\n\nEin **Capturefilter** begrenzt die Erfassung, etwa `host 10.44.0.20`. Ein **Displayfilter** blendet gespeicherte Pakete lediglich aus, etwa `ip.addr == 10.44.0.20 && tcp.port == 443`. Entfernen des Displayfilters zeigt sie wieder; nicht erfasste Pakete kann er nicht zurückholen. Syntax beider Filterarten ist nicht austauschbar.\n\nSuche zusammengehörige Pakete nach Adressen, Ports und passendem Protokollkontext, nicht nur nach ihrer Nachbarschaft in der Liste. Bei TCP hilft `tcp.stream == 0` für den entsprechenden Stream dieser Datei. Die Nummer ist keine globale Verbindungs-ID. Verschlüsselung verbirgt Anwendungsinhalte; ein Mitschnitt allein liefert keine TLS-Schlüssel.\n\nAnalysehinweise wie **TCP Retransmission** sind aus beobachteten Sequenzen abgeleitete Hinweise. Fehlende Pakete, eine spät gestartete Aufnahme oder Offloading können die Interpretation beeinflussen. Prüfsummenwarnungen am sendenden Host können vor Hardware-Offloading entstehen. Ein Warnlabel ist deshalb noch keine nachgewiesene defekte Leitung."
+        },
+        {
+          "type": "figure",
+          "diagramId": "modell",
+          "alt": "Erfassung: Interface, Zeit und Drops; Auswahl: Filter begrenzt die Sicht; Protokoll: Flags und Stream prüfen; Befund: Beobachtung, nicht Vermutung.",
+          "caption": "Von der Datei zur Aussage – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Eigene vereinfachte Laborfolge, alle Zeiten relativ zum Beginn: Bei 0 ms sendet A ein SYN an B:443. Bei 20 ms folgt B mit SYN/ACK, bei 21 ms bestätigt A mit ACK. Danach beginnt TLS. Der TCP-Aufbau ist in dieser Aufnahme sichtbar; eine erfolgreiche Anmeldung ist nicht belegt.\n\nFiltere zunächst auf die beiden Endpunkte und den Transportport. Prüfe die Flags in den Details und den zugehörigen Stream. Ein Displayfilter auf ausschließlich SYN-Pakete würde das letzte ACK ausblenden und könnte einen unvollständigen Aufbau vortäuschen. Vor einer Aussage zur Vollständigkeit den Filter prüfen.\n\nZweiter Fall: Es sind wiederholte SYNs ohne Antwort sichtbar. Mögliche Erklärungen sind ein unbeantworteter Aufbau, ein asymmetrischer Messpunkt oder Capture-Verlust. Ergänze einen zweiten autorisierten Messpunkt oder passende Server-/Firewallbefunde. Speichere für die Übergabe nur notwendige Daten mit begrenztem Zugriff; Mitschnitte können vertrauliche Inhalte enthalten."
+        },
+        {
+          "type": "figure",
+          "diagramId": "ablauf",
+          "alt": "0 ms: A → B: SYN; 20 ms: B → A: SYN/ACK; 21 ms: A → B: ACK; Danach: TLS und Anwendung separat.",
+          "caption": "Beispiel: beobachteter TCP-Aufbau – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Selbst entscheiden",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "wireshark-uebung",
+          "question": "Ein SYN-Filter zeigt nur zwei Pakete des TCP-Aufbaus. Wie prüfst du das abschließende ACK?",
+          "options": [
+            {
+              "text": "Den Filter erweitern oder entfernen und denselben Stream prüfen.",
+              "rationale": "Ein ACK ohne SYN kann durch den Filter verborgen sein.",
+              "correct": true
+            },
+            {
+              "text": "Den Router sofort neu starten.",
+              "rationale": "Die Ansicht kann die scheinbare Lücke erklären.",
+              "correct": false
+            },
+            {
+              "text": "Den Capturefilter nachträglich erweitern und frühere Pakete zurückholen.",
+              "rationale": "Nicht erfasste Daten entstehen dadurch nicht.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "sequence",
+          "id": "wireshark-reihenfolge",
+          "title": "Vorgehen ordnen",
+          "prompt": "Ordne die Schritte für diesen Lernfall.",
+          "steps": [
+            {
+              "id": "s2",
+              "label": "Filter und zusammengehörige Protokollfolge untersuchen"
+            },
+            {
+              "id": "s0",
+              "label": "Freigabe, Messpunkt und benötigten Umfang bestimmen"
+            },
+            {
+              "id": "s3",
+              "label": "Befund mit Unsicherheiten und ergänzendem Test festhalten"
+            },
+            {
+              "id": "s1",
+              "label": "Aufzeichnung mit Kontext und Drop-Hinweisen sichern"
+            }
+          ],
+          "expected": [
+            "s0",
+            "s1",
+            "s2",
+            "s3"
+          ],
+          "correctFeedback": "Richtig: Freigabe, Messpunkt und benötigten Umfang bestimmen → Aufzeichnung mit Kontext und Drop-Hinweisen sichern → Filter und zusammengehörige Protokollfolge untersuchen → Befund mit Unsicherheiten und ergänzendem Test festhalten.",
+          "wrongFeedback": "Prüfe die erste abweichende Position. Kläre zunächst die Voraussetzungen, bevor du Ergebnisse bewertest."
+        }
+      ]
+    },
+    {
+      "title": "Aus dem Gedächtnis erklären",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "wireshark-karte-0",
+              "label": "Abruf 1",
+              "front": "Capturefilter oder Displayfilter?",
+              "back": "Capture begrenzt die Erfassung; Display nur die Sicht auf gespeicherte Pakete."
+            },
+            {
+              "id": "wireshark-karte-1",
+              "label": "Abruf 2",
+              "front": "Was fehlt trotz TCP-Handshake?",
+              "back": "Der Nachweis erfolgreicher TLS- und Anwendungsfunktion."
+            },
+            {
+              "id": "wireshark-karte-2",
+              "label": "Abruf 3",
+              "front": "Retransmission gleich kaputtes Kabel?",
+              "back": "Nein, der Hinweis braucht Capture-Kontext und weitere Fehlerbelege."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "wireshark-abruf",
+          "title": "Deine Begründung",
+          "prompt": "Warum kann ein zu enger Filter zu einer falschen Diagnose führen?",
+          "label": "Eigene Erklärung",
+          "placeholder": "Meine Begründung und ihre Grenzen …",
+          "minLength": 80,
+          "model": "Er kann Antworten oder Protokollschritte ausblenden. Ich kontrolliere Filter, Stream und Messpunkt, bevor ich fehlende Kommunikation behaupte; nicht erfasste Pakete lassen sich mit Displayfiltern nicht rekonstruieren."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "wireshark-transfer-a",
+          "question": "Du willst gespeicherte IPv4-Pakete mit 10.44.0.20 und TCP-Port 443 in beiden Richtungen anzeigen. Was passt?",
+          "options": [
+            {
+              "text": "ip.src == 10.44.0.20 && tcp.dstport == 443.",
+              "rationale": "Das beschränkt die Richtungen und kann Antworten ausblenden.",
+              "correct": false
+            },
+            {
+              "text": "ip.addr == 10.44.0.20 && tcp.port == 443.",
+              "rationale": "Beide Felder berücksichtigen Quelle und Ziel.",
+              "correct": true
+            },
+            {
+              "text": "host 10.44.0.20.",
+              "rationale": "Dies ist Capturefilter-Syntax, nicht der gewünschte Displayfilter.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "ziel-0"
+        },
+        {
+          "type": "quiz",
+          "id": "wireshark-transfer-b",
+          "question": "Mehrere SYNs, kein SYN/ACK im Mitschnitt: Welche Aussage ist vertretbar?",
+          "options": [
+            {
+              "text": "Die Firewall des Servers ist sicher schuld.",
+              "rationale": "Auch Messlücken, Pfad und Dienst können beteiligt sein.",
+              "correct": false
+            },
+            {
+              "text": "An diesem Messpunkt ist keine Antwort erfasst; Messpfad und weitere Belege prüfen.",
+              "rationale": "Fehlende Erfassung ist nicht automatisch ein eindeutiger Ursachenbeweis.",
+              "correct": true
+            },
+            {
+              "text": "Der TCP-Aufbau ist definitiv erfolgreich.",
+              "rationale": "Die dafür nötigen Antworten sind hier nicht sichtbar.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "ziel-1"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Buchgrundlage: ITLF10–12, PDF-Seiten 185, 240 und 257. Ergänzung: [Wireshark Displayfilter](https://www.wireshark.org/docs/wsug_html_chunked/ChWorkDisplayFilterSection.html), [Paketansichten](https://www.wireshark.org/docs/wsug_html_chunked/ChapterWork.html), [TCP-Analyse](https://www.wireshark.org/docs/wsug_html_chunked/ChAdvTCPAnalysis.html). Paketfolge und Adressen sind eigene Beispiele, kein veröffentlichter Originalmitschnitt."
+        }
+      ]
+    }
+  ]
+}

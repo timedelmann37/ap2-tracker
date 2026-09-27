@@ -238,6 +238,7 @@ export function curatedCandidates(record, sourceIds) {
   return {
     text,
     figures,
+    excludedChunkIds: Array.isArray(record.excludedChunkIds) ? record.excludedChunkIds.filter(id => typeof id === 'string') : [],
     metadata: {
       slug: record.slug || null,
       coverage: record.coverage || null,
@@ -270,7 +271,10 @@ export function buildBatchPack(queue, options, indexes, curatedByItem = new Map(
 
     const curated = curatedByItem.get(item.itemId);
     const preferredTextCandidates = curated?.text?.length ? [...curated.text, ...(item.textCandidates || [])] : (item.textCandidates || []);
-    const selectedTextCandidates = [...new Map(preferredTextCandidates.map(candidate => [recordKey(candidate.sourceId, candidate.chunkId), candidate])).values()];
+    const excludedChunkIds = new Set(curated?.excludedChunkIds || []);
+    const selectedTextCandidates = [...new Map(preferredTextCandidates
+      .filter(candidate => !excludedChunkIds.has(candidate.chunkId))
+      .map(candidate => [recordKey(candidate.sourceId, candidate.chunkId), candidate])).values()];
     const unresolvedTextReferences = selectedTextCandidates
       .filter(candidate => !indexes.chunks.has(recordKey(candidate.sourceId, candidate.chunkId)))
       .map(candidate => candidate.chunkId);

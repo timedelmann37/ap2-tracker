@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Zwei parallele Anwendungsumgebungen am Schaubild erklären, testen, umschalten und einen begrenzten Rollback begründen.">
+<title>Blue-Green Deployment: Verkehr sicher umschalten – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="blue-green-deployment-traffic-switch" data-progress-id="ga1-5__7" data-content-revision="2026-09-26.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-5">Cloud und Wirtschaftlichkeit</a><span class="sep">›</span>
+    <span class="here">Blue-Green Deployment: Verkehr sicher umschalten</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Blue-Green Deployment: Verkehr sicher umschalten</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 30 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Der fiktive Ersatzteilshop Taktwerk erhält eine neue Bestellfunktion. Ein Update direkt auf dem laufenden Server könnte den Verkauf unterbrechen. Das Team hält deshalb zwei gleichartige, getrennte Anwendungsumgebungen bereit: Blue bedient noch Kundschaft, Green trägt die neue Version. Wann darf der Loadbalancer umschalten?</p>
+<section class="learning-goals" aria-labelledby="blue-green-deployment-traffic-switch-goals">
+  <h2 id="blue-green-deployment-traffic-switch-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Den aktiven Traffic-Weg vor und nach dem Umschalten am Schaubild erklären</li>
+    <li>Tests, Monitoring und Rollback-Grenzen im Ablauf begründen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>1 · Den aktiven Pfad lesen</h2>
+<section class="quiz" data-quiz="bg-diagnose" data-correct="0">
+  <h3>Blue verarbeitet die laufenden Bestellungen, Green ist bereits installiert und getestet. Wohin führt die Produktivregel des Loadbalancers vor dem Switch?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Die neue Version wird vorbereitet, während die alte Version weiter bedient."><span class="m">A</span> Zu Blue; Green erhält noch keinen regulären Produktivverkehr.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Blue-Green verlangt keine gleichzeitige 50:50-Verteilung. Hier zeigt die Produktivregel noch auf Blue."><span class="m">B</span> Gleichzeitig zu beiden, weil zwei Umgebungen immer Lastverteilung 50:50 bedeuten.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Erst der bewusste Traffic-Switch ändert den aktiven Pfad."><span class="m">C</span> Zu Green; Blue ist ab dem Bereitstellen der neuen Version automatisch offline.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><p><strong>Blue-Green Deployment</strong> hält zwei gleichartige Anwendungsumgebungen parallel bereit. In diesem Release läuft auf <strong>Blue</strong> die bisherige Version v1 mit Produktivverkehr. <strong>Green</strong> enthält v2 und wird separat überprüft. Die Farben sind nur Namen für die beiden Seiten; nach einem erfolgreichen Switch wird Green zur aktiven Produktionsumgebung. Green ist also nicht dauerhaft gleichbedeutend mit einer bloßen Staging-Umgebung.</p>
+<p>Lies im ersten Schaubild immer drei Dinge: <strong>Wer sendet Anfragen?</strong> Die Kundschaft. <strong>Wer entscheidet über das Ziel?</strong> Der Loadbalancer mit seiner Produktivregel. <strong>Welches Ziel erhält jetzt Verkehr?</strong> Blue mit v1. Die gestrichelte Verbindung zu Green bedeutet hier ausdrücklich <strong>0 % regulärer Produktivverkehr</strong>, nicht „Server fehlt“. Testanfragen können Green über einen gesonderten Testweg erreichen.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Vor dem Switch: Blue ist live">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-topology" xmlns="http://www.w3.org/2000/svg" width="960" height="470" viewBox="0 0 960 470" role="img" aria-labelledby="diagram-vor-switch-title diagram-vor-switch-desc">
+  <title id="diagram-vor-switch-title">Vor dem Switch: Blue ist live</title>
+  <desc id="diagram-vor-switch-desc">Vor dem Switch gehen Kundschaftsanfragen über den Loadbalancer zu Blue Version 1 mit 100 Prozent Produktivverkehr; Green Version 2 ist bereit, erhält aber null Prozent regulären Produktivverkehr.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Vor dem Switch: Blue ist live</tspan></text>
+  <g class="diagram-edge allowed"><path d="M110 225 L390 225"/><text class="diagram-edge-label" x="250" y="217" text-anchor="middle">HTTPS</text></g><g class="diagram-edge allowed"><path d="M390 225 L730 105"/><text class="diagram-edge-label" x="560" y="157" text-anchor="middle">100 % live</text></g><g class="diagram-edge blocked"><path d="M390 225 L730 345"/><text class="diagram-edge-label" x="560" y="277" text-anchor="middle">0 % live</text></g><g class="diagram-node client" transform="translate(110 225)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="110" y="220" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="110" dy="0">Kundschaft</tspan></text><text class="diagram-node-detail" x="110" y="244" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="110" dy="0">Bestellungen</tspan></text><g class="diagram-node router" transform="translate(390 225)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="390" y="220" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="390" dy="0">Loadbalancer</tspan></text><text class="diagram-node-detail" x="390" y="244" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="390" dy="0">Produktivregel</tspan></text><g class="diagram-node server" transform="translate(730 105)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="730" y="100" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="730" dy="0">Blue · v1</tspan></text><text class="diagram-node-detail" x="730" y="124" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="730" dy="0">live</tspan></text><g class="diagram-node server" transform="translate(730 345)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="730" y="340" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="730" dy="0">Green · v2</tspan></text><text class="diagram-node-detail" x="730" y="364" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="730" dy="0">Testziel</tspan></text>
+</svg>
+  </div>
+  <figcaption>Eigene Vorher-Skizze. Der Loadbalancer steuert den Produktivpfad, nicht die Farbe des Servers.</figcaption>
+</figure><section class="quiz" data-quiz="bg-vorher-pfad" data-correct="0">
+  <h3>Eine Prüfungsaufgabe zeigt zwei laufende Servergruppen, aber nur Blue ist am Produktivpfad markiert. Welche Aussage ist richtig?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Bereitgestellt ist nicht gleich aktiv geschaltet."><span class="m">A</span> Green kann vorbereitet und getestet sein, während Kundschaft noch Blue nutzt.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die Existenz der Gruppe legt keine Traffic-Gewichtung fest."><span class="m">B</span> Green verarbeitet zwingend die Hälfte aller Bestellungen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Sie stellen hier denselben Dienst in unterschiedlichen Versionen bereit."><span class="m">C</span> Blue und Green müssen verschiedene Geschäftsprozesse anbieten.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2"><span class="num">2</span>2 · Umschalten ist mehr als ein Klick</h2>
+<p>Vor der Umstellung prüft Taktwerk Green mit der neuen Version: Startet der Dienst? Sind Abhängigkeiten und Datenbank erreichbar? Funktionieren die kritischen Bestellwege? Zeigen Health Checks tatsächlich einen brauchbaren Zustand? Erst danach ändert das Team die Produktivregel des Loadbalancers von <strong>Blue → Green</strong>. Das zweite Schaubild zeigt den neuen Pfad: Kundschaft → Loadbalancer → Green. Blue bleibt zunächst betriebsbereit, damit ein Rückschwenk möglich ist.</p>
+<p>Ein <strong>nahezu unterbrechungsarmes</strong> Release ist möglich, aber nicht durch zwei Server allein garantiert. Bestehende Verbindungen müssen je nach Anwendung zu Ende laufen oder neu aufgebaut werden. Servergebundene Sitzungen können beim Zielwechsel verloren gehen. Im Beispiel verwenden beide App-Versionen eine gemeinsame Datenbank: Eine Schemaänderung muss für v1 und v2 verträglich sein, solange ein Rückschwenk vorgesehen ist. Die Produktivregel zurück auf Blue zu setzen rollt Datenbankänderungen nicht automatisch zurück. Deshalb gehören Sessions, Daten, Verbindungen und der Rückfallweg in den Testplan.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Nach dem Switch: Green ist live">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-topology" xmlns="http://www.w3.org/2000/svg" width="960" height="470" viewBox="0 0 960 470" role="img" aria-labelledby="diagram-nach-switch-title diagram-nach-switch-desc">
+  <title id="diagram-nach-switch-title">Nach dem Switch: Green ist live</title>
+  <desc id="diagram-nach-switch-desc">Nach dem Switch leitet der Loadbalancer den Produktivverkehr zu Green Version 2; Blue Version 1 bleibt vorerst als möglicher Rückweg bestehen.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Nach dem Switch: Green ist live</tspan></text>
+  <g class="diagram-edge allowed"><path d="M110 225 L390 225"/><text class="diagram-edge-label" x="250" y="217" text-anchor="middle">HTTPS</text></g><g class="diagram-edge blocked"><path d="M390 225 L730 105"/><text class="diagram-edge-label" x="560" y="157" text-anchor="middle">0 % live</text></g><g class="diagram-edge allowed"><path d="M390 225 L730 345"/><text class="diagram-edge-label" x="560" y="277" text-anchor="middle">100 % live</text></g><g class="diagram-node client" transform="translate(110 225)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="110" y="220" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="110" dy="0">Kundschaft</tspan></text><text class="diagram-node-detail" x="110" y="244" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="110" dy="0">Bestellungen</tspan></text><g class="diagram-node router" transform="translate(390 225)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="390" y="220" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="390" dy="0">Loadbalancer</tspan></text><text class="diagram-node-detail" x="390" y="244" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="390" dy="0">Produktivregel</tspan></text><g class="diagram-node server" transform="translate(730 105)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="730" y="100" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="730" dy="0">Blue · v1</tspan></text><text class="diagram-node-detail" x="730" y="124" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="730" dy="0">Rückweg</tspan></text><g class="diagram-node server" transform="translate(730 345)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="730" y="340" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="730" dy="0">Green · v2</tspan></text><text class="diagram-node-detail" x="730" y="364" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="730" dy="0">live</tspan></text>
+</svg>
+  </div>
+  <figcaption>Eigene Nachher-Skizze. Jetzt ist Green live; Blue wird nicht vor der Beobachtungsphase abgeschaltet.</figcaption>
+</figure><section class="sequence-practice" data-sequence="bg-releasefolge" data-expected="green,switch,monitor,blue" data-correct-feedback="Richtig: Green vorab prüfen, Verkehr umstellen, echte Nutzung beobachten und Blue erst nach der Rückfallphase abbauen." data-wrong-feedback="Testen kommt vor dem Traffic-Switch. Blue bleibt während der Rückfallphase erreichbar und wird nicht vorher abgebaut." aria-labelledby="bg-releasefolge-title">
+  <div class="lab-heading"><div><h3 id="bg-releasefolge-title">Release-Reihenfolge bauen</h3><p>Bringe den Blue-Green-Ablauf für Taktwerks Bestellfunktion in eine sichere Reihenfolge. Blue bleibt während der Umstellung durchgehend betriebsbereit.</p></div><span class="lab-tag">Ablauf</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="switch" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Produktivregel des Loadbalancers auf Green ändern</span></li>
+    <li data-step="green" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Green mit v2 bereitstellen und kritische Wege testen</span></li>
+    <li data-step="monitor" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Fehlerquote, Latenz und Bestellungen nach dem Switch beobachten</span></li>
+    <li data-step="blue" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Blue erst nach der vereinbarten Rückfallphase abbauen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s3"><span class="num">3</span>3 · Fehlerbild und Rollback begründen</h2>
+<p>Nach dem Switch steigt die Fehlerrate beim Bezahlen. Der Loadbalancer kann reguläre Anfragen wieder nach <strong>Blue</strong> leiten, sofern Blue noch gesund und mit den inzwischen geschriebenen Daten kompatibel ist. Das begrenzt die Auswirkung des fehlerhaften App-Releases. Es ist aber <strong>kein universeller Zurück-Knopf</strong>: Neue Datenfelder, irreversible Migrationen oder veränderte externe Schnittstellen können v1 unbrauchbar machen. Dann braucht es zuvor getestete Maßnahmen für Daten und Abhängigkeiten.</p>
+<p>Für eine Prüfungsantwort genügen die Schlagwörter „zwei Umgebungen“ und „Loadbalancer“ nicht. Beschreibe den Weg <strong>vorher</strong>, die Prüfung von Green, den <strong>Umschaltpunkt</strong>, die Messgrößen danach und die <strong>Bedingung für den Rückweg</strong>. Eine schrittweise Traffic-Verschiebung ist bei manchen Implementierungen ebenfalls möglich; der hier geübte Grundfall schaltet nach bestandenem Test den Produktivpfad vollständig um.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Prüfen, schalten, beobachten">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="434" viewBox="0 0 960 434" role="img" aria-labelledby="diagram-release-ablauf-title diagram-release-ablauf-desc">
+  <title id="diagram-release-ablauf-title">Prüfen, schalten, beobachten</title>
+  <desc id="diagram-release-ablauf-desc">Die Release-Folge zeigt das Testen von Green, das Umschalten der Loadbalancer-Produktivregel und das Beobachten von Fehlern, Latenz und Bestellungen.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Prüfen, schalten, beobachten</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Green vorbereiten</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Version, Datenzugriff und Health Checks testen.</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Verkehr schalten</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Produktivregel auf Green umstellen.</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Betrieb prüfen</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Fehler, Latenz und Bestellungen beobachten.</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Kontrollfolge. Monitoring ist Teil des Releases, nicht nur Nacharbeit.</figcaption>
+</figure><section class="recall-practice" data-recall="bg-taktwerk-erklaerung" data-min-length="170" aria-labelledby="bg-taktwerk-erklaerung-title">
+  <div class="recall-prompt"><h3 id="bg-taktwerk-erklaerung-title">Schaubild mündlich erklären</h3><p>Erkläre Taktwerk in eigenen Worten den Weg einer Bestellung vor und nach dem Switch. Nenne einen Test vorab und eine Bedingung, ohne die der Rückschwenk auf Blue riskant wäre.</p></div>
+  <label class="sr-only" for="bg-taktwerk-erklaerung-answer">Deine Erklärung</label>
+  <textarea id="bg-taktwerk-erklaerung-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Vor dem Switch gehen Bestellungen von der Kundschaft über den Loadbalancer zu Blue mit Version 1; Green mit Version 2 ist getrennt erreichbar und wird etwa mit einem kritischen Bestelltest und einem Health Check geprüft. Nach Freigabe ändert das Team die Produktivregel, sodass neue reguläre Anfragen zu Green gehen. Es überwacht Fehlerquote, Antwortzeit und erfolgreiche Bestellungen. Bei einem Problem kann es auf Blue zurückschwenken, sofern Blue gesund ist und mit den während des Releases geschriebenen Daten sowie dem Datenbankschema noch funktioniert. Laufende Sitzungen und Verbindungen müssen ebenfalls berücksichtigt werden.</div>
+</section><h2 class="sec" id="s4"><span class="num">4</span>4 · Abruf und Lernziel-Check</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="bg-karte-0" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Blue und Green: feste Rollen?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Nein. Im gezeigten Release ist erst Blue aktiv, nach dem Switch Green. Beim nächsten Release können die Rollen wechseln.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="bg-karte-1" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was schaltet der Loadbalancer um?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Die Produktivregel beziehungsweise den Zielpfad für neue reguläre Anfragen, nicht automatisch Daten oder laufende Sitzungen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="bg-karte-2" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum ist Rollback nicht immer einfach?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Die alte App muss gesund und zu neuen Daten, Schema und Schnittstellen kompatibel sein.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Abruf 1“:</span><button type="button" data-card-id="bg-karte-0" data-card-rate="known">gewusst</button><button type="button" data-card-id="bg-karte-0" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="bg-karte-0"></span></div>
+<div class="card-rating"><span>Karte „Abruf 2“:</span><button type="button" data-card-id="bg-karte-1" data-card-rate="known">gewusst</button><button type="button" data-card-id="bg-karte-1" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="bg-karte-1"></span></div>
+<div class="card-rating"><span>Karte „Abruf 3“:</span><button type="button" data-card-id="bg-karte-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="bg-karte-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="bg-karte-2"></span></div><section class="quiz" data-quiz="bg-pfad-gate" data-correct="0" data-required-objective="verkehrsweg-erklaeren">
+  <h3>Was zeigt das Nachher-Schaubild korrekt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Green ist jetzt live, Blue wird nicht sofort entfernt."><span class="m">A</span> Neue reguläre Anfragen gehen vom Loadbalancer zu Green; Blue bleibt vorerst als möglicher Rückweg stehen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Das widerspricht dem Ziel des parallelen Betriebs."><span class="m">B</span> Beide Umgebungen sind zwangsläufig offline, bis die alte gelöscht ist.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Nach dem Switch ist Green das aktive Ziel."><span class="m">C</span> Der Loadbalancer leitet weiter alles auf Blue, weil die Farbe nie wechselt.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="bg-rollback-gate" data-correct="0" data-required-objective="release-absichern">
+  <h3>Nach dem Switch enthält die Datenbank ein neues, mit v1 unvereinbares Schema. Ist ein bloßer Rückschwenk auf Blue sicher?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Der App-Rückweg und der Datenzustand sind getrennte Themen."><span class="m">A</span> Nein. Erst Daten- und Schemakompatibilität sowie den getesteten Rückfallplan prüfen; Traffic-Routing allein setzt keine Daten zurück.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Der Loadbalancer steuert Anfragen, aber führt keinen Daten-Rollback aus."><span class="m">B</span> Ja. Der Loadbalancer stellt Datenbank und Sitzungen automatisch auf den alten Zustand zurück.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Farbnamen sagen nichts über Datenkompatibilität aus."><span class="m">C</span> Ja, sofern beide Servergruppen die gleiche Farbe im Dashboard haben.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Quellen und Grenzen</h2>
+<p>Fachliche Grundlagen: <a href="https://docs.aws.amazon.com/whitepapers/latest/blue-green-deployments/introduction.html">AWS Whitepaper zu Blue-Green Deployments</a> und <a href="https://learn.microsoft.com/en-us/azure/architecture/microservices/ci-cd">Microsoft Azure Architecture Center zu Blue-Green</a>, gelesen am 26.09.2026. Taktwerk, Schaubilder und Übungen sind eigenständig. Der private Quellenbatch diente nur zur Auswahl des Kernthemas; seine Bilder wurden nicht veröffentlicht. Das Fallbeispiel verspricht keine ausfallfreie Umstellung ohne Prüfung von Verbindungen, Sitzungen und Daten.</p>
+
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-5"><span class="d">zurück zu</span><span class="t">Cloud und Wirtschaftlichkeit</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Cloud und Wirtschaftlichkeit</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">1 · Den aktiven Pfad lesen</a></li>
+<li><a href="#s2" data-t="s2">2 · Umschalten ist mehr als ein Klick</a></li>
+<li><a href="#s3" data-t="s3">3 · Fehlerbild und Rollback begründen</a></li>
+<li><a href="#s4" data-t="s4">4 · Abruf und Lernziel-Check</a></li>
+<li><a href="#s5" data-t="s5">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-5">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

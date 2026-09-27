@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Deklarative und imperative Beschreibung unterscheiden und Wiederholungen am tatsächlichen Zielzustand beurteilen.">
+<title>Idempotenz: Zielzustand statt wiederholter Nebenwirkung – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="idempotenz-deklarativ-vs-imperativ-erklaren" data-progress-id="ga1-9__10" data-content-revision="2026-09-15.2" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-9">Programme zur automatisierten Systemverwaltung</a><span class="sep">›</span>
+    <span class="here">Idempotenz: Zielzustand statt wiederholter Nebenwirkung</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Idempotenz: Zielzustand statt wiederholter Nebenwirkung</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 26 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Ein unterbrochener Verwaltungsauftrag wird oft erneut gestartet. Entscheidend ist, ob dadurch der gewünschte Zustand entsteht oder zusätzliche unerwünschte Änderungen entstehen. Du vergleichst eigene Papiermodelle; keine Befehle werden ausgeführt.</p>
+<section class="learning-goals" aria-labelledby="idempotenz-deklarativ-vs-imperativ-erklaren-goals">
+  <h2 id="idempotenz-deklarativ-vs-imperativ-erklaren-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>deklarativen Zielzustand von einer imperativen Schrittfolge unterscheiden</li>
+    <li>Idempotenz anhand eines zweiten unveränderten Aufrufs beurteilen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Vorwissen aktivieren</h2>
+<section class="quiz" data-quiz="idempotenz-deklarativ-vs-imperativ-erklaren-diagnose" data-correct="1">
+  <h3>Ein Skript läuft ohne Fehlermeldung zweimal durch. Ist damit Idempotenz nachgewiesen?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Erfolgreiche Aufrufe können jeweils weitere Änderungen erzeugen."><span class="m">A</span> Ja, solange beide Aufrufe erfolgreich enden.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Es geht um die wiederholte Wirkung auf den betrachteten Zustand."><span class="m">B</span> Nein, auch der Zustand nach beiden Aufrufen muss verglichen werden.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die Länge sagt nichts über die Wirkung einer Wiederholung aus."><span class="m">C</span> Ja, wenn es kurz genug ist.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2"><span class="num">2</span>Zwei verschiedene Fragen</h2>
+<p><strong>Imperativ</strong> beschreibt Schritte: Lies einen Wert, erhöhe ihn, schreibe ihn zurück. <strong>Deklarativ</strong> beschreibt den gewünschten Zustand: Der verwaltete Wert soll 30 sein. Ein Werkzeug muss daraus weiterhin konkrete Aktionen ableiten; die Zustandsbeschreibung erledigt die Umsetzung nicht von selbst.</p>
+<p><strong>Idempotenz</strong> ist eine andere Eigenschaft: Dieselbe Operation hat bei Wiederholung ohne zwischenzeitliche Änderungen auf den betrachteten Zustand dieselbe Wirkung wie einmaliges Anwenden. Imperativer Code kann idempotent sein, etwa wenn er einen festen Wert setzt. Eine deklarative Oberfläche ist allein noch kein Nachweis, dass die tatsächliche Umsetzung korrekt und wiederholungssicher arbeitet.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Gleicher Auftrag, stabiler Zielzustand">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="434" viewBox="0 0 960 434" role="img" aria-labelledby="diagram-zustand-title diagram-zustand-desc">
+  <title id="diagram-zustand-title">Gleicher Auftrag, stabiler Zielzustand</title>
+  <desc id="diagram-zustand-desc">Startwert 10, nach Setzen auf 30 steht der Wert auf 30, nach erneutem Setzen weiterhin auf 30.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Gleicher Auftrag, stabiler Zielzustand</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Start</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Der verwaltete Wert ist noch 10</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Erster Lauf</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Setzen auf den vereinbarten Wert 30</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Zweiter Lauf</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Wert bleibt 30; kein weiteres Erhöhen</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Zustandsfolge: Die zweite Anwendung erzeugt keine zusätzliche Änderung am verwalteten Wert.</figcaption>
+</figure><h2 class="sec" id="s3"><span class="num">3</span>Zwei vollständig durchgerechnete Modelle</h2>
+<p>Unser Konfigurationsmodell enthält genau einen verwalteten Zahlenwert. Andere Änderungen und Fehler während der Ausführung sind für diesen Vergleich ausgeschlossen.</p>
+<p>Operation A setzt ihn auf 30. Aus dem Startwert 10 wird nach dem ersten Lauf 30 und nach dem zweiten Lauf erneut 30. Operation B erhöht ihn bei jedem Lauf um 20. Hier wird aus 10 zuerst 30, danach 50. Beide liefern beim ersten Lauf dasselbe Ergebnis; erst die Wiederholung zeigt den Unterschied.</p>
+<div class="math-display" role="group" aria-label="Setzen: f von 10 gleich 30 und f von 30 gleich 30. Erhöhen: g von 10 gleich 30 und g von 30 gleich 50."><math display="block" aria-label="Setzen: f von 10 gleich 30 und f von 30 gleich 30. Erhöhen: g von 10 gleich 30 und g von 30 gleich 50."><mtable columnalign="left"><mtr><mtd><mi>f</mi><mo>(</mo><mn>10</mn><mo>)</mo><mo>=</mo><mn>30</mn><mo>;</mo><mspace width="0.5em"/><mi>f</mi><mo>(</mo><mn>30</mn><mo>)</mo><mo>=</mo><mn>30</mn></mtd></mtr><mtr><mtd><mi>g</mi><mo>(</mo><mn>10</mn><mo>)</mo><mo>=</mo><mn>30</mn><mo>;</mo><mspace width="0.5em"/><mi>g</mi><mo>(</mo><mn>30</mn><mo>)</mo><mo>=</mo><mn>50</mn></mtd></mtr></mtable></math><div class="math-legend"><span>f: festen Wert 30 setzen</span><span>g: aktuellen Wert um 20 erhöhen</span></div></div><p>Ein neuer Protokolleintrag je Versuch kann trotzdem entstehen. Sage deshalb ausdrücklich, welchen Zustand du vergleichst: hier den verwalteten Konfigurationswert, nicht die komplette Protokollhistorie. Aus einem unveränderten Zielwert folgt außerdem nicht, dass ein Ablauf nebenwirkungsfrei oder parallel sicher ist.</p>
+<h2 class="sec" id="s4"><span class="num">4</span>Stabil bedeutet nicht richtig</h2>
+<p>Gegenbeispiel zum selben Auftrag: Der Wert soll 30 sein, aber eine fehlerhafte Umsetzung setzt ihn immer auf 20. Nach dem ersten Lauf steht er auf 20 und nach dem zweiten weiterhin auf 20. Diese Operation ist in unserem Modell idempotent, erfüllt aber den Auftrag nicht.</p>
+<p>Prüfe deshalb zwei Dinge getrennt: Stimmt das Ergebnis mit dem Soll überein? Bleibt die Wirkung bei einem identischen Wiederholungsaufruf stabil? Ein grüner Wiederholungstest ohne Soll-Ist-Vergleich könnte eine dauerhaft falsche Konfiguration freigeben.</p>
+<section class="quiz" data-quiz="idempotenz-deklarativ-vs-imperativ-erklaren-stabil-falsch" data-correct="1">
+  <h3>Auftrag: Wert 30. Umsetzung: bei jedem Aufruf auf 20 setzen. Welche Bewertung stimmt unter unseren Modellannahmen?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Der unveränderte Wert 20 bleibt ein falsches Ergebnis für den Auftrag 30."><span class="m">A</span> Korrekt und idempotent, weil der zweite Lauf nichts mehr ändert.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die Wiederholung bleibt stabil; der Soll-Ist-Vergleich schlägt trotzdem fehl."><span class="m">B</span> Idempotent bezüglich des Werts, aber fachlich nicht korrekt.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Idempotenz beschreibt die Wiederholungswirkung, nicht die Übereinstimmung mit dem Auftrag."><span class="m">C</span> Nicht idempotent, weil jede fehlerhafte Umsetzung diese Eigenschaft verliert.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Wiederholung selbst prüfen</h2>
+<section class="numeric-practice transfer-number" data-numeric-practice="idempotenz-deklarativ-vs-imperativ-erklaren-zahl" data-expected="13" data-tolerance="0" data-correct-feedback="Richtig: nach dem ersten Aufruf 9, nach dem zweiten 13. Der zweite Lauf verändert den Wert erneut." data-wrong-feedback="Verwende beim zweiten Aufruf den Zustand nach dem ersten, nicht erneut den Startwert.">
+  <h3>Zweiten Lauf vorhersagen</h3>
+  <p>Startwert 5. Eine Operation erhöht den aktuellen Wert bei jedem Aufruf um 4. Welcher Wert steht nach zwei Aufrufen im Modell?</p>
+  <label for="idempotenz-deklarativ-vs-imperativ-erklaren-zahl-answer">Wert nach dem zweiten Aufruf</label>
+  <div class="answer-row"><input id="idempotenz-deklarativ-vs-imperativ-erklaren-zahl-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Ergebnis"><button type="button" class="lbtn" data-numeric-check>Antwort prüfen</button></div><p>  <template data-numeric-feedback-for="9">Neun ist der Wert nach nur einem Aufruf.</template>
+  <template data-numeric-feedback-for="8">Acht ist nur die gesamte Erhöhung; der Startwert fünf fehlt.</template>
+  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p></p>
+</section><section class="quiz" data-quiz="idempotenz-deklarativ-vs-imperativ-erklaren-uebung" data-correct="1">
+  <h3>Ein imperatives Skript prüft einen verwalteten Wert und setzt ihn bei Abweichung auf 30. Was gilt in unserem fehlerfreien Modell?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Schreibweise und Wiederholungswirkung sind verschiedene Eigenschaften."><span class="m">A</span> Imperativer Code kann grundsätzlich nicht idempotent sein.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Der feste Sollwert verhindert ein erneutes Erhöhen."><span class="m">B</span> Nach dem ersten Erreichen von 30 bleibt der Zielwert bei unverändertem Auftrag stabil.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Das folgt nicht aus dem Auftrag und würde den Sollzustand zerstören."><span class="m">C</span> Jeder zweite Lauf muss den Wert löschen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Testplan statt Etikett</h2>
+<section class="sequence-practice" data-sequence="idempotenz-deklarativ-vs-imperativ-erklaren-reihenfolge" data-expected="start,schleife,ausgabe" data-correct-feedback="Erst den Vergleich festlegen, dann ersten und zweiten Zustand prüfen." data-wrong-feedback="Ohne definierten Vergleich weißt du nicht, welche Wirkung stabil bleiben muss." aria-labelledby="idempotenz-deklarativ-vs-imperativ-erklaren-reihenfolge-title">
+  <div class="lab-heading"><div><h3 id="idempotenz-deklarativ-vs-imperativ-erklaren-reihenfolge-title">Wiederholungsnachweis aufbauen</h3><p>Ordne die drei Schritte für einen begrenzten Test.</p></div><span class="lab-tag">Ablauf</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="ausgabe" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Gleichen Auftrag erneut anwenden und Zielzustand vergleichen</span></li>
+    <li data-step="start" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Startzustand, Auftrag und betrachteten Zielzustand festlegen</span></li>
+    <li data-step="schleife" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Auftrag einmal anwenden und tatsächliches Ergebnis prüfen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><section class="recall-practice" data-recall="idempotenz-deklarativ-vs-imperativ-erklaren-begruendung" data-min-length="80" aria-labelledby="idempotenz-deklarativ-vs-imperativ-erklaren-begruendung-title">
+  <div class="recall-prompt"><h3 id="idempotenz-deklarativ-vs-imperativ-erklaren-begruendung-title">Deinen Nachweis formulieren</h3><p>Beschreibe einen Test für „Wert soll 30 sein“. Nenne Startzustand, Ergebnis nach zwei Läufen, Annahmen und eine Grenze des Tests.</p></div>
+  <label class="sr-only" for="idempotenz-deklarativ-vs-imperativ-erklaren-begruendung-answer">Dein Nachweis</label>
+  <textarea id="idempotenz-deklarativ-vs-imperativ-erklaren-begruendung-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Ich beginne beispielsweise bei zehn und wende denselben Auftrag zweimal an. Nach beiden Läufen muss der verwaltete Wert dreißig sein. Eingaben und Sollwert bleiben gleich, kein anderer Prozess ändert den Wert dazwischen. Der Test betrachtet den Konfigurationswert; neue Protokolleinträge sind möglich. Der Versuch beweist weder Fehlerfreiheit für alle Startzustände noch Sicherheit bei parallelen Änderungen.</div>
+</section><p>Ändert ein anderer Prozess den Wert zwischen den Läufen, liegt nicht mehr derselbe Wiederholungsversuch vor. Ein erneutes Herstellen des Sollwerts kann dann sinnvoll sein. Vor einer tatsächlichen Korrektur müssen Zuständigkeit und Änderungsfreigabe geklärt sein. Ein Existenztest allein verhindert außerdem keinen Wettlauf paralleler Prozesse.</p>
+<h2 class="sec" id="s7"><span class="num">7</span>Aus dem Gedächtnis erklären</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="idempotenz-deklarativ-vs-imperativ-erklaren-karte-0" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was unterscheidet deklarativ von imperativ?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Deklarativ beschreibt das gewünschte Ergebnis, imperativ die auszuführenden Schritte.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="idempotenz-deklarativ-vs-imperativ-erklaren-karte-1" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Ist imperativer Code automatisch nicht idempotent?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Nein. Auch eine Anweisungsfolge kann beim Wiederholen denselben Zielzustand erhalten.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="idempotenz-deklarativ-vs-imperativ-erklaren-karte-2" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum genügt ein erfolgreicher erster Lauf nicht?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Er zeigt nicht, ob ein zweiter identischer Aufruf weitere Änderungen erzeugt.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Beschreibung“:</span><button type="button" data-card-id="idempotenz-deklarativ-vs-imperativ-erklaren-karte-0" data-card-rate="known">gewusst</button><button type="button" data-card-id="idempotenz-deklarativ-vs-imperativ-erklaren-karte-0" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="idempotenz-deklarativ-vs-imperativ-erklaren-karte-0"></span></div>
+<div class="card-rating"><span>Karte „Wirkung“:</span><button type="button" data-card-id="idempotenz-deklarativ-vs-imperativ-erklaren-karte-1" data-card-rate="known">gewusst</button><button type="button" data-card-id="idempotenz-deklarativ-vs-imperativ-erklaren-karte-1" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="idempotenz-deklarativ-vs-imperativ-erklaren-karte-1"></span></div>
+<div class="card-rating"><span>Karte „Grenze“:</span><button type="button" data-card-id="idempotenz-deklarativ-vs-imperativ-erklaren-karte-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="idempotenz-deklarativ-vs-imperativ-erklaren-karte-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="idempotenz-deklarativ-vs-imperativ-erklaren-karte-2"></span></div><h2 class="sec" id="s8"><span class="num">8</span>Lernziel-Check</h2>
+<section class="quiz" data-quiz="idempotenz-deklarativ-vs-imperativ-erklaren-transfer-a" data-correct="2" data-required-objective="modell">
+  <h3>Ein Auftrag lautet „Die verwaltete Kontaktliste soll genau A und B enthalten“. Welche Einordnung passt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Es wurden keine konkreten Schritte beschrieben."><span class="m">A</span> Das ist zwingend eine imperative Schrittfolge.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die tatsächliche Wirkung der Umsetzung muss geprüft werden."><span class="m">B</span> Damit ist jede mögliche Umsetzung automatisch idempotent.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Beschreibung des Solls und Eigenschaft der Umsetzung sind getrennte Fragen."><span class="m">C</span> Das ist eine deklarative Zielbeschreibung; die Wiederholungswirkung ist zusätzlich zu prüfen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="idempotenz-deklarativ-vs-imperativ-erklaren-transfer-b" data-correct="0" data-required-objective="wiederholung">
+  <h3>Ein Ablauf hängt bei jedem Aufruf erneut A an eine Liste an, die Dubletten erlaubt. Nach einem Lauf enthält sie A, nach zwei Läufen A und A. Was folgt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Die zweite identische Anwendung verändert den betrachteten Zustand erneut."><span class="m">A</span> Bezüglich des Listeninhalts ist dieser Ablauf nicht idempotent.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Erfolgsmeldungen ersetzen keinen Zustandsvergleich."><span class="m">B</span> Er ist idempotent, weil beide Aufrufe erfolgreich waren.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die zusätzliche Dublette verändert den Listeninhalt."><span class="m">C</span> Er ist idempotent, weil A weiterhin vorkommt.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s9"><span class="num">9</span>Quellen und Grenzen</h2>
+<p>Buchkontext: EUROPA Prüfungsvorbereitung Teil 2 Integratoren, Chunk 00750, Zeilen 7569–7596, Programmierparadigmen. Definition der Wiederholungswirkung: <a href="https://docs.ansible.com/projects/ansible/latest/reference_appendices/glossary.html#idempotency">Ansible-Glossar – Idempotency</a>, geprüft am 15.09.2026.</p>
+<p>Eigene Zahlenmodelle, Aufgaben und Grafik; keine übernommenen Verwaltungsbefehle. Die Modelle vergleichen den ausdrücklich benannten Zustand unter unveränderten Bedingungen. Produktionsfreigabe, Fehlerbehandlung und gleichzeitige Zugriffe sind zusätzliche Prüfaufgaben.</p>
+
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-9"><span class="d">zurück zu</span><span class="t">Programme zur automatisierten Systemverwaltung</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Programme zur automatisierten Systemverwaltung</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Vorwissen aktivieren</a></li>
+<li><a href="#s2" data-t="s2">Zwei verschiedene Fragen</a></li>
+<li><a href="#s3" data-t="s3">Zwei vollständig durchgerechnete Modelle</a></li>
+<li><a href="#s4" data-t="s4">Stabil bedeutet nicht richtig</a></li>
+<li><a href="#s5" data-t="s5">Wiederholung selbst prüfen</a></li>
+<li><a href="#s6" data-t="s6">Testplan statt Etikett</a></li>
+<li><a href="#s7" data-t="s7">Aus dem Gedächtnis erklären</a></li>
+<li><a href="#s8" data-t="s8">Lernziel-Check</a></li>
+<li><a href="#s9" data-t="s9">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-9">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

@@ -1,5 +1,668 @@
 window.AP2_LEARNING_TOPICS = Object.freeze([
   {
+    "id": "server-leistungsindikatoren-cpu-ram-io",
+    "slug": "server-leistungsindikatoren-cpu-ram-io",
+    "title": "Serverleistung richtig lesen: CPU, RAM und I/O",
+    "description": "Messwerte einem Engpass zuordnen und IOPS, Durchsatz und Latenz aus einem Lastprofil begründet unterscheiden.",
+    "domain": "GA1",
+    "groupId": "ga1-1",
+    "groupLabel": "Server-, Client- und Hardwarekonzeption",
+    "itemId": "ga1-1__0",
+    "week": "KW 35",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "cpu-ram",
+      "io-metriken"
+    ],
+    "sources": [
+      "server-cpu-intel",
+      "server-memory-kingston",
+      "server-io-dell"
+    ],
+    "contentHash": "0c7148b336730db131a8d88e9937bedf6f8563c18ad7d609c542cfdbdba6e84f",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "serverdimensionierung-anforderungen-begruenden",
+    "slug": "serverdimensionierung-anforderungen-begruenden",
+    "title": "Server dimensionieren: vom Bedarf zur Entscheidung",
+    "description": "Aus gemessenen Spitzenwerten, Reserven und Antwortzeitzielen eine nachvollziehbare Serverkonfiguration auswählen.",
+    "domain": "GA1",
+    "groupId": "ga1-1",
+    "groupLabel": "Server-, Client- und Hardwarekonzeption",
+    "itemId": "ga1-1__1",
+    "week": "KW 35",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "bedarf",
+      "entscheidung"
+    ],
+    "sources": [
+      "sizing-aws-rightsize",
+      "sizing-aws-metrics",
+      "server-io-dell"
+    ],
+    "contentHash": "a8e1edadfa724d651bc1f2099dd45f3cf5c2e843796d7128bd180b4150576bfb",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "serverbauformen-tower-rack-blade",
+    "slug": "serverbauformen-tower-rack-blade",
+    "title": "Serverbauformen: Tower, Rack oder Blade?",
+    "description": "Bauformen anhand des Einsatzorts wählen und einen Rackeinbau über Höhe, Tiefe, Schienen und Traglast prüfen.",
+    "domain": "GA1",
+    "groupId": "ga1-1",
+    "groupLabel": "Server-, Client- und Hardwarekonzeption",
+    "itemId": "ga1-1__2",
+    "week": "KW 35",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "bauform",
+      "einbau"
+    ],
+    "sources": [
+      "europa-integratoren-2026",
+      "server-form-hpe-rack",
+      "server-form-hpe-blade",
+      "server-form-dell-rails",
+      "server-form-dell-u"
+    ],
+    "contentHash": "14750c0ff3c4f4afcbdf8e92b25055c9c8146a52d57b1f6eea2becc3eb124583",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "hardware-redundanz-hot-swap-hot-spare-bonding-ecc",
+    "slug": "hardware-redundanz-hot-swap-hot-spare-bonding-ecc",
+    "title": "Hardware-Redundanz: welcher Ausfall ist wirklich abgedeckt?",
+    "description": "Netzteile, austauschbare Komponenten, Ersatzplatten, Netzwerkpfade und ECC nach ihrer tatsächlichen Schutzwirkung unterscheiden.",
+    "domain": "GA1",
+    "groupId": "ga1-1",
+    "groupLabel": "Server-, Client- und Hardwarekonzeption",
+    "itemId": "ga1-1__3",
+    "week": "KW 35",
+    "estimatedMinutes": 32,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "strom",
+      "speicher",
+      "netz"
+    ],
+    "sources": [
+      "europa-integratoren-2026",
+      "redundancy-dell-psu",
+      "redundancy-dell-spare",
+      "redundancy-linux-bond",
+      "redundancy-kingston-ecc"
+    ],
+    "contentHash": "c991a241c93bc4ebccdf349a19998c61f31e113b73aadb5b26f8737977397544",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "clients-fat-thin-zero-vdi-daas",
+    "slug": "clients-fat-thin-zero-vdi-daas",
+    "title": "Client-Konzepte: lokal arbeiten oder Desktop streamen?",
+    "description": "Fat, Thin und Zero Clients von VDI und DaaS trennen und anhand von Netzabhängigkeit und Betriebsverantwortung auswählen.",
+    "domain": "GA1",
+    "groupId": "ga1-1",
+    "groupLabel": "Server-, Client- und Hardwarekonzeption",
+    "itemId": "ga1-1__4",
+    "week": "KW 35",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "endpunkt",
+      "dienstmodell"
+    ],
+    "sources": [
+      "itlf10-12-2023",
+      "clients-hp-thin-zero",
+      "clients-microsoft-avd",
+      "clients-aws-daas",
+      "clients-ibm-local-remote"
+    ],
+    "contentHash": "b383c8bc8e7eefcdcf74038a28b7b6b79e335122b2bc49005d620fe900d3bf3e",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "peripherie-appliances-rollen-und-grenzen",
+    "slug": "peripherie-appliances-rollen-und-grenzen",
+    "title": "Appliances und Peripherie: wer erledigt welche Aufgabe?",
+    "description": "Hardware-Firewall, Load Balancer, NAS und Multifunktionsgerät einem Datenfluss zuordnen und falsche Sicherheitsannahmen erkennen.",
+    "domain": "GA1",
+    "groupId": "ga1-1",
+    "groupLabel": "Server-, Client- und Hardwarekonzeption",
+    "itemId": "ga1-1__5",
+    "week": "KW 35",
+    "estimatedMinutes": 27,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "rollen",
+      "grenzen"
+    ],
+    "sources": [
+      "appliance-fortinet-policy",
+      "appliance-nginx-health",
+      "appliance-synology-nas",
+      "appliance-hp-mfp"
+    ],
+    "contentHash": "f9a8054fa6a817db1a169d91aa423407fc82eb306beaa17027437d38c4b29242",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "rechenzentrumsbetrieb-leistung-waerme-luftfuehrung",
+    "slug": "rechenzentrumsbetrieb-leistung-waerme-luftfuehrung",
+    "title": "Rechenzentrumsbetrieb: Strom, Wärme und Luftwege",
+    "description": "IT-Leistung in Wärmelast und Tagesenergie übersetzen, Kalt- und Warmgang erklären und eine Kühlentscheidung begründen.",
+    "domain": "GA1",
+    "groupId": "ga1-1",
+    "groupLabel": "Server-, Client- und Hardwarekonzeption",
+    "itemId": "ga1-1__6",
+    "week": "KW 35",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "leistung-waerme",
+      "luftwege"
+    ],
+    "sources": [
+      "dc-doe-design-guide",
+      "dc-ashrae-airflow",
+      "europa-integratoren-2026"
+    ],
+    "contentHash": "bc773288cfb829e2a64c6e20bc18a2d30c8f2fb9eb6e2a1fda89bbcb613c4ba7",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "usv-leistung-laufzeit-abschaltung",
+    "slug": "usv-leistung-laufzeit-abschaltung",
+    "title": "USV auslegen: VA, Watt und sichere Abschaltung",
+    "description": "Leistungsfaktor, USV-Grenzen, Batterielaufzeit und Topologie in einer Beschaffungsentscheidung zusammenführen.",
+    "domain": "GA1",
+    "groupId": "ga1-1",
+    "groupLabel": "Server-, Client- und Hardwarekonzeption",
+    "itemId": "ga1-1__7",
+    "week": "KW 35",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "dimensionierung",
+      "betriebsfall"
+    ],
+    "sources": [
+      "ups-eaton-sizing",
+      "ups-schneider-transfer",
+      "ups-eaton-shutdown",
+      "europa-integratoren-2026"
+    ],
+    "contentHash": "bff649bddc418e1688ef7ae6045b70530ee05369cea785e5cd6c4cc293fc0450",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "usv-klassen-vfd-vi-vfi-schaltbilder",
+    "slug": "usv-klassen-vfd-vi-vfi-schaltbilder",
+    "title": "USV-Klassen lesen: VFD, VI und VFI",
+    "description": "Die drei Kürzel nach IEC 62040-3 auseinanderhalten und vereinfachte Funktionsschaltbilder richtig zuordnen.",
+    "domain": "GA1",
+    "groupId": "ga1-1",
+    "groupLabel": "Server-, Client- und Hardwarekonzeption",
+    "itemId": "ga1-1__8",
+    "week": "KW 35",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "klassen",
+      "schaltweg"
+    ],
+    "sources": [
+      "ups-iec-62040-3-2021",
+      "ups-doe-vfd-vi-vfi",
+      "ups-eaton-topologies",
+      "ihk-bonn"
+    ],
+    "contentHash": "5e539c28b6bc61aad55f1cfe220f384ce56771e097492817b5ff083023935e46",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "redundanzstufen-n-plus-eins-zwei-n-geo",
+    "slug": "redundanzstufen-n-plus-eins-zwei-n-geo",
+    "title": "Redundanzstufen: N+1, 2N und zwei Standorte",
+    "description": "Kapazitätsreserve von unabhängigen Pfaden trennen und Georedundanz anhand eines Dienstes bewerten.",
+    "domain": "GA1",
+    "groupId": "ga1-1",
+    "groupLabel": "Server-, Client- und Hardwarekonzeption",
+    "itemId": "ga1-1__9",
+    "week": "KW 35",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "kapazitaet",
+      "standort"
+    ],
+    "sources": [
+      "redundancy-schneider-ups-types",
+      "redundancy-aws-dr-strategy",
+      "redundancy-aws-dr-operations"
+    ],
+    "contentHash": "5fda1f680e83cbb3057e1f0ac9a3f4ea68175865759b9a6fc216803e9091e7aa",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "green-it-pue-lebenszyklus-refurbishing",
+    "slug": "green-it-pue-lebenszyklus-refurbishing",
+    "title": "Green IT: PUE und Beschaffung über den Lebenszyklus",
+    "description": "RZ-Energiekennzahl rechnen und eine Geräteentscheidung mit Betrieb, Zweitnutzung und Eignung begründen.",
+    "domain": "GA1",
+    "groupId": "ga1-1",
+    "groupLabel": "Server-, Client- und Hardwarekonzeption",
+    "itemId": "ga1-1__10",
+    "week": "KW 35",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "pue",
+      "beschaffung"
+    ],
+    "sources": [
+      "green-doe-datacenter-guide",
+      "green-uba-refurbished-ict",
+      "green-jrc-gpp-ict"
+    ],
+    "contentHash": "55ed43493beaef5b89226b1be9bcb1feac09035da81d6d5a060c614bcd061541",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "windows-server-core-cal-open-source-lizenzen",
+    "slug": "windows-server-core-cal-open-source-lizenzen",
+    "title": "Lizenzen planen: Cores, CALs und Open Source",
+    "description": "Windows-Server-2025-Kernlizenzen und Zugriffsrechte im Fall trennen und Open-Source-Pflichten differenziert prüfen.",
+    "domain": "GA1",
+    "groupId": "ga1-1",
+    "groupLabel": "Server-, Client- und Hardwarekonzeption",
+    "itemId": "ga1-1__11",
+    "week": "KW 35",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "cores",
+      "zugriff",
+      "offen"
+    ],
+    "sources": [
+      "license-microsoft-ws2025",
+      "license-osi-faq",
+      "license-osi-mit",
+      "license-gnu-gpl3"
+    ],
+    "contentHash": "93447810ff5d04511f2007c3547993fd8096432f22969cc755b775f4f2c00ca5",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "hypervisor-typ-eins-zwei-einsatzentscheidung",
+    "slug": "hypervisor-typ-eins-zwei-einsatzentscheidung",
+    "title": "Hypervisor Typ 1 oder Typ 2?",
+    "description": "Die Schichten bis zur Hardware zeichnen, Hyper-V richtig einordnen und für Labor oder Serverbetrieb begründet entscheiden.",
+    "domain": "GA1",
+    "groupId": "ga1-2",
+    "groupLabel": "Virtualisierung, Cluster und Verfügbarkeit",
+    "itemId": "ga1-2__0",
+    "week": "KW 36",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "architektur",
+      "entscheidung"
+    ],
+    "sources": [
+      "hypervisor-oracle-virtualbox-hosted",
+      "hypervisor-microsoft-architecture",
+      "hypervisor-vmware-esxi-target"
+    ],
+    "contentHash": "d84cfea0aeebb4c0d84d519bffe1c0c51715f910b36429cce1bfb9865cfd4751",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "container-vs-vm-isolation-ressourcen-einsatz",
+    "slug": "container-vs-vm-isolation-ressourcen-einsatz",
+    "title": "Container oder VM? Die Grenze liegt beim Kernel",
+    "description": "Isolation, Ressourcen und Startverhalten ohne Pauschalurteil vergleichen und drei Einsatzfälle begründet lösen.",
+    "domain": "GA1",
+    "groupId": "ga1-2",
+    "groupLabel": "Virtualisierung, Cluster und Verfügbarkeit",
+    "itemId": "ga1-2__1",
+    "week": "KW 36",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "grenze",
+      "einsatz"
+    ],
+    "sources": [
+      "container-microsoft-vs-vm",
+      "container-docker-concepts",
+      "container-microsoft-isolation"
+    ],
+    "contentHash": "321a09b22d2020fd5ee79296cd346d1345514584631f32ab0bc05c7cae82180d",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation",
+    "slug": "vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation",
+    "title": "Virtualisierung abwägen: vier VMs, ein Host",
+    "description": "Konsolidierung, Prüfpunkte und Isolation nutzen, ohne Hostausfall, Ressourcenbedarf oder Lizenzen zu übersehen.",
+    "domain": "GA1",
+    "groupId": "ga1-2",
+    "groupLabel": "Virtualisierung, Cluster und Verfügbarkeit",
+    "itemId": "ga1-2__2",
+    "week": "KW 36",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "konsolidierung",
+      "entscheidung"
+    ],
+    "sources": [
+      "virt-ms-checkpoints",
+      "virt-ms-host-requirements",
+      "virt-ms-dc-host-failure",
+      "virt-nist-hypervisor-security",
+      "license-microsoft-ws2025"
+    ],
+    "contentHash": "107aa02f42cbf5dd13d7f8c645a74769016828bc471ea7025cd6c623317d90c0",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "overcommitment-cpu-ram-ballooning-thin-thick",
+    "slug": "overcommitment-cpu-ram-ballooning-thin-thick",
+    "title": "Mehr versprochen als vorhanden? CPU, RAM und Speicher",
+    "description": "Overcommitment, Ballooning und Thin/Thick Provisioning an drei Kapazitätsbudgets unterscheiden und sicher beurteilen.",
+    "domain": "GA1",
+    "groupId": "ga1-2",
+    "groupLabel": "Virtualisierung, Cluster und Verfügbarkeit",
+    "itemId": "ga1-2__3",
+    "week": "KW 36",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "cpu-ram",
+      "disk"
+    ],
+    "sources": [
+      "overcommit-redhat-rhel9",
+      "overcommit-microsoft-dynamic-memory",
+      "overcommit-broadcom-disk-types"
+    ],
+    "contentHash": "b6e8ddb9b86bc8526bf1961e9be6c11cf57f09f8c52787f44ffbc789edd0cfa6",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "live-migration-voraussetzungen-wartung-shared-nothing",
+    "slug": "live-migration-voraussetzungen-wartung-shared-nothing",
+    "title": "Live-Migration: Wartung ohne VM-Neustart planen",
+    "description": "Hosts, CPU, Netz und Storage-Muster prüfen; geplanten Umzug von automatischem Failover unterscheiden.",
+    "domain": "GA1",
+    "groupId": "ga1-2",
+    "groupLabel": "Virtualisierung, Cluster und Verfügbarkeit",
+    "itemId": "ga1-2__4",
+    "week": "KW 36",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "voraussetzungen",
+      "wartung"
+    ],
+    "sources": [
+      "migration-ms-overview",
+      "migration-ms-with-storage",
+      "migration-ms-cpu-compat",
+      "migration-ms-network"
+    ],
+    "contentHash": "4587262f32ca9b28c1888ebaff78643807b76d0d36650cb37e2030b2403c93ab",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "cluster-arten-failover-load-balancing-aktiv-aktiv-passiv",
+    "slug": "cluster-arten-failover-load-balancing-aktiv-aktiv-passiv",
+    "title": "Cluster wählen: verteilen oder übernehmen?",
+    "description": "Failover, Load Balancing und Aktiv-Aktiv/Aktiv-Passiv anhand von Ausfällen und Restkapazität unterscheiden.",
+    "domain": "GA1",
+    "groupId": "ga1-2",
+    "groupLabel": "Virtualisierung, Cluster und Verfügbarkeit",
+    "itemId": "ga1-2__5",
+    "week": "KW 36",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "muster",
+      "kapazitaet"
+    ],
+    "sources": [
+      "cluster-ms-failover-overview",
+      "cluster-aws-elb-routing",
+      "cluster-ms-fault-domains"
+    ],
+    "contentHash": "68303583d9199665f163137017889de11e88fe747b7000f855c29b96e9484819",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "quorum-split-brain-fencing-witness-tiebreaker",
+    "slug": "quorum-split-brain-fencing-witness-tiebreaker",
+    "title": "Wer darf weiterschreiben? Quorum und Fencing",
+    "description": "Netztrennung im Zwei-Knoten-Cluster sicher entscheiden: Stimmenmehrheit, Witness und Ausschluss des alten Schreibers.",
+    "domain": "GA1",
+    "groupId": "ga1-2",
+    "groupLabel": "Virtualisierung, Cluster und Verfügbarkeit",
+    "itemId": "ga1-2__6",
+    "week": "KW 36",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "abstimmung",
+      "schutz"
+    ],
+    "sources": [
+      "quorum-ms-witness",
+      "quorum-redhat-overview",
+      "quorum-redhat-device"
+    ],
+    "contentHash": "97f7b7df8e9a64061e58c97844df1865356cc55af46a4c22a3dfc9238e439482",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "snapshot-ist-kein-backup",
+    "slug": "snapshot-ist-kein-backup",
+    "title": "Snapshot ist kein Backup – den Ausfall mitdenken",
+    "description": "Rücksprungpunkt und unabhängige Sicherung anhand von Patchfehler, Speicherdefekt und Restore-Test sauber abgrenzen.",
+    "domain": "GA1",
+    "groupId": "ga1-2",
+    "groupLabel": "Virtualisierung, Cluster und Verfügbarkeit",
+    "itemId": "ga1-2__7",
+    "week": "KW 36",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "abgrenzung",
+      "entscheidung"
+    ],
+    "sources": [
+      "snapshot-ms-checkpoints",
+      "snapshot-vmware-overview",
+      "snapshot-ms-troubleshooting"
+    ],
+    "contentHash": "75f9019d038fc714ef22a42dae0444fc2cd6eeaf15b6984c9b45d80df275308c",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "verfuegbarkeit-ausfallzeit-jahr-monat",
+    "slug": "verfuegbarkeit-ausfallzeit-jahr-monat",
+    "title": "99,9 % klingt viel – wie lange darf es ausfallen?",
+    "description": "Verfügbarkeitsziele in Ausfallminuten pro Jahr und 30-Tage-Monat umrechnen und die Messperiode sauber benennen.",
+    "domain": "GA1",
+    "groupId": "ga1-2",
+    "groupLabel": "Virtualisierung, Cluster und Verfügbarkeit",
+    "itemId": "ga1-2__8",
+    "week": "KW 36",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "rechnen",
+      "einordnen"
+    ],
+    "sources": [
+      "availability-google-table",
+      "availability-google-risk"
+    ],
+    "contentHash": "d451c724de7793cefc4b835ce5170b1b4d4f4c9cb895634e43bbc322df85feb1",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "mtbf-mttr-verfuegbarkeit",
+    "slug": "mtbf-mttr-verfuegbarkeit",
+    "title": "MTBF und MTTR: seltener ausfallen, schneller zurück sein",
+    "description": "Aus Betriebs- und Ausfallzeit Kennzahlen berechnen und mit der Verfügbarkeitsformel Entscheidungen begründen.",
+    "domain": "GA1",
+    "groupId": "ga1-2",
+    "groupLabel": "Virtualisierung, Cluster und Verfügbarkeit",
+    "itemId": "ga1-2__9",
+    "week": "KW 36",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "kennzahlen",
+      "verfuegbarkeit"
+    ],
+    "sources": [
+      "mtbf-aws-availability",
+      "mtbf-ibm-metrics"
+    ],
+    "contentHash": "5e3ff7da6f2315be4831e87d384155f5e35844801e9b8352be66f7c407a1338c",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "reihen-und-parallelschaltung-verfuegbarkeit",
+    "slug": "reihen-und-parallelschaltung-verfuegbarkeit",
+    "title": "Reihe oder parallel? Verfügbarkeit der Dienstkette",
+    "description": "Harte Abhängigkeiten und unabhängige Redundanz unterscheiden, Gesamtverfügbarkeit berechnen und gemeinsame Ausfälle erkennen.",
+    "domain": "GA1",
+    "groupId": "ga1-2",
+    "groupLabel": "Virtualisierung, Cluster und Verfügbarkeit",
+    "itemId": "ga1-2__10",
+    "week": "KW 36",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "rechnen",
+      "grenzen"
+    ],
+    "sources": [
+      "availability-aws-reliability-pillar",
+      "availability-aws-dependencies",
+      "availability-aws-redundancy"
+    ],
+    "contentHash": "f2ba08b20bbd20ed4b2006af2e5cdc72820a48558387bfa4274d209bd78fd856",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "sla-servicezeiten-reaktion-wiederherstellung",
+    "slug": "sla-servicezeiten-reaktion-wiederherstellung",
+    "title": "SLA lesen: Antwort ist noch keine Lösung",
+    "description": "Reaktions- und Wiederherstellungszeit, Servicefenster, Messdefinitionen und vertragliche Folgen an einem Störfall unterscheiden.",
+    "domain": "GA1",
+    "groupId": "ga1-2",
+    "groupLabel": "Virtualisierung, Cluster und Verfügbarkeit",
+    "itemId": "ga1-2__11",
+    "week": "KW 36",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "zeiten",
+      "vertrag"
+    ],
+    "sources": [
+      "sla-ms-overview",
+      "sla-ibm-business-hours",
+      "sla-aws-ec2"
+    ],
+    "contentHash": "e7f49b8958aba153d1b18c14f7b41fe254c8cad4345a2129a3ecf6f78a8ce309",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "kubernetes-pod-deployment-service",
+    "slug": "kubernetes-pod-deployment-service",
+    "title": "Kubernetes: Wer startet Pods, wer findet sie?",
+    "description": "Pod, Deployment, Service und Replikate an einem Ausfall verstehen, ohne Erreichbarkeit mit Datensicherung zu verwechseln.",
+    "domain": "GA1",
+    "groupId": "ga1-2",
+    "groupLabel": "Virtualisierung, Cluster und Verfügbarkeit",
+    "itemId": "ga1-2__12",
+    "week": "KW 36",
+    "estimatedMinutes": 28,
+    "relevance": "mittel",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "rollen",
+      "ausfall"
+    ],
+    "sources": [
+      "k8s-pods",
+      "k8s-deployments",
+      "k8s-services"
+    ],
+    "contentHash": "1391719076ffd343eaaf2dc794369b7feb1a34aa1836293f31888beaa29ab1a1",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "storage-types",
     "slug": "storage-types",
     "title": "DAS, NAS und SAN sicher unterscheiden",
@@ -24,6 +687,59 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     ],
     "contentHash": "5dfdf32eb1fed8b53580627a3b729dbffe93c09c823f8f6579da91aa86337dfa",
     "sourceKind": "legacy-markdown"
+  },
+  {
+    "id": "auswahlentscheidung-nas-vs-san-einem-szenario-begrunden",
+    "slug": "auswahlentscheidung-nas-vs-san-einem-szenario-begrunden",
+    "title": "NAS oder SAN: eine Auswahl begründen",
+    "description": "Aus Zugriff, Arbeitslast und Betrieb eine Speicherentscheidung ableiten, statt NAS und SAN pauschal nach Geschwindigkeit zu sortieren.",
+    "domain": "GA1",
+    "groupId": "ga1-3",
+    "groupLabel": "Speicherlösungen",
+    "itemId": "ga1-3__1",
+    "week": "KW 37",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-17.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "auswahl",
+      "begruendung"
+    ],
+    "sources": [
+      "storage-access-model",
+      "storage-windows-cases",
+      "ihk-bonn",
+      "itlf6-9-2022"
+    ],
+    "contentHash": "75e87bc2a774642f4a362fbfa77b7fe6081347a569adffc6a7291c1add288c85",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "objektspeicher-s3-kompatibel-buckets-keys-versionierung-object-lock",
+    "slug": "objektspeicher-s3-kompatibel-buckets-keys-versionierung-object-lock",
+    "title": "Objektspeicher: Versionen verstehen und schützen",
+    "description": "Buckets, Keys und Versionen unterscheiden und ein Backup-Ziel mit Löschschutz begründet auswählen.",
+    "domain": "GA1",
+    "groupId": "ga1-3",
+    "groupLabel": "Speicherlösungen",
+    "itemId": "ga1-3__2",
+    "week": "KW 37",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-17.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "versionen",
+      "schutz"
+    ],
+    "sources": [
+      "s3-overview",
+      "s3-versioning",
+      "s3-object-lock"
+    ],
+    "contentHash": "33fb1154dda638ef8942b4d362a76e1710a41c56c97b6816d4248d9da3c3167b",
+    "sourceKind": "compact-spec"
   },
   {
     "id": "raid-level",
@@ -51,6 +767,30 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     ],
     "contentHash": "cb8348c9c5a9cc0223dba0c9a071870165745da6c850bf2c5156d9df32789a4e",
     "sourceKind": "legacy-markdown"
+  },
+  {
+    "id": "write-penalty-raid-level-auswirkung-auf-iops",
+    "slug": "write-penalty-raid-level-auswirkung-auf-iops",
+    "title": "RAID Write Penalty: IOPS richtig einordnen",
+    "description": "Physische I/O-Arbeit aus Lese- und Schreiblast ableiten und die Grenzen des vereinfachten RAID-Modells erkennen.",
+    "domain": "GA1",
+    "groupId": "ga1-3",
+    "groupLabel": "Speicherlösungen",
+    "itemId": "ga1-3__4",
+    "week": "KW 37",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-18.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "rechnen",
+      "grenzen"
+    ],
+    "sources": [
+      "dell-raid-penalty"
+    ],
+    "contentHash": "37e24d4f091981a73bf3c021d6acbf1428562aded40debd12bf835d272074e2f",
+    "sourceKind": "compact-spec"
   },
   {
     "id": "raid-operations",
@@ -105,6 +845,165 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "legacy-markdown"
   },
   {
+    "id": "dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs",
+    "slug": "dateisysteme-ntfs-refs-ext4-xfs-zfs-btrfs",
+    "title": "Dateisysteme: passend auswählen und Daten schützen",
+    "description": "NTFS, ReFS, ext4, XFS, ZFS und Btrfs einordnen; Journal, Prüfsumme, Snapshot und Quota unterscheiden.",
+    "domain": "GA1",
+    "groupId": "ga1-3",
+    "groupLabel": "Speicherlösungen",
+    "itemId": "ga1-3__7",
+    "week": "KW 37",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-18.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "auswahl",
+      "schutz"
+    ],
+    "sources": [
+      "fs-refs",
+      "fs-ext4",
+      "fs-xfs",
+      "fs-btrfs",
+      "fs-zfs-concepts",
+      "fs-zfs-scrub",
+      "fs-ntfs-quota"
+    ],
+    "contentHash": "0031ba903092f8b07a6747fc23853608cde12a8b74da2847b4c4bec39fbe0fa6",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "lvm-volumes-partitionierung-online-erweiterung-volume-groups",
+    "slug": "lvm-volumes-partitionierung-online-erweiterung-volume-groups",
+    "title": "LVM: Speicher verteilen und sicher erweitern",
+    "description": "Physical Volume, Volume Group und Logical Volume unterscheiden; Kapazität planen und Dateisysteme auf der richtigen Ebene erweitern.",
+    "domain": "GA1",
+    "groupId": "ga1-3",
+    "groupLabel": "Speicherlösungen",
+    "itemId": "ga1-3__8",
+    "week": "KW 37",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-18.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "kapazitaet",
+      "ebenen"
+    ],
+    "sources": [
+      "lvm-vg",
+      "lvm-lv",
+      "lvm-ext4-grow",
+      "lvm-xfs-grow"
+    ],
+    "contentHash": "22fe291d02dcd2e6fbf09d8bfde2dd6318821feefd470a16edbb914e4ee780d0",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "deduplizierung-komprimierung-thin-provisioning-nutzen-risiken",
+    "slug": "deduplizierung-komprimierung-thin-provisioning-nutzen-risiken",
+    "title": "Speicher sparen: Deduplizierung, Komprimierung und Thin Provisioning",
+    "description": "Drei unterschiedliche Verfahren auseinanderhalten, Einsparungen berechnen und Überbelegung rechtzeitig erkennen.",
+    "domain": "GA1",
+    "groupId": "ga1-3",
+    "groupLabel": "Speicherlösungen",
+    "itemId": "ga1-3__9",
+    "week": "KW 37",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-18.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "einsparung",
+      "risiko"
+    ],
+    "sources": [
+      "storage-dedupe",
+      "storage-compression",
+      "lvm-lv"
+    ],
+    "contentHash": "ea22066d5ab1a5d7b94b4d17bfd4044f07734db2c2bfda30349e2446ea4343e0",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "software-defined-storage-verteilte-systeme-replikation-vs-erasure",
+    "slug": "software-defined-storage-verteilte-systeme-replikation-vs-erasure",
+    "title": "Verteilte Speicher: Kopien, Erasure Coding und Ausfallbereiche",
+    "description": "Speicherbedarf und Ausfalltoleranz gemeinsam beurteilen, statt die Anzahl der Server mit Sicherheit gleichzusetzen.",
+    "domain": "GA1",
+    "groupId": "ga1-3",
+    "groupLabel": "Speicherlösungen",
+    "itemId": "ga1-3__10",
+    "week": "KW 37",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-18.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "kapazitaet",
+      "ausfall"
+    ],
+    "sources": [
+      "sds-ceph-ec",
+      "sds-ceph-arch"
+    ],
+    "contentHash": "3fcc47efdbb0bffcfc77e8d124130016d95720387729e2dd3562973086dc0dcb",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "kapazitatsplanung-wachstum-reservekapazitat-bruttokapazitat-vs-nutzkapaz",
+    "slug": "kapazitatsplanung-wachstum-reservekapazitat-bruttokapazitat-vs-nutzkapaz",
+    "title": "Kapazitätsplanung: Wachstum, Reserve und TB/TiB",
+    "description": "Vom Datenbestand zur begründeten Speicherkapazität rechnen, ohne Einheiten und Reserve zu vermischen.",
+    "domain": "GA1",
+    "groupId": "ga1-3",
+    "groupLabel": "Speicherlösungen",
+    "itemId": "ga1-3__11",
+    "week": "KW 37",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-18.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "kapazitaet",
+      "einheiten"
+    ],
+    "sources": [
+      "capacity-nist-binary",
+      "capacity-ceph-reserve"
+    ],
+    "contentHash": "81a0f4238d15063fd4f36589f2496d85677512d20f8d843583f27883ea146966",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "archivierung-revisionssichere-ablage-aufbewahrungsfristen-hsm",
+    "slug": "archivierung-revisionssichere-ablage-aufbewahrungsfristen-hsm",
+    "title": "Archivierung: nachvollziehbar aufbewahren und wiederfinden",
+    "description": "Archiv, Backup und HSM unterscheiden, Fristen sauber einordnen und einen Archivierungsprozess auf Lücken prüfen.",
+    "domain": "GA1",
+    "groupId": "ga1-3",
+    "groupLabel": "Speicherlösungen",
+    "itemId": "ga1-3__12",
+    "week": "KW 37",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-18.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "verfahren",
+      "hsm"
+    ],
+    "sources": [
+      "archive-ao147",
+      "archive-gobd",
+      "archive-hsm"
+    ],
+    "contentHash": "4e9773f879b7a6716d2c74af6889a11df5035eb961473765daf1d0e662c5db4b",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "backup-methods",
     "slug": "backup-methods",
     "title": "Sicherungsarten auswählen und Restore-Ketten beherrschen",
@@ -114,9 +1013,9 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "groupLabel": "Block 4 · Backup, Recovery und Notfallvorsorge",
     "itemId": "ga1-4__0",
     "week": "KW 38",
-    "estimatedMinutes": 24,
+    "estimatedMinutes": 31,
     "relevance": "hoch",
-    "contentRevision": "2026-09-11.1",
+    "contentRevision": "2026-09-14.1",
     "contentStatus": "CURATED_DRAFT",
     "learningObjectives": [
       "backup-selection",
@@ -127,8 +1026,108 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
       "ihk-bonn",
       "itlf10-12-2023"
     ],
-    "contentHash": "aec3078290f11d33d85ae68721f35d60f62483472389f47a3a214c862fd416b5",
+    "contentHash": "93b5122ef1212e1e6c0846c4e2261ba391fedcc4651f76b3041a50c0767e773f",
     "sourceKind": "legacy-markdown"
+  },
+  {
+    "id": "szenario-passende-kombination-wahlen-begrunden",
+    "slug": "szenario-passende-kombination-wahlen-begrunden",
+    "title": "Backup-Verfahren im Szenario begründet auswählen",
+    "description": "Sicherungsfenster, Restore-Kette und Wiederanlaufziel gemeinsam prüfen statt pauschal ein Verfahren zu bevorzugen.",
+    "domain": "GA1",
+    "groupId": "ga1-4",
+    "groupLabel": "Backup, Recovery und Notfallvorsorge",
+    "itemId": "ga1-4__1",
+    "week": "KW 38",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-18.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "auswahl",
+      "grenzen"
+    ],
+    "sources": [
+      "backup-choice-ibm"
+    ],
+    "contentHash": "9a7f39bcfe91754a10439f6f951b66d00e5903983ff562d308916fb32b688283",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "generationenprinzip-grossvater-vater-sohn-medienrotation-benotigte-medie",
+    "slug": "generationenprinzip-grossvater-vater-sohn-medienrotation-benotigte-medie",
+    "title": "Generationenprinzip: Medienrotation richtig zählen",
+    "description": "Aufbewahrungsstufen planen und Medienbedarf aus klaren Regeln ableiten.",
+    "domain": "GA1",
+    "groupId": "ga1-4",
+    "groupLabel": "Backup, Recovery und Notfallvorsorge",
+    "itemId": "ga1-4__2",
+    "week": "KW 38",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-18.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "zaehlen",
+      "rotation"
+    ],
+    "sources": [
+      "gfs-veeam-tape",
+      "gfs-veeam-retention"
+    ],
+    "contentHash": "ebbe2dcf8f4365d9affd0bfeb3ca02a781e83c7853603a78e9dc1b96a2297671",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "backup-3-2-1-1-0-offsite-airgap-immutable",
+    "slug": "backup-3-2-1-1-0-offsite-airgap-immutable",
+    "title": "3-2-1-1-0: Kopien gegen denselben Angriff trennen",
+    "description": "Backup-Kopien, Offsite-Lagerung, Air Gap, Unveränderbarkeit und Restore-Prüfung an einem Ransomware-Fall planen.",
+    "domain": "GA1",
+    "groupId": "ga1-4",
+    "groupLabel": "Backup, Recovery und Notfallvorsorge",
+    "itemId": "ga1-4__3",
+    "week": "KW 38",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "kopien",
+      "angriff"
+    ],
+    "sources": [
+      "backup-cisa-ransomware-guide",
+      "backup-veeam-32110",
+      "backup-acsc-321"
+    ],
+    "contentHash": "9a0a5bb3ad380167f6dedbda50e51736bf04fbf3b172b9d2033117127808d2f5",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "rto-rpo-definition-abgrenzung-zuordnung-anforderungen",
+    "slug": "rto-rpo-definition-abgrenzung-zuordnung-anforderungen",
+    "title": "RTO und RPO: Ausfallzeit und Datenstand getrennt planen",
+    "description": "Wiederanlaufziele in messbare Anforderungen übersetzen und mit einem Ausfallprotokoll vergleichen.",
+    "domain": "GA1",
+    "groupId": "ga1-4",
+    "groupLabel": "Backup, Recovery und Notfallvorsorge",
+    "itemId": "ga1-4__4",
+    "week": "KW 38",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-18.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "zuordnen",
+      "pruefen"
+    ],
+    "sources": [
+      "recovery-nist-rto",
+      "recovery-nist-rpo"
+    ],
+    "contentHash": "fbd9c82e17488dcce3188fdd6f27f08e32a2b615c93e2395c2ab2650199e8003",
+    "sourceKind": "compact-spec"
   },
   {
     "id": "backup-window",
@@ -140,9 +1139,9 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "groupLabel": "Block 4 · Backup, Recovery und Notfallvorsorge",
     "itemId": "ga1-4__5",
     "week": "KW 38",
-    "estimatedMinutes": 20,
+    "estimatedMinutes": 27,
     "relevance": "hoch",
-    "contentRevision": "2026-09-11.1",
+    "contentRevision": "2026-09-14.1",
     "contentStatus": "CURATED_DRAFT",
     "learningObjectives": [
       "rate-conversion",
@@ -152,8 +1151,995 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
       "ihk-bonn",
       "europa-integratoren-2026"
     ],
-    "contentHash": "812fafb375f63f3393e95d54e65b28786c57b9cbdd131f52c95dafeed504941d",
+    "contentHash": "f42a7b7eef9af015f3626a57bef0a01faa620ac2ea1a1e6c7b55d38f37711a4d",
     "sourceKind": "legacy-markdown"
+  },
+  {
+    "id": "backup-ziele-lto-d2d2t-cloud",
+    "slug": "backup-ziele-lto-d2d2t-cloud",
+    "title": "Backup-Ziele wählen: Disk, Band und Cloud",
+    "description": "LTO-Kapazität ohne Werbefaktor planen, D2D2T verstehen und Backup-Server sowie Cloud-Kopie in einem Restore-Pfad verorten.",
+    "domain": "GA1",
+    "groupId": "ga1-4",
+    "groupLabel": "Backup, Recovery und Notfallvorsorge",
+    "itemId": "ga1-4__6",
+    "week": "KW 38",
+    "estimatedMinutes": 32,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "kapazitaet",
+      "architektur"
+    ],
+    "sources": [
+      "lto-ibm-capacity",
+      "d2d2t-veeam-tape",
+      "cloud-aws-backup-copy",
+      "backup-ms-dpm-recovery"
+    ],
+    "contentHash": "2a97dd09f1948f5efa0cea14765f96da15ea3f0556364bfba372de4a29ed7554",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "restore-test-wiederanlauf-notfallhandbuch",
+    "slug": "restore-test-wiederanlauf-notfallhandbuch",
+    "title": "Restore beweisen: vom Backup zum Notbetrieb",
+    "description": "Restore-Test, Wiederanlaufplan und Notfallhandbuch an einem Ausfall eines Bestellsystems mit BSI-BCM-Begriffen unterscheiden.",
+    "domain": "GA1",
+    "groupId": "ga1-4",
+    "groupLabel": "Backup, Recovery und Notfallvorsorge",
+    "itemId": "ga1-4__7",
+    "week": "KW 38",
+    "estimatedMinutes": 32,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "nachweis",
+      "plan"
+    ],
+    "sources": [
+      "bsi-200-4-bcm",
+      "bsi-200-4-glossar",
+      "bsi-der4-notfall",
+      "ms-backup-recovery-test"
+    ],
+    "contentHash": "125e1e16b6d05a889d484da8cf792d89ab03ec2fa52752b51ef175d800e4c6fc",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "backup-replikation-spiegelung-archivierung",
+    "slug": "backup-replikation-spiegelung-archivierung",
+    "title": "Vier Kopien, vier verschiedene Aufgaben",
+    "description": "Backup, Replikation, Spiegelung und Archivierung anhand von Ausfall, Fehlbedienung und Aufbewahrung unterscheiden.",
+    "domain": "GA1",
+    "groupId": "ga1-4",
+    "groupLabel": "Backup, Recovery und Notfallvorsorge",
+    "itemId": "ga1-4__8",
+    "week": "KW 38",
+    "estimatedMinutes": 27,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "abgrenzen",
+      "kombinieren"
+    ],
+    "sources": [
+      "ms-redundancy-replication-backup",
+      "ms-storage-spaces-mirror",
+      "aws-s3-replication-deletes",
+      "aws-data-archiving"
+    ],
+    "contentHash": "15de4e7a9d147fb213190dc45df695245f36169b0ab3a8e5d38a4ed2e359200f",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "backup-konzept-planen-pruefen-testen",
+    "slug": "backup-konzept-planen-pruefen-testen",
+    "title": "Ein Backup-Konzept, das den Ernstfall besteht",
+    "description": "Für einen fiktiven Betrieb Umfang, Takt, Ziel, Aufbewahrung, Zuständigkeit und Restore-Prüfung in einem schriftlichen Plan verbinden.",
+    "domain": "GA1",
+    "groupId": "ga1-4",
+    "groupLabel": "Backup, Recovery und Notfallvorsorge",
+    "itemId": "ga1-4__9",
+    "week": "KW 38",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "anforderungen",
+      "konzept"
+    ],
+    "sources": [
+      "bsi-con3-backup-concept",
+      "ms-backup-recovery-test",
+      "ms-redundancy-replication-backup"
+    ],
+    "contentHash": "265a6f26b80f4275b42c513557dda96b253cc2244f9d362a244a576756cecb7c",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "iaas-paas-saas-verantwortung",
+    "slug": "iaas-paas-saas-verantwortung",
+    "title": "Cloud-Modelle: Wer betreibt welche Schicht?",
+    "description": "IaaS, PaaS und SaaS anhand von Hardware, Gast-OS, Runtime, Anwendung und Daten zuordnen – mit Shared-Responsibility-Fallstricken.",
+    "domain": "GA1",
+    "groupId": "ga1-5",
+    "groupLabel": "Cloud und Wirtschaftlichkeit",
+    "itemId": "ga1-5__0",
+    "week": "KW 39",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "schichten",
+      "transfer"
+    ],
+    "sources": [
+      "cloud-nist-sp800145",
+      "cloud-ms-shared-responsibility",
+      "cloud-ncsc-shared-responsibility"
+    ],
+    "contentHash": "fc29ac083aee7bd480cec0534553a095864e8ab44b49a5a25bd8405ca396ba0f",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "cloud-bereitstellungsmodelle",
+    "slug": "cloud-bereitstellungsmodelle",
+    "title": "Wo läuft die Cloud – und für wen?",
+    "description": "Public, Private, Community, Hybrid und Multi-Cloud sicher auseinanderhalten; On-Premises als Standort, nicht automatisch als Cloud-Modell, einordnen.",
+    "domain": "GA1",
+    "groupId": "ga1-5",
+    "groupLabel": "Cloud und Wirtschaftlichkeit",
+    "itemId": "ga1-5__1",
+    "week": "KW 39",
+    "estimatedMinutes": 29,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "zuordnen",
+      "kombination"
+    ],
+    "sources": [
+      "cloud-nist-sp800145",
+      "cloud-ncsc-deployment-models"
+    ],
+    "contentHash": "fbda66ed3c1643005b47156e5070db6ab7539d8b6ddbb8b703abc1082e4a5d32",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "cloud-vorteile-nachteile-entscheiden",
+    "slug": "cloud-vorteile-nachteile-entscheiden",
+    "title": "Cloud oder eigener Betrieb? Sechs Hebel statt Bauchgefühl",
+    "description": "CapEx/OpEx, Elastizität, Lock-in, Datenschutz, Latenz und Betriebsaufwand anhand eines konkreten Falls gegeneinander abwägen.",
+    "domain": "GA1",
+    "groupId": "ga1-5",
+    "groupLabel": "Cloud und Wirtschaftlichkeit",
+    "itemId": "ga1-5__2",
+    "week": "KW 39",
+    "estimatedMinutes": 32,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "hebel",
+      "fall"
+    ],
+    "sources": [
+      "cloud-nist-sp800145",
+      "cloud-ms-cost-efficiency",
+      "cloud-ncsc-shared-responsibility",
+      "cloud-edpb-controller-processor",
+      "cloud-aws-portability",
+      "cloud-ms-hybrid-latency"
+    ],
+    "contentHash": "cfd5b9a011429f6afe6b107c75b92d0270466eec2b42f6643b77214fa76c7472",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "skalierung-elastizitaet-autoscaling-load-balancer",
+    "slug": "skalierung-elastizitaet-autoscaling-load-balancer",
+    "title": "Skalieren, ohne den Engpass zu verschieben",
+    "description": "Vertikale und horizontale Skalierung, Elastizität, Autoscaling und Load Balancing an einer Ticketplattform sicher unterscheiden und zusammendenken.",
+    "domain": "GA1",
+    "groupId": "ga1-5",
+    "groupLabel": "Cloud und Wirtschaftlichkeit",
+    "itemId": "ga1-5__3",
+    "week": "KW 39",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "skalierungsart",
+      "regelkreis"
+    ],
+    "sources": [
+      "cloud-ms-autoscale-overview",
+      "cloud-ms-lb-health",
+      "cloud-aws-autoscaling-lb"
+    ],
+    "contentHash": "cb54815479b8aabb036e7270ff3fac7303152fecf63a499df0a6bf12d8c42381",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "load-balancer-algorithmen-auswaehlen",
+    "slug": "load-balancer-algorithmen-auswaehlen",
+    "title": "Wohin mit der nächsten Anfrage?",
+    "description": "Round Robin, Least Connections und IP-Hashing anhand kurzer Anfragen, langer Verbindungen und Sitzungstreue auswählen und Grenzen erklären.",
+    "domain": "GA1",
+    "groupId": "ga1-5",
+    "groupLabel": "Cloud und Wirtschaftlichkeit",
+    "itemId": "ga1-5__4",
+    "week": "KW 39",
+    "estimatedMinutes": 29,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "verfahren",
+      "wahl"
+    ],
+    "sources": [
+      "nginx-http-load-balancing",
+      "nginx-session-persistence-limits",
+      "cloud-ms-lb-health"
+    ],
+    "contentHash": "5015af07e75e84e4c774f80a9cb860ad6d8d48c28ae2dee4959ee8b1e32048fc",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "cloud-dsgvo-avv-transfer-tom",
+    "slug": "cloud-dsgvo-avv-transfer-tom",
+    "title": "Cloud und DSGVO: vier Prüfspuren",
+    "description": "Auftragsverarbeitung, Datenorte, mögliche Drittlandübermittlung und technische sowie organisatorische Maßnahmen an einem Cloud-CRM unterscheiden.",
+    "domain": "GA1",
+    "groupId": "ga1-5",
+    "groupLabel": "Cloud und Wirtschaftlichkeit",
+    "itemId": "ga1-5__5",
+    "week": "KW 39",
+    "estimatedMinutes": 31,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "rollen-avv",
+      "datenwege-tom"
+    ],
+    "sources": [
+      "gdpr-eurlex-2016-679",
+      "cloud-edpb-controller-processor",
+      "edpb-international-transfers",
+      "edpb-secure-personal-data"
+    ],
+    "contentHash": "c0ad1637a8f95f1794f2b3f1fa339d1908261fd35749553cd9193591e31f96f6",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "cloud-migrationsstrategien-einordnen",
+    "slug": "cloud-migrationsstrategien-einordnen",
+    "title": "Cloud-Migration: Rehost, Replatform oder Refactor?",
+    "description": "Drei Migrationsstrategien am selben Anwendungssystem unterscheiden, auswählen und ihre Grenzen begründen.",
+    "domain": "GA1",
+    "groupId": "ga1-5",
+    "groupLabel": "Cloud und Wirtschaftlichkeit",
+    "itemId": "ga1-5__6",
+    "week": "KW 39",
+    "estimatedMinutes": 29,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "strategien-unterscheiden",
+      "strategie-begruenden"
+    ],
+    "sources": [
+      "aws-migration-strategies-7r",
+      "ms-cloud-modernization-strategies"
+    ],
+    "contentHash": "58cc11aef5175b2754b89ceb31d15d0eddc79f729921366827eb3c1c594d2aa1",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "blue-green-deployment-traffic-switch",
+    "slug": "blue-green-deployment-traffic-switch",
+    "title": "Blue-Green Deployment: Verkehr sicher umschalten",
+    "description": "Zwei parallele Anwendungsumgebungen am Schaubild erklären, testen, umschalten und einen begrenzten Rollback begründen.",
+    "domain": "GA1",
+    "groupId": "ga1-5",
+    "groupLabel": "Cloud und Wirtschaftlichkeit",
+    "itemId": "ga1-5__7",
+    "week": "KW 39",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "verkehrsweg-erklaeren",
+      "release-absichern"
+    ],
+    "sources": [
+      "aws-blue-green-whitepaper",
+      "ms-blue-green-deployment"
+    ],
+    "contentHash": "b5cc3ba76c924aeb0aa6cde9ddd6d42dd1201453a12faf37f61a5dac5d99f6e9",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "tco-vierjahresrechnung-kostenarten",
+    "slug": "tco-vierjahresrechnung-kostenarten",
+    "title": "TCO über vier Jahre sauber aufstellen",
+    "description": "Einmalige und laufende IT-Kosten abgrenzen, eine Vierjahresrechnung aufstellen und Annahmen prüfen.",
+    "domain": "GA1",
+    "groupId": "ga1-5",
+    "groupLabel": "Cloud und Wirtschaftlichkeit",
+    "itemId": "ga1-5__8",
+    "week": "KW 39",
+    "estimatedMinutes": 34,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "kostenarten-trennen",
+      "tco-berechnen"
+    ],
+    "sources": [
+      "itlf10-12-2023",
+      "aws-it-tco-cost-components",
+      "ibm-total-cost-ownership"
+    ],
+    "contentHash": "f9af6db90edd90adc29952463a0b8115c2984456f467394d4ba7d8142ff77848",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "break-even-cloud-onprem-kostenvergleich",
+    "slug": "break-even-cloud-onprem-kostenvergleich",
+    "title": "Cloud oder eigener Server: Kosten-Break-even",
+    "description": "Zwei kumulierte Kostenfunktionen aufstellen, ihren Schnittpunkt berechnen und die Aussagegrenzen erklären.",
+    "domain": "GA1",
+    "groupId": "ga1-5",
+    "groupLabel": "Cloud und Wirtschaftlichkeit",
+    "itemId": "ga1-5__9",
+    "week": "KW 39",
+    "estimatedMinutes": 32,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "kostenfunktionen-aufstellen",
+      "schnittpunkt-deuten"
+    ],
+    "sources": [
+      "aws-cloud-onprem-comparison-model",
+      "aws-it-tco-cost-components",
+      "ibm-total-cost-ownership"
+    ],
+    "contentHash": "4117eab1ba7ca82751b9557cbbeee6aea940838f5fc531b99f72e4151ea5e70d",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "amortisation-roi-kostenvergleich-it-investition",
+    "slug": "amortisation-roi-kostenvergleich-it-investition",
+    "title": "IT-Investition: Kosten, Amortisation und ROI",
+    "description": "Drei Kennzahlen am selben IT-Fall getrennt berechnen, deuten und ihre Grenzen erklären.",
+    "domain": "GA1",
+    "groupId": "ga1-5",
+    "groupLabel": "Cloud und Wirtschaftlichkeit",
+    "itemId": "ga1-5__10",
+    "week": "KW 39",
+    "estimatedMinutes": 36,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "kosten-und-amortisation-rechnen",
+      "roi-einordnen"
+    ],
+    "sources": [
+      "itlf10-12-2023",
+      "microsoft-azure-business-case-metrics",
+      "aws-directional-business-case"
+    ],
+    "contentHash": "3cff57415858aeeb42ae2ee65d6ecad608cba214a8691009935e3628e7b67248",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "nutzwertanalyse-kriterien-gewichten-entscheiden",
+    "slug": "nutzwertanalyse-kriterien-gewichten-entscheiden",
+    "title": "Nutzwertanalyse: gewichten und begründen",
+    "description": "Eine Bewertungsmatrix für IT-Alternativen aufstellen, Teilnutzen rechnen und das Ergebnis kritisch prüfen.",
+    "domain": "GA1",
+    "groupId": "ga1-5",
+    "groupLabel": "Cloud und Wirtschaftlichkeit",
+    "itemId": "ga1-5__11",
+    "week": "KW 39",
+    "estimatedMinutes": 34,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "matrix-rechnen",
+      "entscheidung-pruefen"
+    ],
+    "sources": [
+      "ihk-bonn",
+      "ihk-regensburg-ideenbewertung-nutzwertanalyse",
+      "vmodell-bund-bewertungsmatrix"
+    ],
+    "contentHash": "1422269a6231438bce8079ebd7ec57c4e150e369a437f42f01136334a617dff3",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "angebotsvergleich-rabatt-skonto-bezugspreis",
+    "slug": "angebotsvergleich-rabatt-skonto-bezugspreis",
+    "title": "Angebote vergleichen: Rabatt, Skonto, Fracht",
+    "description": "Netto-Bezugspreise aus zwei IT-Angeboten stufenweise berechnen und Zahlungsbedingungen einordnen.",
+    "domain": "GA1",
+    "groupId": "ga1-5",
+    "groupLabel": "Cloud und Wirtschaftlichkeit",
+    "itemId": "ga1-5__12",
+    "week": "KW 39",
+    "estimatedMinutes": 32,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "bezugspreis-rechnen",
+      "konditionen-deuten"
+    ],
+    "sources": [
+      "ihk-bonn",
+      "ihk-bergische-bezugspreis-beispiel"
+    ],
+    "contentHash": "9d047cfca418ff5970adb78e78595a3f21b5e7e6eeff604313ddd72f1023e6c6",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "make-or-buy-kauf-leasing-miete",
+    "slug": "make-or-buy-kauf-leasing-miete",
+    "title": "Make-or-Buy und Kauf, Leasing, Miete",
+    "description": "Eigenentwicklung und Fertiglösung getrennt von Finanzierungs- und Nutzungsformen vergleichen.",
+    "domain": "GA1",
+    "groupId": "ga1-5",
+    "groupLabel": "Cloud und Wirtschaftlichkeit",
+    "itemId": "ga1-5__13",
+    "week": "KW 39",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "make-or-buy-abwaegen",
+      "nutzungsform-vergleichen"
+    ],
+    "sources": [
+      "europa-integratoren-2026",
+      "vmodell-bund-make-or-buy",
+      "ihk-koeln-leasing-grundlagen"
+    ],
+    "contentHash": "89dedfd9cc49721e695cbdbe00e232f08f2832db219a49e0e6ef9d4fbb2ffe11",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "windows-server-active-directory-struktur-dns-dc",
+    "slug": "windows-server-active-directory-struktur-dns-dc",
+    "title": "Windows Server und Active Directory: Struktur, DNS, Redundanz",
+    "description": "Rollen und Features einordnen, Forest, Domain, OU und Site unterscheiden und einen DC-Ausfall mit DNS-Abhängigkeit durchdenken.",
+    "domain": "GA1",
+    "groupId": "ga1-6",
+    "groupLabel": "Betriebssysteme und Administration",
+    "itemId": "ga1-6__0",
+    "week": "KW 40",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "ad-struktur-unterscheiden",
+      "dns-dc-ausfall-pruefen"
+    ],
+    "sources": [
+      "itlf10-12-2023",
+      "microsoft-ad-logical-model",
+      "microsoft-ad-site-replication",
+      "microsoft-dc-locator",
+      "microsoft-server-roles-features"
+    ],
+    "contentHash": "47d85a6f417dfe8fbf73ef255939e98296913b89870fc9e56d0479d4395c161c",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "gruppenrichtlinien-lsdou-loopback",
+    "slug": "gruppenrichtlinien-lsdou-loopback",
+    "title": "Gruppenrichtlinien: LSDOU, Vererbung und Loopback",
+    "description": "GPOs verknüpfen, Standardreihenfolge und Ausnahmen auflösen und Benutzerregeln für Spezial-PCs prüfen.",
+    "domain": "GA1",
+    "groupId": "ga1-6",
+    "groupLabel": "Betriebssysteme und Administration",
+    "itemId": "ga1-6__1",
+    "week": "KW 40",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "gpo-reihenfolge-aufloesen",
+      "gpo-ausnahmen-begruenden"
+    ],
+    "sources": [
+      "itlf10-12-2023",
+      "microsoft-group-policy-processing",
+      "microsoft-group-policy-scope"
+    ],
+    "contentHash": "b2870d2dae920cb13d98bf538b0fda5e6e7aa131a253ccf9766686ec6f8b7c36",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "patch-updatemanagement-wsus-testring-rollback",
+    "slug": "patch-updatemanagement-wsus-testring-rollback",
+    "title": "Patchmanagement: WSUS, Testring und Rückfallplan",
+    "description": "Updates risikobewusst freigeben, im Wartungsfenster prüfen und eine realistische Rückfallstrategie festlegen.",
+    "domain": "GA1",
+    "groupId": "ga1-6",
+    "groupLabel": "Betriebssysteme und Administration",
+    "itemId": "ga1-6__2",
+    "week": "KW 40",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "patch-ringe-planen",
+      "wartung-rueckfall-pruefen"
+    ],
+    "sources": [
+      "microsoft-wsus-deprecation",
+      "microsoft-wsus-computer-groups",
+      "microsoft-wsus-operations"
+    ],
+    "contentHash": "98757ab558baa3bfaadc259cf7d58746ab69a863623339a8db4a02174db9a030",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "clientbereitstellung-images-deployment-mdm",
+    "slug": "clientbereitstellung-images-deployment-mdm",
+    "title": "Clientbereitstellung: Image, Deployment und MDM",
+    "description": "Passende Bereitstellungswege für Schulungs-PCs und mobile Geräte wählen, testen und betreiben.",
+    "domain": "GA1",
+    "groupId": "ga1-6",
+    "groupLabel": "Betriebssysteme und Administration",
+    "itemId": "ga1-6__3",
+    "week": "KW 40",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "bereitstellungsweg-waehlen",
+      "rollout-absichern"
+    ],
+    "sources": [
+      "itlf10-12-2023",
+      "microsoft-autopilot-overview",
+      "microsoft-configmgr-osd",
+      "microsoft-intune-ios-guide"
+    ],
+    "contentHash": "9a7f360bf5bade46e98e44afeeaad61abb727f908aa25cda908eab7c919bda15",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
+    "slug": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
+    "title": "Struktogramm und Programmablaufplan",
+    "description": "Eine Verzweigung in zwei Darstellungen lesen und zeichnen; bei Schleifen die Bedingung, den Rumpf und das Ende unterscheiden.",
+    "domain": "GA1",
+    "groupId": "ga1-9",
+    "groupLabel": "Programme zur automatisierten Systemverwaltung",
+    "itemId": "ga1-9__0",
+    "week": "KW 43",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-17.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "lesen",
+      "zeichnen"
+    ],
+    "sources": [
+      "ns-if",
+      "ns-while",
+      "pap-symbols",
+      "it-basiswissen-2012"
+    ],
+    "contentHash": "921da13f2976db57670459c1e9bd82ec17f418639f9913ab2a69f64ba382ae15",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "pseudocode-schreiben-ohne-sprachkenntnis-verstandlich",
+    "slug": "pseudocode-schreiben-ohne-sprachkenntnis-verstandlich",
+    "title": "Pseudocode: einen Ablauf eindeutig beschreiben",
+    "description": "Eingaben, Bedingungen und Ausgaben eines Algorithmus ohne Programmiersprache festlegen und mit Testfällen prüfen.",
+    "domain": "GA1",
+    "groupId": "ga1-9",
+    "groupLabel": "Programme zur automatisierten Systemverwaltung",
+    "itemId": "ga1-9__1",
+    "week": "KW 43",
+    "estimatedMinutes": 22,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-15.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "eindeutig",
+      "randfall"
+    ],
+    "sources": [
+      "europa-integratoren-2026"
+    ],
+    "contentHash": "083ad6e454d86655ac981a3e849edc9482f2e9dacc1797869b227826815ec9b7",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "schreibtischtest-trace-table-variablenbelegung-algorithmus-schritt-schri",
+    "slug": "schreibtischtest-trace-table-variablenbelegung-algorithmus-schritt-schri",
+    "title": "Schreibtischtest: Algorithmen Schritt für Schritt prüfen",
+    "description": "Variablenzustände in einer Trace-Tabelle verfolgen, Grenzwerte prüfen und die erste falsche Zustandsänderung begründen.",
+    "domain": "GA1",
+    "groupId": "ga1-9",
+    "groupLabel": "Programme zur automatisierten Systemverwaltung",
+    "itemId": "ga1-9__2",
+    "week": "KW 43",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-15.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "trace",
+      "grenze"
+    ],
+    "sources": [
+      "it-basiswissen-2012",
+      "ihk-bonn"
+    ],
+    "contentHash": "1fb90c9c44a5a7ef42e86e40b2ebbe8a4b261fec383ff0dd5192e85b7e4d3942",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "kontrollstrukturen-sequenz-verzweigung-else-case-schleifen-for",
+    "slug": "kontrollstrukturen-sequenz-verzweigung-else-case-schleifen-for",
+    "title": "Kontrollstrukturen: auswählen, wiederholen und beenden",
+    "description": "Sequenz, Verzweigung und Schleifen passend wählen und den ersten, letzten und ausbleibenden Durchlauf prüfen.",
+    "domain": "GA1",
+    "groupId": "ga1-9",
+    "groupLabel": "Programme zur automatisierten Systemverwaltung",
+    "itemId": "ga1-9__3",
+    "week": "KW 43",
+    "estimatedMinutes": 31,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-15.2",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "auswahl",
+      "schleife"
+    ],
+    "sources": [
+      "itlf6-9-2022"
+    ],
+    "contentHash": "caa0371a3e7e02ec82c6c7ab288ea26df239f6b471c9096dbbfc70636cf8030b",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "variablen-datentypen-arrays-listen-funktionen-parametern-ruckgabewert",
+    "slug": "variablen-datentypen-arrays-listen-funktionen-parametern-ruckgabewert",
+    "title": "Variablen, Listen und Funktionen sicher unterscheiden",
+    "description": "Index, Wert, Zähler und Summe auseinanderhalten und eine Funktion mit Parametern und Rückgabewert nachvollziehen.",
+    "domain": "GA1",
+    "groupId": "ga1-9",
+    "groupLabel": "Programme zur automatisierten Systemverwaltung",
+    "itemId": "ga1-9__4",
+    "week": "KW 43",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-17.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "daten",
+      "funktion"
+    ],
+    "sources": [
+      "it-basiswissen-2012"
+    ],
+    "contentHash": "15b7c7b3eaa8379da0d95000893f734d29856320bd6cad05038b34049a32ebdd",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "klassendiagramm-beziehungstypen-aggregation-lose-hat-teile-leben-unabhan",
+    "slug": "klassendiagramm-beziehungstypen-aggregation-lose-hat-teile-leben-unabhan",
+    "title": "Aggregation und Komposition richtig lesen",
+    "description": "Die Raute am Ganzen erkennen, Multiplizitäten lesen und Lebensdauerregeln anhand eines ausdrücklich beschriebenen Modells begründen.",
+    "domain": "GA1",
+    "groupId": "ga1-9",
+    "groupLabel": "Programme zur automatisierten Systemverwaltung",
+    "itemId": "ga1-9__5",
+    "week": "KW 43",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-17.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "notation",
+      "lebensdauer"
+    ],
+    "sources": [
+      "uml-2-5-1"
+    ],
+    "contentHash": "10dc3f1ed9f2e98c0371698a7a162b157ffc5c72b2d4f50e72dbf3990579cda6",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "bash-shebang-variablen-parameter-bedingungen-schleifen-exit-codes",
+    "slug": "bash-shebang-variablen-parameter-bedingungen-schleifen-exit-codes",
+    "title": "Bash: Argumente, Ausgabe und Exit-Status lesen",
+    "description": "Argumentgrenzen erhalten, eine Schleife nachvollziehen und Standardausgabe von Fehlerausgabe und Exit-Status unterscheiden.",
+    "domain": "GA1",
+    "groupId": "ga1-9",
+    "groupLabel": "Programme zur automatisierten Systemverwaltung",
+    "itemId": "ga1-9__6",
+    "week": "KW 43",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-17.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "argumente",
+      "status"
+    ],
+    "sources": [
+      "itlf10-12-2023",
+      "bash-parameters",
+      "bash-scripts",
+      "bash-streams",
+      "bash-pipelines"
+    ],
+    "contentHash": "2257bc8fa00363873636f22319bab766d857d9824851e47d1eb6a726f5823125",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "powershell-verb-noun-cmdlets-pipeline-import-csv-foreach-ad-cmdlets-mass",
+    "slug": "powershell-verb-noun-cmdlets-pipeline-import-csv-foreach-ad-cmdlets-mass",
+    "title": "PowerShell: Objekte und CSV-Daten verarbeiten",
+    "description": "Eine Objektpipeline lesen, CSV-Datensätze filtern und die Vorbereitung einer Benutzeranlage von ihrer Ausführung trennen.",
+    "domain": "GA1",
+    "groupId": "ga1-9",
+    "groupLabel": "Programme zur automatisierten Systemverwaltung",
+    "itemId": "ga1-9__7",
+    "week": "KW 43",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-17.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "objekte",
+      "anlage"
+    ],
+    "sources": [
+      "ps-pipelines",
+      "ps-csv",
+      "ps-foreach",
+      "ps-verbs",
+      "ps-aduser"
+    ],
+    "contentHash": "c00e19150ef26b7cba19a7cc5bf165531be8c4370971e801c7b32cebcbf5220e",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s",
+    "slug": "typische-aufgabenstellungen-selbst-schreiben-logdateien-loschen-backup-s",
+    "title": "Verwaltungsskripte: vom Auftrag zum sicheren Ablauf",
+    "description": "Aus einer Anforderung einen prüfbaren Ablauf für Logdateien, Backups, CSV-Konten und Dienststatus entwickeln.",
+    "domain": "GA1",
+    "groupId": "ga1-9",
+    "groupLabel": "Programme zur automatisierten Systemverwaltung",
+    "itemId": "ga1-9__8",
+    "week": "KW 43",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-17.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "auswahl",
+      "kontrolle"
+    ],
+    "sources": [
+      "ps-comparisons",
+      "ps-date",
+      "ps-service",
+      "ps-foreach"
+    ],
+    "contentHash": "f1be1b7286b855f1b645e27024f472233d011177ef00fe26a5dc11118522e00b",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "gegebenes-skript-analysieren-tut-ausgabe-entsteht-welcher",
+    "slug": "gegebenes-skript-analysieren-tut-ausgabe-entsteht-welcher",
+    "title": "Skripte analysieren: Ausgabe, Fehler und Ergänzung",
+    "description": "Ein fremdes Skript Zeile für Zeile verfolgen, eine falsche Zählung erklären und eine gezielte Korrektur mit Grenzfällen absichern.",
+    "domain": "GA1",
+    "groupId": "ga1-9",
+    "groupLabel": "Programme zur automatisierten Systemverwaltung",
+    "itemId": "ga1-9__9",
+    "week": "KW 43",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-17.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "trace",
+      "korrektur"
+    ],
+    "sources": [
+      "ps-foreach",
+      "ps-comparisons"
+    ],
+    "contentHash": "31b55d39c1850699ba77c59f55e289c755296eb2f05d1dbc1f64717c164d4dbd",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "idempotenz-deklarativ-vs-imperativ-erklaren",
+    "slug": "idempotenz-deklarativ-vs-imperativ-erklaren",
+    "title": "Idempotenz: Zielzustand statt wiederholter Nebenwirkung",
+    "description": "Deklarative und imperative Beschreibung unterscheiden und Wiederholungen am tatsächlichen Zielzustand beurteilen.",
+    "domain": "GA1",
+    "groupId": "ga1-9",
+    "groupLabel": "Programme zur automatisierten Systemverwaltung",
+    "itemId": "ga1-9__10",
+    "week": "KW 43",
+    "estimatedMinutes": 26,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-15.2",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "modell",
+      "wiederholung"
+    ],
+    "sources": [
+      "europa-integratoren-2026"
+    ],
+    "contentHash": "34472ea5e94d0a53ca280dddf3e77486f6940fc14f6525e510228b5a1f7306c3",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "konfigurationsmanagement-iac-ansible-inventory-playbook-modul-rolle",
+    "slug": "konfigurationsmanagement-iac-ansible-inventory-playbook-modul-rolle",
+    "title": "Ansible und IaC: Ziele und Sollzustände trennen",
+    "description": "Inventory, Playbook, Task, Modul und Rolle zuordnen und einen begrenzten Konfigurationslauf beurteilen.",
+    "domain": "GA1",
+    "groupId": "ga1-9",
+    "groupLabel": "Programme zur automatisierten Systemverwaltung",
+    "itemId": "ga1-9__11",
+    "week": "KW 43",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-17.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "bausteine",
+      "grenzen"
+    ],
+    "sources": [
+      "itlf10-12-2023",
+      "ansible-concepts",
+      "ansible-check",
+      "terraform-intro",
+      "puppet-architecture",
+      "chef-overview"
+    ],
+    "contentHash": "ba01458b13d9f3d0c49050fde57bfa5a942465a6c59a1008455b2a0d364ce2da",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "yaml-json-lesen-syntaxfehler-finden",
+    "slug": "yaml-json-lesen-syntaxfehler-finden",
+    "title": "YAML und JSON lesen und Fehler eingrenzen",
+    "description": "Datenstruktur, Syntax und fachliche Gültigkeit trennen und Konfigurationsfehler gezielt korrigieren.",
+    "domain": "GA1",
+    "groupId": "ga1-9",
+    "groupLabel": "Programme zur automatisierten Systemverwaltung",
+    "itemId": "ga1-9__12",
+    "week": "KW 43",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-17.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "struktur",
+      "fehler"
+    ],
+    "sources": [
+      "rfc8259",
+      "yaml-1-2-2"
+    ],
+    "contentHash": "ef0b99ec0407227cedca1c5d450e99c0981ebad2a5a77330f71c863d39f68523",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "versionsverwaltung-git-repository-commit-branch-merge-warum",
+    "slug": "versionsverwaltung-git-repository-commit-branch-merge-warum",
+    "title": "Git: Änderungen nachvollziehbar sichern",
+    "description": "Repository, Commit, Branch und Merge unterscheiden und den tatsächlich gesicherten Skriptstand bestimmen.",
+    "domain": "GA1",
+    "groupId": "ga1-9",
+    "groupLabel": "Programme zur automatisierten Systemverwaltung",
+    "itemId": "ga1-9__13",
+    "week": "KW 43",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-17.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "stand",
+      "merge"
+    ],
+    "sources": [
+      "itlf10-12-2023",
+      "git-book-basics",
+      "git-book-merge"
+    ],
+    "contentHash": "4caf2e9dc258177bca464ec5ec1aeb5b42123cb022d41882a0648c2f3701ba35",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "cd-grundbegriffe-pipeline-stage-runner-automatisiertes-deployment",
+    "slug": "cd-grundbegriffe-pipeline-stage-runner-automatisiertes-deployment",
+    "title": "CI/CD: vom Commit zur geprüften Bereitstellung",
+    "description": "Pipeline, Stage, Job und Runner zuordnen und entscheiden, wann ein Deployment starten darf.",
+    "domain": "GA1",
+    "groupId": "ga1-9",
+    "groupLabel": "Programme zur automatisierten Systemverwaltung",
+    "itemId": "ga1-9__14",
+    "week": "KW 43",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-17.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "ablauf",
+      "freigabe"
+    ],
+    "sources": [
+      "gitlab-pipelines",
+      "gitlab-delivery"
+    ],
+    "contentHash": "052f27d8ac3a3155f23d79978f9144965e6fc5b9bf6769c454628618c2b55ea6",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor",
+    "slug": "qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor",
+    "title": "Administrationsskripte sicher prüfen und betreiben",
+    "description": "Eingaben, Fehlerbehandlung, Logging und Wiederholungstests für eine begrenzte Automatisierung beurteilen und nachvollziehbar dokumentieren.",
+    "domain": "GA1",
+    "groupId": "ga1-9",
+    "groupLabel": "Programme zur automatisierten Systemverwaltung",
+    "itemId": "ga1-9__15",
+    "week": "KW 43",
+    "estimatedMinutes": 34,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-14.2",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "sicherer-ablauf",
+      "nachweis"
+    ],
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentHash": "2cac855173ad7ce1839b9bff6b690aee69d655495f2d5242110f19e200bd4f0a",
+    "sourceKind": "compact-spec"
   },
   {
     "id": "osi-model",
@@ -1446,9 +3432,9 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "groupLabel": "Block N5 · Switching und VLANs",
     "itemId": "ga2-5__4",
     "week": "KW 39",
-    "estimatedMinutes": 22,
+    "estimatedMinutes": 28,
     "relevance": "hoch",
-    "contentRevision": "2026-09-11.1",
+    "contentRevision": "2026-09-14.1",
     "contentStatus": "CURATED_DRAFT",
     "learningObjectives": [
       "effects-and-limits",
@@ -1458,7 +3444,7 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
       "itlf10-12-2023",
       "europa-integratoren-2026"
     ],
-    "contentHash": "a0f0bab65b16ab244e28e4ce961ec10e7935cc6327673e664329fc80b5df0a9f",
+    "contentHash": "540023d853451405b1cd2ee9796fb52d649775173c254cb8aefc73b23e2dad12",
     "sourceKind": "compact-spec"
   },
   {
@@ -1633,6 +3619,1183 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
       "itlf6-9-2022"
     ],
     "contentHash": "4d8e5d919766b83cb4f06a53a15ad9c69ca2a726ca82880b40dd090d77cd17f6",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "wlan-standards-frequenzen",
+    "slug": "wlan-standards-frequenzen",
+    "title": "WLAN-Standards und Frequenzbänder sicher auswählen",
+    "description": "802.11-Generationen, Frequenzbänder und theoretische Datenraten einordnen und aus einer Anforderung eine belastbare WLAN-Auswahl ableiten.",
+    "domain": "GA2",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__0",
+    "week": "KW 40",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "standard-classification",
+      "standard-selection"
+    ],
+    "sources": [
+      "ihk-bonn",
+      "itlf6-9-2022"
+    ],
+    "contentHash": "91b0f323e4ef65ebf1141102bff31a42634c7375a175bafebda4a624a636615a",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "wlan-kanalplanung",
+    "slug": "wlan-kanalplanung",
+    "title": "WLAN-Kanäle planen, ohne 1/6/11 blind anzuwenden",
+    "description": "Kanalbreite, Überlappung und Gleichkanalnutzung unterscheiden und einen belastbaren 2,4- und 5-GHz-Kanalplan entwickeln.",
+    "domain": "GA2",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__1",
+    "week": "KW 40",
+    "estimatedMinutes": 27,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "channel-overlap",
+      "channel-plan"
+    ],
+    "sources": [
+      "itlf6-9-2022"
+    ],
+    "contentHash": "708fff07cada1168a1a07a2663db7b900aa7310d2813fa9e6955947c8b2fc2c1",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "wlan-site-survey",
+    "slug": "wlan-site-survey",
+    "title": "WLAN-Site-Survey von der Prognose zum Lasttest",
+    "description": "Virtuelle, passive und aktive Site Surveys unterscheiden, Messwerte korrekt lesen und AP-Positionen nachvollziehbar verbessern.",
+    "domain": "GA2",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__2",
+    "week": "KW 40",
+    "estimatedMinutes": 26,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "survey-methods",
+      "survey-decision"
+    ],
+    "sources": [
+      "europa-integratoren-2026",
+      "itlf6-9-2022"
+    ],
+    "contentHash": "c3c943cb443365923fd43403a0199fbb125163c86c64df1407ac97c1bd779c96",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "wlan-controller",
+    "slug": "wlan-controller",
+    "title": "WLAN-Controller und Standalone-APs passend betreiben",
+    "description": "Aufgaben von Access Point und WLAN-Controller trennen sowie für kleine und größere Funknetze eine begründete Betriebsarchitektur wählen.",
+    "domain": "GA2",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__3",
+    "week": "KW 40",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "controller-functions",
+      "controller-selection"
+    ],
+    "sources": [
+      "europa-integratoren-2026",
+      "itlf6-9-2022"
+    ],
+    "contentHash": "39939b4093a13dc9dcb2ba3cbd402f9930c2c0c26aef30ba8b98eb15ec917402",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "wlan-sicherheit",
+    "slug": "wlan-sicherheit",
+    "title": "WLAN-Sicherheit als mehrschichtiges Profil entwerfen",
+    "description": "WPA2 und WPA3, Personal und Enterprise, 802.1X, RADIUS, Gasttrennung und Captive Portal fachlich abgrenzen und kombinieren.",
+    "domain": "GA2",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__4",
+    "week": "KW 40",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "security-methods",
+      "security-profile"
+    ],
+    "sources": [
+      "europa-integratoren-2026",
+      "itlf10-12-2023"
+    ],
+    "contentHash": "d38be07543461c22c08ec508955ffe51fcd887f1408960bbfc3dfd40d5efdc3b",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "wan-zugangsarten",
+    "slug": "wan-zugangsarten",
+    "title": "WAN-Zugänge nach Bedarf und Betriebsrisiko auswählen",
+    "description": "DSL, Kabel, Glasfaser, Standleitung, Mobilfunk und Richtfunk nicht nur nach Bandbreite, sondern nach Medium, SLA und Ausfallrisiko vergleichen.",
+    "domain": "GA2",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__5",
+    "week": "KW 40",
+    "estimatedMinutes": 27,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "wan-access-compare",
+      "wan-access-select"
+    ],
+    "sources": [
+      "itlf6-9-2022",
+      "it-basiswissen-2012",
+      "europa-integratoren-2026"
+    ],
+    "contentHash": "41d66bb058f60912752de5319a77c41a5e27a4b5d407586f4e1f6ca72c040fce",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "mpls-sd-wan",
+    "slug": "mpls-sd-wan",
+    "title": "MPLS und SD-WAN als Betriebsmodelle vergleichen",
+    "description": "Providerbasierte MPLS-Dienste und softwaregesteuerte WAN-Overlays anhand von Pfad, Steuerung, Sicherheit, SLA und Betrieb unterscheiden.",
+    "domain": "GA2",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__6",
+    "week": "KW 40",
+    "estimatedMinutes": 29,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "mpls-sdwan-compare",
+      "mpls-sdwan-design"
+    ],
+    "sources": [
+      "europa-integratoren-2026",
+      "itlf10-12-2023"
+    ],
+    "contentHash": "46f02664ddd6dbb134a61b052ab9490b5219d6c9deccdee78858064b6f15f321",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "provider-redundanz",
+    "slug": "provider-redundanz",
+    "title": "Provider-Redundanz ohne gemeinsame Fehlerdomäne planen",
+    "description": "Dual-WAN, Failover und Active-Active anhand physischer und logischer Abhängigkeiten entwerfen, testen und überwachen.",
+    "domain": "GA2",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__7",
+    "week": "KW 40",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "redundancy-domains",
+      "redundancy-validate"
+    ],
+    "sources": [
+      "itlf10-12-2023",
+      "europa-integratoren-2026"
+    ],
+    "contentHash": "db8e441d5049255fcd603b8c43922b257419c53e2b5c23933bda16bdea548914",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "vpn-arten",
+    "slug": "vpn-arten",
+    "title": "VPN-Arten nach Endpunkten und Vertrauensgrenze unterscheiden",
+    "description": "Site-to-Site, Remote-Access und End-to-End anhand von Tunnelendpunkten, erreichbaren Netzen, Identität und Betriebsverantwortung auswählen.",
+    "domain": "GA2",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__8",
+    "week": "KW 40",
+    "estimatedMinutes": 27,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "vpn-types-classify",
+      "vpn-type-select"
+    ],
+    "sources": [
+      "europa-integratoren-2026",
+      "itlf10-12-2023",
+      "itlf6-9-2022"
+    ],
+    "contentHash": "e81e9d8b62cc8314510abdb2efffe9ff049b5ee2ceff017a4004ae2ae59fc550",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "ipsec",
+    "slug": "ipsec",
+    "title": "IPsec mit IKE, AH, ESP und Security Associations verstehen",
+    "description": "IPsec-Bausteine, Tunnel- und Transportmodus sowie den IKEv2-Aufbau so einordnen, dass Schutzversprechen und Fehlersuche nachvollziehbar werden.",
+    "domain": "GA2",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__9",
+    "week": "KW 40",
+    "estimatedMinutes": 32,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "ipsec-components",
+      "ipsec-design"
+    ],
+    "sources": [
+      "itlf10-12-2023",
+      "ihk-bonn"
+    ],
+    "contentHash": "da0fa7ebda9f5fd79fe4ada3e5ca1845c82aa3e593b0334e65183ff2208fcb37",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "x509-zertifikate",
+    "slug": "x509-zertifikate",
+    "title": "X.509-Zertifikate und Vertrauenskette prüfen",
+    "description": "Zertifikat, privater Schlüssel, CSR, CA und Vertrauenskette auseinanderhalten und einen Zertifikatsfehler systematisch untersuchen.",
+    "domain": "GA2",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__10",
+    "week": "KW 40",
+    "estimatedMinutes": 31,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "x509-components",
+      "x509-validation"
+    ],
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentHash": "4a1887bf2dc7f9db860cfd39c897d63282ee127dc738b7cc973aac70fd0b1413",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "ssl-vpn-wireguard",
+    "slug": "ssl-vpn-wireguard",
+    "title": "TLS-VPN, OpenVPN und WireGuard fachlich vergleichen",
+    "description": "Die unscharfe Bezeichnung SSL-VPN einordnen und OpenVPN sowie WireGuard nach Schicht, Identität, Kryptografie und Betriebsmodell auswählen.",
+    "domain": "GA2",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__11",
+    "week": "KW 40",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "vpn-protocol-compare",
+      "vpn-protocol-operate"
+    ],
+    "sources": [
+      "itlf10-12-2023",
+      "europa-integratoren-2026"
+    ],
+    "contentHash": "b2966d16d56179ce5d3e4bc08c6617b30f9c1e4ce6a668ec21ef43422804f8b0",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "split-tunneling",
+    "slug": "split-tunneling",
+    "title": "Split Tunneling als Routing- und Sicherheitsentscheidung planen",
+    "description": "Full Tunnel und Split Tunnel anhand von Routen, DNS, Kontrollpunkten, Bandbreite und lokalen Risiken vergleichen und prüfen.",
+    "domain": "GA2",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__12",
+    "week": "KW 40",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "split-full-compare",
+      "split-policy-design"
+    ],
+    "sources": [
+      "itlf10-12-2023",
+      "europa-integratoren-2026"
+    ],
+    "contentHash": "474bd4d41faf5c3cc0c2d90ef6d5f5d42cee8ce79136fb1c2e55d807b280a5cf",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "sicheres-homeoffice",
+    "slug": "sicheres-homeoffice",
+    "title": "Sicheres Homeoffice als Ende-zu-Ende-Betrieb entwerfen",
+    "description": "Verwaltetes Endgerät, starke Identität, VPN, minimale Rechte, Patchen, Datensicherung und Arbeitsumgebung zu einem prüfbaren Schutzkonzept verbinden.",
+    "domain": "GA2",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__13",
+    "week": "KW 40",
+    "estimatedMinutes": 31,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "homeoffice-controls",
+      "homeoffice-response"
+    ],
+    "sources": [
+      "itlf10-12-2023",
+      "europa-integratoren-2026"
+    ],
+    "contentHash": "c16d223ff3fb094130e82a768ea280f4512b9457258d2d867e0ae8897e063f3d",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "voip-bandbreite",
+    "slug": "voip-bandbreite",
+    "title": "VoIP-Bandbreite mit Paket-Overhead und Reserve dimensionieren",
+    "description": "Codec-Nutzrate, Paketierungsintervall, RTP/UDP/IP- und Layer-2-Overhead, Gesprächszahl und Reserve in eine nachvollziehbare Bandbreitenplanung übersetzen.",
+    "domain": "GA2",
+    "groupId": "ga2-6",
+    "groupLabel": "Block N6 · WLAN, WAN und VPN",
+    "itemId": "ga2-6__14",
+    "week": "KW 40",
+    "estimatedMinutes": 33,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "voip-bandwidth-model",
+      "voip-bandwidth-calculate"
+    ],
+    "sources": [
+      "ihk-bonn",
+      "itlf10-12-2023"
+    ],
+    "contentHash": "6923e3c02fb516e3eeb7f1dd7e03160a35afd21feeb74eeff3ae591c235e523c",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "firewall-typen",
+    "slug": "firewall-typen",
+    "title": "Firewalltypen nach ihrer Prüftiefe auswählen",
+    "description": "Paketfilter, Stateful Inspection, Application Gateway und NGFW anhand konkreter Sicherheitsfragen unterscheiden.",
+    "domain": "GA2",
+    "groupId": "ga2-7",
+    "groupLabel": "Block N7 · Netzwerksicherheit",
+    "itemId": "ga2-7__0",
+    "week": "KW 42",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "prueftiefe",
+      "schutzgrenze"
+    ],
+    "sources": [
+      "ihk-bonn",
+      "itlf10-12-2023"
+    ],
+    "contentHash": "dcbca0a798c4546cc86657c58fdec9e8a20f7805b4141bacbe7083c1ae7c1a27",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "firewall-regelwerk",
+    "slug": "firewall-regelwerk",
+    "title": "Aus einer Kommunikationsmatrix Firewallregeln ableiten",
+    "description": "Quelle, Ziel, Protokoll, Port und Aktion aus einem Szenario bestimmen und positive sowie negative Testfälle planen.",
+    "domain": "GA2",
+    "groupId": "ga2-7",
+    "groupLabel": "Block N7 · Netzwerksicherheit",
+    "itemId": "ga2-7__1",
+    "week": "KW 42",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "regel-ableiten",
+      "regel-pruefen"
+    ],
+    "sources": [
+      "itlf10-12-2023",
+      "ihk-bonn"
+    ],
+    "contentHash": "e72f5c69e06bdfb5275bf153ec74e5f10f1fdffa4232eed33ce79cb73db62437",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "default-deny-regelreihenfolge",
+    "slug": "default-deny-regelreihenfolge",
+    "title": "Default Deny und die erste passende Regel",
+    "description": "First-Match-Regelwerke Schritt für Schritt auswerten, Verschattung erkennen und Änderungen nachvollziehbar pflegen.",
+    "domain": "GA2",
+    "groupId": "ga2-7",
+    "groupLabel": "Block N7 · Netzwerksicherheit",
+    "itemId": "ga2-7__2",
+    "week": "KW 42",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "default-deny",
+      "first-match"
+    ],
+    "sources": [
+      "europa-integratoren-2026",
+      "itlf10-12-2023"
+    ],
+    "contentHash": "159fa56c504e4266be03c476f5d38071bb500ba24af1720f7c8791df7e699c0f",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "dmz-architektur",
+    "slug": "dmz-architektur",
+    "title": "Eine DMZ über Vertrauensgrenzen entwerfen",
+    "description": "Ein- und Zwei-Firewall-DMZ vergleichen, Dienste platzieren und einen kompromittierten DMZ-Host begrenzen.",
+    "domain": "GA2",
+    "groupId": "ga2-7",
+    "groupLabel": "Block N7 · Netzwerksicherheit",
+    "itemId": "ga2-7__3",
+    "week": "KW 42",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "dmz-aufbau",
+      "dmz-freigabe"
+    ],
+    "sources": [
+      "europa-integratoren-2026",
+      "itlf10-12-2023"
+    ],
+    "contentHash": "f8f3069b462aac956462c71dd0b240815afb3e2abf930d1138b66487dbe4e2d4",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "zero-trust-segmentierung",
+    "slug": "zero-trust-segmentierung",
+    "title": "Zero Trust und Mikrosegmentierung am Zugriff erklären",
+    "description": "Schutzbedarf, Identität und Gerätezustand in eine minimale Zugriffsentscheidung übersetzen und Segmentierung richtig einordnen.",
+    "domain": "GA2",
+    "groupId": "ga2-7",
+    "groupLabel": "Block N7 · Netzwerksicherheit",
+    "itemId": "ga2-7__4",
+    "week": "KW 42",
+    "estimatedMinutes": 31,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-14.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "zt-unterscheiden",
+      "zt-entscheiden"
+    ],
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentHash": "d1983c76167fc29217f479842f209806712f71802cdc7d9d1cc5862f4b908ba5",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "ids-ips",
+    "slug": "ids-ips",
+    "title": "IDS und IPS mit Fehlalarmen sinnvoll betreiben",
+    "description": "Erkennung und Blockierung, Netz- und Hostsensoren sowie False Positives in einem Betriebsfall beurteilen.",
+    "domain": "GA2",
+    "groupId": "ga2-7",
+    "groupLabel": "Block N7 · Netzwerksicherheit",
+    "itemId": "ga2-7__5",
+    "week": "KW 42",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "sensorwahl",
+      "alarmbewertung"
+    ],
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentHash": "108f7a7622b684cbdf4396c9d5bd582698d442af8e63ea9bd589f34ea0a9e6f7",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "nac-8021x",
+    "slug": "nac-8021x",
+    "title": "Netzzugang mit NAC und 802.1X steuern",
+    "description": "Supplicant, Switch und RADIUS unterscheiden und sichere Freigabe- und Quarantäneregeln begründen.",
+    "domain": "GA2",
+    "groupId": "ga2-7",
+    "groupLabel": "Block N7 · Netzwerksicherheit",
+    "itemId": "ga2-7__6",
+    "week": "KW 42",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "rollen",
+      "zugangsentscheidung"
+    ],
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentHash": "e7c3444c43e65a0456f182a4f5a6bb307b58529157ae62df3099ac346857bf1a",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "acl-vs-firewall",
+    "slug": "acl-vs-firewall",
+    "title": "ACLs und Firewalls am richtigen Prüfpunkt einsetzen",
+    "description": "Paketfilter, Verbindungszustand und Richtung im Inter-VLAN-Verkehr unterscheiden.",
+    "domain": "GA2",
+    "groupId": "ga2-7",
+    "groupLabel": "Block N7 · Netzwerksicherheit",
+    "itemId": "ga2-7__7",
+    "week": "KW 42",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "kontrollziel",
+      "filterpunkt"
+    ],
+    "sources": [
+      "europa-integratoren-2026"
+    ],
+    "contentHash": "bd3ce414137ab25915094fdce6ff67b0242717bb7c4ac8aacd15a545f1beb436",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "reverse-proxy-waf",
+    "slug": "reverse-proxy-waf",
+    "title": "Reverse Proxy, WAF und Load Balancer unterscheiden",
+    "description": "TLS-Grenzen, Inhaltsprüfung und Lastverteilung an einer Webarchitektur erklären.",
+    "domain": "GA2",
+    "groupId": "ga2-7",
+    "groupLabel": "Block N7 · Netzwerksicherheit",
+    "itemId": "ga2-7__8",
+    "week": "KW 42",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "rollen",
+      "vertrauensgrenzen"
+    ],
+    "sources": [
+      "europa-integratoren-2026"
+    ],
+    "contentHash": "85b1e16501c2b9b08d85c1cfb65edaf448db8d07d657c97e2c02399fb4e28f2f",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "netzwerkangriffe",
+    "slug": "netzwerkangriffe",
+    "title": "Netzwerkangriffe anhand von Belegen unterscheiden",
+    "description": "Sieben Angriffsarten nach Mechanismus, Voraussetzung und betroffener Sicherheitswirkung einordnen.",
+    "domain": "GA2",
+    "groupId": "ga2-7",
+    "groupLabel": "Block N7 · Netzwerksicherheit",
+    "itemId": "ga2-7__9",
+    "week": "KW 42",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "mechanismus",
+      "beleg"
+    ],
+    "sources": [
+      "itlf6-9-2022"
+    ],
+    "contentHash": "61db6c47b2daf647537496d95eb9666d1b9a144238ab3b82b6a061a3ff9c8f67",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "angriffsgegenmassnahmen",
+    "slug": "angriffsgegenmassnahmen",
+    "title": "Gegenmaßnahmen mit Wirkung und Restrisiko begründen",
+    "description": "Zu jedem Netzwerkangriff einen passenden Kontrollpunkt, eine Gegenprobe und eine Grenze benennen.",
+    "domain": "GA2",
+    "groupId": "ga2-7",
+    "groupLabel": "Block N7 · Netzwerksicherheit",
+    "itemId": "ga2-7__10",
+    "week": "KW 42",
+    "estimatedMinutes": 32,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "zuordnung",
+      "wirksamkeit"
+    ],
+    "sources": [
+      "itlf6-9-2022",
+      "itlf10-12-2023"
+    ],
+    "contentHash": "07b6b50f0c6ce3ab53686ed1004471270dac2f47abf0bea386f60e887346b9cf",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "sichere-netzprotokolle",
+    "slug": "sichere-netzprotokolle",
+    "title": "Unsichere Protokolle durch geprüfte sichere Verbindungen ersetzen",
+    "description": "TLS, SSH, Zertifikatsprüfung und HSTS im Migrationsfall richtig einsetzen.",
+    "domain": "GA2",
+    "groupId": "ga2-7",
+    "groupLabel": "Block N7 · Netzwerksicherheit",
+    "itemId": "ga2-7__11",
+    "week": "KW 42",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "ersatz",
+      "validierung"
+    ],
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentHash": "762d4578467959b8875a5db6debb1f00be527933af9660c187e372b0ae7d7a4c",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "netzwerk-logging-datenschutz",
+    "slug": "netzwerk-logging-datenschutz",
+    "title": "Netzwerkprotokollierung zweckgebunden planen",
+    "description": "Ein Logging-Konzept mit Datenminimierung, Löschung, Zugriffsschutz und Mitbestimmungsprüfung entwickeln.",
+    "domain": "GA2",
+    "groupId": "ga2-7",
+    "groupLabel": "Block N7 · Netzwerksicherheit",
+    "itemId": "ga2-7__12",
+    "week": "KW 42",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "konzept",
+      "speicherbedarf"
+    ],
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentHash": "a59975d8083d2c0e5f49c39d2d5b1ce6d9b391ff10dc3d30c3eacbd5b9423a51",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "netzwerkredundanz",
+    "slug": "netzwerkredundanz",
+    "title": "Netzwerkredundanz bis zum Ausfallfall planen",
+    "description": "Doppelte Uplinks, Ringstrukturen und N+1 nach verbleibender Kapazität und gemeinsamen Fehlern beurteilen.",
+    "domain": "GA2",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__0",
+    "week": "KW 44",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "ausfallwege",
+      "restkapazitaet"
+    ],
+    "sources": [
+      "europa-integratoren-2026"
+    ],
+    "contentHash": "b00993981e548433cd9bd42aa66b429ac77bd3a02ce09a76c7321747fd996219",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "vrrp-hsrp",
+    "slug": "vrrp-hsrp",
+    "title": "Gateway-Failover mit VRRP und HSRP erklären",
+    "description": "Virtuelle IP/MAC, Priorität, Ausfallerkennung und Grenzen der Gateway-Redundanz nachvollziehen.",
+    "domain": "GA2",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__1",
+    "week": "KW 44",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "failover",
+      "grenzen"
+    ],
+    "sources": [
+      "europa-integratoren-2026"
+    ],
+    "contentHash": "2bd7aa997dbb1df8d468f17d982b5f65ba28823e2de64f7780a94eace6709de6",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "verfuegbarkeit-berechnen",
+    "slug": "verfuegbarkeit-berechnen",
+    "title": "Verfügbarkeit und Ausfallzeit sauber berechnen",
+    "description": "Zeitanteile, Reihensysteme und unabhängige Parallelpfade mit klaren Annahmen berechnen.",
+    "domain": "GA2",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__2",
+    "week": "KW 44",
+    "estimatedMinutes": 38,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "modell",
+      "ausfallzeit",
+      "reihe",
+      "parallel"
+    ],
+    "sources": [
+      "itlf6-9-2022",
+      "itlf10-12-2023"
+    ],
+    "contentHash": "3094689030e5477dc00cc44340da4cfa4dae564c67b1aa6cff72b65feaad36df",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "single-points-of-failure",
+    "slug": "single-points-of-failure",
+    "title": "Single Points of Failure im Netzplan finden",
+    "description": "Dienstabhängigkeiten verfolgen und gemeinsame technische oder organisatorische Ausfallpunkte erkennen.",
+    "domain": "GA2",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__3",
+    "week": "KW 44",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "spof",
+      "massnahme"
+    ],
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentHash": "9f0274dab37886b600033669714938dc5ff86922dda223f44730215551862d3c",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "usv-technikraum",
+    "slug": "usv-technikraum",
+    "title": "USV und Technikraum für den Dienst auslegen",
+    "description": "Watt, VA, Laufzeit und Wärmeabfuhr zusammen betrachten, statt nur die USV-Nennzahl zu vergleichen.",
+    "domain": "GA2",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__4",
+    "week": "KW 44",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "auslegung",
+      "leistung"
+    ],
+    "sources": [
+      "europa-integratoren-2026"
+    ],
+    "contentHash": "1da9756f4c637038b7c3ac564926ef31a2885ba5cee7c75e77ab90ecb18c422d",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "sla-netzdienste",
+    "slug": "sla-netzdienste",
+    "title": "Netzdienste mit messbaren SLA-Zielen vereinbaren",
+    "description": "Verfügbarkeit, Reaktionszeit, Wiederherstellung und vereinbarte Folgen einer Abweichung getrennt beurteilen.",
+    "domain": "GA2",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__5",
+    "week": "KW 44",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "zeiten",
+      "budget"
+    ],
+    "sources": [
+      "itlf6-9-2022",
+      "europa-integratoren-2026"
+    ],
+    "contentHash": "8c48228725c973bcfb527063071b69f7231e08562b9e525acccb49b591842c21",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "snmp-netflow-syslog",
+    "slug": "snmp-netflow-syslog",
+    "title": "Monitoringquellen zu einer brauchbaren Alarmierung verbinden",
+    "description": "SNMP, Flowdaten und Syslog nach Aussage, Grenzen und Alarmierungsaufgabe auswählen.",
+    "domain": "GA2",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__6",
+    "week": "KW 44",
+    "estimatedMinutes": 32,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "datenquellen",
+      "alarmierung"
+    ],
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentHash": "cb176cefe74f3492584fb85e95d237124f614f6594d0c42992a9f0e7478aba1a",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "netzwerk-messwerte",
+    "slug": "netzwerk-messwerte",
+    "title": "Netzwerkmesswerte korrekt lesen und berechnen",
+    "description": "Auslastung, Fehlerzähler, Latenz, Verlust und Jitter mit Messfenster und Aussagegrenzen einordnen.",
+    "domain": "GA2",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__7",
+    "week": "KW 44",
+    "estimatedMinutes": 40,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-14.2",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "interpretation",
+      "auslastung",
+      "verlust"
+    ],
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentHash": "e2d8c68c29798e14b34d367d2b00fbcd08d1fa7215bb3cf1eafc6d1a5e9fa0f2",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "monitoring-trendanalyse",
+    "slug": "monitoring-trendanalyse",
+    "title": "Kapazität aus Trends rechtzeitig planen",
+    "description": "Vergleichbare Lastreihen beurteilen und den Zeitpunkt einer Kapazitätsmaßnahme berechnen.",
+    "domain": "GA2",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__8",
+    "week": "KW 44",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "ziel-0",
+      "ziel-1"
+    ],
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentHash": "cfdbc1a885effb74f12fb4da8d5dd03e326fca7c89378538ab4d8348b116de20",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "systematische-netzfehlersuche",
+    "slug": "systematische-netzfehlersuche",
+    "title": "Netzfehler mit prüfbaren Hypothesen eingrenzen",
+    "description": "Schichtenbezogene Tests auswählen und Beobachtung, Vermutung und bestätigte Ursache sauber trennen.",
+    "domain": "GA2",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__9",
+    "week": "KW 44",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "ziel-0",
+      "ziel-1"
+    ],
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentHash": "30fc2c7152e89c73e44c8bbcce02d6ed99b9717f2438a9d4f6b03783bbab0ab7",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "netzwerk-diagnosewerkzeuge",
+    "slug": "netzwerk-diagnosewerkzeuge",
+    "title": "Für jede Netzwerkfrage das passende Werkzeug",
+    "description": "Konfiguration, Namensauflösung, Pfad, Nachbarn und Dienstverbindungen mit passenden Werkzeugen untersuchen.",
+    "domain": "GA2",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__10",
+    "week": "KW 44",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "ziel-0",
+      "ziel-1"
+    ],
+    "sources": [
+      "it-basiswissen-2012"
+    ],
+    "contentHash": "35be828559ee9861d9d1df263ed46c94738283d89d97a69433d49a7f8d9c95a7",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "wireshark",
+    "slug": "wireshark",
+    "title": "Paketmitschnitte lesen, filtern und begründet auswerten",
+    "description": "Capture- und Displayfilter unterscheiden und aus einer Paketfolge nur belegbare Aussagen ableiten.",
+    "domain": "GA2",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__11",
+    "week": "KW 44",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "ziel-0",
+      "ziel-1"
+    ],
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentHash": "64a4fdddbffa3f31fcf7a443aef48aaf8007c73fcc7ee72c5b3ce501e8ec296c",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "span-mirror-port",
+    "slug": "span-mirror-port",
+    "title": "Mit SPAN den richtigen Verkehr sichtbar machen",
+    "description": "Spiegelquelle, Richtung und Analyseport auswählen und Grenzen eines Mitschnitts erkennen.",
+    "domain": "GA2",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__12",
+    "week": "KW 44",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "ziel-0",
+      "ziel-1"
+    ],
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentHash": "25bf2491d52b3635e8c9a13ac35063e5f9ad4f0233babb1637088d850d59ffff",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "netzdokumentation",
+    "slug": "netzdokumentation",
+    "title": "Netzdokumentation als verlässliche Betriebshilfe",
+    "description": "Physische und logische Netzinformationen verknüpfen und Änderungen nachvollziehbar übergeben.",
+    "domain": "GA2",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__13",
+    "week": "KW 44",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "ziel-0",
+      "ziel-1"
+    ],
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentHash": "6e37da92b01b056fe14d1959f85dc15884b02a8c9a532cf6ebdaed69b21bd346",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "netzplan-pruefungsanalyse",
+    "slug": "netzplan-pruefungsanalyse",
+    "title": "Netzpläne lesen und Annahmen sichtbar machen",
+    "description": "Vorgaben, abgeleitete Aussagen und offene Annahmen in einem Netzplan unterscheiden; aus Netzplan und Aufgabenwortlaut einen passenden Lösungsansatz wählen.",
+    "domain": "GA2",
+    "groupId": "ga2-9",
+    "groupLabel": "Prüfungstechnik GA2",
+    "itemId": "ga2-9__0",
+    "week": "KW 45–47",
+    "estimatedMinutes": 22,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-14.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "ziel-0",
+      "ziel-1"
+    ],
+    "sources": [
+      "ihk-bonn"
+    ],
+    "contentHash": "e8beb51028de4a34b92121121eea431c04a5963031b6d06abfaf5a11a2362fe9",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "subnetting-rechenweg",
+    "slug": "subnetting-rechenweg",
+    "title": "Subnetting mit prüfbarem Rechenweg lösen",
+    "description": "einen nachvollziehbaren IPv4-Subnetting-Ansatz samt Plausibilitätsprüfung beurteilen; für einen gegebenen Hostbedarf die kleinste passende Präfixlänge berechnen.",
+    "domain": "GA2",
+    "groupId": "ga2-9",
+    "groupLabel": "Prüfungstechnik GA2",
+    "itemId": "ga2-9__1",
+    "week": "KW 45–47",
+    "estimatedMinutes": 22,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-14.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "ziel-0",
+      "ziel-1"
+    ],
+    "sources": [
+      "ihk-bonn"
+    ],
+    "contentHash": "02a9e4cdd0d94283750e5fd786a09eba3003b9e200795359eb6d0c8691812276",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "konfiguration-beschreiben",
+    "slug": "konfiguration-beschreiben",
+    "title": "Konfigurationen aufgabengerecht beschreiben",
+    "description": "das geforderte Antwortformat aus der Aufgabenstellung ableiten; eine vollständige nachvollziehbare Konfigurationsbeschreibung beurteilen.",
+    "domain": "GA2",
+    "groupId": "ga2-9",
+    "groupLabel": "Prüfungstechnik GA2",
+    "itemId": "ga2-9__2",
+    "week": "KW 45–47",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-14.2",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "ziel-0",
+      "ziel-1"
+    ],
+    "sources": [
+      "ihk-bonn"
+    ],
+    "contentHash": "3196f3d8ec604b46a9529867da43f4c35a219fda8a69df12148015b81cc3d3fe",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "alternativen-bewerten",
+    "slug": "alternativen-bewerten",
+    "title": "Alternativen anhand von Anforderungen bewerten",
+    "description": "Musskriterien vor einer gewichteten Bewertung anwenden; eine Entscheidung mit fallbezogenen Vor- und Nachteilen begründen.",
+    "domain": "GA2",
+    "groupId": "ga2-9",
+    "groupLabel": "Prüfungstechnik GA2",
+    "itemId": "ga2-9__3",
+    "week": "KW 45–47",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-14.2",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "ziel-0",
+      "ziel-1"
+    ],
+    "sources": [
+      "ihk-bonn"
+    ],
+    "contentHash": "01927d924cd3c6d890f0b51c95bc9bea3eabd059366846c1e7082ae2e20928c6",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "ga2-zeitmanagement",
+    "slug": "ga2-zeitmanagement",
+    "title": "Prüfungszeit nach Aufgaben und Reserve planen",
+    "description": "einen anpassbaren Zeitplan statt starrer Minutenregeln beurteilen; aus Gesamtzeit, Reserve und Aufgabengewicht ein Zeitbudget berechnen.",
+    "domain": "GA2",
+    "groupId": "ga2-9",
+    "groupLabel": "Prüfungstechnik GA2",
+    "itemId": "ga2-9__4",
+    "week": "KW 45–47",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-14.2",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "ziel-0",
+      "ziel-1"
+    ],
+    "sources": [
+      "ihk-bonn"
+    ],
+    "contentHash": "dc3b4aab34e69131db3a8210e56a7e08c0fca0e9ae25e1c3398132b1a59d4b49",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "subnetting-priorisieren",
+    "slug": "subnetting-priorisieren",
+    "title": "Aufgabenreihenfolge bewusst wählen",
+    "description": "eine Aufgabenreihenfolge nach Sicherheit, Aufwand und Abhängigkeiten auswählen; bei einer Blockade sinnvoll wechseln und den Wiedereinstieg sichern.",
+    "domain": "GA2",
+    "groupId": "ga2-9",
+    "groupLabel": "Prüfungstechnik GA2",
+    "itemId": "ga2-9__5",
+    "week": "KW 45–47",
+    "estimatedMinutes": 22,
+    "relevance": "hoch",
+    "contentRevision": "2026-09-14.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "ziel-0",
+      "ziel-1"
+    ],
+    "sources": [
+      "ihk-bonn"
+    ],
+    "contentHash": "6ed13b658edf93639c8812684cb3eec82778b88d1eb7c193c7ec49408d5636fb",
     "sourceKind": "compact-spec"
   },
   {

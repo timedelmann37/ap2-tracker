@@ -1,0 +1,380 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "deduplizierung-komprimierung-thin-provisioning-nutzen-risiken",
+    "slug": "deduplizierung-komprimierung-thin-provisioning-nutzen-risiken",
+    "title": "Speicher sparen: Deduplizierung, Komprimierung und Thin Provisioning",
+    "description": "Drei unterschiedliche Verfahren auseinanderhalten, Einsparungen berechnen und Überbelegung rechtzeitig erkennen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-3",
+    "groupLabel": "Speicherlösungen",
+    "itemId": "ga1-3__9",
+    "week": "KW 37",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "sources": [
+      "storage-dedupe",
+      "storage-compression",
+      "lvm-lv"
+    ],
+    "contentRevision": "2026-09-18.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "einsparung",
+      "label": "Deduplizierung und Komprimierung unterscheiden und Einsparung berechnen"
+    },
+    {
+      "id": "risiko",
+      "label": "Thin-Provisioning-Risiken aus realer Belegung ableiten"
+    }
+  ],
+  "intro": "Drei unterschiedliche Verfahren auseinanderhalten, Einsparungen berechnen und Überbelegung rechtzeitig erkennen. Du arbeitest mit eigenen Block- und Kapazitätsmodellen; keine Speicherfunktion wird aktiviert.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "storage-dedupe",
+        "sourceLocator": "What is Data Deduplication? und Why is Data Deduplication useful?",
+        "use": "Prinzip und datenabhängige Wirkung",
+        "reviewStatus": "Abschnitte am 18.09.2026 gelesen"
+      },
+      {
+        "sourceId": "storage-compression",
+        "sourceLocator": "Einleitung und Compression levels",
+        "use": "Prinzip und datenabhängige Wirkung",
+        "reviewStatus": "Abschnitte am 18.09.2026 gelesen"
+      },
+      {
+        "sourceId": "lvm-lv",
+        "sourceLocator": "4.3.3 Extending a thin pool, Einleitung und data_percent/metadata_percent",
+        "use": "Virtuelle Größe, physische Belegung und Monitoring",
+        "reviewStatus": "Abschnitt am 18.09.2026 erneut gelesen"
+      }
+    ],
+    "notes": [
+      "Eigene Datenblöcke, Fälle und Grafiken; menschliche Fachfreigabe offen.",
+      "Batch ga1-3-009-009 enthält IoT-, RAID-, STP- und Projektorganisationskontext. Nicht als Fachbeleg übernommen. Unaufgelösten IT-Basiswissen-Verweis nicht als gelesen behandelt.",
+      "Rechenmodelle ohne Metadaten-, Redundanz- und Rundungsaufwand; keine garantierten Einsparquoten."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "verfahren",
+      "title": "Drei Wege – unterschiedliche Wirkung",
+      "type": "comparison",
+      "items": [
+        {
+          "label": "Deduplizierung",
+          "detail": "Identische Inhalte gemeinsam speichern"
+        },
+        {
+          "label": "Komprimierung",
+          "detail": "Inhalte platzsparender darstellen"
+        },
+        {
+          "label": "Thin Provisioning",
+          "detail": "Physisch erst bei Bedarf zuweisen"
+        }
+      ]
+    },
+    {
+      "id": "pool",
+      "title": "Zusagen sind keine freien Blöcke",
+      "type": "comparison",
+      "items": [
+        {
+          "label": "Virtuell zugesagt",
+          "detail": "3 Volumes mit je 500 GiB: 1500 GiB"
+        },
+        {
+          "label": "Physisch vorhanden",
+          "detail": "Datenpool 1000 GiB; 700 GiB belegt"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "deduplizierung-komprimierung-thin-provisioning-nutzen-risiken-diagnose",
+          "question": "Drei virtuelle Volumes zeigen zusammen 1.500 GiB auf einem 1.000-GiB-Pool. Was ist dadurch bewiesen?",
+          "options": [
+            {
+              "text": "500 GiB zusätzlicher physischer Speicher wurden erzeugt.",
+              "rationale": "Eine logische Zusage erzeugt keine Datenträger.",
+              "correct": false
+            },
+            {
+              "text": "Die zugesagte Größe übersteigt die vorhandene Poolkapazität.",
+              "rationale": "Richtig: Wie viel aktuell belegt ist, muss separat geprüft werden.",
+              "correct": true
+            },
+            {
+              "text": "Der Pool ist zwangsläufig bereits voll.",
+              "rationale": "Virtuelle Größe und tatsächliche Belegung sind verschieden.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Drei Begriffe, nicht drei Namen für dasselbe",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "verfahren",
+          "alt": "Deduplizierung teilt identische Inhalte, Komprimierung verkleinert deren Darstellung, Thin Provisioning verschiebt die physische Zuweisung.",
+          "caption": "Eigene Darstellung; vereinfachtes Lernmodell."
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Deduplizierung** erkennt identische Inhalte und speichert sie gemeinsam. Das kann auf Datei- oder Block-/Chunk-Ebene geschehen. Unterschiedliche Dateien können gleiche Teilbereiche enthalten. Die logische Sicht bleibt erhalten; Referenzen verweisen auf gemeinsam gespeicherte Daten.\n\n**Komprimierung** stellt Inhalte mit weniger Speicherplatz dar. Hier geht es um verlustfreie Komprimierung: Beim Lesen entsteht wieder der ursprüngliche Inhalt. Der Erfolg hängt von Daten und Verfahren ab. Eine hohe Kompressionsstufe kann mehr Rechenzeit beanspruchen, ohne entsprechend viel zusätzlichen Platz zu sparen.\n\n**Thin Provisioning** weist einem logischen Volume physische Kapazität bedarfsabhängig zu. Es entfernt keine doppelten Inhalte und komprimiert sie nicht von selbst. Es vermeidet zunächst ungenutzte feste Zuweisungen und kann Überbelegung ermöglichen. Die Verfahren sind kombinierbar, ihre Wirkungen dürfen aber nicht doppelt gezählt werden."
+        }
+      ]
+    },
+    {
+      "title": "Eigene Blöcke statt Herstellerquote",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Sechs logische Datenblöcke haben jeweils 10 MiB. Gleiche Buchstaben bedeuten **exakt gleichen Inhalt**, unterschiedliche Buchstaben unterschiedliche Inhalte. Das Modell ignoriert Metadaten und Redundanz; Komprimierung ist aus.\n\n```text\nLogische Folge: A B A C B A\nEinmalige Inhalte: A B C\nBlockgröße: 10 MiB\n```\n\nVorher werden 60 MiB für die sechs Blöcke angesetzt. Nach Deduplizierung liegen drei unterschiedliche Inhalte vor: 30 MiB. Die logischen sechs Blöcke bleiben lesbar. Die Referenzen kosten real ebenfalls Speicher; den lassen wir hier ausdrücklich außen vor."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Ersparnis gleich 60 minus 30 geteilt durch 60 mal 100 Prozent gleich 50 Prozent.",
+          "mathml": "<math display=\"block\"><mrow><mfrac><mrow><mn>60</mn><mo>−</mo><mn>30</mn></mrow><mn>60</mn></mfrac><mo>·</mo><mn>100</mn><mo>%</mo><mo>=</mo><mn>50</mn><mo>%</mo></mrow></math>",
+          "legend": [
+            "Bezugsgröße ist die ursprüngliche Datenmenge; Modell ohne Verwaltungsaufwand"
+          ]
+        },
+        {
+          "type": "numeric",
+          "id": "deduplizierung-komprimierung-thin-provisioning-nutzen-risiken-zahl",
+          "title": "Selbst zählen",
+          "prompt": "Neuer Fall: acht gleich große 10-MiB-Blöcke A B A C D B A C. Wie viele MiB benötigen die einmaligen Inhalte nach reiner Deduplizierung? Metadaten und Redundanz bleiben unberücksichtigt.",
+          "label": "Physische Datenmenge in MiB",
+          "expected": 40,
+          "tolerance": 0,
+          "correctFeedback": "A, B, C und D: vier einmalige Inhalte zu je 10 MiB ergeben 40 MiB.",
+          "wrongFeedback": "Zähle unterschiedliche Inhalte, nicht alle logischen Vorkommen.",
+          "misconceptions": [
+            {
+              "value": 80,
+              "feedback": "Das ist die logische Ausgangsmenge; Wiederholungen wurden nicht entfernt."
+            },
+            {
+              "value": 30,
+              "feedback": "Auch D muss einmal gespeichert werden."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Einsparungen nicht addieren",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Zurück zum ersten Modell: Deduplizierung reduziert 60 auf 30 MiB. Eine anschließend gemessene Komprimierung reduziert diese verbliebenen Inhalte auf 20 MiB. Die Gesamtmenge ist nun 20 MiB, nicht null. Die zweite Einsparung bezieht sich auf einen anderen Ausgangswert."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Gesamtersparnis gleich 60 minus 20 geteilt durch 60 mal 100 Prozent, ungefähr 66,7 Prozent.",
+          "mathml": "<math display=\"block\"><mrow><mfrac><mrow><mn>60</mn><mo>−</mo><mn>20</mn></mrow><mn>60</mn></mfrac><mo>·</mo><mn>100</mn><mo>%</mo><mo>≈</mo><mn>66,7</mn><mo>%</mo></mrow></math>",
+          "legend": [
+            "Eigene gemessene Modellwerte, keine zugesicherte Produktquote"
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "deduplizierung-komprimierung-thin-provisioning-nutzen-risiken-uebung",
+          "question": "Warum kann man Einsparprozente zweier aufeinanderfolgender Verfahren nicht einfach addieren?",
+          "options": [
+            {
+              "text": "Prozentrechnung ist bei Speicher grundsätzlich verboten.",
+              "rationale": "Sie funktioniert mit einer klaren Bezugsgröße.",
+              "correct": false
+            },
+            {
+              "text": "Das zweite Verfahren wirkt auf die bereits veränderte Restmenge.",
+              "rationale": "Richtig: Ausgangs- und Endmenge gemeinsam vergleichen.",
+              "correct": true
+            },
+            {
+              "text": "Beide Verfahren sparen immer exakt gleich viel.",
+              "rationale": "Die Wirkung ist daten- und verfahrensabhängig.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Thin Provisioning: das gemeinsame Limit",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "pool",
+          "alt": "1500 GiB virtuelle Volumes teilen 1000 GiB physischen Datenpool; davon sind 700 GiB belegt.",
+          "caption": "Eigene Darstellung; vereinfachtes Lernmodell."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Unser Pool hat **1.000 GiB nutzbare Datenkapazität**, ohne den separat betrachteten Metadatenbereich. Drei Volumes sind jeweils 500 GiB groß. Aktuell sind 700 GiB physische Datenblöcke belegt; 300 GiB bleiben frei. Die Volumes können deshalb nicht alle gleichzeitig bis zur zugesagten Größe befüllt werden.\n\nEin geplanter Schreibvorgang benötigt nun 350 GiB **zusätzliche physische** Blöcke. Ohne Erweiterung oder nachgewiesene Freigabe fehlen 50 GiB. Freie logische Kapazität innerhalb eines Volumes genügt nicht. Welche Fehler ein voller Pool konkret auslöst, hängt vom System ab; sichere weitere Schreibbarkeit ist dann nicht gewährleistet."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Fehlende Kapazität gleich 350 minus Klammer 1000 minus 700 gleich 50 GiB.",
+          "mathml": "<math display=\"block\"><mrow><mn>350</mn><mo>−</mo><mo>(</mo><mn>1000</mn><mo>−</mo><mn>700</mn><mo>)</mo><mo>=</mo><mn>50</mn></mrow></math>",
+          "legend": [
+            "Nur Datenkapazität, ohne neue Einsparung oder Freigabe"
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "Im Betrieb sind Daten- **und** Metadatenbelegung zu überwachen. Dazu gehören Wachstumsrate, Vorwarnzeit, Verantwortliche und tatsächlich verfügbare Erweiterungskapazität. Automatische Erweiterung ist nur nützlich, wenn sie funktioniert und noch Speicher vorhanden ist. Warte nicht auf die Meldung „100 Prozent“."
+        }
+      ]
+    },
+    {
+      "title": "Nutzen prüfen, Schutz nicht verwechseln",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Viele ähnliche Installationsabbilder können Deduplizierung lohnend machen. Stark unterschiedliche Inhalte bieten dafür weniger Ansatzpunkte. Für Komprimierung zählt die Struktur der verbleibenden Daten; eine Quote aus einem anderen Datenbestand ist kein belastbarer Planungswert.\n\nPrüfe Einsparung, CPU-/RAM-Aufwand, Antwortzeiten und den erfolgreichen Restore mit repräsentativen Daten. Bei späterer Rückführung in einen unoptimierten Zustand kann wieder mehr Kapazität nötig sein. Ein Pilot braucht daher Reserven und einen Rückweg.\n\nEine gemeinsam gespeicherte Kopie ist **keine zusätzliche Sicherung**. Speicheroptimierung ersetzt weder Redundanz noch Backup. Plane zudem nicht mit einer erhofften Einsparung als garantiert verfügbarem Platz."
+        }
+      ]
+    },
+    {
+      "title": "Selbst ordnen und erklären",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "deduplizierung-komprimierung-thin-provisioning-nutzen-risiken-reihenfolge",
+          "title": "Ablauf ordnen",
+          "prompt": "Ordne die Einführung einer Speicheroptimierung.",
+          "steps": [
+            {
+              "id": "abschluss",
+              "label": "Überwachen, Reserven sichern und erst dann ausrollen"
+            },
+            {
+              "id": "start",
+              "label": "Datenart, Last und Schutzziele erfassen"
+            },
+            {
+              "id": "pruefen",
+              "label": "Mit repräsentativen Daten Einsparung und Restore testen"
+            }
+          ],
+          "expected": [
+            "start",
+            "pruefen",
+            "abschluss"
+          ],
+          "correctFeedback": "Richtig: Voraussetzungen, Prüfung und Abschluss stehen in der vorgesehenen Reihenfolge.",
+          "wrongFeedback": "Prüfe die Voraussetzungen: Der letzte Schritt darf die vorherige Prüfung nicht überspringen."
+        },
+        {
+          "type": "recall",
+          "id": "deduplizierung-komprimierung-thin-provisioning-nutzen-risiken-begruendung",
+          "title": "Aus dem Gedächtnis erklären",
+          "prompt": "Ein Angebot verspricht 80 Prozent Einsparung und unbegrenzt große virtuelle Volumes. Welche Nachweise und Grenzen würdest du verlangen?",
+          "label": "Deine Erklärung",
+          "minLength": 70,
+          "model": "Ich verlange Messungen mit unseren Daten, inklusive CPU-/RAM-Bedarf, Latenz und erfolgreichem Restore. Eine beworbene Einsparquote ist keine feste zusätzliche Kapazität. Thin Provisioning braucht Daten- und Metadatenüberwachung, Reserve, Verantwortliche und rechtzeitige physische Erweiterung; virtuelle Zusagen schaffen keinen Speicher."
+        },
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "deduplizierung-komprimierung-thin-provisioning-nutzen-risiken-karte-0",
+              "label": "Abruf 1",
+              "front": "Deduplizierung entfernt welche Wiederholung?",
+              "back": "Identische Dateninhalte können einmal physisch vorliegen und mehrfach referenziert werden."
+            },
+            {
+              "id": "deduplizierung-komprimierung-thin-provisioning-nutzen-risiken-karte-1",
+              "label": "Abruf 2",
+              "front": "Komprimierung ist keine Deduplizierung – warum?",
+              "back": "Sie codiert Inhalte platzsparender; dafür müssen nicht mehrere gleiche Dateien vorhanden sein."
+            },
+            {
+              "id": "deduplizierung-komprimierung-thin-provisioning-nutzen-risiken-karte-2",
+              "label": "Abruf 3",
+              "front": "Was überwacht man bei einem LVM-Thin-Pool?",
+              "back": "Datenbelegung und Metadatenbelegung sowie Wachstum und Erweiterungsreserve."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "deduplizierung-komprimierung-thin-provisioning-nutzen-risiken-transfer-a",
+          "question": "Neue Blockfolge: X Y X Y, jeder Block 5 MiB. Reine Deduplizierung ohne Metadaten: Welche Aussage stimmt?",
+          "options": [
+            {
+              "text": "20 MiB bleiben physisch nötig.",
+              "rationale": "Das zählt Wiederholungen mehrfach.",
+              "correct": false
+            },
+            {
+              "text": "Die Dateien werden verlustbehaftet verkleinert.",
+              "rationale": "Deduplizierung entfernt keine logischen Nutzdaten.",
+              "correct": false
+            },
+            {
+              "text": "10 MiB einmalige Inhalte bleiben; logisch sind weiterhin 20 MiB verfügbar.",
+              "rationale": "X und Y werden je einmal gespeichert.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "einsparung"
+        },
+        {
+          "type": "quiz",
+          "id": "deduplizierung-komprimierung-thin-provisioning-nutzen-risiken-transfer-b",
+          "question": "Ein Thin-Pool ist zu 95 Prozent belegt, die Volumes zeigen noch viel freien Platz. Was hat Priorität?",
+          "options": [
+            {
+              "text": "Reale Daten-/Metadatenbelegung und Wachstum prüfen, Reserve beziehungsweise Erweiterung rechtzeitig sicherstellen.",
+              "rationale": "Die physische Grenze gilt für alle Volumes gemeinsam.",
+              "correct": true
+            },
+            {
+              "text": "Nur die virtuellen Volumes größer einstellen.",
+              "rationale": "Das schafft keine neuen physischen Blöcke.",
+              "correct": false
+            },
+            {
+              "text": "Ungeprüft eine feste Deduplizierungsquote einplanen.",
+              "rationale": "Erhoffte Einsparung ersetzt keine verfügbare Kapazität.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "risiko"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "[Microsoft: Data Deduplication](https://learn.microsoft.com/en-us/windows-server/storage/data-deduplication/overview), [Btrfs: Compression](https://btrfs.readthedocs.io/en/latest/Compression.html) und [Red Hat: Thin-Pool-Verwaltung](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/configuring_and_managing_logical_volumes/basic-logical-volume-management_configuring-and-managing-logical-volumes), ausgewählte Abschnitte am 18.09.2026 gelesen. Keine Hersteller-Einsparquote übernommen. Buchbatch-Treffer betreffen andere Themen und wurden ausgeschlossen. Alle Zahlen, Aufgaben und Grafiken sind eigene Modelle; menschliche Fachfreigabe offen."
+        }
+      ]
+    }
+  ]
+}

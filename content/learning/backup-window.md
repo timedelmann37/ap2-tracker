@@ -9,10 +9,10 @@ group_id: ga1-4
 group_label: Block 4 · Backup, Recovery und Notfallvorsorge
 item_id: ga1-4__5
 week: KW 38
-estimated_minutes: 20
+estimated_minutes: 27
 relevance: hoch
 sources: ["ihk-bonn", "europa-integratoren-2026"]
-content_revision: 2026-09-11.1
+content_revision: 2026-09-14.1
 content_status: CURATED_DRAFT
 learning_objectives: ["rate-conversion", "window-decision"]
 curation: content/curation/backup-window.json
@@ -99,6 +99,38 @@ Ein Datenbestand umfasst 540 GB. Das Backup läuft über einen 1-Gbit/s-Link. F�
 - **Keine Reserve einplanen:** Ein rechnerisches Ergebnis exakt am Fensterrand ist betrieblich keine robuste Planung.
 - **Kompressionsangaben blind übernehmen:** Die erreichbare Kompression hängt von den Daten ab; bereits komprimierte oder verschlüsselte Daten schrumpfen oft wenig.
 
+## Praxisfall: Kopierdauer ist nicht Wiederanlaufzeit
+
+Eigene Planungsrechnung: Ein Archivdienst soll spätestens 100 Minuten nach Beginn des angenommenen Ausfalls wieder geprüft nutzbar sein. Die Übung berücksichtigt lückenlos vier aufeinanderfolgende, nicht überlappende Phasen: Bereitstellung 25 Minuten, Rückübertragung 48 Minuten, Anwendungsstart 12 Minuten sowie Datenprüfung und Freigabe 20 Minuten. Weitere Wartezeiten werden in diesem Modell nicht angesetzt.
+
+Die 48 Minuten Rückübertragung liegen unter der Vorgabe. Für die Gesamtentscheidung reicht das nicht: Alle Phasen bis zur vereinbarten Nutzbarkeit zählen. Backup-Schreibrate und Restore-Leserate dürfen außerdem nicht ohne Messung gleichgesetzt werden.
+
+<section class="quiz" data-quiz="backup-window-quellenfall" data-correct="2">
+  <h3>Welche Aussage ist für die Freigabe belastbar?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Die übrigen aufeinanderfolgenden Phasen fehlen in dieser Rechnung."><span class="m">A</span>48 Minuten liegen unter 100; der Dienst ist rechtzeitig nutzbar.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Damit wird die geforderte geprüfte Nutzbarkeit nicht nachgewiesen."><span class="m">B</span>Die Datenprüfung weglassen, damit der Zeitplan passt.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die Vorgabe bezieht sich im Fall auf den vollständigen Wiederanlauf, nicht nur auf den Datentransfer."><span class="m">C</span>Alle vier Phasen addieren und die Abweichung bearbeiten; ein schneller Kopiervorgang allein reicht nicht.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section>
+
+<section class="numeric-practice" data-numeric-practice="backup-window-quellenzeit" data-expected="105" data-correct-feedback="105 Minuten; die Vorgabe wird im Modell um fünf Minuten überschritten." data-wrong-feedback="Addiere alle vier aufeinanderfolgenden Phasen. 48 Minuten erfasst nur die Rückübertragung.">
+  <h3>Gesamtdauer selbst berechnen</h3>
+  <label for="backup-window-quellenzeit">Dauer in Minuten, ganze Zahl</label>
+  <div class="answer-row"><input id="backup-window-quellenzeit" data-numeric-input type="text" inputmode="decimal" autocomplete="off"><button type="button" class="lbtn" data-numeric-check>Ergebnis prüfen</button></div>
+  <template data-numeric-correct><div class="math-display"><math display="block" aria-label="25 plus 48 plus 12 plus 20 ergibt 105 Minuten"><mrow><mn>25</mn><mo>+</mo><mn>48</mn><mo>+</mo><mn>12</mn><mo>+</mo><mn>20</mn><mo>=</mo><mn>105</mn></mrow></math><div class="math-legend"><span>Alle Zeiten in Minuten</span><span>105 Minuten statt höchstens 100</span><span>Keine überlappenden Phasen im Modell</span></div></div></template>
+  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p>
+</section>
+
+<section class="recall-practice" data-recall="backup-window-quellenbegruendung" data-min-length="80" aria-labelledby="backup-window-quellenfrage">
+  <div class="recall-prompt"><h3 id="backup-window-quellenfrage">Begründe deinen nächsten Schritt</h3><p>Deine Rechnung überschreitet die Vorgabe. Schlage eine überprüfbare Verbesserung vor und nenne, wie du ihren tatsächlichen Nutzen nachweisen würdest. Welche Annahme solltest du nicht stillschweigend ändern?</p></div>
+  <label for="backup-window-quellenantwort">Deine Fallbegründung</label>
+  <textarea id="backup-window-quellenantwort" data-recall-input rows="4" placeholder="Kriterium, Beobachtung und nächster Nachweis …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Ich prüfe beispielsweise, ob ein vorbereitetes Ersatzsystem die Bereitstellungszeit verkürzt. Danach messe ich den vollständigen Restore unter dokumentierten Bedingungen erneut, einschließlich Datenprüfung und Freigabe. Ich streiche keine Abnahmephase und behaupte keine Parallelität, solange Abhängigkeiten nicht geklärt sind. Die Zielzeit bleibt unverändert, bis eine berechtigte Stelle sie ausdrücklich neu festlegt.</div>
+</section>
+
+Die Zusatzübung ersetzt keinen Pflichtnachweis. Vergleiche deine Begründung selbst mit dem Muster; Textlänge ist keine fachliche Bewertung.
+
 ## Karteikarten und Wiederholung
 
 <div class="flashcard-grid">
@@ -139,6 +171,8 @@ Ein Datenbestand umfasst 540 GB. Das Backup läuft über einen 1-Gbit/s-Link. F�
 </section>
 
 ## Quellen und Einordnung
+
+Der ergänzende Praxisfall nutzt einen didaktischen Impuls aus [Ausbildung in der IT – Backup und Restore](https://ausbildung-in-der-it.de/lernen/systemintegration/lektion/backup-und-restore-planen). Fachlich abgeglichen mit [NIST SP 800-34 Rev. 1, Anhang A.1, Abschnitte 5.1–5.3](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-34r1.pdf): Daten- und Funktionsprüfung vor Wiederaufnahme. Quellenabschnitte gelesen am 14.09.2026. Szenario, Zahlen und Aufgaben sind eigenständig; die Zeitvorgabe ist eine Übungsannahme, keine Prüfungsvorschrift.
 
 <div class="src-block">
   <p><strong>Prüfungsvorbereitung IHK Bonn:</strong> prüfungsnahe Muster zur Berechnung von Datenvolumen, Sicherungsdauer und Datentransferraten. Die Zahlen und Aufgaben dieser Einheit sind neu erstellt.</p>

@@ -1,0 +1,128 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "quorum-split-brain-fencing-witness-tiebreaker",
+    "slug": "quorum-split-brain-fencing-witness-tiebreaker",
+    "title": "Wer darf weiterschreiben? Quorum und Fencing",
+    "description": "Netztrennung im Zwei-Knoten-Cluster sicher entscheiden: Stimmenmehrheit, Witness und Ausschluss des alten Schreibers.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-2",
+    "groupLabel": "Virtualisierung, Cluster und Verfügbarkeit",
+    "itemId": "ga1-2__6",
+    "week": "KW 36",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": ["quorum-ms-witness", "quorum-redhat-overview", "quorum-redhat-device"],
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    { "id": "abstimmung", "label": "Bei einer Netztrennung die stimmberechtigte Seite bestimmen und die Witness-Rolle erklären" },
+    { "id": "schutz", "label": "Fencing als Schutz gegen zwei aktive Schreiber vor einer Übernahme begründen" }
+  ],
+  "intro": "A und B betreiben einen Dienst mit genau einem aktiven Schreiber. Die Verbindung zwischen ihnen fällt aus. Beide laufen noch – aber jeder hält den anderen womöglich für tot. Wer darf jetzt weiterschreiben?",
+  "curation": {
+    "evidence": [
+      { "sourceId": "quorum-ms-witness", "sourceLocator": "Quorum witness; Node vote assignment; Dynamic quorum management", "use": "Mehrheit und Witness als zusätzliche Stimme; Produktgrenze dynamischer Stimmen", "reviewStatus": "Am 26.09.2026 gelesen; eigene Fallzahlen und Grafiken" },
+      { "sourceId": "quorum-redhat-overview", "sourceLocator": "High Availability Add-On overview, Fencing und Quorum", "use": "Fencing bei ungewisser Ressourcennutzung und Quorum gegen Split-Brain", "reviewStatus": "Am 26.09.2026 gelesen" },
+      { "sourceId": "quorum-redhat-device", "sourceLocator": "Configuring quorum devices, Einleitung und Standortempfehlungen", "use": "Dritte Schiedsinstanz für zwei Knoten und unabhängiger Ausfallort", "reviewStatus": "Am 26.09.2026 gelesen" }
+    ],
+    "notes": [
+      "Der private Batch ga1-2-006-006 enthält nur allgemeine Virtualisierungstreffer, keinen belastbaren Quorum-Abschnitt. Daher eigenständiger Lehrfall, mit öffentlich prüfbaren Hersteller-Primärquellen abgeglichen; keine Buchtexte oder -grafiken übernommen.",
+      "Das Stimmenmodell A+B+W ist eine bewusst statische Vereinfachung. Windows Server kann Knoten- und Witness-Stimmen dynamisch anpassen; Pacemaker/Corosync besitzt eigene Sonderregeln für Zwei-Knoten-Cluster. Die Beispiele gelten nur für die ausdrücklich genannte Konfiguration.",
+      "Quorum entscheidet über erlaubte Cluster-Mitgliedschaft; Fencing bestätigt den Ausschluss eines möglicherweise weiter aktiven alten Besitzers. Kein allgemeines Versprechen unterbrechungsfreier Verfügbarkeit. Menschliche Fachfreigabe offen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "stimmenbild",
+      "type": "comparison",
+      "title": "Netz geteilt: 2 Stimmen gegen 1",
+      "description": "Im vereinfachten Modell haben A, B und W je eine feste Stimme. Mehr als die Hälfte von drei Stimmen sind zwei.",
+      "items": [
+        { "label": "A + Witness", "detail": "A erreicht W und besitzt 2 von 3 Stimmen. Diese Seite darf die Clusterrolle fortführen – sofern der alte Besitzer sicher ausgeschlossen ist." },
+        { "label": "B allein", "detail": "B hat nur 1 von 3 Stimmen. B darf den Dienst nicht eigenständig als neue aktive Schreibrolle starten." },
+        { "label": "Kein Knoten erreicht W", "detail": "Nach der Trennung hat jede Seite nur 1 von 3 Stimmen. Im statischen Modell stoppt die Rolle auf beiden Seiten: Datenkonsistenz vor Erreichbarkeit." }
+      ]
+    },
+    {
+      "id": "schutzkette",
+      "type": "flow",
+      "title": "Sichere Übernahme bei unklarer Gegenstelle",
+      "description": "Heartbeat-Verlust allein ist keine Aussage über Stromzustand oder Speicherzugriff.",
+      "items": [
+        { "label": "Kommunikation verloren", "detail": "A kann B nicht mehr erreichen. B könnte dennoch laufen und weiter auf gemeinsame Daten schreiben." },
+        { "label": "Quorum bestimmen", "detail": "Nur die Seite mit gültiger Mehrheit darf die Clusterrolle beanspruchen." },
+        { "label": "Alten Besitzer fencen", "detail": "Eine externe Maßnahme trennt den alten Besitzer verlässlich von der Ressource, zum Beispiel Stromabschaltung oder Storage-Fencing." },
+        { "label": "Rolle übernehmen und prüfen", "detail": "Erst nach bestätigtem Ausschluss startet der neue Schreiber; anschließend Datenzustand und Dienstfunktion prüfen." }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Diagnose: Tot oder nur unerreichbar?",
+      "blocks": [
+        { "type": "quiz", "id": "quorum-diagnose", "question": "A erhält keine Heartbeats von B. Was weiß A damit sicher?", "options": [
+          { "text": "B ist ausgeschaltet und kann keine Daten mehr schreiben.", "rationale": "Ein Netzwerkfehler kann Heartbeats verhindern, obwohl B weiterläuft.", "correct": false },
+          { "text": "Die Kommunikation zu B ist gestört; B könnte weiterhin auf Daten zugreifen.", "rationale": "Richtig. Ein ausgebliebener Heartbeat ist kein Beweis für einen abgeschalteten Knoten.", "correct": true },
+          { "text": "Ein Witness enthält automatisch eine aktuelle Kopie aller Nutzdaten.", "rationale": "Ein Witness hilft bei der Abstimmung; er ist keine allgemeine Nutzdaten-Replik.", "correct": false }
+        ], "diagnostic": true }
+      ]
+    },
+    {
+      "title": "Mit Stimmen eine Seite wählen",
+      "blocks": [
+        { "type": "figure", "diagramId": "stimmenbild", "alt": "Netztrennung im vereinfachten Drei-Stimmen-Modell: Knoten A mit Witness hat zwei Stimmen und Quorum, Knoten B allein hat eine Stimme und stoppt die Schreibrolle.", "caption": "Eigenes Lehrmodell: A, B und W haben je eine feste Stimme; produktabhängige dynamische Regeln bleiben außen vor." },
+        { "type": "markdown", "markdown": "**Split-Brain** droht, wenn getrennte Clusterteile sich beide als aktiver Besitzer derselben exklusiven Ressource ansehen. Zwei gleichzeitige Schreiber auf nicht dafür ausgelegtem Speicher können Daten beschädigen. **Quorum** fragt deshalb: Welche Seite besitzt die nötige Stimmenmehrheit, um die Rolle weiterzubetreiben? Im vereinfachten Modell stimmen Knoten A, Knoten B und Witness W je einmal ab. Mehr als die Hälfte von drei Stimmen bedeutet **mindestens zwei**.\n\nEin **Witness/Tiebreaker** ist eine Schiedsinstanz. Er entscheidet bei zwei Knoten die 1:1-Teilung, indem er auf genau einer Seite zur Mehrheit beiträgt. Er trägt nicht automatisch Anwendungsdaten und ersetzt weder Backup noch Fencing. Platziere ihn möglichst außerhalb gemeinsamer Ausfallorte von A und B – ein Witness am selben Stromkreis oder Netzsegment kann bei genau diesem Ausfall mit verschwinden. Reale Produkte können Stimmen dynamisch verändern; prüfe die konkrete Clusterkonfiguration statt blind 2-von-3 zu unterstellen." },
+        { "type": "math", "ariaLabel": "Mehrheit von drei festen Stimmen gleich ganzzahliger Anteil von drei durch zwei plus eins gleich zwei Stimmen.", "mathml": "<math display=\"block\"><mrow><mtext>Mehrheit</mtext><mo>=</mo><mo>⌊</mo><mfrac><mn>3</mn><mn>2</mn></mfrac><mo>⌋</mo><mo>+</mo><mn>1</mn><mo>=</mo><mn>2</mn><mtext> Stimmen</mtext></mrow></math>", "legend": ["Gilt für drei fest vergebene Stimmen ohne dynamische Anpassung."] },
+        { "type": "numeric", "id": "quorum-stimmen", "title": "Mehrheit berechnen", "prompt": "A, B und ein Witness haben je genau eine feste Stimme. Wie viele Stimmen benötigt eine Seite mindestens für die Mehrheit?", "label": "Benötigte Stimmen", "expected": 2, "tolerance": 0, "correctFeedback": "Richtig: Mehr als die Hälfte von 3 ist 2. A+W kann fortfahren; B allein nicht.", "wrongFeedback": "Mehrheit heißt mehr als die Hälfte aller drei festen Stimmen, nicht die Hälfte der erreichbaren Stimmen.", "misconceptions": [ { "value": 1, "feedback": "Eine Stimme ist nur ein Drittel aller Stimmen. B allein hat kein Quorum." }, { "value": 3, "feedback": "Alle drei wären Einstimmigkeit; für die Mehrheit genügen zwei." } ] },
+        { "type": "quiz", "id": "quorum-witnessrolle", "question": "A und B verlieren die Verbindung zueinander; A erreicht W, B nicht. Was ist im beschriebenen statischen Drei-Stimmen-Modell richtig?", "options": [
+          { "text": "A+W hat Quorum, B allein nicht; die Rollenübernahme braucht zusätzlich eine sichere Ausschlussprüfung.", "rationale": "Richtig: 2 von 3 Stimmen bestimmen die erlaubte Seite. Fencing schützt den exklusiven Zugriff.", "correct": true },
+          { "text": "B darf weiterschreiben, weil jeder überlebende Knoten seine eigene Mehrheit bildet.", "rationale": "Die Mehrheit wird aus allen konfigurierten Stimmen bestimmt, nicht nur aus den aktuell sichtbaren.", "correct": false },
+          { "text": "W übernimmt den Dienst und stellt dessen Nutzdaten wieder her.", "rationale": "Der Witness ist eine Schiedsinstanz, kein allgemeiner Anwendungs- oder Backupserver.", "correct": false }
+        ] }
+      ]
+    },
+    {
+      "title": "Vor dem Neustart den alten Schreiber ausschließen",
+      "blocks": [
+        { "type": "figure", "diagramId": "schutzkette", "alt": "Sichere Übernahmekette: Kommunikationsverlust erkennen, Quorum bestimmen, alten Besitzer durch externe Maßnahme von der Ressource ausschließen, erst dann neue Schreibrolle starten und prüfen.", "caption": "Eigene Sicherheitskette für eine exklusive Schreibrolle; Implementierungsdetails hängen vom Clusterprodukt ab." },
+        { "type": "markdown", "markdown": "**Fencing** bedeutet, einen unklaren alten Besitzer zuverlässig vom Zugriff auf die exklusive Ressource auszuschließen. Das kann ein harter Neustart über einen unabhängigen Managementpfad oder ein verlässliches Sperren des Storage-Zugriffs sein. Eine bloße Nachricht an B genügt nicht: Gerade B ist möglicherweise nicht erreichbar. Manche Stacks nennen das **STONITH**.\n\nQuorum und Fencing beantworten verschiedene Fragen. Quorum: *Welche Seite darf die Rolle beanspruchen?* Fencing: *Ist der vorige Besitzer wirklich vom Schreiben ausgeschlossen?* Erst dann darf ein anderer Knoten dieselbe exklusive Schreibrolle übernehmen. Scheitert das Fencing, ist eine Unterbrechung oft der sichere Zustand. Das ist unangenehm, aber besser als zwei Schreiber mit beschädigten Daten. Ein Witness oder ein zusätzlicher Heartbeat ersetzt diesen Nachweis nicht automatisch." },
+        { "type": "sequence", "id": "quorum-uebernahme", "title": "Sichere Reihenfolge", "prompt": "Ordne die Schritte nach dem Verlust der Verbindung zu B für eine exklusive Schreibrolle.", "steps": [
+          { "id": "signal", "label": "Kommunikationsverlust als Verdacht erkennen" },
+          { "id": "vote", "label": "Erlaubte Seite per Quorum bestimmen" },
+          { "id": "fence", "label": "Alten Besitzer verlässlich vom Ressourcenzugriff ausschließen" },
+          { "id": "start", "label": "Neue Schreibrolle starten und Dienstzustand prüfen" }
+        ], "expected": ["signal", "vote", "fence", "start"], "correctFeedback": "Richtig: Erst entscheiden und den alten Zugriff absichern, dann die neue Schreibrolle aktivieren.", "wrongFeedback": "Der neue Schreiber darf nicht vor bestätigtem Ausschluss des alten Besitzers starten." },
+        { "type": "recall", "id": "quorum-erklaerung", "title": "Erkläre den Zielkonflikt", "prompt": "A und B können sich nicht mehr erreichen; auch W ist für beide unerreichbar. Warum sollte der exklusive Schreibdienst im statischen Drei-Stimmen-Modell stoppen? Was wäre an einem erzwungenen Doppelstart gefährlich?", "label": "Deine Erklärung", "minLength": 90, "model": "Jede getrennte Seite besitzt nur eine von drei Stimmen und damit keine Mehrheit. Stoppen schützt die Datenkonsistenz, auch wenn der Dienst vorübergehend nicht erreichbar ist. Würden A und B ohne sichere Abstimmung und Fencing beide dieselbe exklusive Ressource beschreiben, könnten widersprüchliche Änderungen oder Datenbeschädigung entstehen." }
+      ]
+    },
+    {
+      "title": "Abrufen und anwenden",
+      "blocks": [
+        { "type": "flashcards", "cards": [
+          { "id": "quorum-karte-0", "label": "Abruf 1", "front": "Was entscheidet Quorum?", "back": "Welche Clusterseite genügend Stimmen hat, um die Rolle betreiben zu dürfen. Es beweist nicht, dass die Gegenstelle ausgeschaltet ist." },
+          { "id": "quorum-karte-1", "label": "Abruf 2", "front": "Was tut ein Witness?", "back": "Er liefert eine Schiedsstimme bei einer Teilung. Er ist nicht automatisch Datenkopie, Backup oder Fencing-Gerät." },
+          { "id": "quorum-karte-2", "label": "Abruf 3", "front": "Warum Fencing vor der Übernahme?", "back": "Der alte Besitzer könnte trotz verlorener Heartbeats noch laufen und schreiben. Sein Zugriff muss verlässlich ausgeschlossen sein." }
+        ] },
+        { "type": "quiz", "id": "quorum-transfer-a", "question": "A+B+W haben feste Stimmen. Nach einer Trennung erreicht A den Witness, B nicht. Welche Aussage gilt im Lehrmodell?", "options": [
+          { "text": "A+W besitzt 2 von 3 Stimmen; B allein darf die exklusive Rolle nicht weiterbetreiben.", "rationale": "Richtig. Die Seite mit der Mehrheit ist autorisiert; sichere Übernahme bleibt separat zu prüfen.", "correct": true },
+          { "text": "A und B haben jeweils die Hälfte und dürfen beide schreiben.", "rationale": "A hat mit W zwei Stimmen, B nur eine. Zwei Schreiber wären gerade die Gefahr.", "correct": false },
+          { "text": "Der Witness betreibt die Anwendungsdatenbank, bis A und B wieder verbunden sind.", "rationale": "Der Witness ist hier nur eine Stimme.", "correct": false }
+        ], "requiredObjective": "abstimmung" },
+        { "type": "quiz", "id": "quorum-transfer-b", "question": "A besitzt Quorum, aber der Zugriff des isolierten B auf gemeinsamen Speicher ist nicht nachweislich beendet. Was ist vor dem Start der Schreibrolle auf A nötig?", "options": [
+          { "text": "B verlässlich fencen oder den exklusiven Zugriff anderweitig nachweislich sperren; erst dann A als Schreiber starten.", "rationale": "Richtig. Mehrheit und Ausschluss des alten Besitzers sind unterschiedliche Sicherungen.", "correct": true },
+          { "text": "Sofort auf A starten: Quorum garantiert, dass B elektrisch abgeschaltet ist.", "rationale": "Quorum ist eine Abstimmung; es schaltet keinen Knoten ab.", "correct": false },
+          { "text": "Nur den Heartbeat-Timer verkürzen: Ein Timeout verhindert gleichzeitigen Schreibzugriff.", "rationale": "Ein kürzerer Timeout kann einen noch aktiven Knoten nicht sicher ausschließen.", "correct": false }
+        ], "requiredObjective": "schutz" }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        { "type": "markdown", "markdown": "[Microsoft Learn: Quorum Witness](https://learn.microsoft.com/en-us/windows-server/failover-clustering/what-is-quorum-witness), [Red Hat: HA-Überblick zu Fencing und Quorum](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/configuring_and_managing_high_availability_clusters/assembly_overview-of-high-availability-configuring-and-managing-high-availability-clusters) und [Red Hat: Quorum-Geräte](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/configuring_and_managing_high_availability_clusters/assembly_configuring-quorum-devices-configuring-and-managing-high-availability-clusters), am 26.09.2026 gelesen. Das Drei-Stimmen-Szenario und alle Grafiken sind eigene vereinfachte Lehrmodelle. Produktabhängige dynamische Stimmen, Zwei-Knoten-Sonderfälle und konkrete Fencing-Methoden müssen für die reale Implementierung gesondert geprüft werden. Menschliche Fachfreigabe offen." }
+      ]
+    }
+  ]
+}

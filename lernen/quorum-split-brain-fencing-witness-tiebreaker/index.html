@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Netztrennung im Zwei-Knoten-Cluster sicher entscheiden: Stimmenmehrheit, Witness und Ausschluss des alten Schreibers.">
+<title>Wer darf weiterschreiben? Quorum und Fencing – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="quorum-split-brain-fencing-witness-tiebreaker" data-progress-id="ga1-2__6" data-content-revision="2026-09-26.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-2">Virtualisierung, Cluster und Verfügbarkeit</a><span class="sep">›</span>
+    <span class="here">Wer darf weiterschreiben? Quorum und Fencing</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Wer darf weiterschreiben? Quorum und Fencing</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 30 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>A und B betreiben einen Dienst mit genau einem aktiven Schreiber. Die Verbindung zwischen ihnen fällt aus. Beide laufen noch – aber jeder hält den anderen womöglich für tot. Wer darf jetzt weiterschreiben?</p>
+<section class="learning-goals" aria-labelledby="quorum-split-brain-fencing-witness-tiebreaker-goals">
+  <h2 id="quorum-split-brain-fencing-witness-tiebreaker-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Bei einer Netztrennung die stimmberechtigte Seite bestimmen und die Witness-Rolle erklären</li>
+    <li>Fencing als Schutz gegen zwei aktive Schreiber vor einer Übernahme begründen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Diagnose: Tot oder nur unerreichbar?</h2>
+<section class="quiz" data-quiz="quorum-diagnose" data-correct="1">
+  <h3>A erhält keine Heartbeats von B. Was weiß A damit sicher?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Ein Netzwerkfehler kann Heartbeats verhindern, obwohl B weiterläuft."><span class="m">A</span> B ist ausgeschaltet und kann keine Daten mehr schreiben.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Ein ausgebliebener Heartbeat ist kein Beweis für einen abgeschalteten Knoten."><span class="m">B</span> Die Kommunikation zu B ist gestört; B könnte weiterhin auf Daten zugreifen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein Witness hilft bei der Abstimmung; er ist keine allgemeine Nutzdaten-Replik."><span class="m">C</span> Ein Witness enthält automatisch eine aktuelle Kopie aller Nutzdaten.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2"><span class="num">2</span>Mit Stimmen eine Seite wählen</h2>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Netz geteilt: 2 Stimmen gegen 1">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-stimmenbild-title diagram-stimmenbild-desc">
+  <title id="diagram-stimmenbild-title">Netz geteilt: 2 Stimmen gegen 1</title>
+  <desc id="diagram-stimmenbild-desc">Netztrennung im vereinfachten Drei-Stimmen-Modell: Knoten A mit Witness hat zwei Stimmen und Quorum, Knoten B allein hat eine Stimme und stoppt die Schreibrolle.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Netz geteilt: 2 Stimmen gegen 1</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">A + Witness</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">A erreicht W und besitzt 2</tspan><tspan x="64" dy="30">von 3 Stimmen. Diese Seite</tspan><tspan x="64" dy="30">darf die Clusterrolle</tspan></text></g><g><rect class="diagram-row" x="340" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="362" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="362" dy="0">B allein</tspan></text><text x="362" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="362" dy="0">B hat nur 1 von 3 Stimmen. B</tspan><tspan x="362" dy="30">darf den Dienst nicht</tspan><tspan x="362" dy="30">eigenständig als neue aktive</tspan></text></g><g><rect class="diagram-row" x="638" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="660" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="660" dy="0">Kein Knoten erreicht W</tspan></text><text x="660" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="660" dy="0">Nach der Trennung hat jede</tspan><tspan x="660" dy="30">Seite nur 1 von 3 Stimmen.</tspan><tspan x="660" dy="30">Im statischen Modell stoppt</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigenes Lehrmodell: A, B und W haben je eine feste Stimme; produktabhängige dynamische Regeln bleiben außen vor.</figcaption>
+</figure><p><strong>Split-Brain</strong> droht, wenn getrennte Clusterteile sich beide als aktiver Besitzer derselben exklusiven Ressource ansehen. Zwei gleichzeitige Schreiber auf nicht dafür ausgelegtem Speicher können Daten beschädigen. <strong>Quorum</strong> fragt deshalb: Welche Seite besitzt die nötige Stimmenmehrheit, um die Rolle weiterzubetreiben? Im vereinfachten Modell stimmen Knoten A, Knoten B und Witness W je einmal ab. Mehr als die Hälfte von drei Stimmen bedeutet <strong>mindestens zwei</strong>.</p>
+<p>Ein <strong>Witness/Tiebreaker</strong> ist eine Schiedsinstanz. Er entscheidet bei zwei Knoten die 1:1-Teilung, indem er auf genau einer Seite zur Mehrheit beiträgt. Er trägt nicht automatisch Anwendungsdaten und ersetzt weder Backup noch Fencing. Platziere ihn möglichst außerhalb gemeinsamer Ausfallorte von A und B – ein Witness am selben Stromkreis oder Netzsegment kann bei genau diesem Ausfall mit verschwinden. Reale Produkte können Stimmen dynamisch verändern; prüfe die konkrete Clusterkonfiguration statt blind 2-von-3 zu unterstellen.</p>
+<div class="math-display" role="group" aria-label="Mehrheit von drei festen Stimmen gleich ganzzahliger Anteil von drei durch zwei plus eins gleich zwei Stimmen."><math display="block" aria-label="Mehrheit von drei festen Stimmen gleich ganzzahliger Anteil von drei durch zwei plus eins gleich zwei Stimmen."><mrow><mtext>Mehrheit</mtext><mo>=</mo><mo>⌊</mo><mfrac><mn>3</mn><mn>2</mn></mfrac><mo>⌋</mo><mo>+</mo><mn>1</mn><mo>=</mo><mn>2</mn><mtext> Stimmen</mtext></mrow></math><div class="math-legend"><span>Gilt für drei fest vergebene Stimmen ohne dynamische Anpassung.</span></div></div><section class="numeric-practice transfer-number" data-numeric-practice="quorum-stimmen" data-expected="2" data-tolerance="0" data-correct-feedback="Richtig: Mehr als die Hälfte von 3 ist 2. A+W kann fortfahren; B allein nicht." data-wrong-feedback="Mehrheit heißt mehr als die Hälfte aller drei festen Stimmen, nicht die Hälfte der erreichbaren Stimmen.">
+  <h3>Mehrheit berechnen</h3>
+  <p>A, B und ein Witness haben je genau eine feste Stimme. Wie viele Stimmen benötigt eine Seite mindestens für die Mehrheit?</p>
+  <label for="quorum-stimmen-answer">Benötigte Stimmen</label>
+  <div class="answer-row"><input id="quorum-stimmen-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Ergebnis"><button type="button" class="lbtn" data-numeric-check>Antwort prüfen</button></div><p>  <template data-numeric-feedback-for="1">Eine Stimme ist nur ein Drittel aller Stimmen. B allein hat kein Quorum.</template>
+  <template data-numeric-feedback-for="3">Alle drei wären Einstimmigkeit; für die Mehrheit genügen zwei.</template>
+  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p></p>
+</section><section class="quiz" data-quiz="quorum-witnessrolle" data-correct="0">
+  <h3>A und B verlieren die Verbindung zueinander; A erreicht W, B nicht. Was ist im beschriebenen statischen Drei-Stimmen-Modell richtig?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig: 2 von 3 Stimmen bestimmen die erlaubte Seite. Fencing schützt den exklusiven Zugriff."><span class="m">A</span> A+W hat Quorum, B allein nicht; die Rollenübernahme braucht zusätzlich eine sichere Ausschlussprüfung.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die Mehrheit wird aus allen konfigurierten Stimmen bestimmt, nicht nur aus den aktuell sichtbaren."><span class="m">B</span> B darf weiterschreiben, weil jeder überlebende Knoten seine eigene Mehrheit bildet.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Der Witness ist eine Schiedsinstanz, kein allgemeiner Anwendungs- oder Backupserver."><span class="m">C</span> W übernimmt den Dienst und stellt dessen Nutzdaten wieder her.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s3"><span class="num">3</span>Vor dem Neustart den alten Schreiber ausschließen</h2>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Sichere Übernahme bei unklarer Gegenstelle">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="542" viewBox="0 0 960 542" role="img" aria-labelledby="diagram-schutzkette-title diagram-schutzkette-desc">
+  <title id="diagram-schutzkette-title">Sichere Übernahme bei unklarer Gegenstelle</title>
+  <desc id="diagram-schutzkette-desc">Sichere Übernahmekette: Kommunikationsverlust erkennen, Quorum bestimmen, alten Besitzer durch externe Maßnahme von der Ressource ausschließen, erst dann neue Schreibrolle starten und prüfen.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Sichere Übernahme bei unklarer Gegenstelle</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Kommunikation verloren</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">A kann B nicht mehr erreichen. B könnte dennoch laufen und</tspan><tspan x="178" dy="25">weiter auf gemeinsame Daten schreiben.</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Quorum bestimmen</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Nur die Seite mit gültiger Mehrheit darf die Clusterrolle</tspan><tspan x="178" dy="25">beanspruchen.</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Alten Besitzer fencen</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Eine externe Maßnahme trennt den alten Besitzer verlässlich</tspan><tspan x="178" dy="25">von der Ressource, zum Beispiel Stromabschaltung oder</tspan><tspan x="178" dy="25">Storage-Fencing.</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Rolle übernehmen und prüfen</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Erst nach bestätigtem Ausschluss startet der neue Schreiber;</tspan><tspan x="178" dy="25">anschließend Datenzustand und Dienstfunktion prüfen.</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Sicherheitskette für eine exklusive Schreibrolle; Implementierungsdetails hängen vom Clusterprodukt ab.</figcaption>
+</figure><p><strong>Fencing</strong> bedeutet, einen unklaren alten Besitzer zuverlässig vom Zugriff auf die exklusive Ressource auszuschließen. Das kann ein harter Neustart über einen unabhängigen Managementpfad oder ein verlässliches Sperren des Storage-Zugriffs sein. Eine bloße Nachricht an B genügt nicht: Gerade B ist möglicherweise nicht erreichbar. Manche Stacks nennen das <strong>STONITH</strong>.</p>
+<p>Quorum und Fencing beantworten verschiedene Fragen. Quorum: <em>Welche Seite darf die Rolle beanspruchen?</em> Fencing: <em>Ist der vorige Besitzer wirklich vom Schreiben ausgeschlossen?</em> Erst dann darf ein anderer Knoten dieselbe exklusive Schreibrolle übernehmen. Scheitert das Fencing, ist eine Unterbrechung oft der sichere Zustand. Das ist unangenehm, aber besser als zwei Schreiber mit beschädigten Daten. Ein Witness oder ein zusätzlicher Heartbeat ersetzt diesen Nachweis nicht automatisch.</p>
+<section class="sequence-practice" data-sequence="quorum-uebernahme" data-expected="signal,vote,fence,start" data-correct-feedback="Richtig: Erst entscheiden und den alten Zugriff absichern, dann die neue Schreibrolle aktivieren." data-wrong-feedback="Der neue Schreiber darf nicht vor bestätigtem Ausschluss des alten Besitzers starten." aria-labelledby="quorum-uebernahme-title">
+  <div class="lab-heading"><div><h3 id="quorum-uebernahme-title">Sichere Reihenfolge</h3><p>Ordne die Schritte nach dem Verlust der Verbindung zu B für eine exklusive Schreibrolle.</p></div><span class="lab-tag">Ablauf</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="signal" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Kommunikationsverlust als Verdacht erkennen</span></li>
+    <li data-step="vote" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Erlaubte Seite per Quorum bestimmen</span></li>
+    <li data-step="fence" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Alten Besitzer verlässlich vom Ressourcenzugriff ausschließen</span></li>
+    <li data-step="start" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Neue Schreibrolle starten und Dienstzustand prüfen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><section class="recall-practice" data-recall="quorum-erklaerung" data-min-length="90" aria-labelledby="quorum-erklaerung-title">
+  <div class="recall-prompt"><h3 id="quorum-erklaerung-title">Erkläre den Zielkonflikt</h3><p>A und B können sich nicht mehr erreichen; auch W ist für beide unerreichbar. Warum sollte der exklusive Schreibdienst im statischen Drei-Stimmen-Modell stoppen? Was wäre an einem erzwungenen Doppelstart gefährlich?</p></div>
+  <label class="sr-only" for="quorum-erklaerung-answer">Deine Erklärung</label>
+  <textarea id="quorum-erklaerung-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Jede getrennte Seite besitzt nur eine von drei Stimmen und damit keine Mehrheit. Stoppen schützt die Datenkonsistenz, auch wenn der Dienst vorübergehend nicht erreichbar ist. Würden A und B ohne sichere Abstimmung und Fencing beide dieselbe exklusive Ressource beschreiben, könnten widersprüchliche Änderungen oder Datenbeschädigung entstehen.</div>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Abrufen und anwenden</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="quorum-karte-0" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was entscheidet Quorum?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Welche Clusterseite genügend Stimmen hat, um die Rolle betreiben zu dürfen. Es beweist nicht, dass die Gegenstelle ausgeschaltet ist.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="quorum-karte-1" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was tut ein Witness?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Er liefert eine Schiedsstimme bei einer Teilung. Er ist nicht automatisch Datenkopie, Backup oder Fencing-Gerät.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="quorum-karte-2" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum Fencing vor der Übernahme?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Der alte Besitzer könnte trotz verlorener Heartbeats noch laufen und schreiben. Sein Zugriff muss verlässlich ausgeschlossen sein.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Abruf 1“:</span><button type="button" data-card-id="quorum-karte-0" data-card-rate="known">gewusst</button><button type="button" data-card-id="quorum-karte-0" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="quorum-karte-0"></span></div>
+<div class="card-rating"><span>Karte „Abruf 2“:</span><button type="button" data-card-id="quorum-karte-1" data-card-rate="known">gewusst</button><button type="button" data-card-id="quorum-karte-1" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="quorum-karte-1"></span></div>
+<div class="card-rating"><span>Karte „Abruf 3“:</span><button type="button" data-card-id="quorum-karte-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="quorum-karte-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="quorum-karte-2"></span></div><section class="quiz" data-quiz="quorum-transfer-a" data-correct="0" data-required-objective="abstimmung">
+  <h3>A+B+W haben feste Stimmen. Nach einer Trennung erreicht A den Witness, B nicht. Welche Aussage gilt im Lehrmodell?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Die Seite mit der Mehrheit ist autorisiert; sichere Übernahme bleibt separat zu prüfen."><span class="m">A</span> A+W besitzt 2 von 3 Stimmen; B allein darf die exklusive Rolle nicht weiterbetreiben.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="A hat mit W zwei Stimmen, B nur eine. Zwei Schreiber wären gerade die Gefahr."><span class="m">B</span> A und B haben jeweils die Hälfte und dürfen beide schreiben.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Der Witness ist hier nur eine Stimme."><span class="m">C</span> Der Witness betreibt die Anwendungsdatenbank, bis A und B wieder verbunden sind.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="quorum-transfer-b" data-correct="0" data-required-objective="schutz">
+  <h3>A besitzt Quorum, aber der Zugriff des isolierten B auf gemeinsamen Speicher ist nicht nachweislich beendet. Was ist vor dem Start der Schreibrolle auf A nötig?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Mehrheit und Ausschluss des alten Besitzers sind unterschiedliche Sicherungen."><span class="m">A</span> B verlässlich fencen oder den exklusiven Zugriff anderweitig nachweislich sperren; erst dann A als Schreiber starten.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Quorum ist eine Abstimmung; es schaltet keinen Knoten ab."><span class="m">B</span> Sofort auf A starten: Quorum garantiert, dass B elektrisch abgeschaltet ist.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein kürzerer Timeout kann einen noch aktiven Knoten nicht sicher ausschließen."><span class="m">C</span> Nur den Heartbeat-Timer verkürzen: Ein Timeout verhindert gleichzeitigen Schreibzugriff.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Quellen und Grenzen</h2>
+<p><a href="https://learn.microsoft.com/en-us/windows-server/failover-clustering/what-is-quorum-witness">Microsoft Learn: Quorum Witness</a>, <a href="https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/configuring_and_managing_high_availability_clusters/assembly_overview-of-high-availability-configuring-and-managing-high-availability-clusters">Red Hat: HA-Überblick zu Fencing und Quorum</a> und <a href="https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/configuring_and_managing_high_availability_clusters/assembly_configuring-quorum-devices-configuring-and-managing-high-availability-clusters">Red Hat: Quorum-Geräte</a>, am 26.09.2026 gelesen. Das Drei-Stimmen-Szenario und alle Grafiken sind eigene vereinfachte Lehrmodelle. Produktabhängige dynamische Stimmen, Zwei-Knoten-Sonderfälle und konkrete Fencing-Methoden müssen für die reale Implementierung gesondert geprüft werden. Menschliche Fachfreigabe offen.</p>
+
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-2"><span class="d">zurück zu</span><span class="t">Virtualisierung, Cluster und Verfügbarkeit</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Virtualisierung, Cluster und Verfügbarkeit</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Diagnose: Tot oder nur unerreichbar?</a></li>
+<li><a href="#s2" data-t="s2">Mit Stimmen eine Seite wählen</a></li>
+<li><a href="#s3" data-t="s3">Vor dem Neustart den alten Schreiber ausschließen</a></li>
+<li><a href="#s4" data-t="s4">Abrufen und anwenden</a></li>
+<li><a href="#s5" data-t="s5">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-2">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

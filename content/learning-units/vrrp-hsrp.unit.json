@@ -1,0 +1,358 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "vrrp-hsrp",
+    "slug": "vrrp-hsrp",
+    "title": "Gateway-Failover mit VRRP und HSRP erklären",
+    "description": "Virtuelle IP/MAC, Priorität, Ausfallerkennung und Grenzen der Gateway-Redundanz nachvollziehen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__1",
+    "week": "KW 44",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "sources": [
+      "europa-integratoren-2026"
+    ],
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "failover",
+      "label": "virtuelles Gateway, Ausfallerkennung und Übernahme der aktiven Rolle erklären"
+    },
+    {
+      "id": "grenzen",
+      "label": "Tracking, Preemption und fehlende Sitzungssynchronisation im Ausfallfall beurteilen"
+    }
+  ],
+  "intro": "Der Client soll sein Default Gateway nicht neu konfigurieren müssen, wenn ein Router ausfällt. Dafür teilen sich Router eine virtuelle Gateway-Identität – aber nicht automatisch jeden weiteren Zustand.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Markdown-Chunks 00359 und 00877",
+        "use": "First Hop Redundancy, virtuelle IP/MAC und Protokollvergleich",
+        "reviewStatus": "Auszüge geprüft; Lastverteilung nicht als gleichzeitige aktive Bedienung einer einzelnen VRRP-Gruppe verallgemeinert"
+      }
+    ],
+    "notes": [
+      "Aktueller Standard: RFC 9568; Begriff Active statt älterem Master. Cisco HSRP Preempt/Track ergänzend geprüft am 2026-09-13.",
+      "ITLF6–9 00263 ist Virtualisierung/Backup und kein passender VRRP-Beleg.",
+      "Eigene Beispiele und Grafiken. Private Buchabbildungen werden nicht veröffentlicht. Menschliche Fachfreigabe steht aus."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "virtuelles-gateway",
+      "type": "topology",
+      "title": "Gateway-Adresse bleibt bestehen",
+      "description": "Logisches Rollenbild: Der Client nutzt die virtuelle IP 10.44.0.1, die A aktiv bedient. B hält die Backup-Rolle; VIP ist kein zusätzliches Gerät.",
+      "height": 460,
+      "nodes": [
+        {
+          "id": "client",
+          "label": "Client",
+          "detail": "Gateway: 10.44.0.1",
+          "x": 120,
+          "y": 230,
+          "kind": "client"
+        },
+        {
+          "id": "vip",
+          "label": "Virtuelles GW",
+          "detail": "logische Identität",
+          "x": 430,
+          "y": 230,
+          "kind": "router"
+        },
+        {
+          "id": "a",
+          "label": "Router A",
+          "detail": "150 / aktiv",
+          "x": 760,
+          "y": 140,
+          "kind": "router"
+        },
+        {
+          "id": "b",
+          "label": "Router B",
+          "detail": "100 / Backup",
+          "x": 760,
+          "y": 350,
+          "kind": "router"
+        }
+      ],
+      "edges": [
+        {
+          "from": "client",
+          "to": "vip",
+          "label": "unverändert",
+          "kind": "allowed"
+        },
+        {
+          "from": "vip",
+          "to": "a",
+          "label": "aktiver Dienst",
+          "kind": "allowed"
+        },
+        {
+          "from": "vip",
+          "to": "b",
+          "label": "bei Übernahme",
+          "kind": "allowed"
+        }
+      ]
+    },
+    {
+      "id": "ablauf",
+      "type": "flow",
+      "title": "Ausfall erkennen und übernehmen",
+      "description": "Fehlende Statusnachrichten führen erst nach Erkennung zur Übernahme; danach muss der eigentliche Dienst geprüft werden.",
+      "items": [
+        {
+          "label": "Normalbetrieb",
+          "detail": "A bedient virtuelle Identität"
+        },
+        {
+          "label": "Erkennung",
+          "detail": "Status fehlt / Tracking greift"
+        },
+        {
+          "label": "Übernahme",
+          "detail": "B wird aktives Gateway"
+        },
+        {
+          "label": "Diensttest",
+          "detail": "Routing und Sitzungen prüfen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "vrrp-hsrp-diagnose",
+          "question": "Router A fällt aus. Muss jeder Client als Gateway die reale IP von B eintragen?",
+          "options": [
+            {
+              "text": "Nein. Er nutzt weiterhin die virtuelle Gateway-IP.",
+              "rationale": "Richtig: Die aktive Bedienung dieser Identität wechselt.",
+              "correct": true
+            },
+            {
+              "text": "Ja. Genau darin besteht VRRP-Failover.",
+              "rationale": "Eine unveränderte Clientkonfiguration ist gerade das Ziel.",
+              "correct": false
+            },
+            {
+              "text": "Nur wenn vorher ARP verwendet wurde.",
+              "rationale": "ARP beziehungsweise ND löst die Gateway-Erreichbarkeit; es verlangt keinen manuellen IP-Wechsel.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Leitgedanke",
+          "markdown": "Die virtuelle Gateway-Adresse bleibt; welcher Router sie bedient, kann wechseln."
+        }
+      ]
+    },
+    {
+      "title": "Virtuelle Identität, reale Router",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**VRRP** ist ein standardisiertes First-Hop-Redundanzprotokoll; **HSRP** stammt von Cisco. Der Client verwendet eine virtuelle IP als Gateway. Die aktive Instanz bedient die zugehörige virtuelle MAC-Adresse, sodass ein Rollenwechsel keine manuelle Gateway-Änderung am Client verlangt. VRRPv3 unterstützt IPv4 und IPv6. Der aktuelle Standard nennt die Rolle **Active Router**; in älteren Unterlagen heißt sie Master. HSRP verwendet Active/Standby, VRRP Active/Backup.\n\nDie Router tauschen Statusnachrichten aus. Bleiben sie aus, kann nach Ablauf der vorgesehenen Erkennungszeit ein Backup übernehmen. Prioritäten beeinflussen die Wahl; bei VRRP hat der IP-Adressbesitzer eine besondere Rolle mit Priorität 255. Für unsere Beispiele ist die virtuelle IP keine reale Interface-IP eines Routers. Die Standardpriorität eines VRRP-Backups beträgt 100, höhere reguläre Werte bevorzugen ihn.\n\n**Preemption** regelt die Verdrängung eines noch aktiven Routers durch einen höher priorisierten Kandidaten. VRRP und HSRP haben unterschiedliche Standardwerte; HSRP-Preemption muss üblicherweise explizit aktiviert werden. **Tracking** kann eine verlorene Weiterleitungsmöglichkeit erkennen und die Priorität beeinflussen. Ein aktives LAN-Interface und regelmäßige Statusmeldungen beweisen keinen funktionierenden Internetpfad."
+        },
+        {
+          "type": "figure",
+          "diagramId": "virtuelles-gateway",
+          "alt": "Logisches Rollenbild: Der Client nutzt die virtuelle IP 10.44.0.1, die A aktiv bedient. B hält die Backup-Rolle; VIP ist kein zusätzliches Gerät.",
+          "caption": "Gateway-Adresse bleibt bestehen – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Im VLAN 44 haben Router A und B die realen Adressen 10.44.0.2 und 10.44.0.3; die virtuelle Gateway-IP ist 10.44.0.1. A ist aktiv. Nach seinem vollständigen Ausfall fehlen seine Statusnachrichten. B erkennt den Ausfall nach dem Protokolltimer, übernimmt die virtuelle Identität und kündigt deren Erreichbarkeit im lokalen Netz an. Der Client behält 10.44.0.1 als Gateway. Die Unterbrechung ist nicht null: Erkennung, Rollenwechsel und Weiterleitung müssen wirken.\n\nNun fällt nur As WAN-Pfad aus. Wenn A weiterhin gültige Statusnachrichten sendet, erkennt die reine Gateway-Wahl diesen entfernten Defekt nicht automatisch. Ein passend definierter Tracking-Test kann eine Umschaltung auslösen. Bei einem eigenen HSRP-Beispiel fällt As Priorität von 150 um 60 auf 90; B mit 100 und aktivierter Preemption kann übernehmen. Der Test muss den tatsächlich benötigten Pfad prüfen, nicht nur irgendein antwortendes Gerät.\n\nBestehende NAT- oder Firewall-Sitzungen können trotzdem abbrechen. VRRP/HSRP allein synchronisieren diese Zustände nicht. Ebenso bleiben gemeinsame Switches, Versorgung und Provider mögliche Ausfallursachen."
+        },
+        {
+          "type": "figure",
+          "diagramId": "ablauf",
+          "alt": "Fehlende Statusnachrichten führen erst nach Erkennung zur Übernahme; danach muss der eigentliche Dienst geprüft werden.",
+          "caption": "Ausfall erkennen und übernehmen – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Selbst entscheiden",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "vrrp-hsrp-uebung",
+          "question": "A sendet VRRP-Nachrichten weiter, aber sein WAN-Pfad ist unterbrochen. Was folgt?",
+          "options": [
+            {
+              "text": "B übernimmt zwingend sofort, weil VRRP alle Internetziele testet.",
+              "rationale": "VRRP führt keinen solchen allgemeinen Diensttest aus.",
+              "correct": false
+            },
+            {
+              "text": "Ohne passende weitere Erkennung kann A aktiv bleiben, obwohl der Dienst nicht erreichbar ist.",
+              "rationale": "Richtig: First-Hop-Erreichbarkeit ist nicht Ende-zu-Ende-Verfügbarkeit.",
+              "correct": true
+            },
+            {
+              "text": "Der Client ersetzt automatisch alle NAT-Zustände auf B.",
+              "rationale": "Clientkonfiguration synchronisiert keine Routerzustände.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "sequence",
+          "id": "vrrp-hsrp-reihenfolge",
+          "title": "Den vollständigen Routerausfall erklären",
+          "prompt": "Ordne den vereinfachten Fall mit einem verfügbaren Backup.",
+          "steps": [
+            {
+              "id": "s2",
+              "label": "Backup übernimmt aktive Rolle und virtuelle Identität"
+            },
+            {
+              "id": "s0",
+              "label": "Aktiver Router fällt aus und Statusnachrichten bleiben aus"
+            },
+            {
+              "id": "s3",
+              "label": "Weiterleitung und Erreichbarkeit des Dienstes werden geprüft"
+            },
+            {
+              "id": "s1",
+              "label": "Backup erkennt den Ausfall nach vorgesehenem Timer"
+            }
+          ],
+          "expected": [
+            "s0",
+            "s1",
+            "s2",
+            "s3"
+          ],
+          "correctFeedback": "Richtig: Die Gateway-Adresse bleibt bestehen; Erkennung und Übernahme benötigen Zeit.",
+          "wrongFeedback": "Prüfe die erste abweichende Position. Erst Grundlagen klären, dann entscheiden und nachweisen."
+        }
+      ]
+    },
+    {
+      "title": "Aus dem Gedächtnis erklären",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "vrrp-hsrp-karte-0",
+              "label": "Abruf 1",
+              "front": "Was bleibt beim Rollenwechsel gleich?",
+              "back": "Die vom Client verwendete virtuelle Gateway-IP und die zugehörige virtuelle Identität."
+            },
+            {
+              "id": "vrrp-hsrp-karte-1",
+              "label": "Abruf 2",
+              "front": "Was bedeutet Preemption?",
+              "back": "Ein höher priorisierter Kandidat darf die aktive Rolle eines noch laufenden Routers übernehmen."
+            },
+            {
+              "id": "vrrp-hsrp-karte-2",
+              "label": "Abruf 3",
+              "front": "Was synchronisiert VRRP nicht automatisch?",
+              "back": "NAT-/Firewall-Sitzungen oder Anwendungszustände."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "vrrp-hsrp-abruf",
+          "title": "Deine Begründung",
+          "prompt": "Ein Routerpaar hat erfolgreich umgeschaltet, aber laufende Sitzungen brechen ab. Erkläre den Unterschied.",
+          "label": "Eigene Erklärung",
+          "placeholder": "Meine Begründung und ihre Grenzen …",
+          "minLength": 80,
+          "model": "Das Gateway-Failover erhält den nächsten Routing-Hop. Bestehende NAT- oder Firewall-Sitzungen benötigen jedoch passenden Zustand auf dem neuen Gerät. Ohne zusätzliche Synchronisation kann ein neuer Verbindungsaufbau erforderlich sein."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "vrrp-hsrp-transfer-a",
+          "question": "Welche Beschreibung eines VRRP-Failovers stimmt?",
+          "options": [
+            {
+              "text": "Der Client muss ein neues DHCP-Lease erhalten, bevor B routen darf.",
+              "rationale": "Ein neues Lease ist für die virtuelle Gateway-Übernahme nicht grundsätzlich erforderlich.",
+              "correct": false
+            },
+            {
+              "text": "Beide Router ändern beim Ausfall alle Client-IP-Adressen.",
+              "rationale": "Das ist keine Funktion des Gateway-Redundanzprotokolls.",
+              "correct": false
+            },
+            {
+              "text": "Backup erkennt das Ausbleiben der Meldungen, übernimmt die virtuelle Gateway-Identität; Clients behalten ihre Gateway-IP.",
+              "rationale": "Richtig: Routerrolle und Clientkonfiguration werden getrennt betrachtet.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "failover"
+        },
+        {
+          "type": "quiz",
+          "id": "vrrp-hsrp-transfer-b",
+          "question": "Ein HSRP-Router A hat nach WAN-Tracking Priorität 90, B hat 100. Welche Planung ist vollständig?",
+          "options": [
+            {
+              "text": "Priorität 100 garantiert ohne weitere Annahme jede bestehende Sitzung.",
+              "rationale": "Die Priorität überträgt keine Sitzungsdaten.",
+              "correct": false
+            },
+            {
+              "text": "Tracking ist überflüssig, solange A am LAN erreichbar ist.",
+              "rationale": "Das LAN kann trotz ausgefallenem WAN weiter funktionieren.",
+              "correct": false
+            },
+            {
+              "text": "Preemption auf B passend aktivieren und Dienstpfad sowie nötige Zustandssynchronisation gesondert prüfen.",
+              "rationale": "Richtig: Priorität allein ersetzt weder Übernahmeregel noch Sitzungszustand.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "grenzen"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Buchgrundlage: EUROPA, Chunks 00359/00877. Ergänzung: [RFC 9568 – VRRPv3](https://www.rfc-editor.org/rfc/rfc9568.html), [Cisco – HSRP Preempt und Track](https://www.cisco.com/c/en/us/support/docs/ip/hot-standby-router-protocol-hsrp/13780-6.html). Failoverzeiten und Trackingfunktionen sind konkret zu konfigurieren und zu testen."
+        }
+      ]
+    }
+  ]
+}

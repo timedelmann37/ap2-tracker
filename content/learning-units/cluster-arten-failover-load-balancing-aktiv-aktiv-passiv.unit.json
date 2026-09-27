@@ -1,0 +1,131 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "cluster-arten-failover-load-balancing-aktiv-aktiv-passiv",
+    "slug": "cluster-arten-failover-load-balancing-aktiv-aktiv-passiv",
+    "title": "Cluster wählen: verteilen oder übernehmen?",
+    "description": "Failover, Load Balancing und Aktiv-Aktiv/Aktiv-Passiv anhand von Ausfällen und Restkapazität unterscheiden.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-2",
+    "groupLabel": "Virtualisierung, Cluster und Verfügbarkeit",
+    "itemId": "ga1-2__5",
+    "week": "KW 36",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": ["cluster-ms-failover-overview", "cluster-aws-elb-routing", "cluster-ms-fault-domains"],
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    { "id": "muster", "label": "Failover und Load Balancing sowie Aktiv-Aktiv und Aktiv-Passiv nach Betriebsaufgabe unterscheiden" },
+    { "id": "kapazitaet", "label": "Restkapazität und gemeinsame Ausfallorte in einem Zwei-Knoten-Fall prüfen" }
+  ],
+  "intro": "Zwei Server sind noch kein hochverfügbarer Dienst. Die entscheidenden Fragen: Arbeiten beide im Normalbetrieb, wer übernimmt nach einem Fehler, und kann der verbleibende Knoten die gesamte Last tatsächlich tragen?",
+  "curation": {
+    "evidence": [
+      { "sourceId": "cluster-ms-failover-overview", "sourceLocator": "Overview; Active and passive failover configuration", "use": "Übernahme nach Fehler und Betriebsarten Aktiv-Aktiv/Aktiv-Passiv", "reviewStatus": "Am 26.09.2026 gelesen; keine Herstellerabbildung übernommen" },
+      { "sourceId": "cluster-aws-elb-routing", "sourceLocator": "Request routing; healthy targets; Availability Zones", "use": "Verteilung neuer Anfragen und Health Checks von Zielsystemen", "reviewStatus": "Am 26.09.2026 gelesen" },
+      { "sourceId": "cluster-ms-fault-domains", "sourceLocator": "Failover clustering fault domains", "use": "Knoten- und Rackausfall als verschiedene Schutzgrenzen", "reviewStatus": "Am 26.09.2026 gelesen" }
+    ],
+    "notes": [
+      "Der private Batch ga1-2-005-005 enthält ein konkretes DHCP-Failover-Beispiel aus ITLF10-12, aber auch fachfremde Treffer. Das Buchbild wurde nicht verwendet; die Lerneinheit nutzt eigenständige generische Fälle und öffentlich prüfbare Primärquellen.",
+      "Aktiv-Aktiv und Aktiv-Passiv beschreiben die Rolle der Knoten für einen bestimmten Dienst; ein Cluster kann für unterschiedliche Dienste unterschiedliche Rollen haben. Load Balancing und Failover sind keine exklusiven Gegensätze.",
+      "Die Anfragen pro Sekunde sind fiktive, stationäre Lernwerte ohne Session-/Datenbank- oder Cacheeffekte. Reale Kapazität, Erkennungszeit, Zustandskonsistenz, gemeinsame Abhängigkeiten und Wiederanlauf müssen getestet werden. Menschliche Fachfreigabe offen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "cluster-muster",
+      "type": "comparison",
+      "title": "Wer arbeitet im Normalbetrieb?",
+      "description": "Die Betriebsrolle ist eine andere Frage als die Fehlerreaktion.",
+      "items": [
+        { "label": "Aktiv-Passiv", "detail": "Knoten A bedient den Dienst; B hält sich als Übernehmer bereit. Beim Ausfall muss B den Dienst mit passendem Zustand starten oder übernehmen." },
+        { "label": "Aktiv-Aktiv", "detail": "A und B bedienen denselben Dienst gleichzeitig, etwa hinter einer Lastverteilung. Nach Ausfall eines Knotens bleibt der andere aktiv, braucht aber genug freie Kapazität." },
+        { "label": "Load Balancer", "detail": "Verteilt neue Anfragen an gesunde Ziele. Sein eigener Ausfall, Sitzungsdaten und gemeinsame Datenhaltung benötigen separate Lösungen." }
+      ]
+    },
+    {
+      "id": "fehlerpfad",
+      "type": "flow",
+      "title": "Ein Fehler ist eine Kette, kein Etikett",
+      "description": "Eine funktionsfähige Übernahme braucht Erkennung, Routing, Kapazität und Zustand.",
+      "items": [
+        { "label": "Fehler erkennen", "detail": "Health Check oder Clusterüberwachung erkennt einen nicht nutzbaren Dienst/Knoten; Zeitpunkt und Aussagekraft zählen." },
+        { "label": "Verkehr oder Rolle wechseln", "detail": "Aktiv-Passiv: Rolle übernehmen. Aktiv-Aktiv: neue Anfragen zu den verbliebenen Instanzen lenken." },
+        { "label": "Dienst prüfen", "detail": "Restkapazität, Datenzustand, offene Sitzungen und gemeinsam genutzte Komponenten bestimmen die tatsächliche Verfügbarkeit." }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Was leisten zwei Knoten wirklich?",
+      "blocks": [
+        { "type": "quiz", "id": "cluster-arten-failover-load-balancing-aktiv-aktiv-passiv-diagnose", "question": "Zwei Webserver bearbeiten gleichzeitig Anfragen hinter einem Verteiler. Welches Betriebsmodell beschreibt das für den Webdienst?", "options": [
+          { "text": "Aktiv-Passiv, weil einer auf den Fehler des anderen wartet.", "rationale": "Im Fall bearbeiten beide im Normalbetrieb Anfragen.", "correct": false },
+          { "text": "Aktiv-Aktiv mit Lastverteilung; die Ausfallfestigkeit muss zusätzlich geprüft werden.", "rationale": "Richtig. Gleichzeitiger Betrieb sagt noch nichts über Restkapazität und gemeinsame Abhängigkeiten.", "correct": true },
+          { "text": "Kein Cluster-Muster, denn Load Balancing verhindert jeden Ausfall.", "rationale": "Auch Lastverteiler, Datenhaltung und beide Server können ausfallen.", "correct": false }
+        ], "diagnostic": true }
+      ]
+    },
+    {
+      "title": "Rolle und Mechanismus auseinanderhalten",
+      "blocks": [
+        { "type": "figure", "diagramId": "cluster-muster", "alt": "Aktiv-Passiv: A bedient den Dienst, B wartet als Übernehmer. Aktiv-Aktiv: A und B bedienen Anfragen gleichzeitig. Ein Load Balancer verteilt nur an erreichbare Ziele und benötigt selbst eine Ausfallstrategie.", "caption": "Eigenes Rollenmodell für einen Dienst; andere Dienste im selben Cluster können anders verteilt sein." },
+        { "type": "markdown", "markdown": "**Failover/HA** fragt: Was passiert mit einem Dienst, wenn ein Knoten oder eine Komponente ausfällt? Ein Cluster kann Rollen überwachen und sie auf einem anderen Knoten starten oder übernehmen. Eine Erkennungs- und Umschaltzeit kann trotzdem spürbar sein. **Load Balancing** fragt: Wohin gehen neue Anfragen im Normalbetrieb? Ein Verteiler kann sie auf mehrere gesunde Ziele aufteilen und kranke Ziele aus der Verteilung nehmen. Das schützt aber nicht automatisch bestehende Sitzungen, den Verteiler selbst oder eine gemeinsame Datenbank.\n\n**Aktiv-Passiv**: Für *diesen Dienst* arbeitet A, B steht bereit. Das hält Betriebsrollen einfach, nutzt B im Normalfall aber nicht für dieselbe Last. **Aktiv-Aktiv**: Beide bedienen denselben Dienst; die Last kann verteilt werden. Wenn einer ausfällt, muss der andere dessen Anteil tragen. Ein Zwei-Knoten-Cluster kann für Dienst X aktiv-passiv und für Dienst Y anders organisiert sein – die Begriffe beschreiben keine unveränderliche Eigenschaft der Server.\n\nEin Health Check sollte die tatsächliche Nutzbarkeit des Dienstes prüfen. ‚Server antwortet auf Ping‘ beweist keine funktionierende Anwendung. Für Dienste mit Zustand müssen Sitzungen, Schreibkonflikte und Datenkonsistenz mitgeplant werden. Load Balancing und Failover können sich ergänzen." },
+        { "type": "quiz", "id": "cluster-arten-failover-load-balancing-aktiv-aktiv-passiv-begriffe", "question": "Ein Cluster schaltet eine Datenbankrolle nach Knotenfehler auf den Standby-Knoten. Im Normalbetrieb nimmt nur der erste Schreibzugriffe an. Welche Einordnung passt?", "options": [
+          { "text": "Aktiv-Passiv für diese Datenbankrolle mit Failover beim Fehler.", "rationale": "Richtig: Ein aktiver Schreiber, ein vorbereiteter Übernehmer.", "correct": true },
+          { "text": "Aktiv-Aktiv, denn beide Knoten sind eingeschaltet.", "rationale": "Eingeschaltet ist nicht dasselbe wie gleichzeitiges Bedienen dieser Rolle.", "correct": false },
+          { "text": "Load Balancing, weil automatisch beide gleichzeitig schreiben.", "rationale": "Der Fall beschreibt eine Rollenübernahme, nicht die Verteilung gleichzeitiger Schreibanfragen.", "correct": false }
+        ] }
+      ]
+    },
+    {
+      "title": "Restkapazität im Fehlerfall rechnen",
+      "blocks": [
+        { "type": "figure", "diagramId": "fehlerpfad", "alt": "Nach Erkennung eines Fehlers wechselt eine Rolle oder der Traffic zu verbleibenden Knoten. Erst eine Prüfung von Restkapazität, Datenzustand und gemeinsamen Ausfallorten bestätigt den Dienst.", "caption": "Eigene Fehlerkette; ein Health Check allein belegt noch keine erfolgreiche Übernahme." },
+        { "type": "markdown", "markdown": "Übungsfall: Ein zustandsarmer Webdienst verarbeitet **160 Anfragen pro Sekunde**. Zwei aktive Knoten schaffen unter der geforderten Antwortzeit je höchstens **120 Anfragen pro Sekunde**. Im Normalbetrieb bekommt jeder 80 und hat Reserve. Fällt einer aus, müsste der andere alle 160 bearbeiten – **40 über seiner geprüften Kapazität**. Der Dienst bleibt vielleicht erreichbar, erfüllt aber die Last-/Latenzanforderung nicht. Für eine Zusage mit einem ausgefallenen Knoten bräuchte man hier einen größeren Knoten, weitere Knoten oder eine geringere zugesagte Last.\n\nPrüfe außerdem Ausfalldomänen: Zwei Knoten im selben Rack überstehen vielleicht den Ausfall eines Knotens, aber nicht zwingend eine defekte gemeinsame Stromleiste oder einen Rack-Switch. Und ein einzelner Load Balancer wäre selbst ein möglicher Single Point of Failure. Das Design muss die *gesamte* Dienstkette betrachten." },
+        { "type": "math", "ariaLabel": "160 Anfragen pro Sekunde Gesamtnachfrage minus 120 Anfragen pro Sekunde Kapazität des verbleibenden Knotens gleich 40 Anfragen pro Sekunde fehlende Kapazität nach einem Ausfall.", "mathml": "<math display=\"block\"><mrow><mn>160</mn><mtext> Anfragen/s</mtext><mo>−</mo><mn>120</mn><mtext> Anfragen/s</mtext><mo>=</mo><mn>40</mn><mtext> Anfragen/s Fehlmenge</mtext></mrow></math>", "legend": ["Geprüfte Kapazität pro Knoten bei vorgegebener Antwortzeit; kein allgemeiner Benchmark."] },
+        { "type": "numeric", "id": "cluster-arten-failover-load-balancing-aktiv-aktiv-passiv-fehlmenge", "title": "Ausfallkapazität bestimmen", "prompt": "Ein anderer Zwei-Knoten-Webdienst verarbeitet 200 Anfragen/s. Jeder Knoten schafft bei der Ziel-Latenz höchstens 150 Anfragen/s. Wie viele Anfragen/s übersteigen nach dem Ausfall eines Knotens die Kapazität des verbleibenden?", "label": "Fehlende Anfragen pro Sekunde", "expected": 50, "tolerance": 0.001, "correctFeedback": "Richtig: 200 − 150 = 50 Anfragen/s. Die Normalverteilung auf zwei Knoten sagt nichts über die Leistung nach Ausfall.", "wrongFeedback": "Nach einem Ausfall ist nur noch die Kapazität eines Knotens verfügbar; vergleiche sie mit der gesamten Nachfrage.", "misconceptions": [ { "value": 100, "feedback": "100 ist die normale Hälfte der Nachfrage, gefragt ist die Fehlmenge gegenüber der Restkapazität." }, { "value": 0, "feedback": "300 Anfragen/s gelten nur mit beiden Knoten. Nach dem Ausfall bleiben 150." } ] },
+        { "type": "sequence", "id": "cluster-arten-failover-load-balancing-aktiv-aktiv-passiv-pruefweg", "title": "HA-Behauptung testen", "prompt": "Ordne den Prüfweg für den Webdienst.", "steps": [
+          { "id": "anforderung", "label": "Ziel-Last und zulässige Unterbrechung festlegen" },
+          { "id": "fehler", "label": "Knoten und gemeinsame Komponenten gezielt ausfallen lassen" },
+          { "id": "nachweis", "label": "Umschaltung, Dienstzustand und Restleistung messen" }
+        ], "expected": ["anforderung", "fehler", "nachweis"], "correctFeedback": "Richtig: Eine HA-Zusage braucht Zielwerte und einen gemessenen Fehlerfall.", "wrongFeedback": "Lege zuerst die Zielwerte fest; dann simuliere den Fehler und prüfe den weiterlaufenden Dienst." }
+      ]
+    },
+    {
+      "title": "Das Muster begründen",
+      "blocks": [
+        { "type": "recall", "id": "cluster-arten-failover-load-balancing-aktiv-aktiv-passiv-begruendung", "title": "Zwei Dienste, zwei Entscheidungen", "prompt": "Ein Webdienst kann Anfragen parallel bedienen, eine Datenbank erlaubt im Beispiel nur einen aktiven Schreiber. Skizziere passende Betriebsrollen und nenne je eine Prüfung für den Fehlerfall.", "label": "Deine Begründung", "minLength": 100, "model": "Für den zustandsarmen Webdienst können zwei aktive Instanzen hinter einer Lastverteilung arbeiten. Ich prüfe die Restkapazität nach Ausfall eines Knotens und sichere auch den Verteiler ab. Für die Datenbankrolle kann ein aktiver Schreiber mit passivem Übernehmer passen; ich prüfe Zustandsabgleich, saubere Rollenübernahme und die tatsächlich gemessene Unterbrechung. In beiden Fällen betrachte ich gemeinsame Ausfallorte." },
+        { "type": "flashcards", "cards": [
+          { "id": "cluster-arten-failover-load-balancing-aktiv-aktiv-passiv-karte-0", "label": "Abruf 1", "front": "Failover oder Load Balancing?", "back": "Failover ist die Übernahme nach Fehler; Load Balancing verteilt Anfragen im Normalbetrieb. Beides kann kombiniert werden." },
+          { "id": "cluster-arten-failover-load-balancing-aktiv-aktiv-passiv-karte-1", "label": "Abruf 2", "front": "Woran erkennst du Aktiv-Passiv?", "back": "Nur ein Knoten bedient die betrachtete Rolle im Normalbetrieb; ein anderer steht als Übernehmer bereit." },
+          { "id": "cluster-arten-failover-load-balancing-aktiv-aktiv-passiv-karte-2", "label": "Abruf 3", "front": "Welcher Test fehlt bei Aktiv-Aktiv oft?", "back": "Ob die verbliebenen Knoten die volle Ziel-Last und Antwortzeit nach einem Ausfall noch schaffen." }
+        ] }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        { "type": "quiz", "id": "cluster-arten-failover-load-balancing-aktiv-aktiv-passiv-transfer-a", "question": "Ein Webdienst verteilt neue Anfragen auf zwei aktive Instanzen. Eine Datenbankrolle läuft nur auf A und kann auf B übernommen werden. Welche Beschreibung ist korrekt?", "options": [
+          { "text": "Der Webdienst ist aktiv-aktiv mit Load Balancing; die Datenbankrolle ist aktiv-passiv mit Failover.", "rationale": "Richtig. Die Betriebsrolle wird pro Dienst betrachtet.", "correct": true },
+          { "text": "Das gesamte System muss entweder ausschließlich aktiv-aktiv oder ausschließlich aktiv-passiv sein.", "rationale": "Unterschiedliche Rollen im selben System können verschiedene Muster verwenden.", "correct": false },
+          { "text": "Beides ist nur Load Balancing, weil zwei Server existieren.", "rationale": "Die Datenbankrolle wird nicht im Normalbetrieb auf beide verteilt.", "correct": false }
+        ], "requiredObjective": "muster" },
+        { "type": "quiz", "id": "cluster-arten-failover-load-balancing-aktiv-aktiv-passiv-transfer-b", "question": "200 Anfragen/s Last, zwei aktive Knoten mit je 150 Anfragen/s geprüfter Kapazität. Beide Knoten und der einzige Load Balancer stehen im selben Rack. Welche Aussage ist tragfähig?", "options": [
+          { "text": "Das System ist gegen jeden Knoten- und Rackausfall vollständig abgesichert.", "rationale": "Nach einem Knotenausfall fehlen 50 Anfragen/s; Rack und Verteiler sind gemeinsame Ausfallorte.", "correct": false },
+          { "text": "Nach einem Knotenausfall fehlen 50 Anfragen/s geprüfte Kapazität; Verteiler und Rack sind zusätzlich als gemeinsame Ausfallorte zu prüfen.", "rationale": "Richtig. HA umfasst Last nach Fehler und alle kritischen Abhängigkeiten.", "correct": true },
+          { "text": "Die normale Kapazität von 300 Anfragen/s bleibt auch nach einem Knotenausfall bestehen.", "rationale": "Die 300 Anfragen/s setzen beide aktiven Knoten voraus.", "correct": false }
+        ], "requiredObjective": "kapazitaet" }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        { "type": "markdown", "markdown": "[Microsoft Learn: Failover Clustering](https://learn.microsoft.com/en-us/windows-server/failover-clustering/failover-clustering-overview), [AWS: Elastic Load Balancing](https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/how-elastic-load-balancing-works.html) und [Microsoft Learn: Ausfalldomänen im Cluster](https://learn.microsoft.com/en-us/windows-server/failover-clustering/topologies), am 26.09.2026 gelesen. Alle Zahlen, Fälle und Grafiken sind eigene Lehrmodelle; echte HA-Werte hängen von Last, Fehlererkennung, Datenzustand und Infrastruktur ab. Menschliche Fachfreigabe offen." }
+      ]
+    }
+  ]
+}

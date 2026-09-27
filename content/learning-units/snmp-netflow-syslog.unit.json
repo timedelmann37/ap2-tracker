@@ -1,0 +1,321 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "snmp-netflow-syslog",
+    "slug": "snmp-netflow-syslog",
+    "title": "Monitoringquellen zu einer brauchbaren Alarmierung verbinden",
+    "description": "SNMP, Flowdaten und Syslog nach Aussage, Grenzen und Alarmierungsaufgabe auswählen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__6",
+    "week": "KW 44",
+    "estimatedMinutes": 32,
+    "relevance": "hoch",
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "datenquellen",
+      "label": "SNMP, NetFlow/IPFIX und Syslog passend zur Beobachtungsfrage unterscheiden"
+    },
+    {
+      "id": "alarmierung",
+      "label": "einen Alarm mit Dauer, Hysterese, Zuständigkeit und unabhängiger Überwachung beurteilen"
+    }
+  ],
+  "intro": "Ein einzelner roter Messwert erklärt noch keinen Vorfall. Unterschiedliche Datenquellen zeigen Zustand, Kommunikationsmengen und Ereignisse – und brauchen einen definierten Empfänger.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seiten 107–109",
+        "use": "MIB, OID, Monitoring und Schwellwerte",
+        "reviewStatus": "OCR geprüft; OID und Wert sowie Trap und Polling präzisiert"
+      }
+    ],
+    "notes": [
+      "RFC 3416, 7011 und 5424 ergänzend geprüft am 2026-09-13.",
+      "SNMPv3 nicht pauschal mit verschlüsseltem Betrieb gleichgesetzt; Flowdaten nicht als Paketmitschnitt beschrieben.",
+      "Eigene Beispiele und Grafiken. Private Buchabbildungen werden nicht veröffentlicht. Menschliche Fachfreigabe steht aus."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "modell",
+      "type": "layers",
+      "title": "Drei Sichten auf denselben Vorfall",
+      "description": "SNMP liefert Zustände und Zähler, Flowexport Kommunikationsmengen, Syslog Ereignisse; erst eine Regel erzeugt einen handlungsfähigen Alarm.",
+      "items": [
+        {
+          "label": "SNMP",
+          "detail": "Status und Objektwerte"
+        },
+        {
+          "label": "Flowexport",
+          "detail": "Wer kommuniziert wie viel?"
+        },
+        {
+          "label": "Syslog",
+          "detail": "Welches Ereignis trat auf?"
+        },
+        {
+          "label": "Alarmregel",
+          "detail": "Bedingung, Empfänger, Handlung"
+        }
+      ]
+    },
+    {
+      "id": "ablauf",
+      "type": "flow",
+      "title": "Vom Signal zur bearbeiteten Störung",
+      "description": "Daten werden gesammelt, zeitlich eingeordnet, nach einer stabilen Regel bewertet und einer verantwortlichen Person übergeben.",
+      "items": [
+        {
+          "label": "Erfassung",
+          "detail": "Zähler, Flows und Ereignisse"
+        },
+        {
+          "label": "Einordnung",
+          "detail": "Zeit und Datenlücken prüfen"
+        },
+        {
+          "label": "Regel",
+          "detail": "Dauer und Hysterese auswerten"
+        },
+        {
+          "label": "Handlung",
+          "detail": "Empfänger und Rückmeldung"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "snmp-netflow-syslog-diagnose",
+          "question": "Eine OID wurde konfiguriert. Ist sie selbst bereits die gemessene Auslastung?",
+          "options": [
+            {
+              "text": "Ja. Jede OID enthält die aktuelle Prozentzahl.",
+              "rationale": "Die OID ist keine ständig umgeschriebene Messzahl.",
+              "correct": false
+            },
+            {
+              "text": "Ja, sofern Punkte zwischen den Ziffern stehen.",
+              "rationale": "Die Schreibweise beschreibt den hierarchischen Bezeichner.",
+              "correct": false
+            },
+            {
+              "text": "Nein. Sie adressiert ein Objekt oder eine Instanz; der gelesene Wert muss interpretiert werden.",
+              "rationale": "Richtig: Adresse, Typ und Wert sind verschiedene Dinge.",
+              "correct": true
+            }
+          ],
+          "diagnostic": true
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Leitgedanke",
+          "markdown": "Messwert, Ereignis und Flow sind unterschiedliche Belege. Ein Alarm braucht zusätzlich eine Handlung."
+        }
+      ]
+    },
+    {
+      "title": "Wer fragt, wer meldet, was wird sichtbar?",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Bei **SNMP** fragt ein Manager einen Agenten auf dem Gerät nach Managementinformationen. Eine **MIB** beschreibt Objekte, Datentypen und Bedeutung; eine **OID** adressiert ein Objekt beziehungsweise dessen konkrete Instanz. Sie ist nicht selbst der Messwert. Zähler, Status und Gerätebeschreibung sind unterschiedliche Objekttypen. Das Schema muss zur Auswertung passen.\n\n**Polling** liefert periodische Antworten. Ein **Trap** ist eine unaufgeforderte Benachrichtigung ohne die Bestätigung eines InformRequests. Ein **Inform** sieht eine Antwort vor; auch damit ist dauerhafte Speicherung oder menschliche Bearbeitung nicht automatisch garantiert. SNMPv3 bietet Sicherheitsmechanismen, doch die gewählte Sicherheitsstufe zählt: Für Authentifizierung und Vertraulichkeit muss entsprechend konfiguriert werden. Managementzugriff bleibt eng begrenzt.\n\n**NetFlow/IPFIX** exportiert zusammengefasste Kommunikationsdaten, zum Beispiel Endpunkte, Ports, Zeit und Zähler entsprechend Template und Messverfahren. Das ist kein vollständiger Paketinhalt; Sampling und Exportverluste beeinflussen die Aussage. **Syslog** transportiert Ereignismeldungen mit Kontext, etwa Interface-Wechsel oder Anmeldung. Ein Protokollname allein garantiert weder verschlüsselten noch verlustfreien Transport.\n\nEin belastbarer Alarm nennt Bedingung, Dauer, Schwere, betroffenen Dienst und verantwortliche Person. **Hysterese** verwendet unterschiedliche Ein- und Ausschaltschwellen gegen Flattern. Abhängigkeiten unterdrücken unnötige Folgealarme. Monitoring und Benachrichtigungsweg brauchen selbst eine Überwachung; ein stiller Collector ist nicht automatisch ein gesundes Netz."
+        },
+        {
+          "type": "figure",
+          "diagramId": "modell",
+          "alt": "SNMP liefert Zustände und Zähler, Flowexport Kommunikationsmengen, Syslog Ereignisse; erst eine Regel erzeugt einen handlungsfähigen Alarm.",
+          "caption": "Drei Sichten auf denselben Vorfall – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Uplink ist häufig stark ausgelastet. SNMP-Polling liefert die Veränderung des Bytezählers und Interface-Fehler. Flowdaten zeigen, dass ein Backupziel viel Verkehr verursacht. Syslog meldet zusätzlich einen kurzen Linkwechsel. Zusammen ergeben sie Hypothesen: planbare Last, physisches Problem oder beides. Keiner der drei Belege allein beweist die vollständige Ursache.\n\nDie eigene Alarmregel lautet: Auslastung länger als fünf Minuten über 85 Prozent; Entwarnung erst länger als zwei Minuten unter 70 Prozent. Das sind didaktische Beispielwerte, keine allgemeinen Netzgrenzen. Ein kurzer Peak bleibt ohne Alarm, anhaltende Überlast wird gemeldet. Bei kritischen Diensten ergänzt ein Ende-zu-Ende-Test die Gerätemetriken.\n\nEin Alarm enthält Interface, Beginn, Messwerte und einen Link zur Betriebsanweisung. Der Empfänger bestätigt die Übernahme. Fällt das Monitoring selbst aus, meldet ein unabhängiger Prüfpunkt die fehlenden Daten. Für Datenumfang, Zugriff und Aufbewahrung gilt weiterhin ein begründetes Protokollierungskonzept."
+        },
+        {
+          "type": "figure",
+          "diagramId": "ablauf",
+          "alt": "Daten werden gesammelt, zeitlich eingeordnet, nach einer stabilen Regel bewertet und einer verantwortlichen Person übergeben.",
+          "caption": "Vom Signal zur bearbeiteten Störung – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Selbst entscheiden",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "snmp-netflow-syslog-uebung",
+          "question": "Ein Link sendet keinen Trap. Darf man daraus schließen, dass er fehlerfrei ist?",
+          "options": [
+            {
+              "text": "Nein. Ereignis, Transport oder Empfänger können fehlen; Polling und unabhängige Prüfungen ergänzen die Sicht.",
+              "rationale": "Richtig: Fehlende Meldung ist kein positiver Gesundheitsnachweis.",
+              "correct": true
+            },
+            {
+              "text": "Ja. Jeder Trap wird zuverlässig bestätigt und gespeichert.",
+              "rationale": "Ein Trap besitzt gerade nicht die Inform-Bestätigung.",
+              "correct": false
+            },
+            {
+              "text": "Ja, sofern der Manager viele Geräte kennt.",
+              "rationale": "Die Anzahl konfigurierter Geräte garantiert keinen Empfang.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "sequence",
+          "id": "snmp-netflow-syslog-reihenfolge",
+          "title": "Eine Alarmregel einführen",
+          "prompt": "Ordne den Weg zu handlungsfähiger Alarmierung.",
+          "steps": [
+            {
+              "id": "s2",
+              "label": "Bedingung, Dauer, Entwarnung und Zuständigkeit definieren"
+            },
+            {
+              "id": "s0",
+              "label": "Dienstfrage und passende Messquelle festlegen"
+            },
+            {
+              "id": "s3",
+              "label": "Auslösung, Entwarnung und Ausfall des Meldewegs testen"
+            },
+            {
+              "id": "s1",
+              "label": "Messwerte, Zeitbasis und normale Schwankungen prüfen"
+            }
+          ],
+          "expected": [
+            "s0",
+            "s1",
+            "s2",
+            "s3"
+          ],
+          "correctFeedback": "Richtig: Eine Meldung wird erst durch Kontext und getestete Zuständigkeit zum Betriebswerkzeug.",
+          "wrongFeedback": "Prüfe die erste abweichende Position. Erst Grundlagen klären, dann entscheiden und nachweisen."
+        }
+      ]
+    },
+    {
+      "title": "Aus dem Gedächtnis erklären",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "snmp-netflow-syslog-karte-0",
+              "label": "Abruf 1",
+              "front": "Trap oder Inform?",
+              "back": "Trap ist unbestätigte Benachrichtigung; Inform erwartet eine Antwort, aber keine automatische menschliche Bearbeitung."
+            },
+            {
+              "id": "snmp-netflow-syslog-karte-1",
+              "label": "Abruf 2",
+              "front": "Flowdaten gleich Paketmitschnitt?",
+              "back": "Nein. Exportierte Datensätze enthalten ausgewählte Kommunikationsmerkmale und Zähler, nicht automatisch den Payload."
+            },
+            {
+              "id": "snmp-netflow-syslog-karte-2",
+              "label": "Abruf 3",
+              "front": "Was bewirkt Hysterese?",
+              "back": "Unterschiedliche Ein-/Ausschaltschwellen verhindern ständiges Alarmflattern nahe einer Grenze."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "snmp-netflow-syslog-abruf",
+          "title": "Deine Begründung",
+          "prompt": "Der Monitoringserver fällt aus, aber niemand erhält eine Meldung. Welche Abhängigkeit wurde übersehen?",
+          "label": "Eigene Erklärung",
+          "placeholder": "Meine Begründung und ihre Grenzen …",
+          "minLength": 80,
+          "model": "Das Monitoring kann seinen eigenen Totalausfall nicht zuverlässig über denselben ausgefallenen Pfad melden. Ich ergänze eine unabhängige Erreichbarkeits-/Heartbeat-Prüfung und teste Empfänger, Eskalation und Datenlücken."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "snmp-netflow-syslog-transfer-a",
+          "question": "Du brauchst Interface-Zähler, größte Kommunikationspartner und zeitgestempelte Neustartmeldungen. Welche Kombination passt?",
+          "options": [
+            {
+              "text": "Nur OIDs speichern; ihre Ziffern enthalten alle Ereignisse.",
+              "rationale": "OID-Bezeichner sind keine historischen Ereignisdaten.",
+              "correct": false
+            },
+            {
+              "text": "SNMP für Zähler, Flowdaten für Kommunikationsmengen, Syslog für Ereignisse.",
+              "rationale": "Richtig: Die Quellen beantworten unterschiedliche Fragen.",
+              "correct": true
+            },
+            {
+              "text": "NetFlow liefert automatisch alle vollständigen Anwendungsinhalte.",
+              "rationale": "Flowexport ist keine vollständige Payload-Aufzeichnung.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "datenquellen"
+        },
+        {
+          "type": "quiz",
+          "id": "snmp-netflow-syslog-transfer-b",
+          "question": "Welche Regel ist betrieblich am brauchbarsten?",
+          "options": [
+            {
+              "text": "Jeden einzelnen Peak an alle Personen schicken, ohne Zuständigkeit.",
+              "rationale": "Das produziert Rauschen und garantiert keine Bearbeitung.",
+              "correct": false
+            },
+            {
+              "text": "Definierte Schwelle mit Mindestdauer, gesonderte Entwarnung, verantwortlicher Empfänger und getesteter Ausfallweg.",
+              "rationale": "Richtig: Das begrenzt Flattern und schafft einen nachweisbaren Handlungsablauf.",
+              "correct": true
+            },
+            {
+              "text": "Nur Alarme zählen; die Funktion des Collectors wird nicht geprüft.",
+              "rationale": "Ein defekter Collector kann gerade keine neuen Alarme liefern.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "alarmierung"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Buchgrundlage: ITLF10–12, PDF-Seiten 107–109. Primärabgleich: [RFC 3416 – SNMP-Operationen](https://www.rfc-editor.org/rfc/rfc3416.html), [RFC 7011 – IPFIX](https://www.rfc-editor.org/rfc/rfc7011.html), [RFC 5424 – Syslog](https://www.rfc-editor.org/rfc/rfc5424.html). Alarmwerte sind eigene Beispiele, keine verbindlichen Grenzwerte. SNMPv3-Sicherheitsmodell: [RFC 3414](https://www.rfc-editor.org/rfc/rfc3414.html)."
+        }
+      ]
+    }
+  ]
+}

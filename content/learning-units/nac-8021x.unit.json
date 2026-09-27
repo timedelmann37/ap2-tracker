@@ -1,0 +1,358 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "nac-8021x",
+    "slug": "nac-8021x",
+    "title": "Netzzugang mit NAC und 802.1X steuern",
+    "description": "Supplicant, Switch und RADIUS unterscheiden und sichere Freigabe- und Quarantäneregeln begründen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-7",
+    "groupLabel": "Block N7 · Netzwerksicherheit",
+    "itemId": "ga2-7__6",
+    "week": "KW 42",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "sources": [
+      "itlf10-12-2023"
+    ],
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "rollen",
+      "label": "den 802.1X-Ablauf mit Supplicant, Authenticator und RADIUS korrekt zuordnen"
+    },
+    {
+      "id": "zugangsentscheidung",
+      "label": "Quarantäne und Ausfallverhalten ohne unkontrollierte Netzfreigabe festlegen"
+    }
+  ],
+  "intro": "Ein Netzwerkkabel beweist keine Berechtigung. Die Zugangskontrolle entscheidet zuerst, wer oder welches Gerät anschließen darf – und danach, welche Kommunikation erlaubt ist.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seite 217",
+        "use": "AAA und 802.1X-Rollen",
+        "reviewStatus": "OCR geprüft; physische Portabschaltung und vollständige RADIUS-Verschlüsselung nicht pauschal übernommen"
+      }
+    ],
+    "notes": [
+      "Primärabgleich: Cisco IEEE 802.1X Port-Based Authentication, abgerufen 2026-09-12.",
+      "IHK-Bonn 00278 und ESP-Grafik verworfen: Zugangskontrolle ist keine Nutzdatenverschlüsselung.",
+      "Eigene Fälle und Diagramme; keine privaten Buchabbildungen veröffentlicht. Fach- und Verständlichkeitsfreigabe durch einen Menschen steht aus."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "nac-rollen",
+      "type": "topology",
+      "title": "Nachweis und Durchsetzung",
+      "description": "EAPOL verbindet Notebook und Switch; RADIUS verbindet Switch und Prüfserver. Der Switch setzt die eingeschränkte Rolle um.",
+      "height": 450,
+      "nodes": [
+        {
+          "id": "client",
+          "label": "Notebook",
+          "detail": "Supplicant",
+          "x": 130,
+          "y": 170,
+          "kind": "client"
+        },
+        {
+          "id": "switch",
+          "label": "Switch",
+          "detail": "Authenticator",
+          "x": 430,
+          "y": 170,
+          "kind": "switch"
+        },
+        {
+          "id": "radius",
+          "label": "RADIUS",
+          "detail": "Prüfserver",
+          "x": 750,
+          "y": 170,
+          "kind": "server"
+        },
+        {
+          "id": "repair",
+          "label": "Reparatur",
+          "detail": "begrenzte Ziele",
+          "x": 430,
+          "y": 350,
+          "kind": "server"
+        }
+      ],
+      "edges": [
+        {
+          "from": "client",
+          "to": "switch",
+          "label": "EAPOL",
+          "kind": "allowed"
+        },
+        {
+          "from": "switch",
+          "to": "radius",
+          "label": "RADIUS",
+          "kind": "allowed"
+        },
+        {
+          "from": "switch",
+          "to": "repair",
+          "label": "Rolle / ACL",
+          "kind": "allowed"
+        }
+      ]
+    },
+    {
+      "id": "nac-8021x-ablauf",
+      "type": "flow",
+      "title": "Vom Anschluss zur begrenzten Rolle",
+      "description": "Identitätsprüfung und Zustandsbewertung gehen einer begrenzten Freigabe und späteren Neubewertung voraus.",
+      "items": [
+        {
+          "label": "Anschluss",
+          "detail": "EAPOL bleibt möglich"
+        },
+        {
+          "label": "Nachweis",
+          "detail": "RADIUS prüft Identität"
+        },
+        {
+          "label": "Richtlinie",
+          "detail": "Zustand und Rolle bewerten"
+        },
+        {
+          "label": "Durchsetzung",
+          "detail": "VLAN/ACL anwenden"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "nac-8021x-diagnose",
+          "question": "Ein noch nicht authentifiziertes Notebook zeigt am Switch einen aktiven Link. Ist 802.1X damit wirkungslos?",
+          "options": [
+            {
+              "text": "Ja, die LED muss zwingend ausgehen.",
+              "rationale": "Eine logische Zugangssperre verlangt keinen abgeschalteten Link.",
+              "correct": false
+            },
+            {
+              "text": "Ja, jedes verbundene Kabel erlaubt automatisch IP-Verkehr.",
+              "rationale": "Der Authenticator kann Nutzdaten trotz aktivem Link sperren.",
+              "correct": false
+            },
+            {
+              "text": "Nein. Link und Freigabe des normalen Datenverkehrs sind unterschiedliche Zustände.",
+              "rationale": "Richtig: Der Authentifizierungsverkehr benötigt weiterhin einen Transportweg.",
+              "correct": true
+            }
+          ],
+          "diagnostic": true
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Leitgedanke",
+          "markdown": "802.1X kontrolliert den Zugang; NAC ergänzt Richtlinien. Authentifiziert bedeutet nicht uneingeschränkt berechtigt."
+        }
+      ]
+    },
+    {
+      "title": "Drei Rollen, zwei Transportwege",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Der **Supplicant** ist die 802.1X-Komponente des Endgeräts. Der **Authenticator** am Switch oder Access Point kontrolliert den Netzzugang. Der **Authentifizierungsserver**, häufig ein RADIUS-Server, prüft den Nachweis und liefert das Ergebnis. Zwischen Endgerät und Authenticator läuft EAP über LAN (**EAPOL**); der Authenticator transportiert EAP-Nachrichten typischerweise in RADIUS zum Server. Mehrere Challenge-Runden sind möglich.\n\nVor der Freigabe ist im hier betrachteten geschlossenen Modus der normale Nutzdatenverkehr gesperrt, nicht zwingend der physische Link. Authentifizierungsverkehr muss weiter möglich bleiben. Ein Access-Accept kann Richtlinienattribute enthalten; der Switch setzt beispielsweise eine VLAN-Zuordnung um. Das ist keine Freigabe durch den Client selbst.\n\n**NAC (Network Access Control)** kann zusätzlich Gerätestatus, Inventar und Rollen auswerten. 802.1X allein ist weder Virenscanner noch allgemeine Nutzdatenverschlüsselung. **EAP-TLS** nutzt Zertifikate zur gegenseitigen Authentifizierung; Vertrauenskette, Serveridentität und Zertifikatslebenszyklus müssen stimmen. RADIUS mit Shared Secret bedeutet nicht, dass sämtliche Attribute automatisch vollständig verschlüsselt sind."
+        },
+        {
+          "type": "figure",
+          "diagramId": "nac-rollen",
+          "alt": "EAPOL verbindet Notebook und Switch; RADIUS verbindet Switch und Prüfserver. Der Switch setzt die eingeschränkte Rolle um.",
+          "caption": "Nachweis und Durchsetzung – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein verwaltetes Notebook besitzt ein gültiges Zertifikat, aber der verpflichtende Geräteschutz fehlt. Schritt 1: EAP-TLS bestätigt die konfigurierte Geräteidentität. Schritt 2: Die NAC-Richtlinie erkennt den fehlenden Schutz. Schritt 3: Der Switch weist nach Richtlinie eine eingeschränkte Rolle beziehungsweise ein Quarantäne-VLAN zu. Schritt 4: Dort sind nur notwendige Reparaturdienste erreichbar, etwa DNS, Zeitdienst und Update-Server; Servernetze bleiben gesperrt.\n\nNach erfolgreicher Reparatur folgt eine erneute Bewertung. Ein bloßer VLAN-Wechsel ohne passende ACLs oder Firewallregeln isoliert nicht zuverlässig. Ein nicht erreichbarer RADIUS-Server ist außerdem etwas anderes als eine abgelehnte Identität: Ausfallszenarien werden vorab entschieden, etwa redundanter Server und eng begrenzte Notfallrolle. Eine pauschale Freigabe ins Produktionsnetz wäre eine bewusste Sicherheitsausnahme, kein unvermeidlicher Standard."
+        },
+        {
+          "type": "figure",
+          "diagramId": "nac-8021x-ablauf",
+          "alt": "Identitätsprüfung und Zustandsbewertung gehen einer begrenzten Freigabe und späteren Neubewertung voraus.",
+          "caption": "Vom Anschluss zur begrenzten Rolle – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Selbst entscheiden",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "nac-8021x-uebung",
+          "question": "Das Zertifikat ist gültig, aber der Gerätestatus verletzt die NAC-Richtlinie. Was passt?",
+          "options": [
+            {
+              "text": "Identität akzeptieren, Zugang dennoch auf notwendige Reparaturdienste begrenzen.",
+              "rationale": "Richtig: Identitätsnachweis und Berechtigung werden getrennt bewertet.",
+              "correct": true
+            },
+            {
+              "text": "Das gültige Zertifikat beweist einen aktuellen Virenschutz.",
+              "rationale": "Das Zertifikat ersetzt keine Zustandsprüfung.",
+              "correct": false
+            },
+            {
+              "text": "Quarantäne-VLAN eintragen und alle Verbindungen erlauben.",
+              "rationale": "Die Isolation entsteht erst mit wirksamen Verkehrsregeln.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "sequence",
+          "id": "nac-8021x-reihenfolge",
+          "title": "Eine Freigabe nachvollziehen",
+          "prompt": "Ordne den vereinfachten Erfolgsfall ohne wiederholte EAP-Challenges.",
+          "steps": [
+            {
+              "id": "s2",
+              "label": "Server liefert das Prüfergebnis und Richtlinienattribute"
+            },
+            {
+              "id": "s0",
+              "label": "Supplicant beginnt den EAPOL-Austausch"
+            },
+            {
+              "id": "s3",
+              "label": "Authenticator setzt die erlaubte Rolle um"
+            },
+            {
+              "id": "s1",
+              "label": "Authenticator leitet den Nachweis über RADIUS weiter"
+            }
+          ],
+          "expected": [
+            "s0",
+            "s1",
+            "s2",
+            "s3"
+          ],
+          "correctFeedback": "Richtig: Das Endgerät stellt den Nachweis bereit, der Server bewertet ihn, der Switch setzt das Ergebnis durch.",
+          "wrongFeedback": "Gehe vom belegten Bedarf über die Entscheidung zum Nachweis. Prüfe die erste abweichende Position."
+        }
+      ]
+    },
+    {
+      "title": "Aus dem Gedächtnis erklären",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "nac-8021x-karte-0",
+              "label": "Abruf 1",
+              "front": "Was heißt AAA?",
+              "back": "Authentication: Identität; Authorization: Rechte; Accounting: Nutzung protokollieren."
+            },
+            {
+              "id": "nac-8021x-karte-1",
+              "label": "Abruf 2",
+              "front": "Warum ist MAC Authentication Bypass schwächer?",
+              "back": "Eine MAC-Adresse lässt sich nachbilden; sie ist kein kryptografischer Identitätsnachweis."
+            },
+            {
+              "id": "nac-8021x-karte-2",
+              "label": "Abruf 3",
+              "front": "Was muss Quarantäne begrenzen?",
+              "back": "Erlaubte Dienste und Ziele, nicht nur den VLAN-Namen."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "nac-8021x-abruf",
+          "title": "Deine Begründung",
+          "prompt": "Ein Drucker unterstützt kein 802.1X. Begründe eine eng begrenzte Ausnahme und ihr Restrisiko.",
+          "label": "Eigene Erklärung",
+          "placeholder": "Meine Entscheidung und ihre Grenze …",
+          "minLength": 100,
+          "model": "Ich inventarisiere den Drucker, begrenze Port beziehungsweise Rolle auf nötige Druckdienste und überwache die Ausnahme. Eine MAC-basierte Zuordnung kann übergangsweise helfen, ist aber nachbildbar. Sie rechtfertigt keinen allgemeinen Zugriff auf das Servernetz."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "nac-8021x-transfer-a",
+          "question": "Welcher Ablauf ist für ein neues Notebook richtig?",
+          "options": [
+            {
+              "text": "Notebook weist sich selbst ein Produktions-VLAN zu.",
+              "rationale": "Eine nicht vertrauenswürdige Cliententscheidung ersetzt keine Autorisierung.",
+              "correct": false
+            },
+            {
+              "text": "Notebook → EAPOL → Switch; Switch → RADIUS → Server; Switch setzt das Ergebnis um.",
+              "rationale": "Richtig: Nachweis, Transport und Durchsetzung liegen bei verschiedenen Rollen.",
+              "correct": true
+            },
+            {
+              "text": "RADIUS verschlüsselt nach Anmeldung automatisch alle Nutzdaten.",
+              "rationale": "802.1X/RADIUS-Zugangskontrolle ist keine allgemeine Datenverschlüsselung.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "rollen"
+        },
+        {
+          "type": "quiz",
+          "id": "nac-8021x-transfer-b",
+          "question": "Ein RADIUS-Ausfall soll Büroarbeit nicht vollständig stoppen. Welche Planung ist begründet?",
+          "options": [
+            {
+              "text": "Bei jedem Fehler alle Ports in das Server-VLAN schalten.",
+              "rationale": "So würde ein Ausfall die Zugriffskontrolle aufheben.",
+              "correct": false
+            },
+            {
+              "text": "Redundanz und eine vorab begrenzte Notfallrolle mit protokollierter Ausnahme testen.",
+              "rationale": "Richtig: Verfügbarkeit und begrenzter Zugriff werden gemeinsam geplant.",
+              "correct": true
+            },
+            {
+              "text": "Abgelehnte Identitäten wie einen Serverausfall behandeln und freigeben.",
+              "rationale": "Reject und Nicht-Erreichbarkeit sind unterschiedliche Fälle.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "zugangsentscheidung"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Buchgrundlage: ITLF10–12, PDF-Seite 217. Ergänzung: [Cisco – IEEE 802.1X](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/sec_usr_8021x/configuration/15-e/sec-usr-8021x-15-e-book/config-ieee-802x-pba.html). Rollenmodell herstellerübergreifend; konkrete Ausnahme- und VLAN-Funktionen hängen vom System ab."
+        }
+      ]
+    }
+  ]
+}

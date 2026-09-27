@@ -1,0 +1,144 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "overcommitment-cpu-ram-ballooning-thin-thick",
+    "slug": "overcommitment-cpu-ram-ballooning-thin-thick",
+    "title": "Mehr versprochen als vorhanden? CPU, RAM und Speicher",
+    "description": "Overcommitment, Ballooning und Thin/Thick Provisioning an drei Kapazitätsbudgets unterscheiden und sicher beurteilen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-2",
+    "groupLabel": "Virtualisierung, Cluster und Verfügbarkeit",
+    "itemId": "ga1-2__3",
+    "week": "KW 36",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": ["overcommit-redhat-rhel9", "overcommit-microsoft-dynamic-memory", "overcommit-broadcom-disk-types"],
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    { "id": "cpu-ram", "label": "vCPU- und RAM-Overcommitment samt Ballooning und Lastspitzenrisiko erklären" },
+    { "id": "disk", "label": "Thin und Thick Provisioning anhand logischer und physischer Speicherkapazität unterscheiden" }
+  ],
+  "intro": "Ein Host kann mehr virtuelle Ressourcen anzeigen, als er physisch gleichzeitig bereitstellen kann. Das funktioniert nur unter Bedingungen: Nicht alle Gäste dürfen zur selben Zeit ihr Maximum brauchen. CPU-Zeit, RAM und Speicherplatz verhalten sich dabei unterschiedlich.",
+  "curation": {
+    "evidence": [
+      { "sourceId": "overcommit-redhat-rhel9", "sourceLocator": "18.5.1 Memory overcommitment; 18.7.1 vCPU overcommitment", "use": "vCPU-Scheduling, RAM-Overcommitment, Swap-/OOM-Risiko und Lasttest", "reviewStatus": "Am 26.09.2026 gelesen; keine Herstellerzahlen als allgemeine Faustregel verwendet" },
+      { "sourceId": "overcommit-microsoft-dynamic-memory", "sourceLocator": "Technical overview; Dynamic Memory settings", "use": "Mindest-, Start- und Maximal-RAM sowie Zusammenarbeit von Gast und Host beim Rückgewinnen", "reviewStatus": "Am 26.09.2026 gelesen" },
+      { "sourceId": "overcommit-broadcom-disk-types", "sourceLocator": "Resolution: Thin Provision and Thick Provision", "use": "Logische Diskgröße von tatsächlich belegten beziehungsweise reservierten Blöcken trennen", "reviewStatus": "Am 26.09.2026 gelesen; keine Herstellerabbildung übernommen" }
+    ],
+    "notes": [
+      "Der private Batch ga1-2-003-003 hat für dieses Kernthema einen Quellen-Gap; Treffer und Buchgrafik behandeln überwiegend andere Themen. Sie wurden weder als Beleg noch als Bild verwendet.",
+      "Die Beispielwerte und Diagramme sind eigens erstellte Lehrmodelle. Die CPU-Quote ist nur das Verhältnis konfigurierter vCPUs zu physischen Kernen, keine zulässige oder sichere Betriebsquote. Hardware-Threads, Hypervisor-Regeln, Workload und Reserven sind gesondert zu prüfen.",
+      "Ballooning bezeichnet hier eine mögliche Technik zur Rückgewinnung von Gast-RAM; konkrete Implementierung und Gastunterstützung variieren. Thin/Thick sind Disk-Belegungsmodelle, keine Backup- oder Verfügbarkeitsfunktion. Menschliche Fachfreigabe offen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "drei-budgets",
+      "type": "comparison",
+      "title": "Drei Budgets, drei Engpässe",
+      "description": "Konfigurierte Kapazität ist nicht dasselbe wie gleichzeitig verfügbare physische Kapazität.",
+      "items": [
+        { "label": "CPU: 16 vCPUs / 8 Kerne", "detail": "Der Scheduler verteilt Rechenzeit. Brauchen alle Gäste zugleich volle CPU, entstehen Wartezeiten." },
+        { "label": "RAM: 48 GB möglich / 32 GB physisch", "detail": "Dynamische Zuteilung und Rückgewinnung helfen nur, wenn der tatsächliche Bedarf und die Gastunterstützung passen." },
+        { "label": "Disk: 300 GB logisch / 200 GB physisch", "detail": "Thin Disks können anfangs wenig belegen. Schreiben alle Gäste mehr, als real frei ist, wird Storage voll." }
+      ]
+    },
+    {
+      "id": "balloon-pfad",
+      "type": "flow",
+      "title": "Ballooning verschiebt keinen physischen Grenzwert",
+      "description": "Eine beispielhafte Rückgewinnung bei geeigneter Gastunterstützung; der Host erhält Speicher, den der Gast gerade freigeben kann.",
+      "items": [
+        { "label": "Host meldet RAM-Druck", "detail": "Freier physischer Speicher sinkt; die Plattform benötigt eine Entlastung." },
+        { "label": "Balloon im Gast wächst", "detail": "Ein Gasttreiber beansprucht Speicherseiten im Gast, damit sie der Host zurückgewinnen kann." },
+        { "label": "Gastbedarf entscheidet", "detail": "Sind die Seiten wirklich nötig, kann die Gastleistung sinken oder der Gast auslagern. Kein kostenloses Extra-RAM." }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Eine Zahl ist noch keine Kapazität",
+      "blocks": [
+        { "type": "quiz", "id": "overcommitment-cpu-ram-ballooning-thin-thick-diagnose", "question": "Ein Host hat acht physische CPU-Kerne. Vier VMs erhalten je vier vCPUs. Welche Aussage ist sicher?", "options": [
+          { "text": "Es sind 16 vCPUs konfiguriert, aber ihre gleichzeitige Leistung hängt von der Last ab.", "rationale": "Richtig. Virtuelle Kerne werden auf der physischen CPU eingeplant; eine 2:1-Zahl ist keine Leistungsgarantie.", "correct": true },
+          { "text": "Der Host besitzt jetzt 16 physische Kerne.", "rationale": "vCPUs erzeugen keine zusätzlichen physischen Kerne.", "correct": false },
+          { "text": "Jede VM erhält jederzeit vier exklusive physische Kerne.", "rationale": "Bei acht physischen Kernen können nicht 16 Kerne gleichzeitig exklusiv bereitstehen.", "correct": false }
+        ], "diagnostic": true }
+      ]
+    },
+    {
+      "title": "vCPUs teilen CPU-Zeit",
+      "blocks": [
+        { "type": "figure", "diagramId": "drei-budgets", "alt": "Drei Gegenüberstellungen: 16 konfigurierte vCPUs auf acht Kernen, 48 Gigabyte möglicher Gast-RAM auf 32 Gigabyte physischem RAM und 300 Gigabyte logische Thin Disks auf 200 Gigabyte physischem Storage.", "caption": "Eigene vereinfachte Zahlen; jedes Budget hat einen anderen Engpass und wird getrennt überwacht." },
+        { "type": "markdown", "markdown": "**CPU-Overcommitment** bedeutet, dass die Summe zugeteilter vCPUs größer ist als die Zahl betrachteter physischer Kerne. Im Modell sind vier VMs mit je vier vCPUs auf acht physischen Kernen konfiguriert: 16 ÷ 8 = 2 vCPUs je Kern. Die VMs bekommen Rechenzeit nacheinander beziehungsweise verteilt – keine 16 gleichzeitig exklusiven Kerne. Das kann bei wechselnder Last sinnvoll sein. Steigen mehrere Gäste zur selben Zeit auf Volllast, wachsen CPU-Wartezeit und Antwortzeit. Die Quote ist daher ein **Hinweis zur Prüfung**, keine allgemeine Freigabegrenze.\n\nPrüfe insbesondere Lastspitzen zur selben Zeit, Latenzanforderungen, CPU-Wartezeit und Hostreserve. Ein Mittelwert von 20 % CPU über den Tag kann einen gleichzeitigen Peak um 10 Uhr verdecken. Weniger vCPUs pro VM oder zusätzliche Hostkapazität können geeigneter sein als eine pauschal hohe Zuteilung." },
+        { "type": "math", "ariaLabel": "Vier virtuelle Maschinen mit je vier virtuellen CPUs ergeben 16 virtuelle CPUs. Geteilt durch acht physische Kerne ergibt das Verhältnis zwei zu eins.", "mathml": "<math display=\"block\"><mrow><mfrac><mrow><mn>4</mn><mtext> VMs</mtext><mo>·</mo><mn>4</mn><mtext> vCPUs</mtext></mrow><mrow><mn>8</mn><mtext> physische Kerne</mtext></mrow></mfrac><mo>=</mo><mfrac><mn>16</mn><mn>8</mn></mfrac><mo>=</mo><mn>2</mn><mo>:</mo><mn>1</mn></mrow></math>", "legend": ["Konfigurationsverhältnis, keine Leistungsgarantie und kein allgemeiner Grenzwert."] },
+        { "type": "numeric", "id": "overcommitment-cpu-ram-ballooning-thin-thick-cpu-quote", "title": "vCPU-Verhältnis lesen", "prompt": "Drei VMs erhalten je vier vCPUs auf einem Host mit sechs physischen Kernen. Wie viele vCPUs entfallen rechnerisch auf einen physischen Kern? Gib nur die Zahl vor dem „:1“ ein.", "label": "vCPUs pro Kern", "expected": 2, "tolerance": 0.001, "correctFeedback": "Richtig: 3 × 4 ÷ 6 = 2. Ob das unter Last funktioniert, muss gemessen werden.", "wrongFeedback": "Zähle zuerst alle zugeteilten vCPUs und teile dann durch die sechs physischen Kerne.", "misconceptions": [ { "value": 12, "feedback": "12 ist die Summe der vCPUs, gefragt ist das Verhältnis zu sechs Kernen." }, { "value": 0.5, "feedback": "Das ist das umgekehrte Verhältnis sechs zu zwölf." } ] },
+        { "type": "quiz", "id": "overcommitment-cpu-ram-ballooning-thin-thick-cpu-peak", "question": "Alle vier VMs des 16-vCPU/8-Kern-Modells benötigen plötzlich gleichzeitig ihre volle CPU-Leistung. Was ist die naheliegende Folge?", "options": [
+          { "text": "Der Scheduler kann zusätzliche physische Kerne erzeugen.", "rationale": "Virtuelle Zuteilung vermehrt die Hardware nicht.", "correct": false },
+          { "text": "CPU-Zeit muss geteilt werden; Wartezeiten und Latenz können steigen.", "rationale": "Richtig. Darum werden gleichzeitige Spitzen und Antwortzeiten getestet.", "correct": true },
+          { "text": "Die Thin Disks werden automatisch dicker und lösen das CPU-Problem.", "rationale": "Disk-Provisioning betrifft Speicherplatz, nicht CPU-Zeit.", "correct": false }
+        ] }
+      ]
+    },
+    {
+      "title": "RAM lässt sich zurückgewinnen – mit Grenzen",
+      "blocks": [
+        { "type": "figure", "diagramId": "balloon-pfad", "alt": "Bei RAM-Druck fordert der Host über einen Gasttreiber nicht genutzten RAM zurück. Benötigt der Gast ihn doch, drohen Gast-Auslagerung und geringere Leistung.", "caption": "Eigenes Funktionsmodell; Ballooning und dynamischer RAM sind produktabhängig." },
+        { "type": "markdown", "markdown": "**RAM-Overcommitment** liegt vor, wenn mögliche beziehungsweise konfigurierte Gast-RAM-Anforderungen die physisch bereitstellbare Menge übersteigen. Manche Plattformen weisen RAM dynamisch zu, teilen freie Seiten oder gewinnen Speicher zurück. Beim **Ballooning** kooperiert ein Treiber im Gast: Er belegt dort Seiten, damit die Plattform entsprechende physische Seiten zurücknehmen kann. Das funktioniert nur innerhalb der jeweiligen Produkt- und Gastunterstützung und nur solange der Gast diese Seiten entbehren kann. Es entsteht kein neuer physischer Speicher.\n\nIm Lehrmodell können drei VMs jeweils auf 16 GB wachsen: zusammen 48 GB bei 32 GB physischem Host-RAM. Wenn alle gleichzeitig 16 GB wirklich brauchen, fehlen bereits 16 GB – noch ohne Hostbedarf und Reserve. Dann drohen Auslagerung, Verlangsamung, Startprobleme oder im Extremfall Speichermangel. Für harte Leistungsvorgaben plane reservierte Kapazität und teste Worst-Case-Last; bei dynamischem RAM beobachte Host und Gäste getrennt." },
+        { "type": "quiz", "id": "overcommitment-cpu-ram-ballooning-thin-thick-balloon", "question": "Ein Balloon-Treiber gewinnt 4 GB aus einer wenig genutzten VM zurück. Was bedeutet das?", "options": [
+          { "text": "Der physische Host besitzt nun dauerhaft 4 GB zusätzliches RAM.", "rationale": "Ballooning verschiebt nutzbaren vorhandenen RAM, es erzeugt keinen neuen.", "correct": false },
+          { "text": "Der Host kann die zurückgegebenen Seiten anders nutzen; fordert die VM sie später, kann Druck entstehen.", "rationale": "Richtig. Daher sind Gastverhalten und gleichzeitige Spitzen entscheidend.", "correct": true },
+          { "text": "Die VM-Disk wird automatisch um 4 GB kleiner.", "rationale": "RAM-Rückgewinnung ist nicht dasselbe wie Disk-Provisioning.", "correct": false }
+        ] }
+      ]
+    },
+    {
+      "title": "Thin spart zunächst Blöcke, nicht den Bedarf",
+      "blocks": [
+        { "type": "markdown", "markdown": "Bei **Thick Provisioning** wird der Platz einer virtuellen Disk beim Anlegen auf der zugrunde liegenden Ebene reserviert. Bei **Thin Provisioning** kann die Disk dem Gast schon groß erscheinen, während physische Blöcke erst beim Schreiben belegt werden. Das nutzt anfangs freien Platz besser, verlagert aber das Risiko in die Zukunft.\n\nÜbungsfall: Drei Thin Disks melden Gästen je 100 GB, also **300 GB logisch**. Tatsächlich belegen sie zunächst je 30 GB, also **90 GB physisch** auf einem 200-GB-Datastore. Es sind im Modell 110 GB frei; die Gäste könnten aber zusammen noch 210 GB schreiben. Wenn sie das tun, reicht der Datastore nicht. Snapshots, Metadaten, Reserven und anderes Storage sind in der Vereinfachung nicht enthalten. Thin braucht deshalb Grenzwerte, Alarmierung und rechtzeitige Erweiterung. Thick reserviert den Platz früher, macht aber weder Backup noch Performance pauschal besser." },
+        { "type": "math", "ariaLabel": "Drei Thin Disks mal 100 Gigabyte ergeben 300 Gigabyte logische Kapazität. Drei mal 30 Gigabyte belegen 90 Gigabyte physisch. Von 200 Gigabyte physischer Gesamtkapazität bleiben 110 Gigabyte frei.", "mathml": "<math display=\"block\"><mrow><mn>3</mn><mo>·</mo><mn>100</mn><mtext> GB</mtext><mo>=</mo><mn>300</mn><mtext> GB logisch</mtext></mrow><mspace linebreak=\"newline\"/><mrow><mn>200</mn><mtext> GB</mtext><mo>−</mo><mo>(</mo><mn>3</mn><mo>·</mo><mn>30</mn><mtext> GB</mtext><mo>)</mo><mo>=</mo><mn>110</mn><mtext> GB frei</mtext></mrow></math>", "legend": ["Logische Zusage und momentan physisch belegte Blöcke getrennt führen."] },
+        { "type": "numeric", "id": "overcommitment-cpu-ram-ballooning-thin-thick-disk-frei", "title": "Physischen Freiraum bestimmen", "prompt": "Ein 500-GB-Datastore enthält vier Thin Disks. Jede meldet 200 GB logisch und belegt aktuell 75 GB physisch. Wie viele GB sind im vereinfachten Datastore jetzt noch physisch frei?", "label": "Aktuell freie GB", "expected": 200, "tolerance": 0.001, "correctFeedback": "Richtig: 500 − 4 × 75 = 200 GB physisch frei. Logisch sind bereits 800 GB zugesagt; Wachstum überwachen.", "wrongFeedback": "Subtrahiere die aktuell belegten physischen Blöcke, nicht die logischen Maximalgrößen.", "misconceptions": [ { "value": -300, "feedback": "500 − 800 verwendet die logische Zusage. Aktuell belegen die Disks nur 300 GB physisch." }, { "value": 425, "feedback": "Du hast nur eine der vier Disks abgezogen." } ] },
+        { "type": "sequence", "id": "overcommitment-cpu-ram-ballooning-thin-thick-pruefweg", "title": "Thin-Storage sicher betreiben", "prompt": "Ordne die Prüfschritte für einen Thin-Datastore.", "steps": [
+          { "id": "messen", "label": "Logische Zusagen und real belegte Blöcke erfassen" },
+          { "id": "spitzen", "label": "Wachstum, Snapshots und Reserve als Risiko abschätzen" },
+          { "id": "grenzen", "label": "Alarmgrenzen, Erweiterung und Reaktion testen" }
+        ], "expected": ["messen", "spitzen", "grenzen"], "correctFeedback": "Richtig: Erst Ist- und Sollwerte trennen, dann das Wachstum planen und überwachen.", "wrongFeedback": "Beginne mit den beiden Kapazitätsarten; erst danach kannst du Risiko und Alarmgrenzen sinnvoll festlegen." }
+      ]
+    },
+    {
+      "title": "Drei Begriffe selbst abgrenzen",
+      "blocks": [
+        { "type": "recall", "id": "overcommitment-cpu-ram-ballooning-thin-thick-begruendung", "title": "Der 10-Uhr-Peak", "prompt": "Um 10 Uhr steigen gleichzeitig CPU-Last, RAM-Bedarf und Schreibvolumen. Erkläre in eigenen Worten je eine mögliche Folge bei CPU-Overcommitment, RAM-Overcommitment und Thin Disks.", "label": "Deine Analyse", "minLength": 100, "model": "Bei CPU-Overcommitment müssen vCPUs auf physische Rechenzeit warten; Latenz kann steigen. Bei gleichzeitigem RAM-Bedarf kann Ballooning ungenutzte Seiten nicht beliebig zurückholen; Auslagerung oder Speichermangel drohen. Thin Disks können den Datastore durch neue Schreibvorgänge füllen, obwohl sie anfangs wenig Platz brauchten. Ich überwache alle drei Budgets getrennt und teste den gemeinsamen Peak." },
+        { "type": "flashcards", "cards": [
+          { "id": "overcommitment-cpu-ram-ballooning-thin-thick-karte-0", "label": "Abruf 1", "front": "Was misst die vCPU-Quote?", "back": "Konfigurierte vCPUs im Verhältnis zu physischen Kernen – nicht garantierte gleichzeitige Rechenleistung." },
+          { "id": "overcommitment-cpu-ram-ballooning-thin-thick-karte-1", "label": "Abruf 2", "front": "Was macht Ballooning?", "back": "Ein unterstützter Gasttreiber hilft, aktuell entbehrliche Speicherseiten für den Host zurückzugewinnen. Er erzeugt keinen RAM." },
+          { "id": "overcommitment-cpu-ram-ballooning-thin-thick-karte-2", "label": "Abruf 3", "front": "Was ist der Thin-Storage-Fehler?", "back": "Logische Zusagen mit momentan belegten physischen Blöcken verwechseln und Wachstum nicht überwachen." }
+        ] }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        { "type": "quiz", "id": "overcommitment-cpu-ram-ballooning-thin-thick-transfer-a", "question": "Sechs VMs erhalten je zwei vCPUs auf sechs physischen Kernen. Gleichzeitig fordern alle volle CPU und mehrere Gäste benötigen ihren maximalen RAM. Welcher Schluss ist fachlich tragfähig?", "options": [
+          { "text": "2:1 bei vCPU und dynamischer RAM garantieren unveränderte Latenz.", "rationale": "Gleichzeitige Last kann CPU-Wartezeit und RAM-Druck erzeugen.", "correct": false },
+          { "text": "CPU-Wartezeit und RAM-Druck getrennt messen; Ballooning hilft nur bei entbehrlichen Gastseiten und passender Unterstützung.", "rationale": "Richtig. Eine rechnerische Zuteilung ist keine Ressourcen- oder Leistungsgarantie.", "correct": true },
+          { "text": "Mehr Thin-Storage beseitigt CPU- und RAM-Engpässe automatisch.", "rationale": "Storageplatz ersetzt weder Kerne noch physischen RAM.", "correct": false }
+        ], "requiredObjective": "cpu-ram" },
+        { "type": "quiz", "id": "overcommitment-cpu-ram-ballooning-thin-thick-transfer-b", "question": "Vier Thin Disks melden je 200 GB, belegen je 75 GB und liegen auf einem 500-GB-Datastore. Welche Aussage stimmt?", "options": [
+          { "text": "Es sind aktuell 200 GB physisch frei, aber insgesamt 800 GB logisch zugesagt; weiteres Wachstum braucht Überwachung.", "rationale": "Richtig: 500 − 4 × 75 = 200 GB. Die logischen 800 GB passen nicht gleichzeitig vollständig in 500 GB.", "correct": true },
+          { "text": "800 GB sind schon physisch belegt, also muss der Datastore bereits ausgefallen sein.", "rationale": "Thin belegt hier erst 300 GB physisch; 800 GB sind die logische Zusage.", "correct": false },
+          { "text": "Thin sorgt automatisch für 300 GB zusätzliche physische Kapazität.", "rationale": "Provisioning erzeugt keine physischen Blöcke.", "correct": false }
+        ], "requiredObjective": "disk" }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        { "type": "markdown", "markdown": "[Red Hat: VM-Performance und Overcommitment](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/configuring_and_managing_virtualization/optimizing-virtual-machine-performance-in-rhel_configuring-and-managing-virtualization), [Microsoft Learn: Hyper-V Dynamic Memory](https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/dynamic-memory) und [Broadcom: ESXi-Disktypen](https://knowledge.broadcom.com/external/article/308992/types-of-supported-virtual-disks-on-esxi.html), am 26.09.2026 gelesen. Alle Zahlen und Grafiken sind eigene Lehrmodelle. Keine vCPU-Quote oder RAM-/Storage-Belegung ist eine pauschale Freigabe für reale Lasten; menschliche Fachfreigabe offen." }
+      ]
+    }
+  ]
+}

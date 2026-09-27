@@ -1,0 +1,319 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "usv-technikraum",
+    "slug": "usv-technikraum",
+    "title": "USV und Technikraum für den Dienst auslegen",
+    "description": "Watt, VA, Laufzeit und Wärmeabfuhr zusammen betrachten, statt nur die USV-Nennzahl zu vergleichen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__4",
+    "week": "KW 44",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "sources": [
+      "europa-integratoren-2026"
+    ],
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "auslegung",
+      "label": "USV-Auswahl nach Leistung, Laufzeit, Versorgungspfad und Kühlung beurteilen"
+    },
+    {
+      "id": "leistung",
+      "label": "die benötigte Wirkleistung mit vorgegebenem Planungsaufschlag berechnen"
+    }
+  ],
+  "intro": "Ein gepufferter Server nützt wenig, wenn sein Switch ausfällt. Zur Versorgung gehören alle aktiven Komponenten des Dienstwegs – und die Bedingungen im Raum.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Markdown-Chunks 00218 und 00725",
+        "use": "USV-Bauarten und kontrollierter Shutdown",
+        "reviewStatus": "Auszüge geprüft; pauschale Umschaltzeiten nicht als Gerätedaten übernommen"
+      }
+    ],
+    "notes": [
+      "ITLF10–12 Seite 311 ist Schulungsplanung und wurde als USV-Beleg verworfen.",
+      "APC-Auswahlhilfe zu Watt/VA und Laufzeit ergänzt, geprüft 2026-09-13. Kein verbindlicher pauschaler Temperaturwert oder Reserveprozentsatz behauptet.",
+      "Eigene Beispiele und Grafiken. Private Buchabbildungen werden nicht veröffentlicht. Menschliche Fachfreigabe steht aus."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "modell",
+      "type": "layers",
+      "title": "Vier getrennte Nachweise",
+      "description": "USV-Leistungsgrenzen, Batterielaufzeit, vollständiger Strompfad und Raumtemperatur sind eigene Prüfungen.",
+      "items": [
+        {
+          "label": "Leistung",
+          "detail": "Watt und VA einhalten"
+        },
+        {
+          "label": "Laufzeit",
+          "detail": "Lastkurve statt Nennzahl"
+        },
+        {
+          "label": "Dienstweg",
+          "detail": "Alle nötigen Geräte versorgen"
+        },
+        {
+          "label": "Raum",
+          "detail": "Luftführung und Alarme"
+        }
+      ]
+    },
+    {
+      "id": "ablauf",
+      "type": "flow",
+      "title": "Vom Inventar zum Funktionstest",
+      "description": "Lastinventar, Leistungsprüfung, Laufzeit-/Raumprüfung und kontrollierter Ablauf bilden den Nachweis.",
+      "items": [
+        {
+          "label": "Inventar",
+          "detail": "Aktive Geräte und PoE erfassen"
+        },
+        {
+          "label": "Leistung",
+          "detail": "W und VA prüfen"
+        },
+        {
+          "label": "Laufzeit",
+          "detail": "Lastkurve und Wärme prüfen"
+        },
+        {
+          "label": "Ablauf",
+          "detail": "Shutdown und Wiederanlauf testen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "usv-technikraum-diagnose",
+          "question": "Eine USV hat 1.500 VA. Ist damit ihre Laufzeit bei 500 W bekannt?",
+          "options": [
+            {
+              "text": "Nein. Dafür braucht man die Last-/Laufzeitdaten des konkreten Systems.",
+              "rationale": "Richtig: VA ist eine Leistungsgrenze, keine Batteriezeit.",
+              "correct": true
+            },
+            {
+              "text": "Ja, genau drei Stunden.",
+              "rationale": "VA geteilt durch W ergibt keine Laufzeit in Stunden.",
+              "correct": false
+            },
+            {
+              "text": "Ja, jede USV gleicher VA-Zahl hat dieselbe Batterie.",
+              "rationale": "Batterieausstattung und Wirkungsgrad können sich unterscheiden.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Leitgedanke",
+          "markdown": "Leistung, Laufzeit und Kühlung sind getrennte Anforderungen. Eine VA-Angabe beantwortet nicht alle drei."
+        }
+      ]
+    },
+    {
+      "title": "Leistung ist nicht Energie",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**Watt (W)** beschreibt Wirkleistung, **Voltampere (VA)** Scheinleistung. Eine USV hat Grenzen für beide Größen; beide müssen zur Last passen. Die **Laufzeit** beschreibt dagegen, wie lange die angeschlossene Last aus der Batterie versorgt werden kann. Sie hängt unter anderem von Last, Batterie, Alter, Temperatur und Betriebszustand ab. Verwende die Last-/Laufzeitkurve des konkreten Geräts, nicht die VA-Zahl als Zeitangabe.\n\nBei **Offline-/Standby-USV** kann eine Umschaltzeit auftreten. **Line-Interactive-USV** regeln bestimmte Spannungsschwankungen und schalten bei Bedarf auf Batterie. **Online-Doppelwandler** versorgen die Last im vorgesehenen Doppelwandlungsbetrieb kontinuierlich über den Wechselrichter. Bypass-/Eco-Modi und tatsächliche Gerätespezifikation sind gesondert zu prüfen; keine Bauart ersetzt den Last- und Funktionstest.\n\nZur Last gehören Switches, Router, Firewall, nötige Übertragungstechnik und gegebenenfalls PoE-Endgeräte. PoE-Leistung nicht doppelt zählen: Wenn die verwendete Switch-Eingangsleistung die Endgeräte bereits enthält, wird sie nicht nochmals addiert. Kühlung, Luftführung, Staub, Temperatur am Geräteeinlass und Alarmierung benötigen ein eigenes Konzept. Eine USV beseitigt die erzeugte Wärme nicht. Elektrische Installation und Arbeiten an Verteilungen gehören in fachkundige Hände."
+        },
+        {
+          "type": "figure",
+          "diagramId": "modell",
+          "alt": "USV-Leistungsgrenzen, Batterielaufzeit, vollständiger Strompfad und Raumtemperatur sind eigene Prüfungen.",
+          "caption": "Vier getrennte Nachweise – eigenes Lernmodell."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Planungsleistung ist die Summe der Lastleistungen mal eins plus Reserveanteil",
+          "mathml": "<math display=\"block\"><mrow><msub><mi>P</mi><mtext>Plan</mtext></msub><mo>=</mo><mo>(</mo><msub><mi>P</mi><mn>1</mn></msub><mo>+</mo><msub><mi>P</mi><mn>2</mn></msub><mo>+</mo><mo>…</mo><mo>)</mo><mo>·</mo><mo>(</mo><mn>1</mn><mo>+</mo><mi>r</mi><mo>)</mo></mrow></math>",
+          "legend": [
+            "P: Wirkleistung in Watt",
+            "r: vorgegebener Aufschlag als Anteil, kein universeller Standard",
+            "VA-Grenze und Laufzeit werden zusätzlich geprüft"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Modellnetz benötigt 140 W für den PoE-Switch einschließlich seiner Endgeräte, 45 W für Router/Firewall und 15 W für den Medienkonverter. Zusammen sind das 200 W. Der Auftrag gibt 25 Prozent Planungsaufschlag vor: 250 W. Eine USV mit ausreichendem VA-Wert, aber nur 200 W Ausgangsleistung wäre dafür nicht passend.\n\nAnschließend wird die geforderte Laufzeit von 15 Minuten anhand der Herstellerkurve bei der angesetzten Last geprüft, einschließlich Alterungs-/Betriebsreserve nach Planung. Wenn die Kühlung bei Stromausfall sofort stoppt, muss der Dienst entweder im zulässigen Temperaturbereich weiterlaufen oder kontrolliert herunterfahren. Ein Temperaturalarm allein führt noch keinen sicheren Shutdown aus.\n\nEin Wiederanlauftest prüft deshalb nicht nur „USV piept“, sondern Netzausfallmeldung, verbleibende Zeit, geordnetes Abschalten, Rückkehr der Versorgung und den vollständigen Dienst. Das erfolgt geplant und autorisiert, nicht durch spontanes Ziehen produktiver Stromleitungen."
+        },
+        {
+          "type": "figure",
+          "diagramId": "ablauf",
+          "alt": "Lastinventar, Leistungsprüfung, Laufzeit-/Raumprüfung und kontrollierter Ablauf bilden den Nachweis.",
+          "caption": "Vom Inventar zum Funktionstest – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Selbst entscheiden",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "usv-technikraum-uebung",
+          "question": "Die angegebene Switch-Eingangsleistung enthält bereits die PoE-Endgeräte. Was wird in der Lastsumme angesetzt?",
+          "options": [
+            {
+              "text": "Zusätzlich stets die gesamte PoE-Ausgangsleistung.",
+              "rationale": "Das zählt hier dieselbe Energieversorgung doppelt.",
+              "correct": false
+            },
+            {
+              "text": "Diese Eingangsleistung einmal; die enthaltene PoE-Last nicht nochmals addieren.",
+              "rationale": "Richtig: Die Systemgrenze verhindert Doppelzählung.",
+              "correct": true
+            },
+            {
+              "text": "Nur die PoE-Endgeräte; der Switch benötigt keine Eigenleistung.",
+              "rationale": "Auch die Switch-Elektronik benötigt Leistung.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "sequence",
+          "id": "usv-technikraum-reihenfolge",
+          "title": "Versorgung planen",
+          "prompt": "Ordne die Planung vor dem kontrollierten Test.",
+          "steps": [
+            {
+              "id": "s2",
+              "label": "Laufzeitkurve, Temperaturgrenzen und Shutdown-Ablauf planen"
+            },
+            {
+              "id": "s0",
+              "label": "Nötige Geräte und Lastgrenzen einschließlich PoE erfassen"
+            },
+            {
+              "id": "s3",
+              "label": "Autorisierten Funktionstest einschließlich Wiederanlauf durchführen"
+            },
+            {
+              "id": "s1",
+              "label": "Wirk- und Scheinleistung mit vorgegebenen Reserven prüfen"
+            }
+          ],
+          "expected": [
+            "s0",
+            "s1",
+            "s2",
+            "s3"
+          ],
+          "correctFeedback": "Richtig: Die USV-Auswahl folgt der gesamten Dienstkette und dem Betriebsablauf.",
+          "wrongFeedback": "Prüfe die erste abweichende Position. Erst Grundlagen klären, dann entscheiden und nachweisen."
+        }
+      ]
+    },
+    {
+      "title": "Aus dem Gedächtnis erklären",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "usv-technikraum-karte-0",
+              "label": "Abruf 1",
+              "front": "Watt oder VA?",
+              "back": "Beide Leistungsgrenzen sind einzuhalten; Watt beschreibt Wirk-, VA Scheinleistung."
+            },
+            {
+              "id": "usv-technikraum-karte-1",
+              "label": "Abruf 2",
+              "front": "Warum Klimatisierung separat?",
+              "back": "Die USV liefert Energie, führt aber die Verlustwärme der Geräte nicht ab."
+            },
+            {
+              "id": "usv-technikraum-karte-2",
+              "label": "Abruf 3",
+              "front": "Was bestimmt reale Laufzeit?",
+              "back": "Konkrete Batterie und Last, Alter, Temperatur, Wirkungsgrad und Betriebszustand."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "usv-technikraum-abruf",
+          "title": "Deine Begründung",
+          "prompt": "Der Server hängt an der USV, die Firewall nicht. Erkläre die Lücke für ein öffentliches Portal.",
+          "label": "Eigene Erklärung",
+          "placeholder": "Meine Begründung und ihre Grenzen …",
+          "minLength": 80,
+          "model": "Der Server kann weiterlaufen, ist aber ohne Firewallpfad unter Umständen nicht erreichbar. Ich inventarisiere alle aktiven Komponenten des Dienstwegs und prüfe Versorgung, Laufzeit und den Wiederanlauf gemeinsam."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "usv-technikraum-transfer-a",
+          "question": "Welche Auswahlbegründung ist vollständig?",
+          "options": [
+            {
+              "text": "Die höchste VA-Zahl wählen; damit sind Laufzeit und Kühlung erledigt.",
+              "rationale": "Die VA-Angabe bestimmt weder Batteriekapazität noch Wärmeabfuhr.",
+              "correct": false
+            },
+            {
+              "text": "Nur Server absichern; Netzwerkkomponenten arbeiten ohne Versorgung weiter.",
+              "rationale": "Aktive Netztechnik benötigt ebenfalls Strom.",
+              "correct": false
+            },
+            {
+              "text": "W- und VA-Grenzen, Lastkurve, nötige Dienstgeräte, zulässige Raumtemperatur und getesteten Abschalt-/Wiederanlauf prüfen.",
+              "rationale": "Richtig: Die Nennleistung allein beantwortet nicht die Betriebsanforderungen.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "auslegung"
+        },
+        {
+          "type": "numeric",
+          "id": "usv-technikraum-transfer-b",
+          "requiredObjective": "leistung",
+          "prompt": "Ein Modellnetz benötigt 120 W, 60 W und 20 W am Eingang seiner Geräte. PoE ist darin bereits enthalten. Der Auftrag verlangt 30 Prozent Aufschlag auf diese Summe. Welche Planungs-Wirkleistung in Watt ergibt sich?",
+          "expected": 260,
+          "tolerance": 0,
+          "label": "Planungsleistung in W",
+          "correctFeedback": "260 W: (120 + 60 + 20) × 1,30. VA-Grenze und Laufzeit bleiben zusätzliche Prüfungen.",
+          "wrongFeedback": "Die Lastsumme beträgt 200 W. Multipliziere mit 1,30; 60 W ist nur der Zuschlag, nicht die gesamte Planungsleistung."
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Buchgrundlage: EUROPA, Chunks 00218/00725. Ergänzung: [APC – USV-Auswahlhilfe](https://www.apc.com/us/en/support/product-support/ups-buying-guide-for-selecting-a-battery-backup-system.jsp). Beispiele sind Planungsmodelle, keine elektrische Installationsanleitung; konkrete Herstellergrenzen bleiben maßgeblich."
+        }
+      ]
+    }
+  ]
+}

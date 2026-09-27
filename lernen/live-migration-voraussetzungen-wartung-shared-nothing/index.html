@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Hosts, CPU, Netz und Storage-Muster prüfen; geplanten Umzug von automatischem Failover unterscheiden.">
+<title>Live-Migration: Wartung ohne VM-Neustart planen – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="live-migration-voraussetzungen-wartung-shared-nothing" data-progress-id="ga1-2__4" data-content-revision="2026-09-26.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-2">Virtualisierung, Cluster und Verfügbarkeit</a><span class="sep">›</span>
+    <span class="here">Live-Migration: Wartung ohne VM-Neustart planen</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Live-Migration: Wartung ohne VM-Neustart planen</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 30 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Host A braucht ein Firmware-Update, während eine wichtige VM läuft. Live-Migration verschiebt die laufende VM auf Host B, damit A gewartet werden kann. Sie ist ein geplanter Umzug – kein Zauberknopf, der einen bereits ausgefallenen Host repariert.</p>
+<section class="learning-goals" aria-labelledby="live-migration-voraussetzungen-wartung-shared-nothing-goals">
+  <h2 id="live-migration-voraussetzungen-wartung-shared-nothing-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Zielkapazität, CPU-Kompatibilität, Migrationnetz und Storage-Modell vor dem Umzug prüfen</li>
+    <li>Geplante Live-Migration von automatischem Wiederanlauf nach Hostausfall unterscheiden</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Geplant oder ungeplant?</h2>
+<section class="quiz" data-quiz="live-migration-voraussetzungen-wartung-shared-nothing-diagnose" data-correct="1">
+  <h3>Host A ist bereits stromlos. Kann eine Live-Migration die darauf laufende VM jetzt noch regulär zu Host B verschieben?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Ohne laufenden Quellhost kann dessen aktueller VM-Zustand nicht mehr live übertragen werden."><span class="m">A</span> Ja, Live-Migration kopiert den aktiven RAM auch von einem ausgeschalteten Host.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Live-Migration und automatisches Failover lösen unterschiedliche Ereignisse."><span class="m">B</span> Nein. Ein Ausfall braucht einen vorher geplanten Wiederanlauf-/Failover-Weg; Live-Migration dient dem geplanten Umzug.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein Snapshot ersetzt weder einen laufenden Quellhost noch eine Failover-Lösung."><span class="m">C</span> Ja, sobald die VM einen Snapshot besitzt; weitere Architektur ist nicht nötig.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2"><span class="num">2</span>Der Pfad der Daten bestimmt die Vorprüfung</h2>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Zwei Wege für die VM-Daten">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-migrationspfade-title diagram-migrationspfade-desc">
+  <title id="diagram-migrationspfade-title">Zwei Wege für die VM-Daten</title>
+  <desc id="diagram-migrationspfade-desc">Mit Shared Storage bleibt die VM-Disk für beide Hosts erreichbar. Ohne Shared Storage wird sie mit dem laufenden Zustand zum Ziel übertragen. Beides ist vom automatischen Failover zu unterscheiden.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Zwei Wege für die VM-Daten</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">Gemeinsamer Storage</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">Host A und Host B erreichen</tspan><tspan x="64" dy="30">den VM-Zustand. Laufender</tspan><tspan x="64" dy="30">Speicher und</tspan></text></g><g><rect class="diagram-row" x="340" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="362" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="362" dy="0">Ohne Shared Storage</tspan></text><text x="362" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="362" dy="0">Zusätzlich zum laufenden</tspan><tspan x="362" dy="30">Zustand werden VM-Dateien</tspan><tspan x="362" dy="30">auf Storage bei Host B</tspan></text></g><g><rect class="diagram-row" x="638" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="660" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="660" dy="0">Nicht dasselbe wie HA</tspan></text><text x="660" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="660" dy="0">Geplanter Umzug benötigt</tspan><tspan x="660" dy="30">funktionierende Ausgangs-</tspan><tspan x="660" dy="30">und Zielhosts. Automatischer</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigenes Lehrbild anhand von Hyper-V; konkrete Funktionen anderer Plattformen prüfen.</figcaption>
+</figure><p>Bei einer <strong>Live-Migration</strong> wechselt eine laufende VM von Host A zu Host B. Geeignete Plattformen übertragen dazu den Ausführungszustand und schalten die Ausführung am Ende um. Der geplante Hostwechsel soll für Nutzer möglichst unbemerkt bleiben; die tatsächliche Unterbrechung hängt von Konfiguration, Netzwerk und Last ab.</p>
+<p><strong>Shared Storage</strong> ist ein häufiges Modell: Beide Hosts können die VM-Daten erreichen. Für hochverfügbare Hyper-V-Cluster ist der gemeinsame Zugriff auf den VM-Zustand Voraussetzung. Daraus folgt aber <strong>nicht</strong>, dass jede Live-Migration Shared Storage braucht: Hyper-V kann bei einer Migration ohne Cluster auch den Storage zum Ziel mitnehmen. Dann sind Zielplatz, Übertragungszeit und Netzlast zusätzlich relevant. ‚Shared Nothing‘ heißt nicht ‚ohne Speicher‘, sondern ohne denselben gemeinsam erreichbaren Datenspeicher.</p>
+<p>Unabhängig vom Storage-Muster braucht Host B genug freie Ressourcen für die VM. Die Host-/VM-Versionen, Berechtigungen und Netzverbindung für Migration und fortgesetzten Gastbetrieb müssen passen. Eine große VM kann das Migrationsnetz belasten; die Datenmenge und Last beeinflussen die Dauer. Prüfe die Möglichkeiten der <strong>konkreten</strong> Hypervisor-Version, statt ein Schema blind zu übertragen.</p>
+<section class="quiz" data-quiz="live-migration-voraussetzungen-wartung-shared-nothing-storage" data-correct="1">
+  <h3>Zwei Hyper-V-Hosts nutzen nur lokalen Storage. Welche Aussage ist fachlich richtig?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Hyper-V kann eine VM einschließlich ihres Storage übertragen, wenn die Voraussetzungen erfüllt sind."><span class="m">A</span> Live-Migration ist grundsätzlich unmöglich, weil Shared Storage immer zwingend ist.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Shared Storage ist nicht für jede Live-Migration Pflicht, wohl aber eine übliche Cluster-Architektur."><span class="m">B</span> Eine Migration mit Storage-Übertragung ist möglich; Zielplatz und Netzwerk sind zusätzlich zu prüfen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ohne Shared Storage müssen VM-Dateien am Ziel liegen können, und die Hosts müssen für den Transfer verbunden sein."><span class="m">C</span> Die VM braucht am Ziel weder Platz noch einen erreichbaren Netzwerkpfad.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s3"><span class="num">3</span>CPU und Platz vor dem Klick prüfen</h2>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Erst Ziel prüfen, dann Host A warten">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="434" viewBox="0 0 960 434" role="img" aria-labelledby="diagram-wartungsablauf-title diagram-wartungsablauf-desc">
+  <title id="diagram-wartungsablauf-title">Erst Ziel prüfen, dann Host A warten</title>
+  <desc id="diagram-wartungsablauf-desc">Vor dem Wartungsfenster wird Host B auf Ressourcen, CPU-Features, Storage und Netzwerk geprüft. Dann folgt der Live-Umzug mit Funktionstest; erst danach wird Host A gewartet.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Erst Ziel prüfen, dann Host A warten</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Vorprüfung</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Host B: freie CPU-/RAM-Kapazität, kompatible CPU-Features,</tspan><tspan x="178" dy="25">Storage-Zugriff oder Zielplatz, Migrationnetz und</tspan><tspan x="178" dy="25">Berechtigungen.</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Live migrieren</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">VM-Zustand übertragen; Anwendung und Netzwerkpfad auf Host B</tspan><tspan x="178" dy="25">nach dem Wechsel prüfen.</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">A warten</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Erst nach erfolgreichem Umzug und Kontrolle den Quellhost in</tspan><tspan x="178" dy="25">Wartung nehmen; Rückweg für Abbruch planen.</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigener Ablauf mit Freigabepunkt zwischen Migration und Wartung.</figcaption>
+</figure><p>Unterschiedliche <strong>CPU-Generationen</strong> können verschiedene Befehlssätze anbieten. Eine laufende VM darf am Ziel nicht plötzlich benötigte CPU-Features verlieren. Prüfe die Prozessor-Kompatibilität und den produktspezifischen Kompatibilitätsmodus <strong>vor</strong> der Migration. Bei Hyper-V kann ein erforderlicher Modus nicht einfach während des VM-Betriebs umgestellt werden; die Dokumentation fordert dafür eine ausgeschaltete VM. Das gehört deshalb in die Vorbereitung des Wartungsfensters.</p>
+<p>Die Zielkapazität darf nicht nur auf dem Papier reichen. Im Übungsfall hat B 64 GB physisches RAM, 28 GB sind bereits für Host und laufende Gäste verplant, die zu migrierende VM benötigt 20 GB, und 8 GB bleiben als festgelegte zusätzliche Reserve. Danach sind 8 GB übrig. Das ist nur eine RAM-Rechnung; CPU, Netz, Storage und Lastspitzen bleiben separat zu prüfen. Auch die Anwendung selbst kann Hostnamen, Lizenzen oder Netzpfade voraussetzen – nach dem Umzug funktional testen.</p>
+<div class="math-display" role="group" aria-label="64 Gigabyte physisches RAM minus 28 Gigabyte bestehende Last minus 20 Gigabyte migrierende VM minus acht Gigabyte Reserve gleich acht Gigabyte verbleibender Spielraum im Lehrmodell."><math display="block" aria-label="64 Gigabyte physisches RAM minus 28 Gigabyte bestehende Last minus 20 Gigabyte migrierende VM minus acht Gigabyte Reserve gleich acht Gigabyte verbleibender Spielraum im Lehrmodell."><mrow><mn>64</mn><mtext> GB</mtext><mo>−</mo><mn>28</mn><mtext> GB</mtext><mo>−</mo><mn>20</mn><mtext> GB</mtext><mo>−</mo><mn>8</mn><mtext> GB</mtext><mo>=</mo><mn>8</mn><mtext> GB</mtext></mrow></math><div class="math-legend"><span>Nur RAM-Modell; keine Freigabe ohne CPU-, Storage-, Netzwerk- und Lastprüfung.</span></div></div><section class="numeric-practice transfer-number" data-numeric-practice="live-migration-voraussetzungen-wartung-shared-nothing-ziel-ram" data-expected="16" data-tolerance="0.001" data-correct-feedback="Richtig: 96 − 40 − 24 − 16 = 16 GB. Weitere Engpässe trotzdem testen." data-wrong-feedback="Ziehe bestehende Last, VM-Bedarf und die bewusst freizuhaltende Reserve vom physischen RAM ab.">
+  <h3>Ziel-RAM mit Reserve</h3>
+  <p>Host B hat 96 GB physisches RAM. 40 GB sind schon verplant, die VM benötigt 24 GB, und 16 GB sollen als zusätzliche Reserve ungenutzt bleiben. Wie viel GB Spielraum bleiben danach im Modell?</p>
+  <label for="live-migration-voraussetzungen-wartung-shared-nothing-ziel-ram-answer">Spielraum in GB</label>
+  <div class="answer-row"><input id="live-migration-voraussetzungen-wartung-shared-nothing-ziel-ram-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Ergebnis"><button type="button" class="lbtn" data-numeric-check>Antwort prüfen</button></div><p>  <template data-numeric-feedback-for="32">32 GB sind nach der VM noch frei, aber die 16 GB Zusatzreserve wurden nicht abgezogen.</template>
+  <template data-numeric-feedback-for="56">56 GB sind vor der neuen VM und vor der Reserve verfügbar.</template>
+  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p></p>
+</section><section class="sequence-practice" data-sequence="live-migration-voraussetzungen-wartung-shared-nothing-ablauf" data-expected="pruefen,umziehen,warten" data-correct-feedback="Richtig: A erst abschalten, wenn die VM nachweislich auf B arbeitet." data-wrong-feedback="Zuerst das Ziel absichern, dann migrieren und prüfen, zuletzt den Quellhost warten." aria-labelledby="live-migration-voraussetzungen-wartung-shared-nothing-ablauf-title">
+  <div class="lab-heading"><div><h3 id="live-migration-voraussetzungen-wartung-shared-nothing-ablauf-title">Hostwartung ordnen</h3><p>Ordne die Schritte vor dem Firmware-Update von A.</p></div><span class="lab-tag">Ablauf</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="pruefen" tabindex="-1"><span class="step-position" data-step-position>1</span><span>B auf CPU, Kapazität, Storage und Netz prüfen</span></li>
+    <li data-step="umziehen" tabindex="-1"><span class="step-position" data-step-position>2</span><span>VM live nach B verschieben und Dienst testen</span></li>
+    <li data-step="warten" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Erst jetzt A in Wartung nehmen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Den Wartungsplan begründen</h2>
+<section class="recall-practice" data-recall="live-migration-voraussetzungen-wartung-shared-nothing-plan" data-min-length="100" aria-labelledby="live-migration-voraussetzungen-wartung-shared-nothing-plan-title">
+  <div class="recall-prompt"><h3 id="live-migration-voraussetzungen-wartung-shared-nothing-plan-title">Ein Plan ohne pauschale Shared-Storage-Regel</h3><p>Host A soll gewartet werden, Host B nutzt eine ältere CPU und lokalen Storage. Formuliere die nötigen Prüfungen und grenze den Plan von automatischem Failover ab.</p></div>
+  <label class="sr-only" for="live-migration-voraussetzungen-wartung-shared-nothing-plan-answer">Dein Wartungsplan</label>
+  <textarea id="live-migration-voraussetzungen-wartung-shared-nothing-plan-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Ich prüfe die kompatiblen CPU-Features beider Hosts und konfiguriere einen nötigen Kompatibilitätsmodus vorab nach Produktvorgabe. B braucht freie CPU-/RAM-Kapazität und genug Ziel-Storage, wenn die VM-Dateien mitwandern. Das Migrationsnetz und der Gast-Netzpfad müssen passen. Nach dem Live-Umzug teste ich den Dienst und beginne erst dann mit der Wartung. Bei ungeplantem Hostausfall brauche ich eine separate Failover-/Wiederanlaufarchitektur.</div>
+</section><div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="live-migration-voraussetzungen-wartung-shared-nothing-karte-0" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was ermöglicht Live-Migration bei Wartung?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Die laufende VM geplant auf einen geeigneten Zielhost verschieben und erst danach den Quellhost warten.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="live-migration-voraussetzungen-wartung-shared-nothing-karte-1" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Ist Shared Storage immer nötig?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Nein. Es ist ein häufiges Muster und für bestimmte HA-Cluster nötig; Hyper-V kann bei geeigneter Konfiguration auch Storage mitmigrieren.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="live-migration-voraussetzungen-wartung-shared-nothing-karte-2" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was löst Live-Migration nicht?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Sie ersetzt kein automatisches Failover nach einem schon eingetretenen Hostausfall.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Abruf 1“:</span><button type="button" data-card-id="live-migration-voraussetzungen-wartung-shared-nothing-karte-0" data-card-rate="known">gewusst</button><button type="button" data-card-id="live-migration-voraussetzungen-wartung-shared-nothing-karte-0" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="live-migration-voraussetzungen-wartung-shared-nothing-karte-0"></span></div>
+<div class="card-rating"><span>Karte „Abruf 2“:</span><button type="button" data-card-id="live-migration-voraussetzungen-wartung-shared-nothing-karte-1" data-card-rate="known">gewusst</button><button type="button" data-card-id="live-migration-voraussetzungen-wartung-shared-nothing-karte-1" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="live-migration-voraussetzungen-wartung-shared-nothing-karte-1"></span></div>
+<div class="card-rating"><span>Karte „Abruf 3“:</span><button type="button" data-card-id="live-migration-voraussetzungen-wartung-shared-nothing-karte-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="live-migration-voraussetzungen-wartung-shared-nothing-karte-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="live-migration-voraussetzungen-wartung-shared-nothing-karte-2"></span></div><h2 class="sec" id="s5"><span class="num">5</span>Lernziel-Check</h2>
+<section class="quiz" data-quiz="live-migration-voraussetzungen-wartung-shared-nothing-transfer-a" data-correct="1" data-required-objective="voraussetzungen">
+  <h3>Ein laufender Dienst soll von A nach B. B hat genügend CPU/RAM, aber eine ältere CPU-Generation und nur lokalen Storage. Welche Vorprüfung ist vollständig?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="CPU-Feature-Kompatibilität und der Storage-Transfer sind zentrale Vorbedingungen."><span class="m">A</span> Nur die IP-Adresse von B notieren; CPU und Storage sind bei Live-Migration irrelevant.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Ein passendes Ziel braucht mehr als nominell freien RAM."><span class="m">B</span> CPU-Features und nötigen Kompatibilitätsmodus vorab prüfen, Platz für VM-Dateien auf B sowie Migrations- und Gastnetz nachweisen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Eine passende Shared-Nothing-Migration kann VM-Dateien mitnehmen; das ist produkt- und konfigurationsabhängig."><span class="m">C</span> Shared Storage nachrüsten, denn ohne ihn ist jede Live-Migration ausgeschlossen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="live-migration-voraussetzungen-wartung-shared-nothing-transfer-b" data-correct="0" data-required-objective="wartung">
+  <h3>Eine VM wurde vor geplanter Wartung erfolgreich von A nach B verschoben. Welche Schlussfolgerung ist gerechtfertigt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Wartungsumzug und Ausfallreaktion getrennt nachweisen."><span class="m">A</span> Die geplante Wartung von A kann nach einem Diensttest beginnen; automatisches Failover für künftige Ausfälle ist damit nicht bewiesen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die Dienstfunktion und Netz-Erreichbarkeit müssen am Ziel geprüft werden."><span class="m">B</span> A darf schon vor dem Funktionstest stromlos geschaltet werden, weil der Migrationsdialog genügt.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein erfolgreicher geplanter Umzug ist kein Test der Failover-Architektur."><span class="m">C</span> Das beweist, dass jede VM bei einem plötzlichen Ausfall von B ohne Unterbrechung weiterläuft.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Quellen und Grenzen</h2>
+<p><a href="https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/manage/live-migration-overview">Microsoft Learn: Live-Migration im Überblick</a>, <a href="https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/manage/use-live-migration-without-failover-clustering-to-move-a-virtual-machine">Live-Migration ohne Cluster einschließlich Storage-Transfer</a>, <a href="https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/configure-processor-compatibility-mode">CPU-Kompatibilität</a> und <a href="https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/failover-cluster-network-recommendations">Netzempfehlungen</a>, am 26.09.2026 gelesen. Alle Zahlen, Fälle und Grafiken sind eigene Lehrmodelle. Voraussetzungen und Unterbrechung müssen für die konkrete Plattform getestet werden; menschliche Fachfreigabe offen.</p>
+
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-2"><span class="d">zurück zu</span><span class="t">Virtualisierung, Cluster und Verfügbarkeit</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Virtualisierung, Cluster und Verfügbarkeit</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Geplant oder ungeplant?</a></li>
+<li><a href="#s2" data-t="s2">Der Pfad der Daten bestimmt die Vorprüfung</a></li>
+<li><a href="#s3" data-t="s3">CPU und Platz vor dem Klick prüfen</a></li>
+<li><a href="#s4" data-t="s4">Den Wartungsplan begründen</a></li>
+<li><a href="#s5" data-t="s5">Lernziel-Check</a></li>
+<li><a href="#s6" data-t="s6">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-2">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

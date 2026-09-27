@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Repository, Commit, Branch und Merge unterscheiden und den tatsächlich gesicherten Skriptstand bestimmen.">
+<title>Git: Änderungen nachvollziehbar sichern – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="versionsverwaltung-git-repository-commit-branch-merge-warum" data-progress-id="ga1-9__13" data-content-revision="2026-09-17.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-9">Programme zur automatisierten Systemverwaltung</a><span class="sep">›</span>
+    <span class="here">Git: Änderungen nachvollziehbar sichern</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Git: Änderungen nachvollziehbar sichern</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 25 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Repository, Commit, Branch und Merge unterscheiden und den tatsächlich gesicherten Skriptstand bestimmen. Du bearbeitest eigene Papierfälle; es werden keine echten Systeme verändert.</p>
+<section class="learning-goals" aria-labelledby="versionsverwaltung-git-repository-commit-branch-merge-warum-goals">
+  <h2 id="versionsverwaltung-git-repository-commit-branch-merge-warum-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Arbeitsstand, Staging und Commit korrekt unterscheiden</li>
+    <li>Zusammenführung von Branches fachlich prüfen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Vorwissen aktivieren</h2>
+<section class="quiz" data-quiz="versionsverwaltung-git-repository-commit-branch-merge-warum-diagnose" data-correct="1">
+  <h3>Du speicherst eine Datei im Editor. Ist damit schon ein Git-Commit entstanden?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Der Editor verändert zunächst nur die Arbeitsdatei."><span class="m">A</span> Ja, Speichern und Commit sind dasselbe.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig: Ein Commit sichert den vorgesehenen Stand im Repository."><span class="m">B</span> Nein, dazu ist ein eigener Git-Schritt nötig.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Der Dateityp ändert diese Trennung nicht."><span class="m">C</span> Nur wenn die Datei ein Skript ist.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2"><span class="num">2</span>Drei Orte statt einer Dateikopie</h2>
+<p>Ein Repository enthält versionierte Projektstände und ihre Historie. Ein Commit benennt einen gespeicherten Snapshot mit Metadaten und Vorgängern. Im Arbeitsverzeichnis bearbeitest du Dateien. Der Index, oft Staging-Bereich genannt, hält den für den nächsten Commit ausgewählten Stand.</p>
+<p><code>git add bericht.ps1</code> übernimmt den aktuellen Inhalt dieser Datei in den Index. <code>git commit</code> sichert den Index. Spätere Bearbeitungen werden nicht automatisch mitgenommen. <code>git status</code> unterscheidet vorgemerkte, nicht vorgemerkte und unversionierte Änderungen. <code>git diff</code> zeigt Änderungen zwischen Arbeitsdatei und Index; <code>git diff --cached</code> zwischen Index und letztem Commit.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Welcher Stand wird gesichert?">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="434" viewBox="0 0 960 434" role="img" aria-labelledby="diagram-staende-title diagram-staende-desc">
+  <title id="diagram-staende-title">Welcher Stand wird gesichert?</title>
+  <desc id="diagram-staende-desc">Arbeitsdatei, Index und Repository enthalten unterscheidbare Stände.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Welcher Stand wird gesichert?</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Arbeitsdatei</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Hier bearbeitest du das Skript</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Staging / Index</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Ausgewählter Stand für den Commit</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Repository</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Commit hält diesen Stand fest</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Darstellung des Lernmodells.</figcaption>
+</figure><h2 class="sec" id="s3"><span class="num">3</span>Den gesicherten Inhalt vorhersagen</h2>
+<p>Eigener Papierfall: Im letzten Commit steht <code>grenze = 5</code>. Du änderst auf 8 und führst <code>git add</code> aus. Danach änderst du auf 12, ohne erneut vorzumerken. Sage zuerst voraus: Welche Zahl wird beim folgenden Commit gesichert?</p>
+<div class="twrap"><table class="knowledge-table">
+<thead>
+<tr>
+<th>Ort vor dem Commit</th>
+<th>Wert</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Letzter Commit</td>
+<td>5</td>
+</tr>
+<tr>
+<td>Index</td>
+<td>8</td>
+</tr>
+<tr>
+<td>Arbeitsdatei</td>
+<td>12</td>
+</tr>
+</tbody></table></div>
+<p>Der Commit erhält <strong>8</strong>, weil dies der vorgemerkte Stand ist. Die Arbeitsdatei bleibt bei <strong>12</strong>; diese spätere Änderung bleibt uncommitted. Für 12 müsstest du erneut gezielt vormerken und prüfen.</p>
+<section class="numeric-practice transfer-number" data-numeric-practice="versionsverwaltung-git-repository-commit-branch-merge-warum-zahl" data-expected="6" data-tolerance="0" data-correct-feedback="Sechs war vorgemerkt. Neun bleibt eine zusätzliche Arbeitsänderung." data-wrong-feedback="Entscheidend ist der Index, nicht der neueste Editorstand.">
+  <h3>Neuer Staging-Fall</h3>
+  <p>Letzter Commit: 3. Auf 6 geändert und vorgemerkt. Danach auf 9 geändert, nicht erneut vorgemerkt. Welcher Wert landet im normalen Commit?</p>
+  <label for="versionsverwaltung-git-repository-commit-branch-merge-warum-zahl-answer">Gesicherter Wert</label>
+  <div class="answer-row"><input id="versionsverwaltung-git-repository-commit-branch-merge-warum-zahl-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Ergebnis"><button type="button" class="lbtn" data-numeric-check>Antwort prüfen</button></div><p>  <template data-numeric-feedback-for="9">Neun wurde nicht erneut vorgemerkt.</template>
+  <template data-numeric-feedback-for="3">Drei ist der alte Commit, nicht der aktualisierte Index.</template>
+  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p></p>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Branch und Merge</h2>
+<p>Ein Branch ist ein beweglicher Verweis auf einen Commit, keine vollständige unabhängige Ordnerkopie. Neue Commits entwickeln den aktuellen Branch weiter. Ein Merge führt Historien zusammen. Bei einem Fast-forward wird der Zielverweis vorgeschoben; bei auseinanderentwickelten Historien kann ein Merge-Commit entstehen.</p>
+<p>Eigener Fall: main erhöht eine Wartezeit, ein zweiter Branch ergänzt eine Eingabeprüfung. Git kann die Texte möglicherweise automatisch zusammenführen. Ob beide Änderungen zusammen richtig funktionieren, entscheidet ein Test. Bearbeiten beide dieselbe Stelle unterschiedlich, kann ein Konflikt entstehen. Dann die beabsichtigte Gesamtfunktion klären, Ergebnis bearbeiten, prüfen und erst danach den Merge abschließen.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Zusammenführen braucht Prüfung">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="434" viewBox="0 0 960 434" role="img" aria-labelledby="diagram-merge-title diagram-merge-desc">
+  <title id="diagram-merge-title">Zusammenführen braucht Prüfung</title>
+  <desc id="diagram-merge-desc">Zwei Änderungen nach einem gemeinsamen Stand werden zu einem geprüften Ergebnis zusammengeführt.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Zusammenführen braucht Prüfung</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Gemeinsamer Stand</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Beide Branches starten bei A</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Getrennte Änderungen</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">main: B; pruefung: C</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Zusammenführung</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Ergebnis fachlich testen, dann sichern</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Darstellung des Lernmodells.</figcaption>
+</figure><section class="quiz" data-quiz="versionsverwaltung-git-repository-commit-branch-merge-warum-uebung" data-correct="1">
+  <h3>Git meldet eine konfliktfreie Zusammenführung. Was ist damit belegt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Textintegration beweist nicht die fachliche Wirkung."><span class="m">A</span> Das Skript ist fachlich fehlerfrei.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig; anschließend bleibt die Funktionsprüfung nötig."><span class="m">B</span> Git konnte die Änderungen automatisch zusammenführen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Merge und Übertragung sind unterschiedliche Vorgänge."><span class="m">C</span> Der Stand ist bereits auf einem Remote-Server.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Warum auch kleine Skripte?</h2>
+<p>Änderungsgrund und betroffene Dateien gehören zusammen in einen überschaubaren Commit. So lässt sich später erklären, welche Prüfregel wann geändert wurde. Ein lokaler Commit ist noch kein Push und ein Push noch kein erfolgreicher Betrieb. Versionsverwaltung ersetzt keine Datensicherung. Zugangsdaten gehören nicht in die Historie.</p>
+<p>Ein Branch für einen Versuch schützt nicht vor allen Fehlern: Vor dem Wechsel ungesicherte Änderungen prüfen. Diese Einheit führt keine Git-Befehle aus und beschreibt keine Lösch- oder Zurücksetzroutine.</p>
+<h2 class="sec" id="s6"><span class="num">6</span>Selbst ordnen und erklären</h2>
+<section class="sequence-practice" data-sequence="versionsverwaltung-git-repository-commit-branch-merge-warum-reihenfolge" data-expected="start,pruefen,abschluss" data-correct-feedback="Richtig: Voraussetzungen, Prüfung und Abschluss stehen in der vorgesehenen Reihenfolge." data-wrong-feedback="Prüfe die Voraussetzungen: Der letzte Schritt darf die vorherige Prüfung nicht überspringen." aria-labelledby="versionsverwaltung-git-repository-commit-branch-merge-warum-reihenfolge-title">
+  <div class="lab-heading"><div><h3 id="versionsverwaltung-git-repository-commit-branch-merge-warum-reihenfolge-title">Ablauf ordnen</h3><p>Ordne den Abschluss einer bereits bearbeiteten Änderung.</p></div><span class="lab-tag">Ablauf</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="abschluss" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Den geprüften Stand committen</span></li>
+    <li data-step="start" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Gewünschte Änderung gezielt vormerken</span></li>
+    <li data-step="pruefen" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Vorgemerkten Unterschied prüfen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><section class="recall-practice" data-recall="versionsverwaltung-git-repository-commit-branch-merge-warum-begruendung" data-min-length="70" aria-labelledby="versionsverwaltung-git-repository-commit-branch-merge-warum-begruendung-title">
+  <div class="recall-prompt"><h3 id="versionsverwaltung-git-repository-commit-branch-merge-warum-begruendung-title">Aus dem Gedächtnis erklären</h3><p>Erkläre den Fall mit 5, 8 und 12: Was sichert der Commit, was bleibt offen, und warum wäre das bei einem Administrationsskript wichtig?</p></div>
+  <label class="sr-only" for="versionsverwaltung-git-repository-commit-branch-merge-warum-begruendung-answer">Deine Erklärung</label>
+  <textarea id="versionsverwaltung-git-repository-commit-branch-merge-warum-begruendung-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Der Index enthält 8, also sichert der Commit 8. Die Arbeitsdatei enthält weiterhin 12 als nicht vorgemerkte Änderung. Sonst könnte ich glauben, die neueste Prüfregel sei bereits dokumentiert oder geteilt, obwohl nur ein älterer Stand gesichert wurde.</div>
+</section><div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="versionsverwaltung-git-repository-commit-branch-merge-warum-karte-0" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Ist Commit gleich Push?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Nein. Commit sichert lokal; Push überträgt Commits und aktualisiert Remote-Verweise, sofern erlaubt.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="versionsverwaltung-git-repository-commit-branch-merge-warum-karte-1" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Beweist ein Merge ohne Konflikt die Korrektheit?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Nein. Zusammengeführter Text muss fachlich getestet werden.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="versionsverwaltung-git-repository-commit-branch-merge-warum-karte-2" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum kleine begründete Commits?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Damit zusammengehörige Änderungen später nachvollziehbar bleiben.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Abruf 1“:</span><button type="button" data-card-id="versionsverwaltung-git-repository-commit-branch-merge-warum-karte-0" data-card-rate="known">gewusst</button><button type="button" data-card-id="versionsverwaltung-git-repository-commit-branch-merge-warum-karte-0" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="versionsverwaltung-git-repository-commit-branch-merge-warum-karte-0"></span></div>
+<div class="card-rating"><span>Karte „Abruf 2“:</span><button type="button" data-card-id="versionsverwaltung-git-repository-commit-branch-merge-warum-karte-1" data-card-rate="known">gewusst</button><button type="button" data-card-id="versionsverwaltung-git-repository-commit-branch-merge-warum-karte-1" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="versionsverwaltung-git-repository-commit-branch-merge-warum-karte-1"></span></div>
+<div class="card-rating"><span>Karte „Abruf 3“:</span><button type="button" data-card-id="versionsverwaltung-git-repository-commit-branch-merge-warum-karte-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="versionsverwaltung-git-repository-commit-branch-merge-warum-karte-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="versionsverwaltung-git-repository-commit-branch-merge-warum-karte-2"></span></div><h2 class="sec" id="s7"><span class="num">7</span>Lernziel-Check</h2>
+<section class="quiz" data-quiz="versionsverwaltung-git-repository-commit-branch-merge-warum-transfer-a" data-correct="2" data-required-objective="stand">
+  <h3>Eine Datei ist vorgemerkt. Danach wird nur die Arbeitsdatei erneut bearbeitet. Was sichert ein normaler Commit?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Spätere Änderungen sind nicht automatisch vorgemerkt."><span class="m">A</span> Immer die letzte Editorversion.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Der Index bleibt als vorgemerkter Stand vorhanden."><span class="m">B</span> Gar nichts, weil sich die Datei erneut änderte.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Dieser ist vom danach bearbeiteten Arbeitsstand getrennt."><span class="m">C</span> Den zuletzt vorgemerkten Stand.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="versionsverwaltung-git-repository-commit-branch-merge-warum-transfer-b" data-correct="0" data-required-objective="merge">
+  <h3>Zwei Branches ändern dieselbe Grenzprüfung unterschiedlich. Git hält mit einem Konflikt an. Was ist sinnvoll?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Die fachliche Entscheidung kann Git nicht abnehmen."><span class="m">A</span> Anforderung klären, Gesamtprüfung herstellen, testen und dann abschließen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Das kann eine erforderliche Änderung verlieren."><span class="m">B</span> Beliebig eine Seite wählen, Hauptsache der Konflikt verschwindet.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Syntaktische Bereinigung garantiert keine sinnvolle Logik."><span class="m">C</span> Nur die Konfliktmarker entfernen, beide Bedingungen ungeprüft lassen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s8"><span class="num">8</span>Quellen und Grenzen</h2>
+<p>Buchkontext: ITLF10–12, PDF-Seite 124, ausgewählter OCR-Ausschnitt. Präzisierung: <a href="https://git-scm.com/book/en/v2/Getting-Started-What-is-Git%3F">Pro Git – Grundmodell</a> und <a href="https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging">Zusammenführen</a>, Grundlagenabschnitte am 17.09.2026 gelesen. Eigene Beispiele. Keine vollständige Git-Befehlsreferenz und keine Änderung am echten Repository durch die Übungen.</p>
+
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-9"><span class="d">zurück zu</span><span class="t">Programme zur automatisierten Systemverwaltung</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Programme zur automatisierten Systemverwaltung</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Vorwissen aktivieren</a></li>
+<li><a href="#s2" data-t="s2">Drei Orte statt einer Dateikopie</a></li>
+<li><a href="#s3" data-t="s3">Den gesicherten Inhalt vorhersagen</a></li>
+<li><a href="#s4" data-t="s4">Branch und Merge</a></li>
+<li><a href="#s5" data-t="s5">Warum auch kleine Skripte?</a></li>
+<li><a href="#s6" data-t="s6">Selbst ordnen und erklären</a></li>
+<li><a href="#s7" data-t="s7">Lernziel-Check</a></li>
+<li><a href="#s8" data-t="s8">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-9">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

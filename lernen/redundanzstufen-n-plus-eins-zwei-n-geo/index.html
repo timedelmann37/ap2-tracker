@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Kapazitätsreserve von unabhängigen Pfaden trennen und Georedundanz anhand eines Dienstes bewerten.">
+<title>Redundanzstufen: N+1, 2N und zwei Standorte – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="redundanzstufen-n-plus-eins-zwei-n-geo" data-progress-id="ga1-1__9" data-content-revision="2026-09-26.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-1">Server-, Client- und Hardwarekonzeption</a><span class="sep">›</span>
+    <span class="here">Redundanzstufen: N+1, 2N und zwei Standorte</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Redundanzstufen: N+1, 2N und zwei Standorte</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 30 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Drei zusätzliche Module sind nicht automatisch „hochverfügbar“. Zuerst muss klar sein, was N für die konkrete Spitzenlast bedeutet und welcher Ausfall überstanden werden soll: ein Modul, ein kompletter Pfad oder ein Standort.</p>
+<section class="learning-goals" aria-labelledby="redundanzstufen-n-plus-eins-zwei-n-geo-goals">
+  <h2 id="redundanzstufen-n-plus-eins-zwei-n-geo-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>N, N+1 und 2N für eine definierte Last berechnen und die geschützte Fehlerdomäne nennen</li>
+    <li>Eine standortübergreifende Lösung gegen Datenverlust, Ausfallzeit und gemeinsame Abhängigkeiten prüfen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Welche Störung willst du überstehen?</h2>
+<section class="quiz" data-quiz="redundanzstufen-n-plus-eins-zwei-n-geo-diagnose" data-correct="1">
+  <h3>Ein Dienst braucht 18 kW. Zwei 10-kW-USV-Module versorgen ihn. Ist das schon N+1?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Nach Ausfall eines Moduls bleiben nur 10 kW für 18 kW Last."><span class="m">A</span> Ja, zwei Module sind immer redundant.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig: Erst eine dritte geeignete Einheit schafft hier ein einfaches Modul-N+1."><span class="m">B</span> Nein, beide Module werden für die Last benötigt; es fehlt ein zusätzlich tragfähiges Modul.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die kleine Kapazitätsdifferenz ersetzt keine vollständige 10-kW-Einheit."><span class="m">C</span> Ja, denn 20 kW sind größer als 18 kW.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2"><span class="num">2</span>N zuerst bestimmen</h2>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Drei Konzepte für dieselbe Last">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-kapazitaetsstufen-title diagram-kapazitaetsstufen-desc">
+  <title id="diagram-kapazitaetsstufen-title">Drei Konzepte für dieselbe Last</title>
+  <desc id="diagram-kapazitaetsstufen-desc">Für 18 Kilowatt Last braucht man zwei 10-Kilowatt-Module als N; N plus eins benötigt drei Module, 2N zwei getrennte Gruppen zu je zwei Modulen.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Drei Konzepte für dieselbe Last</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">N = 2</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">Zwei 10-kW-Module tragen 18</tspan><tspan x="64" dy="30">kW; ein Modulausfall lässt</tspan><tspan x="64" dy="30">nur 10 kW übrig.</tspan></text></g><g><rect class="diagram-row" x="340" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="362" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="362" dy="0">N+1 = 3</tspan></text><text x="362" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="362" dy="0">Drei Module in einer Gruppe;</tspan><tspan x="362" dy="30">nach Ausfall eines Moduls</tspan><tspan x="362" dy="30">bleiben 20 kW.</tspan></text></g><g><rect class="diagram-row" x="638" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="660" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="660" dy="0">2N = 2 + 2</tspan></text><text x="660" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="660" dy="0">Zwei getrennte Gruppen mit</tspan><tspan x="660" dy="30">je 20 kW; eine ganze Gruppe</tspan><tspan x="660" dy="30">darf ausfallen.</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Gleiche Modulgröße und volle nutzbare Leistung sind Annahmen des Übungsfalls.</figcaption>
+</figure><p><strong>N</strong> ist die minimal erforderliche Kapazität für die festgelegte Last, nicht einfach die gerade eingebaute Stückzahl. Bei 18 kW Last und identischen 10-kW-Modulen sind mindestens zwei nötig: <strong>N = 2</strong>. Bei <strong>N+1</strong> gibt es ein zusätzliches geeignetes Modul. Nach Ausfall eines beliebigen einzelnen Moduls sollen die übrigen die volle Last tragen können. Drei Module liefern im Modell nach einem Ausfall noch 20 kW. Ein gemeinsam genutzter Eingang, Controller oder Verteiler kann trotzdem ausfallen.</p>
+<p><strong>2N</strong> bedeutet hier zwei getrennte, jeweils voll tragfähige Versorgungsgruppen. Jede Gruppe enthält zwei Module und muss die gesamten 18 kW allein tragen. Fällt eine ganze Gruppe aus, übernimmt die andere. Vier Module an einem gemeinsamen, ausfallgefährdeten Verteiler sind deshalb nicht automatisch 2N. Nennleistung allein genügt nicht: Batteriezeit, Lastverteilung, Übernahme, Wartung und nachgelagerte Netzteile sind eigene Prüfungen.</p>
+<div class="math-display" role="group" aria-label="N ist die aufgerundete Zahl aus 18 Kilowatt geteilt durch 10 Kilowatt je Modul, also 2. N plus eins sind 3 Module. Zwei N sind zwei getrennte Gruppen mit je 2 Modulen, zusammen 4 Module."><math display="block" aria-label="N ist die aufgerundete Zahl aus 18 Kilowatt geteilt durch 10 Kilowatt je Modul, also 2. N plus eins sind 3 Module. Zwei N sind zwei getrennte Gruppen mit je 2 Modulen, zusammen 4 Module."><mrow><mi>N</mi><mo>=</mo><mo>⌈</mo><mfrac><mrow><mn>18</mn><mtext> kW</mtext></mrow><mrow><mn>10</mn><mtext> kW/Modul</mtext></mrow></mfrac><mo>⌉</mo><mo>=</mo><mn>2</mn></mrow><mspace linebreak="newline"/><mrow><mi>N</mi><mo>+</mo><mn>1</mn><mo>=</mo><mn>3</mn><mtext> Module</mtext><mspace width="1em"/><mn>2</mn><mi>N</mi><mo>=</mo><mn>2</mn><mo>+</mo><mn>2</mn><mtext> Module in zwei Pfaden</mtext></mrow></math><div class="math-legend"><span>Aufrunden bedeutet: Ein teilweise benötigtes Modul zählt als ganzes. 2N setzt im Modell unabhängige vollständige Pfade voraus.</span></div></div><section class="numeric-practice transfer-number" data-numeric-practice="redundanzstufen-n-plus-eins-zwei-n-geo-zahl" data-expected="4" data-tolerance="0" data-correct-feedback="22 ÷ 8 = 2,75, also N = 3 Module. Mit einem zusätzlichen Modul: N+1 = 4." data-wrong-feedback="Runde den Bedarf an Grundmodulen zuerst auf und addiere danach ein vollständiges Reservemodul.">
+  <h3>Modulreserve bestimmen</h3>
+  <p>Neue Last: 22 kW. Jedes identische Modul kann nutzbar 8 kW tragen. Wie viele Module braucht eine einfache N+1-Gruppe mindestens?</p>
+  <label for="redundanzstufen-n-plus-eins-zwei-n-geo-zahl-answer">Anzahl Module für N+1</label>
+  <div class="answer-row"><input id="redundanzstufen-n-plus-eins-zwei-n-geo-zahl-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Ergebnis"><button type="button" class="lbtn" data-numeric-check>Antwort prüfen</button></div><p>  <template data-numeric-feedback-for="3">Drei Module sind das benötigte N, aber noch nicht N+1.</template>
+  <template data-numeric-feedback-for="6">Sechs Module wären zwei vollständige Dreiergruppen im 2N-Modell, nicht N+1.</template>
+  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p></p>
+</section><h2 class="sec" id="s3"><span class="num">3</span>Fehlerdomänen mitzeichnen</h2>
+<p>Redundanz ist immer auf eine <strong>Fehlerdomäne</strong> bezogen. N+1 kann einen Modulausfall abfangen, wenn die restliche Gruppe die Last übernimmt. 2N kann im passenden Aufbau den Ausfall einer ganzen Versorgungsgruppe abfangen. Das schließt nicht automatisch einen gemeinsam genutzten Raum, Brandabschnitt, Softwarestand, Wartungsfehler oder eine gemeinsame Netzverbindung ein.</p>
+<p>Stelle die Prüfungsfrage konkret: „Kann der Dienst die verlangte Last noch tragen, wenn genau dieses Bauteil oder dieser Pfad wegfällt?“ Zeichne vom Eingang bis zum Gerät und markiere jede gemeinsame Stelle. Bei einem Server mit zwei Netzteilen ist auch zu prüfen, ob jedes Netzteil einzeln die Last tragen kann und ob die Leitungen tatsächlich aus getrennten Pfaden kommen. Doppelte Stecker am selben Stromkreis schaffen keinen zweiten Ausfallbereich.</p>
+<section class="quiz" data-quiz="redundanzstufen-n-plus-eins-zwei-n-geo-uebung" data-correct="1">
+  <h3>Zwei voll ausgelegte USV-Gruppen hängen an derselben einzigen Ausgangssammelschiene. Welche Behauptung ist nicht belegt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Das kann stimmen, wenn die jeweils verbleibende Gruppe die Last trägt."><span class="m">A</span> Einzelne USV-Gruppen können Kapazitätsreserve bieten.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig: Die gemeinsame Sammelschiene bleibt ein möglicher Einzelausfallpunkt."><span class="m">B</span> Der vollständige Lastpfad ist 2N und ohne gemeinsamen Fehlerpunkt.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Das ist eine notwendige Prüfung, nicht die falsche Behauptung."><span class="m">C</span> Die Sammelschiene muss in die Ausfallanalyse aufgenommen werden.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Georedundanz ist ein Dienstversprechen</h2>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Zwei Standorte, ein nutzbarer Dienst?">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-topology" xmlns="http://www.w3.org/2000/svg" width="960" height="500" viewBox="0 0 960 500" role="img" aria-labelledby="diagram-standorte-title diagram-standorte-desc">
+  <title id="diagram-standorte-title">Zwei Standorte, ein nutzbarer Dienst?</title>
+  <desc id="diagram-standorte-desc">Nutzende erreichen über eine Zugangssteuerung Standort A oder bei Ausfall Standort B; Daten werden zwischen den Standorten übertragen.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Zwei Standorte, ein nutzbarer Dienst?</tspan></text>
+  <g class="diagram-edge "><path d="M115 220 L340 220"/></g><g class="diagram-edge "><path d="M340 220 L675 130"/><text class="diagram-edge-label" x="507.5" y="167" text-anchor="middle">normal</text></g><g class="diagram-edge "><path d="M340 220 L675 335"/><text class="diagram-edge-label" x="507.5" y="269.5" text-anchor="middle">Failover</text></g><g class="diagram-edge "><path d="M675 130 L675 335"/><text class="diagram-edge-label" x="675" y="224.5" text-anchor="middle">Daten</text></g><g class="diagram-node client" transform="translate(115 220)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="115" y="215" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="115" dy="0">Nutzende</tspan></text><text class="diagram-node-detail" x="115" y="239" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="115" dy="0">neue Sitzungen</tspan></text><g class="diagram-node router" transform="translate(340 220)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="340" y="215" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="340" dy="0">Zugangssteuerung</tspan></text><text class="diagram-node-detail" x="340" y="239" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="340" dy="0">DNS oder Routing</tspan></text><g class="diagram-node server" transform="translate(675 130)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="675" y="125" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="675" dy="0">Standort A</tspan></text><text class="diagram-node-detail" x="675" y="149" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="675" dy="0">Primärdienst</tspan></text><g class="diagram-node server" transform="translate(675 335)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="675" y="330" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="675" dy="0">Standort B</tspan></text><text class="diagram-node-detail" x="675" y="354" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="675" dy="0">Wiederanlauf</tspan></text>
+</svg>
+  </div>
+  <figcaption>Das eigene Schema zeigt nur Abhängigkeiten, keine automatisch funktionierende Umschaltung.</figcaption>
+</figure><p>Ein zweiter geografisch getrennter Standort schützt vor anderen Ereignissen als ein zusätzliches Netzteil: zum Beispiel vor einem standortweiten Strom- oder Gebäudeschaden. Doch ein zweites Rechenzentrum ist noch kein zweiter <strong>nutzbarer Dienst</strong>. Anwendungen, Identität, Netzwerkzugang, Daten und Betriebswissen müssen dort im definierten Ausfallfall verfügbar sein. Die Auslegung reicht von Backup und Wiederherstellung über vorbereitete Standby-Kapazität bis zu zwei gleichzeitig aktiven Standorten.</p>
+<p>Lege <strong>RTO</strong> (maximal tragbare Ausfallzeit) und <strong>RPO</strong> (maximal tragbarer Datenverlust als Zeitspanne) für den Dienst fest. Asynchrone Replikation kann hinterherhinken; auch ein Failover kann manuelle Entscheidung, DNS-Änderung oder Datenabgleich benötigen. Gleiche Administrationskonten, dieselbe Steuerungsebene oder eine fehlerhafte Konfiguration können beide Standorte zugleich treffen. Proben müssen neue Nutzerzugriffe und Datenkonsistenz einschließen. Eine entfernte Sicherung ist wertvoll, aber nicht automatisch ein sofort einsatzbereiter zweiter Betrieb.</p>
+<section class="sequence-practice" data-sequence="redundanzstufen-n-plus-eins-zwei-n-geo-reihenfolge" data-expected="entscheidung,daten,zugang" data-correct-feedback="Richtig: entscheiden, Datenstand prüfen, neuen Zugriff testen." data-wrong-feedback="Beginne mit der Ausfallentscheidung; ein scheinbar erreichbarer Dienst genügt ohne Datenprüfung nicht." aria-labelledby="redundanzstufen-n-plus-eins-zwei-n-geo-reihenfolge-title">
+  <div class="lab-heading"><div><h3 id="redundanzstufen-n-plus-eins-zwei-n-geo-reihenfolge-title">Standortausfall prüfen</h3><p>Ordne die modellhafte Prüfung nach Ausfall von Standort A.</p></div><span class="lab-tag">Ablauf</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="zugang" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Neue Nutzer erreichen den Dienst am Standort B</span></li>
+    <li data-step="daten" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Datenstand und mögliche Replikationslücke werden geprüft</span></li>
+    <li data-step="entscheidung" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Ausfall erkennen und Failover-Entscheidung treffen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Die drei Ebenen abfragen</h2>
+<section class="recall-practice" data-recall="redundanzstufen-n-plus-eins-zwei-n-geo-begruendung" data-min-length="100" aria-labelledby="redundanzstufen-n-plus-eins-zwei-n-geo-begruendung-title">
+  <div class="recall-prompt"><h3 id="redundanzstufen-n-plus-eins-zwei-n-geo-begruendung-title">Schutzwirkung begründen</h3><p>Worin unterscheiden sich N+1, 2N und Georedundanz? Nenne je einen Ausfall und eine verbleibende Grenze.</p></div>
+  <label class="sr-only" for="redundanzstufen-n-plus-eins-zwei-n-geo-begruendung-answer">Deine Begründung</label>
+  <textarea id="redundanzstufen-n-plus-eins-zwei-n-geo-begruendung-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> N+1 hält die definierte Last nach Ausfall eines Moduls, nicht zwingend nach Ausfall des gemeinsamen Verteilers. 2N stellt zwei vollständige, getrennte Versorgungspfade bereit, schützt aber nicht automatisch vor einem Standortausfall. Georedundanz verlagert den Dienst in eine andere Fehlerdomäne; Zugang, Datenstand, RPO, RTO und Failover müssen dafür geplant und getestet werden.</div>
+</section><div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="redundanzstufen-n-plus-eins-zwei-n-geo-karte-0" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was ist N bei 18 kW Last und 10-kW-Modulen?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Zwei nutzbare Module sind minimal nötig. Ein drittes wäre die einfache N+1-Reserve.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="redundanzstufen-n-plus-eins-zwei-n-geo-karte-1" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Reichen vier Module für 2N?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Nur wenn zwei vollständige, ausreichend getrennte Gruppen je die ganze Last tragen können. Stückzahl allein beweist es nicht.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="redundanzstufen-n-plus-eins-zwei-n-geo-karte-2" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Ist ein entferntes Backup bereits Georedundanz des laufenden Dienstes?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Nein. Wiederherstellung, Datenstand, Zugangsweg und RTO/RPO müssen zur Anforderung passen.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Abruf 1“:</span><button type="button" data-card-id="redundanzstufen-n-plus-eins-zwei-n-geo-karte-0" data-card-rate="known">gewusst</button><button type="button" data-card-id="redundanzstufen-n-plus-eins-zwei-n-geo-karte-0" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="redundanzstufen-n-plus-eins-zwei-n-geo-karte-0"></span></div>
+<div class="card-rating"><span>Karte „Abruf 2“:</span><button type="button" data-card-id="redundanzstufen-n-plus-eins-zwei-n-geo-karte-1" data-card-rate="known">gewusst</button><button type="button" data-card-id="redundanzstufen-n-plus-eins-zwei-n-geo-karte-1" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="redundanzstufen-n-plus-eins-zwei-n-geo-karte-1"></span></div>
+<div class="card-rating"><span>Karte „Abruf 3“:</span><button type="button" data-card-id="redundanzstufen-n-plus-eins-zwei-n-geo-karte-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="redundanzstufen-n-plus-eins-zwei-n-geo-karte-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="redundanzstufen-n-plus-eins-zwei-n-geo-karte-2"></span></div><h2 class="sec" id="s6"><span class="num">6</span>Lernziel-Check</h2>
+<section class="quiz" data-quiz="redundanzstufen-n-plus-eins-zwei-n-geo-transfer-a" data-correct="0" data-required-objective="kapazitaet">
+  <h3>Neuer Fall: 22 kW Last, nutzbar 8 kW je Modul. Welche Planung besteht nach einem Modulausfall beziehungsweise nach Ausfall eines vollständigen Pfads?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig: N = 3. Eine Reserve schützt gegen einen Modulausfall, zwei vollständige Pfade gegen einen Pfadausfall."><span class="m">A</span> N+1: vier Module in einer Gruppe; 2N: zwei getrennte Gruppen zu je drei Modulen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Drei Module sind erst N; 2N braucht zwei vollständige und getrennte Dreiergruppen."><span class="m">B</span> N+1: drei Module; 2N: vier beliebig zusammengesteckte Module.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die Last braucht schon drei Module als Grundkapazität."><span class="m">C</span> N+1: ein Modul; 2N: zwei Module, weil N immer eins ist.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="redundanzstufen-n-plus-eins-zwei-n-geo-transfer-b" data-correct="1" data-required-objective="standort">
+  <h3>Neue Situation: Am entfernten Standort liegen nur nächtliche Datenbackups. Die Anforderung lautet höchstens fünf Minuten Ausfallzeit und höchstens eine Minute Datenverlust. Was ist begründet?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Ein nächtlicher Datenstand und ein erst aufzubauender Dienst erfüllen diese Ziele nicht automatisch."><span class="m">A</span> Das Backup garantiert beides, weil es geografisch entfernt ist.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig: Standorttrennung allein ersetzt weder Daten- noch Zugangs- und Wiederanlaufplanung."><span class="m">B</span> Der Zweitstandort braucht einen passenden betriebsbereiten Dienst, geeignete Datensynchronisierung und geprobten Failover; die Ziele sind zu messen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Eine lokale Modulreserve schützt nicht gegen den Verlust ihrer gemeinsamen Standort-Fehlerdomäne."><span class="m">C</span> N+1 Module am Primärstandort lösen den Ausfall des gesamten Gebäudes.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s7"><span class="num">7</span>Quellen und Grenzen</h2>
+<p><a href="https://product-help.schneider-electric.com/EcoStruxure/Power-Monitoring-Expert-2024/content/4_configuring/tools/ups_power_config_utility/ups_system_redundancy_types.htm">Schneider Electric: N-, N+1- und 2N-USV-Gruppen</a>, <a href="https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/rel_planning_for_recovery_disaster_recovery.html">AWS Well-Architected: Wiederanlaufstrategien</a> und <a href="https://docs.aws.amazon.com/prescriptive-guidance/latest/aws-multi-region-fundamentals/fundamental-4.html">AWS: Betrieb zweier Regionen</a>, am 26.09.2026 gelesen. Die Zahlen und Diagramme sind eigene Lernmodelle. Sie sind weder eine elektrische Detailplanung noch eine Verfügbarkeitszusage; menschliche Fachfreigabe offen.</p>
+
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-1"><span class="d">zurück zu</span><span class="t">Server-, Client- und Hardwarekonzeption</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Server-, Client- und Hardwarekonzeption</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Welche Störung willst du überstehen?</a></li>
+<li><a href="#s2" data-t="s2">N zuerst bestimmen</a></li>
+<li><a href="#s3" data-t="s3">Fehlerdomänen mitzeichnen</a></li>
+<li><a href="#s4" data-t="s4">Georedundanz ist ein Dienstversprechen</a></li>
+<li><a href="#s5" data-t="s5">Die drei Ebenen abfragen</a></li>
+<li><a href="#s6" data-t="s6">Lernziel-Check</a></li>
+<li><a href="#s7" data-t="s7">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-1">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

@@ -1,0 +1,328 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "firewall-typen",
+    "slug": "firewall-typen",
+    "title": "Firewalltypen nach ihrer Prüftiefe auswählen",
+    "description": "Paketfilter, Stateful Inspection, Application Gateway und NGFW anhand konkreter Sicherheitsfragen unterscheiden.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-7",
+    "groupLabel": "Block N7 · Netzwerksicherheit",
+    "itemId": "ga2-7__0",
+    "week": "KW 42",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "sources": [
+      "ihk-bonn",
+      "itlf10-12-2023"
+    ],
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "prueftiefe",
+      "label": "Paketmerkmale, Verbindungszustand und Anwendungsinhalt dem passenden Firewallverfahren zuordnen"
+    },
+    {
+      "id": "schutzgrenze",
+      "label": "eine Firewallentscheidung für verschlüsselten Verkehr mit Sichtbarkeits- und Betriebsgrenzen begründen"
+    }
+  ],
+  "intro": "Eine erlaubte TCP-Verbindung kann schädliche Anwendungsdaten transportieren. Ob eine Firewall das erkennt, hängt davon ab, welche Merkmale sie tatsächlich prüft. Der Produktname allein beantwortet diese Frage nicht.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "ihk-bonn",
+        "sourceLocator": "Chunks 00211 und 00164",
+        "use": "Firewalltypen und zustandsbezogene Rückantworten",
+        "reviewStatus": "Ausschnitte geprüft; vermischte Beschreibung von Stateful und Anwendungserkennung getrennt"
+      },
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seite 184; OCR-Kontext zu Abbildung auf PDF-Seite 186",
+        "use": "Paketfilter, ALG und NGFW",
+        "reviewStatus": "Text geprüft; ursprüngliche Grafik nicht übernommen"
+      }
+    ],
+    "notes": [
+      "NGFW-Funktionen und TLS-Inspektion sind produkt- und konfigurationsabhängig. Ein TCP-ACK-Bit allein beweist keinen gültigen Verbindungszustand.",
+      "Die pauschale HTTPS-Inhaltsprüfung der Quelle wird um die erforderliche Entschlüsselung beziehungsweise Terminierung ergänzt.",
+      "Eigene Fälle und Diagramme; keine privaten Buchabbildungen veröffentlicht. Fach- und Verständlichkeitsfreigabe durch einen Menschen steht aus."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "firewall-typen-modell",
+      "type": "layers",
+      "title": "Welche Information wird geprüft?",
+      "description": "Vier Ebenen zeigen Paketkopf, Zustand, Anwendung und kombinierte Sicherheitsfunktionen.",
+      "items": [
+        {
+          "label": "Paketfilter",
+          "detail": "Adressen, Protokoll und Ports"
+        },
+        {
+          "label": "Stateful",
+          "detail": "Pakete einem Gespräch zuordnen"
+        },
+        {
+          "label": "Application Gateway",
+          "detail": "Anwendungsprotokoll vermitteln"
+        },
+        {
+          "label": "NGFW",
+          "detail": "Mehrere aktive Prüfmodule verbinden"
+        }
+      ]
+    },
+    {
+      "id": "firewall-typen-ablauf",
+      "type": "flow",
+      "title": "Aus einer Anforderung ein Verfahren wählen",
+      "description": "Die Entscheidung folgt benötigter Information, Sichtbarkeit, Konfiguration und Test.",
+      "items": [
+        {
+          "label": "Schutzziel",
+          "detail": "Welche Aussage soll die Prüfung liefern?"
+        },
+        {
+          "label": "Sichtbarkeit",
+          "detail": "Ist die benötigte Information verfügbar?"
+        },
+        {
+          "label": "Verfahren",
+          "detail": "Prüfmodul und Policy passend wählen"
+        },
+        {
+          "label": "Abnahme",
+          "detail": "Erlaubten und verbotenen Fall testen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "firewall-typen-diagnose",
+          "question": "Eine Firewall erlaubt TCP/443. Welche Aussage folgt daraus?",
+          "options": [
+            {
+              "text": "Alle HTTPS-Anfragen wurden auf schädliche Inhalte geprüft.",
+              "rationale": "Dafür braucht es Sicht auf die Anwendung und geeignete Prüfregeln.",
+              "correct": false
+            },
+            {
+              "text": "Der Benutzer ist allein durch Port 443 authentisiert.",
+              "rationale": "Ein Port ist kein Identitätsnachweis.",
+              "correct": false
+            },
+            {
+              "text": "Eine Transportverbindung ist erlaubt; ihr Anwendungsinhalt ist dadurch nicht als sicher bewertet.",
+              "rationale": "Richtig: Portfreigabe prüft zunächst den Kommunikationsweg.",
+              "correct": true
+            }
+          ],
+          "diagnostic": true
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Leitgedanke",
+          "markdown": "Frage zuerst: Welche Information muss die Entscheidung tragen – Paketkopf, Verbindung oder Anwendung?"
+        }
+      ]
+    },
+    {
+      "title": "Vier Verfahren, unterschiedliche Aussagen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein **stateless Paketfilter** prüft jedes Paket anhand von Merkmalen wie Quell-/Zieladresse, Protokoll und TCP-/UDP-Port. Er kennt dadurch noch keinen vollständigen Gesprächsverlauf.\n\n**Stateful Inspection** führt einen Zustandsspeicher. Rückverkehr kann einer zuvor erlaubten Kommunikation zugeordnet werden; für UDP verwendet das System zeitbegrenzten Pseudozustand. Ein gesetztes ACK-Bit ist allein kein solcher Nachweis.\n\nEin **Application Gateway/Proxy** vermittelt eine Anwendung und kann deren Protokoll verstehen. Es beendet und eröffnet Verbindungen in seiner Stellvertreterrolle. Eine **NGFW** bündelt häufig Stateful Filtering, Anwendungserkennung und IDS/IPS. Welche Funktion aktiv ist, muss geprüft werden.\n\nBei TLS sind Nutzdaten verschlüsselt. Ohne geeignete Terminierung oder Inspektion bleiben Inhalte verborgen; Metadaten können weiterhin sichtbar sein. Eine Entschlüsselung schafft zusätzliche Anforderungen an Vertrauen, Schlüssel und Betrieb."
+        },
+        {
+          "type": "figure",
+          "diagramId": "firewall-typen-modell",
+          "alt": "Vier Ebenen zeigen Paketkopf, Zustand, Anwendung und kombinierte Sicherheitsfunktionen.",
+          "caption": "Welche Information wird geprüft? – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Unternehmen will zuerst nur ausgehendes HTTPS erlauben und dazugehörige Antworten zurücklassen. Eine Stateful Firewall kann diese Transportanforderung erfüllen. Zweitens soll ein bestimmter HTTP-Upload untersagt werden. Das verlangt Anwendungssicht: Bei verschlüsseltem HTTPS reicht die erste Regel nicht. Ein kontrollierter Anwendungsproxy oder eine passende Prüfung am Server muss Inhalt und Regel zusammenbringen. Auch diese Kontrolle beweist nicht, dass jeder verbleibende Upload harmlos ist."
+        },
+        {
+          "type": "figure",
+          "diagramId": "firewall-typen-ablauf",
+          "alt": "Die Entscheidung folgt benötigter Information, Sichtbarkeit, Konfiguration und Test.",
+          "caption": "Aus einer Anforderung ein Verfahren wählen – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Selbst entscheiden",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "firewall-typen-uebung",
+          "question": "Eine unbekannte eingehende Verbindung trägt ACK. Reicht das für die Freigabe durch Stateful Inspection?",
+          "options": [
+            {
+              "text": "Nein, das Paket muss zu einem gültigen und erlaubten Zustand passen.",
+              "rationale": "Richtig: Die Zustandstabelle ist entscheidend.",
+              "correct": true
+            },
+            {
+              "text": "Ja, ACK kennzeichnet jede erlaubte Rückantwort.",
+              "rationale": "Ein Absender kann ein Flag setzen; das beweist keinen Zustand.",
+              "correct": false
+            },
+            {
+              "text": "Ja, wenn die Quelladresse öffentlich ist.",
+              "rationale": "Öffentliche Adressierung belegt keine Legitimität.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "sequence",
+          "id": "firewall-typen-reihenfolge",
+          "title": "Eine Schutzanforderung prüfen",
+          "prompt": "Ordne die vier Arbeitsschritte.",
+          "steps": [
+            {
+              "id": "s2",
+              "label": "Geeignetes Verfahren konfigurieren"
+            },
+            {
+              "id": "s0",
+              "label": "Benötigte Sicherheitsentscheidung benennen"
+            },
+            {
+              "id": "s3",
+              "label": "Wirksamkeit mit Positiv- und Negativfall belegen"
+            },
+            {
+              "id": "s1",
+              "label": "Sichtbare Paket- und Anwendungsdaten feststellen"
+            }
+          ],
+          "expected": [
+            "s0",
+            "s1",
+            "s2",
+            "s3"
+          ],
+          "correctFeedback": "Richtig: Erst Ziel und Sichtbarkeit, dann Konfiguration und Test.",
+          "wrongFeedback": "Gehe vom belegten Bedarf über die Entscheidung zum Nachweis. Prüfe die erste abweichende Position."
+        }
+      ]
+    },
+    {
+      "title": "Aus dem Gedächtnis erklären",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "firewall-typen-karte-0",
+              "label": "Abruf 1",
+              "front": "Was ergänzt Stateful Inspection?",
+              "back": "Gesprächszustand zur Bewertung einzelner Pakete."
+            },
+            {
+              "id": "firewall-typen-karte-1",
+              "label": "Abruf 2",
+              "front": "Warum ist Port 443 kein Inhaltsurteil?",
+              "back": "Er bezeichnet einen Transportendpunkt; verschlüsselte Nutzdaten sind dadurch nicht geprüft."
+            },
+            {
+              "id": "firewall-typen-karte-2",
+              "label": "Abruf 3",
+              "front": "Was bedeutet NGFW für die Abnahme?",
+              "back": "Konkrete aktive Funktionen testen; der Produktname garantiert keinen Schutzumfang."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "firewall-typen-abruf",
+          "title": "Deine Begründung",
+          "prompt": "Begründe für HTTPS-Rückverkehr und Uploadfilter zwei unterschiedliche Prüfanforderungen. Nenne jeweils eine Grenze.",
+          "label": "Eigene Erklärung",
+          "placeholder": "Meine Entscheidung und ihre Grenze …",
+          "minLength": 100,
+          "model": "Stateful Filtering ordnet Rückverkehr einer erlaubten Kommunikation zu. Ein Uploadfilter benötigt Sicht auf die Anwendung, bei HTTPS also eine passende Terminierung oder Inspektion. Beide Kontrollen brauchen konkrete Regeln und negative Tests; keine garantiert Schadsoftwarefreiheit."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "firewall-typen-transfer-a",
+          "question": "Eine Filiale benötigt zulässige Verbindungen samt zugehörigen Antworten, aber keine Inhaltsanalyse. Welche Ergänzung ist gegenüber einem stateless Filter zentral?",
+          "options": [
+            {
+              "text": "Eine Liste aller Webpfade.",
+              "rationale": "Die Anforderung verlangt keine Pfadprüfung.",
+              "correct": false
+            },
+            {
+              "text": "Ein Zustandsspeicher für erlaubte Kommunikation.",
+              "rationale": "Richtig: Er liefert den Gesprächskontext.",
+              "correct": true
+            },
+            {
+              "text": "Ein NAT-Pool ohne Filterregeln.",
+              "rationale": "Adressübersetzung ersetzt keine Zustands- und Zugriffsentscheidung.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "prueftiefe"
+        },
+        {
+          "type": "quiz",
+          "id": "firewall-typen-transfer-b",
+          "question": "Ein verschlüsselter Upload soll auf konkrete Inhalte geprüft werden. Welche Antwort ist tragfähig?",
+          "options": [
+            {
+              "text": "TCP/443 zulassen und dies als Inhaltsprüfung dokumentieren.",
+              "rationale": "Port und Inhalt sind unterschiedliche Merkmale.",
+              "correct": false
+            },
+            {
+              "text": "Anwendungssicht durch geeignete Terminierung/Inspektion herstellen und Funktion samt Grenzen testen.",
+              "rationale": "Richtig: Ohne Sicht auf die Nutzdaten fehlt die Entscheidungsgrundlage.",
+              "correct": true
+            },
+            {
+              "text": "Nur das ACK-Flag prüfen.",
+              "rationale": "Das enthält keinen Uploadinhalt.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "schutzgrenze"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Buchgrundlage: IHK Bonn, Chunks 00211/00164; ITLF10–12, PDF-Seite 184 und OCR-Kontext zu Seite 186. Die Beispiele trennen Transportfreigabe und Anwendungsprüfung ausdrücklich. Ergänzender Grundlagenabgleich: [NIST SP 800-41 Rev. 1](https://csrc.nist.gov/pubs/sp/800/41/r1/final)."
+        }
+      ]
+    }
+  ]
+}

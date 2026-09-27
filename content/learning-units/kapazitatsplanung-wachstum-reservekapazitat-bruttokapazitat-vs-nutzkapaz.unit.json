@@ -1,0 +1,385 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "kapazitatsplanung-wachstum-reservekapazitat-bruttokapazitat-vs-nutzkapaz",
+    "slug": "kapazitatsplanung-wachstum-reservekapazitat-bruttokapazitat-vs-nutzkapaz",
+    "title": "Kapazitätsplanung: Wachstum, Reserve und TB/TiB",
+    "description": "Vom Datenbestand zur begründeten Speicherkapazität rechnen, ohne Einheiten und Reserve zu vermischen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-3",
+    "groupLabel": "Speicherlösungen",
+    "itemId": "ga1-3__11",
+    "week": "KW 37",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": [
+      "capacity-nist-binary",
+      "capacity-ceph-reserve"
+    ],
+    "contentRevision": "2026-09-18.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "kapazitaet",
+      "label": "Wachstum und freie Reserve berechnen"
+    },
+    {
+      "id": "einheiten",
+      "label": "Rohkapazität, Nutzkapazität und Einheiten unterscheiden"
+    }
+  ],
+  "intro": "Vom Datenbestand zur begründeten Speicherkapazität rechnen, ohne Einheiten und Reserve zu vermischen. Du planst eigene Papierfälle, keine reale Speicheranlage.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "capacity-nist-binary",
+        "sourceLocator": "Prefixes for binary multiples; Examples and comparisons",
+        "use": "Binäre und dezimale Einheiten",
+        "reviewStatus": "Am 18.09.2026 gelesen"
+      },
+      {
+        "sourceId": "capacity-ceph-reserve",
+        "sourceLocator": "Storage Capacity",
+        "use": "Reserve für Betrieb und Ausfälle, keine Default-Empfehlung",
+        "reviewStatus": "Am 18.09.2026 gelesen"
+      }
+    ],
+    "notes": [
+      "Eigene Aufgaben und Grafiken; menschliche Fachfreigabe offen.",
+      "Batch ga1-3-011-011: gekürzte RAID-Tabelle nur Gruppenkontext; CPU-/Mikrocontroller-Treffer und Grafik ausgeschlossen.",
+      "20 Prozent Reserve sind eine Aufgabenannahme. Technische Abzüge, Snapshots, Spares und separate Backups im Rechenmodell ausgeschlossen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "stufen",
+      "title": "Nicht jede Kapazität ist dieselbe",
+      "type": "flow",
+      "items": [
+        {
+          "label": "Rohkapazität",
+          "detail": "6 × 2 TB = 12 TB"
+        },
+        {
+          "label": "Nach RAID 6",
+          "detail": "4 × 2 TB = 8 TB"
+        },
+        {
+          "label": "Einheit wechseln",
+          "detail": "8 TB ≈ 7,276 TiB"
+        }
+      ]
+    },
+    {
+      "id": "reserve",
+      "title": "20 Prozent wovon?",
+      "type": "comparison",
+      "items": [
+        {
+          "label": "Datenbedarf",
+          "detail": "8 TiB = 80 Prozent"
+        },
+        {
+          "label": "Freie Reserve",
+          "detail": "2 TiB = 20 Prozent"
+        },
+        {
+          "label": "Gesamtkapazität",
+          "detail": "10 TiB = 100 Prozent"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "kapazitatsplanung-wachstum-reservekapazitat-bruttokapazitat-vs-nutzkapaz-diagnose",
+          "question": "Eine Platte hat 2 TB. Ein Werkzeug zeigt ungefähr 1,819 TiB. Was folgt allein daraus?",
+          "options": [
+            {
+              "text": "Etwa neun Prozent der Daten sind verschwunden.",
+              "rationale": "Eine andere Maßeinheit ist kein Datenverlust.",
+              "correct": false
+            },
+            {
+              "text": "Die gleiche Bytezahl kann in beiden Einheiten dargestellt sein.",
+              "rationale": "Richtig: Zuerst Einheit und Bytezahl vergleichen.",
+              "correct": true
+            },
+            {
+              "text": "RAID-Parität wurde abgezogen.",
+              "rationale": "Eine Einheitenumrechnung belegt keine RAID-Konfiguration.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Drei Größen auseinanderhalten",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**Roh- oder Bruttokapazität** ist hier die Summe der aktiven Datenträgerkapazitäten. **Nutzkapazität nach Redundanz** bleibt nach dem Schutzverfahren übrig. Weitere technische Belegungen gehen im realen System zusätzlich ab. Der **geplante Datenbestand** darf den verbleibenden Platz nicht vollständig ausfüllen, wenn freie Reserve gefordert ist.\n\nEigener Fall: sechs gleich große aktive Platten mit je 2 TB, RAID 6, kein Hot-Spare. Zwei Plattenäquivalente entfallen auf verteilte Parität. Es bleiben 8 TB vor Dateisystem und Metadaten. Parität liegt nicht einfach auf zwei fest reservierten Paritätsplatten."
+        },
+        {
+          "type": "figure",
+          "diagramId": "stufen",
+          "alt": "12 TB roh ergeben im idealen RAID-6-Modell 8 TB, ungefähr 7,276 TiB.",
+          "caption": "Eigene Modellgrafik; Annahmen im Text beachten."
+        }
+      ]
+    },
+    {
+      "title": "TB und TiB: gleicher Inhalt, anderer Maßstab",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein TB sind 10¹² Byte, ein TiB sind 2⁴⁰ Byte. Rechne den TB-Wert zunächst in Byte um und teile durch die Bytezahl eines TiB. Umgekehrt entspricht ein TiB ungefähr 1,100 TB. Die Umrechnung verbraucht keinen Speicher."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Acht mal zehn hoch zwölf geteilt durch zwei hoch vierzig ergibt ungefähr 7,276 TiB.",
+          "mathml": "<math display=\"block\"><mrow><mfrac><mrow><mn>8</mn><mo>·</mo><msup><mn>10</mn><mn>12</mn></msup></mrow><msup><mn>2</mn><mn>40</mn></msup></mfrac><mo>≈</mo><mn>7,276</mn><mtext> TiB</mtext></mrow></math>",
+          "legend": [
+            "Zähler: Bytezahl von 8 TB; Nenner: Byte je TiB. Erst am Ende runden."
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "8 TB vorhanden und 8 TiB benötigt passt nicht: Schon vor technischen Abzügen fehlen rund 0,724 TiB. Vergleiche Bedarf und Angebot in derselben Einheit."
+        }
+      ]
+    },
+    {
+      "title": "Wachstum: jedes Jahr eine neue Basis",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Heute sind 4 TiB belegt. Für drei Jahre werden jeweils 20 Prozent Wachstum gegenüber dem Vorjahr angenommen. Keine Löschung oder Kompression ist eingerechnet. Das ist ein Szenario, keine Vorhersagegarantie."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Zielbestand gleich Anfangsbestand mal eins plus Wachstumsrate hoch Jahre.",
+          "mathml": "<math display=\"block\"><mrow><msub><mi>D</mi><mi>n</mi></msub><mo>=</mo><msub><mi>D</mi><mn>0</mn></msub><mo>·</mo><msup><mrow><mo>(</mo><mn>1</mn><mo>+</mo><mi>g</mi><mo>)</mo></mrow><mi>n</mi></msup></mrow></math>",
+          "legend": [
+            "D₀ = 4 TiB; g = 0,20 pro Jahr; n = 3. Ergebnis: 4 · 1,2³ = 6,912 TiB."
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "```text\nHeute:    4,000 TiB\nJahr 1:   4,800 TiB\nJahr 2:   5,760 TiB\nJahr 3:   6,912 TiB\n```\n\nDreimal 20 Prozent des Anfangswerts hinzuzuzählen ergäbe 6,4 TiB: ein anderes, lineares Modell. Bei konstantem Zuwachs von 0,8 TiB pro Jahr wäre dieses Vorgehen passend. Prüfe die Formulierung der Aufgabe."
+        }
+      ]
+    },
+    {
+      "title": "Freie Reserve richtig herum rechnen",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "reserve",
+          "alt": "Von 10 TiB sind 8 TiB belegt und 2 TiB frei: 20 Prozent freie Reserve.",
+          "caption": "Eigene Modellgrafik; Annahmen im Text beachten."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Ein zweiter Fall fordert 8 TiB Datenplatz und **20 Prozent freie Reserve bezogen auf die gesamte bereitgestellte Nutzkapazität**. Daten belegen höchstens 80 Prozent. Teile durch 0,8, statt mit 1,2 zu multiplizieren."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Kapazität gleich Datenbedarf durch eins minus Reserveanteil. Acht durch 0,8 ergibt zehn.",
+          "mathml": "<math display=\"block\"><mrow><mi>C</mi><mo>=</mo><mfrac><mi>D</mi><mrow><mn>1</mn><mo>−</mo><mi>r</mi></mrow></mfrac><mo>=</mo><mfrac><mn>8</mn><mn>0,8</mn></mfrac><mo>=</mo><mn>10</mn></mrow></math>",
+          "legend": [
+            "C in TiB; D = 8 TiB; r = 0,20. Kontrolle: 2 von 10 TiB frei = 20 Prozent."
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "Für den Wachstumsfall ergeben 6,912 TiB geteilt durch 0,8 **8,64 TiB** benötigte Nutzkapazität. Das RAID mit etwa 7,276 TiB reicht nicht, selbst ohne Dateisystemabzüge.\n\nReserve ist weder Redundanz noch Backup. Freier Betriebsplatz kann auch für Wiederaufbau und Umverteilung nötig sein. Seine Größe hängt vom System und Ausfallszenario ab. 20 Prozent sind hier ausschließlich eine Aufgabenannahme."
+        },
+        {
+          "type": "numeric",
+          "id": "kapazitatsplanung-wachstum-reservekapazitat-bruttokapazitat-vs-nutzkapaz-zahl",
+          "title": "Jetzt du: freie Reserve",
+          "prompt": "Ein Zielbestand beträgt 12 TiB. 25 Prozent der bereitgestellten Nutzkapazität sollen frei bleiben. Wie viele TiB sind mindestens nötig? Weitere Abzüge sind ausgeschlossen.",
+          "label": "Nutzkapazität in TiB",
+          "expected": 16,
+          "tolerance": 0,
+          "correctFeedback": "12 / 0,75 = 16 TiB. Vier von 16 TiB bleiben frei: 25 Prozent.",
+          "wrongFeedback": "Die Daten entsprechen nur 75 Prozent der gesuchten Kapazität.",
+          "misconceptions": [
+            {
+              "value": 15,
+              "feedback": "12 mal 1,25 lässt nur 3 von 15 TiB frei: 20 statt 25 Prozent."
+            },
+            {
+              "value": 12,
+              "feedback": "Dann bleibt keine freie Reserve."
+            }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "kapazitatsplanung-wachstum-reservekapazitat-bruttokapazitat-vs-nutzkapaz-uebung",
+          "question": "Was bedeutet die 20-Prozent-Reserve im Modell?",
+          "options": [
+            {
+              "text": "20 Prozent zum Datenbestand addieren.",
+              "rationale": "Der freie Anteil an der Gesamtkapazität wäre dann kleiner.",
+              "correct": false
+            },
+            {
+              "text": "Daten dürfen 80 Prozent der Nutzkapazität belegen.",
+              "rationale": "Richtig: Daraus folgt die Division durch 0,8.",
+              "correct": true
+            },
+            {
+              "text": "Reserve ersetzt RAID-Parität.",
+              "rationale": "Freier Platz und Schutzdaten erfüllen verschiedene Aufgaben.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Aus der Modellzahl wird ein Plan",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ermittle zusätzlich Dateisystem- und Metadatenbedarf, Snapshot-Aufbewahrung, Replikate, Hot-Spares und getrennte Backups. Zähle bereits enthaltene Schutz- oder Reserveanteile nicht doppelt. Benenne immer die Kapazitätsstufe.\n\nVergleiche Wachstum mit Messwerten, rechne größere und kleinere Szenarien und berücksichtige Erweiterungsvorlauf. Prüfe auch Latenz, Durchsatz und Wiederaufbau: Genug TiB beweisen keine ausreichende Leistung. Runde erst am Ende auf verfügbare Kapazitätsstufen auf und prüfe die Auswahl erneut."
+        }
+      ]
+    },
+    {
+      "title": "Selbst ordnen und erklären",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "kapazitatsplanung-wachstum-reservekapazitat-bruttokapazitat-vs-nutzkapaz-reihenfolge",
+          "title": "Ablauf ordnen",
+          "prompt": "Ordne die Kapazitätsplanung.",
+          "steps": [
+            {
+              "id": "abschluss",
+              "label": "Kapazitätsstufe auswählen und Annahmen mit Messwerten prüfen"
+            },
+            {
+              "id": "start",
+              "label": "Datenbestand, Einheit, Zeitraum und Wachstumsmodell festlegen"
+            },
+            {
+              "id": "pruefen",
+              "label": "Zielbestand, freie Reserve und Schutzbedarf getrennt berechnen"
+            }
+          ],
+          "expected": [
+            "start",
+            "pruefen",
+            "abschluss"
+          ],
+          "correctFeedback": "Richtig: Voraussetzungen, Prüfung und Abschluss stehen in der vorgesehenen Reihenfolge.",
+          "wrongFeedback": "Prüfe die Voraussetzungen: Der letzte Schritt darf die vorherige Prüfung nicht überspringen."
+        },
+        {
+          "type": "recall",
+          "id": "kapazitatsplanung-wachstum-reservekapazitat-bruttokapazitat-vs-nutzkapaz-begruendung",
+          "title": "Aus dem Gedächtnis erklären",
+          "prompt": "„8 TiB Datenplatz und 20 Prozent freie Reserve: 9,6 TiB reichen.“ Erkläre den Fehler und eine Kontrollrechnung.",
+          "label": "Deine Erklärung",
+          "minLength": 70,
+          "model": "Die 20 Prozent beziehen sich auf die gesamte bereitgestellte Nutzkapazität. Acht TiB entsprechen 80 Prozent; acht geteilt durch 0,8 ergibt zehn TiB. Zwei von zehn TiB bleiben frei. Bei 9,6 TiB wären nur 1,6 TiB beziehungsweise rund 16,7 Prozent frei. Redundanz und technische Abzüge sind getrennt zu berücksichtigen."
+        },
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "kapazitatsplanung-wachstum-reservekapazitat-bruttokapazitat-vs-nutzkapaz-karte-0",
+              "label": "Abruf 1",
+              "front": "Geht beim Umrechnen von TB in TiB Speicher verloren?",
+              "back": "Nein. Dieselbe Bytezahl wird mit unterschiedlich großen Einheiten angegeben."
+            },
+            {
+              "id": "kapazitatsplanung-wachstum-reservekapazitat-bruttokapazitat-vs-nutzkapaz-karte-1",
+              "label": "Abruf 2",
+              "front": "20 Prozent frei: Warum durch 0,8 teilen?",
+              "back": "Die Daten dürfen nur 80 Prozent der bereitgestellten Nutzkapazität belegen."
+            },
+            {
+              "id": "kapazitatsplanung-wachstum-reservekapazitat-bruttokapazitat-vs-nutzkapaz-karte-2",
+              "label": "Abruf 3",
+              "front": "Warum reicht Rohkapazität nicht?",
+              "back": "Redundanz, technische Abzüge und Reserve verringern den Platz für Nutzdaten."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "kapazitatsplanung-wachstum-reservekapazitat-bruttokapazitat-vs-nutzkapaz-transfer-a",
+          "question": "Neuer Fall: 5 TiB heute, 20 Prozent Wachstum pro Jahr für zwei Jahre. Danach sollen 20 Prozent der Nutzkapazität frei bleiben. Mindestkapazität?",
+          "options": [
+            {
+              "text": "8,4 TiB.",
+              "rationale": "Lineares Wachstum und anschließendes Multiplizieren mit 1,2 passen nicht zu den Annahmen.",
+              "correct": false
+            },
+            {
+              "text": "8,64 TiB.",
+              "rationale": "7,2 mal 1,2 lässt nur rund 16,7 Prozent frei.",
+              "correct": false
+            },
+            {
+              "text": "9 TiB.",
+              "rationale": "5 mal 1,2² = 7,2 TiB; durch 0,8 = 9 TiB.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "kapazitaet"
+        },
+        {
+          "type": "quiz",
+          "id": "kapazitatsplanung-wachstum-reservekapazitat-bruttokapazitat-vs-nutzkapaz-transfer-b",
+          "question": "Ein Angebot nennt 12 TB Rohkapazität. Zielbestand: 8 TiB. Was ist begründet?",
+          "options": [
+            {
+              "text": "Erst Redundanz, technische Abzüge, Einheit und Reserve klären.",
+              "rationale": "Richtig: Bedarf und Angebot müssen dieselbe Kapazitätsstufe beschreiben.",
+              "correct": true
+            },
+            {
+              "text": "12 ist größer als 8; es reicht sicher.",
+              "rationale": "Einheiten und Stufen sind unterschiedlich.",
+              "correct": false
+            },
+            {
+              "text": "12 TB entsprechen 12 TiB nach RAID.",
+              "rationale": "Einheit und Schutzbedarf dürfen nicht ignoriert werden.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "einheiten"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "[NIST: Binäre Präfixe](https://physics.nist.gov/cuu/Units/binary.html) erläutert die Einheiten. [Ceph Squid: Storage Capacity](https://docs.ceph.com/en/squid/rados/configuration/mon-config-ref/#storage-capacity) behandelt freien Betriebsplatz bei Ausfällen. Abschnitte am 18.09.2026 gelesen; keine Produktdefaults verallgemeinert. Zahlen und Grafiken sind eigene Modelle. Unpassende Buchtreffer ausgeschlossen. Menschliche Fachfreigabe offen."
+        }
+      ]
+    }
+  ]
+}

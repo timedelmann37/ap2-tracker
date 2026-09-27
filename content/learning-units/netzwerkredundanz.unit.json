@@ -1,0 +1,352 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "netzwerkredundanz",
+    "slug": "netzwerkredundanz",
+    "title": "Netzwerkredundanz bis zum Ausfallfall planen",
+    "description": "Doppelte Uplinks, Ringstrukturen und N+1 nach verbleibender Kapazität und gemeinsamen Fehlern beurteilen.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-8",
+    "groupLabel": "Block N8 · Verfügbarkeit, Monitoring und Fehlersuche",
+    "itemId": "ga2-8__0",
+    "week": "KW 44",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "sources": [
+      "europa-integratoren-2026"
+    ],
+    "contentRevision": "2026-09-13.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "ausfallwege",
+      "label": "Redundanzkonzepte nach Fehlerdomäne und Umschaltmechanismus beurteilen"
+    },
+    {
+      "id": "restkapazitaet",
+      "label": "die notwendige Modulanzahl für einen vorgegebenen N+1-Kapazitätsfall bestimmen"
+    }
+  ],
+  "intro": "Zwei Leitungen sind nur dann eine brauchbare Reserve, wenn nach einem Ausfall noch ein funktionierender Weg mit ausreichender Kapazität bleibt.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Markdown-Chunks 00356, 00873 und 01079",
+        "use": "Redundante Netzteile, Uplinks und schleifenfreie Netzstrukturen",
+        "reviewStatus": "Relevante Auszüge geprüft; doppelte Textstellen zusammengefasst"
+      }
+    ],
+    "notes": [
+      "Eigene N+1-Zahlen unter ausdrücklich idealisierter Kapazitätsannahme.",
+      "LACP nicht ohne passende Multi-Chassis-Unterstützung über unabhängige Gegenstellen verallgemeinert.",
+      "Eigene Beispiele und Grafiken. Private Buchabbildungen werden nicht veröffentlicht. Menschliche Fachfreigabe steht aus."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "redundante-wege",
+      "type": "topology",
+      "title": "Zwei Wege – gemeinsame Endpunkte",
+      "description": "Der Zugang erreicht zwei Core-Switches über unterschiedliche Wege. Zugang und Ziel bleiben in diesem vereinfachten Ausschnitt gemeinsame Punkte.",
+      "height": 460,
+      "nodes": [
+        {
+          "id": "start",
+          "label": "Zugang",
+          "detail": "gemeinsamer Punkt",
+          "x": 130,
+          "y": 250,
+          "kind": "switch"
+        },
+        {
+          "id": "a",
+          "label": "Core A",
+          "detail": "Pfad A",
+          "x": 460,
+          "y": 150,
+          "kind": "switch"
+        },
+        {
+          "id": "b",
+          "label": "Core B",
+          "detail": "Pfad B",
+          "x": 460,
+          "y": 350,
+          "kind": "switch"
+        },
+        {
+          "id": "target",
+          "label": "Dienstziel",
+          "detail": "gemeinsamer Punkt",
+          "x": 790,
+          "y": 250,
+          "kind": "server"
+        }
+      ],
+      "edges": [
+        {
+          "from": "start",
+          "to": "a",
+          "label": "Weg A",
+          "kind": "allowed"
+        },
+        {
+          "from": "start",
+          "to": "b",
+          "label": "Weg B",
+          "kind": "allowed"
+        },
+        {
+          "from": "a",
+          "to": "target",
+          "label": "Pfad A",
+          "kind": "allowed"
+        },
+        {
+          "from": "b",
+          "to": "target",
+          "label": "Pfad B",
+          "kind": "allowed"
+        }
+      ]
+    },
+    {
+      "id": "ablauf",
+      "type": "flow",
+      "title": "Den Ausfallfall nachweisen",
+      "description": "Bedarf und Fehler werden festgelegt; Ersatzweg und Restlast werden berechnet und anschließend kontrolliert getestet.",
+      "items": [
+        {
+          "label": "Bedarf",
+          "detail": "Welche Leistung bleibt nötig?"
+        },
+        {
+          "label": "Fehler",
+          "detail": "Eine Fehlerdomäne entfernen"
+        },
+        {
+          "label": "Restweg",
+          "detail": "Pfad und Kapazität prüfen"
+        },
+        {
+          "label": "Test",
+          "detail": "Umschaltung und Dienst prüfen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "netzwerkredundanz-diagnose",
+          "question": "Zwei Glasfasern liegen im selben Kabelkanal. Gegen welchen Fehler helfen sie nicht unabhängig?",
+          "options": [
+            {
+              "text": "Gegen jeden Defekt eines einzelnen Transceivers.",
+              "rationale": "Ein einzelner Transceiver kann durch den anderen Pfad ersetzt werden, wenn das Design passt.",
+              "correct": false
+            },
+            {
+              "text": "Gegen keinerlei Fehler, weil zwei Fasern nie redundant sind.",
+              "rationale": "Sie können einzelne Leitungsfehler abfangen; das Problem ist die gemeinsame Abhängigkeit.",
+              "correct": false
+            },
+            {
+              "text": "Gegen die gemeinsame Zerstörung dieses Kabelkanals.",
+              "rationale": "Richtig: Beide Wege teilen diese Fehlerdomäne.",
+              "correct": true
+            }
+          ],
+          "diagnostic": true
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Leitgedanke",
+          "markdown": "Redundanz braucht einen unabhängigen Ersatzweg, ein funktionierendes Umschaltverfahren und genügend Restkapazität."
+        }
+      ]
+    },
+    {
+      "title": "Was bleibt nach dem ersten Fehler?",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**Doppelte Uplinks** können einen Leitungsfehler abfangen. Liegen beide im selben Kabelkanal, bleibt dessen Beschädigung ein gemeinsamer Fehler. Zwei Ports am selben Switch schützen nicht gegen dessen kompletten Ausfall. Zwei Switches an derselben Stromversorgung teilen weiterhin diese Abhängigkeit.\n\nEin Layer-2-Ring darf nicht unkontrolliert als Schleife weiterleiten. Er braucht ein passendes Verfahren wie RSTP oder ein geeignetes Ringprotokoll. Ein Link-Aggregat kann mehrere Leitungen bündeln; normale LACP-Bündel über zwei unabhängige Switches benötigen eine ausdrücklich unterstützte gemeinsame logische Gegenstelle, etwa eine passende Multi-Chassis-Lösung. Nicht jeder doppelte Anschluss ist automatisch ein gültiges Aggregat.\n\n**N+1** bedeutet: N Einheiten reichen für die notwendige Leistung, eine weitere steht für den vorgesehenen Einzelausfall zur Verfügung. **2N** stellt zwei vollständige Kapazitätssätze bereit. Beide Aussagen betreffen ein definiertes Ausfallmodell. Gemeinsame Softwarefehler, Wartung, Trassen oder Steuerkomponenten können den Nutzen begrenzen. Redundanz ersetzt außerdem kein Backup gegen gelöschte oder beschädigte Daten."
+        },
+        {
+          "type": "figure",
+          "diagramId": "redundante-wege",
+          "alt": "Der Zugang erreicht zwei Core-Switches über unterschiedliche Wege. Zugang und Ziel bleiben in diesem vereinfachten Ausschnitt gemeinsame Punkte.",
+          "caption": "Zwei Wege – gemeinsame Endpunkte – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Verteiler hat zwei 10-Gbit/s-Uplinks. Die notwendige aggregierte Last beträgt 12 Gbit/s. Im Normalbetrieb kann die Gesamtkapazität ausreichen, soweit die Verteilung passt. Fällt ein Uplink aus, bleiben 10 Gbit/s: Der Weg existiert noch, aber die zugesagte Last passt nicht mehr. Ein einzelner Datenstrom kann zudem durch das Hashing schon vorher auf einen Mitgliedslink begrenzt sein.\n\nFür einen eigenen N+1-Modellfall sind 18 Gbit/s gleichmäßig verteilbare Verarbeitungslast nötig. Jedes Modul trägt 10 Gbit/s. Zwei Module sind für den Bedarf erforderlich; ein zusätzliches ergibt drei. Nach Ausfall eines Moduls bleiben 20 Gbit/s. Das Ergebnis gilt nur für das vereinfachte Kapazitätsmodell mit geeigneter Lastverteilung – nicht als Zusage für beliebige Switchportzahlen oder einzelne Flows."
+        },
+        {
+          "type": "figure",
+          "diagramId": "ablauf",
+          "alt": "Bedarf und Fehler werden festgelegt; Ersatzweg und Restlast werden berechnet und anschließend kontrolliert getestet.",
+          "caption": "Den Ausfallfall nachweisen – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Selbst entscheiden",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "netzwerkredundanz-uebung",
+          "question": "Ein LACP-Aggregat hat zwei 10-Gbit/s-Links und muss 12 Gbit/s nach einem Linkausfall tragen. Reicht es?",
+          "options": [
+            {
+              "text": "Nein. Nach einem Linkausfall bleiben nur 10 Gbit/s.",
+              "rationale": "Richtig: Verfügbarkeit des Weges und ausreichende Kapazität sind getrennt.",
+              "correct": true
+            },
+            {
+              "text": "Ja. Die ursprüngliche Summe bleibt nach Ausfall erhalten.",
+              "rationale": "Ein ausgefallener Link trägt keine Kapazität mehr.",
+              "correct": false
+            },
+            {
+              "text": "Ja. LACP verdoppelt die Datenrate des verbleibenden Links.",
+              "rationale": "LACP verändert dessen physische Datenrate nicht.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "sequence",
+          "id": "netzwerkredundanz-reihenfolge",
+          "title": "Redundanz begründen",
+          "prompt": "Ordne die Planung vom Bedarf zum Nachweis.",
+          "steps": [
+            {
+              "id": "s2",
+              "label": "Ersatzpfad mit Restkapazität und Umschaltverfahren planen"
+            },
+            {
+              "id": "s0",
+              "label": "Erforderliche Leistung und tolerierte Ausfallzeit bestimmen"
+            },
+            {
+              "id": "s3",
+              "label": "Kontrollierten Ausfall und Wiederanlauf des Dienstes testen"
+            },
+            {
+              "id": "s1",
+              "label": "Gemeinsame Fehlerdomänen und Einzelausfall festlegen"
+            }
+          ],
+          "expected": [
+            "s0",
+            "s1",
+            "s2",
+            "s3"
+          ],
+          "correctFeedback": "Richtig: Die zusätzliche Hardware folgt dem Ausfallmodell, nicht umgekehrt.",
+          "wrongFeedback": "Prüfe die erste abweichende Position. Erst Grundlagen klären, dann entscheiden und nachweisen."
+        }
+      ]
+    },
+    {
+      "title": "Aus dem Gedächtnis erklären",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "netzwerkredundanz-karte-0",
+              "label": "Abruf 1",
+              "front": "Wofür steht N+1?",
+              "back": "N Einheiten decken den Bedarf, eine weitere deckt den vorgesehenen Einzelausfall ab."
+            },
+            {
+              "id": "netzwerkredundanz-karte-1",
+              "label": "Abruf 2",
+              "front": "Warum braucht ein L2-Ring ein Verfahren?",
+              "back": "Damit redundante Leitungen keine unkontrollierte Weiterleitungsschleife bilden."
+            },
+            {
+              "id": "netzwerkredundanz-karte-2",
+              "label": "Abruf 3",
+              "front": "Redundanz oder Backup?",
+              "back": "Redundanz hält Dienste bei bestimmten Ausfällen verfügbar; Backup ermöglicht die Wiederherstellung früherer Datenstände."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "netzwerkredundanz-abruf",
+          "title": "Deine Begründung",
+          "prompt": "Begründe, warum zwei Switches im selben Rack noch keine vollständige Ausfallsicherheit ergeben.",
+          "label": "Eigene Erklärung",
+          "placeholder": "Meine Begründung und ihre Grenzen …",
+          "minLength": 80,
+          "model": "Die Switches können gemeinsame Stromversorgung, Kühlung, Kabeltrasse oder Konfiguration teilen. Ich benenne den zu tolerierenden Ausfall und prüfe danach getrennte Versorgungs- und Datenwege sowie Umschaltung und Restkapazität."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "netzwerkredundanz-transfer-a",
+          "question": "Welche Planung ist für zwei redundante Switches am belastbarsten?",
+          "options": [
+            {
+              "text": "Zwei Chassis zählen; gemeinsame Stromversorgung kann dann entfallen.",
+              "rationale": "Die gemeinsame Versorgung kann beide Chassis gleichzeitig stilllegen.",
+              "correct": false
+            },
+            {
+              "text": "Getrennte Versorgungs- und Datenwege, unterstütztes Umschaltverfahren und ein Diensttest nach Einzelausfall.",
+              "rationale": "Richtig: Abhängigkeit, Umschaltung und Wirkung werden gemeinsam geprüft.",
+              "correct": true
+            },
+            {
+              "text": "Ein Ring ohne Schleifenschutz, damit alle Frames immer beide Wege nutzen.",
+              "rationale": "Ungesteuerte Layer-2-Schleifen können den Dienst selbst ausfallen lassen.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "ausfallwege"
+        },
+        {
+          "type": "numeric",
+          "id": "netzwerkredundanz-transfer-b",
+          "requiredObjective": "restkapazitaet",
+          "prompt": "Vereinfachter N+1-Fall: 25 Gbit/s Last lassen sich geeignet auf gleich starke Module verteilen. Ein Modul leistet 10 Gbit/s. Wie viele Module brauchst du insgesamt, damit nach dem Ausfall eines Moduls die notwendige Gesamtkapazität bleibt? Ganze Modulanzahl eingeben.",
+          "expected": 4,
+          "tolerance": 0,
+          "label": "Module insgesamt",
+          "correctFeedback": "Vier: Für 25 Gbit/s sind drei Module nötig, plus eines für den Ausfall. Danach bleiben drei mit zusammen 30 Gbit/s.",
+          "wrongFeedback": "Drei Module reichen nur ohne Ausfall: Danach blieben 20 Gbit/s. Runde den Bedarf in Modulen nach oben und ergänze ein Reservemodul."
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Buchgrundlage: EUROPA Prüfungsvorbereitung, Chunks 00356/00873 und 01079. N+1-Beispiele sind eigene vereinfachte Kapazitätsfälle. Konkrete Aggregations- und Ringverfahren müssen zur eingesetzten Plattform passen."
+        }
+      ]
+    }
+  ]
+}

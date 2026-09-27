@@ -1,11 +1,13 @@
 import { createReadStream } from 'node:fs';
-import { stat } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const distRoot = path.join(repoRoot, 'dist');
+let useSignedInFixture = false;
+const signedInFixture = '<script>window.supabase={createClient:()=>({auth:{getSession:async()=>({data:{session:{user:{id:"browser-test-user"}}}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},from:()=>({select(){return this},eq(){return this},maybeSingle:async()=>({data:null,error:null}),upsert:async()=>({error:null})})})};</script>';
 const contentTypes = {
   '.css': 'text/css; charset=utf-8',
   '.html': 'text/html; charset=utf-8',
@@ -23,6 +25,14 @@ const server = createServer(async (request, response) => {
     if (target !== distRoot && !target.startsWith(`${distRoot}${path.sep}`)) throw new Error('ungueltiger Pfad');
     const info = await stat(target);
     if (!info.isFile()) throw new Error('keine Datei');
+    if (useSignedInFixture && relative.startsWith('lernen/') && relative.endsWith('/index.html')) {
+      const html = await readFile(target, 'utf8');
+      const needle = '<script src="/assets/ap2-learning.js';
+      if (!html.includes(needle)) throw new Error('Lernseite ohne Runtime');
+      response.writeHead(200, { 'content-type': contentTypes['.html'] });
+      response.end(html.replace(needle, signedInFixture + needle));
+      return;
+    }
     response.writeHead(200, { 'content-type': contentTypes[path.extname(target).toLowerCase()] || 'application/octet-stream' });
     createReadStream(target).pipe(response);
   } catch {
@@ -39,6 +49,83 @@ try {
   await import('./verify-navigation.mjs');
   await import('./verify-theme-persistence.mjs');
   await import('./verify-learning-browser.mjs');
+  // Legacy lesson checks exercise progress as a signed-in learner. The dedicated
+  // learning/account checks above cover anonymous and real auth transitions.
+  useSignedInFixture = true;
+  await import('./verify-n8-browser.mjs');
+  await import('./verify-n9-browser.mjs');
+  await import('./verify-source-cases-browser.mjs');
+  await import('./verify-trace-browser.mjs');
+  await import('./verify-pseudocode-browser.mjs');
+  await import('./verify-idempotency-browser.mjs');
+  await import('./verify-control-structures-browser.mjs');
+  await import('./verify-variables-browser.mjs');
+  await import('./verify-data-formats-browser.mjs');
+  await import('./verify-automation-batch-browser.mjs');
+  await import('./verify-shell-batch-browser.mjs');
+  await import('./verify-script-workshop-browser.mjs');
+  await import('./verify-notation-browser.mjs');
+  await import('./verify-nas-decision-browser.mjs');
+  await import('./verify-object-storage-browser.mjs');
+  await import('./verify-write-penalty-browser.mjs');
+  await import('./verify-filesystems-browser.mjs');
+  await import('./verify-lvm-browser.mjs');
+  await import('./verify-storage-efficiency-browser.mjs');
+  await import('./verify-sds-browser.mjs');
+  await import('./verify-capacity-browser.mjs');
+  await import('./verify-archive-browser.mjs');
+  await import('./verify-rto-browser.mjs');
+  await import('./verify-backup-choice-browser.mjs');
+  await import('./verify-gfs-browser.mjs');
+  await import('./verify-server-indicators-browser.mjs');
+  await import('./verify-server-sizing-browser.mjs');
+  await import('./verify-server-form-factors-browser.mjs');
+  await import('./verify-hardware-redundancy-browser.mjs');
+  await import('./verify-client-models-browser.mjs');
+  await import('./verify-appliances-browser.mjs');
+  await import('./verify-datacenter-operations-browser.mjs');
+  await import('./verify-ups-sizing-browser.mjs');
+  await import('./verify-ups-classes-browser.mjs');
+  await import('./verify-redundancy-levels-browser.mjs');
+  await import('./verify-green-it-browser.mjs');
+  await import('./verify-licensing-browser.mjs');
+  await import('./verify-hypervisor-types-browser.mjs');
+  await import('./verify-container-vs-vm-browser.mjs');
+  await import('./verify-virtualization-tradeoffs-browser.mjs');
+  await import('./verify-overcommitment-browser.mjs');
+  await import('./verify-live-migration-browser.mjs');
+  await import('./verify-cluster-types-browser.mjs');
+  await import('./verify-quorum-browser.mjs');
+  await import('./verify-snapshot-browser.mjs');
+  await import('./verify-availability-percent-browser.mjs');
+  await import('./verify-mtbf-browser.mjs');
+  await import('./verify-series-parallel-browser.mjs');
+  await import('./verify-sla-browser.mjs');
+  await import('./verify-kubernetes-browser.mjs');
+  await import('./verify-backup-321-browser.mjs');
+  await import('./verify-backup-targets-browser.mjs');
+  await import('./verify-restore-plan-browser.mjs');
+  await import('./verify-backup-boundaries-browser.mjs');
+  await import('./verify-backup-concept-browser.mjs');
+  await import('./verify-cloud-models-browser.mjs');
+  await import('./verify-cloud-deployment-browser.mjs');
+  await import('./verify-cloud-tradeoffs-browser.mjs');
+  await import('./verify-scaling-browser.mjs');
+  await import('./verify-load-balancer-algorithms-browser.mjs');
+  await import('./verify-cloud-dsgvo-browser.mjs');
+  await import('./verify-cloud-migration-browser.mjs');
+  await import('./verify-blue-green-browser.mjs');
+  await import('./verify-tco-browser.mjs');
+  await import('./verify-break-even-browser.mjs');
+  await import('./verify-amortisation-roi-browser.mjs');
+  await import('./verify-nutzwertanalyse-browser.mjs');
+  await import('./verify-angebotsvergleich-browser.mjs');
+  await import('./verify-make-or-buy-browser.mjs');
+  await import('./verify-active-directory-browser.mjs');
+  await import('./verify-gruppenrichtlinien-browser.mjs');
+  await import('./verify-patch-browser.mjs');
+  await import('./verify-client-deployment-browser.mjs');
+  useSignedInFixture = false;
   await import('./verify-space-browser.mjs');
 } finally {
   await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));

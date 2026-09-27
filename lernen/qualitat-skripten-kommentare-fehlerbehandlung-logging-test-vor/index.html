@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Eingaben, Fehlerbehandlung, Logging und Wiederholungstests für eine begrenzte Automatisierung beurteilen und nachvollziehbar dokumentieren.">
+<title>Administrationsskripte sicher prüfen und betreiben – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor" data-progress-id="ga1-9__15" data-content-revision="2026-09-14.2" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-9">Programme zur automatisierten Systemverwaltung</a><span class="sep">›</span>
+    <span class="here">Administrationsskripte sicher prüfen und betreiben</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Administrationsskripte sicher prüfen und betreiben</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 34 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Ein Skript soll einen Auftrag zuverlässig erfüllen – auch bei ungültigen Daten, fehlenden Rechten und erneuter Ausführung. Du prüfst hier einen eigenen Ablauf auf Papier und im Browser. Es werden keine Verwaltungsbefehle ausgeführt.</p>
+<section class="learning-goals" aria-labelledby="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-goals">
+  <h2 id="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Vorschau, Änderung und Fehlerbehandlung voneinander unterscheiden</li>
+    <li>einen aussagekräftigen Test- und Protokollnachweis auswählen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Vorwissen aktivieren</h2>
+<section class="quiz" data-quiz="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-diagnose" data-correct="1">
+  <h3>Eine Vorschau zeigt die erwartete Änderung. Was weißt du damit?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Zustand und Berechtigungen können sich noch ändern."><span class="m">A</span> Die spätere Ausführung gelingt sicher.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Eine Vorschau ersetzt weder Ausführung noch Nachkontrolle."><span class="m">B</span> Der geplante Eingriff ist sichtbar; sein Erfolg ist noch nicht nachgewiesen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Auch ein plausibler Plan kann während der Ausführung scheitern."><span class="m">C</span> Das Skript benötigt keine Fehlerbehandlung mehr.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2"><span class="num">2</span>Kontrollen statt blindem Ablauf</h2>
+<p>Lege vor dem Schreiben fest: Was soll nach dem Lauf gelten, welche Ziele sind erlaubt und was muss unverändert bleiben? Prüfe Pflichtfelder, zulässige Werte und doppelte Kennungen vor dem ersten schreibenden Schritt. Ein unklarer Auftrag wird nicht durch mehr Automatisierung sicherer.</p>
+<p>Kommentare erklären Entscheidungen und Grenzen, statt jede Codezeile nachzuerzählen. Dokumentiere Voraussetzungen, Aufruf, Rechtebedarf, erwartete Ergebnisse, Fehlerreaktion und zuständige Person. Eine Versionskennung verbindet das getestete Skript mit dem später eingesetzten Stand.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Vier unterschiedliche Nachweise">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-layers" xmlns="http://www.w3.org/2000/svg" width="960" height="512" viewBox="0 0 960 512" role="img" aria-labelledby="diagram-kontrollen-title diagram-kontrollen-desc">
+  <title id="diagram-kontrollen-title">Vier unterschiedliche Nachweise</title>
+  <desc id="diagram-kontrollen-desc">Eingabeprüfung, Vorschau, Ausführung und Abnahme liefern verschiedene Nachweise.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Vier unterschiedliche Nachweise</tspan></text>
+  <g><rect class="diagram-row" x="42" y="82" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="82" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="130" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Eingabe</tspan></text><text x="194" y="116" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Auftrag und Ziel sind zulässig</tspan></text></g><g><rect class="diagram-row" x="42" y="182" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="182" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="230" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Vorschau</tspan></text><text x="194" y="216" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Geplante Wirkung ist verständlich</tspan></text></g><g><rect class="diagram-row" x="42" y="282" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="282" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="330" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Ausführung</tspan></text><text x="194" y="316" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Ergebnis und Fehler sind erfasst</tspan></text></g><g><rect class="diagram-row" x="42" y="382" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="382" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="430" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Abnahme</tspan></text><text x="194" y="416" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Sollzustand wurde geprüft</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Übersicht: Kein einzelner grüner Status ersetzt alle Kontrollen.</figcaption>
+</figure><p>In PowerShell muss eine Vorschau tatsächlich unterstützt und an den Änderungsstellen umgesetzt sein. Bei korrekt eingebundenem ShouldProcess unterdrückt -WhatIf diese Änderung; beliebiger Code außerhalb der Prüfung wird dadurch nicht automatisch sicher. Prüfe die Wirkung in einer Testumgebung.</p>
+<p>try/catch behandelt terminierende Fehler. Ein nicht terminierender Cmdlet-Fehler erreicht catch nicht ohne passende Behandlung, beispielsweise -ErrorAction Stop beim betreffenden Cmdlet. finally ist für Abschlussarbeiten gedacht, nicht als bedingungslose Erfolgsmeldung. Eine Fehlermeldung zu unterdrücken stellt den Sollzustand nicht her.</p>
+<h2 class="sec" id="s3"><span class="num">3</span>Eigener Fall: Statusberichte bereitstellen</h2>
+<p>Ein Team will für drei freigegebene Testgeräte je einen Statusbericht erzeugen. Der Lauf darf nur die Testablage verwenden. A liefert Daten, B ist nicht erreichbar, C liefert Daten. Im vereinbarten Modell sind die Berichte unabhängig: Nach einem Gerätefehler darf der Lauf mit dem nächsten Gerät fortfahren, aber am Ende nicht vollständigen Erfolg melden.</p>
+<p>Für A und C wird jeweils geprüft, ob ein lesbarer Bericht mit passender Gerätekennung und Laufkennung vorliegt. Für B wird ein fehlgeschlagener Abruf dokumentiert. Der Gesamtstatus lautet daher Teilerfolg. Ein erfolgreicher letzter Schritt darf den vorherigen Fehler nicht verdecken.</p>
+<p>Das Protokoll enthält Laufkennung, Skriptversion, Zielkennung, Schritt, Ergebnis und eine bereinigte Fehlerklasse. Zugangstoken, Kennwörter und vollständige vertrauliche Nutzdaten gehören nicht hinein. Protokollzugriff und Aufbewahrung müssen zum betrieblichen Konzept passen.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Vom Auftrag zum überprüften Ergebnis">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="542" viewBox="0 0 960 542" role="img" aria-labelledby="diagram-ablauf-title diagram-ablauf-desc">
+  <title id="diagram-ablauf-title">Vom Auftrag zum überprüften Ergebnis</title>
+  <desc id="diagram-ablauf-desc">Auftrag prüfen, Vorschau testen, freigegeben ausführen, Soll-Ist-Vergleich und Wiederholung testen.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Vom Auftrag zum überprüften Ergebnis</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Voraussetzungen</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Auftrag, Eingaben und erlaubte Ziele prüfen</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Vorschau</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Plan in Testumgebung als Vorschau prüfen</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Ausführung</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Freigegebene Änderungen mit Fehlerbehandlung ausführen</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Abnahme</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Soll-Ist-Vergleich und Wiederholungstest dokumentieren</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Ablaufskizze. Fortsetzen oder Abbrechen hängt von den vereinbarten Abhängigkeiten ab.</figcaption>
+</figure><h2 class="sec" id="s4"><span class="num">4</span>Vorhersagen und prüfen</h2>
+<section class="quiz" data-quiz="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-quellenfall" data-correct="1">
+  <h3>Im beschriebenen Lauf scheitert B, C gelingt. Welche Abschlussmeldung passt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Das Ergebnis von C beseitigt den Fehler bei B nicht."><span class="m">A</span> Alles erfolgreich, weil der letzte Abruf gelang.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die Meldung bildet die unabhängigen Teilergebnisse ab."><span class="m">B</span> Teilerfolg: A und C geprüft, B fehlgeschlagen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Das widerspricht den erfolgreichen, geprüften Berichten für A und C."><span class="m">C</span> Keine Berichte vorhanden.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="sequence-practice" data-sequence="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-reihenfolge" data-expected="s0,s1,s2,s3" data-correct-feedback="Erst Voraussetzungen und Vorschau prüfen, danach ausführen und den erreichten Zustand nachweisen." data-wrong-feedback="Eine Freigabe braucht vorher einen geprüften Plan; eine Abnahme braucht ein tatsächliches Ergebnis." aria-labelledby="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-reihenfolge-title">
+  <div class="lab-heading"><div><h3 id="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-reihenfolge-title">Qualitätssicherung ordnen</h3><p>Ordne den freigegebenen Ablauf.</p></div><span class="lab-tag">Ablauf</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="s2" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Freigegebene Änderungen mit Fehlerbehandlung ausführen</span></li>
+    <li data-step="s0" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Auftrag, Eingaben und erlaubte Ziele prüfen</span></li>
+    <li data-step="s3" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Soll-Ist-Vergleich und Wiederholungstest dokumentieren</span></li>
+    <li data-step="s1" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Plan in Testumgebung als Vorschau prüfen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><p>Wiederholbarkeit bedeutet nicht automatisch, dass jeder Lauf denselben Dateinamen überschreiben soll. Für diesen Fall wird je Laufkennung genau ein Bericht pro Gerät erwartet. Eine erneute Verarbeitung derselben Laufkennung darf keine widersprüchlichen Dubletten erzeugen; ein späterer geplanter Lauf darf dagegen einen neuen Bericht erzeugen. Lege diese Semantik vor dem Test fest.</p>
+<p>Teste mindestens: gültige Eingabe, ungültige Kennung ohne Schreibwirkung, bereits verarbeitetes Ziel, unerreichbares Gerät und fehlendes Schreibrecht. Prüfe auch, was bei parallelen Läufen geschieht. Ein vorheriger Existenztest allein verhindert keinen Wettlauf zweier Prozesse.</p>
+<h2 class="sec" id="s5"><span class="num">5</span>Wiederholung: gleicher Auftrag, neuer Versuch</h2>
+<p>Im eigenen Testmodell gehört der Auftrag zur Laufkennung L17. A und C haben bereits gültige Berichte mit dieser Kennung. Für B fehlt der Bericht. Ein zweiter Versuch desselben Auftrags soll genau diese Lücke schließen. Die Auftragskennung bleibt L17; eine zusätzliche Versuchskennung unterscheidet die beiden Versuche im Protokoll. Ein neuer geplanter Auftrag erhält dagegen eine neue Laufkennung.</p>
+<p>Prüfe zuerst, ob die vorhandenen Berichte tatsächlich zum Auftrag gehören und vollständig sind. Nur ein vorhandener Dateiname reicht nicht als Nachweis. In diesem vereinfachten Modell ändern sich die Eingangsdaten während des Auftrags nicht. Bei veränderten Daten muss vorher entschieden werden, ob ein neuer Auftrag oder eine kontrollierte Korrektur erforderlich ist.</p>
+<section class="quiz" data-quiz="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-wiederholung" data-correct="1">
+  <h3>A und C sind für L17 geprüft vollständig. B ist wieder erreichbar. Was erfüllt den vereinbarten Auftrag beim erneuten Versuch?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Ein neuer Auftrag schließt die dokumentierte Lücke von L17 nicht automatisch."><span class="m">A</span> Alle Berichte unter einer neuen Auftragskennung erzeugen und L17 als erfolgreich melden.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Der Versuch ergänzt den fehlenden Teil desselben Auftrags. Erst die Abnahme aller drei Berichte rechtfertigt vollständigen Erfolg."><span class="m">B</span> Den Bericht für B zu L17 ergänzen, A und C nicht duplizieren und den vollständigen Sollzustand prüfen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Erreichbarkeit beweist weder einen erzeugten Bericht noch dessen Gültigkeit. Der frühere Fehler bleibt Teil der nachvollziehbaren Historie."><span class="m">C</span> Nur die alte Fehlermeldung löschen, weil B wieder erreichbar ist.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="recall-practice" data-recall="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-wiederholungsnachweis" data-min-length="80" aria-labelledby="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-wiederholungsnachweis-title">
+  <div class="recall-prompt"><h3 id="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-wiederholungsnachweis-title">Vorher und nachher nachweisen</h3><p>Beschreibe den Sollzustand nach dem zweiten Versuch und nach einer dritten identischen Wiederholung. Trenne Berichtszustand und Protokollhistorie. Welche Annahme gilt hier für die Eingangsdaten?</p></div>
+  <label class="sr-only" for="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-wiederholungsnachweis-answer">Dein Wiederholungsnachweis</label>
+  <textarea id="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-wiederholungsnachweis-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Nach Versuch zwei liegt für L17 je ein gültiger Bericht für A, B und C vor. Versuch drei erzeugt keine zusätzlichen widersprüchlichen Berichte. Sein Protokolleintrag darf trotzdem neu sein: Auftragskennung L17 und eine eigene Versuchskennung machen den Ablauf nachvollziehbar. Die Historie behält den Fehler des ersten Versuchs. Das Modell setzt unveränderte Eingangsdaten innerhalb des Auftrags voraus.</div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Aus dem Gedächtnis erklären</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-karte-0" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was beweist -WhatIf nicht?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Nicht den späteren Erfolg und nicht die Sicherheit beliebiger ungeschützter Änderungsstellen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-karte-1" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum reicht try/catch nicht für jeden Cmdlet-Fehler?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>catch verarbeitet terminierende Fehler; nicht terminierende Fehler brauchen eine passende Behandlung.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-karte-2" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum gehört die Skriptversion ins Laufprotokoll?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Damit ein Ergebnis einem konkreten, nachvollziehbaren Implementierungsstand zugeordnet werden kann.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Vorschau“:</span><button type="button" data-card-id="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-karte-0" data-card-rate="known">gewusst</button><button type="button" data-card-id="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-karte-0" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-karte-0"></span></div>
+<div class="card-rating"><span>Karte „Fehler“:</span><button type="button" data-card-id="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-karte-1" data-card-rate="known">gewusst</button><button type="button" data-card-id="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-karte-1" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-karte-1"></span></div>
+<div class="card-rating"><span>Karte „Protokoll“:</span><button type="button" data-card-id="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-karte-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-karte-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-karte-2"></span></div><section class="recall-practice" data-recall="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-quellenbegruendung" data-min-length="80" aria-labelledby="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-quellenbegruendung-title">
+  <div class="recall-prompt"><h3 id="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-quellenbegruendung-title">Dein Testplan</h3><p>Plane den Fall fehlender Schreibrechte: erwartete Wirkung, Fehlernachweis und Abschlussstatus. Erkläre, welche Daten nicht ins Protokoll gehören.</p></div>
+  <label class="sr-only" for="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-quellenbegruendung-answer">Deine Begründung</label>
+  <textarea id="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-quellenbegruendung-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> In einer freigegebenen Testumgebung lasse ich das Schreiben scheitern. Es darf kein gültiger Bericht behauptet werden. Lauf-, Ziel- und Versionskennung sowie eine bereinigte Fehlerklasse erklären den Fehlschlag. Der Abschlussstatus meldet mindestens einen Fehler beziehungsweise Teilerfolg, nicht vollständigen Erfolg. Geheimnisse und vertrauliche Berichtsinhalte bleiben aus dem Protokoll.</div>
+</section><h2 class="sec" id="s7"><span class="num">7</span>Lernziel-Check</h2>
+<section class="quiz" data-quiz="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-transfer-a" data-correct="2" data-required-objective="sicherer-ablauf">
+  <h3>Ein anderes Skript ändert ein gemeinsames Konfigurationsobjekt in abhängigen Schritten. Schritt zwei scheitert. Welche Entscheidung ist tragfähig?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Hier hängen die Schritte voneinander ab; die Strategie ist nicht übertragbar."><span class="m">A</span> Wie beim unabhängigen Berichtslauf immer fortsetzen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Damit wäre der erreichte Zustand unbekannt und die Meldung falsch."><span class="m">B</span> Den Fehler ausblenden und Erfolg melden.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Abhängigkeiten bestimmen das Vorgehen; ein Rollback darf fremde Änderungen nicht überschreiben."><span class="m">C</span> Nach festgelegter Fehlerstrategie stoppen, Zustand prüfen und nur kontrolliert rückgängig machen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="qualitat-skripten-kommentare-fehlerbehandlung-logging-test-vor-transfer-b" data-correct="0" data-required-objective="nachweis">
+  <h3>Welcher Nachweis stützt die Freigabe eines neuen Skriptstands am besten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Die Wirkung und Grenzen sind nachvollziehbar, auch wenn Tests nicht jeden möglichen Fehler ausschließen."><span class="m">A</span> Versionierter Testbericht mit Soll/Ist für Normal-, Wiederholungs- und Fehlerfälle unter dokumentierten Bedingungen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Er zeigt nicht den erreichten Zustand nach echter Ausführung."><span class="m">B</span> Ein Screenshot der Vorschau.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ohne Testfälle und Ergebnisse lässt sich die Aussage nicht prüfen."><span class="m">C</span> Nur ein Kommentar: funktioniert.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s8"><span class="num">8</span>Quellen und Grenzen</h2>
+<p>Buchkontext: ITLF10–12, PDF-Seite 122, Testsysteme und Versionierung. Ergänzender didaktischer Impuls: <a href="https://ausbildung-in-der-it.de/lernen/systemintegration/lektion/administrationsaufgabe-automatisieren">Ausbildung in der IT – Administrationsaufgabe automatisieren</a>. Eigene Fälle und Grafiken, keine übernommenen Skripte.</p>
+<p>PowerShell-Fachabgleich am 14.09.2026: <a href="https://learn.microsoft.com/en-us/powershell/scripting/learn/deep-dives/everything-about-shouldprocess?view=powershell-7.5">Microsoft Learn – ShouldProcess</a> und <a href="https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_try_catch_finally?view=powershell-7.5">try/catch/finally</a>. Dies ist eine Entwurfs- und Prüflektion, kein produktionsfertiges Skript. Konkrete Rechte, Aufbewahrung und Rücknahme müssen im jeweiligen Betrieb festgelegt werden.</p>
+
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-9"><span class="d">zurück zu</span><span class="t">Programme zur automatisierten Systemverwaltung</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Programme zur automatisierten Systemverwaltung</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Vorwissen aktivieren</a></li>
+<li><a href="#s2" data-t="s2">Kontrollen statt blindem Ablauf</a></li>
+<li><a href="#s3" data-t="s3">Eigener Fall: Statusberichte bereitstellen</a></li>
+<li><a href="#s4" data-t="s4">Vorhersagen und prüfen</a></li>
+<li><a href="#s5" data-t="s5">Wiederholung: gleicher Auftrag, neuer Versuch</a></li>
+<li><a href="#s6" data-t="s6">Aus dem Gedächtnis erklären</a></li>
+<li><a href="#s7" data-t="s7">Lernziel-Check</a></li>
+<li><a href="#s8" data-t="s8">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-9">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

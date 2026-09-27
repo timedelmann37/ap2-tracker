@@ -1,0 +1,106 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "container-vs-vm-isolation-ressourcen-einsatz",
+    "slug": "container-vs-vm-isolation-ressourcen-einsatz",
+    "title": "Container oder VM? Die Grenze liegt beim Kernel",
+    "description": "Isolation, Ressourcen und Startverhalten ohne Pauschalurteil vergleichen und drei Einsatzfälle begründet lösen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-2",
+    "groupLabel": "Virtualisierung, Cluster und Verfügbarkeit",
+    "itemId": "ga1-2__1",
+    "week": "KW 36",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": ["container-microsoft-vs-vm", "container-docker-concepts", "container-microsoft-isolation"],
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    { "id": "grenze", "label": "Prozessisolierten Container und VM nach gemeinsamem beziehungsweise eigenem Kernel abgrenzen" },
+    { "id": "einsatz", "label": "Ressourcen-, Start- und Sicherheitsanforderungen für Container, VM oder Kombination begründet abwägen" }
+  ],
+  "intro": "Ein Container ist keine „kleine VM“. Beide verpacken Workloads, aber sie ziehen die Isolationsgrenze an verschiedenen Stellen. Die wichtigste Frage lautet: Teilen die Workloads denselben Kernel, oder besitzt jeder Gast einen eigenen?",
+  "curation": {
+    "evidence": [
+      { "sourceId": "container-microsoft-vs-vm", "sourceLocator": "Container architecture, VM architecture, comparison table", "use": "Kernel, Isolation, Ressourcenbedarf und Kombinationsmöglichkeit", "reviewStatus": "Am 26.09.2026 gelesen; keine Herstellerabbildung übernommen" },
+      { "sourceId": "container-docker-concepts", "sourceLocator": "Containers versus virtual machines; using both together", "use": "Container als isolierte Prozesse und VM als möglicher Container-Host", "reviewStatus": "Am 26.09.2026 gelesen" },
+      { "sourceId": "container-microsoft-isolation", "sourceLocator": "Process isolation and Hyper-V isolation", "use": "Ausnahme des hypervisorisolierten Windows-Containers transparent benennen", "reviewStatus": "Am 26.09.2026 gelesen" }
+    ],
+    "notes": [
+      "Der private Batch ga1-2-001-001 enthielt überwiegend themenfremde SLA-, Netzwerk- und Kommunikationsabschnitte; die vorgeschlagene private Abbildung hatte keinen verlässlichen Containerbezug. Sie wurden nicht als Fachbelege oder Grafik verwendet.",
+      "Die Lektion betrachtet zunächst klassische prozessisolierte Container. Hyper-V-isolierte Windows-Container bilden eine ausdrücklich gekennzeichnete Ausnahme mit optimierter VM und eigenem Kernel.",
+      "Weder Startzeit noch Speicherersparnis oder Sicherheit lassen sich aus der Technologieklasse als feste Zahl garantieren. Image-Größe, Cache, Hardware, Gast-OS, Konfiguration und Betriebsumgebung müssen gemessen werden. Menschliche Fachfreigabe offen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "container-schichten",
+      "type": "layers",
+      "title": "Prozessisolierte Container: ein Kernel",
+      "description": "Mehrere Anwendungen erhalten getrennte Prozess- und Dateisystemsichten, nutzen aber den Kernel des Hosts.",
+      "items": [
+        { "label": "Physische Hardware oder VM", "detail": "Der Container-Host kann selbst auf einer VM laufen." },
+        { "label": "Host-OS mit Kernel", "detail": "Gemeinsamer Kernel für die prozessisolierten Container auf diesem Host." },
+        { "label": "Container-Laufzeit", "detail": "Startet und verwaltet isolierte Prozesse, Netz und Ressourcenregeln." },
+        { "label": "Anwendungen in Containern", "detail": "Jeweils benötigte Dateien und Bibliotheken im Image; kein eigener Gast-Kernel." }
+      ]
+    },
+    {
+      "id": "vm-schichten",
+      "type": "layers",
+      "title": "VMs: ein Kernel pro Gast",
+      "description": "Jede VM sieht virtuelle Hardware und startet ein eigenes Gastbetriebssystem.",
+      "items": [
+        { "label": "Physische Hardware", "detail": "CPU, RAM, Speicher und Netz des VM-Hosts." },
+        { "label": "Hypervisor", "detail": "Teilt und isoliert virtuelle Hardware für Gäste." },
+        { "label": "VM A mit Gast-Kernel", "detail": "Eigenes Betriebssystem und Anwendungen." },
+        { "label": "VM B mit Gast-Kernel", "detail": "Separates Betriebssystem; kann auch Container hosten." }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Die Kernelfrage stellen",
+      "blocks": [
+        { "type": "quiz", "id": "container-vs-vm-isolation-ressourcen-einsatz-diagnose", "question": "Auf einem Linux-Host laufen drei prozessisolierte Container. Wie viele eigenständige Gast-Kernel enthalten diese drei Container?", "options": [ { "text": "Drei; jeder Container startet wie eine VM ein komplettes Betriebssystem.", "rationale": "Prozessisolierte Container teilen den Kernel des Hosts.", "correct": false }, { "text": "Keinen; die Container verwenden den gemeinsamen Host-Kernel.", "rationale": "Richtig. Jeder Container hat isolierte Sichten, aber keinen eigenen Gast-Kernel.", "correct": true }, { "text": "Einen pro Docker-Image, auch wenn kein Container läuft.", "rationale": "Ein Image enthält Dateien und Metadaten, aber keinen laufenden Kernel.", "correct": false } ], "diagnostic": true }
+      ]
+    },
+    {
+      "title": "Zwei Schichtenmodelle lesen",
+      "blocks": [
+        { "type": "figure", "diagramId": "container-schichten", "alt": "Bei prozessisolierten Containern liegt unter der Container-Laufzeit ein gemeinsamer Host-Kernel. Die Anwendungen haben getrennte Sichten, aber keinen eigenen Gast-Kernel.", "caption": "Eigenes Lehrbild für klassische Prozessisolation; eine VM kann als Host darunterliegen." },
+        { "type": "figure", "diagramId": "vm-schichten", "alt": "Bei virtuellen Maschinen stellt der Hypervisor jeder VM virtuelle Hardware bereit. VM A und VM B besitzen jeweils einen eigenen Gast-Kernel.", "caption": "Ein VM-Gast kann wiederum einen Container-Host betreiben; es ist kein Entweder-oder." },
+        { "type": "markdown", "markdown": "Ein **prozessisolierter Container** ist ein isolierter Anwendungsprozess mit den benötigten Dateien und Bibliotheken aus einem Image. Sein Kernel kommt vom Host. Isolation entsteht unter anderem durch getrennte Prozess-, Netzwerk- und Dateisystemsichten sowie Ressourcenbegrenzung. Das Image ist nicht die laufende Instanz: Erst beim Start entsteht ein Container.\n\nEine **VM** erhält virtuelle Hardware und startet ein vollständiges Gastbetriebssystem mit eigenem Kernel. Das schafft eine andere, im Regelfall stärkere Trennungsgrenze und erlaubt unterschiedliche Gastbetriebssysteme, benötigt aber die Ressourcen der Gäste. Ein Container kann leichter sein und typischerweise schneller starten, weil kein eigenes Gast-OS bootet. Das ist kein Messwertversprechen: ein kaltes Image, Initialisierung oder Netzwerk-/Speicherzugriff können den Start dominieren. Eine kleine VM kann für bestimmte Lasten geeigneter sein als ein schlecht konfigurierter Container." },
+        { "type": "quiz", "id": "container-vs-vm-isolation-ressourcen-einsatz-architektur", "question": "Die Anwendung läuft als Linux-Container auf einem Windows-Laptop. Widerlegt das die Aussage „Container teilen einen Kernel“?", "options": [ { "text": "Ja, Container emulieren immer eigenständig jeden beliebigen Kernel.", "rationale": "Ein klassischer Container bringt keinen vollständigen Gast-Kernel mit.", "correct": false }, { "text": "Nein. Ein Linux-VM- oder ähnlicher Unterbau kann den Linux-Kernel bereitstellen; die Container teilen dann diesen Kernel.", "rationale": "Richtig: Zeichne die tatsächliche Host-Schicht mit, statt nur die Desktop-Oberfläche zu betrachten.", "correct": true }, { "text": "Ja, weil Windows und Linux denselben Kernel besitzen.", "rationale": "Windows und Linux haben nicht denselben Kernel.", "correct": false } ] }
+      ]
+    },
+    {
+      "title": "Startzeit und Schutzbedarf abwägen",
+      "blocks": [
+        { "type": "markdown", "markdown": "**Fall A – gleichartige Webdienste:** Fünf kleine Dienste sollen regelmäßig neu gebaut und verteilt werden; der Host-Kernel passt zu allen. Container sind ein guter Kandidat für reproduzierbare Anwendungsumgebungen. Prüfe Image-Herkunft, Updates, Ressourcenlimits, Datenhaltung und Netzwerkrechte.\n\n**Fall B – anderer Kernel oder starke Mandantentrennung:** Eine Anwendung benötigt ein eigenes Gastbetriebssystem; ein zweiter Workload stammt von einer nicht vertrauenswürdigen Partei. VMs sind als getrennte Gastumgebungen ein geeigneter Ausgangspunkt. Ein bloßer Container teilt den Host-Kernel; Fehlkonfiguration, privilegierte Rechte oder Kernel-Schwachstellen können diese Grenze schwächen.\n\n**Fall C – kombinieren:** Mehrere Container laufen *in* einer VM. So lassen sich Anwendungsbereitstellung und eine zusätzliche VM-Grenze kombinieren. Windows bietet außerdem Hyper-V-isolierte Container, bei denen jeder Container in einer optimierten VM mit eigenem Kernel läuft. Deshalb muss bei konkreten Produkten der **Isolationsmodus** mitgenannt werden. Keine Variante ersetzt Backups, Patches oder Zugriffsregeln." },
+        { "type": "sequence", "id": "container-vs-vm-isolation-ressourcen-einsatz-pruefweg", "title": "Auswahlprüfung ordnen", "prompt": "Ordne den Entscheidungsweg für einen neuen Dienst.", "steps": [ { "id": "bedarf", "label": "Kernel-, Sicherheits- und Betriebsanforderungen notieren" }, { "id": "grenze", "label": "Isolationsgrenze und möglichen VM-Unterbau zeichnen" }, { "id": "test", "label": "Ressourcen, Start, Wiederherstellung und Rechte im Zielsystem testen" } ], "expected": ["bedarf", "grenze", "test"], "correctFeedback": "Richtig: Zuerst Anforderungen, dann die echte Architektur, danach Messung und Test.", "wrongFeedback": "Beginne mit Kernel- und Schutzbedarf, bevor du Container oder VM auswählst." },
+        { "type": "quiz", "id": "container-vs-vm-isolation-ressourcen-einsatz-entscheidung", "question": "Zwei voneinander unabhängige Kunden liefern nicht vertrauenswürdigen Code. Welche Begründung ist tragfähig?", "options": [ { "text": "Prozessisolierte Container sind ohne Zusatzprüfung eine harte Mandantengrenze.", "rationale": "Der gemeinsame Kernel und mögliche Fehlkonfigurationen sind für feindliche Mandanten relevant.", "correct": false }, { "text": "Eine VM- oder vergleichbar stärkere Sandbox-Grenze ist zu prüfen; Container können innerhalb der getrennten VMs genutzt werden.", "rationale": "Richtig: Die Sicherheitsgrenze und das Anwendungs-Paketmodell dürfen kombiniert werden.", "correct": true }, { "text": "Container sind immer unmöglich, sobald Kundencode beteiligt ist.", "rationale": "Container können innerhalb einer geeigneten VM-/Sandbox-Grenze weiterhin nützlich sein.", "correct": false } ] }
+      ]
+    },
+    {
+      "title": "Den Unterschied in eigenen Worten",
+      "blocks": [
+        { "type": "recall", "id": "container-vs-vm-isolation-ressourcen-einsatz-begruendung", "title": "Architektur und Fall verbinden", "prompt": "Formuliere die Abgrenzung in drei Sätzen: Kernel, typische Ressourcen-/Startwirkung und ein Fall, in dem du VM und Container kombinierst.", "label": "Deine Begründung", "minLength": 100, "model": "Prozessisolierte Container teilen den Host-Kernel, während jede VM ein Gastbetriebssystem mit eigenem Kernel ausführt. Container können deshalb weniger Gast-OS-Ressourcen benötigen und oft schneller starten; feste Zeit- oder Sicherheitsgarantien folgen daraus nicht. Bei nicht vertrauenswürdigen Mandanten kann ich getrennte VMs als Grenze vorsehen und in jeder VM Container für die Anwendungen betreiben." },
+        { "type": "flashcards", "cards": [ { "id": "container-vs-vm-isolation-ressourcen-einsatz-karte-0", "label": "Abruf 1", "front": "Was teilen klassische prozessisolierte Container?", "back": "Den Kernel ihres tatsächlichen Hosts, gegebenenfalls einer darunterliegenden VM." }, { "id": "container-vs-vm-isolation-ressourcen-einsatz-karte-1", "label": "Abruf 2", "front": "Was bringt die VM zusätzlich mit?", "back": "Virtuelle Hardware und ein eigenes Gastbetriebssystem samt eigenem Kernel." }, { "id": "container-vs-vm-isolation-ressourcen-einsatz-karte-2", "label": "Abruf 3", "front": "Können Container und VMs kombiniert werden?", "back": "Ja. Container laufen häufig in VMs; auch Hyper-V-isolierte Windows-Container verwenden eine optimierte VM." } ] }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        { "type": "quiz", "id": "container-vs-vm-isolation-ressourcen-einsatz-transfer-a", "question": "Neuer Fall: Drei prozessisolierte Container laufen in einer Linux-VM. Welche Aussage über die Kernel stimmt?", "options": [ { "text": "Jeder Container besitzt einen eigenen Linux-Gast-Kernel und braucht deshalb einen vollständigen OS-Boot.", "rationale": "Die Container teilen den Kernel der Linux-VM.", "correct": false }, { "text": "Die drei Container teilen den Kernel der Linux-VM; die VM trennt diesen Kernel vom physischen Host.", "rationale": "Richtig: Das Schichtenmodell erklärt die Kombination beider Techniken.", "correct": true }, { "text": "Die Container greifen ohne VM-Schicht direkt auf den physischen Host-Kernel zu.", "rationale": "Im Fall ist die Linux-VM der unmittelbare Container-Host.", "correct": false } ], "requiredObjective": "grenze" },
+        { "type": "quiz", "id": "container-vs-vm-isolation-ressourcen-einsatz-transfer-b", "question": "Ein Dienst muss schnell reproduzierbar ausgerollt werden, verarbeitet aber Code verschiedener nicht vertrauenswürdiger Kunden. Welche Planung ist am besten begründet?", "options": [ { "text": "Nur prozessisolierte Container auf einem gemeinsamen Host; Geschwindigkeit garantiert eine ausreichende Sicherheitsgrenze.", "rationale": "Startverhalten ist keine Sicherheitsgarantie gegen feindliche Mandanten.", "correct": false }, { "text": "Nur eine riesige VM für alle Kunden, ohne weitere Trennung oder Paketierung.", "rationale": "Auch innerhalb einer gemeinsamen VM bleiben Mandanten und Anwendungen zu trennen.", "correct": false }, { "text": "Getrennte VM-/Sandbox-Grenzen prüfen und Container innerhalb dieser Grenzen für das reproduzierbare Deployment einsetzen.", "rationale": "Richtig: Sicherheitsgrenze und Deployment-Modell erfüllen unterschiedliche Anforderungen.", "correct": true } ], "requiredObjective": "einsatz" }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [ { "type": "markdown", "markdown": "[Microsoft Learn: Container und VMs](https://learn.microsoft.com/en-us/virtualization/windowscontainers/about/containers-vs-vm), [Docker Docs: Container-Grundlagen](https://docs.docker.com/get-started/docker-concepts/the-basics/what-is-a-container/) und [Microsoft Learn: Prozess- und Hyper-V-Isolation](https://learn.microsoft.com/en-us/virtualization/windowscontainers/manage-containers/hyperv-container), am 26.09.2026 gelesen. Diagramme und Fälle sind eigene Lehrmodelle. Ressourcen und Startzeit sind keine garantierten Zahlen; Sicherheitsgrenzen sind am konkreten Isolationsmodus zu prüfen. Menschliche Fachfreigabe offen." } ]
+    }
+  ]
+}

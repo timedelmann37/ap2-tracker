@@ -1,0 +1,128 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "mtbf-mttr-verfuegbarkeit",
+    "slug": "mtbf-mttr-verfuegbarkeit",
+    "title": "MTBF und MTTR: seltener ausfallen, schneller zurück sein",
+    "description": "Aus Betriebs- und Ausfallzeit Kennzahlen berechnen und mit der Verfügbarkeitsformel Entscheidungen begründen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-2",
+    "groupLabel": "Virtualisierung, Cluster und Verfügbarkeit",
+    "itemId": "ga1-2__9",
+    "week": "KW 36",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": ["mtbf-aws-availability", "mtbf-ibm-metrics"],
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    { "id": "kennzahlen", "label": "MTBF und MTTR aus Betriebszeit, Ausfallzeit und Fehlerzahl mit Einheiten berechnen" },
+    { "id": "verfuegbarkeit", "label": "A = MTBF / (MTBF + MTTR) anwenden und Verbesserungshebel sachgerecht beurteilen" }
+  ],
+  "intro": "Ein Dienst fällt in 720 Stunden dreimal aus; jede Störung dauert zwei Stunden. Wie zuverlässig ist er in dieser Zeit – und was bringt es, Ausfälle zu vermeiden oder den Dienst schneller wiederherzustellen?",
+  "curation": {
+    "evidence": [
+      { "sourceId": "mtbf-aws-availability", "sourceLocator": "Understanding availability; MTBF, MTTR and Equation 2", "use": "Definition von Betriebs-/Wiederherstellungszeit und Verfügbarkeitsformel", "reviewStatus": "Am 26.09.2026 gelesen; eigene Zahlen und Grafiken" },
+      { "sourceId": "mtbf-ibm-metrics", "sourceLocator": "MTBF calculation; MTTR calculation; Differences", "use": "Mittelwert über beobachtete Betriebs- und Ausfallzeiten", "reviewStatus": "Am 26.09.2026 gelesen" }
+    ],
+    "notes": [
+      "Im privaten Batch ga1-2-009-009 ist ITLF6-9, Abschnitt Nicht funktionale Anforderungen planen, fachlich passend: Summen von Uptime und Downtime je Ausfall. Die OCR-Tabellen sind gestört; Text, Zahlen und Abbildungen wurden nicht übernommen.",
+      "Hier bezeichnet MTBF die mittlere verfügbare Betriebszeit zwischen Ausfällen eines reparierbaren Dienstes. Terminologie variiert; manche Datenblätter verwenden 'time between failures' anders. MTTR zählt hier von Beginn der Dienststörung bis zur Wiederherstellung, einschließlich Erkennen und Diagnose.",
+      "Die Formel ist ein vereinfachtes Langzeitmodell mit konsistenter Messgrenze. Sie macht keine Garantie für den nächsten Ausfall und ersetzt keine Messung der tatsächlichen Nutzererfahrung. Menschliche Fachfreigabe offen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "zeitstreifen",
+      "type": "flow",
+      "title": "Was wird gemittelt?",
+      "description": "Ein Ausfallzyklus enthält verfügbare Zeit und die anschließende Unterbrechung.",
+      "items": [
+        { "label": "Dienst verfügbar", "detail": "Die Uptime bis zur nächsten Störung zählt in die Betriebszeit. Summe der Uptime geteilt durch Fehlerzahl ergibt die hier verwendete MTBF." },
+        { "label": "Störung beginnt", "detail": "Aus Nutzersicht ist der Dienst nicht verwendbar. Das kann vor dem Alarm liegen; Erkennungszeit ist Teil der Wiederherstellung." },
+        { "label": "Erkennen, diagnostizieren, beheben", "detail": "Bis der Dienst wieder nutzbar ist, läuft die Downtime. Summe aller Downtimes geteilt durch Fehlerzahl ergibt MTTR." },
+        { "label": "Dienst wieder verfügbar", "detail": "Ein neuer Betriebsabschnitt beginnt. Die Durchschnittswerte beschreiben die Beobachtung, nicht den exakten Zeitpunkt des nächsten Fehlers." }
+      ]
+    },
+    {
+      "id": "hebel",
+      "type": "comparison",
+      "title": "Zwei Wege zu besserer Verfügbarkeit",
+      "description": "Bei gleicher Messgrenze steigt A, wenn die Betriebszeit zwischen Ausfällen wächst oder Ausfallzeit sinkt.",
+      "items": [
+        { "label": "MTBF erhöhen", "detail": "Fehler seltener machen, zum Beispiel durch Ursachenbehebung, robustere Komponenten und kontrollierte Änderungen. Bei unveränderter MTTR wächst der verfügbare Anteil." },
+        { "label": "MTTR senken", "detail": "Störung schneller entdecken, eine klare Diagnose ermöglichen und einen getesteten Wiederanlauf nutzen. Bei unveränderter MTBF schrumpft der nicht verfügbare Anteil." },
+        { "label": "Nicht verwechseln", "detail": "Ein schneller Restore macht Fehler nicht seltener. Ein selten ausfallender Dienst kann dennoch lange Unterbrechungen haben." }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Welcher Mittelwert ist gemeint?",
+      "blocks": [
+        { "type": "quiz", "id": "mtbf-diagnose", "question": "Ein Dienst läuft nach einer Störung wieder, fällt aber nach kurzer Zeit erneut aus. Welche Kennzahl beschreibt die durchschnittliche Betriebszeit zwischen den Ausfällen?", "options": [
+          { "text": "MTTR", "rationale": "MTTR misst die durchschnittliche Wiederherstellungsdauer.", "correct": false },
+          { "text": "MTBF", "rationale": "Richtig: Mean Time Between Failures – hier die verfügbare Betriebszeit pro Ausfallzyklus.", "correct": true },
+          { "text": "RPO", "rationale": "RPO betrifft den maximal akzeptierten Datenverlustzeitraum, nicht Fehlerabstände.", "correct": false }
+        ], "diagnostic": true },
+        { "type": "figure", "diagramId": "zeitstreifen", "alt": "Zeitstreifen eines Dienstes: verfügbare Betriebszeit bis zum Fehler ist Grundlage der MTBF. Von Beginn der Störung bis zum wieder nutzbaren Dienst verläuft die Ausfallzeit als Grundlage der MTTR.", "caption": "Eigener Zeitstreifen; die Kennzahlen sind Mittelwerte aus mehreren gleichartig gemessenen Zyklen." },
+        { "type": "markdown", "markdown": "**MTBF (Mean Time Between Failures)** bezeichnet hier die durchschnittliche *verfügbare Betriebszeit* zwischen Ausfällen eines reparierbaren Dienstes. **MTTR (Mean Time to Repair/Recovery)** ist die durchschnittliche Zeit vom Beginn der Nichtverfügbarkeit bis zum wieder nutzbaren Dienst. Sie umfasst in diesem Lehrmodell Erkennen, Diagnose, Reparatur und Wiederanlauf. Andere Organisationen grenzen diese Phasen anders ab – frage nach der Messdefinition.\n\nEin Beobachtungsfenster von **720 Stunden** enthält **drei** Dienststörungen mit zusammen **6 Stunden** Nichtverfügbarkeit. Damit sind 714 Stunden Uptime übrig. MTBF = 714 h / 3 = **238 h**; MTTR = 6 h / 3 = **2 h**. Teile also Uptime und Downtime durch dieselbe Zahl der beobachteten Ausfälle. Ein langer MTBF ist gut; ein kurzer MTTR ist gut. Keine dieser Kennzahlen allein nennt die Gesamtverfügbarkeit." },
+        { "type": "math", "ariaLabel": "MTBF gleich 714 Stunden Betriebszeit geteilt durch 3 Ausfälle gleich 238 Stunden. MTTR gleich 6 Stunden Ausfallzeit geteilt durch 3 Ausfälle gleich 2 Stunden.", "mathml": "<math display=\"block\"><mrow><mi>MTBF</mi><mo>=</mo><mfrac><mrow><mn>714</mn><mtext> h</mtext></mrow><mn>3</mn></mfrac><mo>=</mo><mn>238</mn><mtext> h</mtext><mspace width=\"1em\"/><mi>MTTR</mi><mo>=</mo><mfrac><mrow><mn>6</mn><mtext> h</mtext></mrow><mn>3</mn></mfrac><mo>=</mo><mn>2</mn><mtext> h</mtext></mrow></math>", "legend": ["720 h beobachtet = 714 h verfügbar + 6 h ausgefallen; drei Ausfälle."] },
+        { "type": "numeric", "id": "mtbf-mttr-rechnen", "title": "Wiederherstellungszeit mitteln", "prompt": "Drei Ausfälle summieren sich zu 6 Stunden Downtime. Wie viele Stunden beträgt die MTTR?", "label": "MTTR in Stunden", "expected": 2, "tolerance": 0.001, "correctFeedback": "Richtig: 6 Stunden / 3 Ausfälle = 2 Stunden pro Ausfall.", "wrongFeedback": "MTTR ist der Mittelwert der Ausfallzeiten: gesamte Downtime durch Ausfallzahl teilen.", "misconceptions": [ { "value": 6, "feedback": "6 Stunden sind die gesamte Downtime; gesucht ist der Mittelwert über drei Ausfälle." }, { "value": 238, "feedback": "238 Stunden ist die MTBF aus der Uptime, nicht die MTTR." } ] }
+      ]
+    },
+    {
+      "title": "Beide Kennzahlen verbinden",
+      "blocks": [
+        { "type": "markdown", "markdown": "Für einen wiederkehrenden Wechsel aus verfügbarer Zeit und Wiederherstellung gilt im vereinfachten Modell: Verfügbarkeit ist der Anteil der verfügbaren Zeit am gesamten Zyklus. Setze MTBF und MTTR in *derselben Zeiteinheit* ein. Mit 238 h und 2 h ergibt sich 238 / 240 = **0,99167 ≈ 99,17 %**. Das ist derselbe Zeitanteil wie 714 / 720 im Beobachtungsfenster.\n\nDie Formel schätzt keinen einzelnen Fehler voraus. Sie hängt davon ab, dass Messfenster, Fehlerdefinition und Wiederherstellung konsistent sind. Für Nutzer kann zudem eine teilweise Störung wichtig sein, die eine reine Up-/Down-Kennzahl nicht gut abbildet." },
+        { "type": "math", "ariaLabel": "Verfügbarkeit A gleich MTBF geteilt durch Summe aus MTBF und MTTR. Im Beispiel 238 Stunden geteilt durch 238 plus 2 Stunden gleich 0 Komma 99167, also ungefähr 99 Komma 17 Prozent.", "mathml": "<math display=\"block\"><mrow><mi>A</mi><mo>=</mo><mfrac><mi>MTBF</mi><mrow><mi>MTBF</mi><mo>+</mo><mi>MTTR</mi></mrow></mfrac><mo>=</mo><mfrac><mrow><mn>238</mn><mtext> h</mtext></mrow><mrow><mn>238</mn><mtext> h</mtext><mo>+</mo><mn>2</mn><mtext> h</mtext></mrow></mfrac><mo>≈</mo><mn>99,17</mn><mo>%</mo></mrow></math>", "legend": ["A als Prozent: Quotient mal 100; die Stunden kürzen sich heraus."] },
+        { "type": "numeric", "id": "mtbf-verfuegbarkeit", "title": "Verfügbarkeit berechnen", "prompt": "MTBF = 238 Stunden und MTTR = 2 Stunden. Wie groß ist A in Prozent, auf zwei Nachkommastellen gerundet?", "label": "Verfügbarkeit in Prozent", "expected": 99.17, "tolerance": 0.01, "correctFeedback": "Richtig: 238 / (238 + 2) × 100 ≈ 99,17 %.", "wrongFeedback": "Im Nenner stehen beide Zeiten: 238 + 2 = 240 h. Den Quotienten anschließend mit 100 in Prozent umrechnen.", "misconceptions": [ { "value": 0.9917, "feedback": "Das ist ungefähr der Dezimalanteil; gefragt ist Prozent. Multipliziere mit 100." }, { "value": 119, "feedback": "Du hast offenbar nur 238 / 2 gerechnet. Der Nenner ist MTBF + MTTR." } ] },
+        { "type": "figure", "diagramId": "hebel", "alt": "Verbesserungshebel: Seltenerer Fehler erhöht MTBF; schnellere Erkennung und Wiederherstellung senken MTTR. Beide können den verfügbaren Zeitanteil steigern, wirken aber auf verschiedene Ursachen.", "caption": "Eigene Gegenüberstellung für denselben Dienst und dieselbe Messgrenze." },
+        { "type": "quiz", "id": "mtbf-hebelwahl", "question": "Ein Dienst fällt selten aus, ist nach jedem Ausfall aber viele Stunden nicht nutzbar. Welcher Hebel adressiert die lange Unterbrechung direkt?", "options": [
+          { "text": "MTTR durch Alarmierung, Runbook und getesteten Wiederanlauf senken.", "rationale": "Richtig. Das verkürzt die Zeit vom Fehler bis zum wieder nutzbaren Dienst.", "correct": true },
+          { "text": "Nur MTBF erhöhen; die Dauer jedes Ausfalls wird dadurch automatisch kürzer.", "rationale": "Seltenerer Ausfall ist nicht dasselbe wie schnellere Wiederherstellung.", "correct": false },
+          { "text": "Die Ausfälle aus der Statistik entfernen.", "rationale": "Das verändert die Messung, nicht die tatsächliche Nutzererfahrung.", "correct": false }
+        ] }
+      ]
+    },
+    {
+      "title": "Messweg selbst aufbauen",
+      "blocks": [
+        { "type": "sequence", "id": "mtbf-rechenweg", "title": "Vom Ereignisprotokoll zur Kennzahl", "prompt": "Ordne den Rechenweg für das 720-Stunden-Fenster.", "steps": [
+          { "id": "abgrenzen", "label": "Messfenster und drei tatsächliche Dienststörungen festlegen" },
+          { "id": "teilen", "label": "Uptime und Downtime getrennt durch drei Ausfälle teilen" },
+          { "id": "quote", "label": "MTBF / (MTBF + MTTR) berechnen und als Prozent angeben" }
+        ], "expected": ["abgrenzen", "teilen", "quote"], "correctFeedback": "Richtig: Erst eine konsistente Messung, dann Mittelwerte, zuletzt die Verfügbarkeitsquote.", "wrongFeedback": "Vor der Quote musst du Messfenster, Ausfälle und beide Mittelwerte festlegen." },
+        { "type": "recall", "id": "mtbf-erklaerung", "title": "Kennzahlen nicht verwechseln", "prompt": "Erkläre einem Kollegen, warum 238 h MTBF und 2 h MTTR zwei unterschiedliche Aussagen sind und wie sich eine kürzere MTTR bei gleicher MTBF auf A auswirkt.", "label": "Deine Erklärung", "minLength": 100, "model": "238 h MTBF sind die mittlere verfügbare Betriebszeit zwischen Störungen. 2 h MTTR sind die mittlere Zeit vom Ausfall bis zum wieder nutzbaren Dienst. Wird die MTTR bei unveränderter MTBF kürzer, sinkt der nicht verfügbare Teil jedes Zyklus und A steigt. Das macht Ausfälle aber nicht seltener." }
+      ]
+    },
+    {
+      "title": "Abruf und Lernziel-Check",
+      "blocks": [
+        { "type": "flashcards", "cards": [
+          { "id": "mtbf-karte-0", "label": "Abruf 1", "front": "MTBF: Welche Zeit wird gemittelt?", "back": "Die verfügbare Betriebszeit zwischen Fehlern eines reparierbaren Dienstes, hier Uptime geteilt durch Ausfallzahl." },
+          { "id": "mtbf-karte-1", "label": "Abruf 2", "front": "MTTR: Welche Zeit wird gemittelt?", "back": "Die Nichtverfügbarkeit bis zur Wiederherstellung, hier Downtime geteilt durch Ausfallzahl." },
+          { "id": "mtbf-karte-2", "label": "Abruf 3", "front": "Wie lautet die Verfügbarkeitsbeziehung?", "back": "A = MTBF / (MTBF + MTTR). Für Prozent den Quotienten mit 100 multiplizieren." }
+        ] },
+        { "type": "quiz", "id": "mtbf-transfer-a", "question": "In 720 Stunden gibt es drei Ausfälle mit zusammen sechs Stunden Downtime. Welche Mittelwerte passen?", "options": [
+          { "text": "MTBF 238 h, MTTR 2 h", "rationale": "Richtig: 714 h Uptime / 3 und 6 h Downtime / 3.", "correct": true },
+          { "text": "MTBF 240 h, MTTR 6 h", "rationale": "240 h enthält im Beispiel auch Downtime; 6 h ist die Summe, nicht der Mittelwert.", "correct": false },
+          { "text": "MTBF 2 h, MTTR 238 h", "rationale": "Damit wären Betriebs- und Wiederherstellungszeit vertauscht.", "correct": false }
+        ], "requiredObjective": "kennzahlen" },
+        { "type": "quiz", "id": "mtbf-transfer-b", "question": "MTBF bleibt bei 100 h, MTTR sinkt von 2 h auf 1 h. Was folgt im vereinfachten Modell?", "options": [
+          { "text": "A steigt, weil der nicht verfügbare Teil des Zyklus kleiner wird; die Fehler werden nicht automatisch seltener.", "rationale": "Richtig: 100/102 ≈ 98,04 % wird zu 100/101 ≈ 99,01 %.", "correct": true },
+          { "text": "A sinkt, weil eine kleinere MTTR im Nenner steht.", "rationale": "Ein kleinerer Nenner bei gleichem Zähler erhöht den Quotienten.", "correct": false },
+          { "text": "Die MTBF verdoppelt sich zwangsläufig auf 200 h.", "rationale": "MTBF und MTTR beschreiben verschiedene Beobachtungen.", "correct": false }
+        ], "requiredObjective": "verfuegbarkeit" }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        { "type": "markdown", "markdown": "[AWS: Understanding availability](https://docs.aws.amazon.com/whitepapers/latest/availability-and-beyond-improving-resilience/understanding-availability.html) und [IBM: MTTR vs. MTBF](https://www.ibm.com/think/topics/mttr-vs-mtbf), am 26.09.2026 gelesen. Das 720-Stunden-Szenario, Übungen und Grafiken sind eigene Lehrmodelle. Für reale Kennzahlen müssen Fehler, Nutzerverfügbarkeit, Messfenster und Beginn/Ende der Wiederherstellung einheitlich definiert werden. Menschliche Fachfreigabe offen." }
+      ]
+    }
+  ]
+}

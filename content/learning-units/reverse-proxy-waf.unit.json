@@ -1,0 +1,358 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "reverse-proxy-waf",
+    "slug": "reverse-proxy-waf",
+    "title": "Reverse Proxy, WAF und Load Balancer unterscheiden",
+    "description": "TLS-Grenzen, Inhaltsprüfung und Lastverteilung an einer Webarchitektur erklären.",
+    "domain": "GA2",
+    "domainLabel": "Netzwerke",
+    "groupId": "ga2-7",
+    "groupLabel": "Block N7 · Netzwerksicherheit",
+    "itemId": "ga2-7__8",
+    "week": "KW 42",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "sources": [
+      "europa-integratoren-2026"
+    ],
+    "contentRevision": "2026-09-12.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "rollen",
+      "label": "Proxy-, WAF- und Load-Balancer-Funktionen passend zum Schutzziel auswählen"
+    },
+    {
+      "id": "vertrauensgrenzen",
+      "label": "TLS-Abschnitte und mögliche Umgehung des Schutzpfades beurteilen"
+    }
+  ],
+  "intro": "Ein vorgeschalteter Server kann Verbindungen vermitteln, Anfragen prüfen und Last verteilen. Diese Funktionen sind kombinierbar, aber keine folgt automatisch aus einer anderen.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Markdown-Chunks 01038 und 00491",
+        "use": "Reverse Proxy und TLS-Termination",
+        "reviewStatus": "Textausschnitte geprüft; Aufgaben nicht kopiert"
+      }
+    ],
+    "notes": [
+      "WAF-Abgleich: OWASP Web Application Firewall, abgerufen 2026-09-12.",
+      "Offloading nicht als zwingend unverschlüsselte Backendverbindung verallgemeinert.",
+      "Eigene Fälle und Diagramme; keine privaten Buchabbildungen veröffentlicht. Fach- und Verständlichkeitsfreigabe durch einen Menschen steht aus."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "web-schutzpfad",
+      "type": "topology",
+      "title": "Ein Einstieg, zwei mögliche Ziele",
+      "description": "Client-TLS endet am Einstieg mit WAF und Lastverteilung. Zum gewählten Backend besteht ein neuer TLS-Abschnitt.",
+      "height": 450,
+      "nodes": [
+        {
+          "id": "client",
+          "label": "Browser",
+          "detail": "Portalname prüfen",
+          "x": 120,
+          "y": 230,
+          "kind": "client"
+        },
+        {
+          "id": "proxy",
+          "label": "Einstieg",
+          "detail": "Proxy / WAF / LB",
+          "x": 430,
+          "y": 230,
+          "kind": "router"
+        },
+        {
+          "id": "a",
+          "label": "Backend A",
+          "detail": "TLS validieren",
+          "x": 750,
+          "y": 150,
+          "kind": "server"
+        },
+        {
+          "id": "b",
+          "label": "Backend B",
+          "detail": "TLS validieren",
+          "x": 750,
+          "y": 350,
+          "kind": "server"
+        }
+      ],
+      "edges": [
+        {
+          "from": "client",
+          "to": "proxy",
+          "label": "TLS 1",
+          "kind": "allowed"
+        },
+        {
+          "from": "proxy",
+          "to": "a",
+          "label": "TLS 2",
+          "kind": "allowed"
+        },
+        {
+          "from": "proxy",
+          "to": "b",
+          "label": "TLS 2",
+          "kind": "allowed"
+        }
+      ]
+    },
+    {
+      "id": "reverse-proxy-waf-ablauf",
+      "type": "flow",
+      "title": "Zwei getrennte TLS-Abschnitte",
+      "description": "Client-TLS endet am Einstieg; nach Inhaltsprüfung und Zielwahl beginnt eine neue TLS-Verbindung zum Backend.",
+      "items": [
+        {
+          "label": "Client-TLS",
+          "detail": "Portalidentität prüfen"
+        },
+        {
+          "label": "WAF",
+          "detail": "Entschlüsseltes HTTP prüfen"
+        },
+        {
+          "label": "Zielwahl",
+          "detail": "Health Check berücksichtigen"
+        },
+        {
+          "label": "Backend-TLS",
+          "detail": "Backendidentität prüfen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "reverse-proxy-waf-diagnose",
+          "question": "Ein Reverse Proxy ist installiert. Ist damit automatisch eine WAF aktiv?",
+          "options": [
+            {
+              "text": "Ja, jeder Proxy erkennt automatisch jede Weblücke.",
+              "rationale": "Vermittlung garantiert keine vollständige Angriffserkennung.",
+              "correct": false
+            },
+            {
+              "text": "Nein, Vermittlung und HTTP-Sicherheitsregeln sind getrennte Funktionen.",
+              "rationale": "Richtig: Eine WAF muss vorhanden und passend konfiguriert sein.",
+              "correct": true
+            },
+            {
+              "text": "Ja, sobald zwei Backends eingetragen sind.",
+              "rationale": "Das beschreibt Lastverteilung, nicht Inhaltsprüfung.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        },
+        {
+          "type": "callout",
+          "kind": "merksatz",
+          "label": "Leitgedanke",
+          "markdown": "Vermitteln ist nicht gleich prüfen. Last verteilen ist nicht gleich Angriffe verhindern."
+        }
+      ]
+    },
+    {
+      "title": "Drei Aufgaben auf demselben Weg",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein **Reverse Proxy** nimmt Verbindungen stellvertretend für Backend-Dienste an. Eine **WAF** untersucht Webanfragen mit anwendungsspezifischen Regeln und kann verdächtige Anfragen ablehnen. Ein **Load Balancer** verteilt Last auf geeignete Ziele und kann deren Erreichbarkeit durch Health Checks prüfen. Ein Produkt kann alle drei Rollen enthalten; ein reiner Layer-4-Load-Balancer muss jedoch keine HTTP-Inhalte verstehen.\n\nBei **TLS-Termination** endet die Client-TLS-Verbindung am Proxy. Eine erneute TLS-Verbindung zum Backend ist ein eigener Schutzabschnitt und benötigt eine Prüfung der Backend-Identität. Bei TLS-Passthrough bleibt der Inhalt für eine vorgelagerte HTTP-WAF ohne zusätzliche Entschlüsselung nicht lesbar. Ein Zertifikat am Eingang allein schützt den internen Weg nicht.\n\nEine WAF ersetzt keine Eingabeprüfung und Berechtigungsprüfung der Anwendung. Health Checks beweisen keine vollständige fachliche Funktionsfähigkeit. Eine lokale Proxy-Instanz schützt auch nicht automatisch gegen eine bereits vor ihr gesättigte Internetleitung."
+        },
+        {
+          "type": "figure",
+          "diagramId": "web-schutzpfad",
+          "alt": "Client-TLS endet am Einstieg mit WAF und Lastverteilung. Zum gewählten Backend besteht ein neuer TLS-Abschnitt.",
+          "caption": "Ein Einstieg, zwei mögliche Ziele – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Durchgearbeitetes Beispiel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Kundenportal verwendet einen gemeinsamen Einstieg mit TLS-Termination, WAF und zwei Backends. Zuerst prüft der Browser das Zertifikat für den Portalnamen. Am Einstieg kann die WAF die entschlüsselte HTTP-Anfrage bewerten. Der Load Balancer wählt ein per Health Check verfügbares Backend. Die Weiterleitung erfolgt in diesem Beispiel erneut per TLS mit validierter Backend-Identität.\n\nDie Netzwerkregel erlaubt Backend-Zugriff ausschließlich vom Einstieg auf den vorgesehenen Dienst. Sonst könnte ein direkter Backend-Aufruf die WAF umgehen. Weitergeleitete Client-IP-Header darf das Backend nur vom vertrauenswürdigen Proxy übernehmen; fremde vorgelagerte Werte werden dort bereinigt oder korrekt normalisiert.\n\nFällt Backend A aus, wird es aus der Auswahl genommen. Die laufende Sitzung kann dennoch scheitern, etwa wenn ihr Zustand nur auf A liegt. Für belastbare Verfügbarkeit braucht es deshalb auch ein Sitzungskonzept und einen redundanten Einstieg."
+        },
+        {
+          "type": "figure",
+          "diagramId": "reverse-proxy-waf-ablauf",
+          "alt": "Client-TLS endet am Einstieg; nach Inhaltsprüfung und Zielwahl beginnt eine neue TLS-Verbindung zum Backend.",
+          "caption": "Zwei getrennte TLS-Abschnitte – eigenes Lernmodell."
+        }
+      ]
+    },
+    {
+      "title": "Selbst entscheiden",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "reverse-proxy-waf-uebung",
+          "question": "Die WAF soll HTTP-Inhalte prüfen, sieht aber nur TLS-Passthrough. Was fehlt ihr?",
+          "options": [
+            {
+              "text": "Ein drittes Backend.",
+              "rationale": "Die Anzahl der Ziele ändert die Inhaltssicht nicht.",
+              "correct": false
+            },
+            {
+              "text": "Eine zusätzliche öffentliche DNS-Adresse.",
+              "rationale": "Namensauflösung entschlüsselt den Datenstrom nicht.",
+              "correct": false
+            },
+            {
+              "text": "Zugriff auf den entschlüsselten HTTP-Inhalt am geeigneten Prüfpunkt.",
+              "rationale": "Richtig: Verschlüsselter Inhalt lässt sich dort nicht wie Klartext auswerten.",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "type": "sequence",
+          "id": "reverse-proxy-waf-reihenfolge",
+          "title": "Den Schutzpfad kontrollieren",
+          "prompt": "Ordne den Anfrageweg des beschriebenen Portals.",
+          "steps": [
+            {
+              "id": "s2",
+              "label": "Load Balancer wählt verfügbares Backend"
+            },
+            {
+              "id": "s0",
+              "label": "Client validiert Portalzertifikat und baut TLS auf"
+            },
+            {
+              "id": "s3",
+              "label": "Einstieg baut validierte TLS-Verbindung zum Backend auf"
+            },
+            {
+              "id": "s1",
+              "label": "Einstieg terminiert TLS und WAF prüft HTTP"
+            }
+          ],
+          "expected": [
+            "s0",
+            "s1",
+            "s2",
+            "s3"
+          ],
+          "correctFeedback": "Richtig: Die Inhaltsprüfung liegt zwischen zwei eigenständigen TLS-Abschnitten.",
+          "wrongFeedback": "Gehe vom belegten Bedarf über die Entscheidung zum Nachweis. Prüfe die erste abweichende Position."
+        }
+      ]
+    },
+    {
+      "title": "Aus dem Gedächtnis erklären",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "reverse-proxy-waf-karte-0",
+              "label": "Abruf 1",
+              "front": "Was leistet ein Health Check?",
+              "back": "Er prüft die konfigurierte Erreichbarkeits- oder Anwendungsbedingung, nicht automatisch alle Geschäftsprozesse."
+            },
+            {
+              "id": "reverse-proxy-waf-karte-1",
+              "label": "Abruf 2",
+              "front": "Warum direkten Backend-Zugriff verhindern?",
+              "back": "Sonst lässt sich der vorgeschaltete Schutzpfad umgehen."
+            },
+            {
+              "id": "reverse-proxy-waf-karte-2",
+              "label": "Abruf 3",
+              "front": "Warum ersetzt eine WAF kein Patch?",
+              "back": "Sie kann Muster übersehen oder Fehlalarme erzeugen; die Schwachstelle im Programm bleibt bestehen."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "reverse-proxy-waf-abruf",
+          "title": "Deine Begründung",
+          "prompt": "Ein Portal hat HTTPS am Proxy, aber HTTP zum Backend. Erkläre die Schutzlücke und eine Verbesserung.",
+          "label": "Eigene Erklärung",
+          "placeholder": "Meine Entscheidung und ihre Grenze …",
+          "minLength": 100,
+          "model": "TLS endet am Proxy; der anschließende HTTP-Verkehr ist auf diesem Abschnitt unverschlüsselt. Ich plane eine neue TLS-Verbindung mit validierter Backend-Identität und beschränke Backendzugriffe auf den Proxy. Der Proxy bleibt dabei ein Klartext-Prüfpunkt und muss selbst geschützt werden."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "reverse-proxy-waf-transfer-a",
+          "question": "Ein Portal benötigt HTTP-Angriffsfilter und Verteilung auf verfügbare Server. Welche Funktionen sind nötig?",
+          "options": [
+            {
+              "text": "WAF für HTTP-Regeln und Load Balancing mit geeigneten Health Checks.",
+              "rationale": "Richtig: Die beiden Kontrollziele benötigen unterschiedliche Funktionen.",
+              "correct": true
+            },
+            {
+              "text": "Nur Round Robin, dadurch wird jede gefährliche Anfrage entfernt.",
+              "rationale": "Ein Verteilverfahren bewertet keine Angriffsabsicht.",
+              "correct": false
+            },
+            {
+              "text": "Nur ein Zertifikat; es ersetzt WAF und Ausfallprüfung.",
+              "rationale": "TLS schützt Transport und Identitätsprüfung, nicht diese beiden Aufgaben.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "rollen"
+        },
+        {
+          "type": "quiz",
+          "id": "reverse-proxy-waf-transfer-b",
+          "question": "Welcher Entwurf schützt den vorgesehenen Prüfpfad am besten?",
+          "options": [
+            {
+              "text": "Backend nur vom Einstieg erreichbar; separater TLS-Abschnitt mit Backendprüfung; Client-IP-Header nur vom vertrauenswürdigen Proxy übernehmen.",
+              "rationale": "Richtig: Zugangsweg, Transport und Identitätsweitergabe werden abgesichert.",
+              "correct": true
+            },
+            {
+              "text": "Backend öffentlich offenlassen, weil die WAF auf der Hauptdomain sitzt.",
+              "rationale": "Direkte Zugriffe können die WAF umgehen.",
+              "correct": false
+            },
+            {
+              "text": "HTTPS außen genügt; alle inneren Verbindungen sind dadurch mitverschlüsselt.",
+              "rationale": "Jeder TLS-Abschnitt hat eigene Endpunkte.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "vertrauensgrenzen"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Buchgrundlage: EUROPA, Chunks 01038 und 00491. Ergänzung: [OWASP – Web Application Firewall](https://owasp.org/www-community/Web_Application_Firewall). Eigener Architekturfall; konkrete Header- und Health-Check-Semantik hängt vom Produkt ab."
+        }
+      ]
+    }
+  ]
+}

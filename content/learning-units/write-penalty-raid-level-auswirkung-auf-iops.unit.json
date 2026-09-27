@@ -1,0 +1,361 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "write-penalty-raid-level-auswirkung-auf-iops",
+    "slug": "write-penalty-raid-level-auswirkung-auf-iops",
+    "title": "RAID Write Penalty: IOPS richtig einordnen",
+    "description": "Physische I/O-Arbeit aus Lese- und Schreiblast ableiten und die Grenzen des vereinfachten RAID-Modells erkennen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-3",
+    "groupLabel": "Speicherlösungen",
+    "itemId": "ga1-3__4",
+    "week": "KW 37",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "sources": [
+      "dell-raid-penalty"
+    ],
+    "contentRevision": "2026-09-18.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "rechnen",
+      "label": "Die Backend-Last im vereinfachten RAID-Modell berechnen"
+    },
+    {
+      "id": "grenzen",
+      "label": "Write Penalty von Messwerten und Latenz unterscheiden"
+    }
+  ],
+  "intro": "Physische I/O-Arbeit aus Lese- und Schreiblast ableiten und die Grenzen des vereinfachten RAID-Modells erkennen. Du rechnest mit eigenen Modellwerten; kein echter Speicher wird verändert.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "dell-raid-penalty",
+        "sourceLocator": "Abschnitt 4.3, gedruckte Seiten 17–18; Tabelle 5; Abschnitt 7.2, Seite 32",
+        "use": "I/O-Zählmodell und gewichtete Backend-Last; keine Übernahme SC-spezifischer Produktregeln",
+        "reviewStatus": "Begrenzte Abschnitte am 18.09.2026 gelesen"
+      }
+    ],
+    "notes": [
+      "Eigene Aufgaben und Diagramme, menschliche Fachfreigabe offen.",
+      "Buchbatch ga1-3-004-004 enthält unpassende Kompetenz-, Produkt- und Datenbanktreffer. Diese belegen keine Write-Penalty-Faktoren; keine Buchgrafik übernommen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "rmw",
+      "title": "RAID 5: ein kleiner Schreibauftrag",
+      "type": "flow",
+      "items": [
+        {
+          "label": "Alten Stand lesen",
+          "detail": "Datenblock und Parität: 2 I/Os"
+        },
+        {
+          "label": "Parität berechnen",
+          "detail": "Rechenarbeit, kein weiterer Disk-I/O"
+        },
+        {
+          "label": "Neuen Stand schreiben",
+          "detail": "Datenblock und Parität: 2 I/Os"
+        }
+      ]
+    },
+    {
+      "id": "ebenen",
+      "title": "Auftrag und interne Arbeit unterscheiden",
+      "type": "comparison",
+      "items": [
+        {
+          "label": "Frontend",
+          "detail": "Aufträge der Anwendung pro Sekunde"
+        },
+        {
+          "label": "Backend",
+          "detail": "I/O-Arbeit auf den Datenträgern"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "write-penalty-raid-level-auswirkung-auf-iops-diagnose",
+          "question": "Eine Anwendung erzeugt 100 Schreib-IOPS. Muss die Datenträgerseite ebenfalls nur 100 IOPS erledigen?",
+          "options": [
+            {
+              "text": "Ja, ein Auftrag ist immer ein Datenträgerzugriff.",
+              "rationale": "Redundanz kann zusätzliche interne Zugriffe erfordern.",
+              "correct": false
+            },
+            {
+              "text": "Nein, das RAID kann zusätzliche I/O-Arbeit verursachen.",
+              "rationale": "Richtig: Frontend-Aufträge und Backend-Arbeit sind zu trennen.",
+              "correct": true
+            },
+            {
+              "text": "Nein, es sind bei jedem RAID genau 600.",
+              "rationale": "Der Faktor hängt vom RAID und vom Schreibverfahren ab.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Was der Faktor tatsächlich zählt",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "IOPS zählt Ein-/Ausgabeoperationen pro Sekunde. **Write Penalty** beschreibt hier, wie viele physische I/O-Operationen ein logischer Schreibauftrag verursacht. Es geht um Arbeit, nicht um eine feste Verzögerung.\n\nFür diese Einheit gilt ein vereinfachtes Prüfungsmodell: gesunder Verbund, kleine zufällige Schreibänderungen, kein Cache-Hit, kein Full-Stripe-Write und keine Hintergrundlast. Bei Paritäts-RAID betrachten wir Read-Modify-Write. Für RAID 1/10 nehmen wir genau zwei Kopien an.\n\n| RAID-Level | Backend-I/Os je Schreibauftrag |\n| --- | --- |\n| RAID 0 | 1 |\n| RAID 1 / RAID 10, zweifach gespiegelt | 2 |\n| RAID 5, Read-Modify-Write | 4 |\n| RAID 6, Read-Modify-Write | 6 |\n\nEin kleiner Leseauftrag kostet in unserem gesunden Modell einen Backend-I/O. Die Faktoren sind weder Kapazitätsfaktoren noch pauschale Geschwindigkeitsgarantien."
+        },
+        {
+          "type": "figure",
+          "diagramId": "rmw",
+          "alt": "Zwei alte Blöcke lesen, Parität berechnen, zwei neue Blöcke schreiben.",
+          "caption": "Eigene Darstellung des vereinfachten Small-Random-Write-Modells."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Bei RAID 5 müssen alte Daten und alte Parität gelesen werden. Daraus entsteht mit den neuen Daten die neue Parität. Anschließend werden Daten und Parität geschrieben. Die Paritätsberechnung selbst ist kein zusätzlicher Datenträgerzugriff. RAID 6 berücksichtigt zwei Paritätsinformationen: im entsprechenden Modell drei Lese- und drei Schreiboperationen."
+        }
+      ]
+    },
+    {
+      "title": "Eine eigene Lastrechnung",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "ebenen",
+          "alt": "Frontend zählt Anwendungsaufträge, Backend die dafür anfallende Datenträgerarbeit.",
+          "caption": "Eigene Darstellung des vereinfachten Small-Random-Write-Modells."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Ein Schulserver erzeugt 300 Lese-IOPS und 100 Schreib-IOPS. Für RAID 5 gewichten wir nur den Schreibanteil mit vier. Das Ergebnis beschreibt die benötigte interne I/O-Arbeit, nicht den Datendurchsatz in MB/s."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Backend-IOPS gleich Lese-IOPS plus Write Penalty mal Schreib-IOPS.",
+          "mathml": "<math display=\"block\"><mrow><mi>B</mi><mo>=</mo><mi>R</mi><mo>+</mo><mi>p</mi><mo>·</mo><mi>W</mi></mrow></math>",
+          "legend": [
+            "B: Backend-IOPS; R: Frontend-Lese-IOPS; W: Frontend-Schreib-IOPS",
+            "p: Anzahl Backend-I/Os pro Schreibauftrag im Modell"
+          ]
+        },
+        {
+          "type": "math",
+          "ariaLabel": "300 plus vier mal 100 gleich 700 Backend-IOPS.",
+          "mathml": "<math display=\"block\"><mrow><mn>300</mn><mo>+</mo><mn>4</mn><mo>·</mo><mn>100</mn><mo>=</mo><mn>700</mn></mrow></math>",
+          "legend": [
+            "Eigene Beispielwerte, alle Raten in IOPS"
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "```text\nRAID 5: 300 Lese-IOPS, 100 Schreib-IOPS\nBackend-Bedarf: 700 IOPS\nRAID 10 mit denselben Aufträgen:\nBackend-Bedarf: 500 IOPS\n```\n\nDer Vergleich isoliert nur den I/O-Aufwand. Er beweist nicht, dass ein beliebiges RAID-10-Gerät schneller als ein beliebiges RAID-5-Gerät ist."
+        },
+        {
+          "type": "numeric",
+          "id": "write-penalty-raid-level-auswirkung-auf-iops-zahl",
+          "title": "Jetzt du: RAID 6",
+          "prompt": "Ein anderer Server erzeugt 200 Lese-IOPS und 100 Schreib-IOPS. Wie viele Backend-IOPS benötigt RAID 6 im beschriebenen Modell?",
+          "label": "Backend-IOPS",
+          "expected": 800,
+          "tolerance": 0,
+          "correctFeedback": "200 Lese-IOPS plus 600 interne IOPS für die Schreibaufträge ergeben 800.",
+          "wrongFeedback": "Multipliziere nur den Schreibanteil mit sechs; addiere danach die Leseaufträge.",
+          "misconceptions": [
+            {
+              "value": 1800,
+              "feedback": "Du hast auch die Leseaufträge mit dem Schreibfaktor gewichtet."
+            },
+            {
+              "value": 300,
+              "feedback": "Die zusätzlichen internen Zugriffe für Redundanz fehlen."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Vom Backend-Budget zum Frontend",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein fiktives Array stellt im Modell 1.200 Backend-IOPS bereit. Bei ausschließlich kleinen RAID-5-Schreibaufträgen reicht dieses Budget rechnerisch für 300 Frontend-Schreib-IOPS. Kein zusätzlicher Abzug von Paritätsplatten: Das Budget ist bereits für die gesamte Datenträgerseite angegeben."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Frontend-Schreib-IOPS gleich 1200 geteilt durch vier gleich 300.",
+          "mathml": "<math display=\"block\"><mrow><mi>W</mi><mo>=</mo><mfrac><mn>1200</mn><mn>4</mn></mfrac><mo>=</mo><mn>300</mn></mrow></math>",
+          "legend": [
+            "Nur Schreiblast, RAID 5 im festgelegten Modell; keine garantierte Betriebsleistung"
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "write-penalty-raid-level-auswirkung-auf-iops-uebung",
+          "question": "Warum wäre es falsch, bei gemischter Last einfach alle Frontend-IOPS durch vier zu teilen?",
+          "options": [
+            {
+              "text": "Weil IOPS und Megabyte identisch sind.",
+              "rationale": "IOPS zählt Operationen, nicht Datenmenge.",
+              "correct": false
+            },
+            {
+              "text": "Weil Lese- und Schreibaufträge unterschiedlich gewichtet werden.",
+              "rationale": "Richtig: Den Lastmix getrennt betrachten.",
+              "correct": true
+            },
+            {
+              "text": "Weil Parität gar keine I/O-Arbeit verursacht.",
+              "rationale": "Auch Paritätsblöcke werden gelesen beziehungsweise geschrieben.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Die Grenze der Rechnung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein **Full-Stripe-Write** liefert alle neuen Daten eines Stripes zusammen. Dann lässt sich neue Parität ohne Lesen der alten Datenstände bilden. Cache kann kleine Aufträge bündeln; reale Controller wählen geeignete Schreibverfahren. Deshalb gilt die Tabelle nicht für jedes Schreibmuster.\n\nAuch Blockgröße, Warteschlangentiefe, Lastverteilung, Controller und Netzwerk beeinflussen Messwerte. Im degradierten Zustand oder beim Rebuild kommt zusätzliche Arbeit hinzu. Das reine I/O-Zählmodell enthält diese Effekte nicht.\n\nBegründe in einer Prüfung zweistufig: zuerst das Ergebnis unter klaren Annahmen; danach seine Grenze. Für eine Beschaffung fehlen noch Messungen unter passender Last sowie Kapazitäts-, Verfügbarkeits- und Wiederherstellungsanforderungen. Ein niedriger Faktor allein macht RAID 0 nicht zu einer sicheren Speicherlösung."
+        }
+      ]
+    },
+    {
+      "title": "Selbst ordnen und erklären",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "write-penalty-raid-level-auswirkung-auf-iops-reihenfolge",
+          "title": "Ablauf ordnen",
+          "prompt": "Ordne den Weg von der Anforderung zur belastbaren Einordnung.",
+          "steps": [
+            {
+              "id": "abschluss",
+              "label": "Modellgrenzen nennen und reale Messung verlangen"
+            },
+            {
+              "id": "start",
+              "label": "Frontend-Lese-/Schreiblast und RAID-Level erfassen"
+            },
+            {
+              "id": "pruefen",
+              "label": "Backend-I/O-Arbeit mit passendem Faktor berechnen"
+            }
+          ],
+          "expected": [
+            "start",
+            "pruefen",
+            "abschluss"
+          ],
+          "correctFeedback": "Richtig: Voraussetzungen, Prüfung und Abschluss stehen in der vorgesehenen Reihenfolge.",
+          "wrongFeedback": "Prüfe die Voraussetzungen: Der letzte Schritt darf die vorherige Prüfung nicht überspringen."
+        },
+        {
+          "type": "recall",
+          "id": "write-penalty-raid-level-auswirkung-auf-iops-begruendung",
+          "title": "Aus dem Gedächtnis erklären",
+          "prompt": "Warum bedeuten vier interne I/Os bei RAID 5 nicht automatisch vierfache Antwortzeit? Nenne außerdem zwei Grenzen der Modellrechnung.",
+          "label": "Deine Erklärung",
+          "minLength": 70,
+          "model": "Der Faktor zählt I/O-Arbeit, keine feste Zeit. Operationen können parallel laufen und Cache kann sie bündeln. Blockgröße, Lastverteilung, Controller, Full-Stripe-Writes und Rebuild verändern die reale Leistung. Deshalb messe ich passende Last und Latenz statt die Modellzahl als Garantie auszugeben."
+        },
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "write-penalty-raid-level-auswirkung-auf-iops-karte-0",
+              "label": "Abruf 1",
+              "front": "Welche Vorgänge zählen beim RAID-5-Modell?",
+              "back": "Alte Daten und Parität lesen; neue Daten und Parität schreiben."
+            },
+            {
+              "id": "write-penalty-raid-level-auswirkung-auf-iops-karte-1",
+              "label": "Abruf 2",
+              "front": "Warum nicht alle IOPS mit vier multiplizieren?",
+              "back": "Der Write-Penalty-Faktor gilt hier nur für Schreibaufträge; Lesen kostet im gesunden Modell einen I/O."
+            },
+            {
+              "id": "write-penalty-raid-level-auswirkung-auf-iops-karte-2",
+              "label": "Abruf 3",
+              "front": "Was ist ein Full-Stripe-Write?",
+              "back": "Alle Datenblöcke eines Stripes werden gemeinsam neu geschrieben. Das Lesen alter Daten und Parität kann dann entfallen."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "write-penalty-raid-level-auswirkung-auf-iops-transfer-a",
+          "question": "Ein neues RAID-5-Modell bekommt 100 Lese- und 200 Schreib-IOPS. Welche Backend-Last ergibt sich?",
+          "options": [
+            {
+              "text": "1.200 IOPS.",
+              "rationale": "Hier wurden auch die Leseaufträge mit vier multipliziert.",
+              "correct": false
+            },
+            {
+              "text": "300 IOPS.",
+              "rationale": "Hier fehlt der Schreibmehraufwand.",
+              "correct": false
+            },
+            {
+              "text": "900 IOPS.",
+              "rationale": "100 Lese-IOPS und 800 interne IOPS für die Schreibaufträge.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "rechnen"
+        },
+        {
+          "type": "quiz",
+          "id": "write-penalty-raid-level-auswirkung-auf-iops-transfer-b",
+          "question": "Ein Full-Stripe-Benchmark weicht von der Vierer-Regel ab. Was ist die passende Erklärung?",
+          "options": [
+            {
+              "text": "Das Read-Modify-Write-Modell beschreibt diesen Zugriff nicht vollständig.",
+              "rationale": "Alle neuen Daten eines Stripes können alte Lesezugriffe entbehrlich machen.",
+              "correct": true
+            },
+            {
+              "text": "Die Messung muss falsch sein.",
+              "rationale": "Andere Schreibverfahren verändern den Aufwand.",
+              "correct": false
+            },
+            {
+              "text": "Write Penalty gibt immer die genaue Antwortzeit vor.",
+              "rationale": "Der Faktor zählt Operationen, keine feste Latenz.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "grenzen"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Einordnung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Technischer Abgleich: [Dell Engineering: Understanding RAID with Dell SC Series Storage](https://dl.dell.com/manuals/common/dell-emc-raid-sc-series-storage-2014-cd-ds.pdf), September 2016, Abschnitte 4.3 und 7.2. Die historische Quelle belegt das grundlegende I/O-Modell, keine aktuellen Produktgrenzen oder Beschaffungsempfehlungen. Die Buchbatch-Treffer waren nicht als Write-Penalty-Belege geeignet und wurden ausgeschlossen. Zahlenfälle und Grafiken sind eigene didaktische Modelle. Menschliche Fachfreigabe offen."
+        }
+      ]
+    }
+  ]
+}

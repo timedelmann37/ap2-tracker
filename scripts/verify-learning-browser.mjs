@@ -63,7 +63,11 @@ try {
     assert(await topicLink.count() === 1, `${topic.slug}: canonical area item exposes exactly one learning link`);
   }
   await page.goto(`${base}/uebersicht/`);
-  await page.locator('button[data-jump="ga1-3"]').click();
+  const storageRow = page.locator('button[data-jump="ga1-3"]');
+  const storageWeek = page.locator('details.tl-week').filter({ has: storageRow });
+  // Past weeks collapse as the calendar advances; open them like a user would.
+  if (await storageWeek.getAttribute('open') === null) await storageWeek.locator('summary').click();
+  await storageRow.click();
   await page.waitForURL('**/konzeption-administration/#ga1-3');
   const storageLink = page.locator('a.learning-link[href="/lernen/storage-types/"]');
   await storageLink.waitFor({ state: 'visible' });
@@ -235,6 +239,83 @@ try {
   assert(await page.locator('.math-display > math').count() >= 2, 'MTU and oversubscription calculations use visual accessible MathML');
   assert(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'Jumbo-frame topic has no horizontal page overflow');
 
+  await page.goto(`${base}/lernen/wlan-kanalplanung/`);
+  assert(await page.locator('figure .learning-diagram').count() === 2, 'WLAN channel planning exposes both instructional diagrams');
+  assert(await page.locator('.math-display > math').count() >= 1, 'WLAN channel relation uses visual accessible MathML');
+  assert(await page.locator('[data-sequence="channel-planning-sequence"] [data-step]').count() === 5, 'WLAN channel planning exposes the complete decision sequence');
+  await page.locator('[data-quiz="wlan-kanalplanung-transfer-a"] [data-answer="0"]').click();
+  assert(await page.locator('#mark-done').isDisabled(), 'One WLAN channel objective does not unlock completion');
+  await page.locator('[data-quiz="wlan-kanalplanung-transfer-b"] [data-answer="0"]').click();
+  assert(!await page.locator('#mark-done').isDisabled(), 'Both WLAN channel objectives unlock completion');
+
+  await page.goto(`${base}/lernen/voip-bandbreite/`);
+  assert(await page.locator('figure .learning-diagram').count() === 2, 'VoIP bandwidth topic exposes both instructional diagrams');
+  assert(await page.locator('.math-display > math').count() >= 1, 'VoIP bandwidth formulas use visual accessible MathML');
+  await page.locator('[data-quiz="voip-bandbreite-transfer-a"] [data-answer="0"]').click();
+  assert(await page.locator('#mark-done').isDisabled(), 'VoIP concept check alone does not unlock completion');
+  const voipNumeric = page.locator('[data-numeric-practice="voip-bandbreite-transfer-b"]');
+  await voipNumeric.locator('[data-numeric-input]').fill('1382,4');
+  await voipNumeric.locator('[data-numeric-check]').click();
+  assert(await voipNumeric.locator('[data-numeric-feedback]').getAttribute('data-result') === 'correct', 'VoIP transfer calculation accepts decimal comma and correct overhead result');
+  assert(!await page.locator('#mark-done').isDisabled(), 'Both VoIP objectives unlock completion');
+  assert(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'VoIP bandwidth topic has no horizontal page overflow');
+
+  await page.goto(`${base}/lernen/default-deny-regelreihenfolge/`);
+  const ruleSequence = page.locator('[data-sequence="default-deny-regelreihenfolge-reihenfolge"]');
+  await ruleSequence.locator('[data-sequence-check]').click();
+  assert((await ruleSequence.locator('[data-sequence-feedback]').textContent()).includes('Position'), 'N7 sequence starts unsolved and explains the first misplaced step');
+  await ruleSequence.locator('[data-step="s0"] [data-move="up"]').click();
+  await ruleSequence.locator('[data-step="s1"] [data-move="up"]').click();
+  await ruleSequence.locator('[data-step="s1"] [data-move="up"]').click();
+  await ruleSequence.locator('[data-sequence-check]').click();
+  assert((await ruleSequence.locator('[data-sequence-feedback]').textContent()).includes('Richtig'), 'N7 sequence can be solved with labelled move controls');
+  await page.locator('[data-quiz="default-deny-regelreihenfolge-transfer-a"] [data-answer="0"]').click();
+  const ruleNumber = page.locator('[data-numeric-practice="default-deny-regelreihenfolge-transfer-b"]');
+  await ruleNumber.locator('[data-numeric-input]').fill('2');
+  await ruleNumber.locator('[data-numeric-check]').click();
+  assert(await page.locator('#mark-done').isDisabled(), 'Wrong first-match result keeps N7 completion gated');
+  await ruleNumber.locator('[data-numeric-input]').fill('3');
+  await ruleNumber.locator('[data-numeric-check]').click();
+  assert(!await page.locator('#mark-done').isDisabled(), 'Correct first-match reasoning and number unlock N7 completion');
+  await page.reload();
+  assert(!await page.locator('#mark-done').isDisabled(), 'N7 objective results survive reload');
+
+  await page.goto(`${base}/lernen/ids-ips/`);
+  const precision = page.locator('[data-numeric-practice="ids-ips-transfer-b"]');
+  await precision.locator('[data-numeric-input]').fill('75');
+  await precision.locator('[data-numeric-check]').click();
+  assert(await precision.locator('[data-numeric-feedback]').getAttribute('data-result') === 'wrong', 'IDS precision rejects the false-alarm share');
+  await precision.locator('[data-numeric-input]').fill('25');
+  await precision.locator('[data-numeric-check]').click();
+  assert(await precision.locator('[data-numeric-feedback]').getAttribute('data-result') === 'correct', 'IDS precision accepts confirmed alerts divided by all alerts');
+  assert(await page.locator('.math-display > math').count() === 1, 'IDS precision is rendered as semantic visual mathematics');
+
+  for (const [slug, correct] of [['nac-8021x', 1], ['acl-vs-firewall', 2], ['reverse-proxy-waf', 0], ['netzwerkangriffe', 1], ['angriffsgegenmassnahmen', 2], ['sichere-netzprotokolle', 0]]) {
+    await page.goto(`${base}/lernen/${slug}/`);
+    assert(await page.locator('#mark-done').isDisabled(), `${slug}: unattempted objectives gate completion`);
+    await page.locator(`[data-quiz="${slug}-diagnose"] [data-answer]`).first().click();
+    assert(await page.locator('#mark-done').isDisabled(), `${slug}: diagnostic does not grant an objective`);
+    await page.locator(`[data-quiz="${slug}-transfer-a"] [data-answer="${(correct + 1) % 3}"]`).click();
+    assert(await page.locator('#mark-done').isDisabled(), `${slug}: wrong transfer does not unlock completion`);
+    await page.locator(`[data-quiz="${slug}-transfer-a"] [data-quiz-reset]`).click();
+    await page.locator(`[data-quiz="${slug}-transfer-a"] [data-answer="${correct}"]`).click();
+    assert(await page.locator('#mark-done').isDisabled(), `${slug}: one objective is insufficient`);
+    await page.locator(`[data-quiz="${slug}-transfer-b"] [data-answer="${correct}"]`).click();
+    assert(!await page.locator('#mark-done').isDisabled(), `${slug}: both objectives unlock completion`);
+    await page.reload();
+    assert(!await page.locator('#mark-done').isDisabled(), `${slug}: results persist after reload`);
+  }
+  await page.goto(`${base}/lernen/netzwerk-logging-datenschutz/`);
+  await page.locator('[data-quiz="netzwerk-logging-datenschutz-transfer-a"] [data-answer="1"]').click();
+  const logVolume = page.locator('[data-numeric-practice="netzwerk-logging-datenschutz-transfer-b"]');
+  await logVolume.locator('[data-numeric-input]').fill('12');
+  await logVolume.locator('[data-numeric-check]').click();
+  assert(await page.locator('#mark-done').isDisabled(), 'Logging: one-day volume does not pass ten-day objective');
+  await logVolume.locator('[data-numeric-input]').fill('120');
+  await logVolume.locator('[data-numeric-check]').click();
+  assert(!await page.locator('#mark-done').isDisabled(), 'Logging: 120 decimal MB and concept check unlock completion');
+  assert(await page.locator('.math-display > math').count() === 1, 'Logging volume formula uses visual semantic MathML');
+
   await page.goto(`${base}/lernen/ethernet-standards/`);
   const domainAccentMatches = await page.evaluate(() => {
     const probe = document.createElement('span');
@@ -381,6 +462,22 @@ try {
   await mobilePage.goto(`${base}/lernen/netzwerktopologien/`);
   assert(await mobilePage.locator('.learning-diagram').count() === 2, 'Topology diagrams render on mobile');
   assert(await mobilePage.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'Topology learning page has no horizontal page overflow at 390px');
+  for (const slug of ['firewall-typen', 'firewall-regelwerk', 'default-deny-regelreihenfolge', 'dmz-architektur', 'zero-trust-segmentierung', 'ids-ips']) {
+    await mobilePage.goto(`${base}/lernen/${slug}/`);
+    assert(await mobilePage.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `${slug}: no mobile page overflow`);
+    assert(await mobilePage.locator('.learning-diagram').count() === 2, `${slug}: both diagrams render on mobile`);
+  }
+  for (const theme of ['dark', 'light']) {
+    for (const slug of ['nac-8021x', 'acl-vs-firewall', 'reverse-proxy-waf', 'netzwerkangriffe', 'angriffsgegenmassnahmen', 'sichere-netzprotokolle', 'netzwerk-logging-datenschutz']) {
+      await mobilePage.goto(`${base}/lernen/${slug}/`);
+      await mobilePage.evaluate(value => document.documentElement.setAttribute('data-theme', value), theme);
+      assert(await mobilePage.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `${slug}: ${theme} mobile page has no overflow`);
+      assert(await mobilePage.locator('.learning-diagram').count() === 2, `${slug}: two diagrams in ${theme}`);
+      for (const table of await mobilePage.locator('.twrap').all()) {
+        assert(await table.evaluate(node => { if (node.scrollWidth <= node.clientWidth) return true; node.scrollLeft = 50; return node.scrollLeft > 0; }), `${slug}: wide tables remain scrollable`);
+      }
+    }
+  }
   await mobile.close();
 
   console.log('PASS learning route, persistence, quiz retry, shared progress and mobile navigation');

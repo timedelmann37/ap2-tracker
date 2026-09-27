@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Speicherbedarf und Ausfalltoleranz gemeinsam beurteilen, statt die Anzahl der Server mit Sicherheit gleichzusetzen.">
+<title>Verteilte Speicher: Kopien, Erasure Coding und Ausfallbereiche – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="software-defined-storage-verteilte-systeme-replikation-vs-erasure" data-progress-id="ga1-3__10" data-content-revision="2026-09-18.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-3">Speicherlösungen</a><span class="sep">›</span>
+    <span class="here">Verteilte Speicher: Kopien, Erasure Coding und Ausfallbereiche</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Verteilte Speicher: Kopien, Erasure Coding und Ausfallbereiche</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 30 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Speicherbedarf und Ausfalltoleranz gemeinsam beurteilen, statt die Anzahl der Server mit Sicherheit gleichzusetzen. Du vergleichst eigene Cluster-Modelle; kein echter Cluster wird konfiguriert.</p>
+<section class="learning-goals" aria-labelledby="software-defined-storage-verteilte-systeme-replikation-vs-erasure-goals">
+  <h2 id="software-defined-storage-verteilte-systeme-replikation-vs-erasure-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Replikations- und Erasure-Coding-Bedarf berechnen</li>
+    <li>Ausfallbereiche und Dienstverfügbarkeit getrennt beurteilen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Vorwissen aktivieren</h2>
+<section class="quiz" data-quiz="software-defined-storage-verteilte-systeme-replikation-vs-erasure-diagnose" data-correct="1">
+  <h3>Drei Kopien liegen auf drei Servern im selben Rack. Was ist damit noch nicht nachgewiesen?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Das ist durchaus möglich, aber nicht die offene Schutzfrage."><span class="m">A</span> Dass drei vollständige Kopien existieren können.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig: Eine gemeinsame Abhängigkeit kann alle Kopien treffen."><span class="m">B</span> Schutz gegen den vollständigen Ausfall dieses Racks.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die relevante Frage ist die Platzierung, nicht die Dateifähigkeit."><span class="m">C</span> Dass die Server Dateien speichern können.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2"><span class="num">2</span>Was Software-defined Storage hier bedeutet</h2>
+<p>Bei <strong>Software-defined Storage (SDS)</strong> steuert Software wesentliche Speicherfunktionen wie Bereitstellung, Platzierung und Schutz über eine abstrakte Verwaltungsschicht. In einem verteilten System übernehmen mehrere Knoten diese Aufgaben gemeinsam. SDS bedeutet nicht „ohne Hardware“ und auch nicht automatisch „ausfallsicher“.</p>
+<p>Ceph ist ein Beispiel: Speicherprozesse auf Knoten verwalten Daten und deren Verteilung; weitere Dienste halten Clusterzustand und Metadaten bereit. Je nach Dienst kann derselbe Unterbau Objekt-, Block- oder Dateizugriff anbieten. Für eine reale Auswahl zählen Anwendungsunterstützung, Netzwerk, Betriebswissen und getestetes Ausfallverhalten – nicht nur die Zahl der Knoten.</p>
+<h2 class="sec" id="s3"><span class="num">3</span>Replikation und Erasure Coding</h2>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Vollständige Kopien oder Fragmente?">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-schutz-title diagram-schutz-desc">
+  <title id="diagram-schutz-title">Vollständige Kopien oder Fragmente?</title>
+  <desc id="diagram-schutz-desc">Replikation speichert drei vollständige Kopien, EC 4+2 sechs Teilfragmente mit vier Daten- und zwei Codierungsfragmenten.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Vollständige Kopien oder Fragmente?</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="429" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">Dreifache Replikation</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">3 vollständige Kopien desselben Objekts</tspan></text></g><g><rect class="diagram-row" x="489" y="92" width="429" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="511" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="511" dy="0">Erasure Coding 4+2</tspan></text><text x="511" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="511" dy="0">4 Datenfragmente plus 2</tspan><tspan x="511" dy="30">Codierungsfragmente</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Modellanordnung, keine produktive Konfigurationsempfehlung.</figcaption>
+</figure><p><strong>Replikation</strong> hält mehrere vollständige Kopien. Bei Replikationsfaktor drei sind hier insgesamt drei Kopien gemeint, nicht ein Original plus drei weitere.</p>
+<p><strong>Erasure Coding (EC)</strong> zerlegt Daten und berechnet zusätzliche Codierungsfragmente. Unser idealisiertes Reed-Solomon-Modell verwendet vier Datenfragmente und zwei Codierungsfragmente, kurz <strong>4+2</strong>. Aus beliebigen vier intakten Fragmenten desselben Datenstands lässt sich der Inhalt rekonstruieren. Zwei fehlende Fragmente sind im Modell tolerierbar; drei nicht mehr allgemein.</p>
+<p>Diese Aussage betrifft Rekonstruktion. Ob der Dienst weiter lesen oder schreiben darf, hängt zusätzlich von Clusterzustand und Betriebsregeln ab. Ein Codierungsfragment ist keine vollständige Kopie.</p>
+<h2 class="sec" id="s4"><span class="num">4</span>Eigener Kapazitätsvergleich</h2>
+<p>Ein Archiv enthält 8 TiB Nutzdaten. Verglichen werden dreifache Replikation und EC 4+2. Alle Werte beziehen sich auf die Daten und ihren Schutz; Metadaten, Rundung, freie Betriebsreserve und weitere Kopien bleiben außen vor.</p>
+<div class="math-display" role="group" aria-label="Replikation benötigt acht mal drei gleich 24 TiB."><math display="block" aria-label="Replikation benötigt acht mal drei gleich 24 TiB."><mrow><mn>8</mn><mo>·</mo><mn>3</mn><mo>=</mo><mn>24</mn></mrow></math><div class="math-legend"><span>Nutzdaten mal Gesamtzahl der Kopien; Ergebnis in TiB</span></div></div><div class="math-display" role="group" aria-label="EC benötigt acht mal vier plus zwei geteilt durch vier gleich zwölf TiB."><math display="block" aria-label="EC benötigt acht mal vier plus zwei geteilt durch vier gleich zwölf TiB."><mrow><mn>8</mn><mo>·</mo><mfrac><mrow><mn>4</mn><mo>+</mo><mn>2</mn></mrow><mn>4</mn></mfrac><mo>=</mo><mn>12</mn></mrow></math><div class="math-legend"><span>Allgemeiner Speicherfaktor: (k+m)/k; k Datenfragmente, m Codierungsfragmente</span></div></div><p>EC braucht in diesem Vergleich weniger Platz, ist aber nicht kostenlos: Codierung und Wiederaufbau benötigen Rechenarbeit, Datenträgerzugriffe und Netzwerkverkehr. Schreiblatenz und Wiederaufbauzeit müssen zur Arbeitslast passen. Die Modellzahl ist daher noch keine Einkaufsgröße.</p>
+<section class="numeric-practice transfer-number" data-numeric-practice="software-defined-storage-verteilte-systeme-replikation-vs-erasure-zahl" data-expected="18" data-tolerance="0" data-correct-feedback="Der Faktor ist 6/4 beziehungsweise 1,5. Für 12 TiB werden 18 TiB benötigt." data-wrong-feedback="Die Nutzdaten entsprechen vier Datenfragmenten; zusätzliche zwei Fragmente erzeugen den Mehrbedarf.">
+  <h3>Jetzt du: größeres Archiv</h3>
+  <p>12 TiB Nutzdaten sollen mit EC 4+2 gespeichert werden. Wie viele TiB benötigt das gleiche ideale Datenmodell inklusive Codierungsfragmenten, aber ohne Metadaten und Betriebsreserve?</p>
+  <label for="software-defined-storage-verteilte-systeme-replikation-vs-erasure-zahl-answer">Speicherbedarf in TiB</label>
+  <div class="answer-row"><input id="software-defined-storage-verteilte-systeme-replikation-vs-erasure-zahl-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Ergebnis"><button type="button" class="lbtn" data-numeric-check>Antwort prüfen</button></div><p>  <template data-numeric-feedback-for="72">Sechs Fragmente sind keine sechs vollständigen Kopien.</template>
+  <template data-numeric-feedback-for="36">Das wäre dreifache Replikation, nicht EC 4+2.</template>
+  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p></p>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Failure Domains: gemeinsam ausfallen</h2>
+<p>Eine <strong>Failure Domain</strong> ist ein Bereich, dessen Komponenten durch ein gemeinsames Ereignis ausfallen können: ein Datenträger, ein Host, ein Rack oder ein Standort. Gemeinsame Stromversorgung und Netzwerkpfade gehören in die Betrachtung.</p>
+<p>Die Platzierungsregel muss zum Schutzziel passen. Host-Trennung allein beweist keine Rack-Trennung. Unser eigener 4+2-Fall hat genau ein Fragment je Host, verteilt aber sechs Hosts ungleich auf drei Racks:</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Sechs Hosts sind nicht sechs Racks">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-racks-title diagram-racks-desc">
+  <title id="diagram-racks-title">Sechs Hosts sind nicht sechs Racks</title>
+  <desc id="diagram-racks-desc">Rack A enthält drei Fragmente, Rack B zwei und Rack C eines.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Sechs Hosts sind nicht sechs Racks</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">Rack A</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">D1, D2, D3 auf 3 Hosts</tspan></text></g><g><rect class="diagram-row" x="340" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="362" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="362" dy="0">Rack B</tspan></text><text x="362" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="362" dy="0">D4 und P1 auf 2 Hosts</tspan></text></g><g><rect class="diagram-row" x="638" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="660" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="660" dy="0">Rack C</tspan></text><text x="660" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="660" dy="0">P2 auf 1 Host</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Modellanordnung, keine produktive Konfigurationsempfehlung.</figcaption>
+</figure><pre><code class="language-text">Rack A: D1 D2 D3
+Rack B: D4 P1
+Rack C: P2
+</code></pre>
+<p>Fällt Rack B vollständig aus, fehlen zwei Fragmente; vier bleiben erhalten. Die Daten sind im Modell rekonstruierbar. Fällt Rack A aus, fehlen drei; nur drei bleiben. Damit ist die zugesicherte Rekonstruktion nicht mehr gegeben.</p>
+<p>Wer zwei Rack-Ausfälle abdecken will, darf nicht einfach „zwei Paritätsfragmente“ mit „zwei Racks“ gleichsetzen. Entscheidend ist, wie viele Fragmente jeder konkrete Ausfall entfernt. Eine Platzierung mit einem Fragment je Rack wäre ein anderes Modell und benötigte hier sechs entsprechende Bereiche.</p>
+<section class="quiz" data-quiz="software-defined-storage-verteilte-systeme-replikation-vs-erasure-uebung" data-correct="1">
+  <h3>Im dargestellten Fall fällt nur Rack A aus. Warum reicht „sechs Hosts vorhanden“ als Sicherheitsbegründung nicht?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Codierungsfragmente sind keine Vollkopien."><span class="m">A</span> Weil EC immer genau zwei vollständige Kopien speichert.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig: Die gemeinsame Abhängigkeit übersteigt das Zwei-Fragment-Budget."><span class="m">B</span> Weil der einzelne Rack-Ausfall drei Fragmente gleichzeitig entfernt.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die Anzahl betroffener Fragmente hängt gerade von der Verteilung ab."><span class="m">C</span> Weil jede Rack-Verteilung identisch wirkt.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Nach dem Ausfall ist die Arbeit nicht vorbei</h2>
+<p>Ein noch rekonstruierbarer Datenbestand ist nicht wieder vollständig geschützt. Fehlende Kopien oder Fragmente müssen auf geeigneten verfügbaren Bereichen neu aufgebaut werden. Dafür braucht der Betrieb Platz, Bandbreite und Zeit. Ein weiterer Ausfall währenddessen kann die verbleibende Toleranz überschreiten.</p>
+<p>Teste deshalb nicht nur den gesunden Cluster, sondern auch Ausfall und Wiederaufbau unter Last. Prüfe zusätzlich die Erreichbarkeit und Funktionsfähigkeit der Kontroll- und Metadatendienste. „Daten vorhanden“ und „Dienst verfügbar“ sind zwei unterschiedliche Aussagen.</p>
+<p>Weder EC noch Replikation sind ein unabhängiges Backup. Eine logische Fehländerung oder Löschung kann vom System korrekt auf alle Kopien beziehungsweise Fragmente angewendet werden. Für ältere unveränderte Stände braucht es einen passenden Sicherungs- und Wiederherstellungsweg.</p>
+<h2 class="sec" id="s7"><span class="num">7</span>Selbst ordnen und erklären</h2>
+<section class="sequence-practice" data-sequence="software-defined-storage-verteilte-systeme-replikation-vs-erasure-reihenfolge" data-expected="start,pruefen,abschluss" data-correct-feedback="Richtig: Voraussetzungen, Prüfung und Abschluss stehen in der vorgesehenen Reihenfolge." data-wrong-feedback="Prüfe die Voraussetzungen: Der letzte Schritt darf die vorherige Prüfung nicht überspringen." aria-labelledby="software-defined-storage-verteilte-systeme-replikation-vs-erasure-reihenfolge-title">
+  <div class="lab-heading"><div><h3 id="software-defined-storage-verteilte-systeme-replikation-vs-erasure-reihenfolge-title">Ablauf ordnen</h3><p>Ordne die begründete Planung eines verteilten Speichers.</p></div><span class="lab-tag">Ablauf</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="abschluss" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Ausfall, Wiederaufbau und Restore unter Last nachweisen</span></li>
+    <li data-step="start" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Arbeitslast und zu überstehende Ausfallbereiche festlegen</span></li>
+    <li data-step="pruefen" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Schutzverfahren, Platzierung, Kapazität und Reserve planen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><section class="recall-practice" data-recall="software-defined-storage-verteilte-systeme-replikation-vs-erasure-begruendung" data-min-length="70" aria-labelledby="software-defined-storage-verteilte-systeme-replikation-vs-erasure-begruendung-title">
+  <div class="recall-prompt"><h3 id="software-defined-storage-verteilte-systeme-replikation-vs-erasure-begruendung-title">Aus dem Gedächtnis erklären</h3><p>Ein Anbieter sagt: „Wir haben sechs Server und EC 4+2; zwei Rack-Ausfälle sind also kein Problem.“ Welche Angaben fehlen für diese Zusage?</p></div>
+  <label class="sr-only" for="software-defined-storage-verteilte-systeme-replikation-vs-erasure-begruendung-answer">Deine Erklärung</label>
+  <textarea id="software-defined-storage-verteilte-systeme-replikation-vs-erasure-begruendung-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Ich brauche die tatsächliche Verteilung der Fragmente auf Racks und gemeinsame Strom-/Netzabhängigkeiten. Zwei fehlende Fragmente sind nicht automatisch zwei ausgefallene Racks: Ein Rack kann mehrere Fragmente enthalten. Außerdem sind Rekonstruierbarkeit, Dienstverfügbarkeit und Schreibfreigabe verschieden. Zu prüfen sind Kontrollkomponenten, Clusterregeln sowie Reserve und Zeit für den Wiederaufbau.</div>
+</section><div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="software-defined-storage-verteilte-systeme-replikation-vs-erasure-karte-0" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was bedeutet 4+2 im Modell?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Vier Datenfragmente und zwei zusätzliche Codierungsfragmente; insgesamt sechs.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="software-defined-storage-verteilte-systeme-replikation-vs-erasure-karte-1" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was ist eine Failure Domain?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Ein gemeinsamer Ausfallbereich, etwa Host, Rack oder Standort.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="software-defined-storage-verteilte-systeme-replikation-vs-erasure-karte-2" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Ersetzt Replikation ein Backup?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Nein. Fehlerhafte Änderungen oder Löschungen können ebenfalls repliziert werden; unabhängige Wiederherstellung bleibt nötig.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Abruf 1“:</span><button type="button" data-card-id="software-defined-storage-verteilte-systeme-replikation-vs-erasure-karte-0" data-card-rate="known">gewusst</button><button type="button" data-card-id="software-defined-storage-verteilte-systeme-replikation-vs-erasure-karte-0" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="software-defined-storage-verteilte-systeme-replikation-vs-erasure-karte-0"></span></div>
+<div class="card-rating"><span>Karte „Abruf 2“:</span><button type="button" data-card-id="software-defined-storage-verteilte-systeme-replikation-vs-erasure-karte-1" data-card-rate="known">gewusst</button><button type="button" data-card-id="software-defined-storage-verteilte-systeme-replikation-vs-erasure-karte-1" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="software-defined-storage-verteilte-systeme-replikation-vs-erasure-karte-1"></span></div>
+<div class="card-rating"><span>Karte „Abruf 3“:</span><button type="button" data-card-id="software-defined-storage-verteilte-systeme-replikation-vs-erasure-karte-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="software-defined-storage-verteilte-systeme-replikation-vs-erasure-karte-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="software-defined-storage-verteilte-systeme-replikation-vs-erasure-karte-2"></span></div><h2 class="sec" id="s8"><span class="num">8</span>Lernziel-Check</h2>
+<section class="quiz" data-quiz="software-defined-storage-verteilte-systeme-replikation-vs-erasure-transfer-a" data-correct="2" data-required-objective="kapazitaet">
+  <h3>Neuer Datenbestand: 20 TiB, EC 4+2, gleiche Modellannahmen. Welcher Datenbedarf ist richtig?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Hier wurden Fragmente mit Vollkopien verwechselt."><span class="m">A</span> 120 TiB.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die Codierungsfragmente brauchen ebenfalls Platz."><span class="m">B</span> 20 TiB.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="20 mal 6/4 ergibt 30 TiB vor zusätzlichen Reserven."><span class="m">C</span> 30 TiB.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="software-defined-storage-verteilte-systeme-replikation-vs-erasure-transfer-b" data-correct="0" data-required-objective="ausfall">
+  <h3>Vier intakte Fragmente eines 4+2-Satzes sind verfügbar. Was darfst du daraus sicher ableiten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Datenerhalt allein beantwortet die Betriebsfrage nicht."><span class="m">A</span> Rekonstruktion ist im Modell möglich; Dienstbetrieb und Schreibfreigabe sind gesondert zu prüfen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Clusterregeln und weitere Komponenten sind noch ungeprüft."><span class="m">B</span> Alle Schreibvorgänge sind automatisch uneingeschränkt möglich.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die verbleibende Schutzreserve kann bereits aufgebraucht sein."><span class="m">C</span> Jeder weitere Rack-Ausfall ist unkritisch.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s9"><span class="num">9</span>Quellen und Grenzen</h2>
+<p><a href="https://docs.ceph.com/en/squid/rados/operations/erasure-code/">Ceph Squid: Erasure code</a> · <a href="https://docs.ceph.com/en/squid/architecture/">Ceph Squid: Architecture</a>. Ausgewählte Abschnitte am 18.09.2026 gelesen. Versionierte Squid-Dokumentation statt Entwicklungsversion als Referenz verwendet. Keine aktuellen Default-, Tuning- oder Hardwareempfehlungen abgeleitet. Historische SAN-/NAS-Buchtreffer nicht als SDS-/EC-Beleg übernommen. Alle Zahlen und Rack-Anordnungen sind eigene Modelle. Menschliche Fachfreigabe offen.</p>
+
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-3"><span class="d">zurück zu</span><span class="t">Speicherlösungen</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Speicherlösungen</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Vorwissen aktivieren</a></li>
+<li><a href="#s2" data-t="s2">Was Software-defined Storage hier bedeutet</a></li>
+<li><a href="#s3" data-t="s3">Replikation und Erasure Coding</a></li>
+<li><a href="#s4" data-t="s4">Eigener Kapazitätsvergleich</a></li>
+<li><a href="#s5" data-t="s5">Failure Domains: gemeinsam ausfallen</a></li>
+<li><a href="#s6" data-t="s6">Nach dem Ausfall ist die Arbeit nicht vorbei</a></li>
+<li><a href="#s7" data-t="s7">Selbst ordnen und erklären</a></li>
+<li><a href="#s8" data-t="s8">Lernziel-Check</a></li>
+<li><a href="#s9" data-t="s9">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-3">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

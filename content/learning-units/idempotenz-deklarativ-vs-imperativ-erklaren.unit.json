@@ -1,0 +1,348 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "idempotenz-deklarativ-vs-imperativ-erklaren",
+    "slug": "idempotenz-deklarativ-vs-imperativ-erklaren",
+    "title": "Idempotenz: Zielzustand statt wiederholter Nebenwirkung",
+    "description": "Deklarative und imperative Beschreibung unterscheiden und Wiederholungen am tatsächlichen Zielzustand beurteilen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-9",
+    "groupLabel": "Programme zur automatisierten Systemverwaltung",
+    "itemId": "ga1-9__10",
+    "week": "KW 43",
+    "estimatedMinutes": 26,
+    "relevance": "hoch",
+    "sources": [
+      "europa-integratoren-2026"
+    ],
+    "contentRevision": "2026-09-15.2",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "modell",
+      "label": "deklarativen Zielzustand von einer imperativen Schrittfolge unterscheiden"
+    },
+    {
+      "id": "wiederholung",
+      "label": "Idempotenz anhand eines zweiten unveränderten Aufrufs beurteilen"
+    }
+  ],
+  "intro": "Ein unterbrochener Verwaltungsauftrag wird oft erneut gestartet. Entscheidend ist, ob dadurch der gewünschte Zustand entsteht oder zusätzliche unerwünschte Änderungen entstehen. Du vergleichst eigene Papiermodelle; keine Befehle werden ausgeführt.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "europa-integratoren-2026",
+        "sourceLocator": "Chunk 00750, Markdown-Zeilen 7569–7596",
+        "use": "Imperative Anweisungsfolge gegenüber deklarativer Beschreibung",
+        "reviewStatus": "Abschnitt gelesen; vereinfachte Sprachenzuordnung nicht übernommen"
+      }
+    ],
+    "notes": [
+      "Idempotenz gegen offizielles Ansible-Glossar, Abschnitt Idempotency, am 15.09.2026 geprüft. Eigenes Konfigurationsmodell.",
+      "Der allgemeine Netzwerktreffer 01079 ist kein fachlicher Beleg. Menschliche Fachfreigabe offen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "zustand",
+      "type": "flow",
+      "title": "Gleicher Auftrag, stabiler Zielzustand",
+      "description": "Im Modell ändern weder andere Prozesse noch Eingaben den Zustand.",
+      "items": [
+        {
+          "label": "Start",
+          "detail": "Der verwaltete Wert ist noch 10"
+        },
+        {
+          "label": "Erster Lauf",
+          "detail": "Setzen auf den vereinbarten Wert 30"
+        },
+        {
+          "label": "Zweiter Lauf",
+          "detail": "Wert bleibt 30; kein weiteres Erhöhen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Vorwissen aktivieren",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "idempotenz-deklarativ-vs-imperativ-erklaren-diagnose",
+          "question": "Ein Skript läuft ohne Fehlermeldung zweimal durch. Ist damit Idempotenz nachgewiesen?",
+          "options": [
+            {
+              "text": "Ja, solange beide Aufrufe erfolgreich enden.",
+              "rationale": "Erfolgreiche Aufrufe können jeweils weitere Änderungen erzeugen.",
+              "correct": false
+            },
+            {
+              "text": "Nein, auch der Zustand nach beiden Aufrufen muss verglichen werden.",
+              "rationale": "Es geht um die wiederholte Wirkung auf den betrachteten Zustand.",
+              "correct": true
+            },
+            {
+              "text": "Ja, wenn es kurz genug ist.",
+              "rationale": "Die Länge sagt nichts über die Wirkung einer Wiederholung aus.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Zwei verschiedene Fragen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**Imperativ** beschreibt Schritte: Lies einen Wert, erhöhe ihn, schreibe ihn zurück. **Deklarativ** beschreibt den gewünschten Zustand: Der verwaltete Wert soll 30 sein. Ein Werkzeug muss daraus weiterhin konkrete Aktionen ableiten; die Zustandsbeschreibung erledigt die Umsetzung nicht von selbst.\n\n**Idempotenz** ist eine andere Eigenschaft: Dieselbe Operation hat bei Wiederholung ohne zwischenzeitliche Änderungen auf den betrachteten Zustand dieselbe Wirkung wie einmaliges Anwenden. Imperativer Code kann idempotent sein, etwa wenn er einen festen Wert setzt. Eine deklarative Oberfläche ist allein noch kein Nachweis, dass die tatsächliche Umsetzung korrekt und wiederholungssicher arbeitet."
+        },
+        {
+          "type": "figure",
+          "diagramId": "zustand",
+          "alt": "Startwert 10, nach Setzen auf 30 steht der Wert auf 30, nach erneutem Setzen weiterhin auf 30.",
+          "caption": "Eigene Zustandsfolge: Die zweite Anwendung erzeugt keine zusätzliche Änderung am verwalteten Wert."
+        }
+      ]
+    },
+    {
+      "title": "Zwei vollständig durchgerechnete Modelle",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Unser Konfigurationsmodell enthält genau einen verwalteten Zahlenwert. Andere Änderungen und Fehler während der Ausführung sind für diesen Vergleich ausgeschlossen.\n\nOperation A setzt ihn auf 30. Aus dem Startwert 10 wird nach dem ersten Lauf 30 und nach dem zweiten Lauf erneut 30. Operation B erhöht ihn bei jedem Lauf um 20. Hier wird aus 10 zuerst 30, danach 50. Beide liefern beim ersten Lauf dasselbe Ergebnis; erst die Wiederholung zeigt den Unterschied."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Setzen: f von 10 gleich 30 und f von 30 gleich 30. Erhöhen: g von 10 gleich 30 und g von 30 gleich 50.",
+          "mathml": "<math display=\"block\"><mtable columnalign=\"left\"><mtr><mtd><mi>f</mi><mo>(</mo><mn>10</mn><mo>)</mo><mo>=</mo><mn>30</mn><mo>;</mo><mspace width=\"0.5em\"/><mi>f</mi><mo>(</mo><mn>30</mn><mo>)</mo><mo>=</mo><mn>30</mn></mtd></mtr><mtr><mtd><mi>g</mi><mo>(</mo><mn>10</mn><mo>)</mo><mo>=</mo><mn>30</mn><mo>;</mo><mspace width=\"0.5em\"/><mi>g</mi><mo>(</mo><mn>30</mn><mo>)</mo><mo>=</mo><mn>50</mn></mtd></mtr></mtable></math>",
+          "legend": [
+            "f: festen Wert 30 setzen",
+            "g: aktuellen Wert um 20 erhöhen"
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "Ein neuer Protokolleintrag je Versuch kann trotzdem entstehen. Sage deshalb ausdrücklich, welchen Zustand du vergleichst: hier den verwalteten Konfigurationswert, nicht die komplette Protokollhistorie. Aus einem unveränderten Zielwert folgt außerdem nicht, dass ein Ablauf nebenwirkungsfrei oder parallel sicher ist."
+        }
+      ]
+    },
+    {
+      "title": "Stabil bedeutet nicht richtig",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Gegenbeispiel zum selben Auftrag: Der Wert soll 30 sein, aber eine fehlerhafte Umsetzung setzt ihn immer auf 20. Nach dem ersten Lauf steht er auf 20 und nach dem zweiten weiterhin auf 20. Diese Operation ist in unserem Modell idempotent, erfüllt aber den Auftrag nicht.\n\nPrüfe deshalb zwei Dinge getrennt: Stimmt das Ergebnis mit dem Soll überein? Bleibt die Wirkung bei einem identischen Wiederholungsaufruf stabil? Ein grüner Wiederholungstest ohne Soll-Ist-Vergleich könnte eine dauerhaft falsche Konfiguration freigeben."
+        },
+        {
+          "type": "quiz",
+          "id": "idempotenz-deklarativ-vs-imperativ-erklaren-stabil-falsch",
+          "question": "Auftrag: Wert 30. Umsetzung: bei jedem Aufruf auf 20 setzen. Welche Bewertung stimmt unter unseren Modellannahmen?",
+          "options": [
+            {
+              "text": "Korrekt und idempotent, weil der zweite Lauf nichts mehr ändert.",
+              "rationale": "Der unveränderte Wert 20 bleibt ein falsches Ergebnis für den Auftrag 30.",
+              "correct": false
+            },
+            {
+              "text": "Idempotent bezüglich des Werts, aber fachlich nicht korrekt.",
+              "rationale": "Die Wiederholung bleibt stabil; der Soll-Ist-Vergleich schlägt trotzdem fehl.",
+              "correct": true
+            },
+            {
+              "text": "Nicht idempotent, weil jede fehlerhafte Umsetzung diese Eigenschaft verliert.",
+              "rationale": "Idempotenz beschreibt die Wiederholungswirkung, nicht die Übereinstimmung mit dem Auftrag.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Wiederholung selbst prüfen",
+      "blocks": [
+        {
+          "type": "numeric",
+          "id": "idempotenz-deklarativ-vs-imperativ-erklaren-zahl",
+          "title": "Zweiten Lauf vorhersagen",
+          "prompt": "Startwert 5. Eine Operation erhöht den aktuellen Wert bei jedem Aufruf um 4. Welcher Wert steht nach zwei Aufrufen im Modell?",
+          "label": "Wert nach dem zweiten Aufruf",
+          "expected": 13,
+          "tolerance": 0,
+          "correctFeedback": "Richtig: nach dem ersten Aufruf 9, nach dem zweiten 13. Der zweite Lauf verändert den Wert erneut.",
+          "wrongFeedback": "Verwende beim zweiten Aufruf den Zustand nach dem ersten, nicht erneut den Startwert.",
+          "misconceptions": [
+            {
+              "value": 9,
+              "feedback": "Neun ist der Wert nach nur einem Aufruf."
+            },
+            {
+              "value": 8,
+              "feedback": "Acht ist nur die gesamte Erhöhung; der Startwert fünf fehlt."
+            }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "idempotenz-deklarativ-vs-imperativ-erklaren-uebung",
+          "question": "Ein imperatives Skript prüft einen verwalteten Wert und setzt ihn bei Abweichung auf 30. Was gilt in unserem fehlerfreien Modell?",
+          "options": [
+            {
+              "text": "Imperativer Code kann grundsätzlich nicht idempotent sein.",
+              "rationale": "Schreibweise und Wiederholungswirkung sind verschiedene Eigenschaften.",
+              "correct": false
+            },
+            {
+              "text": "Nach dem ersten Erreichen von 30 bleibt der Zielwert bei unverändertem Auftrag stabil.",
+              "rationale": "Der feste Sollwert verhindert ein erneutes Erhöhen.",
+              "correct": true
+            },
+            {
+              "text": "Jeder zweite Lauf muss den Wert löschen.",
+              "rationale": "Das folgt nicht aus dem Auftrag und würde den Sollzustand zerstören.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Testplan statt Etikett",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "idempotenz-deklarativ-vs-imperativ-erklaren-reihenfolge",
+          "title": "Wiederholungsnachweis aufbauen",
+          "prompt": "Ordne die drei Schritte für einen begrenzten Test.",
+          "steps": [
+            {
+              "id": "ausgabe",
+              "label": "Gleichen Auftrag erneut anwenden und Zielzustand vergleichen"
+            },
+            {
+              "id": "start",
+              "label": "Startzustand, Auftrag und betrachteten Zielzustand festlegen"
+            },
+            {
+              "id": "schleife",
+              "label": "Auftrag einmal anwenden und tatsächliches Ergebnis prüfen"
+            }
+          ],
+          "expected": [
+            "start",
+            "schleife",
+            "ausgabe"
+          ],
+          "correctFeedback": "Erst den Vergleich festlegen, dann ersten und zweiten Zustand prüfen.",
+          "wrongFeedback": "Ohne definierten Vergleich weißt du nicht, welche Wirkung stabil bleiben muss."
+        },
+        {
+          "type": "recall",
+          "id": "idempotenz-deklarativ-vs-imperativ-erklaren-begruendung",
+          "title": "Deinen Nachweis formulieren",
+          "prompt": "Beschreibe einen Test für „Wert soll 30 sein“. Nenne Startzustand, Ergebnis nach zwei Läufen, Annahmen und eine Grenze des Tests.",
+          "label": "Dein Nachweis",
+          "minLength": 80,
+          "model": "Ich beginne beispielsweise bei zehn und wende denselben Auftrag zweimal an. Nach beiden Läufen muss der verwaltete Wert dreißig sein. Eingaben und Sollwert bleiben gleich, kein anderer Prozess ändert den Wert dazwischen. Der Test betrachtet den Konfigurationswert; neue Protokolleinträge sind möglich. Der Versuch beweist weder Fehlerfreiheit für alle Startzustände noch Sicherheit bei parallelen Änderungen."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Ändert ein anderer Prozess den Wert zwischen den Läufen, liegt nicht mehr derselbe Wiederholungsversuch vor. Ein erneutes Herstellen des Sollwerts kann dann sinnvoll sein. Vor einer tatsächlichen Korrektur müssen Zuständigkeit und Änderungsfreigabe geklärt sein. Ein Existenztest allein verhindert außerdem keinen Wettlauf paralleler Prozesse."
+        }
+      ]
+    },
+    {
+      "title": "Aus dem Gedächtnis erklären",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "idempotenz-deklarativ-vs-imperativ-erklaren-karte-0",
+              "label": "Beschreibung",
+              "front": "Was unterscheidet deklarativ von imperativ?",
+              "back": "Deklarativ beschreibt das gewünschte Ergebnis, imperativ die auszuführenden Schritte."
+            },
+            {
+              "id": "idempotenz-deklarativ-vs-imperativ-erklaren-karte-1",
+              "label": "Wirkung",
+              "front": "Ist imperativer Code automatisch nicht idempotent?",
+              "back": "Nein. Auch eine Anweisungsfolge kann beim Wiederholen denselben Zielzustand erhalten."
+            },
+            {
+              "id": "idempotenz-deklarativ-vs-imperativ-erklaren-karte-2",
+              "label": "Grenze",
+              "front": "Warum genügt ein erfolgreicher erster Lauf nicht?",
+              "back": "Er zeigt nicht, ob ein zweiter identischer Aufruf weitere Änderungen erzeugt."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "idempotenz-deklarativ-vs-imperativ-erklaren-transfer-a",
+          "question": "Ein Auftrag lautet „Die verwaltete Kontaktliste soll genau A und B enthalten“. Welche Einordnung passt?",
+          "options": [
+            {
+              "text": "Das ist zwingend eine imperative Schrittfolge.",
+              "rationale": "Es wurden keine konkreten Schritte beschrieben.",
+              "correct": false
+            },
+            {
+              "text": "Damit ist jede mögliche Umsetzung automatisch idempotent.",
+              "rationale": "Die tatsächliche Wirkung der Umsetzung muss geprüft werden.",
+              "correct": false
+            },
+            {
+              "text": "Das ist eine deklarative Zielbeschreibung; die Wiederholungswirkung ist zusätzlich zu prüfen.",
+              "rationale": "Beschreibung des Solls und Eigenschaft der Umsetzung sind getrennte Fragen.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "modell"
+        },
+        {
+          "type": "quiz",
+          "id": "idempotenz-deklarativ-vs-imperativ-erklaren-transfer-b",
+          "question": "Ein Ablauf hängt bei jedem Aufruf erneut A an eine Liste an, die Dubletten erlaubt. Nach einem Lauf enthält sie A, nach zwei Läufen A und A. Was folgt?",
+          "options": [
+            {
+              "text": "Bezüglich des Listeninhalts ist dieser Ablauf nicht idempotent.",
+              "rationale": "Die zweite identische Anwendung verändert den betrachteten Zustand erneut.",
+              "correct": true
+            },
+            {
+              "text": "Er ist idempotent, weil beide Aufrufe erfolgreich waren.",
+              "rationale": "Erfolgsmeldungen ersetzen keinen Zustandsvergleich.",
+              "correct": false
+            },
+            {
+              "text": "Er ist idempotent, weil A weiterhin vorkommt.",
+              "rationale": "Die zusätzliche Dublette verändert den Listeninhalt.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "wiederholung"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Buchkontext: EUROPA Prüfungsvorbereitung Teil 2 Integratoren, Chunk 00750, Zeilen 7569–7596, Programmierparadigmen. Definition der Wiederholungswirkung: [Ansible-Glossar – Idempotency](https://docs.ansible.com/projects/ansible/latest/reference_appendices/glossary.html#idempotency), geprüft am 15.09.2026.\n\nEigene Zahlenmodelle, Aufgaben und Grafik; keine übernommenen Verwaltungsbefehle. Die Modelle vergleichen den ausdrücklich benannten Zustand unter unveränderten Bedingungen. Produktionsfreigabe, Fehlerbehandlung und gleichzeitige Zugriffe sind zusätzliche Prüfaufgaben."
+        }
+      ]
+    }
+  ]
+}

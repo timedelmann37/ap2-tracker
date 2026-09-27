@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Konsolidierung, Prüfpunkte und Isolation nutzen, ohne Hostausfall, Ressourcenbedarf oder Lizenzen zu übersehen.">
+<title>Virtualisierung abwägen: vier VMs, ein Host – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation" data-progress-id="ga1-2__2" data-content-revision="2026-09-26.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-2">Virtualisierung, Cluster und Verfügbarkeit</a><span class="sep">›</span>
+    <span class="here">Virtualisierung abwägen: vier VMs, ein Host</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Virtualisierung abwägen: vier VMs, ein Host</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 30 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Vier physische Server auf einen Virtualisierungshost zusammenzulegen kann Platz und Betrieb vereinfachen. Aber vier getrennte VMs sind nicht automatisch vier getrennte Ausfallorte. Hier planst du den Nutzen und den gemeinsamen Fehlerpunkt zusammen.</p>
+<section class="learning-goals" aria-labelledby="vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-goals">
+  <h2 id="vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Konsolidierungsnutzen und gemeinsames Ausfallrisiko anhand eines Hostmodells erklären</li>
+    <li>Prüfpunkt, Isolation, Overhead und Lizenzprüfung in einer Betriebsentscheidung abwägen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Der erste Denkfehler</h2>
+<section class="quiz" data-quiz="vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-diagnose" data-correct="1">
+  <h3>Vier geschäftskritische VMs laufen auf demselben physischen Host. Wie viele unabhängige physische Host-Ausfallorte haben sie?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="VMs sind logisch getrennt, teilen sich hier aber genau einen physischen Host."><span class="m">A</span> Vier, denn jede VM ist ein eigener physischer Rechner.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. VM-Isolation und physische Redundanz sind unterschiedliche Eigenschaften."><span class="m">B</span> Einen; ein Hostdefekt kann alle vier gleichzeitig treffen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Auch VMs, Hypervisor, Speicher und Hosthardware können ausfallen."><span class="m">C</span> Keinen, denn virtuelle Systeme können nicht ausfallen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2"><span class="num">2</span>Konsolidierung mit offenen Augen</h2>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Weniger Hardware, gemeinsamer Ausfallort">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-konsolidierung-title diagram-konsolidierung-desc">
+  <title id="diagram-konsolidierung-title">Weniger Hardware, gemeinsamer Ausfallort</title>
+  <desc id="diagram-konsolidierung-desc">Vorher vier physische Server, danach vier logisch getrennte VMs auf einem Host. Der Host bildet nun einen gemeinsamen Ausfallort.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Weniger Hardware, gemeinsamer Ausfallort</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">Vorher: vier Server</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">Jeder Dienst hat einen</tspan><tspan x="64" dy="30">eigenen physischen Rechner.</tspan><tspan x="64" dy="30">Das ist kein automatisches</tspan></text></g><g><rect class="diagram-row" x="340" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="362" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="362" dy="0">Nachher: ein Host, vier</tspan><tspan x="362" dy="25">VMs</tspan></text><text x="362" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="362" dy="0">Weniger physische Systeme zu</tspan><tspan x="362" dy="30">betreiben; jede VM hat ein</tspan><tspan x="362" dy="30">Gast-OS und ihre eigene</tspan></text></g><g><rect class="diagram-row" x="638" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="660" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="660" dy="0">Gemeinsame Basis</tspan></text><text x="660" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="660" dy="0">Host, Hypervisor, lokale</tspan><tspan x="660" dy="30">Stromversorgung und</tspan><tspan x="660" dy="30">gemeinsam genutzter Speicher</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigenes vereinfachtes Lehrbild; Strom-, Platz- und Kostenvorteile müssen im konkreten Betrieb gemessen werden.</figcaption>
+</figure><p><strong>Konsolidierung</strong> bündelt mehrere Workloads auf weniger physischer Hardware. Das kann ungenutzte Kapazität besser auslasten und die Zahl zu wartender Geräte senken. Es ist aber keine automatische Ersparnis: Der neue Host muss die gleichzeitige Last tragen; Gastbetriebssysteme, Hypervisor, Management, Storage und Netz brauchen ebenfalls Ressourcen. Ob Energie oder Kosten wirklich sinken, hängt von Auslastung, Hardware, Lizenzen und Betriebsmodell ab.</p>
+<p>Im Übungsmodell bekommen vier VMs je <strong>8 GB festen RAM</strong>, und der Host reserviert <strong>8 GB</strong> für Betrieb und Virtualisierung. Bereits ohne zusätzliche Reserve werden <strong>40 GB</strong> benötigt. Ein 32-GB-Host ist damit unzureichend. Ein 40-GB-Host wäre rechnerisch genau ausgeschöpft und für Lastspitzen oder Wachstum nicht vernünftig dimensioniert. CPU, I/O, Storage und Netz müssen getrennt geprüft werden; diese einfache RAM-Rechnung beweist keine Gesamt-Eignung.</p>
+<div class="math-display" role="group" aria-label="Vier virtuelle Maschinen mal acht Gigabyte zugeteilter Arbeitsspeicher plus acht Gigabyte Hostreserve gleich vierzig Gigabyte Mindestbedarf im vereinfachten Modell."><math display="block" aria-label="Vier virtuelle Maschinen mal acht Gigabyte zugeteilter Arbeitsspeicher plus acht Gigabyte Hostreserve gleich vierzig Gigabyte Mindestbedarf im vereinfachten Modell."><mrow><msub><mi>RAM</mi><mtext>Modell</mtext></msub><mo>=</mo><mn>4</mn><mo>·</mo><mn>8</mn><mtext> GB</mtext><mo>+</mo><mn>8</mn><mtext> GB</mtext><mo>=</mo><mn>40</mn><mtext> GB</mtext></mrow></math><div class="math-legend"><span>Vier feste VM-Zuteilungen plus Hostbedarf; zusätzlich Kapazitätsreserve und andere Ressourcen prüfen.</span></div></div><section class="numeric-practice transfer-number" data-numeric-practice="vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-ram" data-expected="36" data-tolerance="0.001" data-correct-feedback="Richtig: 3 × 10 GB + 6 GB = 36 GB. Für den echten Host noch Reserve und andere Ressourcen planen." data-wrong-feedback="Addiere zuerst die festen RAM-Zuteilungen aller Gäste, dann den Hostbedarf. Die Kapazitätsreserve ist noch nicht eingerechnet.">
+  <h3>Nur den Mindest-RAM berechnen</h3>
+  <p>Ein anderer Host soll drei VMs mit je 10 GB festem RAM tragen. Für Host und Hypervisor sind 6 GB vorgesehen. Wie viel GB benötigt das vereinfachte Modell mindestens, noch ohne Zusatzreserve?</p>
+  <label for="vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-ram-answer">Mindestbedarf in GB</label>
+  <div class="answer-row"><input id="vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-ram-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Ergebnis"><button type="button" class="lbtn" data-numeric-check>Antwort prüfen</button></div><p>  <template data-numeric-feedback-for="30">30 GB decken nur die drei VMs; die 6 GB Hostbedarf fehlen.</template>
+  <template data-numeric-feedback-for="16">Du hast offenbar nur eine VM und den Host addiert. Es sind drei VMs.</template>
+  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p></p>
+</section><section class="quiz" data-quiz="vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-ressourcen" data-correct="1">
+  <h3>Ein 40-GB-Host soll exakt die 40 GB aus dem Modell tragen. Ist damit die Beschaffung freigegeben?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Es fehlen Reserve, reale Spitzenlast und Prüfungen von CPU, I/O, Storage und Netz."><span class="m">A</span> Ja, RAM ist die einzige relevante Ressource.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Gerade Konsolidierung bündelt Lastspitzen und gemeinsame Engpässe."><span class="m">B</span> Nein; das Modell liefert nur eine Untergrenze, keine vollständige Dimensionierung.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Virtualisierung erzeugt keinen physischen RAM. Dynamische Zuteilung wäre separat zu planen und zu messen."><span class="m">C</span> Ja, der Hypervisor macht die 40 GB durch Virtualisierung automatisch größer.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s3"><span class="num">3</span>Isolation schützt nicht vor dem Hostausfall</h2>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Fehlerpfad statt Sicherheitsgefühl">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="434" viewBox="0 0 960 434" role="img" aria-labelledby="diagram-ausfallpfad-title diagram-ausfallpfad-desc">
+  <title id="diagram-ausfallpfad-title">Fehlerpfad statt Sicherheitsgefühl</title>
+  <desc id="diagram-ausfallpfad-desc">Fällt nur VM A aus, können die übrigen Gäste weiterlaufen. Fällt der gemeinsame Host aus, stoppt er alle vier. Ein zweiter unabhängiger Host mit geplantem Wiederanlauf verringert diesen gemeinsamen Ausfallpfad.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Fehlerpfad statt Sicherheitsgefühl</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">VM A fällt aus</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Die anderen Gäste können weiterlaufen, sofern die gemeinsame</tspan><tspan x="178" dy="25">Plattform gesund und Ressourcen sauber begrenzt sind.</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Host fällt aus</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Alle vier VMs auf diesem Host stehen still; Isolation der</tspan><tspan x="178" dy="25">Gäste behebt den physischen Fehler nicht.</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Gegenmaßnahmen</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Unabhängiger zweiter Host, geeignetes Failover, Backup und</tspan><tspan x="178" dy="25">Wiederanlauf testen; auch gemeinsame Speicher- und Strompfade</tspan><tspan x="178" dy="25">prüfen.</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigenes Fehlerpfad-Modell; ein zweiter Host hilft nur mit geeigneter Architektur und geprüftem Failover.</figcaption>
+</figure><p>Eine VM kapselt ihren Gast gegenüber anderen Gästen. Ein Fehler in <strong>einer</strong> VM muss nicht alle treffen. Die Trennung ist aber nicht absolut: Hypervisor und Host bilden eine gemeinsame Vertrauensbasis, Ressourcen können sich beeinflussen, und Fehlkonfigurationen oder Sicherheitslücken bleiben möglich. Deshalb: Hypervisor patchen, Rechte begrenzen, Ressourcen beobachten und Gäste getrennt absichern.</p>
+<p>Der <strong>Single Point of Failure (SPOF)</strong> entsteht hier durch den einzigen physischen Host. Wenn er ausfällt, stehen alle vier VMs still. Für geschäftskritische Rollen müssen Ausfallorte bewusst verteilt werden. Ein zweiter Host allein garantiert noch keine Hochverfügbarkeit: Kapazität, gemeinsamer Speicher oder Replikation, Netz, Strom, Failover-Verfahren und Wiederanlauf sind zu planen und zu testen.</p>
+<section class="sequence-practice" data-sequence="vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-entscheidung" data-expected="bedarf,architektur,nachweis" data-correct-feedback="Richtig: Anforderungen vor Architektur, Test vor Freigabe." data-wrong-feedback="Beginne mit der Anforderung, plane danach die technische und rechtliche Basis und teste sie zuletzt." aria-labelledby="vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-entscheidung-title">
+  <div class="lab-heading"><div><h3 id="vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-entscheidung-title">Betriebsentscheidung ordnen</h3><p>Ordne den Weg vor der Konsolidierung eines kritischen Dienstes.</p></div><span class="lab-tag">Ablauf</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="bedarf" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Last, Verfügbarkeit und Wiederanlaufziel ermitteln</span></li>
+    <li data-step="architektur" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Hostkapazität, Ausfallorte und Lizenzen planen</span></li>
+    <li data-step="nachweis" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Backup, Failover und Wiederanlauf praktisch testen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Prüfpunkt, Backup und Lizenz nicht verwechseln</h2>
+<p>Ein <strong>Prüfpunkt/Snapshot</strong> hält einen VM-Zustand zum Rücksetzen fest – praktisch vor einer kontrollierten Änderung. Beim Standardprüfpunkt kann auch Arbeitsspeicher enthalten sein; ein Produktionsprüfpunkt zielt auf konsistente Daten. Das genaue Verhalten hängt vom System ab. Rücksetzen verwirft spätere Änderungen. Ein Prüfpunkt auf derselben Plattform ist <strong>kein unabhängiges Backup</strong>: Ein Defekt des Hostspeichers kann beides treffen. Für Schutz gegen Datenverlust brauchst du ein getrenntes Backup mit geeignetem Wiederherstellungstest.</p>
+<p><strong>Lizenzen</strong> verschwinden durch VMs nicht. Hypervisor, Hostbetriebssystem, Gastbetriebssysteme, Anwendungen und gegebenenfalls Zugriffe können eigene Regeln haben. Bei Windows Server hängen Virtualisierungsrechte unter anderem von Edition, Core-Lizenzierung und konkretem Lizenzprogramm ab. Deshalb im Angebot die tatsächlich eingesetzten Produkte, VM-Zahlen und Nutzungsrechte prüfen – keine pauschale Regel wie „eine VM = eine Lizenz“ annehmen.</p>
+<section class="quiz" data-quiz="vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-snapshot" data-correct="1">
+  <h3>Vor einem Update wird ein Prüfpunkt auf demselben Storage wie die VM erstellt. Am Folgetag fällt dieses Storage aus. Welche Aussage stimmt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Prüfpunkt und VM teilen hier denselben Ausfallort; eine getrennte Sicherung ist nicht belegt."><span class="m">A</span> Der Prüfpunkt ist ein unabhängiges Backup und rettet die VM sicher.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig: Rückweg bei Änderung und Wiederherstellung nach Storageverlust sind verschiedene Aufgaben."><span class="m">B</span> Ein Prüfpunkt erleichtert das Rücksetzen nach einem Updatefehler, ersetzt aber kein getrenntes und getestetes Backup.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Prüfpunkte sind gerade eine Funktion virtueller Maschinen."><span class="m">C</span> Prüfpunkte dürfen nur bei physischen Servern angelegt werden.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="recall-practice" data-recall="vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-begruendung" data-min-length="100" aria-labelledby="vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-begruendung-title">
+  <div class="recall-prompt"><h3 id="vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-begruendung-title">Ein Angebot kritisch lesen</h3><p>Ein Anbieter verspricht mit vier VMs auf einem Host „vierfach abgesichert und ohne Zusatzkosten“. Erkläre in eigenen Worten drei Prüfungen: Ausfallort, Sicherung und Lizenz beziehungsweise Ressourcen.</p></div>
+  <label class="sr-only" for="vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-begruendung-answer">Deine Prüfung</label>
+  <textarea id="vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-begruendung-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Die vier VMs sind logisch getrennt, teilen aber einen physischen Host und möglicherweise Speicher, Strom und Netz. Ich fordere ein unabhängiges Backup mit Restore-Test statt nur lokaler Snapshots. Außerdem prüfe ich reale Hostkapazität samt Reserve und die konkreten Gast-, Host- und Anwendungslizenzen; aus der VM-Zahl allein folgt weder Verfügbarkeit noch Kostenfreiheit.</div>
+</section><div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-karte-0" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was ist der Nutzen der Konsolidierung?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Mehrere Workloads teilen weniger physische Hardware; Auslastung und Gerätebetrieb können günstiger werden, müssen aber konkret gemessen werden.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-karte-1" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was ist hier der gemeinsame Ausfallort?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Der einzelne physische Host und gegebenenfalls gemeinsame Speicher-, Strom- und Netzwerkkomponenten.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-karte-2" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wann hilft ein Prüfpunkt – und wann nicht?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Beim Rücksetzen nach einer Änderung; nicht als unabhängiger Ersatz für ein getrenntes, getestetes Backup.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Abruf 1“:</span><button type="button" data-card-id="vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-karte-0" data-card-rate="known">gewusst</button><button type="button" data-card-id="vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-karte-0" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-karte-0"></span></div>
+<div class="card-rating"><span>Karte „Abruf 2“:</span><button type="button" data-card-id="vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-karte-1" data-card-rate="known">gewusst</button><button type="button" data-card-id="vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-karte-1" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-karte-1"></span></div>
+<div class="card-rating"><span>Karte „Abruf 3“:</span><button type="button" data-card-id="vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-karte-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-karte-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-karte-2"></span></div><h2 class="sec" id="s5"><span class="num">5</span>Lernziel-Check</h2>
+<section class="quiz" data-quiz="vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-transfer-a" data-correct="1" data-required-objective="konsolidierung">
+  <h3>Ein Unternehmen verlagert vier Anwendungen von vier Servern auf vier VMs eines einzigen Hosts. Was muss es für die zugesagte Verfügbarkeit besonders prüfen?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Die VM-Namen ändern nichts am gemeinsamen Host."><span class="m">A</span> Nur die VM-Namen; vier Namen bedeuten vier physische Ausfallorte.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Konsolidierung und Verfügbarkeit müssen gemeinsam entworfen werden."><span class="m">B</span> Host- und Infrastruktur-Ausfallpfade, ausreichende Reserve sowie getesteten Wiederanlauf oder Failover.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein Hostausfall kann alle auf ihm laufenden Gäste treffen."><span class="m">C</span> Nichts; Konsolidierung macht Hardwareausfälle unmöglich.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="vorteile-nachteile-virtualisierung-konsolidierung-snapshots-isolation-transfer-b" data-correct="1" data-required-objective="entscheidung">
+  <h3>Vor dem Rollout einer kritischen VM liegt nur ein lokaler Prüfpunkt vor. Der Anbieter nennt außerdem keine Lizenzannahmen und keinen Kapazitätstest. Was ist die beste Reaktion?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Ein Prüfpunkt ist kein unabhängiges Backup und sagt nichts über Kapazität oder Nutzungsrechte aus."><span class="m">A</span> Freigeben; der Prüfpunkt deckt Storageausfall, Kapazität und Lizenz vollständig ab.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Jede der drei Lücken hat eine eigene Prüfung."><span class="m">B</span> Getrenntes Backup samt Restore, Ressourcen unter Last und konkrete Produkt-/Gastlizenzen nachweisen lassen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Das beseitigt weder gemeinsamen Storageausfall noch Ressourcen- und Lizenzfragen."><span class="m">C</span> Nur einen zweiten Prüfpunkt auf demselben Storage anlegen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Quellen und Grenzen</h2>
+<p><a href="https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/checkpoints">Microsoft Learn: Hyper-V-Prüfpunkte</a>, <a href="https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/host-hardware-requirements">Host-Hardware-Anforderungen</a>, <a href="https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/virtualized-domain-controllers-hyper-v">virtualisierte Domänencontroller</a>, <a href="https://www.nist.gov/publications/security-recommendations-hypervisor-deployment-servers">NIST: Hypervisor-Sicherheit</a> und <a href="https://www.microsoft.com/licensing/guidance/Windows-Server-2025">Microsoft: Windows-Server-Lizenzierung</a>, am 26.09.2026 gelesen. Zahlen, Diagramme und Fälle sind eigene Lehrmodelle. Keine Kapazitäts-, Verfügbarkeits- oder Lizenzfreigabe für eine reale Umgebung; menschliche Fachfreigabe offen.</p>
+
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-2"><span class="d">zurück zu</span><span class="t">Virtualisierung, Cluster und Verfügbarkeit</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Virtualisierung, Cluster und Verfügbarkeit</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 2 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Der erste Denkfehler</a></li>
+<li><a href="#s2" data-t="s2">Konsolidierung mit offenen Augen</a></li>
+<li><a href="#s3" data-t="s3">Isolation schützt nicht vor dem Hostausfall</a></li>
+<li><a href="#s4" data-t="s4">Prüfpunkt, Backup und Lizenz nicht verwechseln</a></li>
+<li><a href="#s5" data-t="s5">Lernziel-Check</a></li>
+<li><a href="#s6" data-t="s6">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-2">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

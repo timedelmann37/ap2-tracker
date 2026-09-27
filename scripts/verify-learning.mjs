@@ -26,6 +26,10 @@ async function exists(target) {
 
 const sourceCatalog = JSON.parse(await readFile(path.join(repoRoot, 'content', 'sources.json'), 'utf8'));
 const sourceIds = new Set(sourceCatalog.sources.map(source => source.id));
+check(sourceIds.size === sourceCatalog.sources.length, 'Quellen-IDs sind eindeutig');
+check(sourceCatalog.sources.filter(source => source.kind === 'web').every(source => {
+  try { return new URL(source.url).protocol === 'https:'; } catch { return false; }
+}), 'Webquellen besitzen eine HTTPS-Quellenadresse');
 const manifest = JSON.parse(await readFile(path.join(repoRoot, 'content', 'learning-manifest.json'), 'utf8'));
 const areaHtmlByDomain = new Map(await Promise.all([
   ['GA1', 'konzeption-administration/index.html'],
@@ -46,7 +50,7 @@ for (const file of compactSources) {
 
 const areaClassByDomain = { GA1: 'area-ga1', GA2: 'area-ga2', WiSo: 'area-wiso' };
 
-check(sourceCatalog.sources.length === 5, 'fünf bereitgestellte Buchquellen werden im Quellenkatalog geführt');
+check(sourceCatalog.sources.filter(source => source.kind !== 'web').length === 5, 'fünf bereitgestellte Buchquellen werden im Quellenkatalog geführt');
 check(sourceIds.size === sourceCatalog.sources.length, 'Quellen-IDs sind eindeutig');
 check(new Set(sourceCatalog.sources.map(source => source.role)).size >= 3, 'Quellen besitzen unterschiedliche Rollen statt gleicher Gewichtung');
 check(manifest.topics.length >= 3, 'Lernmanifest enthält mindestens drei kuratierte Kernthemen');
@@ -193,6 +197,24 @@ for (const topic of switchingVlanTopics) {
   check((page.match(/<svg class="learning-diagram/g) || []).length === 2, `${topic.slug}: zwei eigenständige Erklärgrafiken sind eingebettet`);
 }
 
+const wlanWanVpnTopics = manifest.topics
+  .filter(topic => topic.groupId === 'ga2-6')
+  .sort((left, right) => Number(left.itemId.split('__')[1]) - Number(right.itemId.split('__')[1]));
+check(wlanWanVpnTopics.length === 15, 'WLAN-, WAN- und VPN-Block ist mit allen 15 Kernthemen vollständig umgesetzt');
+check(
+  JSON.stringify(wlanWanVpnTopics.map(topic => topic.itemId)) === JSON.stringify(Array.from({ length: 15 }, (_, index) => `ga2-6__${index}`)),
+  'WLAN-, WAN- und VPN-Block ist lückenlos mit den kanonischen Fortschritts-Schlüsseln verdrahtet'
+);
+for (const topic of wlanWanVpnTopics) {
+  const page = await readFile(path.join(repoRoot, 'lernen', topic.slug, 'index.html'), 'utf8');
+  check((page.match(/<svg class="learning-diagram/g) || []).length === 2, `${topic.slug}: zwei eigenständige Erklärgrafiken sind eingebettet`);
+  check((page.match(/data-step=/g) || []).length >= 5, `${topic.slug}: geführter Transfer enthält einen vollständigen Entscheidungsweg`);
+}
+for (const slug of ['wlan-standards-frequenzen', 'wlan-kanalplanung', 'wlan-site-survey', 'ipsec', 'x509-zertifikate', 'voip-bandbreite']) {
+  const page = await readFile(path.join(repoRoot, 'lernen', slug, 'index.html'), 'utf8');
+  check((page.match(/<math/g) || []).length >= 1, `${slug}: Formel oder technische Beziehung ist als visuelles semantisches MathML gesetzt`);
+}
+
 const backupPage = await readFile(path.join(repoRoot, 'lernen', 'backup-methods', 'index.html'), 'utf8');
 check(backupPage.includes('data-sequence="incremental-restore"') && backupPage.includes('data-expected="verify,full,increments,validate"'), 'Backup-Einheit trainiert die Restore-Reihenfolge interaktiv');
 check((backupPage.match(/<math/g) || []).length >= 4, 'Backup-Rechnungen werden visuell und semantisch gesetzt');
@@ -203,7 +225,8 @@ if (await exists(localCatalogPath)) {
   const localCatalog = JSON.parse(await readFile(localCatalogPath, 'utf8'));
   const localSourceIds = new Set(localCatalog.sources.map(source => source.id));
   check(localCatalog.sources.length === 5, 'lokale Wissensbasis enthält alle fünf Datenquellen');
-  check(sourceIds.size === localSourceIds.size && [...sourceIds].every(id => localSourceIds.has(id)), 'öffentlicher und lokaler Quellenkatalog führen dieselben IDs');
+  const bookSourceIds = new Set(sourceCatalog.sources.filter(source => source.kind !== 'web').map(source => source.id));
+  check(bookSourceIds.size === localSourceIds.size && [...bookSourceIds].every(id => localSourceIds.has(id)), 'öffentlicher und lokaler Buchkatalog führen dieselben IDs');
   check(localCatalog.sources.filter(source => source.stats.kind !== 'pdf').every(source => source.stats.chunks > 0), 'jede Markdown-Quelle besitzt einen Volltextindex');
   check(localCatalog.sources.filter(source => source.stats.kind !== 'pdf').every(source => source.stats.images > 0), 'jede Markdown-Quelle besitzt ein Bildinventar');
   const pdfSource = localCatalog.sources.find(source => source.id === 'itlf10-12-2023');

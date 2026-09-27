@@ -1,0 +1,251 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "redundanzstufen-n-plus-eins-zwei-n-geo",
+    "slug": "redundanzstufen-n-plus-eins-zwei-n-geo",
+    "title": "Redundanzstufen: N+1, 2N und zwei Standorte",
+    "description": "Kapazitätsreserve von unabhängigen Pfaden trennen und Georedundanz anhand eines Dienstes bewerten.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-1",
+    "groupLabel": "Server-, Client- und Hardwarekonzeption",
+    "itemId": "ga1-1__9",
+    "week": "KW 35",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": ["redundancy-schneider-ups-types", "redundancy-aws-dr-strategy", "redundancy-aws-dr-operations"],
+    "contentRevision": "2026-09-26.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "kapazitaet",
+      "label": "N, N+1 und 2N für eine definierte Last berechnen und die geschützte Fehlerdomäne nennen"
+    },
+    {
+      "id": "standort",
+      "label": "Eine standortübergreifende Lösung gegen Datenverlust, Ausfallzeit und gemeinsame Abhängigkeiten prüfen"
+    }
+  ],
+  "intro": "Drei zusätzliche Module sind nicht automatisch „hochverfügbar“. Zuerst muss klar sein, was N für die konkrete Spitzenlast bedeutet und welcher Ausfall überstanden werden soll: ein Modul, ein kompletter Pfad oder ein Standort.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "redundancy-schneider-ups-types",
+        "sourceLocator": "N Type, N+1 Type und 2N Type",
+        "use": "Lokale Kapazitäts- und Pfadredundanz am USV-Modell unterscheiden",
+        "reviewStatus": "Am 26.09.2026 gelesen; Modulzahlen und Lasten für diese Einheit neu gewählt"
+      },
+      {
+        "sourceId": "redundancy-aws-dr-strategy",
+        "sourceLocator": "Backup and restore, pilot light, warm standby, active-active",
+        "use": "Zweitstandort nicht mit sofortigem Failover gleichsetzen",
+        "reviewStatus": "Am 26.09.2026 gelesen; Anbieterbeispiele nicht als universelle RTO/RPO-Zusagen übernommen"
+      },
+      {
+        "sourceId": "redundancy-aws-dr-operations",
+        "sourceLocator": "Operational readiness: failover decisions, testing and dependencies",
+        "use": "Georedundanz als geprobten Dienstweg samt Datenkonsistenz erklären",
+        "reviewStatus": "Am 26.09.2026 gelesen"
+      }
+    ],
+    "notes": [
+      "Batch ga1-1-009-009 bot einen themenfremden Rack-/Blade-Ausschnitt und einen NAS-Hochverfügbarkeits-Hinweis, aber keine tragfähige Erklärung für N+1, 2N oder Georedundanz. Keiner wurde als Fachbeleg benutzt; kein privates Bild veröffentlicht.",
+      "N bezeichnet hier die Anzahl gleich leistungsfähiger Module, die zusammen die definierte Spitzenlast tragen. Die Zahlenbeispiele sind eigene Lernmodelle. In realen Anlagen müssen Derating, W-/VA-Grenzen, Lastverteilung und Übernahmeverhalten geprüft werden.",
+      "2N ist im Lehrmodell zwei getrennte vollständige Versorgungspfade. Vier Module im selben Rack, an derselben Sammelschiene oder an derselben Fehlerdomäne sind nicht automatisch 2N.",
+      "Georedundanz ist keine einzelne Kennzahl und keine automatische Garantie für null Datenverlust oder unterbrechungsfreien Betrieb. Menschliche Fachfreigabe offen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "kapazitaetsstufen",
+      "type": "comparison",
+      "title": "Drei Konzepte für dieselbe Last",
+      "description": "Bei 18 kW Last und 10-kW-Modulen tragen zwei Module die Last. Reserve und Pfadtrennung sind verschiedene Schutzideen.",
+      "items": [
+        { "label": "N = 2", "detail": "Zwei 10-kW-Module tragen 18 kW; ein Modulausfall lässt nur 10 kW übrig." },
+        { "label": "N+1 = 3", "detail": "Drei Module in einer Gruppe; nach Ausfall eines Moduls bleiben 20 kW." },
+        { "label": "2N = 2 + 2", "detail": "Zwei getrennte Gruppen mit je 20 kW; eine ganze Gruppe darf ausfallen." }
+      ]
+    },
+    {
+      "id": "standorte",
+      "type": "topology",
+      "title": "Zwei Standorte, ein nutzbarer Dienst?",
+      "description": "Ein zweiter Standort schützt nur, wenn Zugang, Anwendung und benötigte Daten dort im Ausfallfall verfügbar sind.",
+      "height": 500,
+      "nodes": [
+        { "id": "nutzer", "label": "Nutzende", "detail": "neue Sitzungen", "x": 115, "y": 220, "kind": "client" },
+        { "id": "routing", "label": "Zugangssteuerung", "detail": "DNS oder Routing", "x": 340, "y": 220, "kind": "router" },
+        { "id": "site-a", "label": "Standort A", "detail": "Primärdienst", "x": 675, "y": 130, "kind": "server" },
+        { "id": "site-b", "label": "Standort B", "detail": "Wiederanlauf", "x": 675, "y": 335, "kind": "server" }
+      ],
+      "edges": [
+        { "from": "nutzer", "to": "routing" },
+        { "from": "routing", "to": "site-a", "label": "normal" },
+        { "from": "routing", "to": "site-b", "label": "Failover" },
+        { "from": "site-a", "to": "site-b", "label": "Daten" }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Welche Störung willst du überstehen?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "redundanzstufen-n-plus-eins-zwei-n-geo-diagnose",
+          "question": "Ein Dienst braucht 18 kW. Zwei 10-kW-USV-Module versorgen ihn. Ist das schon N+1?",
+          "options": [
+            { "text": "Ja, zwei Module sind immer redundant.", "rationale": "Nach Ausfall eines Moduls bleiben nur 10 kW für 18 kW Last.", "correct": false },
+            { "text": "Nein, beide Module werden für die Last benötigt; es fehlt ein zusätzlich tragfähiges Modul.", "rationale": "Richtig: Erst eine dritte geeignete Einheit schafft hier ein einfaches Modul-N+1.", "correct": true },
+            { "text": "Ja, denn 20 kW sind größer als 18 kW.", "rationale": "Die kleine Kapazitätsdifferenz ersetzt keine vollständige 10-kW-Einheit.", "correct": false }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "N zuerst bestimmen",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "kapazitaetsstufen",
+          "alt": "Für 18 Kilowatt Last braucht man zwei 10-Kilowatt-Module als N; N plus eins benötigt drei Module, 2N zwei getrennte Gruppen zu je zwei Modulen.",
+          "caption": "Gleiche Modulgröße und volle nutzbare Leistung sind Annahmen des Übungsfalls."
+        },
+        {
+          "type": "markdown",
+          "markdown": "**N** ist die minimal erforderliche Kapazität für die festgelegte Last, nicht einfach die gerade eingebaute Stückzahl. Bei 18 kW Last und identischen 10-kW-Modulen sind mindestens zwei nötig: **N = 2**. Bei **N+1** gibt es ein zusätzliches geeignetes Modul. Nach Ausfall eines beliebigen einzelnen Moduls sollen die übrigen die volle Last tragen können. Drei Module liefern im Modell nach einem Ausfall noch 20 kW. Ein gemeinsam genutzter Eingang, Controller oder Verteiler kann trotzdem ausfallen.\n\n**2N** bedeutet hier zwei getrennte, jeweils voll tragfähige Versorgungsgruppen. Jede Gruppe enthält zwei Module und muss die gesamten 18 kW allein tragen. Fällt eine ganze Gruppe aus, übernimmt die andere. Vier Module an einem gemeinsamen, ausfallgefährdeten Verteiler sind deshalb nicht automatisch 2N. Nennleistung allein genügt nicht: Batteriezeit, Lastverteilung, Übernahme, Wartung und nachgelagerte Netzteile sind eigene Prüfungen."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "N ist die aufgerundete Zahl aus 18 Kilowatt geteilt durch 10 Kilowatt je Modul, also 2. N plus eins sind 3 Module. Zwei N sind zwei getrennte Gruppen mit je 2 Modulen, zusammen 4 Module.",
+          "mathml": "<math display=\"block\"><mrow><mi>N</mi><mo>=</mo><mo>⌈</mo><mfrac><mrow><mn>18</mn><mtext> kW</mtext></mrow><mrow><mn>10</mn><mtext> kW/Modul</mtext></mrow></mfrac><mo>⌉</mo><mo>=</mo><mn>2</mn></mrow><mspace linebreak=\"newline\"/><mrow><mi>N</mi><mo>+</mo><mn>1</mn><mo>=</mo><mn>3</mn><mtext> Module</mtext><mspace width=\"1em\"/><mn>2</mn><mi>N</mi><mo>=</mo><mn>2</mn><mo>+</mo><mn>2</mn><mtext> Module in zwei Pfaden</mtext></mrow></math>",
+          "legend": ["Aufrunden bedeutet: Ein teilweise benötigtes Modul zählt als ganzes. 2N setzt im Modell unabhängige vollständige Pfade voraus."]
+        },
+        {
+          "type": "numeric",
+          "id": "redundanzstufen-n-plus-eins-zwei-n-geo-zahl",
+          "title": "Modulreserve bestimmen",
+          "prompt": "Neue Last: 22 kW. Jedes identische Modul kann nutzbar 8 kW tragen. Wie viele Module braucht eine einfache N+1-Gruppe mindestens?",
+          "label": "Anzahl Module für N+1",
+          "expected": 4,
+          "tolerance": 0,
+          "correctFeedback": "22 ÷ 8 = 2,75, also N = 3 Module. Mit einem zusätzlichen Modul: N+1 = 4.",
+          "wrongFeedback": "Runde den Bedarf an Grundmodulen zuerst auf und addiere danach ein vollständiges Reservemodul.",
+          "misconceptions": [
+            { "value": 3, "feedback": "Drei Module sind das benötigte N, aber noch nicht N+1." },
+            { "value": 6, "feedback": "Sechs Module wären zwei vollständige Dreiergruppen im 2N-Modell, nicht N+1." }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Fehlerdomänen mitzeichnen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Redundanz ist immer auf eine **Fehlerdomäne** bezogen. N+1 kann einen Modulausfall abfangen, wenn die restliche Gruppe die Last übernimmt. 2N kann im passenden Aufbau den Ausfall einer ganzen Versorgungsgruppe abfangen. Das schließt nicht automatisch einen gemeinsam genutzten Raum, Brandabschnitt, Softwarestand, Wartungsfehler oder eine gemeinsame Netzverbindung ein.\n\nStelle die Prüfungsfrage konkret: „Kann der Dienst die verlangte Last noch tragen, wenn genau dieses Bauteil oder dieser Pfad wegfällt?“ Zeichne vom Eingang bis zum Gerät und markiere jede gemeinsame Stelle. Bei einem Server mit zwei Netzteilen ist auch zu prüfen, ob jedes Netzteil einzeln die Last tragen kann und ob die Leitungen tatsächlich aus getrennten Pfaden kommen. Doppelte Stecker am selben Stromkreis schaffen keinen zweiten Ausfallbereich."
+        },
+        {
+          "type": "quiz",
+          "id": "redundanzstufen-n-plus-eins-zwei-n-geo-uebung",
+          "question": "Zwei voll ausgelegte USV-Gruppen hängen an derselben einzigen Ausgangssammelschiene. Welche Behauptung ist nicht belegt?",
+          "options": [
+            { "text": "Einzelne USV-Gruppen können Kapazitätsreserve bieten.", "rationale": "Das kann stimmen, wenn die jeweils verbleibende Gruppe die Last trägt.", "correct": false },
+            { "text": "Der vollständige Lastpfad ist 2N und ohne gemeinsamen Fehlerpunkt.", "rationale": "Richtig: Die gemeinsame Sammelschiene bleibt ein möglicher Einzelausfallpunkt.", "correct": true },
+            { "text": "Die Sammelschiene muss in die Ausfallanalyse aufgenommen werden.", "rationale": "Das ist eine notwendige Prüfung, nicht die falsche Behauptung.", "correct": false }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Georedundanz ist ein Dienstversprechen",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "standorte",
+          "alt": "Nutzende erreichen über eine Zugangssteuerung Standort A oder bei Ausfall Standort B; Daten werden zwischen den Standorten übertragen.",
+          "caption": "Das eigene Schema zeigt nur Abhängigkeiten, keine automatisch funktionierende Umschaltung."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Ein zweiter geografisch getrennter Standort schützt vor anderen Ereignissen als ein zusätzliches Netzteil: zum Beispiel vor einem standortweiten Strom- oder Gebäudeschaden. Doch ein zweites Rechenzentrum ist noch kein zweiter **nutzbarer Dienst**. Anwendungen, Identität, Netzwerkzugang, Daten und Betriebswissen müssen dort im definierten Ausfallfall verfügbar sein. Die Auslegung reicht von Backup und Wiederherstellung über vorbereitete Standby-Kapazität bis zu zwei gleichzeitig aktiven Standorten.\n\nLege **RTO** (maximal tragbare Ausfallzeit) und **RPO** (maximal tragbarer Datenverlust als Zeitspanne) für den Dienst fest. Asynchrone Replikation kann hinterherhinken; auch ein Failover kann manuelle Entscheidung, DNS-Änderung oder Datenabgleich benötigen. Gleiche Administrationskonten, dieselbe Steuerungsebene oder eine fehlerhafte Konfiguration können beide Standorte zugleich treffen. Proben müssen neue Nutzerzugriffe und Datenkonsistenz einschließen. Eine entfernte Sicherung ist wertvoll, aber nicht automatisch ein sofort einsatzbereiter zweiter Betrieb."
+        },
+        {
+          "type": "sequence",
+          "id": "redundanzstufen-n-plus-eins-zwei-n-geo-reihenfolge",
+          "title": "Standortausfall prüfen",
+          "prompt": "Ordne die modellhafte Prüfung nach Ausfall von Standort A.",
+          "steps": [
+            { "id": "zugang", "label": "Neue Nutzer erreichen den Dienst am Standort B" },
+            { "id": "daten", "label": "Datenstand und mögliche Replikationslücke werden geprüft" },
+            { "id": "entscheidung", "label": "Ausfall erkennen und Failover-Entscheidung treffen" }
+          ],
+          "expected": ["entscheidung", "daten", "zugang"],
+          "correctFeedback": "Richtig: entscheiden, Datenstand prüfen, neuen Zugriff testen.",
+          "wrongFeedback": "Beginne mit der Ausfallentscheidung; ein scheinbar erreichbarer Dienst genügt ohne Datenprüfung nicht."
+        }
+      ]
+    },
+    {
+      "title": "Die drei Ebenen abfragen",
+      "blocks": [
+        {
+          "type": "recall",
+          "id": "redundanzstufen-n-plus-eins-zwei-n-geo-begruendung",
+          "title": "Schutzwirkung begründen",
+          "prompt": "Worin unterscheiden sich N+1, 2N und Georedundanz? Nenne je einen Ausfall und eine verbleibende Grenze.",
+          "label": "Deine Begründung",
+          "minLength": 100,
+          "model": "N+1 hält die definierte Last nach Ausfall eines Moduls, nicht zwingend nach Ausfall des gemeinsamen Verteilers. 2N stellt zwei vollständige, getrennte Versorgungspfade bereit, schützt aber nicht automatisch vor einem Standortausfall. Georedundanz verlagert den Dienst in eine andere Fehlerdomäne; Zugang, Datenstand, RPO, RTO und Failover müssen dafür geplant und getestet werden."
+        },
+        {
+          "type": "flashcards",
+          "cards": [
+            { "id": "redundanzstufen-n-plus-eins-zwei-n-geo-karte-0", "label": "Abruf 1", "front": "Was ist N bei 18 kW Last und 10-kW-Modulen?", "back": "Zwei nutzbare Module sind minimal nötig. Ein drittes wäre die einfache N+1-Reserve." },
+            { "id": "redundanzstufen-n-plus-eins-zwei-n-geo-karte-1", "label": "Abruf 2", "front": "Reichen vier Module für 2N?", "back": "Nur wenn zwei vollständige, ausreichend getrennte Gruppen je die ganze Last tragen können. Stückzahl allein beweist es nicht." },
+            { "id": "redundanzstufen-n-plus-eins-zwei-n-geo-karte-2", "label": "Abruf 3", "front": "Ist ein entferntes Backup bereits Georedundanz des laufenden Dienstes?", "back": "Nein. Wiederherstellung, Datenstand, Zugangsweg und RTO/RPO müssen zur Anforderung passen." }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "redundanzstufen-n-plus-eins-zwei-n-geo-transfer-a",
+          "question": "Neuer Fall: 22 kW Last, nutzbar 8 kW je Modul. Welche Planung besteht nach einem Modulausfall beziehungsweise nach Ausfall eines vollständigen Pfads?",
+          "options": [
+            { "text": "N+1: vier Module in einer Gruppe; 2N: zwei getrennte Gruppen zu je drei Modulen.", "rationale": "Richtig: N = 3. Eine Reserve schützt gegen einen Modulausfall, zwei vollständige Pfade gegen einen Pfadausfall.", "correct": true },
+            { "text": "N+1: drei Module; 2N: vier beliebig zusammengesteckte Module.", "rationale": "Drei Module sind erst N; 2N braucht zwei vollständige und getrennte Dreiergruppen.", "correct": false },
+            { "text": "N+1: ein Modul; 2N: zwei Module, weil N immer eins ist.", "rationale": "Die Last braucht schon drei Module als Grundkapazität.", "correct": false }
+          ],
+          "requiredObjective": "kapazitaet"
+        },
+        {
+          "type": "quiz",
+          "id": "redundanzstufen-n-plus-eins-zwei-n-geo-transfer-b",
+          "question": "Neue Situation: Am entfernten Standort liegen nur nächtliche Datenbackups. Die Anforderung lautet höchstens fünf Minuten Ausfallzeit und höchstens eine Minute Datenverlust. Was ist begründet?",
+          "options": [
+            { "text": "Das Backup garantiert beides, weil es geografisch entfernt ist.", "rationale": "Ein nächtlicher Datenstand und ein erst aufzubauender Dienst erfüllen diese Ziele nicht automatisch.", "correct": false },
+            { "text": "Der Zweitstandort braucht einen passenden betriebsbereiten Dienst, geeignete Datensynchronisierung und geprobten Failover; die Ziele sind zu messen.", "rationale": "Richtig: Standorttrennung allein ersetzt weder Daten- noch Zugangs- und Wiederanlaufplanung.", "correct": true },
+            { "text": "N+1 Module am Primärstandort lösen den Ausfall des gesamten Gebäudes.", "rationale": "Eine lokale Modulreserve schützt nicht gegen den Verlust ihrer gemeinsamen Standort-Fehlerdomäne.", "correct": false }
+          ],
+          "requiredObjective": "standort"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "[Schneider Electric: N-, N+1- und 2N-USV-Gruppen](https://product-help.schneider-electric.com/EcoStruxure/Power-Monitoring-Expert-2024/content/4_configuring/tools/ups_power_config_utility/ups_system_redundancy_types.htm), [AWS Well-Architected: Wiederanlaufstrategien](https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/rel_planning_for_recovery_disaster_recovery.html) und [AWS: Betrieb zweier Regionen](https://docs.aws.amazon.com/prescriptive-guidance/latest/aws-multi-region-fundamentals/fundamental-4.html), am 26.09.2026 gelesen. Die Zahlen und Diagramme sind eigene Lernmodelle. Sie sind weder eine elektrische Detailplanung noch eine Verfügbarkeitszusage; menschliche Fachfreigabe offen."
+        }
+      ]
+    }
+  ]
+}
