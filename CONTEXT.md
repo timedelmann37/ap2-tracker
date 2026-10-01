@@ -45,3 +45,22 @@ _Avoid_: überfällig, verpasst, offen
 Eine vom Nutzer gesetzte Markierung an einem Kernthema („zur Wiederholung
 markieren"), unabhängig vom Abhaken.
 _Avoid_: Flag, Merker, Lesezeichen
+
+**Lerngruppe**:
+Alle Konten, die den Tracker nutzen, als eine Gruppe gesehen — und der
+Abschnitt auf der Übersicht, der sie als Rangliste zeigt. Jedes Konto ist
+standardmäßig dabei (Opt-out über den Konto-Dialog). Sichtbar nur eingeloggt;
+zu sehen sind ausschließlich Anzeigename und Zählwerte.
+_Avoid_: Leaderboard, Rangliste (als Name des Features), Team, Klasse
+
+**Anzeigename**:
+Der Name, unter dem ein Konto in der Lerngruppe erscheint. Bei der
+Registrierung aus dem E-Mail-Teil vor dem `@` vorbelegt, im Konto-Dialog frei
+änderbar (1–32 Zeichen). Die E-Mail selbst sehen andere nie.
+_Avoid_: Nickname, Username, Benutzername, Profilname
+
+**Wochenwertung**:
+Die Zahl der Kernthemen, die ein Konto in den letzten 7 Tagen abgehakt hat und
+die keine Wiederholungsmarkierung tragen. Standardansicht der Lerngruppe;
+„Gesamt" (Prozent aller Kernthemen) ist die zweite Ansicht.
+_Avoid_: Wochenscore, Punkte, Streak (das ist etwas anderes)
