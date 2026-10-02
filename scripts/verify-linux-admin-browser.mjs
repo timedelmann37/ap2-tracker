@@ -45,6 +45,15 @@ const cases = [
     recall: 'cmd-fallbegruendung',
     gates: ['diagnosebefehle-gate', 'seiteneffekte-gate', 'aenderung-kontrollieren-gate'],
     sequences: [{ id: 'rsync-kontrollfolge', expected: ['target', 'dryrun', 'run', 'result'] }]
+  },
+  {
+    slug: 'prozesse-kontrolliert-beenden',
+    figures: 2,
+    diagnostic: 'prozess-einstieg',
+    card: 'prozess-karte-pid',
+    recall: 'prozess-fallbegruendung',
+    gates: ['prozess-zuordnung-gate', 'prozess-wirkung-gate', 'prozess-nachweis-gate'],
+    sequences: [{ id: 'prozess-kontrollfolge', expected: ['identitaet', 'normal', 'term', 'abwarten', 'ausnahme', 'nachweis'] }]
   }
 ];
 
@@ -89,17 +98,21 @@ try {
       assert((await firstDiagram.textContent()).includes('Cron-Ausdruck: 15 7 * * *'), `${testCase.slug}: full cron expression is visible`);
     } else if (testCase.slug === 'ssh-schluessel-sudo-root-login') {
       assert((await firstDiagram.textContent()).includes('Benutzer: privat'), `${testCase.slug}: key roles are labelled`);
+    } else if (testCase.slug === 'prozesse-kontrolliert-beenden') {
+      assert((await firstDiagram.textContent()).includes('PID bestätigen'), `${testCase.slug}: identity check is labelled`);
     } else {
       assert((await firstDiagram.textContent()).includes('Lesender Befund'), `${testCase.slug}: diagnosis flow is labelled`);
     }
 
     const diagnostic = page.locator(`[data-quiz="${testCase.diagnostic}"]`);
-    await diagnostic.locator('[data-answer="1"]').click();
-    assert(await diagnostic.locator('[data-answer="1"]').evaluate(node => node.classList.contains('wrong')), `${testCase.slug}: diagnostic feedback`);
+    const diagnosticCorrect = Number(await diagnostic.getAttribute('data-correct'));
+    const diagnosticWrong = (diagnosticCorrect + 1) % await diagnostic.locator('[data-answer]').count();
+    await diagnostic.locator(`[data-answer="${diagnosticWrong}"]`).click();
+    assert(await diagnostic.locator(`[data-answer="${diagnosticWrong}"]`).evaluate(node => node.classList.contains('wrong')), `${testCase.slug}: diagnostic feedback`);
     await diagnostic.locator('[data-quiz-reset]').click();
-    await diagnostic.locator('[data-answer="0"]').focus();
+    await diagnostic.locator(`[data-answer="${diagnosticCorrect}"]`).focus();
     await page.keyboard.press('Enter');
-    assert(await diagnostic.locator('[data-answer="0"]').evaluate(node => node.classList.contains('right')), `${testCase.slug}: keyboard quiz`);
+    assert(await diagnostic.locator(`[data-answer="${diagnosticCorrect}"]`).evaluate(node => node.classList.contains('right')), `${testCase.slug}: keyboard quiz`);
     assert(await done.isDisabled(), `${testCase.slug}: diagnostic gives no objective credit`);
 
     for (const { id, expected } of testCase.sequences) {
@@ -121,11 +134,13 @@ try {
     assert(await card.getAttribute('aria-pressed') === 'true', `${testCase.slug}: keyboard flashcard`);
 
     const firstGate = page.locator(`[data-quiz="${testCase.gates[0]}"]`);
-    await firstGate.locator('[data-answer="1"]').click();
+    const firstGateCorrect = Number(await firstGate.getAttribute('data-correct'));
+    await firstGate.locator(`[data-answer="${(firstGateCorrect + 1) % await firstGate.locator('[data-answer]').count()}"]`).click();
     assert(await done.isDisabled(), `${testCase.slug}: wrong gate gives no credit`);
     await firstGate.locator('[data-quiz-reset]').click();
     for (const [index, gateId] of testCase.gates.entries()) {
-      await page.locator(`[data-quiz="${gateId}"] [data-answer="0"]`).click();
+      const gate = page.locator(`[data-quiz="${gateId}"]`);
+      await gate.locator(`[data-answer="${await gate.getAttribute('data-correct')}"]`).click();
       assert((await done.isDisabled()) === (index < testCase.gates.length - 1), `${testCase.slug}: objective gate ${index + 1}`);
     }
     assert((await page.locator('[data-mastery-note]').textContent()).includes('Alle 3 Lernziele'), `${testCase.slug}: mastery message matches objective count`);

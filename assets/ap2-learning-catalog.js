@@ -1860,6 +1860,38 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "prozesse-kontrolliert-beenden",
+    "slug": "prozesse-kontrolliert-beenden",
+    "title": "Prozesse kontrolliert beenden: Signal, Task und Nachweis",
+    "description": "Einen hängenden Prozess eindeutig zuordnen, den schonendsten Stopp wählen und Betrieb sowie Daten danach prüfen.",
+    "domain": "GA1",
+    "groupId": "ga1-6",
+    "groupLabel": "Betriebssysteme und Administration",
+    "itemId": "ga1-6__8",
+    "week": "KW 40",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-02.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "prozess-eindeutig-zuordnen",
+      "stoppwirkung-abwaegen",
+      "betrieb-nachweisen"
+    ],
+    "sources": [
+      "util-linux-kill-man",
+      "linux-signal-man",
+      "procps-ps-man",
+      "systemd-systemctl-man",
+      "systemd-service-man",
+      "microsoft-taskkill",
+      "microsoft-tasklist",
+      "microsoft-process-id"
+    ],
+    "contentHash": "cc4d689a63a3176057fbbafe80fb718bb5d24482f29a7107fefe41b12a9852b7",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "slug": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "title": "Struktogramm und Programmablaufplan",

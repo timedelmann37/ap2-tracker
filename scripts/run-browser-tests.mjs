@@ -45,7 +45,7 @@ await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 const address = server.address();
 process.env.AP2_BASE_URL = `http://127.0.0.1:${address.port}`;
 
-try {
+async function runFullSuite() {
   await import('./verify-navigation.mjs');
   await import('./verify-theme-persistence.mjs');
   await import('./verify-learning-browser.mjs');
@@ -128,6 +128,15 @@ try {
   await import('./verify-linux-admin-browser.mjs');
   useSignedInFixture = false;
   await import('./verify-space-browser.mjs');
+}
+
+try {
+  if (process.env.AP2_BROWSER_ONLY === 'linux-admin') {
+    useSignedInFixture = true;
+    await import('./verify-linux-admin-browser.mjs');
+  } else {
+    await runFullSuite();
+  }
 } finally {
   await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
 }
