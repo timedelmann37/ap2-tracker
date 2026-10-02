@@ -139,6 +139,7 @@ async function runFullSuite() {
   await import('./verify-protection-needs-browser.mjs');
   await import('./verify-threat-patterns-browser.mjs');
   await import('./verify-tom-browser.mjs');
+  await import('./verify-system-network-browser.mjs');
   useSignedInFixture = false;
   await import('./verify-space-browser.mjs');
 }
@@ -186,6 +187,9 @@ try {
   } else if (process.env.AP2_BROWSER_ONLY === 'tom') {
     useSignedInFixture = true;
     await import('./verify-tom-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'system-network') {
+    useSignedInFixture = true;
+    await import('./verify-system-network-browser.mjs');
   } else {
     await runFullSuite();
   }

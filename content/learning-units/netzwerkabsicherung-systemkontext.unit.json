@@ -1,0 +1,417 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "netzwerkabsicherung-systemkontext",
+    "slug": "netzwerkabsicherung-systemkontext",
+    "title": "Netzwerkgrenzen im Systemkontext absichern",
+    "description": "VLAN, DMZ, Firewall-Typen, IDS/IPS und NAC anhand eines eigenen Dienstkonzepts unterscheiden und prüfen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-8",
+    "groupLabel": "IT-Sicherheit und Datenschutz",
+    "itemId": "ga1-8__4",
+    "week": "KW 42",
+    "estimatedMinutes": 40,
+    "relevance": "hoch",
+    "sources": [
+      "system-net-nist-fw",
+      "system-net-owasp",
+      "system-net-nac",
+      "system-net-ips"
+    ],
+    "contentRevision": "2026-10-02.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "zonen",
+      "label": "VLAN-Trennung und kontrollierte Zonenübergänge unterscheiden"
+    },
+    {
+      "id": "regeln",
+      "label": "DMZ-Verbindungen auf Quelle, Ziel und Dienst begrenzen"
+    },
+    {
+      "id": "sensor",
+      "label": "Firewall-Typen sowie IDS und IPS nach Wirkung einordnen"
+    },
+    {
+      "id": "zulassung",
+      "label": "NAC-Zulassung von Anwendungsrechten trennen und Tests planen"
+    }
+  ],
+  "intro": "Die fiktive Leihgeräteverwaltung Hafenwerk veröffentlicht ein Kundenportal. Dahinter arbeitet eine interne API mit Datenbank. Gäste bringen eigene Notebooks mit. Du planst nicht nur zusätzliche Geräte, sondern erlaubte Kommunikationswege, überprüfbare Sperren und den Umgang mit Fehlalarmen.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "system-net-nist-fw",
+        "sourceLocator": "Abschnitte zu Stateful Inspection und DMZ, Druckseiten 2-4 und 3-2; Grundlagenpublikation 2009",
+        "use": "Begriffe, Kontrollgrenzen und eigene defensive Architekturbeispiele",
+        "reviewStatus": "Genannte offizielle Passagen am 02.10.2026 direkt gelesen"
+      },
+      {
+        "sourceId": "system-net-owasp",
+        "sourceLocator": "Introduction, Three-layer architecture und Interservice interaction",
+        "use": "Begriffe, Kontrollgrenzen und eigene defensive Architekturbeispiele",
+        "reviewStatus": "Genannte offizielle Passagen am 02.10.2026 direkt gelesen"
+      },
+      {
+        "sourceId": "system-net-nac",
+        "sourceLocator": "How NAC works; admission, posture, restricted access",
+        "use": "Begriffe, Kontrollgrenzen und eigene defensive Architekturbeispiele",
+        "reviewStatus": "Genannte offizielle Passagen am 02.10.2026 direkt gelesen"
+      },
+      {
+        "sourceId": "system-net-ips",
+        "sourceLocator": "IPS Concept und Differences from passive IDS; Entwicklungsdokumentation 9.0.0-dev, keine Installationsanleitung",
+        "use": "Begriffe, Kontrollgrenzen und eigene defensive Architekturbeispiele",
+        "reviewStatus": "Genannte offizielle Passagen am 02.10.2026 direkt gelesen"
+      }
+    ],
+    "notes": [
+      "Privater Themenanker europa-integratoren-2026:00350, Zeilen 3335–3340, nennt Firewall und DMZ. Keine Buchaufgabe, Firma oder Abbildung übernommen.",
+      "NIST-Firewallpublikation von 2009 nur als Grundlagenquelle; aktuelle Webdokumentation ergänzt. Suricata latest ist Entwicklungsdokumentation; keine Versions- oder Produktinstallationsvorgaben.",
+      "Schema stellt logische, im eigenen Beispiel freigegebene Verbindungsinitiierung dar. Keine vollständige physische Topologie. Keine mathematische Formel erforderlich."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "system-zones",
+      "type": "topology",
+      "title": "Nur benötigte Dienstwege",
+      "description": "Eigene logische Dienstarchitektur: Internet initiiert HTTPS zum DMZ-Portal; Portal initiiert TCP 8443 zur internen API; API initiiert TCP 5432 zur Datenbank. Zonenübergänge sind firewallkontrolliert. Keine Direktfreigabe Internet zur API oder Datenbank.",
+      "zones": [
+        {
+          "id": "outside",
+          "label": "Extern",
+          "x": 40,
+          "y": 170,
+          "width": 220,
+          "height": 190
+        },
+        {
+          "id": "dmz",
+          "label": "DMZ",
+          "x": 375,
+          "y": 170,
+          "width": 210,
+          "height": 190
+        },
+        {
+          "id": "inside",
+          "label": "Intern",
+          "x": 685,
+          "y": 170,
+          "width": 240,
+          "height": 340
+        }
+      ],
+      "nodes": [
+        {
+          "id": "internet",
+          "label": "Internet",
+          "detail": "Externe Clients",
+          "x": 150,
+          "y": 280
+        },
+        {
+          "id": "portal",
+          "label": "Portal",
+          "detail": "DMZ-Dienst",
+          "x": 480,
+          "y": 280
+        },
+        {
+          "id": "api",
+          "label": "API",
+          "detail": "Interner Dienst",
+          "x": 800,
+          "y": 280
+        },
+        {
+          "id": "db",
+          "label": "Datenbank",
+          "detail": "Nur API-Zugriff",
+          "x": 800,
+          "y": 440
+        }
+      ],
+      "edges": [
+        {
+          "from": "internet",
+          "to": "portal",
+          "label": "TCP 443"
+        },
+        {
+          "from": "portal",
+          "to": "api",
+          "label": "TCP 8443"
+        },
+        {
+          "from": "api",
+          "to": "db",
+          "label": "TCP 5432"
+        }
+      ]
+    },
+    {
+      "id": "system-nac",
+      "type": "flow",
+      "title": "Zulassung vor Zugriff",
+      "description": "NAC bewertet einen Verbindungsversuch nach der festgelegten Policy. Das Ergebnis ist normaler, eingeschränkter oder kein Netzzugang; keine automatische Datenbankfreigabe.",
+      "items": [
+        {
+          "label": "Gerät und Identität",
+          "detail": "Wer versucht sich anzuschließen?"
+        },
+        {
+          "label": "Policy prüfen",
+          "detail": "Rolle und Gerätezustand bewerten"
+        },
+        {
+          "label": "Netzzugang zuweisen",
+          "detail": "Normal, eingeschränkt oder gesperrt"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Diagnose: getrennt heißt nicht gesperrt",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "system-diagnose",
+          "question": "Gäste und Server liegen in verschiedenen VLANs. Ein Router erlaubt jeden Verkehr zwischen beiden. Sind die Server zuverlässig vor Gastzugriffen getrennt?",
+          "options": [
+            {
+              "text": "Ja, unterschiedliche VLAN-Nummern reichen.",
+              "rationale": "Die Layer-2-Trennung verhindert nicht ausdrücklich erlaubte geroutete Verbindungen.",
+              "correct": false
+            },
+            {
+              "text": "Nein: Zonenübergänge brauchen begrenzte Routing-/Firewall-Regeln.",
+              "rationale": "Die Trennung und die Zugriffspolitik sind verschiedene Aufgaben. Erlaubte Querzugriffe bleiben erreichbar.",
+              "correct": true
+            },
+            {
+              "text": "Eine neue IP-Adresse repariert automatisch die Policy.",
+              "rationale": "Adressierung ersetzt keine Regeln für Quelle, Ziel und Dienst.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        },
+        {
+          "type": "markdown",
+          "markdown": "Der Prüfweg lautet: **Zone → Kommunikationsbedarf → Kontrolle → Nachweis**. Frage bei jedem Dienst: Wer muss ihn erreichen, wofür und über welchen Weg? Ohne konkreten Bedarf gibt es im eigenen Konzept keine Freigabe."
+        }
+      ]
+    },
+    {
+      "title": "Segmentierung und DMZ",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein **VLAN** teilt ein geswitchtes Netz in getrennte Layer-2-Broadcast-Domänen. **Segmentierung** ordnet Systeme nach Aufgabe und Schutzbedarf und begrenzt die Kommunikation zwischen ihnen. Der kontrollierte Übergang kann beispielsweise über eine Firewall oder passende ACL erfolgen; ein VLAN-Name erzwingt die Policy nicht.\n\nEine **DMZ** ist eine eigene Zone für Dienste, die von weniger vertrauenswürdigen Netzen erreichbar sein müssen. Sie ist nicht ungeschützt. Bei Hafenwerk steht das Portal dort, API und Datenbank bleiben intern. Auch aus der DMZ werden nur benötigte Verbindungen erlaubt. Ein kompromittiertes Portal soll nicht beliebig auf interne Server zugreifen können."
+        },
+        {
+          "type": "quiz",
+          "id": "system-zonen",
+          "question": "Was verbessert Hafenwerks Gastnetz tatsächlich?",
+          "options": [
+            {
+              "text": "Eigenes VLAN plus beschränkte Übergangsregeln und Test gesperrter Serverzugriffe.",
+              "rationale": "Die Kombination schafft Trennung und überprüfbare Zugriffskontrolle.",
+              "correct": true
+            },
+            {
+              "text": "Eigenes VLAN mit weiterhin uneingeschränktem Routing.",
+              "rationale": "Die Server sind damit weiterhin über den Router erreichbar.",
+              "correct": false
+            },
+            {
+              "text": "Alle Server ebenfalls ins Gastnetz verschieben.",
+              "rationale": "Das beseitigt die beabsichtigte Trennung und erweitert die Angriffsfläche.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "zonen"
+        }
+      ]
+    },
+    {
+      "title": "Freigaben aus dem Dienstbedarf ableiten",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "system-zones",
+          "alt": "Externes Internet, DMZ-Portal und interne API mit Datenbank. Benötigte Verbindungen: Internet zu Portal TCP 443, Portal zu API TCP 8443 und API zu Datenbank TCP 5432.",
+          "caption": "Logische Wege, keine vollständige Verkabelung: Verbindungen werden in der beschriebenen Richtung initiiert. Zonenübergänge sind firewallkontrolliert; Antwortverkehr gehört zur erlaubten Verbindung."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Im eigenen Beispiel gelten **drei gezielte Freigaben**:\n\n- Internet → Portal: TCP 443 für HTTPS.\n- Portal → genau die API: TCP 8443 für deren festgelegten Dienst.\n- API → genau die Datenbank: TCP 5432 für deren festgelegten Dienst.\n\nAndere Verbindungsinitiierungen sind standardmäßig gesperrt. Administrative Zugänge und Infrastrukturabhängigkeiten sind in diesem vereinfachten Schema ausgelassen und müssen separat geplant werden. Antwortverkehr wird bei einer zustandsbehafteten Firewall passend zur erlaubten Verbindung behandelt – nicht durch eine pauschale Rückrichtung für alle Ports.\n\nPro Regel gehören Quelle, Ziel, Protokoll, Zielport, Zweck, Verantwortlicher und Prüftermin in die Dokumentation. Die Portnummer allein beweist nicht, dass ein Dienst sicher ist. Auch ein erlaubter Weg braucht sichere Endpunkte und Anwendungsrechte."
+        },
+        {
+          "type": "quiz",
+          "id": "system-regeln",
+          "question": "Welche Regel passt zum festgelegten Portalbedarf?",
+          "options": [
+            {
+              "text": "DMZ zu allen internen Servern auf allen Ports.",
+              "rationale": "Sie übersteigt den konkreten Bedarf und ermöglicht unnötige Querzugriffe.",
+              "correct": false
+            },
+            {
+              "text": "Internet direkt zur Datenbank, weil sie zum Portal gehört.",
+              "rationale": "Die Datenbank wird durch die API angesprochen; ein direkter Internetzugriff ist im Konzept nicht nötig.",
+              "correct": false
+            },
+            {
+              "text": "Portal-IP zur API-IP, TCP-Zielport 8443, mit dokumentiertem Zweck.",
+              "rationale": "Quelle, Ziel und Dienst entsprechen dem Bedarf. Antwortverkehr und andere Abhängigkeiten werden gesondert berücksichtigt.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "regeln"
+        }
+      ]
+    },
+    {
+      "title": "Filtern, erkennen und verhindern",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "### Firewall-Typen\nEin **Paketfilter** bewertet Paketmerkmale wie Adressen, Protokoll und Ports. **Stateful Inspection** berücksichtigt zusätzlich den Verbindungszustand. Ein **Anwendungsproxy** vermittelt Kommunikation auf Anwendungsebene und kann protokollspezifische Prüfungen durchführen. Netzwerkfirewalls kontrollieren Netzgrenzen, Host-Firewalls ergänzen Regeln am einzelnen System. Diese Begriffe beschreiben unterschiedliche Eigenschaften, keine starre Rangliste.\n\n### IDS und IPS\nEin passives **IDS** beobachtet Verkehr und meldet auffällige Befunde. Ein **IPS** kann bei passender Einbindung in den Verkehrsweg und aktiven Blockierregeln unerwünschten Verkehr verwerfen. Der Name IPS allein belegt keine Blockierung; Suricata beispielsweise benötigt dafür passende Regeln.\n\nEin Fehlalarm kann legitimen Verkehr betreffen. Deshalb brauchen Blockierregeln Tests, Verantwortliche und ein abgestimmtes Rücknahmeverfahren. Verschlüsselter Inhalt ist ohne geeignete Sichtbarkeit nicht vollständig lesbar; Endpunktüberwachung kann ergänzen. Kein Sensor garantiert, jeden Angriff zu erkennen."
+        },
+        {
+          "type": "quiz",
+          "id": "system-sensor",
+          "question": "Ein Sensor bekommt nur eine Kopie des Verkehrs und erzeugt Alarme. Was folgt daraus?",
+          "options": [
+            {
+              "text": "Jeder Alarm bedeutet, dass die Verbindung blockiert wurde.",
+              "rationale": "Eine Beobachtungskopie ist nicht der durchlaufene Verkehrsweg; ein Alarm ist kein Blockierungsnachweis.",
+              "correct": false
+            },
+            {
+              "text": "Es handelt sich hier um passive Erkennung; Blockierung braucht einen passenden Durchsetzungspunkt.",
+              "rationale": "Sensorposition, Modus und Regeln bestimmen die tatsächliche Wirkung, nicht allein die Produktbezeichnung.",
+              "correct": true
+            },
+            {
+              "text": "Eine Stateful Firewall beweist stets schadfreie Inhalte.",
+              "rationale": "Verbindungszustand ist kein Beweis für die fachliche oder sicherheitstechnische Unbedenklichkeit der Anwendung.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "sensor"
+        }
+      ]
+    },
+    {
+      "title": "NAC und überprüfbare Zulassung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**Network Access Control (NAC)** prüft nach der festgelegten Policy, welche Geräte beziehungsweise Nutzer Zugang zum Netz erhalten. Identität und gegebenenfalls Gerätezustand können zur Entscheidung beitragen. Das Ergebnis kann regulärer Zugang, ein eingeschränktes Netz oder Ablehnung sein. 802.1X kann ein Baustein sein; NAC ist mehr als das Auslesen einer MAC-Adresse.\n\nBei Hafenwerk wird ein unbekanntes Gastgerät nur im beschränkten Gastnetz zugelassen. Ein nicht konformes Firmengerät erhält nach der eigenen Policy eingeschränkten Zugang zu Wartungsdiensten. Netzzulassung erteilt keine automatischen API- oder Datenbankrechte."
+        },
+        {
+          "type": "figure",
+          "diagramId": "system-nac",
+          "alt": "Gerät und Identität erfassen, Policy prüfen und normalen, eingeschränkten oder gesperrten Netzzugang zuweisen.",
+          "caption": "Die Entscheidung betrifft den Netzzugang. Berechtigungen innerhalb der Anwendung bleiben eine eigene Kontrolle."
+        },
+        {
+          "type": "quiz",
+          "id": "system-zulassung",
+          "question": "Ein Firmenrechner wurde durch NAC zugelassen. Darf sein Nutzer dadurch alle Datenbanktabellen lesen?",
+          "options": [
+            {
+              "text": "Nein: Netzzulassung und Anwendungsberechtigung sind getrennte Entscheidungen.",
+              "rationale": "NAC prüft den Zugang zur Netzumgebung. Datenbankrollen und fachliche Rechte werden dadurch nicht automatisch vergeben.",
+              "correct": true
+            },
+            {
+              "text": "Ja, das Firmennetz ersetzt alle Anmeldungen.",
+              "rationale": "Eine Netzposition ist kein pauschaler Nachweis für erlaubte Datenverwendung.",
+              "correct": false
+            },
+            {
+              "text": "Nur die VLAN-Nummer entscheidet über Tabellenrechte.",
+              "rationale": "VLANs und Datenbankrollen kontrollieren verschiedene Ebenen.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "zulassung"
+        },
+        {
+          "type": "markdown",
+          "markdown": "### Sichere Testplanung\nPrüfe autorisiert im Testnetz einen erlaubten Portalzugriff und einen gesperrten Direktzugriff auf interne Dienste. Prüfe NAC mit freigegebenem und nicht konformem Testgerät. Für IDS/IPS braucht es einen ungefährlichen, vorher abgestimmten Testfall: Alarm und tatsächliche Blockierung getrennt nachweisen. Dokumentiere auch legitimen Verkehr, Ausfallverhalten und Rücknahme. Keine unkoordinierten Tests an produktiven oder fremden Netzen."
+        },
+        {
+          "type": "recall",
+          "id": "system-transfer",
+          "title": "Dein Architekturentscheid",
+          "prompt": "Ein Kollege möchte der DMZ Zugriff auf alle internen Ports geben und nennt den passiven Sensor eine Blockiersicherung. Erkläre die beiden Fehler. Formuliere eine gezielte Freigabe, zwei Tests und die Grenze von NAC.",
+          "minLength": 180,
+          "model": "Die pauschale DMZ-Freigabe übersteigt den Dienstbedarf. Ich erlaube nur die Portal-IP zur API-IP auf TCP 8443 und dokumentiere Zweck und Betreiber. Ein passiver Sensor sieht eine Kopie und meldet; das belegt keine Blockierung. Ich prüfe einen erlaubten Portalzugriff und einen gesperrten Direktzugriff auf interne Dienste im autorisierten Testnetz. Ein zusätzlicher Sensor-Test unterscheidet Alarm von Blockierung. NAC-Zulassung kontrolliert den Netzzugang, nicht automatisch die Datenbankberechtigungen."
+        }
+      ]
+    },
+    {
+      "title": "Abruftraining",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "id": "system-cards",
+          "cards": [
+            {
+              "id": "vlan",
+              "label": "Kontrollgrenze",
+              "front": "Warum reicht ein VLAN nicht als vollständige Zugriffskontrolle?",
+              "back": "Es trennt Layer-2-Broadcast-Domänen. Geroutete Verbindungen benötigen ausdrücklich passende Kontrollen."
+            },
+            {
+              "id": "dmz",
+              "label": "Kontrollgrenze",
+              "front": "Wofür dient die DMZ?",
+              "back": "Eigene Sicherheitszone für exponierte Dienste; Zugriffe zu internen Diensten werden begrenzt."
+            },
+            {
+              "id": "state",
+              "label": "Kontrollgrenze",
+              "front": "Was ergänzt Stateful Inspection?",
+              "back": "Verbindungszustand zum Vergleich von Paketen; das beweist keine schadfreie Anwendung."
+            },
+            {
+              "id": "proxy",
+              "label": "Kontrollgrenze",
+              "front": "Was unterscheidet einen Anwendungsproxy?",
+              "back": "Er vermittelt Kommunikation auf Anwendungsebene; Prüfungen hängen von Protokoll und Konfiguration ab."
+            },
+            {
+              "id": "ids",
+              "label": "Kontrollgrenze",
+              "front": "IDS oder IPS: Was kann Verkehr direkt blockieren?",
+              "back": "Ein passend eingebundenes IPS mit aktiven Blockierregeln. Ein passives IDS meldet Befunde."
+            },
+            {
+              "id": "nac",
+              "label": "Kontrollgrenze",
+              "front": "Was entscheidet NAC?",
+              "back": "Netzzulassung anhand Identität und gegebenenfalls Gerätezustand; Anwendungsrechte bleiben separat."
+            },
+            {
+              "id": "test",
+              "label": "Kontrollgrenze",
+              "front": "Warum auch verbotene Wege testen?",
+              "back": "Ein erlaubter Zugriff allein belegt nicht, dass unerlaubte Querzugriffe gesperrt sind."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
