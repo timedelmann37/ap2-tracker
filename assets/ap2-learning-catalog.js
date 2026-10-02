@@ -2114,6 +2114,35 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "zugriffsmodelle-dac-mac-rbac-abac",
+    "slug": "zugriffsmodelle-dac-mac-rbac-abac",
+    "title": "Wer entscheidet über den Zugriff?",
+    "description": "DAC, MAC, RBAC und ABAC am selben Zugriffsfall unterscheiden, kombinierte Regeln prüfen und eine passende Umsetzung begründen.",
+    "domain": "GA1",
+    "groupId": "ga1-7",
+    "groupLabel": "Berechtigungskonzepte",
+    "itemId": "ga1-7__1",
+    "week": "KW 41",
+    "estimatedMinutes": 40,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-02.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "vier-modelle-unterscheiden",
+      "zugriffsentscheidung-ableiten",
+      "kombination-begruenden"
+    ],
+    "sources": [
+      "itlf10-12-2023",
+      "access-nist-dac-glossary",
+      "access-nist-mac-glossary",
+      "access-nist-rbac-faq",
+      "access-nist-sp800162"
+    ],
+    "contentHash": "97c60f6830aacaed685e94833c45a8b12b45a09809ef543ef569d851fead2212",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "slug": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "title": "Struktogramm und Programmablaufplan",

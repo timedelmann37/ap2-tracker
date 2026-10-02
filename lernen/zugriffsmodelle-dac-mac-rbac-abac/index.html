@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="DAC, MAC, RBAC und ABAC am selben Zugriffsfall unterscheiden, kombinierte Regeln prüfen und eine passende Umsetzung begründen.">
+<title>Wer entscheidet über den Zugriff? – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="zugriffsmodelle-dac-mac-rbac-abac" data-progress-id="ga1-7__1" data-content-revision="2026-10-02.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-7">Berechtigungskonzepte</a><span class="sep">›</span>
+    <span class="here">Wer entscheidet über den Zugriff?</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Wer entscheidet über den Zugriff?</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 40 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Bei der fiktiven Torwerk Service GmbH werden Inspektionsberichte für mehrere Schleusentore verwaltet. Mara arbeitet in der Wartung am Nordtor. Der Autor Ben teilt den Bericht T17 mit ihr zum Lesen. Mara hat die Rolle „Wartung“, ihr Einsatzort passt zum Bericht – trotzdem verweigert das System den Zugriff. T17 hat zusätzlich eine zentral verwaltete Schutzkennzeichnung. Welche Regel könnte Bens Freigabe begrenzen, und was muss vor einer Entscheidung geprüft werden?</p>
+<section class="learning-goals" aria-labelledby="zugriffsmodelle-dac-mac-rbac-abac-goals">
+  <h2 id="zugriffsmodelle-dac-mac-rbac-abac-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>DAC, MAC, RBAC und ABAC anhand von Entscheidungsbefugnis und ausgewerteter Regel unterscheiden</li>
+    <li>Eine Anfrage mit Rolle, Subjekt-, Objekt- und Aktionsattributen sowie einer verbindlichen Grenze prüfen</li>
+    <li>Für neue Anforderungen geeignete Modellbausteine auswählen und ihre Grenzen erkennen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Diagnose: Vier Kürzel, eine Entscheidung</h2>
+<section class="quiz" data-quiz="zugriffsmodelle-diagnose" data-correct="1">
+  <h3>Ben hat Mara Bericht T17 zum Lesen freigegeben. Maras Wartungsrolle und Einsatzort passen. Die zentrale Schutzregel verlangt jedoch eine Freigabestufe, die Mara fehlt. Welche Aussage erklärt die Verweigerung am besten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="DAC gibt einem Eigentümer oder Berechtigten einen definierten Spielraum. Er kann eine zentral verbindliche MAC-Regel nicht durch eine einzelne Objektfreigabe außer Kraft setzen."><span class="m">A</span> Bens Freigabe als Eigentümer hebt alle anderen Zugriffsregeln auf.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Die angenommene Torwerk-Policy verlangt alle einschlägigen Bedingungen. Eine erfüllte Regel überstimmt die fehlende zentrale Freigabe nicht."><span class="m">B</span> Die Kombination der Torwerk-Regeln verweigert Zugriff, weil die verbindliche Schutzregel nicht erfüllt ist – trotz DAC-Freigabe, Rolle und passendem Ort.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="MAC bedeutet hier Mandatory Access Control, nicht Media Access Control oder MAC-Adresse. Auch eine passende Rolle kann zusätzlichen Regeln unterliegen."><span class="m">C</span> Die Rolle Wartung genügt immer; die Schutzkennzeichnung betrifft nur Netzwerk-MAC-Adressen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><p><strong>Einordnung vorab:</strong> DAC, MAC, RBAC und ABAC sind keine vier sich ausschließenden Produktschubladen. DAC und MAC beschreiben vor allem, wie viel Entscheidungsspielraum die Eigentümerin eines Objekts gegenüber einer verbindlichen Regel hat. RBAC bindet Rechte an Rollen; ABAC wertet Attribute gegen eine Policy aus. Eine Rolle kann selbst ein Attribut sein, und eine Attribut-Policy kann auch Eigentümerfreigaben oder zentrale Schutzregeln ausdrücken. Entscheidend ist, welche Policy das konkrete System tatsächlich durchsetzt. <strong>Keines der Modelle erfüllt Least Privilege automatisch:</strong> Eine zu breite Rolle oder Regel vergibt weiterhin zu viele Rechte.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Vier Zugriffsmodelle">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-modellvergleich-title diagram-modellvergleich-desc">
+  <title id="diagram-modellvergleich-title">Vier Zugriffsmodelle</title>
+  <desc id="diagram-modellvergleich-desc">Vier Vergleichskarten: DAC lässt den berechtigten Objekteigentümer über Freigaben entscheiden; MAC bindet den Zugriff an zentral durchgesetzte Regeln; RBAC ordnet Berechtigungen Rollen zu; ABAC prüft Attribute und angeforderte Aktion gegen eine Policy. Die Modelle sind kombinierbar.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Vier Zugriffsmodelle</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">DAC</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">Eigentümer darf</tspan><tspan x="64" dy="30">teilen</tspan></text></g><g><rect class="diagram-row" x="265" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="287" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="287" dy="0">MAC</tspan></text><text x="287" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="287" dy="0">Zentrale Regel</tspan><tspan x="287" dy="30">bindet</tspan></text></g><g><rect class="diagram-row" x="488" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="510" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="510" dy="0">RBAC</tspan></text><text x="510" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="510" dy="0">Rolle trägt Rechte</tspan></text></g><g><rect class="diagram-row" x="711" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="733" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="733" dy="0">ABAC</tspan></text><text x="733" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="733" dy="0">Attribute erfüllen</tspan><tspan x="733" dy="30">Policy</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene technische Übersicht. Die Kurztexte benennen den Kern, nicht ein vollständiges Produktverhalten; mehrere Modelle können dieselbe Entscheidung beeinflussen.</figcaption>
+</figure><h2 class="sec" id="s2"><span class="num">2</span>DAC und MAC: Wer darf Regeln bestimmen?</h2>
+<p>Bei <strong>Discretionary Access Control (DAC)</strong> darf die Eigentümerin eines Objekts oder eine dazu berechtigte Stelle Zugriffsrechte innerhalb ihres Spielraums vergeben. Ben kann beispielsweise die ungeschützte Entwurfsnotiz N4 für Mara zum Lesen freigeben. DAC heißt nicht, dass Ben jede organisationsweite Schranke ändern darf. Eine Dateifreigabe kann DAC-artig sein; ob eine konkrete Gruppenliste oder ACL diese Eigenschaft hat, hängt davon ab, <strong>wer die Einträge bestimmen darf</strong>. Eine ACL ist zunächst nur eine Technik zur Darstellung von Einträgen, kein Beweis für RBAC.</p>
+<p>Bei <strong>Mandatory Access Control (MAC)</strong> setzt eine übergeordnete Instanz eine Regel verbindlich durch. Der einzelne Objekteigentümer kann sie nicht nach Belieben abschalten. Torwerk versieht T17 zentral mit der Schutzkennzeichnung „Kontrollstelle“; Mara besitzt nur die zentral vergebene Freigabestufe „Betrieb“. Bens Lesen-Freigabe bleibt daher wirkungslos. Schutzstufe und Freigabe sind ein typisches Beispiel, aber MAC ist nicht auf militärisch klassifizierte Dateien beschränkt. „MAC“ bezeichnet hier ein Zugriffsmodell, <strong>nicht</strong> die Hardwareadresse einer Netzwerkkarte.</p>
+<section class="quiz" data-quiz="zugriffsmodelle-dac-mac-praxis" data-correct="0">
+  <h3>Bei Torwerk darf eine Berichtautorin Leserechte für eigene Entwürfe vergeben. Für Prüfberichte gilt zusätzlich eine zentral festgelegte Schutzregel, die die Autorin nicht ändern darf. Welche Zuordnung ist korrekt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Die Frage ist, wer die jeweilige Entscheidung kontrolliert. Objektfreigabe und verbindliche Organisationsregel können nebeneinander wirken."><span class="m">A</span> Die Entwurfsfreigabe zeigt DAC-Spielraum; die nicht von der Autorin aufhebbare Schutzregel ist MAC-artig. Beide können im selben System gelten.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Eine Eigentümerfreigabe kann einer zusätzlichen verpflichtenden Regel unterliegen. Die Modelle schließen sich nicht gegenseitig aus."><span class="m">B</span> Sobald ein System eine Dateifreigabe hat, können keine zentralen Zugriffsschranken mehr existieren.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Zentrale Durchsetzung sagt noch nichts über Rollen aus. Bei DAC zählt der echte Ermessensspielraum; eine ACL kann von Eigentümer oder zentraler Verwaltung gepflegt werden."><span class="m">C</span> Jede zentrale Regel ist RBAC und jede ACL ist automatisch DAC, unabhängig davon, wer sie verwaltet.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s3"><span class="num">3</span>RBAC und ABAC: Welche Regel wird ausgewertet?</h2>
+<p><strong>Role-Based Access Control (RBAC)</strong> ordnet Berechtigungen Rollen und Personen diesen Rollen zu. Bei Torwerk trägt die Rolle „Wartung“ das Recht, freigegebene Inspektionsberichte zu lesen; Mara ist dieser Rolle zugeordnet. Das erleichtert die Verwaltung wiederkehrender Aufgaben. Eine bloße Gruppenmitgliedschaft ist nicht automatisch RBAC: Im RBAC-Modell laufen Berechtigungen über Rollen. Außerdem kann die Rolle nur eine <strong>notwendige</strong> Bedingung sein; weitere Constraints können zur Zugriffszeit gelten. Aus „Mara hat Wartung“ folgt deshalb noch kein uneingeschränktes Lesen aller Berichte.</p>
+<p><strong>Attribute-Based Access Control (ABAC)</strong> entscheidet anhand einer Policy über Attribute des Subjekts, des Objekts und der angeforderten Aktion – <strong>gegebenenfalls</strong> auch der Umgebung. Für den auch von Ben mit Mara geteilten, gewöhnlich freigegebenen Bericht T18 könnte Torwerk verlangen: <code>Aktion = lesen</code> und <code>Einsatzort der Person = Ort des Berichts</code> und <code>Berichtsstatus = freigegeben</code>. Mara am Nordtor darf T18 mit Ort Nordtor lesen, sofern die übrigen für diesen Bericht geltenden Regeln ebenfalls erfüllt sind. Wird T18 wieder als Entwurf markiert, scheitert diese ABAC-Bedingung. Die Uhrzeit muss nicht in jeder ABAC-Policy vorkommen; sie wäre nur ein mögliches Umgebungsattribut. Rollen können in einer solchen Policy ebenfalls als Subjektattribut geprüft werden.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Eine ABAC-Regel auswerten">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="650" viewBox="0 0 960 650" role="img" aria-labelledby="diagram-abac-pruefpfad-title diagram-abac-pruefpfad-desc">
+  <title id="diagram-abac-pruefpfad-title">Eine ABAC-Regel auswerten</title>
+  <desc id="diagram-abac-pruefpfad-desc">Technischer ABAC-Prüfpfad für T18: Mara beantragt Lesen. Ihr Einsatzort ist Nordtor. T18 gehört zum Nordtor und hat Status freigegeben. Die Regel vergleicht Orte und Status für die Aktion Lesen. Damit ist diese ABAC-Bedingung erfüllt, vorbehaltlich weiterer geltender Regeln.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Eine ABAC-Regel auswerten</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Anfrage</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Mara · T18 · lesen</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Subjekt</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Einsatzort: Nordtor</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Objekt</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Ort: Nordtor · freigegeben</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Policy</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Ort gleich und Status frei</tspan></text><path d="M480 472v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 494 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="512" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="541" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Ergebnis</tspan></text><text x="178" y="568" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">ABAC-Bedingung erfüllt</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Beispielpolicy ohne Umgebungsbedingung. Das Diagramm zeigt nur die ABAC-Bedingung; es ersetzt keine weitere Rolle oder verpflichtende Schutzregel.</figcaption>
+</figure><section class="quiz" data-quiz="zugriffsmodelle-rbac-abac-praxis" data-correct="0">
+  <h3>Mara hat weiterhin die Rolle „Wartung“. Bericht T18 gehört zum Nordtor, ist aber noch als Entwurf markiert. Torwerks Policy verlangt neben der Rolle für das Lesen `Berichtsstatus = freigegeben`. Was folgt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. RBAC kann durch Constraints ergänzt werden; hier prüft eine Attributregel den Objektstatus. Eine notwendige Rolle ist nicht automatisch hinreichend."><span class="m">A</span> Die Rolle ist vorhanden, aber die zusätzliche Statusbedingung fehlt; Torwerk verweigert das Lesen unter dieser Policy.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="NISTs RBAC-Beschreibung erlaubt zusätzliche Bedingungen. In Torwerks konkreter Policy ist ein freigegebener Status erforderlich."><span class="m">B</span> Die Rolle „Wartung“ muss genügen, weil RBAC grundsätzlich keine weiteren Bedingungen zulässt.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Umgebungsattribute sind optional. Der Berichtsstatus ist ein Objektattribut und darf in der Policy die Entscheidung steuern."><span class="m">C</span> Weil kein Uhrzeitattribut genannt ist, handelt es sich nicht um ABAC und der Entwurfsstatus kann ignoriert werden.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Anwendung: T17 und T18 gemeinsam prüfen</h2>
+<p><strong>Durchgerechneter Entscheidungsfall:</strong> Mara beantragt <code>lesen</code> für T17. Ben hat sie als Leserin eingetragen (DAC-Spielraum). Maras Rolle „Wartung“ deckt die Aktion an Inspektionsberichten ab (RBAC). Ihr Einsatzort Nordtor stimmt mit dem Berichtsattribut Nordtor überein und T17 ist fachlich freigegeben (ABAC-Bedingung). Trotzdem lautet die <strong>Torwerk-Gesamtentscheidung: verweigern</strong>. Das zentral gesetzte T17-Schutzlabel „Kontrollstelle“ verlangt eine Freigabestufe, die Mara nicht hat (MAC-Grenze). Für den ebenfalls von Ben mit Mara geteilten T18 ohne diese höhere Schutzkennzeichnung und mit Status „freigegeben“ wäre dieselbe Leseanfrage nach den hier festgelegten Regeln zulässig. Diese Ergebnislogik gilt für die <strong>hier beschriebene</strong> Torwerk-Policy; Produkte kombinieren Regeln unterschiedlich und müssen daraufhin geprüft werden.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: T17: vier Regeln, ein Ergebnis">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-layers" xmlns="http://www.w3.org/2000/svg" width="960" height="612" viewBox="0 0 960 612" role="img" aria-labelledby="diagram-bericht-t17-regelschichten-title diagram-bericht-t17-regelschichten-desc">
+  <title id="diagram-bericht-t17-regelschichten-title">T17: vier Regeln, ein Ergebnis</title>
+  <desc id="diagram-bericht-t17-regelschichten-desc">Fünf Schichten der Torwerk-Entscheidung zu Bericht T17: Ben teilt den Bericht mit Mara, ihre Wartungsrolle erlaubt grundsätzlich Lesen, der Einsatzort passt, aber die zentral erforderliche Freigabestufe fehlt. Die Gesamtentscheidung lautet daher verweigern.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">T17: vier Regeln, ein Ergebnis</tspan></text>
+  <g><rect class="diagram-row" x="42" y="82" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="82" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="130" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">DAC</tspan></text><text x="194" y="116" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Ben teilt T17 mit Mara</tspan></text></g><g><rect class="diagram-row" x="42" y="182" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="182" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="230" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">RBAC</tspan></text><text x="194" y="216" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Wartung darf lesen</tspan></text></g><g><rect class="diagram-row" x="42" y="282" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="282" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="330" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">ABAC</tspan></text><text x="194" y="316" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Einsatzort passt</tspan></text></g><g><rect class="diagram-row" x="42" y="382" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="382" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="430" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">MAC</tspan></text><text x="194" y="416" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Freigabestufe fehlt</tspan></text></g><g><rect class="diagram-row" x="42" y="482" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="482" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="530" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Ergebnis</tspan></text><text x="194" y="516" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">T17 nicht lesbar</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigener technischer Fall. Die Schichten sind gleichzeitig geltende Prüfungen, keine behauptete Laufzeitreihenfolge. Die zentrale Schranke lässt sich durch Bens Freigabe nicht überschreiben.</figcaption>
+</figure><section class="sequence-practice" data-sequence="zugriffsmodelle-entscheidungsfolge" data-expected="anfrage,regelbestand,regelwerte,bedingungen,gesamtentscheidung" data-correct-feedback="Richtig. Erst wird die konkrete Leseanfrage klar, dann der geltende Regelbestand und die dafür nötigen Werte. Nur aus allen zutreffenden Bedingungen folgt die Gesamtentscheidung. Diese Analysefolge legt keine feste Laufzeitreihenfolge eines Produkts fest." data-wrong-feedback="Beginne mit der Frage „Wer will welche Aktion an welchem Objekt?“. Stelle danach fest, welche Regeln dort wirklich gelten, beschaffe die dazugehörigen Rollen und Attribute, prüfe jede Bedingung und begründe erst dann erlaubt oder verweigert. Eine DAC-Freigabe oder Rolle allein ist noch kein Gesamtentscheid." aria-labelledby="zugriffsmodelle-entscheidungsfolge-title">
+  <div class="lab-heading"><div><h3 id="zugriffsmodelle-entscheidungsfolge-title">Einen neuen Zugriff nachvollziehbar prüfen</h3><p>Ordne die fünf gedanklichen Prüfschritte für einen neuen Torwerk-Bericht. Das ist eine Begründungsfolge für die Analyse, keine vorgeschriebene technische Ausführungsreihenfolge.</p></div><span class="lab-tag">Regelanalyse</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="gesamtentscheidung" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Aus allen einschlägigen Regeln die Entscheidung begründen</span></li>
+    <li data-step="regelwerte" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Rolle, Freigaben, Objekt- und Einsatzattribute ermitteln</span></li>
+    <li data-step="anfrage" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Person, Bericht und angeforderte Aktion festhalten</span></li>
+    <li data-step="regelbestand" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Geltende Eigentümer-, Rollen-, Attribut- und Pflichtregeln erfassen</span></li>
+    <li data-step="bedingungen" tabindex="-1"><span class="step-position" data-step-position>5</span><span>Jede einschlägige Bedingung mit den ermittelten Werten prüfen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><section class="quiz" data-quiz="zugriffsmodelle-anwendung-praxis" data-correct="0">
+  <h3>Bei T18 sind Rolle und Einsatzort passend, aber das Objektattribut `Status` steht noch auf `Entwurf`. Welche Änderung würde die hier festgelegte ABAC-Regel erfüllen, ohne die Rollenvergabe zu verändern?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Die konkret fehlende Objektbedingung wird nach berechtigter Freigabe erfüllt. Weitere für T18 geltende Regeln müssen weiterhin geprüft werden."><span class="m">A</span> Eine berechtigte Stelle gibt T18 nach fachlicher Prüfung frei; dann wird `Status = freigegeben` gesetzt und die Leseanfrage neu bewertet.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Ein Eintrag in einer Freigabeliste ändert nicht zwingend den Status des Berichts. Torwerks ABAC-Regel bleibt bei `Entwurf` unerfüllt."><span class="m">B</span> Ben fügt Mara zusätzlich in eine Dateiliste ein; dadurch wird der Objektstatus automatisch `freigegeben`.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Bezeichnungen ändern keine durchgesetzte Policy. Solange die Statusbedingung gilt, muss T18 fachlich freigegeben sein."><span class="m">C</span> Man nennt die Rolle „Wartung“ in „ABAC“ um; damit entfällt die Statusprüfung.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Aus dem Kopf abrufen</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="zugriffsmodelle-karte-dac" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wer darf bei DAC typischerweise die Freigabe eines Objekts bestimmen?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Die Eigentümerin oder eine hierzu berechtigte Stelle innerhalb ihres definierten Spielraums. Eine darüberliegende verbindliche Regel bleibt möglich.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="zugriffsmodelle-karte-mac" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum darf Ben die T17-Schutzgrenze nicht selbst aufheben?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Die MAC-artige Regel wird zentral verbindlich durchgesetzt; der einzelne Objekteigentümer darf sie nicht nach Belieben ändern. MAC meint hier Mandatory Access Control, nicht eine Netzwerkadresse.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="zugriffsmodelle-karte-rbac" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wie kommen Berechtigungen bei RBAC zur Person?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Berechtigungen hängen an Rollen; Personen erhalten oder aktivieren autorisierte Rollen. Zusätzliche Constraints können den konkreten Zugriff weiter begrenzen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="zugriffsmodelle-karte-abac" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche Werte können eine ABAC-Entscheidung bestimmen?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Attribute von Subjekt und Objekt sowie die angeforderte Aktion werden gegen eine Policy geprüft; Umgebungsbedingungen können hinzukommen, sind aber nicht in jeder Regel nötig.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „DAC“:</span><button type="button" data-card-id="zugriffsmodelle-karte-dac" data-card-rate="known">gewusst</button><button type="button" data-card-id="zugriffsmodelle-karte-dac" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="zugriffsmodelle-karte-dac"></span></div>
+<div class="card-rating"><span>Karte „MAC“:</span><button type="button" data-card-id="zugriffsmodelle-karte-mac" data-card-rate="known">gewusst</button><button type="button" data-card-id="zugriffsmodelle-karte-mac" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="zugriffsmodelle-karte-mac"></span></div>
+<div class="card-rating"><span>Karte „RBAC“:</span><button type="button" data-card-id="zugriffsmodelle-karte-rbac" data-card-rate="known">gewusst</button><button type="button" data-card-id="zugriffsmodelle-karte-rbac" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="zugriffsmodelle-karte-rbac"></span></div>
+<div class="card-rating"><span>Karte „ABAC“:</span><button type="button" data-card-id="zugriffsmodelle-karte-abac" data-card-rate="known">gewusst</button><button type="button" data-card-id="zugriffsmodelle-karte-abac" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="zugriffsmodelle-karte-abac"></span></div><section class="recall-practice" data-recall="zugriffsmodelle-eigene-erklaerung" data-min-length="180" aria-labelledby="zugriffsmodelle-eigene-erklaerung-title">
+  <div class="recall-prompt"><h3 id="zugriffsmodelle-eigene-erklaerung-title">T17 ohne Kürzelraten erklären</h3><p>Schreibe einem neuen Torwerk-Admin in eigenen Worten, warum Mara T17 nicht lesen darf, obwohl Ben geteilt hat und Maras Rolle und Einsatzort passen. Nenne für DAC, MAC, RBAC und ABAC jeweils den Beitrag zur Entscheidung und erkläre, weshalb keine Modellbezeichnung allein minimale Rechte garantiert.</p></div>
+  <label class="sr-only" for="zugriffsmodelle-eigene-erklaerung-answer">Deine Begründung der Zugriffsentscheidung</label>
+  <textarea id="zugriffsmodelle-eigene-erklaerung-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Ben durfte als Objekteigentümer im Rahmen von DAC eine Lesefreigabe setzen. RBAC ordnet der Rolle Wartung ein grundsätzliches Leserecht für Inspektionsberichte zu; Mara hat diese Rolle. Die ABAC-Regel prüft in Torwerks Fall ihre Aktion, den Einsatzort Nordtor sowie Ort und Freigabestatus von T17; diese Bedingung ist erfüllt. Die zentrale MAC-artige Schutzregel verlangt für T17 jedoch die Freigabestufe Kontrollstelle, die Mara fehlt. Torwerks Policy verlangt alle einschlägigen Bedingungen und verweigert daher den Zugriff. Eine zu weit gefasste Rolle, Eigentümerfreigabe oder Attributregel könnte trotzdem mehr Rechte geben als für die Aufgabe nötig; Least Privilege muss eigens geprüft werden.</div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Lernziel-Check: unabhängige Fälle</h2>
+<section class="quiz" data-quiz="zugriffsmodelle-unterscheiden-gate" data-correct="0" data-required-objective="vier-modelle-unterscheiden">
+  <h3>In einem fiktiven Forschungsarchiv darf eine Autorin ihren privaten Notizentwurf gezielt teilen. Für amtliche Messdaten erzwingt das Archiv dagegen eine von der Autorin nicht änderbare Zugriffsregel. Was beschreibt den Unterschied präzise?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Ausschlaggebend sind Ermessensspielraum und verbindliche Durchsetzung. Schutzstufen sind nur eine mögliche MAC-Ausprägung."><span class="m">A</span> Der begrenzte Freigabespielraum passt zu DAC; die zentral verbindliche Regel passt zu MAC. Die beiden Regeln können im Archiv nebeneinander gelten.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Eine individuelle Objektfreigabe belegt keine Rechtevergabe über Rollen. Wer die Freigabe festlegt, ist für die DAC-Einordnung entscheidend."><span class="m">B</span> Jede geteilte Datei ist automatisch RBAC; die Autorin muss dafür eine Rolle mit denselben Rechten für alle erhalten.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Hier bedeutet MAC Mandatory Access Control. Zentral verbindliche Regeln können auch anders umgesetzt werden; eine Netzwerkkartenadresse ist ein anderer Begriff."><span class="m">C</span> MAC setzt immer eine MAC-Adresse und militärische Geheimhaltungsstufen voraus.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="zugriffsmodelle-anfrage-gate" data-correct="1" data-required-objective="zugriffsentscheidung-ableiten">
+  <h3>In einer fiktiven Klinik darf die Rolle „Labor“ freigegebene Befunde lesen. Die konkrete Policy verlangt außerdem `Aktion = lesen`, `Fallzuordnung der Person = Fall des Befunds` und `Status = freigegeben`. Ivo hat die Rolle, aber sein Fall ist ein anderer. Wie lautet die Entscheidung nach dieser Policy?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Eine Rolle kann notwendig sein, ohne hinreichend zu sein. Hier scheitert die explizite Fallzuordnung als zusätzliche Attributbedingung."><span class="m">A</span> Erlauben, weil Rollenzugehörigkeit bei RBAC jede zusätzliche Bedingung überstimmt.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Die konkrete Policy prüft die Beziehung zwischen Person und Befund zusätzlich zur Rolle."><span class="m">B</span> Verweigern, weil die Fallzuordnung nicht passt; Rolle, Aktion und Status ersetzen die fehlende Bedingung nicht.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Umgebungsattribute wie Uhrzeit sind optional. Die Fallzuordnung kann über Subjekt- und Objektattribute geprüft werden."><span class="m">C</span> Ohne Uhrzeit kann es keine ABAC-Regel sein; deshalb muss die Anwendung den Fall ignorieren.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="zugriffsmodelle-kombination-gate" data-correct="0" data-required-objective="kombination-begruenden">
+  <h3>Ein fiktiver Verkehrsbetrieb will wiederkehrende Schichtrechte verwalten, Zugriff auf nur das aktuell zugewiesene Fahrzeug begrenzen und einen zentral gesetzten Sperrvermerk wirksam halten, selbst wenn ein Autor eine Datei teilt. Welcher Entwurf passt am besten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. RBAC vereinfacht wiederkehrende Aufgaben, ABAC prüft die Zuordnung und die MAC-artige Grenze darf nicht durch eine Eigentümerfreigabe umgangen werden. Umfang und Pflege der Rechte bleiben zu prüfen."><span class="m">A</span> Rollen für Schichtaufgaben, eine Attributregel für die aktuelle Fahrzeugzuordnung und eine verbindliche zentrale Sperrregel; die konkrete Policy muss deren Zusammenspiel durchsetzen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="DAC-Spielraum hebt eine verbindliche MAC-artige Schranke nicht automatisch auf. Zudem fehlen Regeln für Schicht und Fahrzeugzuordnung."><span class="m">B</span> Nur eine Eigentümerfreigabe genügt: Der Autor darf dadurch auch den zentralen Sperrvermerk für andere aufheben.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Eine breite Rolle berücksichtigt den aktuellen Fahrzeugbezug nicht von selbst. Auch RBAC kann zu viele Rechte vergeben; die zentrale Sperre braucht wirksame Durchsetzung."><span class="m">C</span> Eine einzige Rolle für alle Fahrzeuge löst die wechselnde Zuordnung und den Sperrvermerk automatisch und erfüllt Least Privilege ohne Prüfung.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s7"><span class="num">7</span>Quellen und Grenzen</h2>
+<p>Primärquellen, geprüft am 02.10.2026: <a href="https://csrc.nist.gov/glossary/term/discretionary_access_control">NIST-Glossar DAC</a>, <a href="https://csrc.nist.gov/glossary/term/mandatory_access_control">NIST-Glossar MAC</a>, <a href="https://csrc.nist.gov/Projects/Role-Based-Access-Control/faqs">NIST RBAC-FAQ</a> und <a href="https://csrc.nist.gov/pubs/sp/800/162/upd2/final">NIST SP 800-162, aktualisiert 2019</a>. Die private Buchstelle zu RBAC/ABAC war nur ein Themenanker. Personen, Berichte, Policies, Übungen und Diagramme sind eigenständig. Die Beispiele definieren Torwerks angenommene Regeln; reale Produkte können Modelle anders kombinieren oder technisch beschränken. Eine Rollenbezeichnung, ACL oder Attributliste allein beweist weder das Modell noch Least Privilege. Diese Einheit bleibt bis zur menschlichen Freigabe CURATED_DRAFT.</p>
+
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-7"><span class="d">zurück zu</span><span class="t">Berechtigungskonzepte</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Berechtigungskonzepte</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 3 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Diagnose: Vier Kürzel, eine Entscheidung</a></li>
+<li><a href="#s2" data-t="s2">DAC und MAC: Wer darf Regeln bestimmen?</a></li>
+<li><a href="#s3" data-t="s3">RBAC und ABAC: Welche Regel wird ausgewertet?</a></li>
+<li><a href="#s4" data-t="s4">Anwendung: T17 und T18 gemeinsam prüfen</a></li>
+<li><a href="#s5" data-t="s5">Aus dem Kopf abrufen</a></li>
+<li><a href="#s6" data-t="s6">Lernziel-Check: unabhängige Fälle</a></li>
+<li><a href="#s7" data-t="s7">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-7">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>
