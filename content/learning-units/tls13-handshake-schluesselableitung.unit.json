@@ -1,0 +1,393 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "tls13-handshake-schluesselableitung",
+    "slug": "tls13-handshake-schluesselableitung",
+    "title": "TLS 1.3: Handshake und Schlüssel",
+    "description": "Hello-Nachrichten, Zertifikatsprüfung, Signaturnachweis und Schlüsselableitung getrennt erklären; einen Handshake rekonstruieren und Fehler eingrenzen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-8",
+    "groupLabel": "IT-Sicherheit und Datenschutz",
+    "itemId": "ga1-8__8",
+    "week": "KW 42",
+    "estimatedMinutes": 40,
+    "relevance": "hoch",
+    "sources": [
+      "tls13-rfc",
+      "tls13-mdn",
+      "tls13-openssl",
+      "tls13-cf",
+      "pki-rfc9525"
+    ],
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "hello",
+      "label": "Angebot und Auswahl der Hello-Nachrichten unterscheiden"
+    },
+    {
+      "id": "identitaet",
+      "label": "Zertifikatsprüfung und Handshake-Signatur getrennt beurteilen"
+    },
+    {
+      "id": "schluessel",
+      "label": "Öffentliche Key Shares und geheime Verkehrsschlüssel unterscheiden"
+    },
+    {
+      "id": "fehler",
+      "label": "Handshakefehler mit einem sicheren Prüfplan eingrenzen"
+    }
+  ],
+  "intro": "Die fiktive Laborplattform Lumen überträgt Messaufträge an portal.lumen.example. Ein Mitschnitt zeigt Hello-Nachrichten und ein passendes Zertifikat, danach aber einen Abbruch. Eine Kollegin erklärt: „Das Zertifikat ist da, also muss TLS erfolgreich sein.“ Du ordnest Nachrichten und Nachweise und entscheidest, was der Befund tatsächlich aussagt.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "tls13-rfc",
+        "sourceLocator": "Abschnitte 2, 4.4.2–4.4.3 und 7.1–7.3; Grundablauf, CertificateVerify und getrennte Traffic Secrets",
+        "use": "Grundlagenprüfung für eigenständige Abläufe und Fehlerfälle",
+        "reviewStatus": "Genannte offizielle Passagen am 03.10.2026 direkt gelesen"
+      },
+      {
+        "sourceId": "tls13-mdn",
+        "sourceLocator": "Schutzziele, Server authentication und TLS handshake; konkrete TLS-1.3-Nachrichten nur nach RFC",
+        "use": "Grundlagenprüfung für eigenständige Abläufe und Fehlerfälle",
+        "reviewStatus": "Genannte offizielle Passagen am 03.10.2026 direkt gelesen"
+      },
+      {
+        "sourceId": "tls13-openssl",
+        "sourceLocator": "verify_return_error, verify_hostname und Trusted Certificate Options; Prüfwerkzeuggrenzen",
+        "use": "Grundlagenprüfung für eigenständige Abläufe und Fehlerfälle",
+        "reviewStatus": "Genannte offizielle Passagen am 03.10.2026 direkt gelesen"
+      },
+      {
+        "sourceId": "tls13-cf",
+        "sourceLocator": "Was der Handshake leistet; historische RSA-Darstellung ausdrücklich nicht als TLS 1.3 übernommen",
+        "use": "Grundlagenprüfung für eigenständige Abläufe und Fehlerfälle",
+        "reviewStatus": "Genannte offizielle Passagen am 03.10.2026 direkt gelesen"
+      },
+      {
+        "sourceId": "pki-rfc9525",
+        "sourceLocator": "1.1–1.3: Clientprüfung der erwarteten Dienstidentität und SAN",
+        "use": "Grenzen der Dienstnamenprüfung",
+        "reviewStatus": "Genannte Passagen am 03.10.2026 direkt gelesen"
+      }
+    ],
+    "notes": [
+      "Private Quelle europa-integratoren-2026:00491, Zeilen 5031–5078: TLS und Schlüsselrollen als Themenanker geprüft; Buchaufgaben, Fall und Rastergrafiken nicht übernommen.",
+      "Lumen-Fall eigenständig. Modell: zertifikatsbasierter TLS-1.3-Vollhandshake mit ECDHE, ohne PSK, 0-RTT, Clientzertifikat oder HelloRetryRequest. Kein TLS-1.2-RSA-Ablauf.",
+      "Katalogformulierung „Zertifikatsprüfung durch die CA“ wird fachlich präzisiert: Der Client prüft die CA-signierte Bindung und Dienstidentität. Keine Behauptung einer CA-Anfrage je Verbindung.",
+      "Native technische SVGs und bestehende Lernkomponenten; Referenz-Lock unverändert."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "tls-ablauf",
+      "type": "flow",
+      "title": "TLS 1.3 im Lernfall",
+      "description": "Nachrichtenfolge im zertifikatsbasierten ECDHE-Vollhandshake. Die Richtungen stehen in den Knoten; Clientprüfungen sind keine zusätzlichen Netzwerk-Nachrichten.",
+      "items": [
+        {
+          "label": "Client sendet ClientHello",
+          "detail": "Angebot und öffentlicher Key Share"
+        },
+        {
+          "label": "Server sendet ServerHello",
+          "detail": "Auswahl und öffentlicher Key Share"
+        },
+        {
+          "label": "Server sendet geschützte Nachrichten",
+          "detail": "EncryptedExtensions, Certificate, Verify, Finished"
+        },
+        {
+          "label": "Client prüft und sendet Finished",
+          "detail": "Zertifikat, Dienstname und Nachweise prüfen"
+        }
+      ]
+    },
+    {
+      "id": "tls-schluessel",
+      "type": "flow",
+      "title": "Schlüssel getrennt halten",
+      "description": "Abstraktion des Key Schedule: Aus ECDHE-Geheimnis und Handshake-Kontext entstehen mit HKDF unterschiedliche Handshake- und Anwendungs-Traffic-Secrets je Richtung. Kein versendeter Sitzungsschlüssel.",
+      "items": [
+        {
+          "label": "ECDHE auf beiden Seiten",
+          "detail": "Private Werte bleiben lokal, Shares sind öffentlich"
+        },
+        {
+          "label": "HKDF mit Handshake-Kontext",
+          "detail": "Getrennte Handshake- und Anwendungs-Secrets"
+        },
+        {
+          "label": "Schlüssel je Senderichtung",
+          "detail": "Client- und Server-Verkehr getrennt schützen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Diagnose: Zertifikat ist nicht Abschluss",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "tls-diagnose",
+          "question": "Lumen sieht ein Zertifikat, aber CertificateVerify ist ungültig. Darf die Auftragseingabe weitergehen?",
+          "options": [
+            {
+              "text": "Ja, ein Zertifikat genügt.",
+              "rationale": "Ein vorhandenes Zertifikat ersetzt keinen gültigen Handshake-Nachweis.",
+              "correct": false
+            },
+            {
+              "text": "Nein, den Abbruch untersuchen und keine Aufträge senden.",
+              "rationale": "Der Signaturnachweis ist fehlgeschlagen; die Verbindung ist nicht erfolgreich authentisiert.",
+              "correct": true
+            },
+            {
+              "text": "Ja, wenn die CA ein bekanntes Logo hat.",
+              "rationale": "Markenbekanntheit ist kein kryptografischer Nachweis.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Hello: Angebot ist noch keine Auswahl",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**Modellgrenze:** Wir betrachten TLS 1.3 mit ECDHE und Serverzertifikat, ohne Wiederaufnahme oder Clientzertifikat. Ein älterer RSA-Schlüsseltransport ist nicht dieser Ablauf.\n\nTLS schützt übertragene Daten und unterstützt Serverauthentisierung. Eine erfolgreiche Verbindung sagt nichts darüber, ob Lumen die angemeldete Person für einen bestimmten Messauftrag berechtigt.\n\n**Lumen-Befund A:** Die Clientliste enthält zwei mögliche Cipher Suites. **Befund B:** ServerHello nennt eine davon. Notiere Angebot und Auswahl getrennt; leite nicht aus einer angebotenen Suite ab, dass sie tatsächlich genutzt wurde."
+        },
+        {
+          "type": "figure",
+          "diagramId": "tls-ablauf",
+          "alt": "Vier Nachrichtengruppen mit ausdrücklich benannter Senderichtung.",
+          "caption": "Clientprüfungen sind lokale Verarbeitung. CertificateVerify ist hier im Serverblock als Verify abgekürzt. Server-Anwendungsdaten können nach Server-Finished bereits beginnen; im Lernfall wartet die Auftragseingabe auf den abgeschlossenen Client-Handshake."
+        },
+        {
+          "type": "quiz",
+          "id": "tls-hello",
+          "question": "Im Protokoll bietet der Client Suite A und B an; ServerHello wählt B. Welche Suite dokumentierst du als ausgehandelt?",
+          "options": [
+            {
+              "text": "B, mit der tatsächlich gewählten Version und Gruppe.",
+              "rationale": "Die Auswahl im ServerHello ist der Befund, nicht die bloße Angebotsliste.",
+              "correct": true
+            },
+            {
+              "text": "A, weil sie zuerst angeboten wurde.",
+              "rationale": "Listenposition ist kein Beweis der Auswahl.",
+              "correct": false
+            },
+            {
+              "text": "Beide gleichzeitig für dieselben Anwendungsdaten.",
+              "rationale": "Ein Angebot mehrerer Möglichkeiten bedeutet keine gleichzeitige Nutzung aller.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "hello"
+        }
+      ]
+    },
+    {
+      "title": "Identität: drei Prüfungen nicht vermischen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Im Serverblock folgen **EncryptedExtensions**, **Certificate**, **CertificateVerify** und **Finished**. Der Client prüft den Zertifikatspfad und die erwartete Dienstidentität. CertificateVerify ist der Signaturnachweis für diesen Handshake. Finished bestätigt Handshakeintegrität und Schlüsselbezug.\n\n**Lumen-Befund C:** Der SAN enthält `portal.lumen.example`, der Pfad ist akzeptiert, die Zeitprüfung erfolgreich. **Befund D:** CertificateVerify schlägt fehl. Du darfst C dokumentieren, aber daraus nicht D als bestanden ableiten. Zertifikatsausstellung durch eine CA und Prüfung beim Client sind verschiedene Vorgänge. Status-/Widerrufsprüfungen hängen von Client und Richtlinie ab."
+        },
+        {
+          "type": "quiz",
+          "id": "tls-identitaet",
+          "question": "Das Zertifikat passt zum Portal, CertificateVerify scheitert. Welche Schlussfolgerung ist richtig?",
+          "options": [
+            {
+              "text": "Der passende SAN repariert die Handshake-Signatur.",
+              "rationale": "Namensbindung und Handshake-Nachweis sind getrennte Prüfungen.",
+              "correct": false
+            },
+            {
+              "text": "Die CA muss alle Messaufträge freigeben.",
+              "rationale": "Die CA vergibt keine Anwendungsberechtigungen.",
+              "correct": false
+            },
+            {
+              "text": "Die Serverauthentisierung ist nicht erfolgreich abgeschlossen.",
+              "rationale": "Eine gültige Zertifikatsbindung allein ersetzt den Nachweis im konkreten Handshake nicht.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "identitaet"
+        }
+      ]
+    },
+    {
+      "title": "Schlüssel: ableiten statt verschicken",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "tls-schluessel",
+          "alt": "ECDHE-Berechnung, HKDF-Ableitung und getrennte Schlüssel pro Richtung.",
+          "caption": "Dies ist eine Abstraktion, kein vollständiger RFC-Key-Schedule. Zertifikatsschlüssel und kurzlebige ECDHE-Werte erfüllen verschiedene Aufgaben."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Die öffentlichen ECDHE-Shares werden ausgetauscht, private Werte bleiben lokal. Beide Seiten berechnen das gemeinsame Geheimnis. HKDF leitet mit Handshake-Kontext getrennte Traffic Secrets und daraus Schlüssel ab. Handshake- und Anwendungsverkehr sowie die beiden Senderichtungen sind getrennt.\n\n**Lumen-Befund E:** Der Mitschnitt enthält öffentliche Shares. Die Kollegin nennt sie „die Session Keys“. Korrigiere die Beschriftung: Ein Share ist nicht der geheime Verkehrsschlüssel. Der Zertifikats-Privatschlüssel dient hier dem Signaturnachweis, nicht als universeller Datenschlüssel."
+        },
+        {
+          "type": "quiz",
+          "id": "tls-schluessel-check",
+          "question": "Was sollte Lumen im Mitschnitt als öffentliches Schlüsselmaterial kennzeichnen?",
+          "options": [
+            {
+              "text": "Den geheimen symmetrischen Anwendungsschlüssel.",
+              "rationale": "Der wird nicht einfach als Netzwerknachricht übermittelt.",
+              "correct": false
+            },
+            {
+              "text": "Die ECDHE-Key-Shares, nicht die lokalen privaten Werte.",
+              "rationale": "Die öffentlichen Beiträge ermöglichen die lokale Berechnung des gemeinsamen Geheimnisses.",
+              "correct": true
+            },
+            {
+              "text": "Den Zertifikats-Privatschlüssel.",
+              "rationale": "Er bleibt geschützt und wird nicht zum Client geschickt.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "schluessel"
+        }
+      ]
+    },
+    {
+      "title": "Anwendung: den Befund sicher prüfen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**Eigener Prüfplan:** Erfasse Zielendpunkt, erwarteten Hostnamen, gewählte Version, Zertifikatsbefund und genaue Abbruchstelle. Vergleiche einen funktionierenden und einen fehlschlagenden Client unter denselben Bedingungen. Untersuche bei D insbesondere den konkreten Signaturfehler und die zugehörige Serverkonfiguration; nicht ohne Befund auf „CA kaputt“ schließen.\n\nOpenSSL `s_client` ist ein Diagnosewerkzeug und kann Zertifikatsfehler anzeigen, ohne abzubrechen. Für einen gezielten Test sind Hostnamenprüfung (`-verify_hostname`), bewusst gewählte Vertrauensanker und Abbruch bei Prüfungsfehlern (`-verify_return_error`) relevant. Ein erfolgreicher TCP-Verbindungsaufbau oder eine ausgegebene Zertifikatsliste beweist keine erfolgreiche Identitätsprüfung. Hier werden keine Verbindungen zu fremden Diensten getestet und keine produktiven Einstellungen verändert."
+        },
+        {
+          "type": "quiz",
+          "id": "tls-fehler",
+          "question": "Ein Test druckt eine Zertifikatskette und einen Prüfungsfehler, läuft aber weiter. Was protokollierst du?",
+          "options": [
+            {
+              "text": "Den Fehler und die Prüfoptionen; nicht bloß „Verbindung erfolgreich“.",
+              "rationale": "Das Diagnosewerkzeug kann weiterlaufen. Die Abbruch- und Identitätsprüfung muss ausdrücklich beurteilt werden.",
+              "correct": true
+            },
+            {
+              "text": "Bestanden, weil Text ausgegeben wurde.",
+              "rationale": "Ausgabe allein sagt nichts über den Prüfstatus.",
+              "correct": false
+            },
+            {
+              "text": "Bestanden, weil TCP verbunden ist.",
+              "rationale": "TCP-Verfügbarkeit ist nicht gleich TLS-Authentisierung.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "fehler"
+        },
+        {
+          "type": "sequence",
+          "id": "tls-reihenfolge",
+          "title": "Lumen-Ablauf rekonstruieren",
+          "prompt": "Ordne die vier Nachrichtengruppen des beschriebenen Vollhandshakes. Lokale Prüfungen stehen zusammen mit der Clientantwort, nicht als CA-Netzwerknachricht.",
+          "steps": [
+            {
+              "id": "auth",
+              "label": "Server: EncryptedExtensions, Certificate, CertificateVerify, Finished"
+            },
+            {
+              "id": "ch",
+              "label": "Client: ClientHello"
+            },
+            {
+              "id": "cf",
+              "label": "Client: Nachweise prüfen, Finished senden"
+            },
+            {
+              "id": "sh",
+              "label": "Server: ServerHello"
+            }
+          ],
+          "expected": [
+            "ch",
+            "sh",
+            "auth",
+            "cf"
+          ],
+          "correctFeedback": "Richtig: Angebot, Auswahl, Servernachweise und geprüfte Clientantwort sind in der vorgesehenen Reihenfolge.",
+          "wrongFeedback": "Das Clientangebot kommt vor der Serverauswahl; der geschützte Serverblock folgt auf ServerHello."
+        },
+        {
+          "type": "recall",
+          "id": "tls-transfer",
+          "prompt": "Erkläre Lumen, warum Befund C nicht den fehlerhaften Nachweis D ersetzt. Ordne die Hello-Nachrichten, öffentlichen Shares und geheimen Schlüssel und formuliere einen Prüfplan.",
+          "minLength": 180,
+          "model": "Ich trenne angebotene von gewählten Parametern. Nach den Hellos folgt der geschützte Serverblock; der Client prüft Identität und Handshake-Nachweise und antwortet mit Finished. Ein passendes Zertifikat heilt keinen ungültigen CertificateVerify-Nachweis. Öffentliche Shares sind keine Verkehrsschlüssel. Ich dokumentiere Endpunkt, Hostnamen, Version und genaue Abbruchstelle und prüfe Diagnoseoptionen; erst danach entscheide ich über die Fehlereingrenzung."
+        }
+      ]
+    },
+    {
+      "title": "Abruftraining",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "id": "tls-cards",
+          "cards": [
+            {
+              "id": "hello",
+              "label": "Handshake und Schlüsselrollen",
+              "front": "Was bietet ClientHello an?",
+              "back": "Unter anderem unterstützte Versionen, Cipher Suites und öffentliche Key Shares."
+            },
+            {
+              "id": "wahl",
+              "label": "Handshake und Schlüsselrollen",
+              "front": "Was wählt ServerHello?",
+              "back": "Die ausgehandelten Parameter und im betrachteten ECDHE-Fall den öffentlichen Server-Key-Share."
+            },
+            {
+              "id": "ca",
+              "label": "Handshake und Schlüsselrollen",
+              "front": "Wer prüft die CA-Signatur?",
+              "back": "Der Client prüft den Zertifikatspfad zum akzeptierten Vertrauensanker; keine automatische Online-CA-Beteiligung je Verbindung."
+            },
+            {
+              "id": "cv",
+              "label": "Handshake und Schlüsselrollen",
+              "front": "Was beweist CertificateVerify?",
+              "back": "Die Nutzung des zum Zertifikat gehörenden privaten Schlüssels und Bindung an den Handshake."
+            },
+            {
+              "id": "finished",
+              "label": "Handshake und Schlüsselrollen",
+              "front": "Wozu dient Finished?",
+              "back": "Integritäts- und Schlüsselbestätigung für den Handshake; kein Ersatz für die Dienstnamenprüfung."
+            },
+            {
+              "id": "secret",
+              "label": "Handshake und Schlüsselrollen",
+              "front": "Was wird nicht über das Netz geschickt?",
+              "back": "Die privaten ECDHE-Werte, das gemeinsame Geheimnis und die daraus abgeleiteten Verkehrsschlüssel."
+            },
+            {
+              "id": "grenze",
+              "label": "Handshake und Schlüsselrollen",
+              "front": "Bedeutet TLS gleich Anmeldung im Portal?",
+              "back": "Nein. Eine authentisierte Serververbindung ersetzt keine Anwendungsanmeldung oder Zugriffsrechte."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

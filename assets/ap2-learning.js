@@ -435,6 +435,7 @@
     const feedback = sequence.querySelector('[data-sequence-feedback]');
     const expected = sequence.dataset.expected.split(',');
     const key = `${topicId}:sequence:${id}`;
+    const initialOrder = [...list.querySelectorAll('[data-step]')].map(step => step.dataset.step);
     const storedOrder = learning[`${key}:order`];
     if (Array.isArray(storedOrder)) {
       for (const stepId of storedOrder) {
@@ -485,6 +486,22 @@
         feedback.tabIndex = -1;
         feedback.focus({ preventScroll: true });
       }
+      renderMastery();
+    });
+    sequence.querySelector('[data-sequence-reset]')?.addEventListener('click', () => {
+      for (const stepId of initialOrder) {
+        const step = list.querySelector(`[data-step="${stepId}"]`);
+        if (step) list.append(step);
+      }
+      learning[`${key}:correct`] = false;
+      learning[`${key}:attempts`] = 0;
+      saveSequence();
+      if (feedback) {
+        feedback.hidden = true;
+        feedback.textContent = '';
+        delete feedback.dataset.result;
+      }
+      updateButtons();
       renderMastery();
     });
     updateButtons();
