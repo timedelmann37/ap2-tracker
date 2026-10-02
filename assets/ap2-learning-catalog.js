@@ -2646,6 +2646,37 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "authentifizierung-mfa-passkeys",
+    "slug": "authentifizierung-mfa-passkeys",
+    "title": "Authentifizierung: MFA und Passkeys",
+    "description": "Passwortrichtlinien begründen, Faktoren unterscheiden und Passkeys sowie Passwortmanager mit einem geprüften Wiederherstellungsweg einordnen.",
+    "domain": "GA1",
+    "groupId": "ga1-8",
+    "groupLabel": "IT-Sicherheit und Datenschutz",
+    "itemId": "ga1-8__10",
+    "week": "KW 42",
+    "estimatedMinutes": 40,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "passwort",
+      "faktoren",
+      "passkeys",
+      "betrieb"
+    ],
+    "sources": [
+      "auth-nist-passwords",
+      "auth-nist-faq",
+      "auth-nist-aal",
+      "auth-fido",
+      "auth-webauthn",
+      "auth-nist-recovery"
+    ],
+    "contentHash": "17c2bb69560d4f0937cf6136ab28481bf5897c663619d01671c41a992dee2162",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "slug": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "title": "Struktogramm und Programmablaufplan",

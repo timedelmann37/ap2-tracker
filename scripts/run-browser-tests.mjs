@@ -145,6 +145,7 @@ async function runFullSuite() {
   await import('./verify-pki-browser.mjs');
   await import('./verify-tls13-browser.mjs');
   await import('./verify-storage-encryption-browser.mjs');
+  await import('./verify-authentication-browser.mjs');
   useSignedInFixture = false;
   await import('./verify-space-browser.mjs');
 }
@@ -198,6 +199,9 @@ try {
   } else if (process.env.AP2_BROWSER_ONLY === 'zero-trust') {
     useSignedInFixture = true;
     await import('./verify-zero-trust-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'authentication') {
+    useSignedInFixture = true;
+    await import('./verify-authentication-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'storage-encryption') {
     useSignedInFixture = true;
     await import('./verify-storage-encryption-browser.mjs');
