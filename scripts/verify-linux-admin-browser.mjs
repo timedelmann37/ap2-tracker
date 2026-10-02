@@ -54,6 +54,16 @@ const cases = [
     recall: 'prozess-fallbegruendung',
     gates: ['prozess-zuordnung-gate', 'prozess-wirkung-gate', 'prozess-nachweis-gate'],
     sequences: [{ id: 'prozess-kontrollfolge', expected: ['identitaet', 'normal', 'term', 'abwarten', 'ausnahme', 'nachweis'] }]
+  },
+  {
+    slug: 'linux-dateirechte-umask-spezialbits',
+    figures: 3,
+    math: 1,
+    diagnostic: 'rechte-diagnose',
+    card: 'rechte-karte-verzeichnis',
+    recall: 'rechte-fall-erklaeren',
+    gates: ['rechte-modus-gate', 'rechte-umask-gate', 'rechte-spezialbits-gate'],
+    sequences: []
   }
 ];
 
@@ -81,6 +91,13 @@ try {
     const done = page.locator('#mark-done');
     assert(await done.isDisabled(), `${testCase.slug}: initial objective gate`);
     assert(await page.locator('.learning-figure').count() === testCase.figures, `${testCase.slug}: technical diagrams present`);
+    if (testCase.math) {
+      const formulae = page.locator('.math-display math');
+      assert(await formulae.count() >= testCase.math, `${testCase.slug}: semantically rendered formulas present`);
+      for (const formula of await formulae.all()) {
+        assert(Boolean(await formula.getAttribute('aria-label')), `${testCase.slug}: formula has accessible description`);
+      }
+    }
     if (testCase.image) {
       const illustration = page.locator('.learning-figure img');
       await illustration.scrollIntoViewIfNeeded();
@@ -100,6 +117,14 @@ try {
       assert((await firstDiagram.textContent()).includes('Benutzer: privat'), `${testCase.slug}: key roles are labelled`);
     } else if (testCase.slug === 'prozesse-kontrolliert-beenden') {
       assert((await firstDiagram.textContent()).includes('PID bestätigen'), `${testCase.slug}: identity check is labelled`);
+    } else if (testCase.slug === 'linux-dateirechte-umask-spezialbits') {
+      const labels = await firstDiagram.textContent();
+      assert(['u = 7', 'g = 5', 'o = 0'].every(label => labels.includes(label)), `${testCase.slug}: octal owner, group and others are labelled`);
+      const figures = page.locator('.learning-diagram');
+      const umaskLabels = await figures.nth(1).textContent();
+      const specialLabels = await figures.nth(2).textContent();
+      assert(['0640', '0750'].every(label => umaskLabels.includes(label)), `${testCase.slug}: umask outcomes are labelled`);
+      assert(['SUID', 'SGID', 'Sticky'].every(label => specialLabels.includes(label)), `${testCase.slug}: special bits are labelled`);
     } else {
       assert((await firstDiagram.textContent()).includes('Lesender Befund'), `${testCase.slug}: diagnosis flow is labelled`);
     }
@@ -114,6 +139,15 @@ try {
     await page.keyboard.press('Enter');
     assert(await diagnostic.locator(`[data-answer="${diagnosticCorrect}"]`).evaluate(node => node.classList.contains('right')), `${testCase.slug}: keyboard quiz`);
     assert(await done.isDisabled(), `${testCase.slug}: diagnostic gives no objective credit`);
+
+    if (testCase.slug === 'linux-dateirechte-umask-spezialbits') {
+      const umaskQuiz = page.locator('[data-quiz="umask-transfer-027"]');
+      await umaskQuiz.locator('[data-answer="0"]').click();
+      assert((await umaskQuiz.locator('[data-selected-feedback]').textContent()).includes('umask löscht Bits'), `${testCase.slug}: subtraction misconception explained`);
+      await umaskQuiz.locator('[data-quiz-reset]').click();
+      await umaskQuiz.locator('[data-answer="1"]').click();
+      assert((await umaskQuiz.locator('[data-selected-feedback]').textContent()).includes('u bleibt rw'), `${testCase.slug}: correct bitwise calculation explained`);
+    }
 
     for (const { id, expected } of testCase.sequences) {
       const sequence = page.locator(`[data-sequence="${id}"]`);
@@ -166,6 +200,15 @@ try {
           assert(await figure.evaluate(node => node.scrollWidth <= node.clientWidth + 2), `${testCase.slug}: ${width}px ${theme} diagram overflow`);
           if (captureDir && index < 2) {
             await page.screenshot({ path: path.join(captureDir, `${testCase.slug}-${width}-${theme}-figure-${index}.png`), animations: 'disabled' });
+          }
+        }
+        if (testCase.math) {
+          for (const [index, formula] of (await page.locator('.math-display').all()).entries()) {
+            await formula.scrollIntoViewIfNeeded();
+            assert(await formula.evaluate(node => node.scrollWidth <= node.clientWidth + 2), `${testCase.slug}: ${width}px ${theme} formula overflow`);
+            if (captureDir && index === 0) {
+              await page.screenshot({ path: path.join(captureDir, `${testCase.slug}-${width}-${theme}-math.png`), animations: 'disabled' });
+            }
           }
         }
       }
