@@ -130,6 +130,7 @@ async function runFullSuite() {
   await import('./verify-access-models-browser.mjs');
   await import('./verify-ntfs-share-browser.mjs');
   await import('./verify-agdlp-browser.mjs');
+  await import('./verify-permission-matrix-browser.mjs');
   useSignedInFixture = false;
   await import('./verify-space-browser.mjs');
 }
@@ -150,6 +151,9 @@ try {
   } else if (process.env.AP2_BROWSER_ONLY === 'agdlp') {
     useSignedInFixture = true;
     await import('./verify-agdlp-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'permission-matrix') {
+    useSignedInFixture = true;
+    await import('./verify-permission-matrix-browser.mjs');
   } else {
     await runFullSuite();
   }

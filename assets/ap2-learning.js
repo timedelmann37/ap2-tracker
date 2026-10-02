@@ -490,6 +490,106 @@
     updateButtons();
   }
 
+  for (const matrix of document.querySelectorAll('[data-permission-matrix]')) {
+    const id = matrix.dataset.permissionMatrix;
+    const key = `${topicId}:permission-matrix:${id}`;
+    const controls = [...matrix.querySelectorAll('[data-matrix-cell]')];
+    const feedback = matrix.querySelector('[data-matrix-feedback]');
+    const stored = learning[key] && typeof learning[key] === 'object' ? learning[key] : {};
+    const selections = {};
+    for (const control of controls) {
+      const cellId = control.dataset.matrixCell;
+      const savedValue = stored.selections?.[cellId];
+      if (typeof savedValue === 'string' && [...control.options].some(option => option.value === savedValue)) {
+        control.value = savedValue;
+      }
+      selections[cellId] = control.value;
+    }
+    let attempts = Number.isSafeInteger(stored.attempts) && stored.attempts >= 0 ? stored.attempts : 0;
+    let result = ['correct', 'wrong', 'incomplete'].includes(stored.result) ? stored.result : null;
+    const allSelected = () => controls.every(control => control.value !== '');
+    const allCorrect = () => controls.every(control => control.value === control.dataset.expected);
+    const persist = () => {
+      learning[key] = { selections: { ...selections }, result, attempts };
+      save(LEARNING_KEY, learning);
+    };
+    if (result === 'correct' && (!allSelected() || !allCorrect())
+      || result === 'wrong' && (!allSelected() || allCorrect())) {
+      result = null;
+      persist();
+    }
+    const renderMatrix = () => {
+      for (const control of controls) {
+        const wrong = result === 'wrong' && control.value !== control.dataset.expected;
+        const incomplete = result === 'incomplete' && control.value === '';
+        control.closest('td')?.classList.toggle('is-wrong', wrong);
+        control.closest('td')?.classList.toggle('is-incomplete', incomplete);
+        if (wrong || incomplete) control.setAttribute('aria-invalid', 'true');
+        else control.removeAttribute('aria-invalid');
+      }
+      if (!feedback) return;
+      feedback.replaceChildren();
+      feedback.hidden = !result;
+      if (!result) {
+        feedback.removeAttribute('data-result');
+        return;
+      }
+      feedback.dataset.result = result;
+      if (result === 'correct') {
+        feedback.textContent = matrix.dataset.correctFeedback;
+      } else if (result === 'incomplete') {
+        feedback.textContent = 'Wähle in allen Feldern ein Rechtebündel. „Kein zugewiesenes Recht“ ist eine auswählbare Antwort.';
+      } else {
+        const summary = document.createElement('p');
+        summary.textContent = matrix.dataset.wrongFeedback;
+        const details = document.createElement('ul');
+        for (const control of controls.filter(item => item.value !== item.dataset.expected)) {
+          const item = document.createElement('li');
+          item.textContent = `${control.dataset.roleLabel} – ${control.dataset.resourceLabel}: ${control.dataset.cellFeedback}`;
+          details.append(item);
+        }
+        feedback.append(summary, details);
+      }
+    };
+    for (const control of controls) {
+      control.addEventListener('change', () => {
+        selections[control.dataset.matrixCell] = control.value;
+        result = null;
+        persist();
+        renderMatrix();
+        renderMastery();
+      });
+    }
+    matrix.querySelector('[data-matrix-check]')?.addEventListener('click', () => {
+      if (!allSelected()) {
+        result = 'incomplete';
+        persist();
+        renderMatrix();
+        controls.find(control => control.value === '')?.focus();
+        return;
+      }
+      result = allCorrect() ? 'correct' : 'wrong';
+      attempts += 1;
+      persist();
+      renderMatrix();
+      feedback?.setAttribute('tabindex', '-1');
+      feedback?.focus({ preventScroll: true });
+      renderMastery();
+    });
+    matrix.querySelector('[data-matrix-reset]')?.addEventListener('click', () => {
+      for (const control of controls) {
+        control.value = '';
+        selections[control.dataset.matrixCell] = '';
+      }
+      result = null;
+      persist();
+      renderMatrix();
+      renderMastery();
+      controls[0]?.focus();
+    });
+    renderMatrix();
+  }
+
   function masteryState() {
     const required = [...document.querySelectorAll('[data-required-objective]')];
     if (!required.length) return { passed: true, completed: 0, total: 0 };
@@ -500,6 +600,7 @@
         if (activity.dataset.quiz) return learning[`${topicId}:quiz:${activity.dataset.quiz}`] === Number(activity.dataset.correct);
         if (activity.dataset.numericPractice) return learning[`${topicId}:numeric:${activity.dataset.numericPractice}:result`] === 'correct';
         if (activity.dataset.sequence) return learning[`${topicId}:sequence:${activity.dataset.sequence}:correct`] === true;
+        if (activity.dataset.permissionMatrix) return learning[`${topicId}:permission-matrix:${activity.dataset.permissionMatrix}`]?.result === 'correct';
         return false;
       }));
     return { passed: passedIds.length === objectiveIds.length, completed: passedIds.length, total: objectiveIds.length };

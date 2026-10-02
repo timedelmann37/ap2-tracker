@@ -54,8 +54,7 @@ function renderMarkdown(markdown) {
     headings.push({ id, title: plainText(title) });
     return `<h2 class="sec" id="${id}"><span class="num">${headings.length}</span>${title}</h2>`;
   });
-  html = html.replaceAll('<table>', '<div class="twrap"><table class="knowledge-table">');
-  html = html.replaceAll('</table>', '</table></div>');
+  html = html.replace(/<table>([\s\S]*?)<\/table>/g, '<div class="twrap"><table class="knowledge-table">$1</table></div>');
   return { html, headings };
 }
 

@@ -163,8 +163,70 @@
               "type": "object",
               "required": ["type"],
               "properties": {
-                "type": { "enum": ["markdown", "quiz", "callout", "math", "figure", "recall", "flashcards", "numeric", "sequence"] }
+                "type": { "enum": ["markdown", "quiz", "callout", "math", "figure", "recall", "flashcards", "numeric", "sequence", "permission-matrix"] }
               },
+              "allOf": [
+                {
+                  "if": { "properties": { "type": { "const": "permission-matrix" } }, "required": ["type"] },
+                  "then": {
+                    "required": ["id", "title", "prompt", "roles", "resources", "choices", "cells", "correctFeedback", "wrongFeedback"],
+                    "properties": {
+                      "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+                      "title": { "type": "string", "minLength": 3 },
+                      "prompt": { "type": "string", "minLength": 12 },
+                      "roles": {
+                        "type": "array", "minItems": 2, "maxItems": 4,
+                        "items": {
+                          "type": "object", "required": ["id", "label"],
+                          "properties": {
+                            "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+                            "label": { "type": "string", "minLength": 1 }
+                          },
+                          "additionalProperties": false
+                        }
+                      },
+                      "resources": {
+                        "type": "array", "minItems": 2, "maxItems": 4,
+                        "items": {
+                          "type": "object", "required": ["id", "label"],
+                          "properties": {
+                            "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+                            "label": { "type": "string", "minLength": 1 }
+                          },
+                          "additionalProperties": false
+                        }
+                      },
+                      "choices": {
+                        "type": "array", "minItems": 2,
+                        "items": {
+                          "type": "object", "required": ["id", "label"],
+                          "properties": {
+                            "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+                            "label": { "type": "string", "minLength": 1 }
+                          },
+                          "additionalProperties": false
+                        }
+                      },
+                      "cells": {
+                        "type": "array", "minItems": 4,
+                        "items": {
+                          "type": "object", "required": ["roleId", "resourceId", "expected", "feedback"],
+                          "properties": {
+                            "roleId": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+                            "resourceId": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+                            "expected": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+                            "feedback": { "type": "string", "minLength": 12 }
+                          },
+                          "additionalProperties": false
+                        }
+                      },
+                      "correctFeedback": { "type": "string", "minLength": 12 },
+                      "wrongFeedback": { "type": "string", "minLength": 12 },
+                      "requiredObjective": { "type": "string", "pattern": "^[a-z0-9-]+$" }
+                    }
+                  }
+                }
+              ],
               "additionalProperties": true
             }
           }

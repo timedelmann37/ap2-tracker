@@ -1,5 +1,5 @@
 const STATUS_VALUES = new Set(['CURATED_DRAFT', 'DIDACTICALLY_REVIEWED', 'PUBLICATION_READY']);
-const BLOCK_TYPES = new Set(['markdown', 'quiz', 'callout', 'math', 'figure', 'recall', 'flashcards', 'numeric', 'sequence']);
+const BLOCK_TYPES = new Set(['markdown', 'quiz', 'callout', 'math', 'figure', 'recall', 'flashcards', 'numeric', 'sequence', 'permission-matrix']);
 const DIAGRAM_TYPES = new Set(['layers', 'flow', 'comparison', 'topology']);
 
 function fail(fileName, message) {
@@ -35,6 +35,65 @@ function allBlocks(sections) {
 
 function interactiveId(block) {
   return block.id || null;
+}
+
+function meaningfulText(value, minimum = 12) {
+  return typeof value === 'string' && value.trim().length >= minimum;
+}
+
+function validatePermissionMatrix(block, fileName) {
+  const id = block.id;
+  if (typeof id !== 'string' || !/^[a-z0-9-]+$/.test(id)) {
+    fail(fileName, 'permission-matrix benötigt eine slugförmige id.');
+  }
+  if (!meaningfulText(block.title, 3) || !meaningfulText(block.prompt)) {
+    fail(fileName, `permission-matrix ${id} benötigt title und eine verständliche prompt.`);
+  }
+  for (const [name, minimum, maximum] of [['roles', 2, 4], ['resources', 2, 4], ['choices', 2, Infinity]]) {
+    const entries = block[name];
+    if (!Array.isArray(entries) || entries.length < minimum || entries.length > maximum) {
+      fail(fileName, `permission-matrix ${id} benötigt ${minimum}${Number.isFinite(maximum) ? `–${maximum}` : '+'} ${name}.`);
+    }
+    const entryIds = entries.map(entry => entry?.id);
+    if (entryIds.some(entryId => typeof entryId !== 'string' || !/^[a-z0-9-]+$/.test(entryId))
+      || new Set(entryIds).size !== entryIds.length) {
+      fail(fileName, `permission-matrix ${id}: ${name}-IDs müssen eindeutig und slugförmig sein.`);
+    }
+    if (entries.some(entry => !meaningfulText(entry?.label, 1))) {
+      fail(fileName, `permission-matrix ${id}: ${name} benötigen lesbare Labels.`);
+    }
+  }
+  if (!meaningfulText(block.correctFeedback) || !meaningfulText(block.wrongFeedback)) {
+    fail(fileName, `permission-matrix ${id} benötigt aussagekräftiges Ergebnis-Feedback.`);
+  }
+  if (!Array.isArray(block.cells) || block.cells.length !== block.roles.length * block.resources.length) {
+    fail(fileName, `permission-matrix ${id} benötigt genau eine Zelle je Rolle und Ressource.`);
+  }
+  const roles = new Set(block.roles.map(role => role.id));
+  const resources = new Set(block.resources.map(resource => resource.id));
+  const choices = new Set(block.choices.map(choice => choice.id));
+  const cellKeys = new Set();
+  for (const cell of block.cells) {
+    if (!cell || !roles.has(cell.roleId) || !resources.has(cell.resourceId)) {
+      fail(fileName, `permission-matrix ${id} enthält eine Zelle ohne gültige Rolle oder Ressource.`);
+    }
+    const key = `${cell.roleId}:${cell.resourceId}`;
+    if (cellKeys.has(key)) fail(fileName, `permission-matrix ${id} enthält die Zelle ${key} mehrfach.`);
+    cellKeys.add(key);
+    if (!choices.has(cell.expected)) {
+      fail(fileName, `permission-matrix ${id}: erwartetes Recht für ${key} fehlt in choices.`);
+    }
+    if (!meaningfulText(cell.feedback)) {
+      fail(fileName, `permission-matrix ${id}: ${key} benötigt aussagekräftiges Zell-Feedback.`);
+    }
+  }
+  for (const role of block.roles) {
+    for (const resource of block.resources) {
+      if (!cellKeys.has(`${role.id}:${resource.id}`)) {
+        fail(fileName, `permission-matrix ${id}: Zelle ${role.id}:${resource.id} fehlt.`);
+      }
+    }
+  }
 }
 
 function validateMeta(spec, fileName) {
@@ -123,10 +182,11 @@ export function validateUnitSpec(spec, fileName = 'Lern-Spezifikation') {
         fail(fileName, `sequence ${id} besitzt keine konsistente Sollreihenfolge.`);
       }
     }
+    if (block.type === 'permission-matrix') validatePermissionMatrix(block, fileName);
     if (block.type === 'math' && (!block.ariaLabel || !block.mathml)) fail(fileName, 'math benötigt ariaLabel und mathml.');
     if (block.type === 'figure' && (!block.diagramId && !block.src || !block.alt || !block.caption)) fail(fileName, 'figure benötigt diagramId/src, alt und caption.');
     if (block.requiredObjective && !objectiveIds.includes(block.requiredObjective)) fail(fileName, `unbekanntes Pflichtziel ${block.requiredObjective}.`);
-    if (block.requiredObjective && !['quiz', 'numeric', 'sequence'].includes(block.type)) {
+    if (block.requiredObjective && !['quiz', 'numeric', 'sequence', 'permission-matrix'].includes(block.type)) {
       fail(fileName, `Blocktyp ${block.type} kann kein Pflichtziel nachweisen.`);
     }
   }
@@ -246,6 +306,23 @@ function renderSequence(block) {
   return `<section class="sequence-practice" data-sequence="${escapeHtml(block.id)}" data-expected="${escapeHtml(block.expected.join(','))}" data-correct-feedback="${escapeHtml(block.correctFeedback)}" data-wrong-feedback="${escapeHtml(block.wrongFeedback)}"${required} aria-labelledby="${escapeHtml(block.id)}-title">\n  <div class="lab-heading"><div><h3 id="${escapeHtml(block.id)}-title">${escapeHtml(block.title)}</h3><p>${escapeHtml(block.prompt)}</p></div><span class="lab-tag">${escapeHtml(block.tag || 'Ablauf')}</span></div>\n  <ol class="sequence-list" data-sequence-list>\n${steps}\n  </ol>\n  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>\n  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>\n</section>`;
 }
 
+function renderPermissionMatrix(block) {
+  const id = escapeHtml(block.id);
+  const required = block.requiredObjective ? ` data-required-objective="${escapeHtml(block.requiredObjective)}"` : '';
+  const cellsByKey = new Map(block.cells.map(cell => [`${cell.roleId}:${cell.resourceId}`, cell]));
+  const headers = block.resources.map(resource => `      <th scope="col">${escapeHtml(resource.label)}</th>`).join('\n');
+  const rows = block.roles.map((role, rowIndex) => {
+    const cells = block.resources.map((resource, columnIndex) => {
+      const cell = cellsByKey.get(`${role.id}:${resource.id}`);
+      const selectId = `${block.id}-cell-${rowIndex}-${columnIndex}`;
+      const options = block.choices.map(choice => `          <option value="${escapeHtml(choice.id)}">${escapeHtml(choice.label)}</option>`).join('\n');
+      return `      <td><label class="sr-only" for="${escapeHtml(selectId)}">${escapeHtml(role.label)} – ${escapeHtml(resource.label)}: Recht</label><select id="${escapeHtml(selectId)}" data-matrix-cell="${escapeHtml(role.id)}:${escapeHtml(resource.id)}" data-role-label="${escapeHtml(role.label)}" data-resource-label="${escapeHtml(resource.label)}" data-expected="${escapeHtml(cell.expected)}" data-cell-feedback="${escapeHtml(cell.feedback)}" required><option value="">Recht wählen</option>\n${options}\n        </select></td>`;
+    }).join('\n');
+    return `    <tr><th scope="row">${escapeHtml(role.label)}</th>\n${cells}\n    </tr>`;
+  }).join('\n');
+  return `<section class="permission-matrix matrix-cols-${block.resources.length}" data-permission-matrix="${id}" data-correct-feedback="${escapeHtml(block.correctFeedback)}" data-wrong-feedback="${escapeHtml(block.wrongFeedback)}"${required} aria-labelledby="${id}-title" aria-describedby="${id}-prompt">\n  <div class="lab-heading"><div><h3 id="${id}-title">${escapeHtml(block.title)}</h3><p id="${id}-prompt">${escapeHtml(block.prompt)}</p></div></div>\n  <p class="matrix-scroll-hint">Tabelle seitlich verschieben, um alle Ressourcen zu sehen.</p>\n  <div class="permission-matrix-scroll" tabindex="0" role="region" aria-label="Berechtigungsmatrix: ${escapeHtml(block.title)}">\n    <table class="permission-matrix-table"><caption class="sr-only">Recht je Rolle und Ressource wählen</caption><thead><tr><th scope="col">Rolle / Ressource</th>\n${headers}\n    </tr></thead><tbody>\n${rows}\n    </tbody></table>\n  </div>\n  <div class="sequence-actions"><button class="lbtn${block.requiredObjective ? ' primary' : ''}" type="button" data-matrix-check>Rechte prüfen</button><button class="lbtn" type="button" data-matrix-reset>Zurücksetzen</button></div>\n  <div class="practice-feedback" data-matrix-feedback aria-live="polite" hidden></div>\n</section>`;
+}
+
 function renderBlock(block, meta, diagramsById) {
   if (block.type === 'markdown') return block.markdown.trim();
   if (block.type === 'quiz') return renderQuiz(block);
@@ -256,6 +333,7 @@ function renderBlock(block, meta, diagramsById) {
   if (block.type === 'flashcards') return renderFlashcards(block);
   if (block.type === 'numeric') return renderNumeric(block);
   if (block.type === 'sequence') return renderSequence(block);
+  if (block.type === 'permission-matrix') return renderPermissionMatrix(block);
   throw new Error(`Unbekannter Blocktyp ${block.type}`);
 }
 

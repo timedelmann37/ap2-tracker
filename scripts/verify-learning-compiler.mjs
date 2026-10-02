@@ -168,4 +168,69 @@ invalidIds.sections[2].blocks[2].id = 'tcp-ip-diagnostic';
 assert.throws(() => validateUnitSpec(invalidIds, 'ids.json'), /IDs müssen eindeutig/);
 pass('Interaktions- und Karten-IDs sind innerhalb einer Einheit eindeutig');
 
+const matrixSpec = structuredClone(spec);
+const transferSection = matrixSpec.sections.find(section => section.blocks.some(block => block.requiredObjective === 'model-mapping'));
+const transferIndex = transferSection.blocks.findIndex(block => block.requiredObjective === 'model-mapping');
+transferSection.blocks[transferIndex] = {
+  type: 'permission-matrix',
+  id: 'permission-matrix-test',
+  title: 'Rechte <prüfen> & zuordnen',
+  prompt: 'Ordne jeder Rolle für jede Ressource das nötige Recht zu.',
+  roles: [
+    { id: 'team-a', label: 'Team "A" & Co.' },
+    { id: 'team-b', label: 'Team B' }
+  ],
+  resources: [
+    { id: 'share-a', label: 'Freigabe <A>' },
+    { id: 'share-b', label: 'Freigabe B' }
+  ],
+  choices: [
+    { id: 'none', label: 'Kein Recht' },
+    { id: 'read', label: 'Lesen & prüfen' }
+  ],
+  cells: [
+    { roleId: 'team-a', resourceId: 'share-a', expected: 'read', feedback: 'Team A benötigt hier Leserechte & keine Änderung.' },
+    { roleId: 'team-a', resourceId: 'share-b', expected: 'none', feedback: 'Team A hat für diese Freigabe keinen Auftrag.' },
+    { roleId: 'team-b', resourceId: 'share-a', expected: 'none', feedback: 'Team B benötigt hier ausdrücklich keinen Zugriff.' },
+    { roleId: 'team-b', resourceId: 'share-b', expected: 'read', feedback: 'Team B darf diese Freigabe nur lesend prüfen.' }
+  ],
+  correctFeedback: 'Alle Rechte folgen dem beschriebenen Arbeitsauftrag.',
+  wrongFeedback: 'Prüfe die markierten Felder anhand des Arbeitsauftrags.',
+  requiredObjective: 'model-mapping'
+};
+validateUnitSpec(matrixSpec, 'matrix.json');
+const matrixMarkup = compileUnitSpec(matrixSpec, 'matrix.json').contentMarkdown;
+assert.match(matrixMarkup, /<table class="permission-matrix-table"><caption class="sr-only">/);
+assert.match(matrixMarkup, /<th scope="col">Freigabe &lt;A&gt;<\/th>/);
+assert.match(matrixMarkup, /<th scope="row">Team &quot;A&quot; &amp; Co\.<\/th>/);
+assert.equal((matrixMarkup.match(/data-matrix-cell="/g) || []).length, 4);
+assert.match(matrixMarkup, /data-permission-matrix="permission-matrix-test"/);
+assert.match(matrixMarkup, /class="permission-matrix matrix-cols-2"/);
+assert.match(matrixMarkup, /data-matrix-cell="team-a:share-a"/);
+assert.match(matrixMarkup, /<option value="">Recht wählen<\/option>/);
+assert.match(matrixMarkup, /<option value="none">Kein Recht<\/option>/);
+assert.match(matrixMarkup, /data-cell-feedback="Team A benötigt hier Leserechte &amp; keine Änderung\."/);
+assert.doesNotMatch(matrixMarkup, /<prüfen>|<A>/);
+assert.equal((matrixMarkup.match(/data-required-objective="model-mapping"/g) || []).length, 1);
+pass('Berechtigungsmatrix rendert zugängliche Tabellenköpfe, echte Auswahl und escaped Texte');
+
+function invalidMatrix(change, message) {
+  const invalid = structuredClone(matrixSpec);
+  change(blocksOf(invalid).find(block => block.type === 'permission-matrix'));
+  assert.throws(() => validateUnitSpec(invalid, 'matrix-invalid.json'), message);
+}
+
+invalidMatrix(matrix => { matrix.id = 'wrong_id'; }, /slugförmige id/);
+invalidMatrix(matrix => { matrix.id = 'tcp-ip-diagnostic'; }, /IDs müssen eindeutig/);
+invalidMatrix(matrix => { matrix.roles[1].id = 'team-a'; }, /roles-IDs/);
+invalidMatrix(matrix => { matrix.resources[0].id = 'Share A'; }, /resources-IDs/);
+invalidMatrix(matrix => { matrix.choices[1].id = 'none'; }, /choices-IDs/);
+invalidMatrix(matrix => { matrix.cells.pop(); }, /genau eine Zelle/);
+invalidMatrix(matrix => { matrix.cells[3] = { ...matrix.cells[0] }; }, /mehrfach/);
+invalidMatrix(matrix => { matrix.cells[0].roleId = 'unknown'; }, /gültige Rolle/);
+invalidMatrix(matrix => { matrix.cells[0].expected = 'write'; }, /fehlt in choices/);
+invalidMatrix(matrix => { matrix.cells[0].feedback = 'zu kurz'; }, /Zell-Feedback/);
+invalidMatrix(matrix => { matrix.wrongFeedback = ''; }, /Ergebnis-Feedback/);
+pass('Berechtigungsmatrix lehnt fehlerhafte IDs, Zellen, Zielrechte und Feedback ab');
+
 console.log('OK Compiler-Vertrag für kompakte Lerneinheiten verifiziert.');
