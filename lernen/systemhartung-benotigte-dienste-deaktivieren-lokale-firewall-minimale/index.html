@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Nicht benötigte Dienste kontrolliert abschalten, eine lokale Firewall ohne SSH-Selbstsperre planen und Pakete nur nach Abhängigkeitsprüfung minimieren.">
+<title>Linux-Server gezielt härten – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="systemhartung-benotigte-dienste-deaktivieren-lokale-firewall-minimale" data-progress-id="ga1-6__11" data-content-revision="2026-10-02.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-6">Betriebssysteme und Administration</a><span class="sep">›</span>
+    <span class="here">Linux-Server gezielt härten</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Linux-Server gezielt härten</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 45 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Auf dem fiktiven Ubuntu-Server der Werkstatt Elbtor läuft eine interne Anwendung über HTTPS für das Anwendungsnetz 10.78.0.0/24. Die Administration erreicht SSH ausschließlich aus dem VPN 10.77.0.0/24. Eine frühere Testinstallation hat außerdem einen Druckdienst hinterlassen: cups.service ist aktiv und Port 631 lauscht. Es gibt keinen bestätigten Druckbedarf. Du sollst den Server härten, ohne die Anwendung oder den Fernzugriff zu verlieren. Eine Checkliste mit pauschalem Abschalten wäre dafür zu grob; du brauchst für jede Änderung einen Sollzustand und einen Nachweis.</p>
+<section class="learning-goals" aria-labelledby="systemhartung-benotigte-dienste-deaktivieren-lokale-firewall-minimale-goals">
+  <h2 id="systemhartung-benotigte-dienste-deaktivieren-lokale-firewall-minimale-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Dienstbedarf, aktuellen Laufzustand, Boot-Aktivierung und mögliche Socket-Auslöser getrennt prüfen</li>
+    <li>Eine lokale Firewall mit nötigen Freigaben und gesichertem Remote-Rückweg aktivieren und testen</li>
+    <li>Paketbestand anhand von Bedarf, Abhängigkeiten, Updates und Rückweg statt nach bloßer Anzahl beurteilen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>1 · Diagnose: Was ist überhaupt überflüssig?</h2>
+<section class="quiz" data-quiz="haertung-diagnose" data-correct="1">
+  <h3>Port 631 lauscht auf dem Elbtor-Server. Der Druckdienst scheint ungenutzt. Was ist der erste belastbare Schritt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Ohne Bedarfs- und Abhängigkeitsprüfung kann das andere Funktionen oder Supportpfade beschädigen."><span class="m">A</span> Alle Pakete mit Bezug zu Druck sofort entfernen; weniger Pakete sind immer sicherer.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Ein lauschender Port ist ein Hinweis, aber noch kein vollständiger Beleg, dass der Dienst gefahrlos entfallen kann."><span class="m">B</span> Dienst, Socket, Port und tatsächlichen Druckbedarf erfassen; erst danach die Änderung freigeben.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Das würde die Erreichbarkeit ausweiten, ohne den Bedarf zu klären. Beobachtung und Freigabe sind getrennte Aufgaben."><span class="m">C</span> Nur die Firewall für 631 öffnen, damit der Dienst beobachtbar bleibt.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><p><strong>Härtung</strong> heißt hier: erforderliche Funktion behalten und unnötige Angriffsgelegenheiten kontrolliert reduzieren. Drei Inventare helfen: <strong>Dienste/Listener</strong>, <strong>erlaubte Netzpfade</strong> und <strong>installierte Pakete</strong>. Elbtor benötigt HTTPS und einen erreichbaren SSH-Managementpfad; Port 631 ist ein <strong>Prüfkandidat</strong>. <code>ss -ltnp</code> zeigt lauschende TCP-Sockets und, mit ausreichenden Rechten, zugehörige Prozesse. <code>systemctl status cups.service</code> zeigt die Service-Unit; <code>systemctl list-sockets</code> und die konkrete Unit-Konfiguration helfen, mögliche Auslöser zu finden. Die Ausgabe allein ersetzt keine fachliche Freigabe: Ein Dienst kann auch intern oder durch andere Units benötigt werden.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Druckdienst: vier Prüfebenen">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-layers" xmlns="http://www.w3.org/2000/svg" width="960" height="512" viewBox="0 0 960 512" role="img" aria-labelledby="diagram-haertung-dienstzustand-title diagram-haertung-dienstzustand-desc">
+  <title id="diagram-haertung-dienstzustand-title">Druckdienst: vier Prüfebenen</title>
+  <desc id="diagram-haertung-dienstzustand-desc">Vier getrennte Prüfebenen für den fiktiven Druckdienst: aktueller Laufzustand, Boot-Aktivierung, mögliche Socket-Auslöser und nach der Änderung lauschender Netzport 631.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Druckdienst: vier Prüfebenen</tspan></text>
+  <g><rect class="diagram-row" x="42" y="82" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="82" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="130" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Laufzeit</tspan></text><text x="194" y="116" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">cups.service aktiv → stop beendet den aktuellen Lauf</tspan></text></g><g><rect class="diagram-row" x="42" y="182" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="182" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="230" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Boot</tspan></text><text x="194" y="216" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">disable entfernt die Boot-Aktivierung, stoppt aber nicht</tspan></text></g><g><rect class="diagram-row" x="42" y="282" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="282" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="330" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Auslöser</tspan></text><text x="194" y="316" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">cups.socket oder andere Unit kann erneut starten</tspan></text></g><g><rect class="diagram-row" x="42" y="382" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="382" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="430" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Netz</tspan></text><text x="194" y="416" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">ss prüft, ob 631/tcp danach noch lauscht</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene technische Zustandskarte: Ein deaktivierter Boot-Start sagt noch nichts über den laufenden Prozess oder Socket-Auslöser.</figcaption>
+</figure><h2 class="sec" id="s2"><span class="num">2</span>2 · Dienst jetzt und beim Start kontrollieren</h2>
+<p>Für die fiktive Elbtor-Freigabe ist bestätigt: CUPS wird weder für Druckaufträge noch als Abhängigkeit der Anwendung gebraucht. <code>systemctl stop cups.service</code> stoppt den Dienst <strong>jetzt</strong>; das ändert die Boot-Aktivierung nicht. <code>systemctl disable cups.service</code> entfernt die Aktivierung über die Unit-Installation für künftige Starts, stoppt aber einen laufenden Dienst nicht. <code>disable --now</code> kombiniert Deaktivieren und Stoppen. Selbst dann ist <strong>nicht garantiert</strong>, dass der Dienst nie wieder startet: Eine aktive Socket-Unit, ein anderer Auslöser oder ein manueller Start kann ihn erneut aktivieren. Prüfe deshalb vor der Änderung Abhängigkeiten und vorhandene <code>cups.socket</code>, falls installiert. Nach der freigegebenen Änderung vergleiche <code>systemctl is-active cups.service</code>, <code>systemctl is-enabled cups.service</code>, den Socket-Zustand und <code>ss -ltnp</code>. Teste die verbleibende Anwendung; erst ein geplanter Neustart kann den Boot-Sollzustand zusätzlich belegen.</p>
+<section class="quiz" data-quiz="haertung-stop-disable" data-correct="1">
+  <h3>Ein Admin führt nur systemctl disable cups.service aus. cups.service bleibt aktiv und Port 631 lauscht weiter. Ist das widersprüchlich?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="disable beeinflusst die Unit-Aktivierung für zukünftige Starts, nicht den aktuellen Laufzustand."><span class="m">A</span> Ja. disable muss jeden laufenden Prozess sofort beenden und den Port schließen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Für den aktuellen Zustand ist stop beziehungsweise --now relevant; danach sind Service, Socket, Bootstatus und Listener getrennt zu verifizieren."><span class="m">B</span> Nein. disable stoppt nicht; Laufzustand und mögliche Socket-Auslöser müssen gesondert behandelt und geprüft werden.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein deaktivierter Dienst kann etwa durch aktive Socket-Units oder manuell erneut aktiviert werden."><span class="m">C</span> Nein, aber damit ist sicher, dass cups.service von keiner anderen Unit mehr gestartet werden kann.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout warn"><span class="lbl">Kein Blindflug</span><p>SSH, Netzwerk, DNS, Zeitabgleich und Paketverwaltung nicht nach Namen als „überflüssig“ einstufen. Ein Service kann trotz fehlendem offenen Port für den Betrieb wichtig sein; ein geschlossener Port beweist nicht, dass die Funktion entbehrlich ist.</p></aside><h2 class="sec" id="s3"><span class="num">3</span>3 · Firewall: Managementzugang zuerst sichern</h2>
+<p>Die <strong>lokale</strong> Firewall steuert Netzverkehr am Host; sie entfernt keinen installierten Dienst. Für diesen Ubuntu-Fall nutzt das Team UFW. Vor jeder einschränkenden Änderung klärt es, von welcher tatsächlichen Quelladresse SSH ankommt, und hält eine zweite bestehende Sitzung sowie eine getestete Out-of-Band-Konsole als Rückweg bereit. Das Soll: SSH auf 22/tcp nur aus dem VPN 10.77.0.0/24, HTTPS auf 443/tcp nur aus dem Anwendungsnetz 10.78.0.0/24 und sonst keine unerwünschten eingehenden Verbindungen. <strong>Prüfe zuerst Ist-Regeln, Regelreihenfolge und die Default-Inbound-Policy</strong>: Eine alte breite Freigabe für 22/tcp oder 443/tcp kann die neuen engen Regeln wirkungslos machen; bei erlaubender Default-Policy bleibt weiterer Verkehr erreichbar. Die geplante SSH-Freigabe lässt sich im fiktiven Fall mit <code>sudo ufw --dry-run allow proto tcp from 10.77.0.0/24 to any port 22</code> ansehen: Das zeigt entstehende Regeln, <strong>wendet sie aber nicht an</strong>. Lege die benötigten engen Freigaben tatsächlich an, bevor du breite Altregeln kontrolliert entfernst oder eine Verweigerungsregel aktivierst. Der gesicherte SSH-Rückweg muss dabei bestehen bleiben. Aktiviere den freigegebenen Filter und prüfe danach den vollständigen Soll-Regelsatz samt Default-Policy mit <code>ufw status verbose</code> sowie neue Verbindungen von innen und außen. Das Diagramm zeigt den Sollzustand, nicht eine universelle UFW-Standardeinstellung. Cloud-Firewall, IPv6, weitere Interfaces, Containerregeln und der konkrete SSH-Port müssen am Zielsystem zusätzlich geprüft werden.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Host-Firewall: notwendige Eingänge">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-layers" xmlns="http://www.w3.org/2000/svg" width="960" height="412" viewBox="0 0 960 412" role="img" aria-labelledby="diagram-haertung-firewall-pfade-title diagram-haertung-firewall-pfade-desc">
+  <title id="diagram-haertung-firewall-pfade-title">Host-Firewall: notwendige Eingänge</title>
+  <desc id="diagram-haertung-firewall-pfade-desc">Lokale Firewall des fiktiven Elbtor-Servers: SSH-Port 22 nur aus dem VPN-Netz 10.77.0.0/24, HTTPS-Port 443 nur aus dem Anwendungsnetz 10.78.0.0/24. Für sonstigen eingehenden Verkehr gilt eine geprüfte Default-Verweigerung ohne alte breite Freigaben.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Host-Firewall: notwendige Eingänge</tspan></text>
+  <g><rect class="diagram-row" x="42" y="82" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="82" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="130" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">22/tcp</tspan></text><text x="194" y="116" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Nur VPN 10.77.0.0/24 → SSH-Administration</tspan></text></g><g><rect class="diagram-row" x="42" y="182" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="182" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="230" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">443/tcp</tspan></text><text x="194" y="216" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Anwendungsnetz 10.78.0.0/24 → HTTPS</tspan></text></g><g><rect class="diagram-row" x="42" y="282" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="282" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="330" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">sonstige</tspan></text><text x="194" y="316" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Default inbound deny; breite Altregeln entfernen</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigener technischer Soll-Filter. Enge SSH- und HTTPS-Regeln reichen nicht, solange eine alte breite Freigabe oder erlaubende Default-Policy besteht.</figcaption>
+</figure><section class="quiz" data-quiz="haertung-ssh-schutz" data-correct="1">
+  <h3>Der Server ist nur per SSH aus dem VPN erreichbar. Welche Abfolge verhindert am ehesten eine Selbstsperre beim Aktivieren von UFW?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Ohne vorherigen Managementpfad und Rückweg droht der Verlust des Fernzugriffs."><span class="m">A</span> Eingehend sofort alles verweigern, SSH-Sitzung schließen und später versuchen, 22/tcp freizugeben.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Eine bestehende Sitzung allein beweist nicht, dass ein neuer SSH-Verbindungsaufbau nach der Regeländerung gelingt."><span class="m">B</span> Quellnetz und SSH-Port prüfen, Konsole/Rückweg sichern, benötigte SSH- und HTTPS-Regeln vorab setzen, dann aktivieren und eine neue SSH-Sitzung von außen testen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein Statusbild vor der Änderung ersetzt weder den Rückweg noch den Test eines neuen Verbindungsaufbaus danach."><span class="m">C</span> Nur ufw status verbose vor der Änderung lesen; weitere Tests sind unnötig, weil UFW laufende SSH-Verbindungen erkennt.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="haertung-altregel" data-correct="1">
+  <h3>UFW enthält noch eine alte Regel, die 22/tcp aus beliebigen Netzen erlaubt. Zusätzlich wird SSH nun für das VPN freigegeben. Ist SSH damit auf das VPN begrenzt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Eine zusätzliche enge Freigabe entfernt eine bestehende breite Erlaubnis nicht. Ist-Regeln und Reihenfolge müssen geprüft werden."><span class="m">A</span> Ja. Die neue engere Regel überschreibt alle älteren breiten Freigaben automatisch.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Erst der gesamte Regelsatz mit Default-Inbound-Policy und positive wie negative Verbindungstests belegen den Sollzustand."><span class="m">B</span> Nein. Die breite Freigabe muss mit gesichertem Rückweg kontrolliert entfernt und der neue SSH-Zugang aus erlaubtem sowie unerlaubtem Netz getestet werden.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Der Druckdienst hat keinen Einfluss darauf, aus welchen Netzen SSH über Port 22 erlaubt ist."><span class="m">C</span> Ja, sofern cups.service gestoppt wurde; Dienstzustand und Firewall-Erlaubnis sind gekoppelt.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><p>Nach Aktivierung prüfst du aus dem <strong>VPN</strong> eine frische SSH-Verbindung und aus dem vorgesehenen Anwendungsnetz HTTPS. Von nicht freigegebenen Netzen müssen neue Versuche auf 22/tcp und 443/tcp scheitern; auch andere unerwünschte Eingänge prüfst du passend zur Policy. <code>ufw status verbose</code> mit Regelübersicht und Default-Inbound-Policy dokumentiert den lokalen Filterzustand; <strong>positive und negative externe Verbindungstests</strong> weisen die tatsächliche Erreichbarkeit nach. Eine bereits offene SSH-Sitzung offen zu halten ist nur eine Rückfallebene, kein Erfolgstest. Wenn ein Pfad scheitert, nutze den vorbereiteten Konsolen-/Rollback-Weg statt weiterer ungetesteter Regeln.</p>
+<h2 class="sec" id="s4"><span class="num">4</span>4 · Installation minimieren, ohne Funktion zu verlieren</h2>
+<p>Eine <strong>minimale Installation</strong> ist die kleinste passende Grundinstallation mit allen benötigten Funktionen, Sicherheitsupdates und Supportpfaden — nicht die kleinste erreichbare Paketanzahl. Ubuntu warnt ausdrücklich vor blindem Entfernen von Paketen der Standardinstallation; dabei kann erwartete Funktion verloren gehen. Bei Elbtor wurde CUPS laut fiktivem Inventar später nur für einen Test installiert. Selbst dafür gilt: Erst Bedarf und Paketabhängigkeiten prüfen. <code>apt-get --simulate remove cups</code> zeigt geplante <code>Remv</code>-Operationen, ohne die Änderung auszuführen. Wird dabei ein Paket entfernt, das SSH, HTTPS, Monitoring oder die unterstützte Grundinstallation benötigt, brichst du ab. Eine Simulation ist kein Live-Funktionstest und ihr Ergebnis kann sich bei geändertem Paketstand unterscheiden. Erst nach Freigabe, Sicherung und Rückweg kann ein tatsächlicher Paket-Eingriff erwogen werden; anschließend Dienste, Updates und Anwendung erneut testen.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Paketentscheidung statt Löschreflex">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="434" viewBox="0 0 960 434" role="img" aria-labelledby="diagram-haertung-paketentscheidung-title diagram-haertung-paketentscheidung-desc">
+  <title id="diagram-haertung-paketentscheidung-title">Paketentscheidung statt Löschreflex</title>
+  <desc id="diagram-haertung-paketentscheidung-desc">Dreistufiger Entscheidungsweg für ein nachträglich installiertes Druckpaket: Bedarf prüfen, geplante Entfernung samt Abhängigkeiten mit apt-get -s simulieren, nur nach Freigabe mit Rückweg ändern und Funktion testen.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Paketentscheidung statt Löschreflex</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Bedarf klären</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Druckfunktion und Supportbedarf bestätigen</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Folgen simulieren</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">apt-get -s remove cups: Remv-Plan lesen</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Entscheiden und testen</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Nur mit Freigabe, Rückweg und Funktionstest</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene technische Entscheidungskette: Paketminimierung ist bedarfsorientiert und nicht die pauschale Löschung von Default-Paketen.</figcaption>
+</figure><section class="quiz" data-quiz="haertung-paketfall" data-correct="1">
+  <h3>Die Simulation einer CUPS-Entfernung plant zusätzlich den Wegfall eines für den Betrieb benötigten Pakets. Was ist die richtige Entscheidung?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Das würde eine benötigte Funktion riskieren. Weniger Pakete allein ist kein Sicherheitsnachweis."><span class="m">A</span> Trotzdem entfernen: Jede geringere Paketanzahl bedeutet automatisch mehr Sicherheit.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Die Simulation ist ein Vorfilter für Folgeschäden, kein Freibrief für die Entfernung."><span class="m">B</span> Abbrechen und Abhängigkeiten sowie den tatsächlichen Bedarf klären; erst mit angepasstem Plan, Freigabe und Rückweg weitergehen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Das umgeht die Paketverwaltung und kann das System in einen inkonsistenten Zustand bringen."><span class="m">C</span> Das Paket ohne Simulation manuell aus dem Dateisystem löschen, damit APT die Abhängigkeit nicht sieht.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>5 · Änderung als überprüfbare Folge</h2>
+<section class="sequence-practice" data-sequence="haertung-aenderungsfolge" data-expected="bestand,bedarf,rueckweg,deaktivieren,firewall,pruefen" data-correct-feedback="Richtig. Erst Istzustand und Soll klären, dann Rückweg sichern. Enge Freigaben, bereinigte breite Altregeln und die passende Default-Policy ergeben den Sollfilter; neue Zugriffe, Listener- und Bootprüfungen belegen seine Wirkung." data-wrong-feedback="Vor einem Stop oder einer Filteraktivierung müssen Istzustand, Bedarf und Rückweg geklärt sein. Enge SSH/HTTPS-Regeln allein heben breite Altregeln nicht auf; Default-Policy und neue Verbindungen müssen ebenfalls geprüft werden." aria-labelledby="haertung-aenderungsfolge-title">
+  <div class="lab-heading"><div><h3 id="haertung-aenderungsfolge-title">Elbtor-Server ohne Fernzugriffsverlust härten</h3><p>Ordne die Phasen so, dass der Fernzugang während der Änderung beherrschbar bleibt und jeder Eingriff einen Nachweis erhält.</p></div><span class="lab-tag">Änderungsfolge</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="firewall" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Enge SSH/HTTPS-Regeln setzen, breite Altregeln und Default-Policy korrigieren, Filter kontrolliert aktivieren</span></li>
+    <li data-step="deaktivieren" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Freigegebenen Druckdienst und Auslöser kontrolliert stoppen/deaktivieren</span></li>
+    <li data-step="bestand" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Istzustand: Dienste, Socket, Listener, Regeln und Pakete erfassen</span></li>
+    <li data-step="pruefen" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Neuen SSH-/HTTPS-Zugang, Port 631, Bootstatus und Anwendung testen</span></li>
+    <li data-step="rueckweg" tabindex="-1"><span class="step-position" data-step-position>5</span><span>Sicherung, bestehende SSH-Sitzung und Out-of-Band-Konsole vorbereiten</span></li>
+    <li data-step="bedarf" tabindex="-1"><span class="step-position" data-step-position>6</span><span>Sollpfade und Dienst-/Paketbedarf mit dem Betreiber freigeben</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><aside class="callout merk"><span class="lbl">Drei Nachweise</span><p>Dienst: Laufzeit <strong>und</strong> Boot/Trigger prüfen. Firewall: Regeln <strong>und</strong> neue Verbindung prüfen. Pakete: Abhängigkeiten <strong>und</strong> Funktion/Updates prüfen.</p></aside><h2 class="sec" id="s6"><span class="num">6</span>6 · Wissen abrufen</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="haertung-karte-dienst" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was ändern systemctl stop und systemctl disable jeweils?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>stop beendet die Unit jetzt. disable entfernt ihre Aktivierung für den Bootpfad, stoppt sie aber nicht. Socket- oder andere Auslöser separat prüfen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="haertung-karte-listener" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum reicht is-enabled allein nicht als Härtungsnachweis?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Es beschreibt die Boot-Aktivierung, nicht den aktuellen Laufzustand, andere Auslöser oder einen weiterhin lauschenden Port.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="haertung-karte-firewall" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was muss vor UFW-Aktivierung für einen reinen SSH-Server geklärt sein?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Tatsächliche Quelladresse und SSH-Port, passende Freigabe, bestehende Sitzung und getesteter Konsolen-/Rollback-Weg; danach neue SSH-Verbindung testen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="haertung-karte-pakete" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was bedeutet eine minimale Installation?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Nur benötigte Funktionen in einer passenden unterstützten Grundinstallation; Abhängigkeiten, Updates und Rückweg zählen mehr als die reine Paketanzahl.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Dienstzustand“:</span><button type="button" data-card-id="haertung-karte-dienst" data-card-rate="known">gewusst</button><button type="button" data-card-id="haertung-karte-dienst" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="haertung-karte-dienst"></span></div>
+<div class="card-rating"><span>Karte „Listener“:</span><button type="button" data-card-id="haertung-karte-listener" data-card-rate="known">gewusst</button><button type="button" data-card-id="haertung-karte-listener" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="haertung-karte-listener"></span></div>
+<div class="card-rating"><span>Karte „Remote-Zugang“:</span><button type="button" data-card-id="haertung-karte-firewall" data-card-rate="known">gewusst</button><button type="button" data-card-id="haertung-karte-firewall" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="haertung-karte-firewall"></span></div>
+<div class="card-rating"><span>Karte „Paketbestand“:</span><button type="button" data-card-id="haertung-karte-pakete" data-card-rate="known">gewusst</button><button type="button" data-card-id="haertung-karte-pakete" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="haertung-karte-pakete"></span></div><section class="recall-practice" data-recall="haertung-fallbegruendung" data-min-length="210" aria-labelledby="haertung-fallbegruendung-title">
+  <div class="recall-prompt"><h3 id="haertung-fallbegruendung-title">Elbtors Härtung begründen</h3><p>Erkläre in eigenen Worten, warum cups.service, Port 631 und das Paket cups drei verschiedene Prüffragen sind. Beschreibe die sichere Reihenfolge für Dienst- und UFW-Änderung aus der Ferne und nenne je einen Nachweis für Laufzeit, Bootzustand, Netzpfad und Paketfolgen.</p></div>
+  <label class="sr-only" for="haertung-fallbegruendung-answer">Deine Fallbegründung</label>
+  <textarea id="haertung-fallbegruendung-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Ich kläre zuerst, ob der Druckdienst fachlich gebraucht wird. cups.service kann jetzt laufen, obwohl seine Boot-Aktivierung bereits deaktiviert ist; cups.socket oder eine andere Unit könnte ihn erneut starten. Port 631 zeigt einen lauschenden Netzpfad, das Paket cups ist eine separate Installations- und Abhängigkeitsfrage. Nach Istaufnahme und Sollfreigabe sichere ich Konsole, Rückweg und bestehende SSH-Sitzung. Ich stoppe/deaktiviere den freigegebenen Dienst samt relevantem Auslöser und prüfe is-active, is-enabled sowie ss für Port 631. Vor UFW-Aktivierung setze ich die passende SSH-Freigabe aus dem VPN und HTTPS. Danach teste ich eine neue SSH-Verbindung und HTTPS von außen. Eine Paketentfernung simuliere ich erst; geplante Abhängigkeiten und die spätere Update-/Anwendungsfunktion müssen erhalten bleiben.</div>
+</section><h2 class="sec" id="s7"><span class="num">7</span>7 · Lernziel-Check</h2>
+<section class="quiz" data-quiz="haertung-dienste-gate" data-correct="1" data-required-objective="dienste-wirksam-deaktivieren">
+  <h3>Nach systemctl disable cups.service ist cups.service noch aktiv und 631/tcp lauscht. Welche Prüfung und Folgemaßnahme ist korrekt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Ein weiterhin lauschender Port und aktiver Dienst erfüllen den Laufzeit-Sollzustand nicht."><span class="m">A</span> Der Bootstatus genügt; ein aktiver Listener kann ignoriert werden.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. disable allein stoppt nicht und schützt nicht automatisch vor erneuter Aktivierung durch andere Units."><span class="m">B</span> Den aktuellen Dienst nach Freigabe stoppen, mögliche Socket-Auslöser behandeln und Laufzeit, Bootstatus und Listener getrennt erneut prüfen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Eine Paketentfernung ist ein anderer Eingriff mit eigenen Abhängigkeits- und Rollback-Risiken."><span class="m">C</span> Nur das Paket sofort löschen; damit sind alle offenen Sockets ohne Abhängigkeitsprüfung behoben.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="haertung-firewall-gate" data-correct="1" data-required-objective="firewall-ohne-selbstsperre">
+  <h3>Welche Firewall-Änderung wahrt im Elbtor-Fall den Remote-Rückweg?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Eine alte Verbindung beweist keinen neuen Verbindungsaufbau. Ohne vorherige SSH-Regel droht Selbstsperre."><span class="m">A</span> Alle eingehenden Verbindungen zuerst sperren; aus der alten SSH-Sitzung folgt automatisch, dass spätere Anmeldungen funktionieren.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Nur der vollständige Regelsatz und neue erlaubte wie verweigerte Verbindungen belegen die beabsichtigten Pfade."><span class="m">B</span> VPN-Quellnetz und SSH-Port prüfen, Konsole sichern, enge SSH-/HTTPS-Regeln vor Aktivierung setzen, alte breite Freigaben und Default-Inbound-Policy korrigieren und neue Verbindungen positiv und negativ testen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Eine zusätzliche enge Regel hebt eine bestehende breite Erlaubnis nicht automatisch auf. Auch Default-Inbound und Altregeln sind Teil des Sollabgleichs."><span class="m">C</span> Nur eine enge VPN-Freigabe ergänzen; eine alte SSH-Freigabe aus allen Netzen wird dadurch automatisch verdrängt.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="haertung-minimal-gate" data-correct="1" data-required-objective="installation-bedarfsorientiert-minimieren">
+  <h3>Welche Entscheidung entspricht einer bedarfsorientiert minimalen Ubuntu-Installation?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Ubuntu warnt vor Funktionsverlust durch pauschale Entfernung von Default-Paketen; Prioritätsmarkierungen allein reichen nicht."><span class="m">A</span> Alle optional markierten oder standardmäßig installierten Pakete pauschal entfernen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Minimal heißt kleinste passende, unterstützte Funktion, nicht ein willkürliches Paketziel."><span class="m">B</span> Den bestätigten Bedarf und Update-/Supportpfad erhalten, eine geplante Paketentfernung samt Abhängigkeiten simulieren und nur mit Freigabe, Rückweg und Test umsetzen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Das umgeht die Paketverwaltung und macht die Auswirkungen gerade unkontrollierbar."><span class="m">C</span> Pakete durch manuelles Löschen ihrer Dateien reduzieren, damit die Simulation keine Abhängigkeiten meldet.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s8"><span class="num">8</span>Quellen und Grenzen</h2>
+<p>Fachliche Primärquellen, geprüft am 02.10.2026: <a href="https://manpages.debian.org/unstable/systemd/systemctl.1.en.html">systemctl(1)</a>, <a href="https://man7.org/linux/man-pages/man8/ss.8.html">ss(8)</a>, <a href="https://ubuntu.com/server/docs/how-to/security/firewalls/">Ubuntu Server: Firewall</a>, <a href="https://documentation.ubuntu.com/security/common-mistakes/unnecessary-packages/">Ubuntu Security: Unnecessary packages</a> und <a href="https://manpages.debian.org/unstable/apt/apt-get.8.en.html">apt-get(8)</a>. Der private ITLF6-9-Ausschnitt gab nur den Themenanker; seine Beispielmaßnahmen und Medien wurden nicht übernommen. Die beschriebenen Befehle setzen systemd, UFW und APT voraus. Andere Distributionen, Container, Anbieter-Firewalls und lokale Sicherheitsvorgaben können andere Verfahren erfordern. Eine Änderung am produktiven Host erfordert Freigabe, gesicherten Rückweg und Tests am tatsächlichen Zugangspfad. Wiederhole morgen den Lernziel-Check ohne Blick in die Erklärungen.</p>
+
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-6"><span class="d">zurück zu</span><span class="t">Betriebssysteme und Administration</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Betriebssysteme und Administration</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 3 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">1 · Diagnose: Was ist überhaupt überflüssig?</a></li>
+<li><a href="#s2" data-t="s2">2 · Dienst jetzt und beim Start kontrollieren</a></li>
+<li><a href="#s3" data-t="s3">3 · Firewall: Managementzugang zuerst sichern</a></li>
+<li><a href="#s4" data-t="s4">4 · Installation minimieren, ohne Funktion zu verlieren</a></li>
+<li><a href="#s5" data-t="s5">5 · Änderung als überprüfbare Folge</a></li>
+<li><a href="#s6" data-t="s6">6 · Wissen abrufen</a></li>
+<li><a href="#s7" data-t="s7">7 · Lernziel-Check</a></li>
+<li><a href="#s8" data-t="s8">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-6">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

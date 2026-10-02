@@ -73,6 +73,15 @@ const cases = [
     recall: 'konto-fallbegruendung',
     gates: ['konto-gruppe-gate', 'passwort-policy-gate', 'kontosperre-gate'],
     sequences: [{ id: 'konto-aenderungsfolge', expected: ['identitaet', 'soll', 'backup', 'aendern', 'test', 'nachweis'] }]
+  },
+  {
+    slug: 'systemhartung-benotigte-dienste-deaktivieren-lokale-firewall-minimale',
+    figures: 3,
+    diagnostic: 'haertung-diagnose',
+    card: 'haertung-karte-dienst',
+    recall: 'haertung-fallbegruendung',
+    gates: ['haertung-dienste-gate', 'haertung-firewall-gate', 'haertung-minimal-gate'],
+    sequences: [{ id: 'haertung-aenderungsfolge', expected: ['bestand', 'bedarf', 'rueckweg', 'deaktivieren', 'firewall', 'pruefen'] }]
   }
 ];
 
@@ -142,6 +151,14 @@ try {
       assert(['Vorher', 'Mit -aG'].every(label => groupLabels.includes(label)), `${testCase.slug}: before and after supplementary groups are labelled`);
       assert(['Altregel', 'NIST-orientiert'].every(label => policyLabels.includes(label)), `${testCase.slug}: policy comparison is labelled`);
       assert(['Passwort', 'Konto', 'PAM-Dienst'].every(label => lockLabels.includes(label)), `${testCase.slug}: independent lock states are labelled`);
+    } else if (testCase.slug === 'systemhartung-benotigte-dienste-deaktivieren-lokale-firewall-minimale') {
+      const figures = page.locator('.learning-diagram');
+      const serviceLabels = await figures.nth(0).textContent();
+      const firewallLabels = await figures.nth(1).textContent();
+      const packageLabels = await figures.nth(2).textContent();
+      assert(['Laufzeit', 'Boot', 'Auslöser', 'Netz'].every(label => serviceLabels.includes(label)), `${testCase.slug}: distinct service states are labelled`);
+      assert(['22/tcp', '443/tcp', 'sonstige'].every(label => firewallLabels.includes(label)), `${testCase.slug}: required firewall paths are labelled`);
+      assert(['Bedarf klären', 'Folgen simulieren', 'Entscheiden und testen'].every(label => packageLabels.includes(label)), `${testCase.slug}: package decision flow is labelled`);
     } else {
       assert((await firstDiagram.textContent()).includes('Lesender Befund'), `${testCase.slug}: diagnosis flow is labelled`);
     }
@@ -178,6 +195,27 @@ try {
       await lockQuiz.locator('[data-quiz-reset]').click();
       await lockQuiz.locator('[data-answer="0"]').click();
       assert((await lockQuiz.locator('[data-selected-feedback]').textContent()).includes('Passwortsperre'), `${testCase.slug}: lock-state distinction explained`);
+    } else if (testCase.slug === 'systemhartung-benotigte-dienste-deaktivieren-lokale-firewall-minimale') {
+      const serviceQuiz = page.locator('[data-quiz="haertung-stop-disable"]');
+      await serviceQuiz.locator('[data-answer="0"]').click();
+      assert((await serviceQuiz.locator('[data-selected-feedback]').textContent()).includes('nicht den aktuellen Laufzustand'), `${testCase.slug}: disable does not stop a running unit`);
+      await serviceQuiz.locator('[data-quiz-reset]').click();
+      await serviceQuiz.locator('[data-answer="1"]').click();
+      assert((await serviceQuiz.locator('[data-selected-feedback]').textContent()).includes('stop beziehungsweise --now'), `${testCase.slug}: current state requires stop and verification`);
+
+      const firewallQuiz = page.locator('[data-quiz="haertung-ssh-schutz"]');
+      await firewallQuiz.locator('[data-answer="0"]').click();
+      assert((await firewallQuiz.locator('[data-selected-feedback]').textContent()).includes('Verlust des Fernzugriffs'), `${testCase.slug}: lockout risk explained`);
+      await firewallQuiz.locator('[data-quiz-reset]').click();
+      await firewallQuiz.locator('[data-answer="1"]').click();
+      assert((await firewallQuiz.locator('[data-selected-feedback]').textContent()).includes('bestehende Sitzung allein beweist nicht'), `${testCase.slug}: new remote session needed`);
+
+      const oldRuleQuiz = page.locator('[data-quiz="haertung-altregel"]');
+      await oldRuleQuiz.locator('[data-answer="0"]').click();
+      assert((await oldRuleQuiz.locator('[data-selected-feedback]').textContent()).includes('bestehende breite Erlaubnis nicht'), `${testCase.slug}: narrow rule does not override broad old rule`);
+      await oldRuleQuiz.locator('[data-quiz-reset]').click();
+      await oldRuleQuiz.locator('[data-answer="1"]').click();
+      assert(await oldRuleQuiz.locator('[data-answer="1"]').evaluate(node => node.classList.contains('right')), `${testCase.slug}: old-rule correction accepted`);
     }
 
     for (const { id, expected } of testCase.sequences) {
@@ -187,6 +225,9 @@ try {
       await sortSequence(sequence, expected);
       await sequence.locator('[data-sequence-check]').click();
       assert(await sequence.locator('[data-sequence-feedback]').getAttribute('data-result') === 'correct', `${id}: correct order accepted`);
+      if (id === 'haertung-aenderungsfolge') {
+        assert((await sequence.locator('[data-sequence-feedback]').textContent()).includes('breite Altregeln'), `${id}: corrected firewall policy is part of the accepted sequence`);
+      }
     }
 
     const recall = page.locator(`[data-recall="${testCase.recall}"]`);

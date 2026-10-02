@@ -1,0 +1,184 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "systemhartung-benotigte-dienste-deaktivieren-lokale-firewall-minimale",
+    "slug": "systemhartung-benotigte-dienste-deaktivieren-lokale-firewall-minimale",
+    "title": "Linux-Server gezielt härten",
+    "description": "Nicht benötigte Dienste kontrolliert abschalten, eine lokale Firewall ohne SSH-Selbstsperre planen und Pakete nur nach Abhängigkeitsprüfung minimieren.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-6",
+    "groupLabel": "Betriebssysteme und Administration",
+    "itemId": "ga1-6__11",
+    "week": "KW 40",
+    "estimatedMinutes": 45,
+    "relevance": "hoch",
+    "sources": ["itlf6-9-2022", "systemd-systemctl-man", "iproute2-ss-man", "ubuntu-ufw-firewall", "ubuntu-unnecessary-packages", "debian-apt-get-man"],
+    "contentRevision": "2026-10-02.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {"id": "dienste-wirksam-deaktivieren", "label": "Dienstbedarf, aktuellen Laufzustand, Boot-Aktivierung und mögliche Socket-Auslöser getrennt prüfen"},
+    {"id": "firewall-ohne-selbstsperre", "label": "Eine lokale Firewall mit nötigen Freigaben und gesichertem Remote-Rückweg aktivieren und testen"},
+    {"id": "installation-bedarfsorientiert-minimieren", "label": "Paketbestand anhand von Bedarf, Abhängigkeiten, Updates und Rückweg statt nach bloßer Anzahl beurteilen"}
+  ],
+  "intro": "Auf dem fiktiven Ubuntu-Server der Werkstatt Elbtor läuft eine interne Anwendung über HTTPS für das Anwendungsnetz 10.78.0.0/24. Die Administration erreicht SSH ausschließlich aus dem VPN 10.77.0.0/24. Eine frühere Testinstallation hat außerdem einen Druckdienst hinterlassen: cups.service ist aktiv und Port 631 lauscht. Es gibt keinen bestätigten Druckbedarf. Du sollst den Server härten, ohne die Anwendung oder den Fernzugriff zu verlieren. Eine Checkliste mit pauschalem Abschalten wäre dafür zu grob; du brauchst für jede Änderung einen Sollzustand und einen Nachweis.",
+  "curation": {
+    "evidence": [
+      {"sourceId": "itlf6-9-2022", "sourceLocator": "itlf6-9-2022:00254, privater Markdown-Rohtext Zeilen 7669–7671", "use": "Nur Themenanker für Systemhärtung und administrativen SSH-Zugang; keine Buchaufgabe, Tabelle, Formulierung oder Grafik übernommen", "reviewStatus": "Privater Rohtext-Locator am 02.10.2026 geprüft; fachliche Aussagen ausschließlich gegen Primärdokumentation geprüft"},
+      {"sourceId": "systemd-systemctl-man", "sourceLocator": "systemctl(1): stop, disable, --now, is-active, is-enabled, list-sockets und list-dependencies", "use": "Laufzustand, Start bei Boot und Reaktivierung durch andere Units auseinanderhalten", "reviewStatus": "Debian-Manpage des systemd-Projekts am 02.10.2026 geprüft"},
+      {"sourceId": "iproute2-ss-man", "sourceLocator": "ss(8): -l, -t, -n und -p", "use": "Lauschende TCP-Sockets und zugehörige Prozesse im Ist-/Sollvergleich beobachten", "reviewStatus": "Linux man-pages am 02.10.2026 geprüft"},
+      {"sourceId": "ubuntu-ufw-firewall", "sourceLocator": "Ubuntu Server: Firewall, Abschnitte ufw, Open or close a port, Allow access from specific hosts, --dry-run und Check status", "use": "Host-Firewall-Regeln und UFW-Prüfschritte für das Ubuntu-Beispiel", "reviewStatus": "Offizielle Ubuntu-Serverdokumentation am 02.10.2026 geprüft"},
+      {"sourceId": "ubuntu-unnecessary-packages", "sourceLocator": "Ubuntu Security: Unnecessary packages, Einleitung sowie Reducing installed packages", "use": "Kleinste passende Grundinstallation statt ungezielter Entfernung von Default-Paketen; Abhängigkeiten und Funktionsverlust berücksichtigen", "reviewStatus": "Offizielle Ubuntu-Sicherheitsdokumentation am 02.10.2026 geprüft"},
+      {"sourceId": "debian-apt-get-man", "sourceLocator": "apt-get(8): -s/--simulate, Ausgabe der geplanten Remv-/Inst-/Conf-Operationen", "use": "Paketentfernung vor produktivem Eingriff simulieren und deren Folgen lesen", "reviewStatus": "Offizielle Debian-Manpage am 02.10.2026 geprüft"}
+    ],
+    "notes": [
+      "Werkstatt Elbtor, Serverzustand, VPN-Netz, Portbelegung, Entscheidungssituation, Übungen und Diagramme sind eigenständig. Private Buchmedien werden nicht publiziert.",
+      "Alle Befehle sind Beispiele für eine systemd-/UFW-/APT-Umgebung. Vor Eingriffen am echten Host sind Inventar, Zuständigkeiten, Freigabe, Backup, Out-of-Band-Konsole und testsichere neue Sitzung erforderlich. Eine Host-Firewall ersetzt weder Cloud-/Netz-Firewall noch die Prüfung weiterer Zugangspfade. Menschliche Fach- und Didaktikfreigabe offen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "haertung-dienstzustand",
+      "type": "layers",
+      "title": "Druckdienst: vier Prüfebenen",
+      "description": "Die aktive CUPS-Service-Unit, ihre Boot-Aktivierung und ein möglicher Socket-Auslöser müssen getrennt geprüft werden. Der lauschende Port 631 ist ein beobachteter Netzbefund, keine Aussage über den Bootstatus.",
+      "items": [
+        {"label": "Laufzeit", "detail": "cups.service aktiv → stop beendet den aktuellen Lauf"},
+        {"label": "Boot", "detail": "disable entfernt die Boot-Aktivierung, stoppt aber nicht"},
+        {"label": "Auslöser", "detail": "cups.socket oder andere Unit kann erneut starten"},
+        {"label": "Netz", "detail": "ss prüft, ob 631/tcp danach noch lauscht"}
+      ]
+    },
+    {
+      "id": "haertung-firewall-pfade",
+      "type": "layers",
+      "title": "Host-Firewall: notwendige Eingänge",
+      "description": "Im fiktiven Sollzustand darf SSH auf Port 22 nur aus dem VPN 10.77.0.0/24 und HTTPS auf Port 443 nur aus dem Anwendungsnetz 10.78.0.0/24 erreicht werden. Voraussetzung sind eine geprüfte Default-Inbound-Verweigerung ohne alte breite Freigaben und ein gesicherter Managementpfad vor Aktivierung und externem Test.",
+      "items": [
+        {"label": "22/tcp", "detail": "Nur VPN 10.77.0.0/24 → SSH-Administration"},
+        {"label": "443/tcp", "detail": "Anwendungsnetz 10.78.0.0/24 → HTTPS"},
+        {"label": "sonstige", "detail": "Default inbound deny; breite Altregeln entfernen"}
+      ]
+    },
+    {
+      "id": "haertung-paketentscheidung",
+      "type": "flow",
+      "title": "Paketentscheidung statt Löschreflex",
+      "description": "Bei einem nachträglich für einen Test installierten Paket führt der sichere Weg über Bedarfsklärung und eine APT-Simulation mit Abhängigkeitsprüfung zur freigegebenen Änderung. Default-Pakete werden nicht pauschal entfernt.",
+      "items": [
+        {"label": "Bedarf klären", "detail": "Druckfunktion und Supportbedarf bestätigen"},
+        {"label": "Folgen simulieren", "detail": "apt-get -s remove cups: Remv-Plan lesen"},
+        {"label": "Entscheiden und testen", "detail": "Nur mit Freigabe, Rückweg und Funktionstest"}
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "1 · Diagnose: Was ist überhaupt überflüssig?",
+      "blocks": [
+        {"type": "quiz", "id": "haertung-diagnose", "diagnostic": true, "question": "Port 631 lauscht auf dem Elbtor-Server. Der Druckdienst scheint ungenutzt. Was ist der erste belastbare Schritt?", "options": [
+          {"text": "Alle Pakete mit Bezug zu Druck sofort entfernen; weniger Pakete sind immer sicherer.", "rationale": "Ohne Bedarfs- und Abhängigkeitsprüfung kann das andere Funktionen oder Supportpfade beschädigen.", "correct": false},
+          {"text": "Dienst, Socket, Port und tatsächlichen Druckbedarf erfassen; erst danach die Änderung freigeben.", "rationale": "Richtig. Ein lauschender Port ist ein Hinweis, aber noch kein vollständiger Beleg, dass der Dienst gefahrlos entfallen kann.", "correct": true},
+          {"text": "Nur die Firewall für 631 öffnen, damit der Dienst beobachtbar bleibt.", "rationale": "Das würde die Erreichbarkeit ausweiten, ohne den Bedarf zu klären. Beobachtung und Freigabe sind getrennte Aufgaben.", "correct": false}
+        ]},
+        {"type": "markdown", "markdown": "**Härtung** heißt hier: erforderliche Funktion behalten und unnötige Angriffsgelegenheiten kontrolliert reduzieren. Drei Inventare helfen: **Dienste/Listener**, **erlaubte Netzpfade** und **installierte Pakete**. Elbtor benötigt HTTPS und einen erreichbaren SSH-Managementpfad; Port 631 ist ein **Prüfkandidat**. `ss -ltnp` zeigt lauschende TCP-Sockets und, mit ausreichenden Rechten, zugehörige Prozesse. `systemctl status cups.service` zeigt die Service-Unit; `systemctl list-sockets` und die konkrete Unit-Konfiguration helfen, mögliche Auslöser zu finden. Die Ausgabe allein ersetzt keine fachliche Freigabe: Ein Dienst kann auch intern oder durch andere Units benötigt werden."},
+        {"type": "figure", "diagramId": "haertung-dienstzustand", "alt": "Vier getrennte Prüfebenen für den fiktiven Druckdienst: aktueller Laufzustand, Boot-Aktivierung, mögliche Socket-Auslöser und nach der Änderung lauschender Netzport 631.", "caption": "Eigene technische Zustandskarte: Ein deaktivierter Boot-Start sagt noch nichts über den laufenden Prozess oder Socket-Auslöser."}
+      ]
+    },
+    {
+      "title": "2 · Dienst jetzt und beim Start kontrollieren",
+      "blocks": [
+        {"type": "markdown", "markdown": "Für die fiktive Elbtor-Freigabe ist bestätigt: CUPS wird weder für Druckaufträge noch als Abhängigkeit der Anwendung gebraucht. `systemctl stop cups.service` stoppt den Dienst **jetzt**; das ändert die Boot-Aktivierung nicht. `systemctl disable cups.service` entfernt die Aktivierung über die Unit-Installation für künftige Starts, stoppt aber einen laufenden Dienst nicht. `disable --now` kombiniert Deaktivieren und Stoppen. Selbst dann ist **nicht garantiert**, dass der Dienst nie wieder startet: Eine aktive Socket-Unit, ein anderer Auslöser oder ein manueller Start kann ihn erneut aktivieren. Prüfe deshalb vor der Änderung Abhängigkeiten und vorhandene `cups.socket`, falls installiert. Nach der freigegebenen Änderung vergleiche `systemctl is-active cups.service`, `systemctl is-enabled cups.service`, den Socket-Zustand und `ss -ltnp`. Teste die verbleibende Anwendung; erst ein geplanter Neustart kann den Boot-Sollzustand zusätzlich belegen."},
+        {"type": "quiz", "id": "haertung-stop-disable", "question": "Ein Admin führt nur systemctl disable cups.service aus. cups.service bleibt aktiv und Port 631 lauscht weiter. Ist das widersprüchlich?", "options": [
+          {"text": "Ja. disable muss jeden laufenden Prozess sofort beenden und den Port schließen.", "rationale": "disable beeinflusst die Unit-Aktivierung für zukünftige Starts, nicht den aktuellen Laufzustand.", "correct": false},
+          {"text": "Nein. disable stoppt nicht; Laufzustand und mögliche Socket-Auslöser müssen gesondert behandelt und geprüft werden.", "rationale": "Richtig. Für den aktuellen Zustand ist stop beziehungsweise --now relevant; danach sind Service, Socket, Bootstatus und Listener getrennt zu verifizieren.", "correct": true},
+          {"text": "Nein, aber damit ist sicher, dass cups.service von keiner anderen Unit mehr gestartet werden kann.", "rationale": "Ein deaktivierter Dienst kann etwa durch aktive Socket-Units oder manuell erneut aktiviert werden.", "correct": false}
+        ]},
+        {"type": "callout", "kind": "warning", "label": "Kein Blindflug", "markdown": "SSH, Netzwerk, DNS, Zeitabgleich und Paketverwaltung nicht nach Namen als „überflüssig“ einstufen. Ein Service kann trotz fehlendem offenen Port für den Betrieb wichtig sein; ein geschlossener Port beweist nicht, dass die Funktion entbehrlich ist."}
+      ]
+    },
+    {
+      "title": "3 · Firewall: Managementzugang zuerst sichern",
+      "blocks": [
+        {"type": "markdown", "markdown": "Die **lokale** Firewall steuert Netzverkehr am Host; sie entfernt keinen installierten Dienst. Für diesen Ubuntu-Fall nutzt das Team UFW. Vor jeder einschränkenden Änderung klärt es, von welcher tatsächlichen Quelladresse SSH ankommt, und hält eine zweite bestehende Sitzung sowie eine getestete Out-of-Band-Konsole als Rückweg bereit. Das Soll: SSH auf 22/tcp nur aus dem VPN 10.77.0.0/24, HTTPS auf 443/tcp nur aus dem Anwendungsnetz 10.78.0.0/24 und sonst keine unerwünschten eingehenden Verbindungen. **Prüfe zuerst Ist-Regeln, Regelreihenfolge und die Default-Inbound-Policy**: Eine alte breite Freigabe für 22/tcp oder 443/tcp kann die neuen engen Regeln wirkungslos machen; bei erlaubender Default-Policy bleibt weiterer Verkehr erreichbar. Die geplante SSH-Freigabe lässt sich im fiktiven Fall mit `sudo ufw --dry-run allow proto tcp from 10.77.0.0/24 to any port 22` ansehen: Das zeigt entstehende Regeln, **wendet sie aber nicht an**. Lege die benötigten engen Freigaben tatsächlich an, bevor du breite Altregeln kontrolliert entfernst oder eine Verweigerungsregel aktivierst. Der gesicherte SSH-Rückweg muss dabei bestehen bleiben. Aktiviere den freigegebenen Filter und prüfe danach den vollständigen Soll-Regelsatz samt Default-Policy mit `ufw status verbose` sowie neue Verbindungen von innen und außen. Das Diagramm zeigt den Sollzustand, nicht eine universelle UFW-Standardeinstellung. Cloud-Firewall, IPv6, weitere Interfaces, Containerregeln und der konkrete SSH-Port müssen am Zielsystem zusätzlich geprüft werden."},
+        {"type": "figure", "diagramId": "haertung-firewall-pfade", "alt": "Lokale Firewall des fiktiven Elbtor-Servers: SSH-Port 22 nur aus dem VPN-Netz 10.77.0.0/24, HTTPS-Port 443 nur aus dem Anwendungsnetz 10.78.0.0/24. Für sonstigen eingehenden Verkehr gilt eine geprüfte Default-Verweigerung ohne alte breite Freigaben.", "caption": "Eigener technischer Soll-Filter. Enge SSH- und HTTPS-Regeln reichen nicht, solange eine alte breite Freigabe oder erlaubende Default-Policy besteht."},
+        {"type": "quiz", "id": "haertung-ssh-schutz", "question": "Der Server ist nur per SSH aus dem VPN erreichbar. Welche Abfolge verhindert am ehesten eine Selbstsperre beim Aktivieren von UFW?", "options": [
+          {"text": "Eingehend sofort alles verweigern, SSH-Sitzung schließen und später versuchen, 22/tcp freizugeben.", "rationale": "Ohne vorherigen Managementpfad und Rückweg droht der Verlust des Fernzugriffs.", "correct": false},
+          {"text": "Quellnetz und SSH-Port prüfen, Konsole/Rückweg sichern, benötigte SSH- und HTTPS-Regeln vorab setzen, dann aktivieren und eine neue SSH-Sitzung von außen testen.", "rationale": "Richtig. Eine bestehende Sitzung allein beweist nicht, dass ein neuer SSH-Verbindungsaufbau nach der Regeländerung gelingt.", "correct": true},
+          {"text": "Nur ufw status verbose vor der Änderung lesen; weitere Tests sind unnötig, weil UFW laufende SSH-Verbindungen erkennt.", "rationale": "Ein Statusbild vor der Änderung ersetzt weder den Rückweg noch den Test eines neuen Verbindungsaufbaus danach.", "correct": false}
+        ]},
+        {"type": "quiz", "id": "haertung-altregel", "question": "UFW enthält noch eine alte Regel, die 22/tcp aus beliebigen Netzen erlaubt. Zusätzlich wird SSH nun für das VPN freigegeben. Ist SSH damit auf das VPN begrenzt?", "options": [
+          {"text": "Ja. Die neue engere Regel überschreibt alle älteren breiten Freigaben automatisch.", "rationale": "Eine zusätzliche enge Freigabe entfernt eine bestehende breite Erlaubnis nicht. Ist-Regeln und Reihenfolge müssen geprüft werden.", "correct": false},
+          {"text": "Nein. Die breite Freigabe muss mit gesichertem Rückweg kontrolliert entfernt und der neue SSH-Zugang aus erlaubtem sowie unerlaubtem Netz getestet werden.", "rationale": "Richtig. Erst der gesamte Regelsatz mit Default-Inbound-Policy und positive wie negative Verbindungstests belegen den Sollzustand.", "correct": true},
+          {"text": "Ja, sofern cups.service gestoppt wurde; Dienstzustand und Firewall-Erlaubnis sind gekoppelt.", "rationale": "Der Druckdienst hat keinen Einfluss darauf, aus welchen Netzen SSH über Port 22 erlaubt ist.", "correct": false}
+        ]},
+        {"type": "markdown", "markdown": "Nach Aktivierung prüfst du aus dem **VPN** eine frische SSH-Verbindung und aus dem vorgesehenen Anwendungsnetz HTTPS. Von nicht freigegebenen Netzen müssen neue Versuche auf 22/tcp und 443/tcp scheitern; auch andere unerwünschte Eingänge prüfst du passend zur Policy. `ufw status verbose` mit Regelübersicht und Default-Inbound-Policy dokumentiert den lokalen Filterzustand; **positive und negative externe Verbindungstests** weisen die tatsächliche Erreichbarkeit nach. Eine bereits offene SSH-Sitzung offen zu halten ist nur eine Rückfallebene, kein Erfolgstest. Wenn ein Pfad scheitert, nutze den vorbereiteten Konsolen-/Rollback-Weg statt weiterer ungetesteter Regeln."}
+      ]
+    },
+    {
+      "title": "4 · Installation minimieren, ohne Funktion zu verlieren",
+      "blocks": [
+        {"type": "markdown", "markdown": "Eine **minimale Installation** ist die kleinste passende Grundinstallation mit allen benötigten Funktionen, Sicherheitsupdates und Supportpfaden — nicht die kleinste erreichbare Paketanzahl. Ubuntu warnt ausdrücklich vor blindem Entfernen von Paketen der Standardinstallation; dabei kann erwartete Funktion verloren gehen. Bei Elbtor wurde CUPS laut fiktivem Inventar später nur für einen Test installiert. Selbst dafür gilt: Erst Bedarf und Paketabhängigkeiten prüfen. `apt-get --simulate remove cups` zeigt geplante `Remv`-Operationen, ohne die Änderung auszuführen. Wird dabei ein Paket entfernt, das SSH, HTTPS, Monitoring oder die unterstützte Grundinstallation benötigt, brichst du ab. Eine Simulation ist kein Live-Funktionstest und ihr Ergebnis kann sich bei geändertem Paketstand unterscheiden. Erst nach Freigabe, Sicherung und Rückweg kann ein tatsächlicher Paket-Eingriff erwogen werden; anschließend Dienste, Updates und Anwendung erneut testen."},
+        {"type": "figure", "diagramId": "haertung-paketentscheidung", "alt": "Dreistufiger Entscheidungsweg für ein nachträglich installiertes Druckpaket: Bedarf prüfen, geplante Entfernung samt Abhängigkeiten mit apt-get -s simulieren, nur nach Freigabe mit Rückweg ändern und Funktion testen.", "caption": "Eigene technische Entscheidungskette: Paketminimierung ist bedarfsorientiert und nicht die pauschale Löschung von Default-Paketen."},
+        {"type": "quiz", "id": "haertung-paketfall", "question": "Die Simulation einer CUPS-Entfernung plant zusätzlich den Wegfall eines für den Betrieb benötigten Pakets. Was ist die richtige Entscheidung?", "options": [
+          {"text": "Trotzdem entfernen: Jede geringere Paketanzahl bedeutet automatisch mehr Sicherheit.", "rationale": "Das würde eine benötigte Funktion riskieren. Weniger Pakete allein ist kein Sicherheitsnachweis.", "correct": false},
+          {"text": "Abbrechen und Abhängigkeiten sowie den tatsächlichen Bedarf klären; erst mit angepasstem Plan, Freigabe und Rückweg weitergehen.", "rationale": "Richtig. Die Simulation ist ein Vorfilter für Folgeschäden, kein Freibrief für die Entfernung.", "correct": true},
+          {"text": "Das Paket ohne Simulation manuell aus dem Dateisystem löschen, damit APT die Abhängigkeit nicht sieht.", "rationale": "Das umgeht die Paketverwaltung und kann das System in einen inkonsistenten Zustand bringen.", "correct": false}
+        ]}
+      ]
+    },
+    {
+      "title": "5 · Änderung als überprüfbare Folge",
+      "blocks": [
+        {"type": "sequence", "id": "haertung-aenderungsfolge", "title": "Elbtor-Server ohne Fernzugriffsverlust härten", "prompt": "Ordne die Phasen so, dass der Fernzugang während der Änderung beherrschbar bleibt und jeder Eingriff einen Nachweis erhält.", "tag": "Änderungsfolge", "steps": [
+          {"id": "firewall", "label": "Enge SSH/HTTPS-Regeln setzen, breite Altregeln und Default-Policy korrigieren, Filter kontrolliert aktivieren"},
+          {"id": "deaktivieren", "label": "Freigegebenen Druckdienst und Auslöser kontrolliert stoppen/deaktivieren"},
+          {"id": "bestand", "label": "Istzustand: Dienste, Socket, Listener, Regeln und Pakete erfassen"},
+          {"id": "pruefen", "label": "Neuen SSH-/HTTPS-Zugang, Port 631, Bootstatus und Anwendung testen"},
+          {"id": "rueckweg", "label": "Sicherung, bestehende SSH-Sitzung und Out-of-Band-Konsole vorbereiten"},
+          {"id": "bedarf", "label": "Sollpfade und Dienst-/Paketbedarf mit dem Betreiber freigeben"}
+        ], "expected": ["bestand", "bedarf", "rueckweg", "deaktivieren", "firewall", "pruefen"], "correctFeedback": "Richtig. Erst Istzustand und Soll klären, dann Rückweg sichern. Enge Freigaben, bereinigte breite Altregeln und die passende Default-Policy ergeben den Sollfilter; neue Zugriffe, Listener- und Bootprüfungen belegen seine Wirkung.", "wrongFeedback": "Vor einem Stop oder einer Filteraktivierung müssen Istzustand, Bedarf und Rückweg geklärt sein. Enge SSH/HTTPS-Regeln allein heben breite Altregeln nicht auf; Default-Policy und neue Verbindungen müssen ebenfalls geprüft werden."},
+        {"type": "callout", "kind": "merksatz", "label": "Drei Nachweise", "markdown": "Dienst: Laufzeit **und** Boot/Trigger prüfen. Firewall: Regeln **und** neue Verbindung prüfen. Pakete: Abhängigkeiten **und** Funktion/Updates prüfen."}
+      ]
+    },
+    {
+      "title": "6 · Wissen abrufen",
+      "blocks": [
+        {"type": "flashcards", "cards": [
+          {"id": "haertung-karte-dienst", "label": "Dienstzustand", "front": "Was ändern systemctl stop und systemctl disable jeweils?", "back": "stop beendet die Unit jetzt. disable entfernt ihre Aktivierung für den Bootpfad, stoppt sie aber nicht. Socket- oder andere Auslöser separat prüfen."},
+          {"id": "haertung-karte-listener", "label": "Listener", "front": "Warum reicht is-enabled allein nicht als Härtungsnachweis?", "back": "Es beschreibt die Boot-Aktivierung, nicht den aktuellen Laufzustand, andere Auslöser oder einen weiterhin lauschenden Port."},
+          {"id": "haertung-karte-firewall", "label": "Remote-Zugang", "front": "Was muss vor UFW-Aktivierung für einen reinen SSH-Server geklärt sein?", "back": "Tatsächliche Quelladresse und SSH-Port, passende Freigabe, bestehende Sitzung und getesteter Konsolen-/Rollback-Weg; danach neue SSH-Verbindung testen."},
+          {"id": "haertung-karte-pakete", "label": "Paketbestand", "front": "Was bedeutet eine minimale Installation?", "back": "Nur benötigte Funktionen in einer passenden unterstützten Grundinstallation; Abhängigkeiten, Updates und Rückweg zählen mehr als die reine Paketanzahl."}
+        ]},
+        {"type": "recall", "id": "haertung-fallbegruendung", "title": "Elbtors Härtung begründen", "prompt": "Erkläre in eigenen Worten, warum cups.service, Port 631 und das Paket cups drei verschiedene Prüffragen sind. Beschreibe die sichere Reihenfolge für Dienst- und UFW-Änderung aus der Ferne und nenne je einen Nachweis für Laufzeit, Bootzustand, Netzpfad und Paketfolgen.", "label": "Deine Fallbegründung", "minLength": 210, "model": "Ich kläre zuerst, ob der Druckdienst fachlich gebraucht wird. cups.service kann jetzt laufen, obwohl seine Boot-Aktivierung bereits deaktiviert ist; cups.socket oder eine andere Unit könnte ihn erneut starten. Port 631 zeigt einen lauschenden Netzpfad, das Paket cups ist eine separate Installations- und Abhängigkeitsfrage. Nach Istaufnahme und Sollfreigabe sichere ich Konsole, Rückweg und bestehende SSH-Sitzung. Ich stoppe/deaktiviere den freigegebenen Dienst samt relevantem Auslöser und prüfe is-active, is-enabled sowie ss für Port 631. Vor UFW-Aktivierung setze ich die passende SSH-Freigabe aus dem VPN und HTTPS. Danach teste ich eine neue SSH-Verbindung und HTTPS von außen. Eine Paketentfernung simuliere ich erst; geplante Abhängigkeiten und die spätere Update-/Anwendungsfunktion müssen erhalten bleiben."}
+      ]
+    },
+    {
+      "title": "7 · Lernziel-Check",
+      "blocks": [
+        {"type": "quiz", "id": "haertung-dienste-gate", "question": "Nach systemctl disable cups.service ist cups.service noch aktiv und 631/tcp lauscht. Welche Prüfung und Folgemaßnahme ist korrekt?", "options": [
+          {"text": "Der Bootstatus genügt; ein aktiver Listener kann ignoriert werden.", "rationale": "Ein weiterhin lauschender Port und aktiver Dienst erfüllen den Laufzeit-Sollzustand nicht.", "correct": false},
+          {"text": "Den aktuellen Dienst nach Freigabe stoppen, mögliche Socket-Auslöser behandeln und Laufzeit, Bootstatus und Listener getrennt erneut prüfen.", "rationale": "Richtig. disable allein stoppt nicht und schützt nicht automatisch vor erneuter Aktivierung durch andere Units.", "correct": true},
+          {"text": "Nur das Paket sofort löschen; damit sind alle offenen Sockets ohne Abhängigkeitsprüfung behoben.", "rationale": "Eine Paketentfernung ist ein anderer Eingriff mit eigenen Abhängigkeits- und Rollback-Risiken.", "correct": false}
+        ], "requiredObjective": "dienste-wirksam-deaktivieren"},
+        {"type": "quiz", "id": "haertung-firewall-gate", "question": "Welche Firewall-Änderung wahrt im Elbtor-Fall den Remote-Rückweg?", "options": [
+          {"text": "Alle eingehenden Verbindungen zuerst sperren; aus der alten SSH-Sitzung folgt automatisch, dass spätere Anmeldungen funktionieren.", "rationale": "Eine alte Verbindung beweist keinen neuen Verbindungsaufbau. Ohne vorherige SSH-Regel droht Selbstsperre.", "correct": false},
+          {"text": "VPN-Quellnetz und SSH-Port prüfen, Konsole sichern, enge SSH-/HTTPS-Regeln vor Aktivierung setzen, alte breite Freigaben und Default-Inbound-Policy korrigieren und neue Verbindungen positiv und negativ testen.", "rationale": "Richtig. Nur der vollständige Regelsatz und neue erlaubte wie verweigerte Verbindungen belegen die beabsichtigten Pfade.", "correct": true},
+          {"text": "Nur eine enge VPN-Freigabe ergänzen; eine alte SSH-Freigabe aus allen Netzen wird dadurch automatisch verdrängt.", "rationale": "Eine zusätzliche enge Regel hebt eine bestehende breite Erlaubnis nicht automatisch auf. Auch Default-Inbound und Altregeln sind Teil des Sollabgleichs.", "correct": false}
+        ], "requiredObjective": "firewall-ohne-selbstsperre"},
+        {"type": "quiz", "id": "haertung-minimal-gate", "question": "Welche Entscheidung entspricht einer bedarfsorientiert minimalen Ubuntu-Installation?", "options": [
+          {"text": "Alle optional markierten oder standardmäßig installierten Pakete pauschal entfernen.", "rationale": "Ubuntu warnt vor Funktionsverlust durch pauschale Entfernung von Default-Paketen; Prioritätsmarkierungen allein reichen nicht.", "correct": false},
+          {"text": "Den bestätigten Bedarf und Update-/Supportpfad erhalten, eine geplante Paketentfernung samt Abhängigkeiten simulieren und nur mit Freigabe, Rückweg und Test umsetzen.", "rationale": "Richtig. Minimal heißt kleinste passende, unterstützte Funktion, nicht ein willkürliches Paketziel.", "correct": true},
+          {"text": "Pakete durch manuelles Löschen ihrer Dateien reduzieren, damit die Simulation keine Abhängigkeiten meldet.", "rationale": "Das umgeht die Paketverwaltung und macht die Auswirkungen gerade unkontrollierbar.", "correct": false}
+        ], "requiredObjective": "installation-bedarfsorientiert-minimieren"}
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {"type": "markdown", "markdown": "Fachliche Primärquellen, geprüft am 02.10.2026: [systemctl(1)](https://manpages.debian.org/unstable/systemd/systemctl.1.en.html), [ss(8)](https://man7.org/linux/man-pages/man8/ss.8.html), [Ubuntu Server: Firewall](https://ubuntu.com/server/docs/how-to/security/firewalls/), [Ubuntu Security: Unnecessary packages](https://documentation.ubuntu.com/security/common-mistakes/unnecessary-packages/) und [apt-get(8)](https://manpages.debian.org/unstable/apt/apt-get.8.en.html). Der private ITLF6-9-Ausschnitt gab nur den Themenanker; seine Beispielmaßnahmen und Medien wurden nicht übernommen. Die beschriebenen Befehle setzen systemd, UFW und APT voraus. Andere Distributionen, Container, Anbieter-Firewalls und lokale Sicherheitsvorgaben können andere Verfahren erfordern. Eine Änderung am produktiven Host erfordert Freigabe, gesicherten Rückweg und Tests am tatsächlichen Zugangspfad. Wiederhole morgen den Lernziel-Check ohne Blick in die Erklärungen."}
+      ]
+    }
+  ]
+}

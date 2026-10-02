@@ -1956,6 +1956,36 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "systemhartung-benotigte-dienste-deaktivieren-lokale-firewall-minimale",
+    "slug": "systemhartung-benotigte-dienste-deaktivieren-lokale-firewall-minimale",
+    "title": "Linux-Server gezielt härten",
+    "description": "Nicht benötigte Dienste kontrolliert abschalten, eine lokale Firewall ohne SSH-Selbstsperre planen und Pakete nur nach Abhängigkeitsprüfung minimieren.",
+    "domain": "GA1",
+    "groupId": "ga1-6",
+    "groupLabel": "Betriebssysteme und Administration",
+    "itemId": "ga1-6__11",
+    "week": "KW 40",
+    "estimatedMinutes": 45,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-02.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "dienste-wirksam-deaktivieren",
+      "firewall-ohne-selbstsperre",
+      "installation-bedarfsorientiert-minimieren"
+    ],
+    "sources": [
+      "itlf6-9-2022",
+      "systemd-systemctl-man",
+      "iproute2-ss-man",
+      "ubuntu-ufw-firewall",
+      "ubuntu-unnecessary-packages",
+      "debian-apt-get-man"
+    ],
+    "contentHash": "50901c1e20d9c5590c249ee0ee8495f24f764617a9e9fbca605e5a111a5d506a",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "slug": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "title": "Struktogramm und Programmablaufplan",
