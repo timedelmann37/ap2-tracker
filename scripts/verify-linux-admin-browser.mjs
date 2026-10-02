@@ -100,6 +100,15 @@ const cases = [
     recall: 'grub-fallbegruendung',
     gates: ['grub-rolle-gate', 'grub-rescue-gate', 'grub-ziel-gate'],
     sequences: [{ id: 'grub-reparaturfolge', expected: ['befund', 'modus', 'sicherung', 'pfade', 'reparatur', 'test'] }]
+  },
+  {
+    slug: 'verzeichnisdienste-authentifizierung-ldap-kerberos-radius-sso-mfa',
+    figures: 3,
+    diagnostic: 'identitaet-diagnose',
+    card: 'identitaet-karte-ldap',
+    recall: 'identitaet-fallbegruendung',
+    gates: ['identitaet-verzeichnis-gate', 'identitaet-radius-gate', 'identitaet-web-gate'],
+    sequences: [{ id: 'identitaet-stoerfolge', expected: ['befund', 'web-idp', 'app', 'test'] }]
   }
 ];
 const selectedCases = process.env.AP2_LINUX_SLUG
@@ -197,6 +206,15 @@ try {
       assert(['Firmware', 'GRUB', 'Kernel', 'Userspace'].every(label => bootLabels.includes(label)), `${testCase.slug}: boot stages are labelled`);
       assert(['GRUB-Menü', 'grub rescue>', 'Befund'].every(label => diagnosisLabels.includes(label)), `${testCase.slug}: rescue split is labelled`);
       assert(['ESP (UEFI)', '/boot', 'Root', 'BIOS'].every(label => partitionLabels.includes(label)), `${testCase.slug}: UEFI and BIOS targets are distinguished`);
+    } else if (testCase.slug === 'verzeichnisdienste-authentifizierung-ldap-kerberos-radius-sso-mfa') {
+      const figures = page.locator('.learning-diagram');
+      const directoryLabels = await figures.nth(0).textContent();
+      const networkLabels = await figures.nth(1).textContent();
+      const webLabels = await figures.nth(2).textContent();
+      assert(['LDAP Bind', 'LDAP Search', 'Kerberos TGT', 'Dienstticket'].every(label => directoryLabels.includes(label)), `${testCase.slug}: directory and ticket paths are distinguished`);
+      assert(['Endgerät', 'AP oder Switch', 'RADIUS-Server'].every(label => networkLabels.includes(label)), `${testCase.slug}: 802.1X and RADIUS actors are labelled`);
+      assert(networkLabels.includes('Challenge: EAP weiter') && networkLabels.includes('Accept/Reject: final'), `${testCase.slug}: challenge is not a final access decision`);
+      assert(['SAML', 'OAuth 2.0', 'OIDC', 'MFA'].every(label => webLabels.includes(label)), `${testCase.slug}: web federation and factors are distinguished`);
     } else {
       assert((await firstDiagram.textContent()).includes('Lesender Befund'), `${testCase.slug}: diagnosis flow is labelled`);
     }
@@ -305,6 +323,9 @@ try {
         assert((await sequence.locator('[data-sequence-feedback]').textContent()).includes('Recovery ist vorher verfügbar'), `${id}: recovery is established before firmware change`);
       } else if (id === 'grub-reparaturfolge') {
         assert((await sequence.locator('[data-sequence-feedback]').textContent()).includes('Sicherung'), `${id}: safety sequence includes backup before repair`);
+      } else if (id === 'identitaet-stoerfolge') {
+        const feedback = await sequence.locator('[data-sequence-feedback]').textContent();
+        assert(feedback.includes('Web-App') && feedback.includes('SSO-Nachweis'), `${id}: reached web app focuses diagnosis on SSO and local rights`);
       }
     }
 
@@ -313,6 +334,8 @@ try {
       ? 'Ich prüfe Secure Boot, TPM und BitLocker getrennt, sichere den Recovery-Schlüssel und kläre den Bedarf für USB und PXE. Erst nach Freigabe ändere ich die Firmware. Danach prüfe ich Normalstart und Recovery-Pfad einzeln. Ein TPM-Clear ist kein Aktivieren und kann Schlüssel unzugänglich machen.'
       : testCase.slug === 'grub-bootloader-bootvorgang-menue-kernel-auswahl-rescue'
         ? 'Der Rescue-Prompt zeigt, dass GRUB nur seinen Minimalmodus erreicht; ein Kerneldefekt ist damit nicht bewiesen. Ich dokumentiere die Meldung und lese set ohne Zuweisung und ls. Erst nach Sicherung kläre ich UEFI-Modus, Datenträger, Root, /boot, ESP und UUIDs. Dann plane ich eine zur Ursache passende Reparatur und teste den Neustart sowie den Wiki-Dienst.'
+        : testCase.slug === 'verzeichnisdienste-authentifizierung-ldap-kerberos-radius-sso-mfa'
+          ? 'Ich prüfe zuerst, ob die WLAN-Sperre vor der Web-Anmeldung auftritt: Endgerät, AP und RADIUS mit EAP. LDAP-Suche und Kerberos-Ticket erklären andere Teile des Zugangs. Für die Web-App prüfe ich den Identity Provider und ob SAML oder OIDC als Login dient; ein OAuth Access Token allein ist kein ID Token. Danach teste ich die Anwendung und den MFA-Nachweis getrennt.'
         : 'Ich prüfe erst die Voraussetzungen und den aktuellen Zustand. Dann lese ich die passende Meldung, ordne den Auslöser und die Aktion zu, teste die geplante Änderung und kontrolliere danach das wirkliche Ergebnis statt nur einen angelegten Plan zu sehen.';
     await recall.locator('[data-recall-input]').fill(recallAnswer);
     await recall.locator('[data-recall-reveal]').click();
@@ -353,7 +376,16 @@ try {
           }
           assert(!await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), `${testCase.slug}: ${width}px ${theme} document overflow`);
           assert(await figure.evaluate(node => node.scrollWidth <= node.clientWidth + 2), `${testCase.slug}: ${width}px ${theme} diagram overflow`);
-          if (captureDir && (index < 2 || ['uefi-bios-haertung-secure-boot-tpm-bootreihenfolge-schnittstellen', 'grub-bootloader-bootvorgang-menue-kernel-auswahl-rescue'].includes(testCase.slug))) {
+          if (width === 390 && testCase.slug === 'verzeichnisdienste-authentifizierung-ldap-kerberos-radius-sso-mfa') {
+            const scroller = figure.locator('.learning-diagram-scroll');
+            assert(await scroller.count() === 1, `${testCase.slug}: mobile diagram has a dedicated scroll region`);
+            const scrollRange = await scroller.evaluate(node => node.scrollWidth - node.clientWidth);
+            assert(scrollRange > 0, `${testCase.slug}: mobile diagram can reveal hidden columns`);
+            await scroller.evaluate(node => { node.scrollLeft = node.scrollWidth; });
+            assert(await scroller.evaluate(node => node.scrollLeft > 0), `${testCase.slug}: mobile diagram reaches later columns`);
+            await scroller.evaluate(node => { node.scrollLeft = 0; });
+          }
+          if (captureDir && (index < 2 || ['uefi-bios-haertung-secure-boot-tpm-bootreihenfolge-schnittstellen', 'grub-bootloader-bootvorgang-menue-kernel-auswahl-rescue', 'verzeichnisdienste-authentifizierung-ldap-kerberos-radius-sso-mfa'].includes(testCase.slug))) {
             await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
             await page.screenshot({ path: path.join(captureDir, `${testCase.slug}-${width}-${theme}-figure-${index}.png`), animations: 'disabled' });
           }

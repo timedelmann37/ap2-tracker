@@ -2048,6 +2048,43 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "verzeichnisdienste-authentifizierung-ldap-kerberos-radius-sso-mfa",
+    "slug": "verzeichnisdienste-authentifizierung-ldap-kerberos-radius-sso-mfa",
+    "title": "Identität ist nicht gleich Zugriff",
+    "description": "LDAP, Kerberos, RADIUS/AAA und Web-SSO nach ihrer Aufgabe unterscheiden und MFA sowie Tokenprüfung für konkrete Zugänge begründen.",
+    "domain": "GA1",
+    "groupId": "ga1-6",
+    "groupLabel": "Betriebssysteme und Administration",
+    "itemId": "ga1-6__14",
+    "week": "KW 40",
+    "estimatedMinutes": 45,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-02.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "verzeichnis-und-tickets-trennen",
+      "radius-aaa-im-netz-zuordnen",
+      "federation-token-mfa-bewerten"
+    ],
+    "sources": [
+      "itlf10-12-2023",
+      "europa-integratoren-2026",
+      "identity-rfc4511",
+      "identity-rfc4513",
+      "identity-rfc4120",
+      "identity-rfc2865",
+      "identity-rfc2866",
+      "identity-rfc3579",
+      "identity-saml-core",
+      "identity-oauth6749",
+      "identity-oidc-core",
+      "identity-nist-sso",
+      "identity-nist-mfa"
+    ],
+    "contentHash": "e32a8c74275b7d8bf32047d068867a775bdfa0ca9b8ab0d9e759eebd50c1b5f3",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "slug": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "title": "Struktogramm und Programmablaufplan",

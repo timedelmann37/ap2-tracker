@@ -1,0 +1,204 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "verzeichnisdienste-authentifizierung-ldap-kerberos-radius-sso-mfa",
+    "slug": "verzeichnisdienste-authentifizierung-ldap-kerberos-radius-sso-mfa",
+    "title": "Identität ist nicht gleich Zugriff",
+    "description": "LDAP, Kerberos, RADIUS/AAA und Web-SSO nach ihrer Aufgabe unterscheiden und MFA sowie Tokenprüfung für konkrete Zugänge begründen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-6",
+    "groupLabel": "Betriebssysteme und Administration",
+    "itemId": "ga1-6__14",
+    "week": "KW 40",
+    "estimatedMinutes": 45,
+    "relevance": "hoch",
+    "sources": [
+      "itlf10-12-2023",
+      "europa-integratoren-2026",
+      "identity-rfc4511",
+      "identity-rfc4513",
+      "identity-rfc4120",
+      "identity-rfc2865",
+      "identity-rfc2866",
+      "identity-rfc3579",
+      "identity-saml-core",
+      "identity-oauth6749",
+      "identity-oidc-core",
+      "identity-nist-sso",
+      "identity-nist-mfa"
+    ],
+    "contentRevision": "2026-10-02.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {"id": "verzeichnis-und-tickets-trennen", "label": "LDAP-Bind und -Suche von Kerberos-TGT und Dienstticket unterscheiden"},
+    {"id": "radius-aaa-im-netz-zuordnen", "label": "802.1X, EAP, RADIUS und die drei AAA-Aufgaben im Netzzugang richtig zuordnen"},
+    {"id": "federation-token-mfa-bewerten", "label": "SAML, OAuth 2.0, OIDC, SSO und MFA im Webzugang nach Zweck und Sicherheitsgrenze unterscheiden"}
+  ],
+  "intro": "Die fiktive Elbwerk GmbH hat ein zentrales Benutzerverzeichnis. Lea meldet sich am Domänen-PC an, nutzt das Büro-WLAN und öffnet eine externe Projektakte. Nach einer Umstellung kommt sie ins WLAN, erhält in der Projektakte aber „keine Berechtigung“. Im Team heißt es: „LDAP hat sie doch angemeldet, also müssen RADIUS und die Web-App sie freigeben.“ Du ordnest jedem Zugang den richtigen Nachweis und die eigene Berechtigungsentscheidung zu, bevor jemand Konten oder Richtlinien auf Verdacht ändert.",
+  "curation": {
+    "evidence": [
+      {"sourceId": "itlf10-12-2023", "sourceLocator": "Lokaler OCR-Index, PDF-Seiten 21–22, 85–88 und 217", "use": "Nur Themenanker für LDAP, Web-SSO und 802.1X/RADIUS; Buchaussagen zu Linux/AD, Authorization Code, globalem Logout und Portzustand nicht übernommen", "reviewStatus": "OCR-Ausschnitte im Team geprüft; keine Buchprosa oder Abbildung übernommen"},
+      {"sourceId": "europa-integratoren-2026", "sourceLocator": "Lokaler Roh-Markdown-Index, Zeilen 3909–3967 und Antworten 8947–8972", "use": "Nur Themenanker für Verzeichnis- und Authentifizierungsbegriffe", "reviewStatus": "Rohtext im Team geprüft; keine Formulierung, Aufgabe oder Grafik übernommen"},
+      {"sourceId": "identity-rfc4511", "sourceLocator": "RFC 4511, § 4.2 Bind und § 4.5.1 Search", "use": "LDAP-Sitzungs-Bind und Verzeichnissuche als verschiedene Operationen", "reviewStatus": "RFC am 02.10.2026 geprüft"},
+      {"sourceId": "identity-rfc4513", "sourceLocator": "RFC 4513, §§ 2, 3 und 5", "use": "LDAP-Authentisierung und erforderlicher Schutz für passwortbasierten Simple Bind", "reviewStatus": "RFC am 02.10.2026 geprüft; keine pauschale Sicherheit eines ungeschützten Bind behauptet"},
+      {"sourceId": "identity-rfc4120", "sourceLocator": "RFC 4120, §§ 1.1 und 3.1–3.3", "use": "Kerberos-KDC, initiales TGT und dienstbezogenes Ticket", "reviewStatus": "RFC am 02.10.2026 geprüft"},
+      {"sourceId": "identity-rfc2865", "sourceLocator": "RFC 2865, §§ 1 und 4", "use": "RADIUS Access-Request und Accept, Reject oder Challenge für Authentisierung und Autorisierung", "reviewStatus": "RFC am 02.10.2026 geprüft"},
+      {"sourceId": "identity-rfc2866", "sourceLocator": "RFC 2866, §§ 1 und 4", "use": "Accounting-Request/-Response als gesonderter Protokollpfad für Nutzungsereignisse", "reviewStatus": "RFC am 02.10.2026 geprüft"},
+      {"sourceId": "identity-rfc3579", "sourceLocator": "RFC 3579, §§ 1 und 2", "use": "EAP-Nachrichten in RADIUS zwischen Netzzugangsgerät und Authentifizierungsserver", "reviewStatus": "RFC am 02.10.2026 geprüft; 802.1X nicht mit RADIUS gleichgesetzt"},
+      {"sourceId": "identity-saml-core", "sourceLocator": "OASIS SAML 2.0 Core, § 2 Assertions", "use": "SAML-Assertion mit möglichen Authentisierungs- und Attributsaussagen; keine Passwortdatenbank", "reviewStatus": "OASIS-Spezifikation am 02.10.2026 geprüft"},
+      {"sourceId": "identity-oauth6749", "sourceLocator": "RFC 6749, §§ 1 und 1.1 sowie § 4.1 Authorization Code Grant", "use": "Delegierte Autorisierung, Access Token für Ressourcen und Code-vor-Token beim Code-Flow", "reviewStatus": "RFC am 02.10.2026 geprüft; OAuth nicht pauschal als Anmeldeprotokoll bezeichnet"},
+      {"sourceId": "identity-oidc-core", "sourceLocator": "OpenID Connect Core 1.0, §§ 1–3 und 3.1.3.7", "use": "OIDC als Authentisierungsschicht auf OAuth 2.0, ID Token für Client und Validierung", "reviewStatus": "OpenID Foundation am 02.10.2026 geprüft"},
+      {"sourceId": "identity-nist-sso", "sourceLocator": "NIST CSRC Glossary, Single Sign-On", "use": "SSO als Nutzungsmuster nach einer Anmeldung, nicht als einzelnes Protokoll", "reviewStatus": "NIST-Glossar am 02.10.2026 für die Begriffsdefinition geprüft; Logout-Reichweite ist eine separate technische Einordnung"},
+      {"sourceId": "identity-nist-mfa", "sourceLocator": "NIST SP 800-63B-4, § 3.2.5 Phishing Resistance", "use": "MFA von Phishingresistenz trennen; manuelle OTP-Eingabe und passend konfiguriertes WebAuthn/FIDO2 vergleichen", "reviewStatus": "NIST-Veröffentlichung am 02.10.2026 geprüft"}
+    ],
+    "notes": [
+      "Elbwerk, Lea, Störungsfall, Tests, Antwortmöglichkeiten und Diagramme sind eigenständig. Die privaten Bücher liefern nur geprüfte Themenanker. Menschliche fachliche und didaktische Freigabe offen.",
+      "Eine erfolgreiche Anmeldung an einem Pfad beweist weder Berechtigung an einem anderen Dienst noch die Stärke oder Reichweite einer MFA-Regel. Verzeichnis, KDC, RADIUS, IdP und Anwendung können in einer konkreten Plattform integriert sein; ihre hier getrennten Rollen bleiben für die Fehlersuche relevant."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "ldap-kerberos-rollen",
+      "type": "comparison",
+      "title": "Verzeichnisoperation oder Ticket?",
+      "description": "LDAP Bind setzt den Authentifizierungszustand einer LDAP-Sitzung und Search fragt Einträge ab. Kerberos nutzt ein TGT beim KDC, um ein Ticket für einen bestimmten Dienst anzufordern; an den Dienst gehen Ticket und frischer Authenticator.",
+      "items": [
+        {"label": "LDAP Bind", "detail": "Sitzungszustand setzen"},
+        {"label": "LDAP Search", "detail": "Einträge per Filter lesen"},
+        {"label": "Kerberos TGT", "detail": "Beim KDC Dienstticket holen"},
+        {"label": "Dienstticket", "detail": "Mit Authenticator zum Dienst"}
+      ]
+    },
+    {
+      "id": "radius-zugangspfad",
+      "type": "flow",
+      "title": "802.1X und RADIUS: wer entscheidet?",
+      "description": "Das Endgerät spricht EAP über 802.1X mit dem Access-Gerät. Dieses transportiert EAP in RADIUS zum Server. Access-Challenge geht als weitere EAP-Runde über das Access-Gerät zum Endgerät zurück; erst auf Access-Accept oder -Reject setzt das Access-Gerät die Netzregel um. Accounting ist ein gesonderter Nachrichtenpfad.",
+      "items": [
+        {"label": "Endgerät", "detail": "Supplicant: EAP über 802.1X"},
+        {"label": "AP oder Switch", "detail": "Authenticator: EAP in RADIUS"},
+        {"label": "RADIUS-Server", "detail": "Challenge: EAP weiter; Accept/Reject: final"},
+        {"label": "AP oder Switch", "detail": "Challenge weiter; final: Netzregel"}
+      ]
+    },
+    {
+      "id": "web-zugang-grenzen",
+      "type": "layers",
+      "title": "Vier Begriffe, vier Aufgaben",
+      "description": "SAML und OIDC können Web-SSO tragen; OAuth 2.0 autorisiert begrenzten API-Zugriff. MFA stärkt einen Anmeldeschritt, ist aber kein Ersatz für die Prüfung von Assertion, Token und Berechtigung.",
+      "items": [
+        {"label": "SAML", "detail": "IdP-Assertion für Web-SSO; Dienst prüft sie"},
+        {"label": "OAuth 2.0", "detail": "Access Token für begrenzten API-Zugriff"},
+        {"label": "OIDC", "detail": "ID Token für Anmeldung auf OAuth-2.0-Basis"},
+        {"label": "MFA", "detail": "Zusätzlicher Faktor am tatsächlich genutzten Login"}
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Diagnose: Ein Verzeichnis ist keine Pauschalfreigabe",
+      "blocks": [
+        {"type": "quiz", "id": "identitaet-diagnose", "diagnostic": true, "question": "Lea ist im Büro-WLAN, die externe Projektakte meldet aber „keine Berechtigung“. Welche erste Aussage ist belastbar?", "options": [
+          {"text": "RADIUS hat Lea akzeptiert; damit ist ihre Web-App-Berechtigung automatisch bewiesen.", "rationale": "Der Netzzugang und die Berechtigung in der Projektakte sind getrennte Entscheidungen.", "correct": false},
+          {"text": "Der WLAN-Zugang funktioniert in diesem Test. Für die Projektakte sind IdP-Anmeldung, übermittelte Identität und die lokale Rollenprüfung gesondert zu prüfen.", "rationale": "Richtig. Ein erreichbares Netz beweist weder eine gültige SSO-Aussage noch die Anwendungsberechtigung.", "correct": true},
+          {"text": "LDAP enthält Lea; deshalb ist jeder weitere Authentisierungs- und Autorisierungsschritt überflüssig.", "rationale": "Ein Verzeichniseintrag ist kein universeller Zugriffsnachweis. Jedes System prüft seinen eigenen Anmelde- und Rechtepfad.", "correct": false}
+        ]},
+        {"type": "markdown", "markdown": "**Identität** beschreibt, wer oder was bekannt ist. **Authentisierung** prüft einen Nachweis. **Autorisierung** entscheidet anschließend, was diese Identität an einer konkreten Ressource darf. **Accounting** erfasst gegebenenfalls Nutzungsereignisse. Elbwerks zentrales Verzeichnis kann mehrere Dienste mit Kontodaten versorgen; es ersetzt aber weder das jeweilige Anmeldeverfahren noch die lokale Rechteprüfung. Die folgenden drei Pfade — Domäne, WLAN und Web-App — müssen deshalb separat belegt werden."}
+      ]
+    },
+    {
+      "title": "LDAP lesen, Kerberos-Tickets verstehen",
+      "blocks": [
+        {"type": "markdown", "markdown": "**LDAP** ist ein Protokoll für den Zugriff auf Verzeichniseinträge. Eine **Search** fragt Einträge anhand von Suchbasis, Suchbereich und Filter ab. **Bind** setzt den Authentifizierungszustand einer LDAP-Sitzung; ein geeigneter Bind kann also einen Nachweis prüfen. Eine erfolgreiche Suche allein beweist aber nicht, dass Leas Anmeldung an einem anderen Dienst gelungen ist. Ein passwortbasierter Simple Bind benötigt passenden Transportschutz und eine geprüfte Serveridentität; ein leeres Passwort darf nicht als erfolgreiche Benutzeranmeldung fehlinterpretiert werden. Das Verzeichnisprodukt, seine Daten und das LDAP-Protokoll sind nicht dasselbe."},
+        {"type": "markdown", "markdown": "Bei **Kerberos** vertraut der Client einem **Key Distribution Center (KDC)**. Nach dem initialen Nachweis erhält er ein **Ticket-Granting Ticket (TGT)**. Mit diesem fordert er beim KDC ein Ticket für den gewünschten Dienst an und präsentiert **das Dienstticket**, nicht das TGT, zusammen mit einem frischen Authenticator diesem Dienst. So muss das Benutzerpasswort nicht jedem Dienst erneut vorgelegt werden. In einer AD-Domäne können Verzeichnis und KDC auf Domain Controllern zusammenkommen; LDAP-Search und Kerberos-Ticketausgabe bleiben unterschiedliche Vorgänge. Ein Verzeichnistreffer oder ein vorhandenes TGT beweist noch nicht, dass das Ticket für genau diesen Dienst gültig ist oder Lea dessen Daten lesen darf."},
+        {"type": "figure", "diagramId": "ldap-kerberos-rollen", "alt": "Technischer Viererschritt: LDAP Bind setzt den Zustand einer LDAP-Sitzung, LDAP Search liest Einträge per Filter; mit einem Kerberos-TGT wird beim KDC ein Dienstticket angefordert, das zusammen mit einem frischen Authenticator zum Dienst geht.", "caption": "Eigener Rollenvergleich. Ein Verzeichniseintrag ersetzt kein dienstbezogenes Ticket und keine Berechtigungsprüfung."},
+        {"type": "quiz", "id": "identitaet-ldap-kerberos", "question": "Die LDAP-Suche findet Leas Konto, aber ein Kerberos-geschützter Dienst lehnt den Zugriff ab. Was folgt fachlich?", "options": [
+          {"text": "Die erfolgreiche LDAP-Suche beweist, dass Kerberos-Ticket und Dienstberechtigung gültig sind.", "rationale": "Eine Suche sagt nichts über das passende Kerberos-Dienstticket oder die Rechte am Dienst aus.", "correct": false},
+          {"text": "Suchergebnis, Kerberos-Ticket für den konkreten Dienst und dessen Rechteprüfung sind getrennt zu untersuchen.", "rationale": "Richtig. Ein bekannter Benutzer ist nicht automatisch für jeden Dienst authentisiert und autorisiert.", "correct": true},
+          {"text": "Das TGT muss als universelles Passwort direkt an alle Dienste gesendet werden.", "rationale": "Das TGT dient zur Anforderung eines Diensttickets beim KDC; an den Zieldienst geht das passende Dienstticket.", "correct": false}
+        ]}
+      ]
+    },
+    {
+      "title": "AAA und Netzzugang mit RADIUS",
+      "blocks": [
+        {"type": "markdown", "markdown": "Für Elbwerks Büro-WLAN ist **802.1X** die Zugangskontrolle: Leas Endgerät ist der **Supplicant**, der Access Point der **Authenticator**. EAP-Nachrichten laufen zwischen diesen Rollen über die 802.1X-Verbindung; der AP transportiert sie typischerweise in **RADIUS** zum Authentifizierungsserver. Eine Access-Challenge setzt den EAP-Austausch fort und ist noch keine Freigabe. Erst auf Access-Accept oder Access-Reject setzt der AP die Netzentscheidung und gegebenenfalls Richtlinienattribute wie eine VLAN-Zuordnung um. Auch bei abgelehnter Anmeldung bleibt der Authentifizierungsverkehr möglich; der physische Port ist nicht pauschal administrativ abgeschaltet."},
+        {"type": "figure", "diagramId": "radius-zugangspfad", "alt": "Technischer 802.1X-Ablauf: Endgerät als Supplicant, AP oder Switch als Authenticator und RADIUS-Server. Eine Access-Challenge wird als weitere EAP-Runde zum Endgerät weitergegeben; erst Access-Accept oder -Reject führt zur Netzentscheidung. Accounting ist ein separater RADIUS-Pfad.", "caption": "Eigener Protokoll- und Rollenfluss. Challenge setzt EAP fort; der AP oder Switch erzwingt die finale Netzregel, nicht die Web-App-Berechtigung."},
+        {"type": "markdown", "markdown": "**AAA** trennt drei Fragen: Authentication — stimmt der Nachweis? Authorization — welche Netzrolle oder welcher Zugriff ist erlaubt? Accounting — welche Nutzungsereignisse werden erfasst? RADIUS unterstützt die ersten beiden über Access-Nachrichten und Accounting über gesonderte Requests/Responses, sofern diese Funktion eingerichtet ist. Ein Access-Accept allein sagt nicht, welche Anwendungsrechte Lea später besitzt. Ebenso verschlüsselt 802.1X/RADIUS nicht automatisch alle Nutzdaten; die gewählte EAP-Methode, Funkabsicherung und der Schutz der RADIUS-Verbindung müssen im konkreten System separat betrachtet werden."},
+        {"type": "quiz", "id": "identitaet-radius-rolle", "question": "Der RADIUS-Server sendet Access-Accept mit einer vorgesehenen Mitarbeiterrolle, doch Lea landet im Gastnetz. Wo setzt die Fehlersuche an?", "options": [
+          {"text": "Beim AP beziehungsweise Switch: empfangene Attribute, lokale Zuordnung und tatsächlich angewandte Netzregel prüfen.", "rationale": "Richtig. Das Zugangsgerät setzt die RADIUS-Entscheidung und Rollenabbildung im Netz um.", "correct": true},
+          {"text": "Beim OAuth Access Token der Projektakte; dieses legt direkt die WLAN-VLAN-ID fest.", "rationale": "Der Web-API-Token ist kein Ersatz für die 802.1X-/RADIUS-Netzregel.", "correct": false},
+          {"text": "Bei LDAP Search allein; ein gefundener Benutzer legt automatisch das VLAN fest.", "rationale": "Ein Verzeichnistreffer ist keine nachgewiesene VLAN-Policy am Access-Gerät.", "correct": false}
+        ]}
+      ]
+    },
+    {
+      "title": "Web-SSO: Assertion, Access Token oder ID Token?",
+      "blocks": [
+        {"type": "markdown", "markdown": "**Single Sign-On (SSO)** bedeutet, dass eine Anmeldung Zugang zu mehreren angebundenen Systemen ermöglichen kann. SSO ist ein Nutzungsmuster, kein einzelnes Protokoll und keine Garantie für ein globales Logout. Für eine Web-App kann ein **Identity Provider (IdP)** per **SAML** eine Assertion über die Anmeldung bereitstellen; der **Service Provider (SP)** prüft diese und entscheidet weiterhin über Leas lokale Rechte. Eine SAML-Assertion kann auch Attribute oder Autorisierungsentscheidungen enthalten. Sie ist weder eine Passwortdatenbank noch ein Freibrief für alle Ressourcen."},
+        {"type": "markdown", "markdown": "**OAuth 2.0** beschreibt delegierte Autorisierung: Ein Client erhält mit passendem Grant einen **Access Token**, um eine Ressource beziehungsweise API im vereinbarten Umfang aufzurufen. Ein Access Token ist nicht automatisch ein interoperabler Beleg dafür, wer sich in der Web-App angemeldet hat; sein Format ist ebenfalls nicht immer JWT. Im **Authorization-Code-Flow** erhält der Client nach der Umleitung zunächst einen **Code** und tauscht ihn anschließend am Token-Endpunkt gegen Token. **OpenID Connect (OIDC)** ergänzt OAuth 2.0 um Authentisierung; das **ID Token** ist für den Client zur Prüfung der Anmeldung bestimmt. Die Projektakte prüft unter anderem Aussteller, Empfänger, Gültigkeit und Signatur des für sie vorgesehenen Identitätsnachweises. Die API prüft getrennt den für sie bestimmten Access Token und dessen erlaubten Umfang. ID Token und Access Token dürfen nicht vertauscht werden."},
+        {"type": "figure", "diagramId": "web-zugang-grenzen", "alt": "Vier technische Ebenen: SAML-Assertion für Web-SSO vom Identity Provider; OAuth-Access-Token für begrenzten Ressourcenzugriff; OIDC-ID-Token als Anmeldenachweis für den Client; MFA als zusätzlicher Faktor im tatsächlichen Anmeldepfad.", "caption": "Eigene Zweckkarte. SSO, Protokoll, Token und zusätzlicher Faktor beantworten verschiedene Fragen."},
+        {"type": "quiz", "id": "identitaet-token-zweck", "question": "Die Projektakte erhält einen OAuth Access Token für ihre Inventar-API. Darf sie ihn allein als Leas interoperablen Login-Nachweis behandeln?", "options": [
+          {"text": "Ja. Jeder OAuth Access Token ist automatisch ein OIDC ID Token mit derselben Zielgruppe.", "rationale": "Access Token und ID Token haben unterschiedliche Empfänger und Zwecke; OAuth allein definiert keinen interoperablen Login-Nachweis.", "correct": false},
+          {"text": "Nein. Für den Web-Login braucht sie einen passenden, validierten OIDC-ID-Token oder eine validierte SAML-Assertion; den Access Token prüft die API für ihren Zugriff.", "rationale": "Richtig. Identität und API-Autorisierung werden mit den jeweils vorgesehenen Nachweisen und Zielgruppen geprüft.", "correct": true},
+          {"text": "Nein, weil OAuth grundsätzlich keine Token nutzt und nur LDAP-Bind eine Web-Anmeldung ermöglicht.", "rationale": "OAuth verwendet Access Tokens; Web-SSO kann etwa über SAML oder OIDC erfolgen.", "correct": false}
+        ]}
+      ]
+    },
+    {
+      "title": "MFA wirkt nur am tatsächlichen Anmeldepfad",
+      "blocks": [
+        {"type": "markdown", "markdown": "**Mehrfaktor-Authentisierung (MFA)** kombiniert Nachweise aus unterschiedlichen Faktorarten, etwa Wissen und Besitz. Zwei Passwörter sind zweimal Wissen und damit keine zwei Faktoren. Elbwerk kann am Web-IdP MFA verlangen; daraus folgt nicht automatisch dieselbe Pflicht bei Domänen-Anmeldung, WLAN oder einem lokalen Notfallkonto. Die Richtlinie muss für jeden tatsächlich genutzten Einstieg, Ausnahme- und Wiederherstellungspfad geprüft werden. Auch eine erfolgreiche MFA-Anmeldung ersetzt weder die Rollenentscheidung der Projektakte noch ihre Tokenprüfung."},
+        {"type": "markdown", "markdown": "**MFA ist nicht gleich phishingresistent.** Manuell eingegebene Einmalcodes können an eine täuschend echte Anmeldeseite weitergegeben werden und erfüllen nach NIST keine Phishingresistenz. Passend eingesetztes WebAuthn/FIDO2 kann den Nachweis kryptografisch an den echten Dienstnamen binden. Elbwerk wählt für besonders schützenswerte Zugänge den zum Schutzbedarf passenden Mechanismus und testet, ob SSO-Sitzung, Wiederanmeldung und Notfallwege die beabsichtigte MFA-Regel tatsächlich durchsetzen. Eine vorhandene IdP-Sitzung bedeutet nicht, dass die Anwendung nie wieder eine Prüfung verlangen darf."},
+        {"type": "sequence", "id": "identitaet-stoerfolge", "title": "WLAN funktioniert, Projektakte verweigert Zugriff", "prompt": "Ordne eine zielgerichtete, lesende Fehlersuche für Lea. Die Projektakte selbst meldet „keine Berechtigung“; der funktionierende WLAN-Zugang ist bereits ein abgegrenzter Befund. Niemand ändert Konten, Token oder Rollen auf Verdacht.", "tag": "Pfad für Pfad", "steps": [
+          {"id": "web-idp", "label": "IdP-Anmeldung und für die Projektakte ausgestellte Assertion oder ID Token prüfen"},
+          {"id": "befund", "label": "Zeitpunkt, Fehlermeldung und betroffenen Zugangspfad dokumentieren"},
+          {"id": "test", "label": "Nur die belegte Ursache korrigieren und WLAN-, Web- und Rollenpfad erneut testen"},
+          {"id": "app", "label": "Gültigkeit des Nachweises sowie Rollenabbildung und lokale Freigabe der Projektakte prüfen"}
+        ], "expected": ["befund", "web-idp", "app", "test"], "correctFeedback": "Richtig. Der funktionierende Netzpfad ist bereits belegt. Die Meldung der erreichten Web-App lenkt die Fehlersuche auf SSO-Nachweis und lokale Rolle. Korrigiere erst nach einem konkreten Befund und teste die betroffenen Pfade erneut.", "wrongFeedback": "Beginne mit der beobachteten Fehlermeldung. Prüfe dann IdP-Nachweis und lokale Anwendungsrolle. RADIUS wird erst wieder relevant, wenn ein Befund auf Netzrolle oder Erreichbarkeit weist; ein pauschaler Kontoreset ist keine Diagnose."},
+        {"type": "callout", "kind": "warning", "label": "Keine universelle MFA-Abkürzung", "markdown": "Eine MFA-Einstellung am Web-IdP schützt nicht automatisch den Domänen-PC, 802.1X oder einen lokalen Rettungszugang. Liste jeden realen Einstieg und seine Ausnahmen auf; prüfe die wirksame Policy und den Rückweg mit Testkonten, bevor ein produktiver Pfad gesperrt wird."}
+      ]
+    },
+    {
+      "title": "Aus dem Kopf abrufen und anwenden",
+      "blocks": [
+        {"type": "flashcards", "cards": [
+          {"id": "identitaet-karte-ldap", "label": "LDAP", "front": "Was trennt LDAP Bind von LDAP Search?", "back": "Bind setzt den Authentifizierungszustand einer LDAP-Sitzung; Search fragt Verzeichniseinträge ab. Ein Suchtreffer ist kein universeller Login-Nachweis."},
+          {"id": "identitaet-karte-kerberos", "label": "Kerberos", "front": "Wozu dienen TGT und Dienstticket?", "back": "Das TGT dient beim KDC zur Anforderung eines dienstbezogenen Tickets; dieses Ticket wird dem jeweiligen Dienst vorgelegt."},
+          {"id": "identitaet-karte-aaa", "label": "AAA", "front": "Welche der drei AAA-Aufgaben protokolliert Nutzungsereignisse?", "back": "Accounting. Authentisierung prüft den Nachweis, Autorisierung die erlaubte Rolle; Accounting nutzt bei RADIUS einen gesonderten Nachrichtenpfad."},
+          {"id": "identitaet-karte-web", "label": "Web-SSO", "front": "Welcher Nachweis ist für OIDC-Login und welcher für API-Zugriff gedacht?", "back": "Das ID Token belegt die Anmeldung gegenüber dem OIDC-Client; ein Access Token ist für die Zielressource oder API und ihren begrenzten Zugriff bestimmt."},
+          {"id": "identitaet-karte-mfa", "label": "MFA", "front": "Warum ist ein Einmalcode nicht automatisch phishingresistent?", "back": "Ein manuell eingegebener Code kann an einen falschen Verifier weitergeleitet werden. Passend eingesetztes WebAuthn/FIDO2 bindet den Nachweis an den echten Dienstnamen."}
+        ]},
+        {"type": "recall", "id": "identitaet-fallbegruendung", "title": "Elbwerks drei Zugänge erklären", "prompt": "Erkläre Lea in eigenen Worten: Wofür nutzt die Domäne Verzeichnis/LDAP und Kerberos, wer entscheidet im 802.1X-WLAN mit RADIUS, und welche Prüfung fehlt bei der Projektakte trotz funktionierendem WLAN? Grenze außerdem OAuth Access Token, OIDC ID Token und MFA ab.", "label": "Deine Architektur- und Störungsbegründung", "minLength": 220, "model": "LDAP kann Einträge suchen und mit Bind eine LDAP-Sitzung authentisieren; Kerberos stellt nach dem initialen Nachweis ein TGT und danach ein Ticket für den konkreten Dienst aus. Im WLAN spricht das Endgerät EAP über 802.1X mit dem AP; der AP transportiert den Nachweis über RADIUS, erhält ein Ergebnis und setzt die Netzrolle um. Das beweist keine Rechte in der Projektakte. Dort prüfe ich die SAML-Assertion oder das OIDC ID Token und anschließend die lokale Rollenabbildung. Ein OAuth Access Token ist für begrenzten API-Zugriff gedacht, nicht automatisch für den Login. MFA stärkt nur den tatsächlich angebundenen Anmeldepfad; Einmalcode und phishingresistentes WebAuthn sind nicht gleichwertig."}
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {"type": "quiz", "id": "identitaet-verzeichnis-gate", "question": "Welche Aussage zu LDAP und Kerberos trifft auf Elbwerks Domäne zu?", "options": [
+          {"text": "LDAP Search kann Einträge liefern; Kerberos nutzt ein TGT zur Anforderung eines Diensttickets. Keines davon allein beweist eine Berechtigung an jeder Ressource.", "rationale": "Richtig. Verzeichnisoperation, dienstbezogener Nachweis und lokale Autorisierung bleiben unterscheidbar.", "correct": true},
+          {"text": "LDAP Search gibt immer ein Kerberos-TGT zurück, das direkt jedem Dienst als Passwort übermittelt wird.", "rationale": "LDAP Search und Kerberos-Tickets sind verschiedene Operationen. Das TGT wird dem KDC, nicht jedem Zieldienst, vorgelegt.", "correct": false},
+          {"text": "Ein vorhandener Benutzereintrag ersetzt jeden Bind, jedes Ticket und jede spätere Rechteprüfung.", "rationale": "Ein Eintrag belegt weder erfolgreiche Authentisierung noch konkrete Autorisierung.", "correct": false}
+        ], "requiredObjective": "verzeichnis-und-tickets-trennen"},
+        {"type": "quiz", "id": "identitaet-radius-gate", "question": "Wie ist Leas 802.1X-WLAN fachlich zuzuordnen?", "options": [
+          {"text": "Das Endgerät ist Authenticator; der AP liefert das Passwort an die Projektakte; Accounting entscheidet über die App-Rolle.", "rationale": "Rollen und Systeme sind vertauscht. Die Projektakte entscheidet nicht über den 802.1X-Netzzugang.", "correct": false},
+          {"text": "Das Endgerät ist Supplicant, AP/Switch Authenticator und RADIUS der Prüfserver. AP/Switch setzt die Netzregel um; Accounting ist gesondert.", "rationale": "Richtig. EAP/802.1X, RADIUS und die Netzregel haben getrennte Aufgaben.", "correct": true},
+          {"text": "Ein RADIUS Access-Accept gibt automatisch alle Web-Anwendungen frei und protokolliert jede Sitzung ohne Konfiguration.", "rationale": "Netzfreigabe ist nicht Web-Autorisierung; Accounting nutzt einen eigenen, zu konfigurierenden Pfad.", "correct": false}
+        ], "requiredObjective": "radius-aaa-im-netz-zuordnen"},
+        {"type": "quiz", "id": "identitaet-web-gate", "question": "Elbwerk will Web-SSO und MFA für die Projektakte. Welche Entscheidung trennt die Rollen korrekt?", "options": [
+          {"text": "OAuth Access Token als universellen Login-Nachweis nutzen; jeder Einmalcode ist phishingresistent und gilt automatisch auch im WLAN.", "rationale": "OAuth Access Token ist nicht automatisch ein Login-Nachweis. Manuelle OTP-Eingabe ist nicht phishingresistent; MFA-Reichweite ist pfadabhängig.", "correct": false},
+          {"text": "SAML-Assertion oder OIDC ID Token für den Web-Login passend validieren, Anwendungsrolle getrennt prüfen und MFA am tatsächlich genutzten IdP-Pfad mit seinen Ausnahmen testen.", "rationale": "Richtig. Web-Nachweis, lokale Freigabe und tatsächliche MFA-Durchsetzung sind getrennte Prüfungen.", "correct": true},
+          {"text": "SAML ist die Passwortdatenbank, OIDC ein WLAN-VLAN, und SSO beendet automatisch jede Sitzung aller verbundenen Dienste.", "rationale": "SAML und OIDC sind keine Verzeichnisdatenbank beziehungsweise VLAN-Regel. SSO garantiert kein globales Logout.", "correct": false}
+        ], "requiredObjective": "federation-token-mfa-bewerten"}
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {"type": "markdown", "markdown": "Primärquellen, geprüft am 02.10.2026: [LDAP-Protokoll RFC 4511](https://www.rfc-editor.org/rfc/rfc4511.html), [LDAP-Sicherheit RFC 4513](https://www.rfc-editor.org/rfc/rfc4513.html), [Kerberos RFC 4120](https://www.rfc-editor.org/rfc/rfc4120.html), [RADIUS RFC 2865](https://www.rfc-editor.org/rfc/rfc2865.html), [RADIUS Accounting RFC 2866](https://www.rfc-editor.org/rfc/rfc2866.html), [EAP in RADIUS RFC 3579](https://www.rfc-editor.org/rfc/rfc3579.html), [OASIS SAML 2.0](https://docs.oasis-open.org/security/saml/v2.0/saml-core-2.0-os.pdf), [OAuth 2.0 RFC 6749](https://www.rfc-editor.org/rfc/rfc6749.html), [OpenID Connect Core](https://openid.net/specs/openid-connect-core-1_0.html), [NIST zu SSO](https://csrc.nist.gov/glossary/term/single_sign_on) und [NIST zu Phishingresistenz](https://pages.nist.gov/800-63-4/sp800-63b.html). Die privaten Buchstellen dienten nur als Themenanker; alle Fälle, Aufgaben und Diagramme sind eigenständig. Protokolle, Policy und Tokenformate einer konkreten Plattform müssen vor einem produktiven Eingriff geprüft werden. Diese Einheit bleibt bis zur menschlichen Freigabe CURATED_DRAFT."}
+      ]
+    }
+  ]
+}
