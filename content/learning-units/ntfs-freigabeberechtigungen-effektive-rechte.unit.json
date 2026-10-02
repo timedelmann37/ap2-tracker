@@ -1,0 +1,326 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "ntfs-freigabeberechtigungen-effektive-rechte",
+    "slug": "ntfs-freigabeberechtigungen-effektive-rechte",
+    "title": "NTFS und Freigabe: Welches Recht gilt wirklich?",
+    "description": "Lokalen und SMB-Zugriff unterscheiden, Gruppenrechte auf beiden Ebenen auswerten sowie Vererbung und Besitzübernahme bei einer Berechtigungsstörung richtig einordnen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-7",
+    "groupLabel": "Berechtigungskonzepte",
+    "itemId": "ga1-7__2",
+    "week": "KW 41",
+    "estimatedMinutes": 40,
+    "relevance": "hoch",
+    "sources": [
+      "itlf10-12-2023",
+      "windows-share-ntfs-permissions",
+      "windows-access-control-overview",
+      "windows-effective-access-remote",
+      "windows-file-security-access-rights",
+      "windows-dacl-access-check",
+      "windows-ntfs-ownership",
+      "windows-owner-rights"
+    ],
+    "contentRevision": "2026-10-02.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "zugriffsweg-unterscheiden",
+      "label": "Für einen lokalen Dateipfad und einen SMB-Pfad die jeweils wirksamen Berechtigungsebenen nennen"
+    },
+    {
+      "id": "effektiven-zugriff-ableiten",
+      "label": "Gruppenmitgliedschaften und geerbte NTFS-Einträge auswerten und einen konkreten Lese- oder Bearbeitungszugriff begründen"
+    },
+    {
+      "id": "vererbung-besitz-einordnen",
+      "label": "Eine geerbte Berechtigung gezielt korrigieren und erklären, was Besitzübernahme an Rechten ändert"
+    }
+  ],
+  "intro": "Mila kann eine Datei direkt am Dateiserver bearbeiten. Über die SMB-Freigabe `Projekte` kann sie dieselbe Datei dagegen nur lesen. Beide Male meldet sie sich mit demselben Domänenkonto an. Welche Berechtigung begrenzt den Netzwerkzugriff, und würde ein zusätzliches NTFS-Recht helfen?",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "Privater OCR-Index, PDF-Seiten 250–251 / Druckseiten 277–278",
+        "use": "Ausschließlich geprüfter Themenanker für NTFS-Vererbung und die Kombination aus Freigabe- und NTFS-Rechten; kein Beleg für Besitzübernahme",
+        "reviewStatus": "Themenstellen am 02.10.2026 im Team geprüft; beschädigte Screenshot-OCR und Buchabbildungen weder zitiert noch übernommen"
+      },
+      {
+        "sourceId": "windows-share-ntfs-permissions",
+        "sourceLocator": "Share and NTFS Permissions on a File Server, Absätze zu unabhängigen Berechtigungsebenen und Additional considerations",
+        "use": "SMB-Freigabe und NTFS zusammen auswerten; Share-Rechte gelten für Netzwerkzugriff, NTFS auch lokal",
+        "reviewStatus": "Offizielle Microsoft-Learn-Seite am 02.10.2026 geprüft; dokumentiert Windows 7/Server 2008 R2 und deshalb als Grundregel mit aktuellem Remote-Access-Beleg gegengeprüft"
+      },
+      {
+        "sourceId": "windows-access-control-overview",
+        "sourceLocator": "Access control overview, Permissions, Ownership of objects und Inheritance of permissions",
+        "use": "Windows-Zugriff über Benutzer, Gruppen, ACL und vererbbare Einträge erläutern",
+        "reviewStatus": "Aktuelle offizielle Microsoft-Learn-Übersicht am 02.10.2026 geprüft"
+      },
+      {
+        "sourceId": "windows-effective-access-remote",
+        "sourceLocator": "How to evaluate effective permissions for resources on remote computers, Get effective permissions on remote resources including SMB shares",
+        "use": "Bei der Effektivzugriffs-Prüfung auf entfernten SMB-Ressourcen Share- und Dateisystemebene sowie den UNC-Pfad beachten",
+        "reviewStatus": "Offizielle Microsoft-Learn-Fehlerbehebung am 02.10.2026 geprüft; die Anzeige kann bei fehlenden Prüfrechten Warnungen liefern"
+      },
+      {
+        "sourceId": "windows-file-security-access-rights",
+        "sourceLocator": "File security and access rights, Security descriptors und File access rights",
+        "use": "Vererbbare ACEs und die ACL des Zielobjekts von bloßen Berechtigungen des übergeordneten Ordners unterscheiden",
+        "reviewStatus": "Offizielle Microsoft-Win32-Dokumentation am 02.10.2026 geprüft"
+      },
+      {
+        "sourceId": "windows-dacl-access-check",
+        "sourceLocator": "How AccessCheck Works, DACL mit Gruppen-ACEs und Reihenfolge der Zugriffsprüfung",
+        "use": "Mehrere zutreffende Allow-Einträge innerhalb einer Ebene auswerten und pauschale Deny-Regeln vermeiden",
+        "reviewStatus": "Offizielle Microsoft-Win32-Dokumentation am 02.10.2026 geprüft; komplexe ACL-Reihenfolgen liegen außerhalb des vereinfachten Übungsfalls"
+      },
+      {
+        "sourceId": "windows-ntfs-ownership",
+        "sourceLocator": "Can't delete files on NTFS file system, Abschnitt zu Besitzübernahme und anschließender Rechtevergabe",
+        "use": "Besitzübernahme durch berechtigte Administration und nachfolgende ACL-Änderung von unmittelbarem Datenzugriff abgrenzen",
+        "reviewStatus": "Offizieller Microsoft-KB-Artikel am 02.10.2026 geprüft; der Reparaturfall hier ist eigenständig"
+      },
+      {
+        "sourceId": "windows-owner-rights",
+        "sourceLocator": "Special identity groups, Owner Rights",
+        "use": "Eigentümerbefugnis ausdrücklich auf den Standardfall ohne spezielle Owner-Rights-ACE begrenzen",
+        "reviewStatus": "Offizielle Microsoft-Learn-Dokumentation am 02.10.2026 geprüft"
+      }
+    ],
+    "notes": [
+      "Die privaten Buchstellen auf PDF-Seiten 250–251 wurden nur als Themenanker für Vererbung und Share/NTFS geprüft. Sie belegen die Besitzübernahme nicht; keine Buchformulierung, Tabelle oder Abbildung wurde übernommen. Firma, Namen, ACL, Fragen und Diagramme sind erfunden.",
+      "Das Fallbeispiel setzt eine Windows-Dateifreigabe auf einem NTFS-Volume, korrekt authentisierte Konten mit aktuellem Gruppentoken, normale Dateioperationen und ausschließlich die genannten Allow-Einträge voraus. Es gibt keine expliziten Deny-Einträge, zusätzlichen zentralen Zugriffsrichtlinien, EFS-Sperren oder Sonderprivilegien im Zugriffstest. Die vereinfachte Regel 'restriktiver gewinnt' gilt für die jeweils angefragte Aktion nach Auswertung der Gruppenrechte pro Ebene; reale ACE-Reihenfolge und Sonderrechte erfordern genauere Prüfung.",
+      "Besitzübernahme ist eine kontrollierte Änderung des Sicherheitszustands. Ohne spezielle Owner-Rights-ACE kann der Eigentümer im Standardfall die DACL ändern; Besitz allein gibt weder den angefragten Dateiinhalt noch eine zu enge SMB-Freigabe frei. Menschliche Fach- und Didaktikfreigabe steht aus."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "zugriffspfade",
+      "type": "comparison",
+      "title": "Derselbe Dateiinhalt, zwei Zugriffspfade",
+      "description": "Die Dateisystem-ACL gilt für die Zieldatei in beiden Pfaden. Nur der SMB-Pfad durchläuft zusätzlich die Berechtigungen der Freigabe Projekte. Es geht um die Dateioperation Bearbeiten, nicht um die Sichtbarkeit eines Ordnernamens.",
+      "items": [
+        {"label": "Am Server lokal", "detail": "Dateipfad: NTFS prüfen"},
+        {"label": "Über SMB", "detail": "Share + NTFS"},
+        {"label": "Beide Ebenen", "detail": "Jede geltende Ebene muss die Aktion erlauben"}
+      ]
+    },
+    {
+      "id": "milas-bearbeitungszugriff",
+      "type": "layers",
+      "title": "Milas Bearbeitungsanfrage über SMB",
+      "description": "Mila gehört zu G_Alle und G_West_Editoren. Die Freigabe erlaubt G_Alle nur Lesen. Die Ziel-Datei erbt NTFS-Lesen für G_Alle und NTFS-Ändern für G_West_Editoren. Unter den erklärten Fallannahmen scheitert die Bearbeitungsoperation an der Share-Ebene.",
+      "items": [
+        {"label": "Anfrage", "detail": "Schichtplan.xlsx bearbeiten"},
+        {"label": "Share Projekte", "detail": "G_Alle: Lesen → Bearbeiten nicht erlaubt"},
+        {"label": "NTFS-Datei", "detail": "G_West_Editoren: Ändern → Bearbeiten erlaubt"},
+        {"label": "Über SMB", "detail": "Nur Lesen; Share begrenzt"}
+      ]
+    },
+    {
+      "id": "ntfs-vererbung-archiv",
+      "type": "flow",
+      "title": "Warum ein zusätzliches Lesen-Recht nicht einschränkt",
+      "description": "Beim lokalen Zugriff am Dateiserver landet ein auf West vererbbar eingetragenes Ändern-Recht für G_West_Editoren auch in der ACL des Unterordners Archiv. Ein weiterer Allow-Eintrag mit Lesen für dieselbe Gruppe entfernt das geerbte Ändern-Recht nicht. Eine SMB-Freigabe wird in dieser Grafik nicht geprüft.",
+      "items": [
+        {"label": "West", "detail": "G_West_Editoren: Ändern, vererbbar"},
+        {"label": "Archiv", "detail": "Ändern aus West geerbt"},
+        {"label": "Zusatz-Eintrag", "detail": "G_West_Editoren: Lesen, explizit"},
+        {"label": "Ergebnis", "detail": "Ändern bleibt durch geerbten Allow-Eintrag möglich"}
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Diagnose: Welcher Pfad wird geprüft?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "ntfs-share-diagnose",
+          "diagnostic": true,
+          "question": "Mila darf dieselbe Datei am Server lokal bearbeiten, über `\\\\fs-a\\Projekte` aber nicht. Welche Untersuchung trennt die beiden Zugriffswege zuerst sinnvoll?",
+          "options": [
+            {"text": "Nur die NTFS-ACL prüfen; eine SMB-Freigabe hat niemals eigene Berechtigungen.", "rationale": "Eine Windows-SMB-Freigabe kann eigene Share-Berechtigungen haben. Für den Netzwerkpfad müssen beide geltenden Ebenen geprüft werden.", "correct": false},
+            {"text": "Share-Rechte der Freigabe und NTFS-Rechte der Zieldatei für Milas Gruppen prüfen; für den lokalen Dateipfad ist die Share-Ebene nicht beteiligt.", "rationale": "Richtig. Der Unterschied zwischen lokalem Pfad und SMB-Pfad ist die zusätzliche Berechtigungsebene der Freigabe.", "correct": true},
+            {"text": "Mila zur Dateieigentümerin machen; Eigentum hebt alle Netzwerk- und Dateirechte automatisch auf.", "rationale": "Besitzübernahme ist kein pauschaler Zugriff. Sie ändert insbesondere keine SMB-Freigabeberechtigung.", "correct": false}
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Zwei unabhängig konfigurierte Ebenen:** Eine Windows-Freigabe regelt den Zugriff **über den Netzwerkpfad**. Die NTFS-Berechtigung regelt den Zugriff auf Dateien und Ordner auf dem Volume, lokal wie über SMB. Wenn der Zugriff über `\\\\fs-a\\Projekte\\West\\Schichtplan.xlsx` erfolgt, muss die konkrete Aktion auf **beiden** Ebenen erlaubt sein. Wer am Server direkt `D:\\Daten\\Projekte\\West\\Schichtplan.xlsx` öffnet, nutzt die Freigabe nicht. Der Merksatz „die restriktivere Berechtigung gewinnt“ ist für einfache Aufgaben nützlich; genau geprüft wird immer die angefragte Aktion und die wirksamen Rechte der Person auf jeder Ebene."
+        },
+        {
+          "type": "figure",
+          "diagramId": "zugriffspfade",
+          "alt": "Lokaler Pfad D Doppelpunkt Daten Projekte West Schichtplan.xlsx: NTFS entscheidet. Netzwerkpfad über fs-a, Freigabe Projekte und Ordner West zur selben Datei: Share-Berechtigung und NTFS müssen die angefragte Aktion jeweils erlauben.",
+          "caption": "Eigene technische Pfadübersicht. Ein gemapptes Netzlaufwerk bleibt ein SMB-Zugriff und wird dadurch nicht zum lokalen Dateipfad."
+        }
+      ]
+    },
+    {
+      "title": "Anwendung: Milas tatsächliches Recht ableiten",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Bei der fiktiven **Elbwerk Service GmbH** ist `D:\\Daten\\Projekte` als `\\\\fs-a\\Projekte` freigegeben. Mila ist Mitglied der Sicherheitsgruppen **G_Alle** und **G_West_Editoren**. Die Freigabe hat nur einen hier relevanten Allow-Eintrag: `G_Alle: Lesen`. Auf `D:\\Daten\\Projekte` steht `G_Alle: Lesen`, vererbbar. Auf `West` steht zusätzlich `G_West_Editoren: Ändern`, ebenfalls vererbbar. `Schichtplan.xlsx` erbt beide NTFS-Einträge. Es gibt weder Deny-Einträge noch weitere Sonderregeln.\n\n| Prüfstelle | Für Mila wirksamer Eintrag | Bearbeiten der Datei? |\n|---|---|---|\n| SMB-Freigabe `Projekte` | `G_Alle: Lesen` | Nein |\n| NTFS-ACL der Datei | geerbt: `G_Alle: Lesen` und `G_West_Editoren: Ändern` | Ja |\n| Ergebnis über SMB | beide Ebenen erforderlich | Nein; Lesen bleibt möglich |\n| Ergebnis direkt am Server | nur NTFS-Ebene | Ja |\n\nInnerhalb der NTFS-Ebene addieren sich die hier ausschließlich **erlaubenden** Rechte aus Milas Gruppen: Ihr Ändern-Recht geht durch das zusätzliche Lesen-Recht nicht verloren. Zwischen Share und NTFS wird für eine angefragte Operation geprüft, ob **beide** Ebenen sie gestatten. Unterschiedliche Gruppennamen oder bloßes Vergleichen von Etiketten ersetzen diese Prüfung nicht."
+        },
+        {
+          "type": "figure",
+          "diagramId": "milas-bearbeitungszugriff",
+          "alt": "Milas Anfrage Bearbeiten: Die Share-Berechtigung für G_Alle erlaubt nur Lesen und blockiert Bearbeiten. Die NTFS-ACL der Datei erlaubt über die Gruppe G_West_Editoren Ändern. Über SMB bleibt deshalb nur Lesen möglich.",
+          "caption": "Eigener Fall mit benannten Gruppen und ohne Deny-Einträge. Die Karten zeigen Prüfbedingungen; sie behaupten keine feste interne Ausführungsreihenfolge von Windows."
+        },
+        {
+          "type": "sequence",
+          "id": "ntfs-share-prueffolge",
+          "title": "Einen SMB-Zugriff sauber prüfen",
+          "prompt": "Sortiere den Analyseweg für eine neue Zugriffsfrage. Die Reihenfolge ist ein gedanklicher Prüfpfad, keine Behauptung über die interne Windows-Ausführung.",
+          "tag": "Zugriffsanalyse",
+          "steps": [
+            {"id": "gesamt", "label": "Für die konkrete Aktion das Ergebnis beider Ebenen begründen"},
+            {"id": "ntfs", "label": "NTFS-ACL des Zielobjekts einschließlich geerbter Einträge auswerten"},
+            {"id": "anfrage", "label": "Konto, Zugriffsweg, Zielobjekt und Aktion festhalten"},
+            {"id": "share", "label": "Bei SMB die Berechtigungen der tatsächlich genutzten Freigabe auswerten"},
+            {"id": "gruppen", "label": "Wirksame Gruppen des verwendeten Anmeldetokens ermitteln"}
+          ],
+          "expected": ["anfrage", "gruppen", "share", "ntfs", "gesamt"],
+          "correctFeedback": "Richtig. Erst die konkrete Anfrage und das wirksame Konto klären, dann Share und Ziel-NTFS prüfen und die angefragte Aktion auf beiden Ebenen bewerten. Für einen lokalen Zugriff entfällt die Share-Prüfung.",
+          "wrongFeedback": "Beginne mit Konto, Pfad, Zieldatei und Aktion. Prüfe dann den aktuellen Gruppenstand, bei SMB die Freigabe und anschließend die NTFS-ACL der Zieldatei samt geerbten Einträgen. Erst daraus folgt die Entscheidung."
+        },
+        {
+          "type": "quiz",
+          "id": "ntfs-share-reparaturfall",
+          "question": "Mila soll den Schichtplan auch über SMB bearbeiten. Welche kleinste Änderung behebt die begrenzende Ebene, ohne die Freigabe für G_Alle unnötig zu erweitern? Tarek gehört nur zu G_Alle.",
+          "options": [
+            {"text": "Auf der Freigabe `Projekte` der Gruppe G_West_Editoren Ändern (Share: Change) geben und anschließend den Zugriff neu testen.", "rationale": "Richtig. Die Freigabe ist die begrenzende Ebene. Mila bekommt über ihre Editorengruppe dort Ändern; Tarek behält über G_Alle nur Lesen. Die NTFS-Ebene erlaubt Mila Bearbeiten bereits.", "correct": true},
+            {"text": "Auf der NTFS-Datei G_West_Editoren Vollzugriff geben; die Freigabe bleibt bei G_Alle: Lesen.", "rationale": "Mehr NTFS-Rechte lösen die Share-Grenze nicht. Vollzugriff würde zudem unnötig die Verwaltung der Dateirechte erweitern.", "correct": false},
+            {"text": "Der Gruppe G_Alle auf der Freigabe Ändern geben, weil alle Mitglieder dieselbe Rolle haben.", "rationale": "Damit würde die Share-Ebene für alle einschließlich Tarek unnötig erweitert. Seine effektiven Rechte an dieser Datei blieben durch NTFS-Lesen begrenzt, aber die Zielgruppe für die Änderung ist G_West_Editoren.", "correct": false}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Vererbung: Woher kommt der Eintrag?",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "NTFS-Berechtigungen stehen in der ACL des **konkreten Zielobjekts**. Ein Ordner kann einen Eintrag so markieren, dass Unterordner und Dateien ihn erben. Bei Elbwerk kommt Milas Ändern-Recht aus `West` und steht deshalb auch für `Schichtplan.xlsx` zur Verfügung. Nicht jeder Eintrag wird vererbt; Zieltyp und Vererbungsmarkierung zählen. Die bloße Existenz eines Elternordners ersetzt die Prüfung der ACL der Datei nicht.\n\nFür den folgenden Vererbungsfall wird **lokal am Dateiserver** über `D:\\Daten\\Projekte\\West\\Archiv` geprüft; eine SMB-Freigabe ist daran nicht beteiligt. `Archiv` soll für die Editoren nur lesbar sein, erbt aber `G_West_Editoren: Ändern` aus `West`. Ein zusätzlicher expliziter **Allow-Lesen**-Eintrag entfernt dieses geerbte Allow-Ändern **nicht**. Eine saubere Änderung begrenzt den ursprünglichen Ändern-Eintrag in seinem Geltungsbereich oder trennt die Vererbung für `Archiv` nach Prüfung und setzt dort eine passende ACL. Dabei die benötigten übrigen Einträge erhalten, den Änderungseffekt auf Unterobjekte prüfen und mit einem Editor-Konto lokal testen. Nicht reflexartig Deny setzen: Bei komplexen ACLs hängen Ergebnisse von Einträgen, Reihenfolge und der angefragten Aktion ab."
+        },
+        {
+          "type": "figure",
+          "diagramId": "ntfs-vererbung-archiv",
+          "alt": "Beim lokalen NTFS-Zugriff gibt West Ändern für G_West_Editoren an Archiv weiter. Archiv erhält zusätzlich explizit Lesen für dieselbe Gruppe. Das geerbte Ändern bleibt vorhanden; der Zusatz schränkt die Gruppe nicht auf Lesen ein.",
+          "caption": "Eigene Vererbungsillustration für lokalen Zugriff mit ausschließlich erlaubenden ACEs. Ein neues Lesen-ACE ist keine Korrektur eines weiterhin wirksamen Ändern-ACE."
+        },
+        {
+          "type": "quiz",
+          "id": "ntfs-vererbung-anwendung",
+          "question": "Mila öffnet `D:\\Daten\\Projekte\\West\\Archiv\\Altplan.xlsx` lokal am Dateiserver. Warum darf sie die Datei trotz neuem explizitem Allow-Lesen für G_West_Editoren noch bearbeiten?",
+          "options": [
+            {"text": "Ein explizites Lesen-Recht ist immer stärker als jedes geerbte Ändern-Recht und müsste Bearbeiten verhindern.", "rationale": "Ein zusätzliches erlaubendes Lesen-Recht entfernt ein vorhandenes erlaubendes Ändern-Recht nicht.", "correct": false},
+            {"text": "Die Freigabe hat automatisch Vollzugriff erteilt, sobald der Unterordner Archiv heißt.", "rationale": "Der Ordnername ändert keine Berechtigung. Im Fall liegt der weiterhin wirksame Eintrag in der NTFS-Vererbung.", "correct": false},
+            {"text": "Das geerbte Allow-Ändern aus West ist weiterhin Teil der ACL von Archiv beziehungsweise der Datei; der neue Allow-Lesen-Eintrag schränkt es nicht ein.", "rationale": "Richtig. Der geerbte Eintrag muss in seinem Geltungsbereich gezielt geändert oder für den Unterordner kontrolliert entfernt werden; danach den tatsächlichen Zugriff testen.", "correct": true}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Besitzübernahme: Rechte reparieren, Zugriff testen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein **anderer, lokaler NTFS-Störungsfall**: `Altplan.xlsx` gehört einem ausgeschiedenen Konto. Die zuständige Adminrolle arbeitet direkt am Dateiserver und hat auf der Ziel-DACL kein **WRITE_DAC**-Recht, um Dateiberechtigungen zu ändern. Zuerst prüft sie, ob eine bereits berechtigte Rolle die ACL ohne Besitzwechsel gezielt korrigieren kann. Nur wenn das nicht möglich ist, kann sie mit entsprechendem administrativem Recht kontrolliert den **Besitz übernehmen**. Im hier betrachteten Standardfall **ohne spezielle Owner-Rights-ACE** kann der Eigentümer die DACL, also die erlaubenden oder verweigernden Dateirechte, ändern. **Besitzübernahme allein gibt aber nicht automatisch das Recht, den Dateiinhalt zu lesen oder zu bearbeiten.** Sie ändert auch keine Share-Berechtigung; für einen späteren SMB-Zugriff ist diese Ebene gesondert zu prüfen.\n\nVor dem Eingriff Eigentümer, ACL und Zweck dokumentieren. Falls Besitzübernahme erforderlich ist, Umfang auf die betroffenen Objekte begrenzen, die benötigten Gruppenrechte setzen und sowohl den fachlichen Zugriff als auch unveränderte Grenzen für andere Gruppen testen. Eine rekursive Übernahme oder pauschaler Vollzugriff kann weit mehr Dateien verändern als beabsichtigt. Bei Änderungen von Gruppenmitgliedschaften auch mit einer neu aufgebauten Anmeldung testen, damit das aktuelle Token verwendet wird."
+        },
+        {
+          "type": "quiz",
+          "id": "ntfs-besitz-anwendung",
+          "question": "Die Administration übernimmt den Besitz von `Altplan.xlsx`, ändert aber weder dessen NTFS-ACL noch die Freigabe. Welche Aussage ist im beschriebenen Standardfall richtig?",
+          "options": [
+            {"text": "Der Besitzwechsel erlaubt sofort alle Dateioperationen über SMB, unabhängig von ACL und Share-Recht.", "rationale": "Besitz ist keine pauschale Freigabe des Datei- oder SMB-Zugriffs. Die Berechtigungsebenen müssen weiter geprüft werden.", "correct": false},
+            {"text": "Die Administration kann nun grundsätzlich die Dateiberechtigungen korrigieren; für den Inhalt und den SMB-Pfad müssen die tatsächlich erforderlichen Rechte weiterhin vorhanden sein.", "rationale": "Richtig. Besitz ermöglicht im betrachteten Standardfall die DACL-Änderung. Datenzugriff und Share-Berechtigung folgen daraus nicht automatisch.", "correct": true},
+            {"text": "Die Datei wird automatisch wieder Eigentum des ausgeschiedenen Kontos, sobald sie über das Netzwerk geöffnet wird.", "rationale": "Ein SMB-Zugriff setzt den Eigentümer nicht automatisch zurück.", "correct": false}
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "Für die technische Kontrolle kann unter Windows die Anzeige **Effektiver Zugriff** hilfreich sein. Auf entfernten SMB-Ressourcen muss die Prüfung den passenden **UNC-Pfad** und die Share-Ebene berücksichtigen; die Anzeige kann bei fehlenden Berechtigungen zur Remote-Auswertung Warnungen liefern. Ein praktischer Zugriffstest mit dem vorgesehenen Konto und der vorgesehenen Aktion bleibt wichtig. Prüfe Lesen und Bearbeiten getrennt; ein erfolgreiches Öffnen belegt noch kein Speichern."
+        }
+      ]
+    },
+    {
+      "title": "Aus dem Kopf abrufen",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {"id": "ntfs-share-karte-pfad", "label": "Zugriffsweg", "front": "Welche Berechtigungsebenen gelten bei lokalem Zugriff und welche über eine SMB-Freigabe?", "back": "Lokal gilt die NTFS-ACL des Zielobjekts. Über SMB müssen die Share-Berechtigung der genutzten Freigabe und die NTFS-ACL die angefragte Aktion jeweils erlauben."},
+            {"id": "ntfs-share-karte-gruppen", "label": "Gruppen", "front": "Mila ist in G_Alle und G_West_Editoren. Wie wirken zwei erlaubende NTFS-Einträge Lesen und Ändern im Fall zusammen?", "back": "Die wirksamen Allow-Rechte der beiden Gruppen werden auf dieser Ebene zusammen betrachtet. Der zusätzliche Lesen-Eintrag nimmt Mila das Ändern-Recht nicht weg; Deny-Einträge wären gesondert zu prüfen."},
+            {"id": "ntfs-share-karte-vererbung", "label": "Vererbung", "front": "Warum reicht ein explizites Allow-Lesen auf Archiv nicht aus, wenn Ändern aus West geerbt wird?", "back": "Der geerbte Allow-Ändern-Eintrag bleibt in der Ziel-ACL wirksam. Sein Geltungsbereich oder die Vererbung muss kontrolliert geändert werden."},
+            {"id": "ntfs-share-karte-besitz", "label": "Eigentum", "front": "Was ermöglicht Besitzübernahme, und was bewirkt sie allein nicht?", "back": "Der neue Eigentümer kann im Standardfall die DACL ändern. Besitz allein gewährt weder automatisch Dateiinhalte noch eine zu enge Share-Berechtigung."}
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "ntfs-share-eigene-begruendung",
+          "title": "Mila den Unterschied erklären",
+          "prompt": "Erkläre einem neuen Admin ohne Blick auf die Tabelle, weshalb Mila `Schichtplan.xlsx` lokal bearbeiten, über `\\\\fs-a\\Projekte` aber zunächst nur lesen kann. Nenne ihre Gruppen, die geerbten NTFS-Rechte, das Share-Recht und die kleinste zielgerichtete Änderung für SMB-Bearbeitung. Ergänze, warum Besitzübernahme hierfür keine erste Lösung ist.",
+          "label": "Deine Begründung des effektiven Zugriffs",
+          "minLength": 170,
+          "model": "Mila gehört zu G_Alle und G_West_Editoren. Die Datei erbt NTFS-Lesen für G_Alle und NTFS-Ändern für G_West_Editoren; lokal darf sie deshalb im angenommenen Fall bearbeiten. Über SMB greift zusätzlich die Freigabe Projekte. Dort hat G_Alle nur Lesen, also scheitert Bearbeiten an dieser Ebene. Zielgerichtet erhält G_West_Editoren auf der Freigabe Ändern, während G_Alle bei Lesen bleibt; danach wird mit Mila und einem Nur-Lese-Konto getestet. Besitzübernahme ändert die Share-Berechtigung nicht und würde unnötig den Eigentümerzustand der Datei verändern."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check: neue Zugriffsfragen",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "ntfs-share-pfad-gate",
+          "question": "Ein Administrator liest `E:\\Daten\\Team\\Status.txt` in einer lokalen Sitzung am Dateiserver; eine Kollegin liest dieselbe Datei über `\\\\fs-b\\Team\\Status.txt`. Welche Ebenen gehören zu den beiden Prüfungen?",
+          "options": [
+            {"text": "Beide Wege prüfen immer nur die Freigabe; NTFS-Rechte sind für SMB ausgeschaltet.", "rationale": "NTFS wirkt auch bei SMB. Eine Share-Berechtigung ist kein Ersatz für die Dateisystem-ACL.", "correct": false},
+            {"text": "Lokal die NTFS-ACL; über SMB die Berechtigung der genutzten Freigabe und die NTFS-ACL der Datei.", "rationale": "Richtig. Der lokale Dateipfad durchläuft keine SMB-Share-Berechtigung, der Netzwerkpfad schon.", "correct": true},
+            {"text": "Lokal die Freigabe und über SMB nur NTFS, weil die Pfade denselben Inhalt bezeichnen.", "rationale": "Die Zugriffspfade führen zu unterschiedlichen Prüfungen. Der SMB-Pfad hat die zusätzliche Share-Ebene.", "correct": false}
+          ],
+          "requiredObjective": "zugriffsweg-unterscheiden"
+        },
+        {
+          "type": "quiz",
+          "id": "ntfs-share-effektiv-gate",
+          "question": "Ravi ist Mitglied von G_Alle und G_Forschung. Auf der Freigabe `Daten` hat G_Alle Lesen und G_Forschung Ändern. Die Datei erbt NTFS-Lesen für G_Alle; für G_Forschung gibt es dort keinen Eintrag. Es gibt keine Deny- oder Sonderregeln. Darf Ravi die Datei über SMB bearbeiten?",
+          "options": [
+            {"text": "Ja, weil ein Ändern-Recht auf einer der beiden Ebenen immer genügt.", "rationale": "Das Share-Ändern hilft nicht über die NTFS-Grenze hinweg. Auf der Datei erlaubt NTFS Ravi nur Lesen.", "correct": false},
+            {"text": "Nein, weil G_Alle-Mitglieder nie zusätzlich Rechte einer zweiten Gruppe nutzen dürfen.", "rationale": "Gruppenrechte können auf einer Ebene zusammenwirken. Hier liegt die Begrenzung daran, dass die Ziel-NTFS-ACL keinen Ändern-Eintrag für Ravi enthält.", "correct": false},
+            {"text": "Nein. Die Freigabe erlaubt über G_Forschung zwar Ändern, aber die Ziel-NTFS-ACL erlaubt nur Lesen.", "rationale": "Richtig. Beide Ebenen müssen die angefragte Bearbeitung erlauben. Das ist das Spiegelbild von Milas Fall.", "correct": true}
+          ],
+          "requiredObjective": "effektiven-zugriff-ableiten"
+        },
+        {
+          "type": "quiz",
+          "id": "ntfs-share-vererbung-besitz-gate",
+          "question": "Ein Archiv erbt für G_Projekt ein Allow-Ändern von seinem Elternordner. Die Gruppe soll dort nur lesen. Zusätzlich gehört die Datei einem nicht mehr verwendeten Konto. Welcher Plan trennt die beiden Probleme richtig?",
+          "options": [
+            {"text": "Explizit Allow-Lesen auf Archiv ergänzen und pauschal Besitz aller Projektdateien übernehmen; beides entzieht das geerbte Ändern.", "rationale": "Ein zusätzlicher Allow-Lesen-Eintrag entfernt das geerbte Ändern nicht. Besitzübernahme hebt eine solche ACL ebenfalls nicht automatisch auf und wäre zu breit.", "correct": false},
+            {"text": "Den vererbten Ändern-Eintrag beziehungsweise seinen Geltungsbereich gezielt korrigieren und testen; Besitz nur mit berechtigtem Bedarf zur ACL-Reparatur übernehmen, anschließend Rechte gesondert setzen und prüfen.", "rationale": "Richtig. Vererbung und Eigentum sind unterschiedliche Fragen. Erst der passende ACL-Zustand und ein Zugriffstest belegen die Einschränkung.", "correct": true},
+            {"text": "Nur die Freigabe auf Lesen stellen; damit ist das Archiv auch bei lokalem Dateizugriff geschützt und Eigentum ist irrelevant.", "rationale": "Share-Rechte gelten für SMB. Ein lokaler Zugriff bliebe durch das geerbte NTFS-Ändern erlaubt; der Eigentümerzustand ist eine separate Verwaltungsfrage.", "correct": false}
+          ],
+          "requiredObjective": "vererbung-besitz-einordnen"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Geltungsgrenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Microsoft-Primärdokumentation, geprüft am 02.10.2026: [Share und NTFS auf einem Dateiserver](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/cc754178%28v%3Dws.11%29) (historische Dokumentation für Windows 7/Server 2008 R2), [aktuelle Access-Control-Übersicht](https://learn.microsoft.com/en-us/windows/security/identity-protection/access-control/access-control), [Effektiver Zugriff auf entfernte SMB-Ressourcen](https://learn.microsoft.com/en-us/troubleshoot/windows-server/windows-security/access-checks-windows-apis-return-incorrect-results), [Dateisicherheit und Vererbung](https://learn.microsoft.com/en-us/windows/win32/fileio/file-security-and-access-rights), [DACL-Zugriffsprüfung](https://learn.microsoft.com/en-us/windows/win32/secauthz/how-dacls-control-access-to-an-object), [Besitzübernahme bei NTFS-Zugriffsproblemen](https://learn.microsoft.com/en-us/troubleshoot/windows-server/backup-and-storage/cannot-delete-file-folder-on-ntfs-file-system) und [Owner Rights](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-special-identities-groups). Die privaten Buchstellen lieferten nur Themenanker. Alle Fälle, Gruppen, Fragen und Diagramme sind eigenständig. Die vereinfachte Fallauswertung setzt ausschließlich genannte Allow-Einträge und keine spezielle Owner-Rights-ACE voraus; konkrete Deny-ACEs, Spezialrechte, zentrale Richtlinien und weitere Sperren müssen im Produktivsystem gesondert untersucht werden. Diese Einheit bleibt bis zur menschlichen Freigabe CURATED_DRAFT."
+        }
+      ]
+    }
+  ]
+}
