@@ -82,8 +82,21 @@ const cases = [
     recall: 'haertung-fallbegruendung',
     gates: ['haertung-dienste-gate', 'haertung-firewall-gate', 'haertung-minimal-gate'],
     sequences: [{ id: 'haertung-aenderungsfolge', expected: ['bestand', 'bedarf', 'rueckweg', 'deaktivieren', 'firewall', 'pruefen'] }]
+  },
+  {
+    slug: 'uefi-bios-haertung-secure-boot-tpm-bootreihenfolge-schnittstellen',
+    figures: 3,
+    diagnostic: 'uefi-diagnose',
+    card: 'uefi-karte-secure-boot',
+    recall: 'uefi-fallbegruendung',
+    gates: ['uefi-signatur-gate', 'uefi-tpm-gate', 'uefi-recovery-gate'],
+    sequences: [{ id: 'uefi-aenderungsfolge', expected: ['inventar', 'ziel', 'recovery', 'aendern', 'pruefen', 'nachweis'] }]
   }
 ];
+const selectedCases = process.env.AP2_LINUX_SLUG
+  ? cases.filter(testCase => testCase.slug === process.env.AP2_LINUX_SLUG)
+  : cases;
+if (selectedCases.length === 0) throw new Error(`Unknown Linux administration slug: ${process.env.AP2_LINUX_SLUG}`);
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -101,7 +114,7 @@ async function sortSequence(sequence, expected) {
 const browser = await chromium.launch();
 try {
   if (captureDir) await mkdir(captureDir, { recursive: true });
-  for (const testCase of cases) {
+  for (const testCase of selectedCases) {
     const page = await browser.newPage({ viewport: { width: 390, height: 900 } });
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
@@ -159,6 +172,14 @@ try {
       assert(['Laufzeit', 'Boot', 'Auslöser', 'Netz'].every(label => serviceLabels.includes(label)), `${testCase.slug}: distinct service states are labelled`);
       assert(['22/tcp', '443/tcp', 'sonstige'].every(label => firewallLabels.includes(label)), `${testCase.slug}: required firewall paths are labelled`);
       assert(['Bedarf klären', 'Folgen simulieren', 'Entscheiden und testen'].every(label => packageLabels.includes(label)), `${testCase.slug}: package decision flow is labelled`);
+    } else if (testCase.slug === 'uefi-bios-haertung-secure-boot-tpm-bootreihenfolge-schnittstellen') {
+      const figures = page.locator('.learning-diagram');
+      const bootLabels = await figures.nth(0).textContent();
+      const protectionLabels = await figures.nth(1).textContent();
+      const recoveryLabels = await figures.nth(2).textContent();
+      assert(['UEFI-Firmware', 'Boot-Image', 'Signaturprüfung', 'Startentscheidung'].every(label => bootLabels.includes(label)), `${testCase.slug}: Secure Boot trust chain is labelled`);
+      assert(['Secure Boot', 'TPM', 'BitLocker'].every(label => protectionLabels.includes(label)), `${testCase.slug}: distinct protections are labelled`);
+      assert(['Alltagsstart', 'Setup-Zugang', 'Recovery', 'Nachweis'].every(label => recoveryLabels.includes(label)), `${testCase.slug}: recovery path is labelled`);
     } else {
       assert((await firstDiagram.textContent()).includes('Lesender Befund'), `${testCase.slug}: diagnosis flow is labelled`);
     }
@@ -216,6 +237,28 @@ try {
       await oldRuleQuiz.locator('[data-quiz-reset]').click();
       await oldRuleQuiz.locator('[data-answer="1"]').click();
       assert(await oldRuleQuiz.locator('[data-answer="1"]').evaluate(node => node.classList.contains('right')), `${testCase.slug}: old-rule correction accepted`);
+    } else if (testCase.slug === 'uefi-bios-haertung-secure-boot-tpm-bootreihenfolge-schnittstellen') {
+      const secureBootQuiz = page.locator('[data-quiz="uefi-rollen-quiz"]');
+      await secureBootQuiz.locator('[data-answer="1"]').click();
+      assert((await secureBootQuiz.locator('[data-selected-feedback]').textContent()).includes('keine Verschlüsselung der SSD'), `${testCase.slug}: Secure Boot is not disk encryption`);
+      await secureBootQuiz.locator('[data-quiz-reset]').click();
+      await secureBootQuiz.locator('[data-answer="0"]').click();
+      assert((await secureBootQuiz.locator('[data-selected-feedback]').textContent()).includes('nicht den Schutzstatus des Laufwerks'), `${testCase.slug}: independent BitLocker proof explained`);
+
+      const tpmQuiz = page.locator('[data-quiz="uefi-tpm-bitlocker-fall"]');
+      await tpmQuiz.locator('[data-answer="2"]').click();
+      assert((await tpmQuiz.locator('[data-selected-feedback]').textContent()).includes('TPM-Clear kann Schlüssel vernichten'), `${testCase.slug}: TPM clearing risk explained`);
+      await tpmQuiz.locator('[data-quiz-reset]').click();
+      await tpmQuiz.locator('[data-answer="1"]').click();
+      assert((await tpmQuiz.locator('[data-selected-feedback]').textContent()).includes('verschlüsselt das Laufwerk aber nicht selbst'), `${testCase.slug}: TPM role explained`);
+
+      const serviceQuiz = page.locator('[data-quiz="uefi-bootfall"]');
+      await serviceQuiz.locator('[data-answer="0"]').click();
+      const wrongServiceFeedback = await serviceQuiz.locator('[data-selected-feedback]').textContent();
+      assert(wrongServiceFeedback.includes('USB-Bootoption und gesamter USB-Port sind verschiedene Eingriffe') && wrongServiceFeedback.includes('Setup-Kennwort ersetzt weder Bootmedium'), `${testCase.slug}: boot option, port and service access distinguished`);
+      await serviceQuiz.locator('[data-quiz-reset]').click();
+      await serviceQuiz.locator('[data-answer="1"]').click();
+      assert((await serviceQuiz.locator('[data-selected-feedback]').textContent()).includes('geprüften Vor-Ort-Rückweg'), `${testCase.slug}: recovery path explained`);
     }
 
     for (const { id, expected } of testCase.sequences) {
@@ -227,11 +270,16 @@ try {
       assert(await sequence.locator('[data-sequence-feedback]').getAttribute('data-result') === 'correct', `${id}: correct order accepted`);
       if (id === 'haertung-aenderungsfolge') {
         assert((await sequence.locator('[data-sequence-feedback]').textContent()).includes('breite Altregeln'), `${id}: corrected firewall policy is part of the accepted sequence`);
+      } else if (id === 'uefi-aenderungsfolge') {
+        assert((await sequence.locator('[data-sequence-feedback]').textContent()).includes('Recovery ist vorher verfügbar'), `${id}: recovery is established before firmware change`);
       }
     }
 
     const recall = page.locator(`[data-recall="${testCase.recall}"]`);
-    await recall.locator('[data-recall-input]').fill('Ich prüfe erst die Voraussetzungen und den aktuellen Zustand. Dann lese ich die passende Meldung, ordne den Auslöser und die Aktion zu, teste die geplante Änderung und kontrolliere danach das wirkliche Ergebnis statt nur einen angelegten Plan zu sehen.');
+    const recallAnswer = testCase.slug === 'uefi-bios-haertung-secure-boot-tpm-bootreihenfolge-schnittstellen'
+      ? 'Ich prüfe Secure Boot, TPM und BitLocker getrennt, sichere den Recovery-Schlüssel und kläre den Bedarf für USB und PXE. Erst nach Freigabe ändere ich die Firmware. Danach prüfe ich Normalstart und Recovery-Pfad einzeln. Ein TPM-Clear ist kein Aktivieren und kann Schlüssel unzugänglich machen.'
+      : 'Ich prüfe erst die Voraussetzungen und den aktuellen Zustand. Dann lese ich die passende Meldung, ordne den Auslöser und die Aktion zu, teste die geplante Änderung und kontrolliere danach das wirkliche Ergebnis statt nur einen angelegten Plan zu sehen.';
+    await recall.locator('[data-recall-input]').fill(recallAnswer);
     await recall.locator('[data-recall-reveal]').click();
     assert(await recall.locator('[data-recall-model]').isVisible(), `${testCase.slug}: model answer revealed`);
     const card = page.locator(`[data-flashcard="${testCase.card}"]`);
@@ -270,7 +318,8 @@ try {
           }
           assert(!await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), `${testCase.slug}: ${width}px ${theme} document overflow`);
           assert(await figure.evaluate(node => node.scrollWidth <= node.clientWidth + 2), `${testCase.slug}: ${width}px ${theme} diagram overflow`);
-          if (captureDir && index < 2) {
+          if (captureDir && (index < 2 || testCase.slug === 'uefi-bios-haertung-secure-boot-tpm-bootreihenfolge-schnittstellen')) {
+            await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
             await page.screenshot({ path: path.join(captureDir, `${testCase.slug}-${width}-${theme}-figure-${index}.png`), animations: 'disabled' });
           }
         }

@@ -1,0 +1,180 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "uefi-bios-haertung-secure-boot-tpm-bootreihenfolge-schnittstellen",
+    "slug": "uefi-bios-haertung-secure-boot-tpm-bootreihenfolge-schnittstellen",
+    "title": "UEFI-Härtung mit sicherem Rückweg",
+    "description": "Secure Boot, TPM und BitLocker auseinanderhalten und Firmware-Zugänge, Bootmedien sowie Schnittstellen ohne Verlust des Recovery-Wegs absichern.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-6",
+    "groupLabel": "Betriebssysteme und Administration",
+    "itemId": "ga1-6__12",
+    "week": "KW 40",
+    "estimatedMinutes": 45,
+    "relevance": "hoch",
+    "sources": ["itlf10-12-2023", "uefi-secure-boot-spec", "microsoft-surface-uefi-settings", "microsoft-bitlocker-overview", "microsoft-bitlocker-faq", "microsoft-tpm-troubleshooting", "microsoft-confirm-secureboot", "microsoft-bitlocker-operations"],
+    "contentRevision": "2026-10-02.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {"id": "secure-boot-korrekt-pruefen", "label": "Secure Boot als Signaturprüfung von UEFI-Startcode erklären und den wirksamen Zustand prüfen"},
+    {"id": "tpm-bitlocker-trennen", "label": "TPM-Funktion, Wiederherstellungsschlüssel und BitLocker-Laufwerksverschlüsselung getrennt nachweisen"},
+    {"id": "firmware-mit-rueckweg-haerten", "label": "Setup-Zugang, Bootpfade und Schnittstellen anhand des Bedarfs mit gesichertem Recovery-Weg härten"}
+  ],
+  "intro": "Die fiktive Nordhafen Service GmbH richtet zwölf dienstliche Surface-Laptops mit Windows 11 Pro für Außendienstteams ein. Im Pilotgerät meldet die Windows-Prüfung Secure Boot als ausgeschaltet; BitLocker schützt das Systemlaufwerk bereits. Das TPM wurde im Firmware-Menü noch nicht verifiziert. Die IT braucht USB-Wiederherstellungsmedien und gelegentlich PXE für die Neuinstallation. Der Auftrag „Secure Boot und TPM aktivieren, alle externen Starts und ungenutzten Schnittstellen sperren“ klingt einfach, kann aber den Rechner oder seine Wiederherstellung unzugänglich machen. Du erstellst deshalb erst ein gerätespezifisches Soll mit Rückweg und belegst anschließend jede Schutzfunktion getrennt.",
+  "curation": {
+    "evidence": [
+      {"sourceId": "itlf10-12-2023", "sourceLocator": "Privates ITLF10-12-PDF/OCR S. 259, OCR-Zeilen 91–106; S. 74 nur als Hinweis auf PXE-Abhängigkeit", "use": "Nur Themenanker für TPM-Prüfung, Secure-Boot-Konfiguration und mögliche Firmware-Netzwerkstart-Abhängigkeit; keine Buchformulierung, Tabelle, Aufgabe oder Grafik übernommen", "reviewStatus": "Privaten OCR-Ausschnitt am 02.10.2026 geprüft; alle Erklärungen an aktuellen Primärquellen gespiegelt"},
+      {"sourceId": "uefi-secure-boot-spec", "sourceLocator": "UEFI Specification 2.11, Kapitel 32 Secure Boot and Driver Signing, insbesondere Image Authentication und Signaturdatenbanken", "use": "Signaturprüfung von UEFI-Images und Unterscheidung zu Datenträgerverschlüsselung", "reviewStatus": "Offizielle UEFI-Spezifikation am 02.10.2026 geprüft"},
+      {"sourceId": "microsoft-surface-uefi-settings", "sourceLocator": "Manage Surface UEFI settings: Security, Devices und Boot configuration", "use": "Gerätespezifisches Beispiel für Setup-Passwort, Secure Boot, TPM-Anzeige, Bootoptionen und abschaltbare Geräte", "reviewStatus": "Microsoft Learn am 02.10.2026 geprüft; Surface-Funktionen werden ausdrücklich nicht auf alle Hersteller übertragen"},
+      {"sourceId": "microsoft-bitlocker-overview", "sourceLocator": "BitLocker overview: Schutz des Laufwerks, TPM und Anforderungen an UEFI beziehungsweise Legacy-Start", "use": "BitLocker-Verschlüsselung, TPM-Schlüsselschutz und UEFI-/Legacy-Abgrenzung", "reviewStatus": "Microsoft Learn am 02.10.2026 geprüft"},
+      {"sourceId": "microsoft-bitlocker-faq", "sourceLocator": "BitLocker FAQ: Recovery bei Firmware-/Boot-Änderungen und Wiederherstellungsschlüssel", "use": "Recovery-Schlüssel vor Firmwareänderungen sichern und tatsächlich erreichbaren Wiederherstellungspfad planen", "reviewStatus": "Microsoft Learn am 02.10.2026 geprüft"},
+      {"sourceId": "microsoft-tpm-troubleshooting", "sourceLocator": "Troubleshoot the TPM: TPM-Bereitschaft, Firmwareeinstellung und Warnung vor Clear", "use": "TPM-Zustand statt bloßer Menüannahme prüfen; TPM-Clear nicht als Härtung empfehlen", "reviewStatus": "Microsoft Learn am 02.10.2026 geprüft"},
+      {"sourceId": "microsoft-confirm-secureboot", "sourceLocator": "Confirm-SecureBootUEFI: True, False und Fehler auf nicht unterstützten Plattformen", "use": "Wirksamen Secure-Boot-Status auf unterstütztem Windows-UEFI-Gerät getrennt vom Firmware-Menü nachweisen", "reviewStatus": "Microsoft Learn am 02.10.2026 geprüft"},
+      {"sourceId": "microsoft-bitlocker-operations", "sourceLocator": "BitLocker operations guide: Get-BitLockerVolume, Recovery-Protektoren und Suspend and resume", "use": "Verschlüsselungs- und Schutzstatus getrennt prüfen; vorab entscheiden, ob zeitweiliges Aussetzen nötig ist, danach Wiederaufnahme belegen", "reviewStatus": "Microsoft Learn am 02.10.2026 geprüft"}
+    ],
+    "notes": [
+      "Nordhafen, Flottengröße, Pilotzustand, Dialoge, Fragen, Diagramme und Entscheidungsfall sind eigenständig. Private Buchmedien werden nicht veröffentlicht.",
+      "Surface ist ein konkretes Herstellerbeispiel, keine allgemeingültige UEFI-Menüanleitung. Vor produktiven Firmware-Änderungen sind Gerätehandbuch, Zuständigkeit, gesicherte Recovery-Informationen, physischer Zugang, genehmigtes Wartungsfenster und Rollback zu prüfen. Menschliche Fach- und Didaktikfreigabe offen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "uefi-boot-vertrauenskette",
+      "type": "flow",
+      "title": "Secure Boot prüft den UEFI-Startpfad",
+      "description": "Die UEFI-Firmware prüft Signaturen relevanter UEFI-Images anhand ihrer Vertrauens- und Sperrdaten. Ein nicht autorisiertes Image wird blockiert. Dieser Mechanismus verschlüsselt keine Laufwerksdaten.",
+      "items": [
+        {"label": "UEFI-Firmware", "detail": "Vertrauens- und Sperrdaten für Images"},
+        {"label": "Boot-Image", "detail": "UEFI-Startcode mit prüfbarer Signatur"},
+        {"label": "Signaturprüfung", "detail": "Erlaubt und nicht gesperrt?"},
+        {"label": "Startentscheidung", "detail": "Zulassen oder blockieren, nicht entschlüsseln"}
+      ]
+    },
+    {
+      "id": "uefi-tpm-datenschutz",
+      "type": "comparison",
+      "title": "Drei Schutzfunktionen, drei Fragen",
+      "description": "Secure Boot, TPM und BitLocker ergänzen sich, sind aber keine Synonyme. Ihr Zustand muss einzeln geprüft werden.",
+      "items": [
+        {"label": "Secure Boot", "detail": "Darf dieser UEFI-Startcode laden?"},
+        {"label": "TPM", "detail": "Kann Schlüssel an Gerät und Startzustand binden"},
+        {"label": "BitLocker", "detail": "Sind Laufwerksdaten tatsächlich verschlüsselt?"}
+      ]
+    },
+    {
+      "id": "uefi-recovery-pfad",
+      "type": "layers",
+      "title": "Alltag sperren, Wiederherstellung erhalten",
+      "description": "Ein enger Alltags-Bootpfad ist nur dann tragfähig, wenn Setup-Zugang, Recovery-Schlüssel, benötigtes Medium und physischer Servicezugang dokumentiert und getestet sind. USB-Ports und USB-Boot sind verschiedene Einstellungen; PXE bleibt dort, wo Provisionierung es verlangt.",
+      "items": [
+        {"label": "Alltagsstart", "detail": "Windows Boot Manager als freigegebenes Ziel"},
+        {"label": "Setup-Zugang", "detail": "Admin-Kennwort und Zuständigkeit sichern"},
+        {"label": "Recovery", "detail": "Schlüssel, USB/PXE-Bedarf und Vor-Ort-Pfad"},
+        {"label": "Nachweis", "detail": "Normalstart und Serviceweg getrennt testen"}
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Diagnose: Erst den tatsächlichen Zustand erfassen",
+      "blocks": [
+        {"type": "quiz", "id": "uefi-diagnose", "diagnostic": true, "question": "Das Nordhafen-Pilotgerät meldet Secure Boot aus, BitLocker an. Ein Kollege will im Firmware-Menü sofort TPM zurücksetzen, USB/PXE abschalten und Secure Boot aktivieren. Was ist der erste tragfähige Schritt?", "options": [
+          {"text": "Alles in einem Durchgang ändern; ein Firmware-Kennwort ersetzt den BitLocker-Wiederherstellungsschlüssel.", "rationale": "Ein Setup-Kennwort schützt nur Firmware-Einstellungen. Es ersetzt keinen Laufwerksschlüssel; ein TPM-Reset kann geschützte Schlüssel unzugänglich machen.", "correct": false},
+          {"text": "UEFI-/Secure-Boot-, TPM- und BitLocker-Zustand getrennt prüfen, Recovery-Schlüssel und Service-Bootpfad sichern, dann die gerätespezifische Änderung freigeben.", "rationale": "Richtig. Erst getrennte Istwerte, Abhängigkeiten und Rückweg machen die Änderung überprüfbar und reversibel.", "correct": true},
+          {"text": "Nur Secure Boot einschalten; damit ist das Laufwerk automatisch verschlüsselt und jede Recovery-Frage erledigt.", "rationale": "Secure Boot validiert UEFI-Startcode. Es verschlüsselt keine Laufwerksdaten und sichert keinen Recovery-Schlüssel.", "correct": false}
+        ]},
+        {"type": "markdown", "markdown": "Erfasse für **jedes konkrete Gerät** zuerst Firmware-Startmodus, wirksamen Secure-Boot-Status, TPM-Bereitschaft, BitLocker-Schutzstatus, hinterlegte Wiederherstellungsinformationen sowie benötigte Boot- und Schnittstellenpfade. Auf einem geeigneten Windows-UEFI-Gerät liefert `Confirm-SecureBootUEFI` mit passenden Rechten **True** oder **False**. Auf einer nicht unterstützten Plattform, etwa im Legacy-BIOS-Modus, ist eine Fehlermeldung nicht gleichbedeutend mit „Secure Boot ist nur ausgeschaltet“: Ein Wechsel des Startmodus ist ein eigenes Migrationsvorhaben. TPM-Bereitschaft lässt sich auf dem Windows-Beispiel über `tpm.msc` und die dokumentierten Geräteoptionen untersuchen. `Get-BitLockerVolume` zeigt den gesonderten Laufwerks- und Schutzstatus. Ein Menüschalter allein beweist weder einen erfolgreichen Start noch aktive Verschlüsselung."}
+      ]
+    },
+    {
+      "title": "Secure Boot: Signaturen statt Datenverschlüsselung",
+      "blocks": [
+        {"type": "markdown", "markdown": "**Secure Boot** ist eine UEFI-Funktion. Die Firmware prüft Signaturen relevanter UEFI-Images beim Laden gegen autorisierte und gesperrte Signaturdaten. Im Nordhafen-Fall muss deshalb vor der Aktivierung geklärt sein, ob das installierte Windows, benötigte Bootloader und Recovery-Medien zum freigegebenen Vertrauenssatz passen. Eine nicht akzeptierte Komponente kann am Start gehindert werden. Secure Boot sagt **nicht**, ob das Laufwerk verschlüsselt ist oder ob eine laufende Anwendung sicher ist. Das ältere Wort „BIOS-Passwort“ meint im Auftrag den Schutz der Firmware-Konfiguration; auf diesem Pilotgerät ist die technisch passende Bezeichnung **UEFI-Setup-Kennwort**. Bei einem echten Legacy-BIOS-Start sind Secure-Boot-Schalter und Windows-Abfrage nicht einfach gleichzusetzen. Firmware-Modus und mögliche Umstellung müssen vorab gerätespezifisch geklärt werden."},
+        {"type": "figure", "diagramId": "uefi-boot-vertrauenskette", "alt": "Technischer Ablauf von Secure Boot: UEFI-Firmware mit Vertrauens- und Sperrdaten, UEFI-Boot-Image, Signaturprüfung und Entscheidung über Laden oder Blockieren. Keine Datenverschlüsselung.", "caption": "Eigene technische Vertrauenskette. Die Signaturentscheidung betrifft den Startcode, nicht den Inhalt des Laufwerks."},
+        {"type": "quiz", "id": "uefi-rollen-quiz", "question": "Nach der Aktivierung meldet Confirm-SecureBootUEFI True. Welche Aussage darf Nordhafen daraus ableiten?", "options": [
+          {"text": "UEFI Secure Boot ist auf diesem unterstützten Windows-Gerät wirksam; BitLocker-Verschlüsselung und TPM-Bereitschaft müssen separat geprüft werden.", "rationale": "Richtig. Der Befehl weist den Secure-Boot-Zustand nach, nicht den Schutzstatus des Laufwerks oder des TPM.", "correct": true},
+          {"text": "Die SSD ist damit verschlüsselt; ein BitLocker-Statuscheck wäre doppelt.", "rationale": "Eine erfolgreiche Signaturprüfung des Startcodes ist keine Verschlüsselung der SSD. Prüfe den BitLocker-Status separat.", "correct": false},
+          {"text": "Alle späteren Programme und Treiber sind nun automatisch vertrauenswürdig.", "rationale": "Secure Boot betrifft den geprüften UEFI-Startpfad und ist kein pauschales Urteil über alle Programme zur Laufzeit.", "correct": false}
+        ]}
+      ]
+    },
+    {
+      "title": "TPM und BitLocker nicht verwechseln",
+      "blocks": [
+        {"type": "markdown", "markdown": "Das **TPM** ist eine Hardware-/Firmware-Sicherheitsfunktion für Schlüssel und Startzustandsmessungen. Bei einer passenden BitLocker-Konfiguration kann es Laufwerksschlüssel an Gerät und Startbedingungen binden. **BitLocker** ist dagegen die Funktion, die das Laufwerk verschlüsselt. Weder ein bereites TPM noch aktives Secure Boot beweist für sich allein, dass BitLocker das Systemlaufwerk schützt; BitLocker ist auch in Konfigurationen ohne TPM möglich. Vor der Nordhafen-Änderung werden deshalb `tpm.msc`, BitLocker-Status und verfügbare Recovery-Informationen unabhängig dokumentiert. Sollte das TPM im UEFI tatsächlich deaktiviert sein, plant die IT eine freigegebene Aktivierung nach Geräteanleitung und prüft danach erneut. **TPM-Clear/Zurücksetzen ist kein Aktivierungsschritt**: Es kann TPM-gebundene Schlüssel löschen und den Zugang zu geschützten Daten gefährden. Firmware- und Bootänderungen können eine BitLocker-Wiederherstellung auslösen; den zugehörigen Schlüssel muss Nordhafen vorab außerhalb des betroffenen Geräts berechtigt abrufen können, ohne ihn in einem Ticket oder Screenshot offenzulegen. Je nach konkreter Änderung kann es zudem nötig sein, den BitLocker-Schutz **zeitweilig auszusetzen**. Das wird vorab nach Geräte- und BitLocker-Anleitung entschieden, nicht pauschal für jede UEFI-Einstellung. Nach dem Neustart muss der Schutz wieder aufgenommen und als aktiv nachgewiesen werden. Aussetzen ist nicht dasselbe wie Entschlüsseln oder BitLocker abschalten."},
+        {"type": "figure", "diagramId": "uefi-tpm-datenschutz", "alt": "Drei nebeneinander dargestellte Schutzfragen: Secure Boot entscheidet über UEFI-Startcode, TPM bindet Schlüssel an Gerät und Startzustand, BitLocker verschlüsselt Laufwerksdaten.", "caption": "Eigener technischer Rollenvergleich. Die drei Schutzfragen brauchen getrennte Nachweise, nicht nur einen Menüschalter."},
+        {"type": "quiz", "id": "uefi-tpm-bitlocker-fall", "question": "Bei einem zweiten Testgerät ist das TPM bereit, aber Get-BitLockerVolume zeigt für C: keinen aktiven Schutz. Was folgt daraus?", "options": [
+          {"text": "Das TPM ersetzt BitLocker, also sind die Daten im ausgeschalteten Gerät verschlüsselt.", "rationale": "TPM-Bereitschaft ist kein Nachweis für Laufwerksverschlüsselung. Der BitLocker-Schutz muss gesondert eingerichtet und geprüft werden.", "correct": false},
+          {"text": "Der TPM-Status ist nur ein Baustein. BitLocker-Schutz und Recovery-Informationen fehlen beziehungsweise müssen getrennt geklärt werden.", "rationale": "Richtig. Das TPM kann Schlüssel schützen, verschlüsselt das Laufwerk aber nicht selbst.", "correct": true},
+          {"text": "Das TPM sollte sofort gelöscht werden; dadurch schaltet Windows BitLocker automatisch ein.", "rationale": "TPM-Clear kann Schlüssel vernichten. Ohne vorab gesicherten Recovery-Schlüssel droht Datenverlust; BitLocker wird dadurch nicht aktiviert.", "correct": false}
+        ]}
+      ]
+    },
+    {
+      "title": "Firmware-Zugang und Bootpfade mit Serviceplan",
+      "blocks": [
+        {"type": "markdown", "markdown": "Auf den hier betrachteten **Surface-Unternehmensgeräten** können geeignete UEFI-Einstellungen den Setup-Zugang mit einem Administrationskennwort schützen, Secure Boot konfigurieren und Bootoptionen wie Windows Boot Manager, USB-Speicher oder PXE-Netzwerkstart verwalten. Die verfügbaren Menüs und Sperren hängen vom **konkreten Modell und Hersteller** ab. Nordhafen verwahrt Setup-Zugang und BitLocker-Recovery getrennt in der vorgesehenen Verwaltung; ein Firmware-Kennwort ist kein Windows-Login und kein Ersatz für Verschlüsselung. Ein enger Alltagsstart über Windows Boot Manager kann sinnvoll sein. Vor einer Beschränkung von USB- oder PXE-Boot klärt die IT jedoch, welche Medien der Service tatsächlich nutzt und wie eine autorisierte Ausnahme oder Vor-Ort-Wiederherstellung funktioniert. PXE wird für die Nordhafen-Neuinstallation noch gebraucht; es wird nicht blind gesperrt. Die USB-Schnittstelle selbst bleibt für das getestete Wiederherstellungsmedium nötig: **USB-Boot-Reihenfolge** und **USB-Controller/Port** sind verschiedene Stellschrauben. Ein bestätigtermaßen ungenutzter Funkadapter könnte auf einem dafür unterstützten Gerät deaktiviert werden, erst nach Peripherie- und Supportprüfung. Ein pauschales „alle Schnittstellen aus“ ist keine Bedarfsanalyse."},
+        {"type": "figure", "diagramId": "uefi-recovery-pfad", "alt": "Vier Ebenen des Nordhafen-Sollzustands: freigegebener Alltagsstart über Windows Boot Manager, geschützter UEFI-Setup-Zugang, dokumentierter Recovery-Schlüssel und benötigter USB-/PXE-Serviceweg sowie getrennte Tests von Normalstart und Wiederherstellung.", "caption": "Eigener technischer Betriebs- und Recovery-Pfad. Eine Boot-Sperre ist erst tragfähig, wenn die berechtigte Ausnahme praktisch funktioniert."},
+        {"type": "quiz", "id": "uefi-bootfall", "question": "Nordhafen nutzt PXE für Neuinstallationen und USB für Notfallmedien. Welche Änderung passt zum Auftrag, ohne den Serviceweg abzuschneiden?", "options": [
+          {"text": "USB-Controller und PXE sofort abschalten; das Setup-Kennwort genügt für jede Wiederherstellung.", "rationale": "USB-Bootoption und gesamter USB-Port sind verschiedene Eingriffe. Der Service braucht die Medien; ein Setup-Kennwort ersetzt weder Bootmedium noch Recovery-Schlüssel.", "correct": false},
+          {"text": "Alltags-Bootziel, Setup-Schutz und gerätespezifische Bootregeln mit dem Service abstimmen; Recovery-Schlüssel und autorisierten USB-/PXE-Weg vor einer Sperre sichern und testen.", "rationale": "Richtig. Beschränkungen werden an reale Abhängigkeiten und einen geprüften Vor-Ort-Rückweg gebunden.", "correct": true},
+          {"text": "Nur die Reihenfolge ändern und danach aus Windows starten; ein erfolgreicher Normalstart beweist automatisch, dass USB- und PXE-Recovery noch möglich sind.", "rationale": "Normalstart und Wiederherstellung sind getrennte Tests. Eine Bootregel kann den Alltagsstart erlauben und den Serviceweg zugleich verhindern.", "correct": false}
+        ]},
+        {"type": "callout", "kind": "warning", "label": "Kein pauschaler TPM-Reset", "markdown": "Ein TPM-Clear, ein ungeplanter Wechsel von Legacy zu UEFI oder das Sperren des letzten Recovery-Mediums ist keine Routinehärtung. Die IT braucht zuerst die berechtigten Wiederherstellungsinformationen, Geräteanleitung, physische Zugriffsmöglichkeit und einen freigegebenen Rollback-Plan."}
+      ]
+    },
+    {
+      "title": "Die Änderung als überprüfbare Folge",
+      "blocks": [
+        {"type": "sequence", "id": "uefi-aenderungsfolge", "title": "Pilotgerät kontrolliert härten", "prompt": "Ordne die Phasen so, dass der normale Start und der berechtigte Servicezugang nach der Firmwareänderung überprüfbar bleiben.", "tag": "Änderungsfolge", "steps": [
+          {"id": "aendern", "label": "Nur freigegebene UEFI-Einstellungen und nötige Schnittstellen gerätespezifisch ändern"},
+          {"id": "pruefen", "label": "Secure Boot, TPM, aktiven BitLocker-Schutz, Normalstart und Recovery-Weg getrennt testen"},
+          {"id": "inventar", "label": "Startmodus, Schutzstatus, Firmwareoptionen, USB-/PXE- und Gerätebedarf erfassen"},
+          {"id": "nachweis", "label": "Soll/Ist, Testergebnisse und gesicherte Verantwortlichkeiten dokumentieren"},
+          {"id": "ziel", "label": "Sollzustand mit Betrieb und Service für das konkrete Modell freigeben"},
+          {"id": "recovery", "label": "Setup-Zugang, BitLocker-Schlüssel, Konsole und Medium sichern; nötiges Aussetzen des BitLocker-Schutzes vorab klären"}
+        ], "expected": ["inventar", "ziel", "recovery", "aendern", "pruefen", "nachweis"], "correctFeedback": "Richtig. Bedarf und Modell sind vor der Sperre geklärt, Recovery ist vorher verfügbar, und nach der Änderung werden Signaturprüfung, TPM, wieder aktiver BitLocker-Schutz, Normalstart und Serviceweg einzeln belegt.", "wrongFeedback": "Inventar und Servicebedarf müssen vor dem Soll stehen. Ohne vorab gesicherten Setup-Zugang, Schlüssel und Bootmedium kann eine Firmwareänderung den Rückweg abschneiden; ein erfolgreicher Normalstart ersetzt keinen Recovery-Test."}
+      ]
+    },
+    {
+      "title": "Ohne Spickzettel abrufen",
+      "blocks": [
+        {"type": "flashcards", "cards": [
+          {"id": "uefi-karte-secure-boot", "label": "Secure Boot", "front": "Was beweist ein wirksamer Secure-Boot-Status – und was nicht?", "back": "UEFI prüft autorisierte Signaturen relevanter Start-Images. Das beweist weder Laufwerksverschlüsselung noch die Sicherheit aller Programme zur Laufzeit."},
+          {"id": "uefi-karte-tpm", "label": "TPM", "front": "Warum ist ein bereites TPM kein Ersatz für BitLocker?", "back": "Das TPM kann Schlüssel und Startzustand absichern; BitLocker verschlüsselt das Laufwerk. Laufwerksschutz und Recovery-Schlüssel brauchen eigene Nachweise."},
+          {"id": "uefi-karte-legacy", "label": "Startmodus", "front": "Was bedeutet ein nicht unterstütztes Confirm-SecureBootUEFI-Ergebnis im Legacy-Modus?", "back": "Es ist nicht einfach Secure Boot gleich aus. Erst Firmware-Startmodus und Migrationsfähigkeit prüfen; kein blinder Schalterwechsel."},
+          {"id": "uefi-karte-recovery", "label": "Bootpfad", "front": "Warum dürfen USB-Boot, USB-Port und PXE nicht pauschal gesperrt werden?", "back": "Die Funktionen haben verschiedene Aufgaben. USB- oder PXE-Medien können für autorisierte Recovery oder Provisionierung nötig sein; Bedarf und Rückweg zuerst testen."}
+        ]},
+        {"type": "recall", "id": "uefi-fallbegruendung", "title": "Nordhafens Pilotänderung begründen", "prompt": "Formuliere einen kurzen Änderungsplan für das Pilotgerät: Trenne Secure Boot, TPM und BitLocker; nenne die Vorabprüfungen, den Umgang mit PXE/USB sowie je einen Nachweis für normalen Start und Recovery. Wie gehst du mit dem BitLocker-Schutz und einem möglichen temporären Aussetzen um? Begründe, warum du das TPM nicht einfach zurücksetzt.", "label": "Dein Plan", "minLength": 220, "model": "Ich prüfe zuerst UEFI-Startmodus und den wirksamen Secure-Boot-Status sowie TPM-Bereitschaft und den BitLocker-Schutz des Laufwerks getrennt. Secure Boot prüft Signaturen im UEFI-Startpfad, das TPM kann Schlüssel an Gerät und Startzustand binden, BitLocker verschlüsselt die Daten. Vor Firmwareänderungen sichere ich berechtigt abrufbare Recovery-Informationen, den Setup-Zugang und eine Vor-Ort-Wiederherstellung. Für die konkrete Änderung prüfe ich, ob BitLocker zeitweilig ausgesetzt werden muss, und plane die Wiederaufnahme samt Schutzstatus-Nachweis ein. PXE bleibt wegen der Neuinstallation eingeplant; USB-Port und USB-Boot sind getrennte Einstellungen, und das Notfallmedium muss erreichbar sein. Erst nach gerätespezifischer Freigabe ändere ich Secure Boot und nötige Bootregeln. Danach teste ich Windows-Normalstart und einen autorisierten Recovery-Pfad separat und dokumentiere alle Schutzstatus. TPM-Clear wäre kein Aktivieren, sondern könnte Schlüssel und geschützte Daten unzugänglich machen."}
+      ]
+    },
+    {
+      "title": "Lernziel-Check",
+      "blocks": [
+        {"type": "quiz", "id": "uefi-signatur-gate", "question": "Auf einem unterstützten Windows-UEFI-Gerät liefert Confirm-SecureBootUEFI True. Welcher Schluss ist fachlich gedeckt?", "options": [
+          {"text": "Der relevante UEFI-Startpfad nutzt Secure Boot; der BitLocker-Laufwerksschutz braucht einen eigenen Statusnachweis.", "rationale": "Richtig. Signaturprüfung des Startcodes und Laufwerksverschlüsselung sind verschiedene Schutzfunktionen.", "correct": true},
+          {"text": "Der gesamte Datenträger ist durch Secure Boot verschlüsselt.", "rationale": "Secure Boot prüft UEFI-Images, verschlüsselt aber keine Laufwerksdaten.", "correct": false},
+          {"text": "True besagt, dass jede gestartete Anwendung signiert und ungefährlich ist.", "rationale": "Die UEFI-Startprüfung ist kein allgemeines Laufzeiturteil über sämtliche Anwendungen.", "correct": false}
+        ], "requiredObjective": "secure-boot-korrekt-pruefen"},
+        {"type": "quiz", "id": "uefi-tpm-gate", "question": "Das TPM ist bereit. Welche weiteren Belege braucht Nordhafen für das bereits eingesetzte BitLocker-Laufwerk vor einer Firmwareänderung?", "options": [
+          {"text": "Keine: TPM-Bereitschaft beweist sowohl Verschlüsselung als auch einen vorhandenen Recovery-Schlüssel.", "rationale": "Ein bereites TPM belegt weder den BitLocker-Schutzstatus noch die Verfügbarkeit des Wiederherstellungsschlüssels.", "correct": false},
+          {"text": "BitLocker-Schutzstatus des Laufwerks und berechtigt abrufbaren, extern gesicherten Recovery-Schlüssel getrennt prüfen.", "rationale": "Richtig. Der Laufwerksschutz und sein Rückweg sind eigene, überprüfbare Zustände.", "correct": true},
+          {"text": "TPM sofort löschen, damit der Schlüssel nach der Änderung neu erzeugt wird.", "rationale": "TPM-Clear kann vorhandene Schlüssel unzugänglich machen. Ohne vorher gesicherten Recovery-Schlüssel kann der Zugriff auf verschlüsselte Daten verloren gehen.", "correct": false}
+        ], "requiredObjective": "tpm-bitlocker-trennen"},
+        {"type": "quiz", "id": "uefi-recovery-gate", "question": "Ein Dienstleister fordert: USB-Controller und PXE auf allen Nordhafen-Geräten sperren. Was ist für das Pilotgerät die richtige Entscheidung?", "options": [
+          {"text": "Sofort sperren; ein erfolgreicher Windows-Normalstart beweist auch die Wiederherstellbarkeit.", "rationale": "USB-Bootoption und USB-Port sind nicht identisch. Der Normalstart testet weder USB-Recovery noch PXE-Provisionierung; der Serviceweg könnte wegfallen.", "correct": false},
+          {"text": "Gerätespezifischen Bedarf und Setup-Zugang klären, Recovery-Schlüssel und Medium sichern, benötigte USB-/PXE-Pfade erhalten oder autorisierte Ausnahme testen und erst dann einschränken.", "rationale": "Richtig. Die Sperre folgt dem bestätigten Soll und einem getesteten Recovery-Weg, nicht einer pauschalen Gerätezahl.", "correct": true},
+          {"text": "Nur das UEFI-Setup-Kennwort setzen; damit sind Datenträger und alle Bootpfade automatisch geschützt.", "rationale": "Ein Setup-Kennwort schützt Firmware-Einstellungen, ersetzt aber weder BitLocker noch gerätespezifische Bootregeln oder Recovery-Tests.", "correct": false}
+        ], "requiredObjective": "firmware-mit-rueckweg-haerten"}
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {"type": "markdown", "markdown": "Fachliche Primärquellen, geprüft am 02.10.2026: [UEFI Specification 2.11: Secure Boot and Driver Signing](https://uefi.org/specs/UEFI/2.11/32_Secure_Boot_and_Driver_Signing.html), [Microsoft: Surface UEFI settings](https://learn.microsoft.com/en-us/surface/manage-surface-uefi-settings), [BitLocker overview](https://learn.microsoft.com/en-us/windows/security/operating-system-security/data-protection/bitlocker/), [BitLocker FAQ](https://learn.microsoft.com/en-us/windows/security/operating-system-security/data-protection/bitlocker/faq), [TPM troubleshooting](https://learn.microsoft.com/en-us/windows/security/hardware-security/tpm/initialize-and-configure-ownership-of-the-tpm), [Confirm-SecureBootUEFI](https://learn.microsoft.com/en-us/powershell/module/secureboot/confirm-securebootuefi?view=windowsserver2025-ps) und [BitLocker operations guide](https://learn.microsoft.com/en-us/windows/security/operating-system-security/data-protection/bitlocker/operations-guide). Der private ITLF10-12-Ausschnitt diente nur als Themenanker. Windows-Befehle und Surface-Menüs gelten nur für passende Geräte und Versionen. An produktiven Systemen sind Herstelleranleitung, Recovery-Verfahren und Freigabe verbindlich. Wiederhole morgen die drei Lernziel-Checks ohne Erklärungen."}
+      ]
+    }
+  ]
+}
