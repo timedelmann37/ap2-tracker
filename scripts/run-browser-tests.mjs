@@ -126,6 +126,7 @@ async function runFullSuite() {
   await import('./verify-patch-browser.mjs');
   await import('./verify-client-deployment-browser.mjs');
   await import('./verify-linux-admin-browser.mjs');
+  await import('./verify-access-principles-browser.mjs');
   useSignedInFixture = false;
   await import('./verify-space-browser.mjs');
 }
@@ -134,6 +135,9 @@ try {
   if (process.env.AP2_BROWSER_ONLY === 'linux-admin') {
     useSignedInFixture = true;
     await import('./verify-linux-admin-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'access-principles') {
+    useSignedInFixture = true;
+    await import('./verify-access-principles-browser.mjs');
   } else {
     await runFullSuite();
   }
