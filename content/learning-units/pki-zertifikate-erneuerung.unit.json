@@ -1,0 +1,353 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "pki-zertifikate-erneuerung",
+    "slug": "pki-zertifikate-erneuerung",
+    "title": "PKI, Zertifikate und Erneuerung",
+    "description": "Zertifikatsaufbau, Vertrauenskette und Dienstnamen prüfen; TLS-Schlüsselrollen unterscheiden und Erneuerungen am echten Endpunkt nachweisen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-8",
+    "groupLabel": "IT-Sicherheit und Datenschutz",
+    "itemId": "ga1-8__7",
+    "week": "KW 42",
+    "estimatedMinutes": 40,
+    "relevance": "hoch",
+    "sources": [
+      "pki-rfc5280",
+      "pki-rfc9525",
+      "pki-certbot",
+      "pki-tls13"
+    ],
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "aufbau",
+      "label": "Zertifikatsfelder und CA-Aufgabe zuordnen"
+    },
+    {
+      "id": "pruefung",
+      "label": "Vertrauenskette, Dienstnamen und Gültigkeit getrennt prüfen"
+    },
+    {
+      "id": "tls",
+      "label": "Zertifikatsauthentisierung von TLS-Verkehrsschlüsseln trennen"
+    },
+    {
+      "id": "erneuerung",
+      "label": "Erneuerung, Bereitstellung und Endpunktprüfung planen"
+    }
+  ],
+  "intro": "Das fiktive Werkstattportal Brückenfeld läuft unter portal.werk.example. Der Browser meldet einen Zertifikatsfehler, obwohl die Datei noch nicht abgelaufen ist. Später erneuert die Administration das Zertifikat, aber ein externer Test sieht weiterhin das alte. Du untersuchst beide Fehler und entwirfst eine überprüfbare Betriebsroutine.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "pki-rfc5280",
+        "sourceLocator": "4.1.1.3, 4.1.2 und 4.1.2.5: CA-Signatur, Felder, Gültigkeit; 3.2 und 6: Vertrauenskette",
+        "use": "Begriffs- und Ablaufprüfung für eigenständige Lernfälle",
+        "reviewStatus": "Genannte offizielle Passagen am 03.10.2026 direkt gelesen"
+      },
+      {
+        "sourceId": "pki-rfc9525",
+        "sourceLocator": "DNS-ID, subjectAltName und erwarteter Dienstname",
+        "use": "Begriffs- und Ablaufprüfung für eigenständige Lernfälle",
+        "reviewStatus": "Genannte offizielle Passagen am 03.10.2026 direkt gelesen"
+      },
+      {
+        "sourceId": "pki-certbot",
+        "sourceLocator": "Renewing certificates und deploy-hook; erfolgreicher Aufruf bedeutet nicht zwingend Erneuerung",
+        "use": "Begriffs- und Ablaufprüfung für eigenständige Lernfälle",
+        "reviewStatus": "Genannte offizielle Passagen am 03.10.2026 direkt gelesen"
+      },
+      {
+        "sourceId": "pki-tls13",
+        "sourceLocator": "Abschnitt 2: Certificate, CertificateVerify, Finished und Anwendungsdaten",
+        "use": "Begriffs- und Ablaufprüfung für eigenständige Lernfälle",
+        "reviewStatus": "Genannte offizielle Passagen am 03.10.2026 direkt gelesen"
+      }
+    ],
+    "notes": [
+      "Private Quelle europa-integratoren-2026:00491, Zeilen 5031–5078: Zertifikatsverwaltung am Reverse Proxy als Themenanker geprüft. OCR-Fragen, Buchfall und Abbildungen nicht übernommen.",
+      "Brückenfeld-Fall und technische SVGs eigenständig. Vereinfachtes PKI-/TLS-Modell; keine vollständige Validierungsimplementierung oder produktive Betriebsanweisung.",
+      "Bestehende Deep-Space-Referenzbindung und gemeinsame Lernkomponenten unverändert. Keine feste Zertifikatslaufzeit oder pauschale Online-Widerrufsprüfung behauptet."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "pki-kette",
+      "type": "flow",
+      "title": "Vertrauenskette",
+      "description": "Ausstellerbeziehungen, keine Netzwerkroute: Root-CA als bewusst gesetzter Vertrauensanker, Intermediate-CA und Serverzertifikat. Der Client prüft zum akzeptierten Anker.",
+      "items": [
+        {
+          "label": "Root-CA",
+          "detail": "Vertrauensanker im Client bereitgestellt"
+        },
+        {
+          "label": "Intermediate-CA",
+          "detail": "Von übergeordneter CA signiert"
+        },
+        {
+          "label": "Serverzertifikat",
+          "detail": "Öffentlicher Schlüssel und Dienstname"
+        }
+      ]
+    },
+    {
+      "id": "pki-betrieb",
+      "type": "flow",
+      "title": "Erneuerung nachweisen",
+      "description": "Vier getrennte Betriebsnachweise: Bestand und Zuständigkeit, rechtzeitige Erneuerung, Laden am TLS-Endpunkt, unabhängige Prüfung samt Alarmierung.",
+      "items": [
+        {
+          "label": "Bestand und Zuständigkeit",
+          "detail": "Dienstname, Endpunkt, Ablauf, Owner erfassen"
+        },
+        {
+          "label": "Rechtzeitig erneuern",
+          "detail": "Ausstellung und Fehlerüberwachung prüfen"
+        },
+        {
+          "label": "Bereitstellen und laden",
+          "detail": "Zertifikat, Kette und Schlüssel zuordnen"
+        },
+        {
+          "label": "Endpunkt unabhängig prüfen",
+          "detail": "Ausgelieferten Stand und Ablauf überwachen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Diagnose: noch gültig, trotzdem falsch",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "pki-diagnose",
+          "question": "Das Zertifikat ist zeitlich gültig, nennt aber nur api.werk.example. Der Aufruf gilt portal.werk.example. Was folgt?",
+          "options": [
+            {
+              "text": "Weiterarbeiten: Nur das Ablaufdatum zählt.",
+              "rationale": "Zeitliche Gültigkeit ersetzt keine Prüfung des Dienstnamens.",
+              "correct": false
+            },
+            {
+              "text": "Der Dienstname passt nicht; den Zertifikatsfehler untersuchen.",
+              "rationale": "Die angeforderte Identität muss zu einem passenden SAN-Eintrag passen.",
+              "correct": true
+            },
+            {
+              "text": "Den privaten Schlüssel an den Browser senden.",
+              "rationale": "Der private Schlüssel bleibt geschützt am TLS-Endpunkt.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Aufbau: öffentliche Bindung, geheime Schlüssel",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Zertifikat bindet einen öffentlichen Schlüssel an Identitätsangaben. Die CA (Certification Authority) signiert diese Bindung. Eine PKI umfasst auch Prozesse für Ausstellung, Vertrauen und Widerruf.\n\nIm Portalbestand liest du **Aussteller (Issuer)**, **Seriennummer**, **notBefore/notAfter**, **Subject**, **öffentlichen Schlüssel** und Erweiterungen. Für DNS-Dienstnamen ist **subjectAltName (SAN)** entscheidend. Schlüsselverwendung und weitere Einschränkungen begrenzen den zulässigen Einsatz. Die Zertifikatsdatei enthält keinen privaten Schlüssel; eine getrennte Schlüsseldatei oder ein exportiertes Gesamtpaket kann ihn enthalten und muss entsprechend geschützt werden."
+        },
+        {
+          "type": "quiz",
+          "id": "pki-aufbau",
+          "question": "Welche Information gehört in das Serverzertifikat?",
+          "options": [
+            {
+              "text": "Öffentlicher Schlüssel und signierte Identitätsangaben.",
+              "rationale": "Der private Schlüssel gehört nicht in das öffentliche Zertifikat.",
+              "correct": true
+            },
+            {
+              "text": "Der geheime Verkehrsschlüssel jeder künftigen Sitzung.",
+              "rationale": "Verkehrsschlüssel entstehen für Verbindungen, nicht als feste Zertifikatsfelder.",
+              "correct": false
+            },
+            {
+              "text": "Das Browserpasswort der Kundin.",
+              "rationale": "Anwendungszugang und Zertifikatsidentität sind verschiedene Aufgaben.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "aufbau"
+        }
+      ]
+    },
+    {
+      "title": "Prüfung: Vertrauen ist mehr als ein Datum",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "pki-kette",
+          "alt": "Ausstellerbeziehungen von Root-CA über Intermediate-CA zum Serverzertifikat.",
+          "caption": "Die Pfeile zeigen Ausstellerbeziehungen. Üblicherweise liefert der Server sein Zertifikat und benötigte Zwischenzertifikate; der akzeptierte Vertrauensanker stammt aus dem Clientbestand."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Für Brückenfeld sammelst du getrennte Befunde: Führt der Zertifikatspfad zu einem akzeptierten Vertrauensanker? Stimmen Signaturen und Einschränkungen? Passt der erwartete Dienstname zum SAN? Liegt die geprüfte Zeit im Gültigkeitsintervall? Ist der Verwendungszweck zulässig? Status-/Widerrufsinformationen werden gemäß Clientverfahren und Richtlinie behandelt – nicht jeder Client fragt bei jeder Verbindung die CA online ab.\n\n**Fallbefund:** SAN enthält nur `api.werk.example`. Erforderlich ist `portal.werk.example`. Eine neue Laufzeit repariert diesen Namensfehler nicht. Ebenso macht die Selbstsignatur einer unbekannten Root-CA sie nicht vertrauenswürdig. Eine interne CA muss kontrolliert als Vertrauensanker bereitgestellt werden; die Prüfung abzuschalten ist keine Reparatur."
+        },
+        {
+          "type": "quiz",
+          "id": "pki-pruefung",
+          "question": "Eine unbekannte Root-CA signiert sich selbst; der SAN passt und das Datum stimmt. Was ist richtig?",
+          "options": [
+            {
+              "text": "Selbstsigniert bedeutet automatisch vertrauenswürdig.",
+              "rationale": "Die Selbstsignatur ersetzt die bewusste Vertrauensentscheidung nicht.",
+              "correct": false
+            },
+            {
+              "text": "Ein passender SAN ersetzt die Kettenprüfung.",
+              "rationale": "Dienstname und Vertrauen sind unabhängige Prüfungen.",
+              "correct": false
+            },
+            {
+              "text": "Der akzeptierte Vertrauensanker fehlt; kontrollierte Bereitstellung prüfen.",
+              "rationale": "Erst eine bewusste Vertrauenskonfiguration macht den Anker für diesen Client akzeptiert.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "pruefung"
+        }
+      ]
+    },
+    {
+      "title": "TLS: Identität und Verkehrsschlüssel unterscheiden",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Beim vereinfachten **zertifikatsbasierten TLS-1.3-Vollhandshake** stimmen die Partner Parameter und Schlüsselmaterial ab. Der Server präsentiert Zertifikatsinformationen und weist mit **CertificateVerify** die Nutzung des zugehörigen privaten Schlüssels nach. Der Client prüft Zertifikat und Dienstidentität; **Finished** bindet den Handshake an die ausgehandelten Schlüssel. Anwendungsdaten werden mit abgeleiteten symmetrischen Verkehrsschlüsseln geschützt.\n\nDer öffentliche Zertifikatsschlüssel ist nicht der geheime Sitzungsschlüssel. Auch die CA verschlüsselt nicht die Portalbestellungen. Brückenfeld terminiert TLS am Reverse Proxy: Der Nachweis gilt für diese Verbindung. Ein separater Backendweg benötigt ein eigenes Schutzkonzept. Sitzungswiederaufnahme, PSK und Clientzertifikate werden hier nicht als vollständige Abläufe behandelt."
+        },
+        {
+          "type": "quiz",
+          "id": "pki-tls",
+          "question": "Wofür nutzt der Server seinen Zertifikats-Privatschlüssel im beschriebenen TLS-1.3-Fall?",
+          "options": [
+            {
+              "text": "Er versendet ihn zum Browser.",
+              "rationale": "Private Schlüssel werden nicht zum Nachweis ihrer Nutzung offengelegt.",
+              "correct": false
+            },
+            {
+              "text": "Für den Signaturnachweis im Handshake.",
+              "rationale": "CertificateVerify authentisiert den Handshake; Anwendungsdaten nutzen abgeleitete Verkehrsschlüssel.",
+              "correct": true
+            },
+            {
+              "text": "Als unveränderten Datenschlüssel für alle Kundinnen.",
+              "rationale": "Verbindungsbezogene Verkehrsschlüssel sind nicht einfach der Zertifikats-Privatschlüssel.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "tls"
+        }
+      ]
+    },
+    {
+      "title": "Betrieb: die Datei ist nicht der Endpunkt",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "pki-betrieb",
+          "alt": "Betriebsablauf mit Bestand, Erneuerung, Bereitstellung und unabhängiger Endpunktprüfung.",
+          "caption": "Jeder Schritt braucht einen Nachweis. Ein erfolgreich erzeugtes Zertifikat beweist noch nicht, welches der Dienst ausliefert."
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Eigener Betriebsfall:** Die neue Datei hat Seriennummer B42. Der externe Portaltest sieht A17. Du prüfst den tatsächlich angesprochenen TLS-Endpunkt, die Zertifikatspfade und das Laden der Konfiguration. Bei mehreren Proxys prüfst du die betroffenen Instanzen. Anschließend vergleichst du am richtigen Hostnamen/SNI Seriennummer oder Fingerprint, Kette und Ablaufdatum mit dem Sollstand.\n\nFühre einen Bestand mit Owner, Vertretung, Dienstnamen, TLS-Endpunkt und Ablauf. Starte Erneuerungen mit ausreichendem Reaktionspuffer; überwache Fehlschläge und probe die Routine. Certbots `renew` kann erfolgreich enden, ohne ein Zertifikat zu erneuern. Ein `deploy-hook` kann an erfolgreiche Erneuerung anschließen; seine Bereitstellung muss trotzdem überprüft werden. Ein Testlauf ersetzt keine Endpunktprüfung.\n\n**Notfall:** Bei kompromittiertem privatem Schlüssel nicht nur verlängern: betroffenen Schlüssel aus dem Betrieb nehmen, Widerruf veranlassen, neuen Schlüssel samt Zertifikat bereitstellen und den Vorfall untersuchen. Alarmwege und Zuständigkeit müssen vor dem Ablauf feststehen."
+        },
+        {
+          "type": "quiz",
+          "id": "pki-erneuerung",
+          "question": "B42 liegt auf der Festplatte; der externe Test sieht A17. Welcher nächste Schritt liefert den nötigen Nachweis?",
+          "options": [
+            {
+              "text": "Endpunkt/Pfade und Laden prüfen; danach den ausgelieferten Stand erneut testen.",
+              "rationale": "Erst die unabhängige Endpunktprüfung bestätigt die wirksame Bereitstellung.",
+              "correct": true
+            },
+            {
+              "text": "Den erfolgreichen Dateiexport als Abschluss dokumentieren.",
+              "rationale": "Das beweist nicht den Zustand des laufenden Dienstes.",
+              "correct": false
+            },
+            {
+              "text": "Alle Zertifikatswarnungen im Browser abschalten.",
+              "rationale": "Das verdeckt den Fehler und schwächt die Sicherheitsprüfung.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "erneuerung"
+        },
+        {
+          "type": "recall",
+          "id": "pki-transfer",
+          "prompt": "Erkläre den SAN-Fehler und plane die Prüfung von B42 am Portal. Trenne Zertifikat, privaten Schlüssel und Verkehrsschlüssel; ergänze Zuständigkeit und den Kompromittierungsfall.",
+          "minLength": 180,
+          "model": "api.werk.example passt nicht zu portal.werk.example; ich brauche das richtige SAN und eine akzeptierte Vertrauenskette. Das Zertifikat enthält den öffentlichen Schlüssel; der private Schlüssel bleibt geschützt. TLS leitet eigene Verkehrsschlüssel ab. Für B42 prüfe ich den tatsächlichen TLS-Endpunkt, Pfade und Laden der Konfiguration und kontrolliere anschließend den ausgelieferten Stand unabhängig. Owner und Vertretung überwachen Ablauf und Erneuerungsfehler. Bei Schlüsselkompromittierung veranlasse ich Widerruf, neuen Schlüssel und neues Zertifikat sowie Vorfallbearbeitung."
+        }
+      ]
+    },
+    {
+      "title": "Abruftraining",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "id": "pki-cards",
+          "cards": [
+            {
+              "id": "inhalt",
+              "label": "PKI im Betrieb",
+              "front": "Was steht im Zertifikat?",
+              "back": "Öffentlicher Schlüssel, Identitätsangaben, Aussteller, Seriennummer, Gültigkeit, Erweiterungen und CA-Signatur. Kein privater Schlüssel."
+            },
+            {
+              "id": "ca",
+              "label": "PKI im Betrieb",
+              "front": "Was bestätigt die CA-Signatur?",
+              "back": "Die Bindung der Zertifikatsangaben an den öffentlichen Schlüssel; der Client braucht zusätzlich eine akzeptierte Vertrauenskette."
+            },
+            {
+              "id": "san",
+              "label": "PKI im Betrieb",
+              "front": "Wo wird der DNS-Name geprüft?",
+              "back": "Im passenden dNSName-Eintrag der subjectAltName-Erweiterung, gegen den erwarteten Dienstnamen."
+            },
+            {
+              "id": "anker",
+              "label": "PKI im Betrieb",
+              "front": "Wodurch vertraut der Client der Root-CA?",
+              "back": "Durch einen bewusst bereitgestellten Vertrauensanker. Selbstsignatur allein schafft kein Vertrauen."
+            },
+            {
+              "id": "tls",
+              "label": "PKI im Betrieb",
+              "front": "Ist der Zertifikatsschlüssel der Sitzungsschlüssel?",
+              "back": "Nein. Zertifikatsbasierte Authentisierung und die abgeleiteten Verkehrsschlüssel haben verschiedene Rollen."
+            },
+            {
+              "id": "deploy",
+              "label": "PKI im Betrieb",
+              "front": "Ist Erneuerung gleich erfolgreicher Betrieb?",
+              "back": "Nein. Installation, Laden durch den Dienst und Prüfung am tatsächlichen Endpunkt folgen."
+            },
+            {
+              "id": "widerruf",
+              "label": "PKI im Betrieb",
+              "front": "Was tun bei kompromittiertem privatem Schlüssel?",
+              "back": "Betroffenes Zertifikat widerrufen, neuen Schlüssel und neues Zertifikat bereitstellen sowie den Vorfall behandeln."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
