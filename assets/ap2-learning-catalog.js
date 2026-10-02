@@ -2235,6 +2235,33 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "rollenkonzept-rezertifizierung-berechtigungen",
+    "slug": "rollenkonzept-rezertifizierung-berechtigungen",
+    "title": "Rollenrechte prüfen und erneut bestätigen",
+    "description": "Rollenbasierte Rechte von direkten Benutzerrechten unterscheiden und bestehende Berechtigungen anhand aktueller Aufgaben nachvollziehbar überprüfen.",
+    "domain": "GA1",
+    "groupId": "ga1-7",
+    "groupLabel": "Berechtigungskonzepte",
+    "itemId": "ga1-7__5",
+    "week": "KW 41",
+    "estimatedMinutes": 32,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-02.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "rollenweg-und-direktrecht",
+      "rollenprofil-pruefen",
+      "rechte-rezertifizieren"
+    ],
+    "sources": [
+      "access-nist-rbac-faq",
+      "access-nist-sp80053r5",
+      "access-bsi-orp4-2023"
+    ],
+    "contentHash": "eddaef694207ef47ae311a9dfa5f43b612bd454fd570788335b5c819ec68cf2e",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "slug": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "title": "Struktogramm und Programmablaufplan",

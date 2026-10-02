@@ -131,6 +131,7 @@ async function runFullSuite() {
   await import('./verify-ntfs-share-browser.mjs');
   await import('./verify-agdlp-browser.mjs');
   await import('./verify-permission-matrix-browser.mjs');
+  await import('./verify-role-review-browser.mjs');
   useSignedInFixture = false;
   await import('./verify-space-browser.mjs');
 }
@@ -154,6 +155,9 @@ try {
   } else if (process.env.AP2_BROWSER_ONLY === 'permission-matrix') {
     useSignedInFixture = true;
     await import('./verify-permission-matrix-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'role-review') {
+    useSignedInFixture = true;
+    await import('./verify-role-review-browser.mjs');
   } else {
     await runFullSuite();
   }
