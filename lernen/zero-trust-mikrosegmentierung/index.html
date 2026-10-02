@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Kontextbezogene Zugriffe, PE/PA/PEP und begrenzte Dienstwege anhand eines eigenen Wartungsfalls unterscheiden und testen.">
+<title>Zero Trust und Mikrosegmentierung – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="zero-trust-mikrosegmentierung" data-progress-id="ga1-8__5" data-content-revision="2026-10-03.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-8">IT-Sicherheit und Datenschutz</a><span class="sep">›</span>
+    <span class="here">Zero Trust und Mikrosegmentierung</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Zero Trust und Mikrosegmentierung</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 35 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Die fiktive Wartungsfirma Nordbogen betreibt eine Auftragsanwendung. Technikerin Mira darf zugewiesene Aufträge lesen, aber keinen Gesamtexport starten. Ein Dienstkonto der Auftrags-API darf Daten abfragen, nicht die Lohnabrechnung erreichen. Ein Kollege schlägt vor: „Alle sind im VPN, also können wir intern alles freigeben.“ Du prüfst diese Entscheidung.</p>
+<section class="learning-goals" aria-labelledby="zero-trust-mikrosegmentierung-goals">
+  <h2 id="zero-trust-mikrosegmentierung-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Netzposition von einer konkreten Zugriffsberechtigung trennen</li>
+    <li>Entscheidung, Steuerung und Durchsetzung auseinanderhalten</li>
+    <li>Mikrosegmentierung auf notwendige Dienstwege begrenzen</li>
+    <li>Kontextänderungen und gesperrte Wege überprüfbar testen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Diagnose: im VPN ist nicht automatisch erlaubt</h2>
+<section class="quiz" data-quiz="zt-diagnose" data-correct="1">
+  <h3>Mira ist erfolgreich am VPN angemeldet. Welche Aussage ist richtig?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Das VPN stellt einen Zugangsweg bereit, aber keine fachliche Vollmacht."><span class="m">A</span> Damit darf sie jeden internen Dienst nutzen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die Anmeldung am Zugangsweg beantwortet nicht die Frage, ob Mira diese Datenaktion ausführen darf."><span class="m">B</span> Der Gesamtexport braucht weiterhin eine eigene Berechtigungsentscheidung.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein VLAN benennt eine Netztrennung, keine fachliche Berechtigung."><span class="m">C</span> Eine zusätzliche VLAN-Nummer erteilt Exportrechte.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2"><span class="num">2</span>Kontext statt Vertrauenszone</h2>
+<p><strong>Zero Trust</strong> erteilt kein pauschales Vertrauen allein wegen LAN, VPN oder Firmeneigentum. Identität, Gerätezustand, Ressource und Aktion fließen in eine dynamische Policy ein. Die drei Merksätze: ausdrücklich prüfen, nur benötigte Rechte vergeben und einen bereits eingedrungenen Angreifer mitdenken.</p>
+<h3>Nordbogens eigene Policy</h3>
+<p>Mira darf <strong>Auftrag 481 lesen</strong>, wenn ihre Technikerrolle diesen Auftrag umfasst und ihr verwaltetes Gerät den festgelegten Sicherheitszustand erfüllt. Der Gesamtexport bleibt für diese Rolle gesperrt. Ein gültiges Passwort ersetzt keine Geräteprüfung; ein aktuelles Gerät ersetzt keine Exportberechtigung.</p>
+<p>Ein nach der Firmenpolicy nicht konformes Testgerät erhält für die Auftragsanwendung keine Freigabe. Ein separat freigegebener Wartungsweg kann zur Behebung dienen. Das ist eine Entscheidung dieses Beispiels, keine allgemeine Pflicht, jedes unbekannte Gerät überall zu sperren.</p>
+<section class="quiz" data-quiz="zt-kontext" data-correct="0" data-required-objective="kontext">
+  <h3>Miras Gerät ist aktuell und ihr Konto gültig, aber ihre Rolle enthält kein Exportrecht. Was folgt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Alle notwendigen Bedingungen müssen zum konkreten Zugriff passen. Mira kann weiterhin die für sie freigegebenen Aufträge lesen."><span class="m">A</span> Export bleibt abgelehnt; Gerätezustand ersetzt keine Aktionsberechtigung.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Geräteintegrität und fachliche Befugnis beantworten verschiedene Fragen."><span class="m">B</span> Das aktuelle Gerät hebt Rollenbeschränkungen auf.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Der Netzweg erteilt keine Exportvollmacht."><span class="m">C</span> VPN-Zugang genügt für den Export.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s3"><span class="num">3</span>Die Entscheidung muss wirken</h2>
+<p>Die <strong>Policy Engine (PE)</strong> trifft und protokolliert die Entscheidung. Der <strong>Policy Administrator (PA)</strong> steuert deren Umsetzung. Der <strong>Policy Enforcement Point (PEP)</strong> kontrolliert den tatsächlichen Zugriffsweg. Es sind logische Rollen; sie müssen nicht drei einzelne Geräte sein.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Entscheiden und steuern">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="542" viewBox="0 0 960 542" role="img" aria-labelledby="diagram-zt-entscheidung-title diagram-zt-entscheidung-desc">
+  <title id="diagram-zt-entscheidung-title">Entscheiden und steuern</title>
+  <desc id="diagram-zt-entscheidung-desc">Steuerablauf von Anfrage und Kontext über PE und PA zum PEP.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Entscheiden und steuern</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Anfrage und Kontext</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Mira, Gerät, Auftrag 481 und Aktion Lesen</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Policy Engine (PE)</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Entscheidet: erlauben, ablehnen oder widerrufen</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Policy Administrator (PA)</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Setzt die Entscheidung durch Steuerbefehle um</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Policy Enforcement Point (PEP)</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Erlaubt, überwacht oder beendet den Zugriffsweg</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Steuerablauf, nicht Nutzdatenroute: Der PEP liegt am kontrollierten Zugriffsweg zur Ressource. Er meldet relevante Informationen zurück; dieser Rückweg ist hier ausgeblendet.</figcaption>
+</figure><p>Bei Nordbogen weist die Engine den Export zurück. Der Administrator übermittelt die Entscheidung an den Durchsetzungspunkt. Dieser lässt die Exportanforderung nicht zur geschützten Funktion durch. Ein Dashboard mit „abgelehnt“ wäre kein ausreichender Nachweis, wenn ein direkter Alternativweg den Export dennoch erlaubt.</p>
+<section class="quiz" data-quiz="zt-durchsetzung" data-correct="2" data-required-objective="durchsetzung">
+  <h3>Das Policy-Dashboard meldet Ablehnung, aber die Exportfunktion lässt sich über einen zweiten Endpunkt aufrufen. Was ist der Fehler?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Die Umgehung ist ein Zugriffskontrollproblem, kein Darstellungsproblem."><span class="m">A</span> Es fehlt nur eine schönere Anzeige.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Eine nicht wirksam durchgesetzte Entscheidung schützt die alternative Route nicht."><span class="m">B</span> Die Entscheidung ist richtig, deshalb ist die Anwendung geschützt.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Der Test muss den tatsächlichen Zugriff umfassen. Eine protokollierte Entscheidung allein genügt nicht."><span class="m">C</span> Die Durchsetzung ist unvollständig; auch der zweite Weg muss kontrolliert werden.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Mikrosegmentierung begrenzt Querbewegung</h2>
+<p><strong>Mikrosegmentierung</strong> kontrolliert Kommunikation zu einzelnen Ressourcen oder kleinen Ressourcengruppen granular. Sie begrenzt unnötige laterale Bewegung: Ein kompromittierter Dienst soll nicht automatisch seine Nachbarn erreichen. Durchsetzung kann beispielsweise am Host oder an einem Gateway erfolgen. Eine größere VLAN-Anzahl allein ist kein Nachweis; Mikrosegmentierung ist ein Baustein, nicht die gesamte Zero-Trust-Architektur.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Gezielte Dienstwege">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-topology" xmlns="http://www.w3.org/2000/svg" width="960" height="560" viewBox="0 0 960 560" role="img" aria-labelledby="diagram-zt-dienstwege-title diagram-zt-dienstwege-desc">
+  <title id="diagram-zt-dienstwege-title">Gezielte Dienstwege</title>
+  <desc id="diagram-zt-dienstwege-desc">Arbeitsplatz mit gezieltem Zugriff auf Auftrags-API, API mit gezieltem Datenbankzugriff; Lohnabrechnung ohne Freigabe.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Gezielte Dienstwege</tspan></text>
+  <g class="diagram-zone "><rect x="40" y="140" width="880" height="185" rx="18"/><text x="56" y="167">Auftragsdienst: zwei gezielte Wege</text></g><g class="diagram-zone "><rect x="340" y="355" width="280" height="145" rx="18"/><text x="356" y="382">Separater Schutzbereich</text></g><g class="diagram-edge "><path d="M150 260 L480 260"/><text class="diagram-edge-label" x="315" y="252" text-anchor="middle">Lesen</text></g><g class="diagram-edge "><path d="M480 260 L810 260"/><text class="diagram-edge-label" x="645" y="252" text-anchor="middle">Abfragen</text></g><g class="diagram-node device" transform="translate(150 260)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="150" y="255" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="150" dy="0">Arbeitsplatz</tspan></text><text class="diagram-node-detail" x="150" y="279" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="150" dy="0">Miras Sitzung</tspan></text><g class="diagram-node device" transform="translate(480 260)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="480" y="255" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="480" dy="0">Auftrags-API</tspan></text><text class="diagram-node-detail" x="480" y="279" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="480" dy="0">Dienstidentität</tspan></text><g class="diagram-node device" transform="translate(810 260)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="810" y="255" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="810" dy="0">Auftrags-DB</tspan></text><text class="diagram-node-detail" x="810" y="279" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="810" dy="0">Datenzugriff</tspan></text><g class="diagram-node device" transform="translate(480 440)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="480" y="435" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="480" dy="0">Lohnabrechnung</tspan></text><text class="diagram-node-detail" x="480" y="459" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="480" dy="0">Keine Freigabe</tspan></text>
+</svg>
+  </div>
+  <figcaption>Linien zeigen nur die im eigenen Fall freigegebenen Initiierungen. Rechte und Durchsetzung gelten pro Weg. DNS, Zeitdienst, Wartung und Antwortverkehr sind ausgelassen und separat zu planen.</figcaption>
+</figure><h3>Nordbogens Freigaben</h3>
+<ul>
+<li>Mira → Auftrags-API: zugewiesene Aufträge lesen.</li>
+<li>API-Dienstidentität → Auftragsdatenbank: benötigte Abfragen.</li>
+<li>API → Lohnabrechnung: keine fachliche Abhängigkeit, daher keine Freigabe.</li>
+</ul>
+<p>Netzregeln können Ziel und Dienst begrenzen; eine Anwendung muss zusätzlich festlegen, welche Aufträge und Aktionen erlaubt sind. Ein freigegebener TCP-Port unterscheidet nicht automatisch zwischen Lesen und Gesamtexport. Die Zeichnung ist kein vollständiger Installationsplan.</p>
+<section class="quiz" data-quiz="zt-dienstwege" data-correct="1" data-required-objective="dienstwege">
+  <h3>Nach einer Übernahme der API versucht deren Dienstkonto die Lohnabrechnung zu erreichen. Welche Planung begrenzt diesen Weg?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Das ermöglicht zusätzliche Querbewegung ohne Bedarf."><span class="m">A</span> Alle internen Server gegenseitig freigeben.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Im eigenen Fall besteht kein Bedarf zur Lohnabrechnung. Die Kontrolle muss am tatsächlichen Weg wirksam sein."><span class="m">B</span> Nur benötigte API-Abhängigkeiten freigeben und den Lohnzugriff ausdrücklich sperren und testen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein Name schafft keine Zugriffssperre."><span class="m">C</span> Den API-Server anders benennen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Einführung und Nachweis</h2>
+<p>Zero Trust wird schrittweise eingeführt: Ressourcen und Abhängigkeiten erfassen, einen wichtigen Anwendungsfall wählen und seine Policy überprüfbar umsetzen. Laufende Zugriffe werden bei relevant verändertem Kontext neu bewertet. Das heißt nicht, bei jedem Netzwerkpaket erneut einen MFA-Dialog einzublenden.</p>
+<h3>Autorisierte Tests für Nordbogen</h3>
+<ol>
+<li>Mira liest Auftrag 481 vom freigegebenen Testgerät: erfolgreich.</li>
+<li>Mira versucht den Gesamtexport: abgelehnt, einschließlich alternativer Route.</li>
+<li>Das Testgerät wird als nicht konform gemeldet: die festgelegte Neubewertung und Sitzungsreaktion nachweisen.</li>
+<li>Das API-Testkonto ruft die Lohnabrechnung auf: gesperrt.</li>
+<li>Policy-Komponente fällt aus: das vorher festgelegte Verhalten prüfen.</li>
+</ol>
+<p>Für <strong>neue Zugriffe</strong> legt Nordbogen bei fehlender Entscheidung Ablehnung fest. Bereits laufende Sitzungen brauchen eine eigene Ausfallregel. Notfallausnahmen sind begrenzt, begründet und überprüfbar – kein stilles „alle intern freigeben“. Nur im freigegebenen Testumfeld arbeiten.</p>
+<section class="quiz" data-quiz="zt-nachweis" data-correct="0" data-required-objective="nachweis">
+  <h3>Die Policy Engine fällt im Test aus. Welche Aussage belegt eine belastbare Betriebsvorbereitung?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Ausfallverhalten ist eine vorher festgelegte und getestete Entscheidung, keine automatische Folge eines Produktnamens."><span class="m">A</span> Neue Zugriffe werden wie festgelegt abgelehnt; laufende Sitzungen und eine begrenzte Notfallregel werden gesondert geprüft.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die pauschale Freigabe widerspricht Nordbogens definierter Ausfallpolicy."><span class="m">B</span> Alle Verbindungen freigeben, weil das einfacher ist.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Das prüft weder Policy-Ausfall noch Ressourcen- und Aktionskontrolle."><span class="m">C</span> Nur den VPN-Login prüfen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="recall-practice" data-recall="zt-transfer" data-min-length="180" aria-labelledby="zt-transfer-title">
+  <div class="recall-prompt"><h3 id="zt-transfer-title">Begründe deinen Zugriffsentwurf</h3><p>Der Kollege fordert volle Rechte nach VPN-Anmeldung. Begründe Miras Exportablehnung, ordne PE/PA/PEP zu und plane einen erlaubten sowie einen gesperrten Diensttest. Ergänze eine Kontextänderung und das Ausfallverhalten.</p></div>
+  <label class="sr-only" for="zt-transfer-answer">Deine freie Antwort</label>
+  <textarea id="zt-transfer-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> VPN ist nur ein Zugangsweg. Mira besitzt kein Gesamtexportrecht, auch mit aktuellem Gerät nicht. PE entscheidet, PA steuert, PEP kontrolliert den Zugriff einschließlich alternativer Endpunkte. Ich prüfe Lesen von Auftrag 481 und den gesperrten API-Zugriff auf Lohnabrechnung im Testnetz. Ein nicht konform gemeldetes Gerät löst die definierte Neubewertung aus. Ohne neue Policy-Entscheidung werden neue Zugriffe abgelehnt; laufende Sitzungen und eine begrenzte Notfallregel prüfe ich separat.</div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Abruftraining</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="vpn" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum erteilt VPN keine Exportvollmacht?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Zugangsweg und fachliche Aktionsberechtigung sind getrennt.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="kontext" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche Informationen braucht Nordbogens Leseentscheidung?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Miras Rolle, zugewiesener Auftrag, Aktion Lesen und der festgelegte Gerätezustand.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="pe" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was entscheidet die PE?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Erlauben, ablehnen oder widerrufen; die Entscheidung wird protokolliert.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="pa" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was übernimmt der PA?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Die Entscheidung durch Steuerung des Durchsetzungspunkts umsetzen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="pep" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum einen zweiten Endpunkt testen?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Er darf den kontrollierten Zugriff nicht umgehen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="micro" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was begrenzt Mikrosegmentierung?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Unnötige Kommunikation zu Ressourcen und damit laterale Bewegung; kein vollständiges Zero Trust allein.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="ausfall" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum neue und laufende Zugriffe getrennt prüfen?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Für laufende Sitzungen kann ein anderes definiertes Ausfallverhalten gelten als für neue Anfragen.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Zugriffsentscheidung“:</span><button type="button" data-card-id="vpn" data-card-rate="known">gewusst</button><button type="button" data-card-id="vpn" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="vpn"></span></div>
+<div class="card-rating"><span>Karte „Zugriffsentscheidung“:</span><button type="button" data-card-id="kontext" data-card-rate="known">gewusst</button><button type="button" data-card-id="kontext" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="kontext"></span></div>
+<div class="card-rating"><span>Karte „Zugriffsentscheidung“:</span><button type="button" data-card-id="pe" data-card-rate="known">gewusst</button><button type="button" data-card-id="pe" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="pe"></span></div>
+<div class="card-rating"><span>Karte „Zugriffsentscheidung“:</span><button type="button" data-card-id="pa" data-card-rate="known">gewusst</button><button type="button" data-card-id="pa" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="pa"></span></div>
+<div class="card-rating"><span>Karte „Zugriffsentscheidung“:</span><button type="button" data-card-id="pep" data-card-rate="known">gewusst</button><button type="button" data-card-id="pep" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="pep"></span></div>
+<div class="card-rating"><span>Karte „Zugriffsentscheidung“:</span><button type="button" data-card-id="micro" data-card-rate="known">gewusst</button><button type="button" data-card-id="micro" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="micro"></span></div>
+<div class="card-rating"><span>Karte „Zugriffsentscheidung“:</span><button type="button" data-card-id="ausfall" data-card-rate="known">gewusst</button><button type="button" data-card-id="ausfall" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ausfall"></span></div>
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-8"><span class="d">zurück zu</span><span class="t">IT-Sicherheit und Datenschutz</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">IT-Sicherheit und Datenschutz</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 4 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Diagnose: im VPN ist nicht automatisch erlaubt</a></li>
+<li><a href="#s2" data-t="s2">Kontext statt Vertrauenszone</a></li>
+<li><a href="#s3" data-t="s3">Die Entscheidung muss wirken</a></li>
+<li><a href="#s4" data-t="s4">Mikrosegmentierung begrenzt Querbewegung</a></li>
+<li><a href="#s5" data-t="s5">Einführung und Nachweis</a></li>
+<li><a href="#s6" data-t="s6">Abruftraining</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-8">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>
