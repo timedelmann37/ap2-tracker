@@ -2440,6 +2440,37 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "technische-organisatorische-massnahmen",
+    "slug": "technische-organisatorische-massnahmen",
+    "title": "Technische und organisatorische Maßnahmen wirksam kombinieren",
+    "description": "Für acht Bedrohungen Maßnahmenpaare begründen, Zuständigkeiten festlegen und Wirksamkeit nachweisen.",
+    "domain": "GA1",
+    "groupId": "ga1-8",
+    "groupLabel": "IT-Sicherheit und Datenschutz",
+    "itemId": "ga1-8__3",
+    "week": "KW 42",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-02.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "einordnung",
+      "paare",
+      "grenzen",
+      "nachweis"
+    ],
+    "sources": [
+      "tom-nist-controls",
+      "tom-owasp-mfa",
+      "tom-owasp-tls",
+      "tom-owasp-dos",
+      "threat-sql",
+      "threat-ransom"
+    ],
+    "contentHash": "5f986f7b1bfc2bd42501c2842eff3a2131aebb06eab3cff9088eb0477536041b",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "slug": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "title": "Struktogramm und Programmablaufplan",
