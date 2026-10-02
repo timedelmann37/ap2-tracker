@@ -1,0 +1,340 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "agdlp-agudlp-gruppenverschachtelung",
+    "slug": "agdlp-agudlp-gruppenverschachtelung",
+    "title": "AGDLP und AGUDLP: Gruppenwege für Berechtigungen",
+    "description": "Konten, globale, universelle und domänenlokale Sicherheitsgruppen korrekt verschachteln und den passenden Berechtigungsweg begründen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-7",
+    "groupLabel": "Berechtigungskonzepte",
+    "itemId": "ga1-7__3",
+    "week": "KW 41",
+    "estimatedMinutes": 40,
+    "relevance": "hoch",
+    "sources": [
+      "itlf10-12-2023",
+      "microsoft-ad-security-groups",
+      "microsoft-ad-nesting-native",
+      "microsoft-ad-group-scope",
+      "microsoft-ad-trust-concepts",
+      "microsoft-ad-gc-replication"
+    ],
+    "contentRevision": "2026-10-02.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "gruppen-scope-pruefen",
+      "label": "Gruppentyp, Geltungsbereich und erlaubte Verschachtelung für einen Berechtigungsweg prüfen"
+    },
+    {
+      "id": "agdlp-aufbauen",
+      "label": "Für ein Konto und eine Ressource eine zulässige AGDLP-Kette mit gezielter Berechtigung aufbauen"
+    },
+    {
+      "id": "agudlp-entscheiden",
+      "label": "Bei mehreren Domänen zwischen direktem AGDLP und einer begründeten AGUDLP-Bündelung entscheiden"
+    }
+  ],
+  "intro": "Die fiktive Hafenwald Sensorik GmbH betreibt Messdaten in einer Active-Directory-Gesamtstruktur. Mitarbeitende aus Labor und Außendienst sollen Berichte lesen. Eine Kollegin behauptet, wegen der zwei Kontendomänen müsse zwingend eine universelle Gruppe zwischen Rollen- und Ressourcengruppe stehen. Prüfe erst die Gruppengrenzen und entscheide dann, wann diese zusätzliche Schicht tatsächlich nützt.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "Privater OCR-Index, physische PDF-Seite 205 (`itlf10-12-2023:page:0205`)",
+        "use": "Nur geprüfter Themenanker für AGDLP und die Trennung von globaler und domänenlokaler Gruppe; sämtliche technischen Regeln anhand von Microsoft-Primärquellen ausgearbeitet",
+        "reviewStatus": "Direkte AGDLP-Themenstelle im Team am 02.10.2026 geprüft; kein Buchtext und keine Buchabbildung übernommen"
+      },
+      {
+        "sourceId": "microsoft-ad-security-groups",
+        "sourceLocator": "Active Directory security groups, Abschnitte Security groups, Distribution groups und Group scope; Tabelle Scope / Possible members / Can grant permissions / Possible member of",
+        "use": "Sicherheits- und Verteilergruppen unterscheiden sowie Mitglieder, Mitgliedschaften und Berechtigungsbereich der drei AD-Gruppenscopes prüfen",
+        "reviewStatus": "Offizielle Microsoft-Learn-Primärquelle am 02.10.2026 geprüft; beschreibt Windows Server 2016 bis 2025"
+      },
+      {
+        "sourceId": "microsoft-ad-nesting-native",
+        "sourceLocator": "Nesting in Native Mode, drei Aufzählungspunkte zu universal, global und domain local",
+        "use": "Zulässige Verschachtelung im angegebenen Native-Mode-Kontext und Grenzen über Domänen bzw. Forests belegen",
+        "reviewStatus": "Offizielle Microsoft-Learn-Primärquelle am 02.10.2026 geprüft; Geltung für die konkret eingesetzte AD-Umgebung bleibt zu prüfen"
+      },
+      {
+        "sourceId": "microsoft-ad-group-scope",
+        "sourceLocator": "[MS-AUTHSOD] 1.1.1.4.1 Group Scope, Absätze Domain global groups und Domain local groups",
+        "use": "Globale Gruppen aus einer von der Ressourcendomäne vertrauten Kontendomäne direkt in deren domänenlokale Gruppe einordnen; lokale Computergruppen abgrenzen",
+        "reviewStatus": "Offizielle Microsoft-Protokolldokumentation am 02.10.2026 geprüft; Vertrauensstellung im Fall ausdrücklich angenommen"
+      },
+      {
+        "sourceId": "microsoft-ad-trust-concepts",
+        "sourceLocator": "Windows Authentication Concepts, Authentication in trust relationships between domains",
+        "use": "Die Vertrauensrichtung im Lehrfall präzisieren: Die Ressourcendomäne vertraut der Kontendomäne; eine Anmeldung allein ersetzt kein Ressourcenrecht",
+        "reviewStatus": "Offizielle Microsoft-Learn-Primärquelle am 02.10.2026 geprüft"
+      },
+      {
+        "sourceId": "microsoft-ad-gc-replication",
+        "sourceLocator": "Active Directory Replication Concepts, Abschnitte Global catalog server und Universal group membership caching",
+        "use": "Global Catalog und Cache als Betriebsaspekt bei universellen Gruppen knapp benennen, ohne pauschale Leistungs- oder Anmeldegarantie",
+        "reviewStatus": "Offizielle Microsoft-Learn-Primärquelle am 02.10.2026 geprüft"
+      }
+    ],
+    "notes": [
+      "Hafenwald, Domänen, Konten, Gruppennamen, Freigaben, Aufgaben und Diagramme sind eigenständig erfundene Lehrbeispiele. Die private Buchstelle lieferte nur einen Themenanker; es wurden keine privaten Abbildungen oder Formulierungen übernommen.",
+      "Der Lehrfall setzt Sicherheitsgruppen, eine gemeinsame AD-Gesamtstruktur mit wirksamen Vertrauensstellungen und einen für die Verschachtelung geeigneten Domänenmodus voraus. Vor Produktiveinsatz müssen Domänenfunktionsebene, Vertrauen, Gruppentyp, Mitgliedschaft, Replikation, Ressourcentyp und effektive ACLs geprüft werden.",
+      "AGDLP und AGUDLP sind Planungs-Merkschemata für Gruppen und Berechtigungen, keine Windows-Zugriffsprüfungsalgorithmen oder vorgeschriebenen Produktfunktionen. Sie garantieren keinen Zugriff: Weitere Share-/NTFS-Berechtigungen, Deny-Einträge oder Produktregeln können ihn verändern. Eine universelle Gruppe ist in einer Mehrdomänen-Umgebung nicht automatisch nötig. Direkte Kontenmitgliedschaften in U oder D sind technisch möglich, auch wenn das hier gewählte Merkschema für die Verwaltung über G führt.",
+      "Menschliche Fach- und Verständlichkeitsprüfung steht aus; die Einheit bleibt CURATED_DRAFT."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "agdlp-rollen",
+      "type": "layers",
+      "title": "Die Buchstaben benennen verschiedene Aufgaben",
+      "description": "A ist das Benutzerkonto. G bündelt Konten einer Domäne nach gemeinsamer Aufgabe. U kann globale Gruppen mehrerer Domänen desselben Forests bündeln. D ist die domänenlokale Ressourcengruppe. P ist die konkrete Berechtigung auf einer Ressource. U kommt nur in AGUDLP vor.",
+      "items": [
+        {"label": "A · Konto", "detail": "Ein Benutzer- oder Dienstkonto"},
+        {"label": "G · Global", "detail": "Aufgabe; Mitglieder aus eigener Domäne"},
+        {"label": "U · Universal", "detail": "Optionale Bündelung im selben Forest"},
+        {"label": "D · Lokal", "detail": "Domänenlokale Gruppe in der Ressourcendomäne"},
+        {"label": "P · Recht", "detail": "Konkrete Berechtigung auf der Ressource"}
+      ]
+    },
+    {
+      "id": "agdlp-einzelressource",
+      "type": "flow",
+      "title": "AGDLP: Labor liest Kalibrierdaten",
+      "description": "Ein Konto aus der Domäne labor.hafenwald.example ist Mitglied der globalen Laborgruppe. Diese ist Mitglied einer domänenlokalen Gruppe derselben Domäne; nur diese Gruppe erhält Lesen auf dem Ordner Kalibrierung.",
+      "items": [
+        {"label": "A · Mira", "detail": "Konto in labor.hafenwald.example"},
+        {"label": "G · G_LAB_KALIBRIERUNG", "detail": "Globale Sicherheitsgruppe in labor"},
+        {"label": "D · D_LAB_KALIBRIERUNG_R", "detail": "Domänenlokale Sicherheitsgruppe in labor"},
+        {"label": "P · Lesen", "detail": "NTFS-Recht auf D:\\Kalibrierung"}
+      ]
+    },
+    {
+      "id": "agudlp-mehrdomane",
+      "type": "topology",
+      "title": "AGUDLP: gemeinsame Auswertung, zwei Ressourcen",
+      "description": "Miras Konto führt über die globale Laborgruppe, Samis Konto über die globale Außendienstgruppe zur universellen Gruppe U_AUSWERTUNG im selben Forest. Von U zweigen zwei domänenlokale Ressourcengruppen in daten.hafenwald.example ab. Jede D-Gruppe hat nur auf ihrem zugeordneten Ordner das NTFS-Leserecht.",
+      "nodes": [
+        {"id": "mira", "label": "A Mira", "detail": "labor", "x": 92, "y": 160, "kind": "client"},
+        {"id": "sami", "label": "A Sami", "detail": "aussendienst", "x": 92, "y": 355, "kind": "client"},
+        {"id": "g-labor", "label": "G Labor", "detail": "in labor", "x": 278, "y": 160, "kind": "server"},
+        {"id": "g-aussen", "label": "G Außendienst", "detail": "in aussendienst", "x": 278, "y": 355, "kind": "server"},
+        {"id": "u-auswertung", "label": "U Auswertung", "detail": "im selben Forest", "x": 465, "y": 258, "kind": "router"},
+        {"id": "d-messreihen", "label": "D Messreihen", "detail": "in daten", "x": 650, "y": 160, "kind": "server"},
+        {"id": "d-protokolle", "label": "D Protokolle", "detail": "in daten", "x": 650, "y": 355, "kind": "server"},
+        {"id": "p-messreihen", "label": "P Lesen", "detail": "Messreihen", "x": 850, "y": 160, "kind": "allowed"},
+        {"id": "p-protokolle", "label": "P Lesen", "detail": "Pruefprotokolle", "x": 850, "y": 355, "kind": "allowed"}
+      ],
+      "edges": [
+        {"from": "mira", "to": "g-labor"},
+        {"from": "sami", "to": "g-aussen"},
+        {"from": "g-labor", "to": "u-auswertung"},
+        {"from": "g-aussen", "to": "u-auswertung"},
+        {"from": "u-auswertung", "to": "d-messreihen"},
+        {"from": "u-auswertung", "to": "d-protokolle"},
+        {"from": "d-messreihen", "to": "p-messreihen"},
+        {"from": "d-protokolle", "to": "p-protokolle"}
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Diagnose: Braucht jede zweite Domäne ein U?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "agdlp-diagnose",
+          "diagnostic": true,
+          "question": "Eine globale Sicherheitsgruppe aus der Kontendomäne `labor.hafenwald.example` soll Lesen auf eine Ressource in `daten.hafenwald.example` erhalten. Die Ressourcendomäne `daten` vertraut der Kontendomäne `labor`. Muss dafür zwingend eine universelle Gruppe angelegt werden?",
+          "options": [
+            {"text": "Ja. Eine domänenlokale Gruppe darf niemals eine globale Gruppe aus einer anderen Domäne enthalten.", "rationale": "Das verwechselt die Herkunft der globalen Gruppe mit der Mitgliedschaftsregel der domänenlokalen Gruppe. Eine D-Gruppe der Ressourcendomäne kann eine G-Gruppe aus einer vertrauten Domäne aufnehmen.", "correct": false},
+            {"text": "Nein. Die globale Gruppe kann bei passender Vertrauensstellung direkt Mitglied einer domänenlokalen Gruppe in `daten` sein; U ist eine mögliche zusätzliche Bündelung.", "rationale": "Richtig. Für einen domänenübergreifenden Weg genügt oft A → G → D → P. Eine U-Gruppe kann wiederkehrende, forestweite Rollenbeziehungen zusammenfassen.", "correct": true},
+            {"text": "Ja. Das NTFS-Recht muss unmittelbar auf das einzelne Konto gesetzt werden, wenn die Domänen verschieden sind.", "rationale": "Ein direktes Konto-ACE ist hier nicht nötig. Die Gruppenwege erlauben die Trennung von Kontozuordnung und ressourcenspezifischem Recht.", "correct": false}
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "**AGDLP** steht für *Account → Global → Domain Local → Permission*. Das ist ein **Planungs-Merkschema**: Personen kommen in aufgabenbezogene **globale Sicherheitsgruppen**, diese in **domänenlokale Sicherheitsgruppen** für die Ressource, und erst die D-Gruppe erhält das konkrete Recht. **AGUDLP** fügt zwischen G und D eine **universelle Sicherheitsgruppe** ein. Sie kann globale Gruppen aus mehreren Domänen **derselben AD-Gesamtstruktur (Forest)** bündeln. **P ist eine tatsächlich auf der Ressource vergebene Berechtigung, keine weitere Gruppe.** Die Buchstaben beschreiben weder einen Windows-Zugriffsprüfungsalgorithmus noch eine vorgeschriebene Produktfunktion; ein technisch erlaubter Gruppenweg kann vom Merkschema abweichen."
+        },
+        {
+          "type": "figure",
+          "diagramId": "agdlp-rollen",
+          "alt": "Fünf beschriftete Vergleichskarten: A ist ein Konto; G bündelt Mitglieder der eigenen Domäne nach Aufgabe; U ist eine optionale Bündelung aus Domänen desselben Forests; D ist die Ressourcengruppe in deren Domäne; P ist ein konkret zugewiesenes Recht.",
+          "caption": "Eigenes Rollenmodell. Das U ist im einfacheren AGDLP-Weg nicht enthalten. Eine domänenlokale AD-Gruppe ist etwas anderes als eine lokale Gruppe auf einem einzelnen Computer."
+        }
+      ]
+    },
+    {
+      "title": "Gruppenscope: Was darf Mitglied von was sein?",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Im Lehrfall liegen `labor.hafenwald.example`, `aussendienst.hafenwald.example` und `daten.hafenwald.example` in **derselben Gesamtstruktur**. Die Domänen vertrauen einander; alle Gruppen im Modell sind **Sicherheitsgruppen**. Verteilergruppen dienen der Verteilung von Nachrichten und gehören nicht als Berechtigungsprinzipal in eine ACL. Eine **globale** Gruppe kann Konten und andere globale Gruppen **ihrer eigenen Domäne** enthalten. Sie kann Mitglied einer universellen Gruppe des Forests oder einer domänenlokalen Gruppe einer passenden Ressourcendomäne sein. Eine globale Gruppe aus `labor` kann also nicht direkt das Konto aus `aussendienst` als Mitglied aufnehmen."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Eine **universelle** Gruppe kann Konten, globale Gruppen und andere universelle Gruppen aus Domänen **ihres eigenen Forests** enthalten. Sie kann nicht eine domänenlokale Gruppe aufnehmen. Eine **domänenlokale** Gruppe darf unter anderem Konten und globale Gruppen aus anderen vertrauenden Domänen, universelle Gruppen sowie domänenlokale Gruppen **ihrer eigenen Domäne** enthalten. Direkte Kontenmitgliedschaften in U oder D sind technisch möglich; für die hier geübte klare Aufgabenverwaltung führt das Merkschema über G. Eine D-Gruppe aus `daten` erhält Berechtigungen auf Ressourcen **in `daten`**; für eine Ressource in `labor` wäre eine eigene passende D-Gruppe in `labor` zu planen. Diese Regeln sind gerichtet: `G_LAB` als Mitglied von `D_DAT` ist zulässig; `D_DAT` als Mitglied von `G_LAB` wäre es nicht."
+        },
+        {
+          "type": "quiz",
+          "id": "agdlp-scope-praxis",
+          "question": "Ein Admin will `G_AUSS_AUSWERTUNG` aus `aussendienst` und `G_LAB_AUSWERTUNG` aus `labor` bündeln. Welche Gruppe darf nach den angenommenen AD-Regeln beide aufnehmen?",
+          "options": [
+            {"text": "Eine universelle Sicherheitsgruppe im gemeinsamen Forest; alternativ kann eine D-Gruppe der Ressourcendomäne beide G-Gruppen direkt aufnehmen.", "rationale": "Richtig. U bündelt Gruppen aus Domänen desselben Forests. D kann globale Gruppen aus vertrauten Domänen direkt enthalten; die Wahl hängt vom Verwaltungszweck ab.", "correct": true},
+            {"text": "Eine globale Sicherheitsgruppe in `labor`, weil global bedeutet, dass ihre Mitglieder aus allen Domänen stammen dürfen.", "rationale": "Global beschreibt nicht einen offenen Mitgliedskreis. Konten und globale Untergruppen einer G-Gruppe stammen aus derselben Domäne wie diese Gruppe.", "correct": false},
+            {"text": "Eine domänenlokale Gruppe aus `daten`, die anschließend Mitglied von `G_LAB_AUSWERTUNG` wird.", "rationale": "Die Richtung ist verkehrt. Eine D-Gruppe kann G-Gruppen aufnehmen, aber eine G-Gruppe darf keine D-Gruppe als Mitglied haben.", "correct": false}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Durchgespielt: AGDLP für eine Ressource",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Mira arbeitet in der Kalibrierung und hat ein Konto in `labor`. Der Ordner `D:\\Kalibrierung` liegt auf einem Server derselben Domäne. **1. A → G:** Mira wird Mitglied der globalen Sicherheitsgruppe `G_LAB_KALIBRIERUNG`; andere Laborkonten ohne diese Aufgabe gehören nicht hinein. **2. G → D:** Die G-Gruppe wird Mitglied der domänenlokalen Sicherheitsgruppe `D_LAB_KALIBRIERUNG_R`. **3. D → P:** Nur diese D-Gruppe bekommt auf dem Ordner die NTFS-Berechtigung **Lesen**. Das R im Namen ist ein Namenshinweis, kein technisch wirksames Recht. Erst der ACL-Eintrag setzt das Recht. Im beschriebenen Fall liegt eine vollständige AGDLP-Kette vor."
+        },
+        {
+          "type": "figure",
+          "diagramId": "agdlp-einzelressource",
+          "alt": "Die Kette führt von Miras Konto in labor über die globale Gruppe G_LAB_KALIBRIERUNG und die domänenlokale Gruppe D_LAB_KALIBRIERUNG_R zum NTFS-Leserecht auf D:\\Kalibrierung. Die Gruppen und die Ressource liegen hier in derselben Domäne.",
+          "caption": "Eigener, vollständig beschrifteter AGDLP-Fall. Der Gruppenname allein vergibt keine Berechtigung; die ACL auf dem Zielordner ist der P-Schritt."
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Ergebnis prüfen:** Mira erreicht über die dargestellte Mitgliedschaft das an D vergebene Leserecht. Tarek hat zwar ebenfalls ein Labor-Konto, gehört aber nicht zu `G_LAB_KALIBRIERUNG`; **aus dieser Kette** erhält er kein Leserecht. Ob er über andere Gruppen, Freigabeberechtigungen oder explizite ACLs Zugriff hat, ist damit noch nicht entschieden. Bei einem SMB-Zugriff sind Freigabe- und NTFS-Berechtigungen gemeinsam zu prüfen. In einer praktischen Prüfung beschreibst du deshalb Gruppe, Domäne, Ressource **und** konkrete Berechtigung, statt nur die Buchstaben aufzuzählen."
+        },
+        {
+          "type": "quiz",
+          "id": "agdlp-anwendung-praxis",
+          "question": "Tarek soll Kalibrierdaten künftig ebenfalls lesen, weil er dauerhaft dieselbe Aufgabe wie Mira übernimmt. Was ist in diesem festgelegten Gruppenmodell die gezielte Änderung?",
+          "options": [
+            {"text": "Tarek nach fachlicher Freigabe in `G_LAB_KALIBRIERUNG` aufnehmen und die vorhandene D-Mitgliedschaft sowie die Ordner-ACL prüfen.", "rationale": "Richtig. Die aufgabenbezogene G-Gruppe bündelt Konten; D und ACL bleiben für dieselbe Aufgabe und Ressource bestehen. Der tatsächliche Zugriff muss anschließend getestet werden.", "correct": true},
+            {"text": "Tarek direkt auf der Ordner-ACL mit Vollzugriff eintragen, weil nur Konten den P-Schritt erhalten dürfen.", "rationale": "P ist hier an die D-Sicherheitsgruppe gebunden. Ein zusätzlicher Vollzugriff auf das Konto umgeht die gewählte Struktur und ist für Lesen zu weit.", "correct": false},
+            {"text": "`G_LAB_KALIBRIERUNG` in die lokale Administratorengruppe des Servers aufnehmen.", "rationale": "Lokale Administratorrechte sind für Lesen auf einem Ordner nicht erforderlich und würden deutlich mehr Befugnisse vergeben.", "correct": false}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Zwei Kontendomänen: AGDLP reicht, U kann bündeln",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Nun sollen Mira aus `labor` und Sami aus `aussendienst` Messreihen in der Domäne `daten` lesen. Ihre Konten bleiben in den jeweiligen **G-Gruppen** `G_LAB_AUSWERTUNG` und `G_AUSS_AUSWERTUNG`. Für nur diesen einen Ordner ist der kürzere Weg zulässig: **beide G-Gruppen direkt als Mitglieder** in `D_DAT_MESSREIHEN_R` aufnehmen; diese D-Gruppe erhält auf `D:\\Messreihen` das NTFS-Recht **Lesen**. Das ist auch über Domänengrenzen hinweg **AGDLP**, sofern die angenommene Vertrauensstellung und die übrigen Zugriffsvoraussetzungen vorliegen. Die bloße Zahl der Domänen erzwingt kein U."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Später sollen **dieselben beiden fachlich freigegebenen Teams** auch `D:\\Pruefprotokolle` in `daten` lesen. Eine mögliche Verwaltungslösung ist **AGUDLP**: `G_LAB_AUSWERTUNG` und `G_AUSS_AUSWERTUNG` werden Mitglieder der universellen Gruppe `U_AUSWERTUNG` im gemeinsamen Forest. U wird Mitglied von `D_DAT_MESSREIHEN_R` **und** `D_DAT_PROTOKOLLE_R`. Jede D-Gruppe erhält nur Lesen auf ihrem eigenen Ordner. **Bei der Umstellung werden die zuvor eingerichteten direkten G→D-Mitgliedschaften entfernt**; im folgenden Modell laufen beide Wege ausschließlich über U. Diese U-Gruppe drückt die gemeinsame fachliche Rolle einmal aus; die Ressourcengruppen und ihre ACLs bleiben getrennt. Alternativ wären auch zwei direkte G→D-Mitgliedschaften je Ressource möglich. Wächst die fachliche Berechtigung auseinander, darf die gemeinsame U-Gruppe nicht stillschweigend beide Rechte weitergeben."
+        },
+        {
+          "type": "figure",
+          "diagramId": "agudlp-mehrdomane",
+          "alt": "Mira und Sami aus zwei Kontendomänen sind jeweils in einer globalen Gruppe ihrer eigenen Domäne. Beide globalen Gruppen sind Mitglieder der universellen Gruppe U_AUSWERTUNG im selben Forest. U ist Mitglied der beiden domänenlokalen Gruppen D_DAT_MESSREIHEN_R und D_DAT_PROTOKOLLE_R in daten. Jede D-Gruppe erhält nur das NTFS-Leserecht auf ihrem eigenen Ordner.",
+          "caption": "Leserichtung von links nach rechts: A → G → U → D → P. Der U-Schritt bündelt dieselbe Zugriffsrolle für zwei getrennte Ressourcengruppen; direkte G→D-Wege sind in diesem Modell entfernt."
+        },
+        {
+          "type": "quiz",
+          "id": "agudlp-entscheidung-praxis",
+          "question": "Hafenwald hat nur `D_DAT_MESSREIHEN_R` und zwei berechtigte G-Gruppen aus `labor` und `aussendienst`. Welche Aussage ist fachlich belastbar?",
+          "options": [
+            {"text": "Beide G-Gruppen können bei passender Vertrauensstellung direkt in D; U wäre erst für eine fachlich sinnvolle, wiederverwendete Bündelung ein zusätzlicher Baustein.", "rationale": "Richtig. Der direkte Weg ist AGDLP. Eine U-Gruppe kann Verwaltungsaufwand bei wiederholter identischer Rollenbündelung senken, ist aber hier nicht technisch Pflicht.", "correct": true},
+            {"text": "Ab zwei Domänen ist AGDLP unzulässig; erst U macht die G-Gruppen zu Mitgliedern einer D-Gruppe.", "rationale": "D-Gruppen dürfen globale Gruppen aus passenden vertrauenden Domänen aufnehmen. Die Domänengrenze allein macht U nicht zwingend.", "correct": false},
+            {"text": "Die G-Gruppe aus `labor` muss in eine G-Gruppe aus `aussendienst` verschachtelt werden.", "rationale": "Eine globale Gruppe nimmt Konten und globale Untergruppen aus ihrer eigenen Domäne auf, nicht die G-Gruppe einer anderen Domäne.", "correct": false}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Eigene Anwendung und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**Erst vorhersagen:** Nach der beschriebenen Umstellung gibt es keine direkten G→D-Mitgliedschaften mehr. Angenommen, `G_AUSS_AUSWERTUNG` verlässt nun `U_AUSWERTUNG`, während U weiterhin in beiden D-Gruppen bleibt. Welche der **hier gezeigten** Berechtigungswege verliert Sami, und welche behält Mira? Formuliere die Vorhersage vor der nächsten Aufgabe. Danach vergleiche sie mit der Rückmeldung. Denke an die Richtung: Mitgliedschaft fließt vom Konto über G und gegebenenfalls U zur D-Gruppe mit ACL-Eintrag."
+        },
+        {
+          "type": "quiz",
+          "id": "agudlp-weg-unterbrechen",
+          "question": "Nach Entfernen der direkten G→D-Mitgliedschaften wird `G_AUSS_AUSWERTUNG` aus U entfernt; es gibt im Lehrfall keine weitere Mitgliedschaft oder ACL für Sami. Was folgt für die beiden dargestellten Ordner?",
+          "options": [
+            {"text": "Sami verliert beide dargestellten U→D→P-Wege; Mira behält sie über ihre weiterhin in U enthaltene G-Gruppe. Der effektive Zugriff ist anschließend zu testen.", "rationale": "Richtig. Beide D-Gruppen hängen in diesem Modell an derselben U-Bündelung. Die Aussage betrifft nur die dargestellten Wege; andere Berechtigungen sind ausgeschlossen.", "correct": true},
+            {"text": "Sami verliert nur Messreihen, weil eine U-Gruppe stets genau eine D-Gruppe bedienen darf.", "rationale": "U ist hier Mitglied von zwei D-Gruppen. Der entfernte G→U-Schritt unterbricht für Sami beide dargestellten Wege.", "correct": false},
+            {"text": "Mira verliert beide Ordner, weil jede Änderung an U alle übrigen Mitglieder entfernt.", "rationale": "Das Entfernen von Samis G-Gruppe löscht nicht automatisch Miras eigene G-Mitgliedschaft in U.", "correct": false}
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "agdlp-eigene-begruendung",
+          "title": "Den Gruppenweg ohne Vorlage erklären",
+          "prompt": "Schreibe für eine neue Hafenwald-Adminperson eine kurze Begründung: Wie erhält Mira Lesen auf Messreihen, warum könnte Sami ohne U direkt über AGDLP berechtigt werden, und wann würde U die Verwaltung vereinfachen? Nenne außerdem eine unzulässige Verschachtelung und eine Bedingung, die vor der produktiven Einrichtung geprüft werden muss.",
+          "label": "Deine Begründung",
+          "minLength": 180,
+          "model": "Miras Konto liegt in der globalen Gruppe G_LAB_AUSWERTUNG ihrer Kontendomäne. Diese Gruppe kann bei passender Vertrauensstellung direkt Mitglied der domänenlokalen Gruppe D_DAT_MESSREIHEN_R in der Ressourcendomäne daten sein; nur D erhält Lesen auf dem Zielordner. Dasselbe gilt für Samis G-Gruppe aus aussendienst: Auch mit zwei Domänen ist AGDLP möglich. Sollen dieselben Teams mehrere Ressourcen mit gleicher fachlicher Zugriffsregel nutzen, kann U_AUSWERTUNG die beiden G-Gruppen im gemeinsamen Forest bündeln und Mitglied der jeweiligen D-Gruppen sein. Unzulässig wäre etwa eine U-Gruppe als Mitglied einer G-Gruppe oder eine fremde D-Gruppe als Mitglied einer G-Gruppe. Vor der Umsetzung prüfe ich Vertrauensstellung, Gruppenscope, ACLs und den tatsächlichen Zugriff; weitere Freigabe- oder Deny-Regeln können das Ergebnis ändern."
+        },
+        {
+          "type": "flashcards",
+          "cards": [
+            {"id": "agdlp-karte-buchstaben", "label": "AGDLP", "front": "Welche Aufgabe haben A, G, D und P?", "back": "A: Konto. G: aufgabenbezogene globale Sicherheitsgruppe mit Mitgliedern aus eigener Domäne. D: domänenlokale Ressourcengruppe. P: konkretes Recht an der Ressource, das an D vergeben wird."},
+            {"id": "agdlp-karte-u", "label": "AGUDLP", "front": "Wann ist U hilfreich, und ist es bei mehreren Domänen zwingend?", "back": "U kann globale Gruppen mehrerer Domänen desselben Forests für einen wiederverwendeten Zugriffszweck bündeln. Es ist nicht allein wegen mehrerer Domänen Pflicht; globale Gruppen können bei passendem Vertrauen direkt in D liegen."},
+            {"id": "agdlp-karte-richtung", "label": "Verschachtelung", "front": "Darf eine globale Gruppe eine universelle Gruppe oder eine G-Gruppe einer anderen Domäne aufnehmen?", "back": "Nein. Eine G-Gruppe enthält Konten und gegebenenfalls G-Untergruppen aus ihrer eigenen Domäne; sie kann selbst Mitglied von U oder D sein."},
+            {"id": "agdlp-karte-d", "label": "Ressource", "front": "Wo darf eine domänenlokale Gruppe Berechtigungen erhalten?", "back": "Auf Ressourcen ihrer eigenen Domäne. Sie kann unter anderem globale Gruppen aus vertrauenden Domänen aufnehmen; das ist nicht dieselbe Art Gruppe wie eine lokale Computergruppe."},
+            {"id": "agdlp-karte-pruefung", "label": "Betrieb", "front": "Beweist eine fertige AGUDLP-Kette schon den effektiven SMB-Zugriff?", "back": "Nein. Gruppentyp und -mitgliedschaft, Vertrauen, Aktualisierung/Verfügbarkeit, Ziel-ACL, Freigaberechte und weitere Regeln müssen geprüft und der Zugriff getestet werden."}
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Grenzen vor dem Einsatz:** Universalgruppen bündeln nur Mitglieder aus ihrem **eigenen Forest**; eine externe vertrauende Domäne wird dadurch nicht automatisch Teil dieser U-Gruppe. Eine D-Gruppe kann bei geeigneter Vertrauensstellung dagegen auch globale Gruppen aus vertrauten Domänen aufnehmen. Für U-Mitgliedschaften sind Global Catalog und gegebenenfalls Caching Betriebsaspekte. Prüfe in der konkreten Umgebung die unterstützte Verschachtelung, die Vertrauensrichtung, die Mitgliedschaften und die tatsächlichen ACLs. Auch Gruppen mit korrekten Namen und Scopes ersetzen keine fachliche Freigabe oder den Test des effektiven Zugriffs."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check: neue Fälle",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "agdlp-scope-gate",
+          "question": "Die fiktive Brückenfeld AG nutzt zwei vertraute Domänen im selben Forest. `G_BAU_PRUEFER` ist eine globale Sicherheitsgruppe in `bau`; eine Datei liegt in `archiv`. Welcher Gruppenschritt ist zulässig?",
+          "options": [
+            {"text": "`G_BAU_PRUEFER` wird Mitglied der domänenlokalen Sicherheitsgruppe `D_ARCHIV_PLAN_R` in `archiv`.", "rationale": "Richtig. Eine D-Gruppe der Ressourcendomäne kann die G-Gruppe aus einer passenden vertrauenden Domäne enthalten; das Recht wird an D auf der Ressource vergeben.", "correct": true},
+            {"text": "`D_ARCHIV_PLAN_R` wird Mitglied von `G_BAU_PRUEFER`, damit die Ressource nach `bau` wandert.", "rationale": "Eine globale Gruppe kann keine domänenlokale Gruppe aufnehmen. Die Mitgliedschaftsrichtung ist verkehrt und verschiebt keine Ressource.", "correct": false},
+            {"text": "Eine universelle Gruppe aus einem extern vertrauten Forest wird Mitglied von `G_BAU_PRUEFER`.", "rationale": "Eine G-Gruppe kann keine U-Gruppe aufnehmen. Welche Mitglieder eine U-Gruppe selbst aufnehmen darf, ist eine andere Frage: Konten und Gruppen dafür müssen aus ihrem eigenen Forest stammen.", "correct": false}
+          ],
+          "requiredObjective": "gruppen-scope-pruefen"
+        },
+        {
+          "type": "quiz",
+          "id": "agdlp-aufbau-gate",
+          "question": "Bei Brückenfeld liegt das Konto Jana und der Ordner `D:\\Bauplaene` in der Domäne `bau`. Jana soll nur Lesen erhalten. Welche vollständige AGDLP-Umsetzung passt?",
+          "options": [
+            {"text": "Jana → `G_BAU_PLANLESEN` → `D_BAU_PLANLESEN_R`; auf `D:\\Bauplaene` erhält nur D das NTFS-Recht Lesen.", "rationale": "Richtig. Konto, aufgabenbezogene globale Gruppe, domänenlokale Ressourcengruppe und konkret vergebenes Leserecht sind getrennt und vollständig.", "correct": true},
+            {"text": "Jana → `D_BAU_PLANLESEN_R` → `G_BAU_PLANLESEN`; der Name R gibt der G-Gruppe automatisch Lesen.", "rationale": "Die Gruppenfolge ist umgekehrt; eine G-Gruppe nimmt D nicht auf. Ein Namenssuffix setzt außerdem keine ACL-Berechtigung.", "correct": false},
+            {"text": "Jana → `G_BAU_PLANLESEN`; das Konto bekommt zusätzlich Vollzugriff auf den Ordner, ohne D-Gruppe.", "rationale": "Das ist keine AGDLP-Kette und Vollzugriff ist für die geforderte Leseaufgabe zu weit. Die D-Gruppe mit gezieltem Recht fehlt.", "correct": false}
+          ],
+          "requiredObjective": "agdlp-aufbauen"
+        },
+        {
+          "type": "quiz",
+          "id": "agudlp-auswahl-gate",
+          "question": "Bei Brückenfeld liegen `bau`, `wartung` und die Ressourcendomäne `archiv` im selben Forest; `archiv` vertraut beiden Kontendomänen. Die globalen Prüfergruppen aus `bau` und `wartung` sollen dieselben zwei Archive in `archiv` lesen. Die Zugriffsregel ist für beide Teams und beide Archive fachlich gleich. Welche Entscheidung ist begründet?",
+          "options": [
+            {"text": "Beide G-Gruppen könnten direkt in jede passende D-Gruppe. Für die wiederverwendete gemeinsame Prüferrolle kann zusätzlich eine U-Gruppe im selben Forest beide G bündeln und Mitglied der zwei D-Gruppen werden.", "rationale": "Richtig. AGDLP bleibt zulässig; AGUDLP ist hier eine begründbare Verwaltungswahl. Jede D-Gruppe behält ihr eigenes Ressourcerecht, und eine spätere Trennung der Zugriffsregeln müsste neu geplant werden.", "correct": true},
+            {"text": "U ist schon deshalb technisch verpflichtend, weil `bau` und `wartung` verschiedene Domänen sind; G→D ist stets verboten.", "rationale": "Bei passender Vertrauensstellung dürfen beide G-Gruppen direkt Mitglieder der D-Gruppen in der Ressourcendomäne sein. U ist nicht pauschal vorgeschrieben.", "correct": false},
+            {"text": "Eine einzige G-Gruppe in `bau` nimmt die G-Gruppe aus `wartung` auf und bekommt direkt Vollzugriff auf beide Archive.", "rationale": "Eine G-Gruppe darf keine G-Gruppe aus einer anderen Domäne aufnehmen. Vollzugriff überschreitet außerdem die geforderte Leseberechtigung.", "correct": false}
+          ],
+          "requiredObjective": "agudlp-entscheiden"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Microsoft-Primärquellen, geprüft am 02.10.2026: [AD-Sicherheitsgruppen und Scope-Tabelle](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-security-groups), [Verschachtelung im Native Mode](https://learn.microsoft.com/en-us/windows/win32/ad/nesting-in-native-mode), [Protokolldokumentation zu Gruppenscopes](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-authsod/597504d8-5408-4629-9d81-aab661e6c953), [Vertrauensrichtung bei Domänen](https://learn.microsoft.com/en-us/windows-server/security/windows-authentication/windows-authentication-concepts) und [Global Catalog/Universalgruppen-Caching](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/replication/active-directory-replication-concepts). Der private Lehrbuchfund auf PDF-Seite 205 diente nur als Themenanker; alle Beispiele, Namen, Fragen und Diagramme sind eigenständig. Die Aussagen zu erlaubter Verschachtelung gelten im beschriebenen AD-Kontext; Domänenmodus, Vertrauensstellung, Gruppenart, ACLs und Anmelde-/Replikationszustand einer realen Umgebung müssen geprüft werden. Die Einheit bleibt bis zur menschlichen Freigabe CURATED_DRAFT."
+        }
+      ]
+    }
+  ]
+}
