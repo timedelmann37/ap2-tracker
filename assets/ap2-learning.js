@@ -517,7 +517,9 @@
       document.querySelector('[data-mastery-box]')?.removeAttribute('hidden');
       if (count) count.textContent = `${state.completed} von ${state.total} Pflichtzielen bestanden`;
       if (bar) bar.style.transform = `scaleX(${state.completed / state.total})`;
-      if (note) note.textContent = state.passed ? 'Beide Lernziele sind nachgewiesen.' : 'Bestehe die gekennzeichneten Lernziel-Checks.';
+      if (note) note.textContent = state.passed
+        ? (state.total === 1 ? 'Das Lernziel ist nachgewiesen.' : `Alle ${state.total} Lernziele sind nachgewiesen.`)
+        : 'Bestehe die gekennzeichneten Lernziel-Checks.';
     }
     const canToggle = state.passed || Boolean(tracker[progressId]);
     button?.toggleAttribute('disabled', !cloudReady || !canToggle);

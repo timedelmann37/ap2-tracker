@@ -1,0 +1,494 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "zeitgesteuerte-ausfuehrung-cron-systemd-timer-schtasks",
+    "slug": "zeitgesteuerte-ausfuehrung-cron-systemd-timer-schtasks",
+    "title": "Zeitgesteuerte Jobs mit Cron, systemd und Windows",
+    "description": "Cron-Ausdrücke lesen, systemd-Timer samt Service einordnen und einen täglichen Windows-Auftrag mit schtasks prüfen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-6",
+    "groupLabel": "Betriebssysteme und Administration",
+    "itemId": "ga1-6__5",
+    "week": "KW 40",
+    "estimatedMinutes": 32,
+    "relevance": "hoch",
+    "sources": [
+      "itlf10-12-2023",
+      "debian-crontab-5",
+      "debian-systemd-timer-5",
+      "debian-systemd-time-7",
+      "systemd-systemctl-man",
+      "microsoft-schtasks-create",
+      "microsoft-schtasks-query"
+    ],
+    "contentRevision": "2026-10-02.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "cron-zeitfelder",
+      "label": "die fünf Zeitfelder eines Benutzer-Crontabs korrekt lesen und schreiben"
+    },
+    {
+      "id": "timer-service",
+      "label": "systemd-Timer, zugehörigen Service und Nachholverhalten unterscheiden"
+    },
+    {
+      "id": "windows-auftrag",
+      "label": "einen täglichen Windows-Auftrag mit schtasks erstellen und seine Planung prüfen"
+    }
+  ],
+  "intro": "Bei der fiktiven Firma Linde soll ein geprüfter Statusbericht auf einem Linux-Server und einem Windows-Server täglich um 07:15 Uhr erstellt werden. Der Linux-Server ist gelegentlich zur geplanten Zeit ausgeschaltet. Du übersetzt den Auftrag in drei Zeitplanungsmodelle und prüfst jeweils, ob ein angelegter Zeitplan auch zu einem erfolgreichen Bericht geführt hat. Alle Befehle sind Lernbeispiele und werden hier nicht ausgeführt.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "lokaler OCR-Index, PDF-Seite 122, Informationsquellen für Skripting",
+        "use": "allgemeiner Kontext: Skriptvorschläge prüfen und zunächst in Testsystemen erproben; kein direkter Syntaxbeleg",
+        "reviewStatus": "OCR-Stelle gelesen; automatische Cron-Treffer waren thematisch unpassend; kein Buchtext und keine Buchgrafik übernommen"
+      },
+      {
+        "sourceId": "debian-crontab-5",
+        "sourceLocator": "Debian manpage crontab(5), Format und Notes",
+        "use": "fünf Zeitfelder, Benutzer-Crontab gegenüber System-Crontab, Stern und Schrittwert",
+        "reviewStatus": "offizielle Debian-Manpage am 02.10.2026 geprüft"
+      },
+      {
+        "sourceId": "debian-systemd-timer-5",
+        "sourceLocator": "Debian manpage systemd.timer(5), OnCalendar=, Unit=, Persistent=",
+        "use": "Kalenderauslöser, Service-Zuordnung und Nachholstart",
+        "reviewStatus": "offizielle Debian-Manpage am 02.10.2026 geprüft"
+      },
+      {
+        "sourceId": "debian-systemd-time-7",
+        "sourceLocator": "Debian manpage systemd.time(7), Calendar Events",
+        "use": "Kalenderausdruck und Prüfung mit systemd-analyze calendar",
+        "reviewStatus": "offizielle Debian-Manpage am 02.10.2026 geprüft"
+      },
+      {
+        "sourceId": "systemd-systemctl-man",
+        "sourceLocator": "Debian manpage systemctl(1), enable, --now, list-timers",
+        "use": "Timer dauerhaft aktivieren, sofort starten und nächste Auslösung anzeigen",
+        "reviewStatus": "offizielle Debian-Manpage am 02.10.2026 geprüft"
+      },
+      {
+        "sourceId": "microsoft-schtasks-create",
+        "sourceLocator": "Microsoft Learn, schtasks create, Syntax und Parameter",
+        "use": "/Create, /tn, /tr, /sc DAILY, /st",
+        "reviewStatus": "Microsoft Learn am 02.10.2026 geprüft"
+      },
+      {
+        "sourceId": "microsoft-schtasks-query",
+        "sourceLocator": "Microsoft Learn, schtasks query, Syntax und Beispiele",
+        "use": "angelegte Aufgabe und Zeitplan mit /query /tn /v /fo LIST prüfen",
+        "reviewStatus": "Microsoft Learn am 02.10.2026 geprüft"
+      }
+    ],
+    "notes": [
+      "Firma, Uhrzeit, Bericht, Erklärungen, Aufgaben, Diagramme und ergänzende Illustration sind eigenständig. Die im Stoffkatalog genannte Prüfung 2023/1 ist ein Themenmarker, kein hier eingesehener Prüfungsbeleg.",
+      "Cron-Details beziehen sich auf das verlinkte Debian-cron-Paket. Der Fall verwendet nicht gleichzeitig eingeschränkte Monats- und Wochentage; deren Verknüpfung ist implementationsabhängig und in Debian cron nicht schlicht UND.",
+      "Ein angelegter Zeitplan beweist keinen erfolgreichen Bericht. Ausführungsrechte, Umgebung, Zeitzone, Sommerzeit und Ergebnisprüfung gehören zur betrieblichen Abnahme. Menschliche Fachfreigabe offen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "cron-fuenf-felder",
+      "type": "comparison",
+      "title": "Cron-Ausdruck: 15 7 * * *",
+      "description": "Fünf eigene Feldkarten zeigen den Ausdruck 15 7 * * * von links nach rechts; danach folgt der Befehl.",
+      "items": [
+        {
+          "label": "15",
+          "detail": "Minute"
+        },
+        {
+          "label": "7",
+          "detail": "Stunde"
+        },
+        {
+          "label": "*",
+          "detail": "Monatstag"
+        },
+        {
+          "label": "*",
+          "detail": "Monat"
+        },
+        {
+          "label": "*",
+          "detail": "Wochentag"
+        }
+      ]
+    },
+    {
+      "id": "drei-planungsmodelle",
+      "type": "comparison",
+      "title": "Auslöser und Aktion bleiben getrennt",
+      "description": "Eigene Gegenüberstellung für denselben täglichen Statusbericht.",
+      "items": [
+        {
+          "label": "Cron",
+          "detail": "fünf Zeitfelder → Befehl in der Benutzer-Crontab"
+        },
+        {
+          "label": "systemd",
+          "detail": ".timer mit OnCalendar → gleichnamiger .service mit ExecStart"
+        },
+        {
+          "label": "Windows",
+          "detail": "Task-Trigger mit /sc und /st → Aktion mit /tr"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "1 · Einen Zeitplan vorhersagen",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "zeitplan-diagnose",
+          "question": "Was bedeutet in einer Benutzer-Crontab die Zeile `15 7 * * * /opt/ops/report.sh`?",
+          "options": [
+            {
+              "text": "Der Befehl ist für jeden Tag um 07:15 Uhr geplant.",
+              "rationale": "Richtig: Minute 15, Stunde 7; die drei Sterne schränken Tag und Monat nicht ein. Das sagt noch nichts über den Erfolg des Befehls.",
+              "correct": true
+            },
+            {
+              "text": "Der Befehl läuft alle 15 Minuten während der Stunde 07.",
+              "rationale": "Die 15 steht als fester Minutenwert. `*/15` wäre ein Schrittwert im Minutenfeld.",
+              "correct": false
+            },
+            {
+              "text": "Der Befehl läuft nur am 15. Juli.",
+              "rationale": "Der Monatstag steht erst an dritter Stelle, der Monat an vierter. Hier sind beide Felder `*`.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        },
+        {
+          "type": "figure",
+          "src": "/assets/learning/scheduled-jobs-three-models.png",
+          "width": 1774,
+          "height": 887,
+          "alt": "Illustration von drei Wegen zum gleichen Bericht: eine Uhr mit Zeitfeldern für Cron, ein Timer mit Dienstsymbol für systemd und ein Kalender mit Aufgabensymbol für Windows.",
+          "caption": "Illustration zum Fall: Drei Planungswerkzeuge können denselben Bericht anstoßen. Ob er tatsächlich entsteht, muss jeweils gesondert geprüft werden."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Ein Zeitplan besteht aus **Auslöser**, **Aktion** und **Nachweis**. Der Ausdruck legt nur fest, wann ein Start versucht wird. Ob `/opt/ops/report.sh` ausführbar ist und einen brauchbaren Bericht erzeugt, muss gesondert getestet werden. Schreibe nie ein ungetestetes Administrationsskript direkt in eine produktive Planung."
+        }
+      ]
+    },
+    {
+      "title": "2 · Fünf Cron-Felder lesen und schreiben",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "cron-fuenf-felder",
+          "alt": "Von links nach rechts: Minute 15, Stunde 7, Monatstag Stern, Monat Stern, Wochentag Stern; danach folgt der auszuführende Befehl.",
+          "caption": "Eigene Feldgrafik: `15 7 * * *` plant 07:15 Uhr an jedem Kalendertag."
+        },
+        {
+          "type": "markdown",
+          "markdown": "In einer **Benutzer-Crontab** stehen genau fünf Zeitfelder vor dem Befehl: `Minute Stunde Monatstag Monat Wochentag Befehl`. `*` bedeutet: dieses Feld schränkt nicht ein. `15 7 * * 1-5 /opt/ops/report.sh` wäre im hier verwendeten Debian-cron-Modell Montag bis Freitag um 07:15 Uhr. `*/15 7 * * *` würde dagegen **viermal** in der Stunde 07 starten: 07:00, 07:15, 07:30 und 07:45. Verwechsle einen festen Wert nicht mit einem Schrittwert.\n\nIn der systemweiten `/etc/crontab` steht zusätzlich ein Benutzerfeld zwischen den fünf Zeitfeldern und dem Befehl. Kopiere diese sechste Angabe nicht in eine Benutzer-Crontab."
+        },
+        {
+          "type": "sequence",
+          "id": "cron-feldfolge",
+          "title": "Felder ordnen",
+          "prompt": "Sortiere die fünf Zeitfelder von links nach rechts. Der Befehl kommt erst danach.",
+          "steps": [
+            {
+              "id": "monat",
+              "label": "Monat"
+            },
+            {
+              "id": "minute",
+              "label": "Minute"
+            },
+            {
+              "id": "wochentag",
+              "label": "Wochentag"
+            },
+            {
+              "id": "stunde",
+              "label": "Stunde"
+            },
+            {
+              "id": "monatstag",
+              "label": "Monatstag"
+            }
+          ],
+          "expected": [
+            "minute",
+            "stunde",
+            "monatstag",
+            "monat",
+            "wochentag"
+          ],
+          "correctFeedback": "Genau: Minute → Stunde → Monatstag → Monat → Wochentag. Danach folgt der Befehl.",
+          "wrongFeedback": "Lies zuerst die Uhrzeit als Minute und Stunde; erst danach kommen Monatstag, Monat und Wochentag."
+        },
+        {
+          "type": "quiz",
+          "id": "cron-stern-fehler",
+          "question": "Jemand schreibt `* 7 * * *`, will aber genau einen Start um 07:00 Uhr. Was muss geändert werden?",
+          "options": [
+            {
+              "text": "Das Minutenfeld von `*` auf `0` setzen: `0 7 * * *`.",
+              "rationale": "Richtig. `*` im Minutenfeld trifft jede Minute der Stunde 07; `0` nur Minute 00.",
+              "correct": true
+            },
+            {
+              "text": "Nur das Stundenfeld auf `0` setzen.",
+              "rationale": "Dann verschiebt sich der Stundenbereich. Das Minutenfeld bliebe weiterhin jede Minute.",
+              "correct": false
+            },
+            {
+              "text": "Ein Benutzerfeld vor den Befehl setzen.",
+              "rationale": "Das ändert die Häufigkeit nicht und gehört nicht in die Benutzer-Crontab.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "3 · systemd: Timer löst Service aus",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein systemd-**Timer** bestimmt den Zeitpunkt, ein zugehöriger **Service** die Aktion. Für den Lernfall könnte `report.timer` unter `[Timer]` die Zeilen `OnCalendar=*-*-* 07:15:00` und `Persistent=true` enthalten. `report.service` würde unter `[Service]` beispielsweise `Type=oneshot` und `ExecStart=/opt/ops/report.sh` enthalten. Ohne abweichendes `Unit=` aktiviert der gleichnamige Timer den Service. Der Timer selbst enthält nicht den Skriptaufruf. Unter `[Install]` kann `WantedBy=timers.target` stehen, damit der Timer dauerhaft aktiviert werden kann. Dies ist eine Skizze: Dateiort, Rechte, Benutzerkonto und Skript müssen im Testsystem geprüft werden."
+        },
+        {
+          "type": "figure",
+          "diagramId": "drei-planungsmodelle",
+          "alt": "Cron verbindet fünf Zeitfelder mit einem Befehl; systemd trennt Timer und Service; Windows trennt Task-Trigger und Aktion.",
+          "caption": "Eigene Vergleichsgrafik: Zeitplan und ausgeführter Auftrag sind in jedem Modell unterschiedliche Dinge."
+        },
+        {
+          "type": "markdown",
+          "markdown": "`systemd-analyze calendar '*-*-* 07:15:00'` zeigt, wie systemd den Kalenderausdruck interpretiert und wann die nächste Auslösung wäre. Nach Anlage und Prüfung der Units startet `systemctl enable --now report.timer` den Timer und aktiviert ihn für spätere Starts; `enable` ohne `--now` startet ihn noch nicht. `systemctl list-timers --all` zeigt geplante Timer, nicht den Erfolg des Berichts. Prüfe außerdem den Status beziehungsweise die Protokolle von `report.service` und den tatsächlichen Bericht.\n\n`Persistent=true` wirkt bei `OnCalendar=`-Timern: War der Timer während eines fälligen Termins inaktiv, wird beim erneuten Aktivieren **ein** Nachholstart ausgelöst. Es werden nicht automatisch alle versäumten Einzeltermine nachgespielt. Die Aktion muss daher auch bei verspätetem Start fachlich sinnvoll sein. Kalenderausführung richtet sich nach der konfigurierten Uhrzeit und Zeitzone; Sommerzeit und Zeitsynchronisation müssen im Betrieb bedacht werden."
+        },
+        {
+          "type": "quiz",
+          "id": "timer-nachholen",
+          "question": "Der Linux-Server war gestern um 07:15 Uhr aus. Der `OnCalendar=`-Timer mit `Persistent=true` wird heute um 09:00 Uhr wieder aktiviert. Welche Erwartung ist richtig?",
+          "options": [
+            {
+              "text": "Der zugehörige Service kann einmal nachholend gestartet werden; anschließend muss das Ergebnis geprüft werden.",
+              "rationale": "Richtig. Persistent merkt verpasste kalenderbasierte Auslösungen, garantiert aber weder einen Bericht noch einen Start pro versäumtem Tag.",
+              "correct": true
+            },
+            {
+              "text": "Alle versäumten Termine werden einzeln bis zur aktuellen Uhrzeit abgespielt.",
+              "rationale": "Persistent führt keinen automatischen Nachlauf jedes einzelnen versäumten Termins aus.",
+              "correct": false
+            },
+            {
+              "text": "`Persistent=true` führt das Skript direkt im Timer aus; ein Service ist unnötig.",
+              "rationale": "Ein Timer aktiviert eine Unit, standardmäßig den gleichnamigen Service. Die Aktion steht nicht im Timer.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "timer-eigene-erklaerung",
+          "title": "Timer und Ergebnis erklären",
+          "prompt": "Erkläre einem Teammitglied in eigenen Worten, wozu `report.timer`, `report.service`, `Persistent=true` und die Ergebnisprüfung dienen.",
+          "label": "Deine Erklärung",
+          "minLength": 110,
+          "model": "report.timer legt mit OnCalendar fest, wann eine Auslösung ansteht. Er aktiviert den gleichnamigen report.service, der das geprüfte Skript startet. Persistent=true kann nach einer inaktiven Zeit einen verpassten kalenderbasierten Lauf einmal nachholen, aber nicht jeden Ausfalltermin einzeln. list-timers oder ein aktiver Timer belegen keinen fertigen Bericht; dafür prüfe ich den Servicestatus, dessen Protokoll und die erzeugte Datei."
+        }
+      ]
+    },
+    {
+      "title": "4 · Windows-Gegenstück: schtasks",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Auf dem Windows-Server kann die Aufgabenplanung denselben Tagesrhythmus abbilden: `schtasks /Create /tn DailyReport /tr C:\\Ops\\report.cmd /sc DAILY /st 07:15`. `/Create` legt die Aufgabe an; `/tn` gibt ihr einen Namen; `/tr` benennt den **vollständigen Pfad** der auszuführenden Aktion; `/sc DAILY` wählt die tägliche Wiederholung; `/st 07:15` setzt die Startzeit im 24-Stunden-Format. Das Beispiel verwendet absichtlich einen Pfad ohne Leerzeichen, damit die Grundsyntax sichtbar bleibt. Ausführendes Konto und Rechte sind im realen Betrieb gesondert festzulegen. Zugangsdaten gehören nicht in eine Lernnotiz oder ungeschützte Befehlszeile.\n\nMit `schtasks /query /tn DailyReport /v /fo LIST` lässt sich die angelegte Aufgabe samt Zeitplan ausführlich abfragen. Auch hier gilt: Registrierung und nächster Lauf sind keine Abnahme des Berichtsinhalts. Ein Verhalten nach verpasstem Start muss in den Task-Einstellungen eigens geprüft werden; `Persistent=true` ist eine systemd-Eigenschaft und kein `schtasks`-Parameter."
+        },
+        {
+          "type": "quiz",
+          "id": "windows-parameter",
+          "question": "In `schtasks /Create /tn DailyReport /tr C:\\Ops\\report.cmd /sc DAILY /st 07:15` soll nur der Aufruf geändert werden, nicht die Uhrzeit. Welcher Parameter ist betroffen?",
+          "options": [
+            {
+              "text": "`/tr`, weil er Programm beziehungsweise Skript als Aktion benennt.",
+              "rationale": "Richtig. `/tr` ist die auszuführende Aktion; prüfe danach im Test, ob Pfad und Rechte stimmen.",
+              "correct": true
+            },
+            {
+              "text": "`/st`, weil er die Skriptdatei angibt.",
+              "rationale": "`/st` ist die Startzeit, hier 07:15.",
+              "correct": false
+            },
+            {
+              "text": "`/sc`, weil er den vollständigen Pfad enthält.",
+              "rationale": "`/sc` bestimmt die Art des Zeitplans, hier DAILY.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "zeitplan-karte-0",
+              "label": "Cron",
+              "front": "Wofür stehen die fünf Zeitfelder vor dem Befehl?",
+              "back": "Minute, Stunde, Monatstag, Monat und Wochentag – genau in dieser Reihenfolge."
+            },
+            {
+              "id": "zeitplan-karte-1",
+              "label": "systemd",
+              "front": "Was gehört in `.timer`, was in `.service`?",
+              "back": "Der Timer enthält den Auslöser, etwa OnCalendar; der Service beschreibt die Aktion, etwa ExecStart."
+            },
+            {
+              "id": "zeitplan-karte-2",
+              "label": "Windows",
+              "front": "Was bedeuten `/tn`, `/sc`, `/tr` und `/st`?",
+              "back": "Taskname, Zeitplantyp, auszuführende Aktion und Startzeit."
+            },
+            {
+              "id": "zeitplan-karte-3",
+              "label": "Nachweis",
+              "front": "Was beweist ein registrierter Zeitplan noch nicht?",
+              "back": "Dass die Aktion wirklich erfolgreich lief oder der erzeugte Bericht fachlich richtig ist."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "5 · Erst testen, dann planen",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "zeitplan-abnahme",
+          "title": "Sicheren Einführungsweg ordnen",
+          "prompt": "Ordne die Schritte, bevor Linde den täglichen Bericht produktiv einplant.",
+          "steps": [
+            {
+              "id": "plan",
+              "label": "Zeitplan anlegen und nächste Auslösung prüfen"
+            },
+            {
+              "id": "rights",
+              "label": "Konto, Pfade und benötigte Rechte festlegen"
+            },
+            {
+              "id": "result",
+              "label": "Testlauf, Protokoll und Berichtsinhalt abnehmen"
+            },
+            {
+              "id": "script",
+              "label": "Berichtsskript im Testsystem mit Beispiel-Eingaben prüfen"
+            }
+          ],
+          "expected": [
+            "script",
+            "rights",
+            "plan",
+            "result"
+          ],
+          "correctFeedback": "Richtig: Erst die Aktion und ihre Rechte prüfen, dann die Planung anlegen und Ergebnis samt Bericht abnehmen.",
+          "wrongFeedback": "Ein registrierter Zeitplan ist nur ein Auslöser. Prüfe Skript und Rechte vorab und den tatsächlichen Bericht danach."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Kontrollfrage für die Praxis: *Wurde der Job eingeplant? Wurde er gestartet? Hat er den Sollzustand erreicht?* Das sind drei verschiedene Nachweise. Cron, systemd und die Windows-Aufgabenplanung unterscheiden sich in Syntax und Verhalten, aber diese Trennung bleibt gleich."
+        }
+      ]
+    },
+    {
+      "title": "6 · Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "cron-lernziel",
+          "question": "Welche Benutzer-Crontab-Zeile plant den Bericht Montag bis Freitag um 07:15 Uhr?",
+          "options": [
+            {
+              "text": "`15 7 * * 1-5 /opt/ops/report.sh`",
+              "rationale": "Richtig: Minute 15, Stunde 7 und im Debian-cron-Beispiel Wochentag 1 bis 5.",
+              "correct": true
+            },
+            {
+              "text": "`7 15 * * 1-5 /opt/ops/report.sh`",
+              "rationale": "Die ersten beiden Felder sind vertauscht: Das wäre 15:07 Uhr.",
+              "correct": false
+            },
+            {
+              "text": "`* 7 * * 1-5 /opt/ops/report.sh`",
+              "rationale": "Das Sternchen im Minutenfeld plant jeden Minutenwert in der Stunde 07.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "cron-zeitfelder"
+        },
+        {
+          "type": "quiz",
+          "id": "timer-lernziel",
+          "question": "Welche Erklärung ist für `report.timer` mit `OnCalendar=`, `Persistent=true` und `report.service` korrekt?",
+          "options": [
+            {
+              "text": "Der Timer plant die Auslösung; der gleichnamige Service führt die Aktion aus; nach Inaktivität kann ein verpasster Kalenderlauf einmal nachgeholt werden.",
+              "rationale": "Richtig. Der Berichtserfolg muss dennoch separat geprüft werden.",
+              "correct": true
+            },
+            {
+              "text": "Der Service plant die Zeit, der Timer enthält das Skript; Persistent startet alle verpassten Tage einzeln.",
+              "rationale": "Zeitpunkt und Aktion sind vertauscht; Persistent spielt nicht jeden versäumten Termin einzeln ab.",
+              "correct": false
+            },
+            {
+              "text": "`systemctl list-timers` beweist die fachliche Richtigkeit des Berichts.",
+              "rationale": "Die Timerliste zeigt Planungsstatus und Zeiten, nicht den geprüften Bericht.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "timer-service"
+        },
+        {
+          "type": "quiz",
+          "id": "windows-lernziel",
+          "question": "Welche Kombination legt den täglichen Windows-Auftrag um 07:15 Uhr an und fragt danach seine Planung ab?",
+          "options": [
+            {
+              "text": "`schtasks /Create /tn DailyReport /tr C:\\Ops\\report.cmd /sc DAILY /st 07:15` und `schtasks /query /tn DailyReport /v /fo LIST`",
+              "rationale": "Richtig. Danach bleibt noch der Test der Aktion und des Berichts nötig.",
+              "correct": true
+            },
+            {
+              "text": "`schtasks /Create /tn 07:15 /tr DAILY /sc C:\\Ops\\report.cmd /st DailyReport` und danach kein Test",
+              "rationale": "Taskname, Aktion, Zeitplantyp und Startzeit sind falsch zugeordnet.",
+              "correct": false
+            },
+            {
+              "text": "`schtasks /query /tn DailyReport /v /fo LIST` allein",
+              "rationale": "Eine Abfrage erstellt keinen neuen Auftrag; sie prüft nur einen vorhandenen.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "windows-auftrag"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Primärquellen, geprüft am 02.10.2026: [Debian crontab(5)](https://manpages.debian.org/bookworm/cron/crontab.5.en.html), [Debian systemd.timer(5)](https://manpages.debian.org/trixie/systemd/systemd.timer.5.en.html), [Debian systemd.time(7)](https://manpages.debian.org/trixie/systemd/systemd.time.7.en.html), [Debian systemctl(1)](https://manpages.debian.org/trixie/systemd/systemctl.1.en.html), [Microsoft schtasks create](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/schtasks-create) und [Microsoft schtasks query](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/schtasks-query). Die private Buchstelle ITLF10–12, PDF-Seite 122, empfiehlt nur das Prüfen von Skriptvorschlägen in Testsystemen; sie belegt keine der hier erklärten Zeitplan-Syntaxen. Firma Linde, Befehlsziel, Übungen und Grafiken sind eigene Beispiele. Konkrete Rechte, Laufzeitumgebung, Zeitzone und Ausfallbehandlung sind vor einem produktiven Einsatz zu testen."
+        }
+      ]
+    }
+  ]
+}

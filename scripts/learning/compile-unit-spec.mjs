@@ -211,7 +211,11 @@ function renderFigure(block, meta, diagramsById) {
     const diagram = diagramsById.get(block.diagramId);
     return `<figure class="learning-figure learning-figure-inline">\n  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: ${escapeHtml(diagram.title)}">\n    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>\n    ${renderDiagram(diagram, block.alt).trim()}\n  </div>\n  <figcaption>${escapeHtml(block.caption)}</figcaption>\n</figure>`;
   }
-  return `<figure class="learning-figure">\n  <img src="${escapeHtml(block.src)}" alt="${escapeHtml(block.alt)}">\n  <figcaption>${escapeHtml(block.caption)}</figcaption>\n</figure>`;
+  const dimensions = Number.isInteger(block.width) && Number.isInteger(block.height) && block.width > 0 && block.height > 0
+    ? ` width="${block.width}" height="${block.height}"`
+    : '';
+  const imageDecoding = dimensions ? ' decoding="async"' : '';
+  return `<figure class="learning-figure">\n  <img src="${escapeHtml(block.src)}" alt="${escapeHtml(block.alt)}"${dimensions}${imageDecoding}>\n  <figcaption>${escapeHtml(block.caption)}</figcaption>\n</figure>`;
 }
 
 function renderRecall(block) {

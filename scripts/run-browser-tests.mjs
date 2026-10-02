@@ -125,6 +125,7 @@ try {
   await import('./verify-gruppenrichtlinien-browser.mjs');
   await import('./verify-patch-browser.mjs');
   await import('./verify-client-deployment-browser.mjs');
+  await import('./verify-linux-admin-browser.mjs');
   useSignedInFixture = false;
   await import('./verify-space-browser.mjs');
 } finally {

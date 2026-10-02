@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Eine Dienststörung auf einem Linux-Server systematisch eingrenzen und Änderungen am Paketbestand sicher einordnen.">
+<title>Linux-Server prüfen: Pfade, Dienste, Pakete und Logs – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="linux-verzeichnisse-dienste-pakete-logs" data-progress-id="ga1-6__4" data-content-revision="2026-10-02.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-6">Betriebssysteme und Administration</a><span class="sep">›</span>
+    <span class="here">Linux-Server prüfen: Pfade, Dienste, Pakete und Logs</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Linux-Server prüfen: Pfade, Dienste, Pakete und Logs</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 35 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Bei Kranich antwortet ein interner Webdienst nach einem Neustart nicht mehr. Er läuft als nginx.service auf einem Debian-basierten Linux-Server. Du weißt noch nicht, ob Konfiguration, Dienst oder Paket die Ursache ist. Statt blind neu zu starten, suchst du zuerst am richtigen Ort nach Belegen und entscheidest dann über den nächsten Schritt.</p>
+<section class="learning-goals" aria-labelledby="linux-verzeichnisse-dienste-pakete-logs-goals">
+  <h2 id="linux-verzeichnisse-dienste-pakete-logs-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Typische Linux-Pfade für Konfiguration, Programme und veränderliche Daten unterscheiden</li>
+    <li>Dienstzustand und Journal gezielt prüfen, bevor ein Dienst verändert wird</li>
+    <li>Metadatenaktualisierung, Installation und Paket-Upgrade sauber trennen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>1 · Den richtigen Ort finden</h2>
+<section class="quiz" data-quiz="linux-einstieg" data-correct="0">
+  <h3>Der Webdienst startet nicht. Du suchst zuerst nach einer hostbezogenen Konfigurationsdatei. Welcher Pfad ist der passende Ausgangspunkt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Den konkreten Dateinamen musst du trotzdem am installierten Dienst prüfen."><span class="m">A</span> /etc – hier liegen typischerweise hostbezogene System- und Dienstkonfigurationen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="/var/log ist für Logdateien vorgesehen, nicht allgemein für Konfiguration."><span class="m">B</span> /var/log – jede dortige Datei ist automatisch eine Konfiguration.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="/run enthält Laufzeitdaten seit dem Boot, keine dauerhafte Konfigurationsbasis."><span class="m">C</span> /run – dieser Pfad ist das dauerhafte Konfigurationsarchiv.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><figure class="learning-figure">
+  <img src="/assets/learning/linux-admin-diagnosis.png" alt="Illustration eines Servers mit Warnsymbol, umgeben von Konfigurationsdatei, Dienstschalter, Softwarepaket und Lupe über Logmeldungen." width="1672" height="941" decoding="async">
+  <figcaption>Illustration zum Fall: Konfiguration, Dienstzustand, Paketbestand und Meldungen sind verschiedene Spuren. Keine davon allein beweist die Ursache.</figcaption>
+</figure><p>Linux hat einen gemeinsamen Verzeichnisbaum unter <strong>/</strong>. Der Filesystem Hierarchy Standard beschreibt typische Rollen: <strong>/etc</strong> für hostbezogene Konfiguration, <strong>/usr</strong> für Programme und überwiegend statische Daten, <strong>/var</strong> für veränderliche Daten und <strong>/run</strong> für Laufzeitdaten seit dem Start. <strong>/home</strong> enthält häufig Benutzerverzeichnisse; das ist kein garantiertes Home jedes Accounts. <strong>/dev</strong> stellt Gerätedateien bereit. In <strong>/tmp</strong> dürfen Dateien nach einem Neustart verschwinden; <strong>/var/tmp</strong> ist für temporäre Daten gedacht, die einen Neustart überstehen sollen.</p>
+<p>Für den Vorfall heißt das: Eine Einstellung suchst du zuerst beim Dienst unter /etc, Ausgaben oder Fehler gegebenenfalls in dessen Log unter /var/log. Ein Pfad ist nur ein Suchhinweis, kein Beweis für die Ursache. Prüfe die tatsächliche Distribution und Dienstkonfiguration; auf modernen Systemen können klassische Pfade außerdem Symlinks sein.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Ein Vorfall, vier Suchorte">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-linux-pfade-title diagram-linux-pfade-desc">
+  <title id="diagram-linux-pfade-title">Ein Vorfall, vier Suchorte</title>
+  <desc id="diagram-linux-pfade-desc">Vier Suchorte: /etc für Konfiguration, /usr für Programme, /var für veränderliche Daten und /run für Laufzeitdaten.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Ein Vorfall, vier Suchorte</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">/etc</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">Konfiguration für</tspan><tspan x="64" dy="30">Host und Dienste</tspan></text></g><g><rect class="diagram-row" x="265" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="287" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="287" dy="0">/usr</tspan></text><text x="287" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="287" dy="0">Programme und</tspan><tspan x="287" dy="30">statische Dateien</tspan></text></g><g><rect class="diagram-row" x="488" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="510" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="510" dy="0">/var</tspan></text><text x="510" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="510" dy="0">Logs und variable</tspan><tspan x="510" dy="30">Daten</tspan></text></g><g><rect class="diagram-row" x="711" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="733" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="733" dy="0">/run</tspan></text><text x="733" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="733" dy="0">Zustand seit Boot</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Orientierungsgrafik: Die Rolle des Verzeichnisses hilft bei der ersten Suche; der konkrete Pfad bleibt systemspezifisch.</figcaption>
+</figure><section class="quiz" data-quiz="linux-pfade-uebung" data-correct="0">
+  <h3>Ein Dienst schreibt eine Anwendungs-Logdatei. Welcher Bereich ist dafür typischerweise vorgesehen?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Der Standard ordnet Logs /var/log zu; ein konkreter Dateiname ist nicht garantiert."><span class="m">A</span> /var/log, sofern die Anwendung eine Datei dort konfiguriert hat.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Konfiguration und laufend entstehende Protokolle erfüllen verschiedene Aufgaben."><span class="m">B</span> /etc, weil jede Meldung eine Konfiguration ist.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Programme und ihre Logausgaben sind nicht dasselbe."><span class="m">C</span> /usr/bin, weil dort ausführbare Programme liegen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2"><span class="num">2</span>2 · Dienstzustand von Boot-Aktivierung trennen</h2>
+<p>Auf einem <strong>systemd</strong>-System verwaltet <code>systemctl</code> Dienste als Units. <code>systemctl status nginx.service</code> zeigt den aktuellen beziehungsweise letzten Laufzeitstatus und einige jüngste Journalzeilen. <strong>start</strong> startet einen Dienst jetzt. <strong>enable</strong> richtet seine Aktivierung beim Boot beziehungsweise über die Unit-Abhängigkeiten ein, startet ihn aber nicht sofort. <code>systemctl enable --now nginx.service</code> kombiniert beides. <strong>restart</strong> beendet und startet neu; das kann eine Unterbrechung auslösen und ist keine Diagnose.</p>
+<p>Nach einer Änderung an einer <em>systemd-Unit-Datei</em> lädt <code>systemctl daemon-reload</code> die Unit-Definitionen neu. Das ist nicht dasselbe wie <code>systemctl reload nginx.service</code>: Letzteres bittet den laufenden Dienst, seine eigene Konfiguration neu zu laden, falls er das unterstützt. Ein geändertes Programm-Konfigurationsfile unter /etc verlangt nicht automatisch <code>daemon-reload</code>. Im Kranich-Fall klärst du zunächst den Befund, bevor du eine Aktion mit Seiteneffekt ausführst.</p>
+<section class="quiz" data-quiz="linux-enable-start" data-correct="0">
+  <h3>`systemctl status nginx.service` zeigt `inactive`, die Unit ist aber `enabled`. Was bedeutet diese Kombination?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Laufzeitstatus und Aktivierungszustand sind zwei unabhängige Fragen."><span class="m">A</span> Der Dienst läuft gerade nicht; die Boot-Aktivierung ist eingerichtet. Die Ursache für den aktuellen Zustand muss geprüft werden.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Enabled beschreibt die Aktivierung über die Unit-Installation, nicht den aktuellen Laufzustand."><span class="m">B</span> `enabled` beweist, dass der Prozess im Moment läuft.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Eine vorhandene Unit kann inaktiv sein; der Paketbestand ist daraus nicht ableitbar."><span class="m">C</span> `inactive` beweist, dass das Paket nicht installiert ist.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Erst Befund, dann Eingriff">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="542" viewBox="0 0 960 542" role="img" aria-labelledby="diagram-linux-diagnosepfad-title diagram-linux-diagnosepfad-desc">
+  <title id="diagram-linux-diagnosepfad-title">Erst Befund, dann Eingriff</title>
+  <desc id="diagram-linux-diagnosepfad-desc">Diagnosefolge: erst Dienststatus prüfen, dann gezielte Journalmeldungen lesen, Ursache eingrenzen und erst danach eine Änderung anwenden und verifizieren.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Erst Befund, dann Eingriff</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Zustand</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">systemctl status: aktiv, inaktiv oder fehlgeschlagen?</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Belege</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">journalctl -u ... -b: Meldungen dieses Dienstes im aktuellen</tspan><tspan x="178" dy="25">Boot</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Ursache</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Konfiguration und gegebenenfalls Anwendungslog gezielt prüfen</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Änderung</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Korrektur freigeben, kontrolliert anwenden und Ergebnis erneut</tspan><tspan x="178" dy="25">prüfen</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Diagnosegrafik: Ein Neustart ohne Befund kann die eigentliche Fehlermeldung überdecken.</figcaption>
+</figure><section class="quiz" data-quiz="linux-reload-unterschied" data-correct="0">
+  <h3>Du hast die Datei einer systemd-Unit geändert. Was ist der nächste notwendige Schritt, damit systemd die neue Unit-Definition einliest?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Das lädt Unit-Dateien im systemd-Manager neu, startet den Dienst aber nicht automatisch."><span class="m">A</span> `systemctl daemon-reload`; danach den vorgesehenen Dienst-Eingriff getrennt planen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Enable richtet Aktivierung ein, ersetzt aber keinen daemon-reload und startet ohne --now nicht sofort."><span class="m">B</span> `systemctl enable` – das liest jede geänderte Unit-Datei neu und startet sie sofort.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="journalctl liest Meldungen; es verändert keine Unit-Definition."><span class="m">C</span> `journalctl -f` – das lädt die Unit-Konfiguration neu.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s3"><span class="num">3</span>3 · Das Journal als Spur nutzen</h2>
+<p><code>systemctl status</code> ist eine schnelle Momentaufnahme, aber keine vollständige Logsuche. Mit <code>journalctl -u nginx.service -b -n 50</code> liest du die letzten 50 Meldungen zur Unit aus dem <strong>aktuellen Boot</strong>, sofern deine Rechte und die Journal-Aufbewahrung sie verfügbar machen. <code>-p err</code> begrenzt auf Fehler und schwerwiegendere Prioritäten; <code>-f</code> folgt neuen Meldungen. Für ältere Boots ist <code>-b -1</code> nur hilfreich, wenn deren Journal noch vorhanden ist. Eine Anwendung kann zusätzlich eigene Textlogs unter <strong>/var/log</strong> führen; die genaue Datei hängt von Installation und Konfiguration ab.</p>
+<p>Im Fall zeigt der Status <code>failed</code>. Eine Meldung aus dem Journal verweist auf einen Konfigurationsfehler. Erst jetzt prüfst du die betroffene Datei und die zulässige Korrektur. Nach einer freigegebenen Änderung beobachtest du erneut Status und neue Meldungen. Fehlende Journal-Ausgabe allein heißt weder, dass es keinen Fehler gab, noch dass der Dienst nie gestartet wurde.</p>
+<section class="quiz" data-quiz="linux-journal-filter" data-correct="0">
+  <h3>Welcher Befehl grenzt die letzten Meldungen des Dienstes im aktuellen Boot ein, ohne den Dienst zu verändern?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Unit, Boot und Anzahl werden gefiltert; der Befehl liest nur Meldungen."><span class="m">A</span> `journalctl -u nginx.service -b -n 50`</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Restart verändert den Dienst und liefert keine gezielte Loghistorie."><span class="m">B</span> `systemctl restart nginx.service`</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein Paket-Upgrade liest keine Dienstmeldungen und kann den Paketbestand verändern. Es wäre kein lesender Diagnosebefehl."><span class="m">C</span> `apt upgrade`</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="linux-karte-0" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wo suchst du zuerst eine hostbezogene Dienstkonfiguration?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Typischerweise unter /etc; den konkreten Pfad aus der Dienst- oder Anwendungsdokumentation prüfen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="linux-karte-1" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was ist der Unterschied zwischen start und enable?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>start verändert den aktuellen Laufzustand; enable richtet die automatische Aktivierung ein, startet aber ohne --now nicht sofort.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="linux-karte-2" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum genügt `systemctl status` nicht für eine vollständige Fehleranalyse?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Es zeigt nur einen kleinen Ausschnitt jüngster Meldungen. `journalctl -u ...` erlaubt eine gezielte Suche in verfügbaren Journal-Einträgen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="linux-karte-3" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Worin unterscheiden sich `apt update` und `apt upgrade`?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>update erneuert Paketlisten/Metadaten; upgrade aktualisiert installierte Pakete gemäß den verfügbaren Paketständen.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Pfad“:</span><button type="button" data-card-id="linux-karte-0" data-card-rate="known">gewusst</button><button type="button" data-card-id="linux-karte-0" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="linux-karte-0"></span></div>
+<div class="card-rating"><span>Karte „Dienst“:</span><button type="button" data-card-id="linux-karte-1" data-card-rate="known">gewusst</button><button type="button" data-card-id="linux-karte-1" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="linux-karte-1"></span></div>
+<div class="card-rating"><span>Karte „Log“:</span><button type="button" data-card-id="linux-karte-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="linux-karte-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="linux-karte-2"></span></div>
+<div class="card-rating"><span>Karte „Paket“:</span><button type="button" data-card-id="linux-karte-3" data-card-rate="known">gewusst</button><button type="button" data-card-id="linux-karte-3" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="linux-karte-3"></span></div><h2 class="sec" id="s4"><span class="num">4</span>4 · Paketänderungen bewusst durchführen</h2>
+<p>Ein <strong>Paketmanager</strong> verwaltet Pakete samt Metadaten, Abhängigkeiten und Installationsstand aus konfigurierten Quellen. Auf diesem Debian-basierten Server aktualisiert <code>apt update</code> zunächst nur die <strong>Paketlisten</strong>. Es installiert noch keine neuen Versionen der vorhandenen Pakete. <code>apt install nginx</code> installiert beispielsweise ein Paket mit nötigen Abhängigkeiten; <code>apt upgrade</code> aktualisiert installierte Pakete nach den verfügbaren Paketständen. Vor einem Upgrade prüfst du die vorgeschlagenen Änderungen und planst bei produktiven Diensten Wartungsfenster sowie Verifikation. Ein Paketwechsel ist keine Ersatzhandlung für die Ursachenanalyse.</p>
+<p>Das Beispiel ist absichtlich distributionsgebunden: Andere Systeme verwenden andere Paketwerkzeuge und teilweise ein anderes Update-Modell. Übernimm APT-Befehle deshalb nicht ungeprüft auf jeden Linux-Server. Ebenso bedeutet ein erfolgreicher Paketbefehl noch nicht, dass Kranichs Webdienst korrekt antwortet.</p>
+<section class="sequence-practice" data-sequence="linux-paket-wartung" data-expected="metadata,window,upgrade,verify" data-correct-feedback="Richtig: Aus dem geprüften Änderungsvorschlag folgen Wartungsfenster und Rückweg. Erst dann aktualisierst du die Pakete und verifizierst die Dienstfunktion." data-wrong-feedback="Erst Paketlisten und konkrete Änderung prüfen; danach kannst du für diesen Vorschlag Wartungsfenster und Rückweg bestimmen. Die Dienstfunktion prüfst du nach dem Upgrade." aria-labelledby="linux-paket-wartung-title">
+  <div class="lab-heading"><div><h3 id="linux-paket-wartung-title">Wartung ohne Blindflug</h3><p>Ordne die Schritte für eine geplante Paketaktualisierung eines produktiven Debian-Servers. Das konkrete Wartungsfenster wird anhand des Änderungsvorschlags festgelegt.</p></div><span class="lab-tag">Ablauf</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="verify" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Dienstfunktion und relevante Logs nach der Änderung kontrollieren</span></li>
+    <li data-step="window" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Für den Änderungsvorschlag Wartungsfenster und Rückweg festlegen</span></li>
+    <li data-step="upgrade" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Freigegebene Paketaktualisierung durchführen</span></li>
+    <li data-step="metadata" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Paketlisten aktualisieren und vorgeschlagene Änderungen prüfen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><section class="quiz" data-quiz="linux-apt-update" data-correct="0">
+  <h3>Nach `apt update` meldet der Server neuere Paketversionen. Was ist zu diesem Zeitpunkt sicher passiert?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Metadatenaktualisierung und Paketinstallation sind getrennte Schritte."><span class="m">A</span> Die lokalen Paketlisten wurden erneuert; ein Upgrade der installierten Pakete ist dadurch noch nicht ausgeführt.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Dazu wäre ein eigener Upgrade-Schritt nötig; Ausnahmen durch andere Automatisierung sind nicht Teil des Befehls."><span class="m">B</span> Alle installierten Pakete wurden bereits automatisch auf die neue Version gebracht.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Aus aktualisierten Paketlisten folgt keine Aussage über die Dienstfunktion."><span class="m">C</span> Der Webdienst wurde dadurch nachweislich repariert.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>5 · Fallentscheidung und Lernziel-Check</h2>
+<section class="recall-practice" data-recall="linux-fallbegruendung" data-min-length="170" aria-labelledby="linux-fallbegruendung-title">
+  <div class="recall-prompt"><h3 id="linux-fallbegruendung-title">Kranichs Störung eingrenzen</h3><p>Der Webdienst ist nach dem Neustart ausgefallen. Beschreibe eine prüfbare Reihenfolge mit mindestens zwei lesenden Befehlen, zwei passenden Suchorten und einer Bedingung, bevor du einen Eingriff vornimmst.</p></div>
+  <label class="sr-only" for="linux-fallbegruendung-answer">Dein Diagnosevorschlag</label>
+  <textarea id="linux-fallbegruendung-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Ich prüfe zuerst `systemctl status nginx.service` und lese danach mit `journalctl -u nginx.service -b -n 50` die Meldungen dieser Unit im aktuellen Boot. Eine hostbezogene Einstellung suche ich unter /etc, eine konfigurierte Anwendungs-Logdatei gegebenenfalls unter /var/log. Erst wenn die Meldungen die Ursache eingrenzen und eine Korrektur geprüft ist, plane ich den nötigen Dienst-Eingriff. Danach kontrolliere ich Status, neue Meldungen und die Webfunktion erneut.</div>
+</section><section class="quiz" data-quiz="linux-pfade-gate" data-correct="0" data-required-objective="dateipfade-einordnen">
+  <h3>Nach einem Neustart fehlt eine kurzlebige Zustandsdatei des Dienstes. Wo würdest du Laufzeitdaten erwarten, und was wäre für die dauerhafte Konfiguration der Gegenpol?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. /run ist bootbezogen; /etc ist der typische Ort für hostbezogene Einstellungen."><span class="m">A</span> Laufzeitdaten in /run, dauerhafte hostbezogene Konfiguration typischerweise in /etc.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="/usr/bin enthält Programme, /run ist gerade nicht für dauerhafte Konfiguration gedacht."><span class="m">B</span> Laufzeitdaten in /usr/bin und dauerhafte Konfiguration in /run.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="/home ist kein universelles Dienstverzeichnis; die Pfadrolle entscheidet."><span class="m">C</span> Beides muss in /home liegen, weil dort jeder Dienst sein Home hat.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="linux-dienst-gate" data-correct="0" data-required-objective="dienst-stoerung-analysieren">
+  <h3>`nginx.service` ist nach dem Boot `enabled`, aber `failed`. Im Journal steht ein Hinweis auf eine ungültige Konfiguration. Welche Folgerung ist begründet?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Enabled beweist keinen erfolgreichen Start; die Meldung ist ein konkreter Diagnosehinweis."><span class="m">A</span> Boot-Aktivierung und Laufzustand sind verschieden; die gemeldete Konfiguration prüfen, bevor ein kontrollierter neuer Start versucht wird.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Enabled ist kein Laufstatus. Failed und die Journalmeldung benötigen eine Ursachenprüfung."><span class="m">B</span> Enabled beweist einen laufenden Prozess; die Statusanzeige muss ignoriert werden.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Eine Konfigurationsmeldung belegt keinen Paketfehler. Ein ungeprüftes Upgrade kann zusätzlich eingreifen."><span class="m">C</span> Sofort `apt upgrade` ausführen; ein Paketwechsel ist aus jeder Konfigurationsmeldung zwingend ableitbar.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="linux-paket-gate" data-correct="0" data-required-objective="paket-aenderung-planen">
+  <h3>Vor dem Wartungsfenster zeigt `apt update` neue Versionen an. Eine Kollegin schreibt: „Damit sind die Sicherheitsupdates bereits installiert.“ Wie antwortest du?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Anzeige verfügbarer Versionen ist nicht ihre Installation."><span class="m">A</span> Nein. Die Paketlisten sind aktuell; für installierte Pakete braucht es einen getrennt geprüften Upgrade-Schritt und danach eine Funktionskontrolle.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="APT trennt Metadatenaktualisierung und Paket-Upgrade."><span class="m">B</span> Ja. `apt update` ist immer dasselbe wie `apt upgrade`.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Weder Paketlisten noch Dienstzustand werden durch diese Aussage verifiziert."><span class="m">C</span> Ja, und deshalb ist auch `nginx.service` automatisch wieder gesund.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Quellen und Grenzen</h2>
+<p>Fachliche Basis: <a href="https://refspecs.linuxfoundation.org/FHS_3.0/fhs-3.0.html">Linux Foundation FHS 3.0</a>, <a href="https://manpages.debian.org/unstable/systemd/systemctl.1.en.html">systemctl-Manpage</a>, <a href="https://manpages.debian.org/unstable/systemd/journalctl.1.en.html">journalctl-Manpage</a> und <a href="https://www.debian.org/doc/manuals/debian-reference/ch02.en.html">Debian-Paketverwaltung</a>, geprüft am 02.10.2026. Die privaten Buchstellen dienten als Themenanker; Buchtext und -grafik wurden nicht übernommen. Pfade, Dienstnamen, Paketwerkzeuge, Rechte und verfügbare Logs sind auf dem Zielsystem zu prüfen. Diese agentisch erstellte Einheit bleibt bis zur menschlichen Freigabe CURATED_DRAFT.</p>
+
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-6"><span class="d">zurück zu</span><span class="t">Betriebssysteme und Administration</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Betriebssysteme und Administration</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 3 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">1 · Den richtigen Ort finden</a></li>
+<li><a href="#s2" data-t="s2">2 · Dienstzustand von Boot-Aktivierung trennen</a></li>
+<li><a href="#s3" data-t="s3">3 · Das Journal als Spur nutzen</a></li>
+<li><a href="#s4" data-t="s4">4 · Paketänderungen bewusst durchführen</a></li>
+<li><a href="#s5" data-t="s5">5 · Fallentscheidung und Lernziel-Check</a></li>
+<li><a href="#s6" data-t="s6">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-6">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Cron-Ausdrücke lesen, systemd-Timer samt Service einordnen und einen täglichen Windows-Auftrag mit schtasks prüfen.">
+<title>Zeitgesteuerte Jobs mit Cron, systemd und Windows – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="zeitgesteuerte-ausfuehrung-cron-systemd-timer-schtasks" data-progress-id="ga1-6__5" data-content-revision="2026-10-02.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-6">Betriebssysteme und Administration</a><span class="sep">›</span>
+    <span class="here">Zeitgesteuerte Jobs mit Cron, systemd und Windows</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Zeitgesteuerte Jobs mit Cron, systemd und Windows</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 32 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Bei der fiktiven Firma Linde soll ein geprüfter Statusbericht auf einem Linux-Server und einem Windows-Server täglich um 07:15 Uhr erstellt werden. Der Linux-Server ist gelegentlich zur geplanten Zeit ausgeschaltet. Du übersetzt den Auftrag in drei Zeitplanungsmodelle und prüfst jeweils, ob ein angelegter Zeitplan auch zu einem erfolgreichen Bericht geführt hat. Alle Befehle sind Lernbeispiele und werden hier nicht ausgeführt.</p>
+<section class="learning-goals" aria-labelledby="zeitgesteuerte-ausfuehrung-cron-systemd-timer-schtasks-goals">
+  <h2 id="zeitgesteuerte-ausfuehrung-cron-systemd-timer-schtasks-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>die fünf Zeitfelder eines Benutzer-Crontabs korrekt lesen und schreiben</li>
+    <li>systemd-Timer, zugehörigen Service und Nachholverhalten unterscheiden</li>
+    <li>einen täglichen Windows-Auftrag mit schtasks erstellen und seine Planung prüfen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>1 · Einen Zeitplan vorhersagen</h2>
+<section class="quiz" data-quiz="zeitplan-diagnose" data-correct="0">
+  <h3>Was bedeutet in einer Benutzer-Crontab die Zeile `15 7 * * * /opt/ops/report.sh`?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig: Minute 15, Stunde 7; die drei Sterne schränken Tag und Monat nicht ein. Das sagt noch nichts über den Erfolg des Befehls."><span class="m">A</span> Der Befehl ist für jeden Tag um 07:15 Uhr geplant.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die 15 steht als fester Minutenwert. `*/15` wäre ein Schrittwert im Minutenfeld."><span class="m">B</span> Der Befehl läuft alle 15 Minuten während der Stunde 07.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Der Monatstag steht erst an dritter Stelle, der Monat an vierter. Hier sind beide Felder `*`."><span class="m">C</span> Der Befehl läuft nur am 15. Juli.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><figure class="learning-figure">
+  <img src="/assets/learning/scheduled-jobs-three-models.png" alt="Illustration von drei Wegen zum gleichen Bericht: eine Uhr mit Zeitfeldern für Cron, ein Timer mit Dienstsymbol für systemd und ein Kalender mit Aufgabensymbol für Windows." width="1774" height="887" decoding="async">
+  <figcaption>Illustration zum Fall: Drei Planungswerkzeuge können denselben Bericht anstoßen. Ob er tatsächlich entsteht, muss jeweils gesondert geprüft werden.</figcaption>
+</figure><p>Ein Zeitplan besteht aus <strong>Auslöser</strong>, <strong>Aktion</strong> und <strong>Nachweis</strong>. Der Ausdruck legt nur fest, wann ein Start versucht wird. Ob <code>/opt/ops/report.sh</code> ausführbar ist und einen brauchbaren Bericht erzeugt, muss gesondert getestet werden. Schreibe nie ein ungetestetes Administrationsskript direkt in eine produktive Planung.</p>
+<h2 class="sec" id="s2"><span class="num">2</span>2 · Fünf Cron-Felder lesen und schreiben</h2>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Cron-Ausdruck: 15 7 * * *">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-cron-fuenf-felder-title diagram-cron-fuenf-felder-desc">
+  <title id="diagram-cron-fuenf-felder-title">Cron-Ausdruck: 15 7 * * *</title>
+  <desc id="diagram-cron-fuenf-felder-desc">Von links nach rechts: Minute 15, Stunde 7, Monatstag Stern, Monat Stern, Wochentag Stern; danach folgt der auszuführende Befehl.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Cron-Ausdruck: 15 7 * * *</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="160" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">15</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">Minute</tspan></text></g><g><rect class="diagram-row" x="220" y="92" width="160" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="242" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="242" dy="0">7</tspan></text><text x="242" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="242" dy="0">Stunde</tspan></text></g><g><rect class="diagram-row" x="398" y="92" width="160" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="420" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="420" dy="0">*</tspan></text><text x="420" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="420" dy="0">Monatstag</tspan></text></g><g><rect class="diagram-row" x="576" y="92" width="160" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="598" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="598" dy="0">*</tspan></text><text x="598" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="598" dy="0">Monat</tspan></text></g><g><rect class="diagram-row" x="754" y="92" width="160" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="776" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="776" dy="0">*</tspan></text><text x="776" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="776" dy="0">Wochentag</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Feldgrafik: `15 7 * * *` plant 07:15 Uhr an jedem Kalendertag.</figcaption>
+</figure><p>In einer <strong>Benutzer-Crontab</strong> stehen genau fünf Zeitfelder vor dem Befehl: <code>Minute Stunde Monatstag Monat Wochentag Befehl</code>. <code>*</code> bedeutet: dieses Feld schränkt nicht ein. <code>15 7 * * 1-5 /opt/ops/report.sh</code> wäre im hier verwendeten Debian-cron-Modell Montag bis Freitag um 07:15 Uhr. <code>*/15 7 * * *</code> würde dagegen <strong>viermal</strong> in der Stunde 07 starten: 07:00, 07:15, 07:30 und 07:45. Verwechsle einen festen Wert nicht mit einem Schrittwert.</p>
+<p>In der systemweiten <code>/etc/crontab</code> steht zusätzlich ein Benutzerfeld zwischen den fünf Zeitfeldern und dem Befehl. Kopiere diese sechste Angabe nicht in eine Benutzer-Crontab.</p>
+<section class="sequence-practice" data-sequence="cron-feldfolge" data-expected="minute,stunde,monatstag,monat,wochentag" data-correct-feedback="Genau: Minute → Stunde → Monatstag → Monat → Wochentag. Danach folgt der Befehl." data-wrong-feedback="Lies zuerst die Uhrzeit als Minute und Stunde; erst danach kommen Monatstag, Monat und Wochentag." aria-labelledby="cron-feldfolge-title">
+  <div class="lab-heading"><div><h3 id="cron-feldfolge-title">Felder ordnen</h3><p>Sortiere die fünf Zeitfelder von links nach rechts. Der Befehl kommt erst danach.</p></div><span class="lab-tag">Ablauf</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="monat" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Monat</span></li>
+    <li data-step="minute" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Minute</span></li>
+    <li data-step="wochentag" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Wochentag</span></li>
+    <li data-step="stunde" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Stunde</span></li>
+    <li data-step="monatstag" tabindex="-1"><span class="step-position" data-step-position>5</span><span>Monatstag</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><section class="quiz" data-quiz="cron-stern-fehler" data-correct="0">
+  <h3>Jemand schreibt `* 7 * * *`, will aber genau einen Start um 07:00 Uhr. Was muss geändert werden?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. `*` im Minutenfeld trifft jede Minute der Stunde 07; `0` nur Minute 00."><span class="m">A</span> Das Minutenfeld von `*` auf `0` setzen: `0 7 * * *`.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Dann verschiebt sich der Stundenbereich. Das Minutenfeld bliebe weiterhin jede Minute."><span class="m">B</span> Nur das Stundenfeld auf `0` setzen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Das ändert die Häufigkeit nicht und gehört nicht in die Benutzer-Crontab."><span class="m">C</span> Ein Benutzerfeld vor den Befehl setzen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s3"><span class="num">3</span>3 · systemd: Timer löst Service aus</h2>
+<p>Ein systemd-<strong>Timer</strong> bestimmt den Zeitpunkt, ein zugehöriger <strong>Service</strong> die Aktion. Für den Lernfall könnte <code>report.timer</code> unter <code>[Timer]</code> die Zeilen <code>OnCalendar=*-*-* 07:15:00</code> und <code>Persistent=true</code> enthalten. <code>report.service</code> würde unter <code>[Service]</code> beispielsweise <code>Type=oneshot</code> und <code>ExecStart=/opt/ops/report.sh</code> enthalten. Ohne abweichendes <code>Unit=</code> aktiviert der gleichnamige Timer den Service. Der Timer selbst enthält nicht den Skriptaufruf. Unter <code>[Install]</code> kann <code>WantedBy=timers.target</code> stehen, damit der Timer dauerhaft aktiviert werden kann. Dies ist eine Skizze: Dateiort, Rechte, Benutzerkonto und Skript müssen im Testsystem geprüft werden.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Auslöser und Aktion bleiben getrennt">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-drei-planungsmodelle-title diagram-drei-planungsmodelle-desc">
+  <title id="diagram-drei-planungsmodelle-title">Auslöser und Aktion bleiben getrennt</title>
+  <desc id="diagram-drei-planungsmodelle-desc">Cron verbindet fünf Zeitfelder mit einem Befehl; systemd trennt Timer und Service; Windows trennt Task-Trigger und Aktion.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Auslöser und Aktion bleiben getrennt</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">Cron</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">fünf Zeitfelder → Befehl in</tspan><tspan x="64" dy="30">der Benutzer-Crontab</tspan></text></g><g><rect class="diagram-row" x="340" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="362" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="362" dy="0">systemd</tspan></text><text x="362" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="362" dy="0">.timer mit OnCalendar →</tspan><tspan x="362" dy="30">gleichnamiger .service mit</tspan><tspan x="362" dy="30">ExecStart</tspan></text></g><g><rect class="diagram-row" x="638" y="92" width="280" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="660" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="660" dy="0">Windows</tspan></text><text x="660" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="660" dy="0">Task-Trigger mit /sc und /st</tspan><tspan x="660" dy="30">→ Aktion mit /tr</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Vergleichsgrafik: Zeitplan und ausgeführter Auftrag sind in jedem Modell unterschiedliche Dinge.</figcaption>
+</figure><p><code>systemd-analyze calendar &#39;*-*-* 07:15:00&#39;</code> zeigt, wie systemd den Kalenderausdruck interpretiert und wann die nächste Auslösung wäre. Nach Anlage und Prüfung der Units startet <code>systemctl enable --now report.timer</code> den Timer und aktiviert ihn für spätere Starts; <code>enable</code> ohne <code>--now</code> startet ihn noch nicht. <code>systemctl list-timers --all</code> zeigt geplante Timer, nicht den Erfolg des Berichts. Prüfe außerdem den Status beziehungsweise die Protokolle von <code>report.service</code> und den tatsächlichen Bericht.</p>
+<p><code>Persistent=true</code> wirkt bei <code>OnCalendar=</code>-Timern: War der Timer während eines fälligen Termins inaktiv, wird beim erneuten Aktivieren <strong>ein</strong> Nachholstart ausgelöst. Es werden nicht automatisch alle versäumten Einzeltermine nachgespielt. Die Aktion muss daher auch bei verspätetem Start fachlich sinnvoll sein. Kalenderausführung richtet sich nach der konfigurierten Uhrzeit und Zeitzone; Sommerzeit und Zeitsynchronisation müssen im Betrieb bedacht werden.</p>
+<section class="quiz" data-quiz="timer-nachholen" data-correct="0">
+  <h3>Der Linux-Server war gestern um 07:15 Uhr aus. Der `OnCalendar=`-Timer mit `Persistent=true` wird heute um 09:00 Uhr wieder aktiviert. Welche Erwartung ist richtig?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Persistent merkt verpasste kalenderbasierte Auslösungen, garantiert aber weder einen Bericht noch einen Start pro versäumtem Tag."><span class="m">A</span> Der zugehörige Service kann einmal nachholend gestartet werden; anschließend muss das Ergebnis geprüft werden.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Persistent führt keinen automatischen Nachlauf jedes einzelnen versäumten Termins aus."><span class="m">B</span> Alle versäumten Termine werden einzeln bis zur aktuellen Uhrzeit abgespielt.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein Timer aktiviert eine Unit, standardmäßig den gleichnamigen Service. Die Aktion steht nicht im Timer."><span class="m">C</span> `Persistent=true` führt das Skript direkt im Timer aus; ein Service ist unnötig.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="recall-practice" data-recall="timer-eigene-erklaerung" data-min-length="110" aria-labelledby="timer-eigene-erklaerung-title">
+  <div class="recall-prompt"><h3 id="timer-eigene-erklaerung-title">Timer und Ergebnis erklären</h3><p>Erkläre einem Teammitglied in eigenen Worten, wozu `report.timer`, `report.service`, `Persistent=true` und die Ergebnisprüfung dienen.</p></div>
+  <label class="sr-only" for="timer-eigene-erklaerung-answer">Deine Erklärung</label>
+  <textarea id="timer-eigene-erklaerung-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> report.timer legt mit OnCalendar fest, wann eine Auslösung ansteht. Er aktiviert den gleichnamigen report.service, der das geprüfte Skript startet. Persistent=true kann nach einer inaktiven Zeit einen verpassten kalenderbasierten Lauf einmal nachholen, aber nicht jeden Ausfalltermin einzeln. list-timers oder ein aktiver Timer belegen keinen fertigen Bericht; dafür prüfe ich den Servicestatus, dessen Protokoll und die erzeugte Datei.</div>
+</section><h2 class="sec" id="s4"><span class="num">4</span>4 · Windows-Gegenstück: schtasks</h2>
+<p>Auf dem Windows-Server kann die Aufgabenplanung denselben Tagesrhythmus abbilden: <code>schtasks /Create /tn DailyReport /tr C:\Ops\report.cmd /sc DAILY /st 07:15</code>. <code>/Create</code> legt die Aufgabe an; <code>/tn</code> gibt ihr einen Namen; <code>/tr</code> benennt den <strong>vollständigen Pfad</strong> der auszuführenden Aktion; <code>/sc DAILY</code> wählt die tägliche Wiederholung; <code>/st 07:15</code> setzt die Startzeit im 24-Stunden-Format. Das Beispiel verwendet absichtlich einen Pfad ohne Leerzeichen, damit die Grundsyntax sichtbar bleibt. Ausführendes Konto und Rechte sind im realen Betrieb gesondert festzulegen. Zugangsdaten gehören nicht in eine Lernnotiz oder ungeschützte Befehlszeile.</p>
+<p>Mit <code>schtasks /query /tn DailyReport /v /fo LIST</code> lässt sich die angelegte Aufgabe samt Zeitplan ausführlich abfragen. Auch hier gilt: Registrierung und nächster Lauf sind keine Abnahme des Berichtsinhalts. Ein Verhalten nach verpasstem Start muss in den Task-Einstellungen eigens geprüft werden; <code>Persistent=true</code> ist eine systemd-Eigenschaft und kein <code>schtasks</code>-Parameter.</p>
+<section class="quiz" data-quiz="windows-parameter" data-correct="0">
+  <h3>In `schtasks /Create /tn DailyReport /tr C:\Ops\report.cmd /sc DAILY /st 07:15` soll nur der Aufruf geändert werden, nicht die Uhrzeit. Welcher Parameter ist betroffen?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. `/tr` ist die auszuführende Aktion; prüfe danach im Test, ob Pfad und Rechte stimmen."><span class="m">A</span> `/tr`, weil er Programm beziehungsweise Skript als Aktion benennt.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="`/st` ist die Startzeit, hier 07:15."><span class="m">B</span> `/st`, weil er die Skriptdatei angibt.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="`/sc` bestimmt die Art des Zeitplans, hier DAILY."><span class="m">C</span> `/sc`, weil er den vollständigen Pfad enthält.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="zeitplan-karte-0" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wofür stehen die fünf Zeitfelder vor dem Befehl?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Minute, Stunde, Monatstag, Monat und Wochentag – genau in dieser Reihenfolge.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="zeitplan-karte-1" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was gehört in `.timer`, was in `.service`?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Der Timer enthält den Auslöser, etwa OnCalendar; der Service beschreibt die Aktion, etwa ExecStart.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="zeitplan-karte-2" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was bedeuten `/tn`, `/sc`, `/tr` und `/st`?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Taskname, Zeitplantyp, auszuführende Aktion und Startzeit.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="zeitplan-karte-3" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was beweist ein registrierter Zeitplan noch nicht?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Dass die Aktion wirklich erfolgreich lief oder der erzeugte Bericht fachlich richtig ist.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Cron“:</span><button type="button" data-card-id="zeitplan-karte-0" data-card-rate="known">gewusst</button><button type="button" data-card-id="zeitplan-karte-0" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="zeitplan-karte-0"></span></div>
+<div class="card-rating"><span>Karte „systemd“:</span><button type="button" data-card-id="zeitplan-karte-1" data-card-rate="known">gewusst</button><button type="button" data-card-id="zeitplan-karte-1" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="zeitplan-karte-1"></span></div>
+<div class="card-rating"><span>Karte „Windows“:</span><button type="button" data-card-id="zeitplan-karte-2" data-card-rate="known">gewusst</button><button type="button" data-card-id="zeitplan-karte-2" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="zeitplan-karte-2"></span></div>
+<div class="card-rating"><span>Karte „Nachweis“:</span><button type="button" data-card-id="zeitplan-karte-3" data-card-rate="known">gewusst</button><button type="button" data-card-id="zeitplan-karte-3" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="zeitplan-karte-3"></span></div><h2 class="sec" id="s5"><span class="num">5</span>5 · Erst testen, dann planen</h2>
+<section class="sequence-practice" data-sequence="zeitplan-abnahme" data-expected="script,rights,plan,result" data-correct-feedback="Richtig: Erst die Aktion und ihre Rechte prüfen, dann die Planung anlegen und Ergebnis samt Bericht abnehmen." data-wrong-feedback="Ein registrierter Zeitplan ist nur ein Auslöser. Prüfe Skript und Rechte vorab und den tatsächlichen Bericht danach." aria-labelledby="zeitplan-abnahme-title">
+  <div class="lab-heading"><div><h3 id="zeitplan-abnahme-title">Sicheren Einführungsweg ordnen</h3><p>Ordne die Schritte, bevor Linde den täglichen Bericht produktiv einplant.</p></div><span class="lab-tag">Ablauf</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="plan" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Zeitplan anlegen und nächste Auslösung prüfen</span></li>
+    <li data-step="rights" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Konto, Pfade und benötigte Rechte festlegen</span></li>
+    <li data-step="result" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Testlauf, Protokoll und Berichtsinhalt abnehmen</span></li>
+    <li data-step="script" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Berichtsskript im Testsystem mit Beispiel-Eingaben prüfen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><p>Kontrollfrage für die Praxis: <em>Wurde der Job eingeplant? Wurde er gestartet? Hat er den Sollzustand erreicht?</em> Das sind drei verschiedene Nachweise. Cron, systemd und die Windows-Aufgabenplanung unterscheiden sich in Syntax und Verhalten, aber diese Trennung bleibt gleich.</p>
+<h2 class="sec" id="s6"><span class="num">6</span>6 · Lernziel-Check</h2>
+<section class="quiz" data-quiz="cron-lernziel" data-correct="0" data-required-objective="cron-zeitfelder">
+  <h3>Welche Benutzer-Crontab-Zeile plant den Bericht Montag bis Freitag um 07:15 Uhr?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig: Minute 15, Stunde 7 und im Debian-cron-Beispiel Wochentag 1 bis 5."><span class="m">A</span> `15 7 * * 1-5 /opt/ops/report.sh`</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die ersten beiden Felder sind vertauscht: Das wäre 15:07 Uhr."><span class="m">B</span> `7 15 * * 1-5 /opt/ops/report.sh`</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Das Sternchen im Minutenfeld plant jeden Minutenwert in der Stunde 07."><span class="m">C</span> `* 7 * * 1-5 /opt/ops/report.sh`</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="timer-lernziel" data-correct="0" data-required-objective="timer-service">
+  <h3>Welche Erklärung ist für `report.timer` mit `OnCalendar=`, `Persistent=true` und `report.service` korrekt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Der Berichtserfolg muss dennoch separat geprüft werden."><span class="m">A</span> Der Timer plant die Auslösung; der gleichnamige Service führt die Aktion aus; nach Inaktivität kann ein verpasster Kalenderlauf einmal nachgeholt werden.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Zeitpunkt und Aktion sind vertauscht; Persistent spielt nicht jeden versäumten Termin einzeln ab."><span class="m">B</span> Der Service plant die Zeit, der Timer enthält das Skript; Persistent startet alle verpassten Tage einzeln.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die Timerliste zeigt Planungsstatus und Zeiten, nicht den geprüften Bericht."><span class="m">C</span> `systemctl list-timers` beweist die fachliche Richtigkeit des Berichts.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="windows-lernziel" data-correct="0" data-required-objective="windows-auftrag">
+  <h3>Welche Kombination legt den täglichen Windows-Auftrag um 07:15 Uhr an und fragt danach seine Planung ab?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Danach bleibt noch der Test der Aktion und des Berichts nötig."><span class="m">A</span> `schtasks /Create /tn DailyReport /tr C:\Ops\report.cmd /sc DAILY /st 07:15` und `schtasks /query /tn DailyReport /v /fo LIST`</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Taskname, Aktion, Zeitplantyp und Startzeit sind falsch zugeordnet."><span class="m">B</span> `schtasks /Create /tn 07:15 /tr DAILY /sc C:\Ops\report.cmd /st DailyReport` und danach kein Test</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Eine Abfrage erstellt keinen neuen Auftrag; sie prüft nur einen vorhandenen."><span class="m">C</span> `schtasks /query /tn DailyReport /v /fo LIST` allein</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s7"><span class="num">7</span>Quellen und Grenzen</h2>
+<p>Primärquellen, geprüft am 02.10.2026: <a href="https://manpages.debian.org/bookworm/cron/crontab.5.en.html">Debian crontab(5)</a>, <a href="https://manpages.debian.org/trixie/systemd/systemd.timer.5.en.html">Debian systemd.timer(5)</a>, <a href="https://manpages.debian.org/trixie/systemd/systemd.time.7.en.html">Debian systemd.time(7)</a>, <a href="https://manpages.debian.org/trixie/systemd/systemctl.1.en.html">Debian systemctl(1)</a>, <a href="https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/schtasks-create">Microsoft schtasks create</a> und <a href="https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/schtasks-query">Microsoft schtasks query</a>. Die private Buchstelle ITLF10–12, PDF-Seite 122, empfiehlt nur das Prüfen von Skriptvorschlägen in Testsystemen; sie belegt keine der hier erklärten Zeitplan-Syntaxen. Firma Linde, Befehlsziel, Übungen und Grafiken sind eigene Beispiele. Konkrete Rechte, Laufzeitumgebung, Zeitzone und Ausfallbehandlung sind vor einem produktiven Einsatz zu testen.</p>
+
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-6"><span class="d">zurück zu</span><span class="t">Betriebssysteme und Administration</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Betriebssysteme und Administration</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 3 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">1 · Einen Zeitplan vorhersagen</a></li>
+<li><a href="#s2" data-t="s2">2 · Fünf Cron-Felder lesen und schreiben</a></li>
+<li><a href="#s3" data-t="s3">3 · systemd: Timer löst Service aus</a></li>
+<li><a href="#s4" data-t="s4">4 · Windows-Gegenstück: schtasks</a></li>
+<li><a href="#s5" data-t="s5">5 · Erst testen, dann planen</a></li>
+<li><a href="#s6" data-t="s6">6 · Lernziel-Check</a></li>
+<li><a href="#s7" data-t="s7">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-6">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>
