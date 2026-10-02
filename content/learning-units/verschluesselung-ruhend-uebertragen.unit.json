@@ -1,0 +1,357 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "verschluesselung-ruhend-uebertragen",
+    "slug": "verschluesselung-ruhend-uebertragen",
+    "title": "Verschlüsselung: Speicher und Transport",
+    "description": "Datenträger, laufende Anwendungen und Netzwerkwege unterscheiden; Schutzgrenzen und Wiederherstellung an einem Außendienstfall prüfen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-8",
+    "groupLabel": "IT-Sicherheit und Datenschutz",
+    "itemId": "ga1-8__9",
+    "week": "KW 42",
+    "estimatedMinutes": 40,
+    "relevance": "hoch",
+    "sources": [
+      "storage-bitlocker",
+      "storage-recovery",
+      "storage-luks",
+      "tls13-mdn"
+    ],
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "zuordnung",
+      "label": "Ruhende, übertragene und verwendete Daten unterscheiden"
+    },
+    {
+      "id": "grenzen",
+      "label": "Datenträgerverschlüsselung und ihre Laufzeitgrenzen erklären"
+    },
+    {
+      "id": "transport",
+      "label": "TLS-Schutz pro Verbindung statt für die ganze Anwendung prüfen"
+    },
+    {
+      "id": "recovery",
+      "label": "Geschützte Wiederherstellung und Backup-Nachweis planen"
+    }
+  ],
+  "intro": "Der fiktive Vermessungsbetrieb Feldmaß verwaltet Messprotokolle auf mobilen Notebooks. Ein ausgeschaltetes Gerät geht verloren; auf einem anderen läuft Schadsoftware in einer entsperrten Sitzung. Die Website nutzt HTTPS bis zum Reverse Proxy, dahinter aber HTTP. Du entscheidest, welcher Schutz an welcher Stelle wirkt – und wie die Administration bei einem Geräteausfall wieder an die Daten kommt.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "storage-bitlocker",
+        "sourceLocator": "Overview: gesamte Volumes, Verlust/Diebstahl, TPM und Schutzstatus",
+        "use": "Schutzumfang und Grenzen für eigenständige Fälle geprüft",
+        "reviewStatus": "Genannte Primärpassagen am 03.10.2026 direkt gelesen"
+      },
+      {
+        "sourceId": "storage-recovery",
+        "sourceLocator": "Recovery options und Considerations: Wiederherstellungsinformationen, getrennte sichere Ablage, Zugriff",
+        "use": "Schutzumfang und Grenzen für eigenständige Fälle geprüft",
+        "reviewStatus": "Genannte Primärpassagen am 03.10.2026 direkt gelesen"
+      },
+      {
+        "sourceId": "storage-luks",
+        "sourceLocator": "RHEL 8 Kapitel 21.1: Blockgeräte und Grenzen nach dem Entsperren",
+        "use": "Schutzumfang und Grenzen für eigenständige Fälle geprüft",
+        "reviewStatus": "Genannte Primärpassagen am 03.10.2026 direkt gelesen"
+      },
+      {
+        "sourceId": "tls13-mdn",
+        "sourceLocator": "TLS: Encryption, Integrity, Authentication und Server authentication",
+        "use": "Schutzumfang und Grenzen für eigenständige Fälle geprüft",
+        "reviewStatus": "Genannte Primärpassagen am 03.10.2026 direkt gelesen"
+      }
+    ],
+    "notes": [
+      "Private Quelle europa-integratoren-2026:00491, Zeilen 5031–5078: Reverse-Proxy/TLS als Transport-Themenanker geprüft. Keine Aussage zur Datenträgerverschlüsselung daraus abgeleitet; Buchfall und OCR-Fragen nicht übernommen.",
+      "Feldmaß-Fälle und SVGs eigenständig. Keine produktiven Verschlüsselungsbefehle oder pauschalen Standardkonfigurationen.",
+      "Bestehende Deep-Space-Leseflächen und technische Flow-Komponenten gemäß Referenzbindung unverändert. Keine Formel für dieses qualitative Schutzmodell nötig."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "storage-weg",
+      "type": "flow",
+      "title": "Schutzstellen getrennt",
+      "description": "Ein Messprotokoll hat verschiedene Zustände. Die Pfeile zeigen Verarbeitung und Übertragung, keine durchgehende Verschlüsselungsgarantie.",
+      "items": [
+        {
+          "label": "Notebook: gespeicherte Datei",
+          "detail": "Geschütztes Volume: ruhende Daten"
+        },
+        {
+          "label": "Entsperrte Anwendung",
+          "detail": "Berechtigte Prozesse erhalten lesbare Daten"
+        },
+        {
+          "label": "TLS zum Reverse Proxy",
+          "detail": "Transport geschützt bis zu diesem Endpunkt"
+        },
+        {
+          "label": "Backend und Speicherung",
+          "detail": "Weiteren Transport und Speicher separat prüfen"
+        }
+      ]
+    },
+    {
+      "id": "storage-betrieb",
+      "type": "flow",
+      "title": "Wiederherstellung prüfen",
+      "description": "Ein getrenntes Betriebsverfahren ergänzt Verschlüsselung. Schlüsselzugriff und Datenwiederherstellung sind zwei unterschiedliche Nachweise.",
+      "items": [
+        {
+          "label": "Bestand erfassen",
+          "detail": "Volumes, Schutzstatus und Owner dokumentieren"
+        },
+        {
+          "label": "Recovery-Zugang absichern",
+          "detail": "Getrennte Ablage, begrenzte Berechtigung"
+        },
+        {
+          "label": "Wiederherstellung proben",
+          "detail": "Entsperren und Backup-Restore separat testen"
+        },
+        {
+          "label": "Nachweise nachhalten",
+          "detail": "Ergebnis, Änderungen und Zuständigkeit prüfen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Diagnose: welches Risiko bleibt?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "storage-diagnose",
+          "question": "Eine Schadsoftware liest Protokolle über die entsperrte Benutzersitzung. Ist Datenträgerverschlüsselung allein die passende Abwehr?",
+          "options": [
+            {
+              "text": "Ja, jede Anwendung sieht nur Chiffretext.",
+              "rationale": "Die Verschlüsselungsschicht entschlüsselt für zugriffsberechtigte Prozesse.",
+              "correct": false
+            },
+            {
+              "text": "Nein, die laufende Sitzung hat bereits Zugriff auf lesbare Dateien.",
+              "rationale": "Der Schutz gegen Offline-Auslesen ersetzt keine Absicherung laufender Endpunkte.",
+              "correct": true
+            },
+            {
+              "text": "Ja, wenn die Website HTTPS nutzt.",
+              "rationale": "HTTPS schützt einen Netzwerkweg, nicht den Zugriff der Schadsoftware.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Zuordnung: Zustand vor Maßnahme",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**Ruhende Daten** liegen auf einem Speichermedium: Notebook-Volume, Serverdatenträger oder Backup. **Übertragene Daten** bewegen sich zwischen Endpunkten. **Daten in Verwendung** verarbeitet eine laufende Anwendung, etwa ein geöffnetes Messprotokoll.\n\nFeldmaß ordnet zuerst den Befund zu: ausgebaute SSD → Speicher; Browser zum Proxy → Transport; lesendes Schadprogramm → laufender Endpunkt. Ein Betriebssystem-Anmeldepasswort ist nicht automatisch Datenträgerverschlüsselung. Ein HTTPS-Aufruf beweist nicht, dass die heruntergeladene Datei verschlüsselt gespeichert wird."
+        },
+        {
+          "type": "quiz",
+          "id": "storage-zuordnung",
+          "question": "Ein Protokoll wurde über HTTPS heruntergeladen und liegt unverschlüsselt auf einem USB-Stick. Welche Maßnahme adressiert den Verlust des Sticks?",
+          "options": [
+            {
+              "text": "Verschlüsselung des USB-Speichers beziehungsweise der dortigen Daten.",
+              "rationale": "Der verbleibende Befund betrifft ruhende Daten auf dem verlorenen Medium.",
+              "correct": true
+            },
+            {
+              "text": "Nur ein neuer HTTPS-Port.",
+              "rationale": "Ein Transportport verschlüsselt keine gespeicherte Kopie.",
+              "correct": false
+            },
+            {
+              "text": "Nur ein längeres Websitepasswort.",
+              "rationale": "Der Websitezugang verhindert kein Offline-Auslesen des Sticks.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "zuordnung"
+        }
+      ]
+    },
+    {
+      "title": "Datenträger: Offline-Schutz ist kein Endpunktschutz",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**BitLocker** schützt Windows-Volumes; **LUKS** ist ein Format für die Verschlüsselung von Linux-Blockgeräten. Im Verlustfall prüfst du tatsächlich geschützte Volumes und die Entsperrkonfiguration, nicht nur ein aktiviertes Kästchen. Wiederherstellungsgeheimnisse dürfen nicht mit dem verlorenen Gerät offen zugänglich sein.\n\n**Fall A:** Das ausgeschaltete Feldmaß-Notebook hat ein wirksam geschütztes Datenvolume. Eine entnommene SSD soll ohne benötigte Entsperrinformation nicht lesbar sein. **Fall B:** Das Volume ist entsperrt und ein Prozess darf die Protokolle lesen. Datenträgerverschlüsselung verhindert diesen Lesezugriff nicht. Berechtigungen, Updates und Endpunktschutz bleiben erforderlich. Auch eine Bildschirmsperre ist nicht dasselbe wie ein wieder gesperrtes Verschlüsselungsvolume."
+        },
+        {
+          "type": "quiz",
+          "id": "storage-grenzen",
+          "question": "Welche Aussage zu einem entsperrten verschlüsselten Volume stimmt?",
+          "options": [
+            {
+              "text": "Alle Dateien sind für jede Anwendung unlesbar.",
+              "rationale": "Die transparente Entschlüsselung stellt berechtigten Prozessen lesbare Inhalte bereit.",
+              "correct": false
+            },
+            {
+              "text": "Das Betriebssystem braucht keine Dateiberechtigungen mehr.",
+              "rationale": "Verschlüsselung ersetzt die Berechtigungsschicht nicht.",
+              "correct": false
+            },
+            {
+              "text": "Prozesse mit passenden Zugriffsrechten können Dateien lesen.",
+              "rationale": "Schutz vor Offline-Auslesen und Zugriffskontrolle im laufenden System sind getrennte Aufgaben.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "grenzen"
+        }
+      ]
+    },
+    {
+      "title": "Transport: der Proxy ist eine Schutzgrenze",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "storage-weg",
+          "alt": "Vier Schutzstellen: Datei auf Notebook, entsperrte Anwendung, TLS-Verbindung zum Proxy und separat zu prüfendes Backend.",
+          "caption": "Das Diagramm markiert verschiedene Schutzaufgaben. Der TLS-Abschnitt endet am Proxy; die Pfeile bedeuten keine Ende-zu-Ende-Verschlüsselung."
+        },
+        {
+          "type": "markdown",
+          "markdown": "TLS schützt die **jeweilige Verbindung** gegen Mitlesen und unbemerkte Veränderung; die Serveridentität muss geprüft werden. Im Feldmaß-Fall endet die Browser-TLS-Verbindung am Reverse Proxy. Dieser verarbeitet lesbare Anwendungsdaten. Die konfigurierte HTTP-Verbindung zum Backend ist ein anderer, unverschlüsselter Transportabschnitt.\n\n**Eigener Prüffall:** Im Browser funktioniert HTTPS. Im Proxybestand steht als Backend `http://messdienst.intern.example`. Dokumentiere diese Lücke getrennt und plane für den Backendweg passenden Transportschutz mit Identitätsprüfung. Prüfe außerdem die Speicherung am Server. Weder Notebook-Verschlüsselung noch das Browser-Schloss liefern diesen Nachweis. Eine zweite TLS-Verbindung wäre ebenfalls keine Ende-zu-Ende-Verschlüsselung gegenüber dem Proxy."
+        },
+        {
+          "type": "quiz",
+          "id": "storage-transport",
+          "question": "Was beweist ein erfolgreicher HTTPS-Aufruf zum Feldmaß-Proxy allein?",
+          "options": [
+            {
+              "text": "Auch das Backend und sämtliche Backups sind verschlüsselt.",
+              "rationale": "Die Browserverbindung macht keine Aussage über andere Schutzstellen.",
+              "correct": false
+            },
+            {
+              "text": "Die geprüfte TLS-Verbindung zum Proxy; weitere Wege und Speicher bleiben separat zu prüfen.",
+              "rationale": "Der TLS-Endpunkt begrenzt den nachgewiesenen Transportabschnitt.",
+              "correct": true
+            },
+            {
+              "text": "Der Proxy kann die Anwendungsdaten nicht lesen.",
+              "rationale": "Bei TLS-Terminierung verarbeitet der Proxy die entschlüsselten Daten.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "transport"
+        }
+      ]
+    },
+    {
+      "title": "Anwendung: Schlüssel sind Teil des Betriebs",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "storage-betrieb",
+          "alt": "Betriebsablauf aus Bestand, abgesichertem Recovery-Zugang, Wiederherstellungsprobe und Nachweisen.",
+          "caption": "Das Entsperren eines vorhandenen Volumes ersetzt kein Backup. Ein Backup ist erst nach erfolgreicher Rücksicherung praktisch nachgewiesen."
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Feldmaß-Auftrag:** Vor dem Rollout legt die Administration einen Owner und eine Vertretung fest. Wiederherstellungsinformationen werden in einer geschützten, vom Notebook getrennten Ablage verwaltet. Zugriff erhalten nur die vorgesehenen Verantwortlichen; Abrufe werden gemäß Betriebsrichtlinie nachvollziehbar gemacht. Bei BitLocker kann ein Wiederherstellungskennwort den Zugriff auf das Volume ermöglichen: Es ist kein harmloser Inventareintrag.\n\nTeste am freigegebenen Testgerät, ob der berechtigte Recovery-Zugang funktioniert. Teste zusätzlich die Rücksicherung eines Backups samt benötigtem Schlüssel und Datenprüfung. Bei einer zerstörten SSD hilft bloßes Entsperren nicht. Nach Konfigurations- oder Zuständigkeitsänderungen aktualisierst du Bestand und Nachweise. Behaupte nicht, eine zentrale Schlüsselsicherung sei ohne geprüfte Konfiguration automatisch vorhanden."
+        },
+        {
+          "type": "quiz",
+          "id": "storage-recovery",
+          "question": "Welche Ablage passt zum Feldmaß-Rollout?",
+          "options": [
+            {
+              "text": "Geschützte getrennte Recovery-Ablage mit begrenztem Zugriff und geprüfter Wiederherstellung.",
+              "rationale": "Getrennte Geheimnisablage und ein Test adressieren Schutz und Wiederherstellbarkeit.",
+              "correct": true
+            },
+            {
+              "text": "Offene Textdatei auf demselben Notebook.",
+              "rationale": "Geräteverlust würde Geheimnis und Daten gemeinsam betreffen.",
+              "correct": false
+            },
+            {
+              "text": "Keine Recovery-Information: dann ist jedes Backup automatisch wiederherstellbar.",
+              "rationale": "Ein verschlüsseltes Backup kann ohne benötigte Schlüssel unbrauchbar sein.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "recovery"
+        },
+        {
+          "type": "recall",
+          "id": "storage-transfer",
+          "prompt": "Erstelle für Feldmaß einen kurzen Befundplan: verlorene SSD, entsperrte Sitzung, Proxy-Backendweg und Geräteausfall. Nenne jeweils Schutzgrenze, passende Maßnahme und einen überprüfbaren Nachweis.",
+          "minLength": 180,
+          "model": "Für die verlorene SSD prüfe ich wirksame Volumenverschlüsselung und getrennte Recovery-Information. Für die entsperrte Sitzung brauche ich Rechte und Endpunktschutz; Offline-Verschlüsselung verhindert den laufenden Lesezugriff nicht. HTTPS endet am Proxy, also prüfe ich den Backendweg und Server-Speicher separat. Bei Geräteausfall teste ich Recovery-Zugang und Backup-Restore getrennt, dokumentiere Datenprüfung, Owner und Vertretung."
+        }
+      ]
+    },
+    {
+      "title": "Abruftraining",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "id": "storage-cards",
+          "cards": [
+            {
+              "id": "ruhend",
+              "label": "Schutzgrenzen",
+              "front": "Was sind ruhende Daten?",
+              "back": "Gespeicherte Inhalte auf Notebook, Server oder Backup. Ihr Transportschutz sagt nichts über die Speicher-Verschlüsselung aus."
+            },
+            {
+              "id": "transport",
+              "label": "Schutzgrenzen",
+              "front": "Was schützt TLS?",
+              "back": "Eine konkrete Netzwerkverbindung: Vertraulichkeit, Integrität und geprüfte Gegenstellenidentität entsprechend dem Verfahren."
+            },
+            {
+              "id": "laufzeit",
+              "label": "Schutzgrenzen",
+              "front": "Was ändert das Entsperren?",
+              "back": "Zugriffsberechtigte Prozesse können lesbare Dateien erhalten. Offline-Schutz ist kein Schutz vor solchen Laufzeitzugriffen."
+            },
+            {
+              "id": "anmeldung",
+              "label": "Schutzgrenzen",
+              "front": "Ist ein Anmeldepasswort Datenträgerverschlüsselung?",
+              "back": "Nein. Anmeldeprüfung und Verschlüsselung eines Volumes sind unterschiedliche Mechanismen."
+            },
+            {
+              "id": "proxy",
+              "label": "Schutzgrenzen",
+              "front": "Was bedeutet TLS-Terminierung?",
+              "back": "Die TLS-Verbindung endet am Proxy. Backend-Verbindungen und Speicherung benötigen separate Prüfungen."
+            },
+            {
+              "id": "recovery",
+              "label": "Schutzgrenzen",
+              "front": "Wie behandle ich Recovery-Information?",
+              "back": "Als Geheimnis: geschützt, getrennt vom Gerät, mit begrenztem Zugriff und überprüfter Nutzbarkeit."
+            },
+            {
+              "id": "backup",
+              "label": "Schutzgrenzen",
+              "front": "Ist Entsperren gleich Rücksicherung?",
+              "back": "Nein. Recovery-Zugang öffnet ein Volume; ein getesteter Backup-Restore stellt Daten nach einem Ausfall wieder her."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
