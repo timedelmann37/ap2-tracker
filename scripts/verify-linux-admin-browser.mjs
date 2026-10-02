@@ -7,6 +7,8 @@ const captureDir = process.env.AP2_LINUX_CAPTURE_DIR;
 const cases = [
   {
     slug: 'linux-verzeichnisse-dienste-pakete-logs',
+    image: true,
+    figures: 3,
     diagnostic: 'linux-einstieg',
     card: 'linux-karte-0',
     recall: 'linux-fallbegruendung',
@@ -15,6 +17,8 @@ const cases = [
   },
   {
     slug: 'zeitgesteuerte-ausfuehrung-cron-systemd-timer-schtasks',
+    image: true,
+    figures: 3,
     diagnostic: 'zeitplan-diagnose',
     card: 'zeitplan-karte-0',
     recall: 'timer-eigene-erklaerung',
@@ -23,6 +27,24 @@ const cases = [
       { id: 'cron-feldfolge', expected: ['minute', 'stunde', 'monatstag', 'monat', 'wochentag'] },
       { id: 'zeitplan-abnahme', expected: ['script', 'rights', 'plan', 'result'] }
     ]
+  },
+  {
+    slug: 'ssh-schluessel-sudo-root-login',
+    figures: 2,
+    diagnostic: 'ssh-einstieg',
+    card: 'ssh-karte-benutzerkey',
+    recall: 'ssh-transfer-erklaerung',
+    gates: ['ssh-schluessel-gate', 'ssh-umstellung-gate', 'ssh-sudo-gate'],
+    sequences: [{ id: 'ssh-migration-reihenfolge', expected: ['rueckweg', 'key-test', 'config-test', 'abschalten', 'abnahme'] }]
+  },
+  {
+    slug: 'linux-befehle-sicher-waehlen',
+    figures: 3,
+    diagnostic: 'befehle-einstieg',
+    card: 'cmd-karte-0',
+    recall: 'cmd-fallbegruendung',
+    gates: ['diagnosebefehle-gate', 'seiteneffekte-gate', 'aenderung-kontrollieren-gate'],
+    sequences: [{ id: 'rsync-kontrollfolge', expected: ['target', 'dryrun', 'run', 'result'] }]
   }
 ];
 
@@ -49,19 +71,26 @@ try {
     await page.goto(`${base}/lernen/${testCase.slug}/`);
     const done = page.locator('#mark-done');
     assert(await done.isDisabled(), `${testCase.slug}: initial objective gate`);
-    assert(await page.locator('.learning-figure').count() === 3, `${testCase.slug}: original illustration and two diagrams`);
-    const illustration = page.locator('.learning-figure img');
-    await illustration.scrollIntoViewIfNeeded();
-    await illustration.evaluate(node => node.decode());
-    assert(await illustration.evaluate(node => node.naturalWidth > 0), `${testCase.slug}: illustration loaded`);
-    assert(await illustration.evaluate(node => Number(node.getAttribute('width')) === node.naturalWidth && Number(node.getAttribute('height')) === node.naturalHeight), `${testCase.slug}: illustration reserves its aspect ratio`);
+    assert(await page.locator('.learning-figure').count() === testCase.figures, `${testCase.slug}: technical diagrams present`);
+    if (testCase.image) {
+      const illustration = page.locator('.learning-figure img');
+      await illustration.scrollIntoViewIfNeeded();
+      await illustration.evaluate(node => node.decode());
+      assert(await illustration.evaluate(node => node.naturalWidth > 0), `${testCase.slug}: technical illustration loaded`);
+      assert((await illustration.getAttribute('src')).endsWith('.svg'), `${testCase.slug}: only technical SVG artwork`);
+      assert(await illustration.evaluate(node => Number(node.getAttribute('width')) === node.naturalWidth && Number(node.getAttribute('height')) === node.naturalHeight), `${testCase.slug}: illustration reserves its aspect ratio`);
+    }
     const firstDiagram = page.locator('.learning-diagram').first();
     if (testCase.slug === 'linux-verzeichnisse-dienste-pakete-logs') {
       const cards = await firstDiagram.locator('g').allTextContents();
       assert(cards.length === 4 && ['Dienste', 'Dateien', 'Daten', 'Boot'].every((word, index) => cards[index].includes(word)), `${testCase.slug}: path cards are complete`);
-    } else {
+    } else if (testCase.slug === 'zeitgesteuerte-ausfuehrung-cron-systemd-timer-schtasks') {
       assert(await firstDiagram.evaluate(node => node.classList.contains('diagram-comparison')), `${testCase.slug}: cron fields form a horizontal row`);
       assert((await firstDiagram.textContent()).includes('Cron-Ausdruck: 15 7 * * *'), `${testCase.slug}: full cron expression is visible`);
+    } else if (testCase.slug === 'ssh-schluessel-sudo-root-login') {
+      assert((await firstDiagram.textContent()).includes('Benutzer: privat'), `${testCase.slug}: key roles are labelled`);
+    } else {
+      assert((await firstDiagram.textContent()).includes('Lesender Befund'), `${testCase.slug}: diagnosis flow is labelled`);
     }
 
     const diagnostic = page.locator(`[data-quiz="${testCase.diagnostic}"]`);

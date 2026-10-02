@@ -1744,7 +1744,7 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "week": "KW 40",
     "estimatedMinutes": 35,
     "relevance": "hoch",
-    "contentRevision": "2026-10-02.1",
+    "contentRevision": "2026-10-02.2",
     "contentStatus": "CURATED_DRAFT",
     "learningObjectives": [
       "dateipfade-einordnen",
@@ -1758,7 +1758,7 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
       "systemd-journalctl-man",
       "debian-reference-packages"
     ],
-    "contentHash": "69ac992e7d094bcb8dcce7c0659a140910cc3f904e26a5e70ad0c04188ef269b",
+    "contentHash": "6486577e5b4609debacba156f6e9ee803fe57aa69f8da7bf38f5f5c44a46dbe2",
     "sourceKind": "compact-spec"
   },
   {
@@ -1773,7 +1773,7 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "week": "KW 40",
     "estimatedMinutes": 32,
     "relevance": "hoch",
-    "contentRevision": "2026-10-02.1",
+    "contentRevision": "2026-10-02.2",
     "contentStatus": "CURATED_DRAFT",
     "learningObjectives": [
       "cron-zeitfelder",
@@ -1789,7 +1789,74 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
       "microsoft-schtasks-create",
       "microsoft-schtasks-query"
     ],
-    "contentHash": "153ee713312e45d6911decfb034154886c4d5c4a9db7e4a721d2e3eef0e1e187",
+    "contentHash": "760319492c169bcb2e6955dd7a11cd3e75eee4081fa7678e462771989affabba",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "ssh-schluessel-sudo-root-login",
+    "slug": "ssh-schluessel-sudo-root-login",
+    "title": "SSH-Zugang absichern: Schlüssel, sudo und Root-Login",
+    "description": "Einen individuellen SSH-Zugang ohne Aussperren einführen und Anmeldung von administrativen Rechten trennen.",
+    "domain": "GA1",
+    "groupId": "ga1-6",
+    "groupLabel": "Betriebssysteme und Administration",
+    "itemId": "ga1-6__6",
+    "week": "KW 40",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-02.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "schluessel-zuordnen",
+      "ssh-zugang-umstellen",
+      "sudo-begrenzen"
+    ],
+    "sources": [
+      "itlf10-12-2023",
+      "openssh-ssh-keygen",
+      "openssh-sshd-config",
+      "openssh-sshd",
+      "ubuntu-openssh-server",
+      "debian-sudoers",
+      "debian-visudo"
+    ],
+    "contentHash": "04ce84e6a532ed71d250c4f05c17e53f3a154bd389996754e57becbc27c85483",
+    "sourceKind": "compact-spec"
+  },
+  {
+    "id": "linux-befehle-sicher-waehlen",
+    "slug": "linux-befehle-sicher-waehlen",
+    "title": "Linux-Befehle sicher auswählen und prüfen",
+    "description": "Bei einer Dienststörung passende Beobachtungsbefehle wählen, Eingriffe abgrenzen und deren Ergebnis verifizieren.",
+    "domain": "GA1",
+    "groupId": "ga1-6",
+    "groupLabel": "Betriebssysteme und Administration",
+    "itemId": "ga1-6__7",
+    "week": "KW 40",
+    "estimatedMinutes": 40,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-02.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "diagnosebefehle-waehlen",
+      "seiteneffekte-einordnen",
+      "aenderung-kontrollieren"
+    ],
+    "sources": [
+      "itlf10-12-2023",
+      "gnu-coreutils-man",
+      "gnu-grep-man",
+      "gnu-findutils-man",
+      "procps-ps-man",
+      "procps-top-man",
+      "iproute2-ss-man",
+      "iproute2-ip-man",
+      "systemd-systemctl-man",
+      "rsync-man",
+      "gnu-tar-man",
+      "util-linux-kill-man"
+    ],
+    "contentHash": "4a909cf0e5f16239dee586694b4291388922cbef931a5ae47e4d2a0eba577f21",
     "sourceKind": "compact-spec"
   },
   {
