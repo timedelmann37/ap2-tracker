@@ -1,0 +1,549 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "berechtigungsprozesse-personalwechsel-vertretung",
+    "slug": "berechtigungsprozesse-personalwechsel-vertretung",
+    "title": "Rechte bei Personalwechsel sicher ändern",
+    "description": "Onboarding, Rollenwechsel, Offboarding und Vertretung mit Freigaben, klaren Zeitgrenzen und wirksamen Zugriffstests planen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-7",
+    "groupLabel": "Berechtigungskonzepte",
+    "itemId": "ga1-7__6",
+    "week": "KW 41",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "sources": [
+      "access-nist-personnel-lifecycle",
+      "microsoft-entra-lifecycle-workflows",
+      "microsoft-entra-revoke-access"
+    ],
+    "contentRevision": "2026-10-02.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "eintritt-freigeben",
+      "label": "Beim Eintritt Identität, Aufgabe, Freigabe und Startzeit vor der wirksamen Rechtevergabe prüfen"
+    },
+    {
+      "id": "rollenwechsel-abgleichen",
+      "label": "Beim Rollenwechsel benötigte Basisrechte behalten und alte Rollen sowie direkte Sonderrechte gezielt entziehen"
+    },
+    {
+      "id": "austritt-wirksam-pruefen",
+      "label": "Beim Austritt Konto, Sitzungen und weitere Zugangspfade berücksichtigen und den wirksamen Entzug nachweisen"
+    },
+    {
+      "id": "vertretung-begrenzen",
+      "label": "Eine personenbezogene Vertretung auf Aufgabe und Zeitraum begrenzen und ihren Entzug überprüfen"
+    }
+  ],
+  "intro": "Ein Eintritt braucht passende Rechte, ein Wechsel braucht auch Entzug, ein Austritt braucht eine wirksame Sperre. Eine Vertretung braucht ein Ende. Du bearbeitest vier Personalereignisse eines fiktiven Messdienstes und entscheidest nicht nur, was beantragt wird, sondern auch, was anschließend tatsächlich erreichbar sein darf.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "access-nist-personnel-lifecycle",
+        "sourceLocator": "NIST SP 800-53 Rev. 5, offizielle PDF: AC-2(c–f, h–l), gedruckte S. 19–20 / PDF-Seiten 46–47; PS-4 S. 224–225 / PDF 251–252; PS-5 S. 225–226 / PDF 252–253",
+        "use": "Kontenmanagement an genehmigten Zweck und Personalereignisse koppeln; beim Wechsel fortbestehenden Bedarf prüfen, beim Austritt Zugriffe und Authentifikatoren entziehen sowie organisatorischen Zugriff auf benötigte Informationen erhalten.",
+        "reviewStatus": "Original-PDF am 02.10.2026 direkt gelesen; Kontrollkatalog, keine pauschale gesetzliche Pflicht oder universell feste Entzugsfrist"
+      },
+      {
+        "sourceId": "microsoft-entra-lifecycle-workflows",
+        "sourceLocator": "Microsoft Learn: What are lifecycle workflows?, Begriffe Joiner, Mover und Leaver",
+        "use": "Drei Personalereignisse als Lifecycle-Kategorien einordnen; die Vertretung ist eine zusätzliche didaktische Ausnahme, keine vierte behauptete Entra-Kategorie.",
+        "reviewStatus": "Offiziellen Microsoft-Learn-Suchindex am 02.10.2026 geprüft; direkter Abruf dieser Seite lieferte einen Fehler. Keine Aussage zu Lizenz oder konkreten Produkt-Tasks übernommen"
+      },
+      {
+        "sourceId": "microsoft-entra-revoke-access",
+        "sourceLocator": "Microsoft Learn: Revoke user access, Overview; Access tokens and refresh tokens; Session tokens (cookies); When access is revoked",
+        "use": "Neue Anmeldung, Token und anwendungseigene Sitzung voneinander unterscheiden; IdP-Sperre allein garantiert keine sofortige Beendigung jedes Anwendungspfads.",
+        "reviewStatus": "Offizielle aktuelle Microsoft-Learn-Seite am 02.10.2026 direkt gelesen; produktbezogene Grenze ausdrücklich benannt, keine universelle Token-Laufzeit gelehrt"
+      }
+    ],
+    "notes": [
+      "Alle Namen, Zeitpunkte, Rechteprofile, Fälle und Übungen sind eigenständige didaktische Erfindungen. Keine Buchaufgabe, Buchgrafik oder Originalabbildung übernommen.",
+      "Ergänzende begrenzte Buchanker-Auswertung zu ITLF10–12, PDF-Seiten 204/205, scheiterte mit provider_exhausted / catalog_unavailable. Kein OpenAI-Ersatz dieser Extraktion, keine neuen Buchbelege aus diesem Auftrag behauptet. Fachliche Aussagen dieser Einheit stützen sich unabhängig auf die registrierten Primärquellen.",
+      "Bestehender Deep-Space-Build-Target aus DESIGN.md und docs/DEEP_SPACE_REFERENCE_LOCK.md: Doppler trägt Paneele und Typografie, Astro nur Atmosphäre, n8n nur Verbindungslinien. Gemeinsame Lernwidgets wiederverwenden; keine neue visuelle Richtung oder Rasterdekoration.",
+      "Die Ablaufgrafiken und Sortieraufgabe zeigen ausdrücklich eine Fall- und Nachweisfolge, keine für jedes System vorgeschriebene Serialisierung aller Sperrmaßnahmen. Notwendige Sperrmaßnahmen dürfen parallel und vor einer vollständigen Übergabe erfolgen.",
+      "Vertretung erhält im Fall eine genehmigte personenbezogene Rollenzuweisung mit Anfang, Ende und Entzugskontrolle. AC-2(2) für temporäre Konten wird nicht fälschlich als Vorgabe für alle befristeten Rollenzuweisungen verwendet.",
+      "CURATED_DRAFT bleibt bis zur menschlichen fachlichen und didaktischen Freigabe bestehen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "personalereignisse-rechtebedarf",
+      "type": "layers",
+      "title": "Vier Ereignisse, vier Rechteänderungen",
+      "description": "Eintritt: genehmigte Rechte zum Start. Wechsel: neues Soll und Entzug des alten Überhangs. Austritt: Zugangspfade sperren und Übergabe sichern. Vertretung: personenbezogener begrenzter Zusatzbedarf mit Ende.",
+      "items": [
+        {
+          "label": "Eintritt",
+          "detail": "Identität, Aufgabe, Freigabe und Startzeit prüfen."
+        },
+        {
+          "label": "Wechsel",
+          "detail": "Neue Aufgabe abgleichen; Altrollen und Ausnahmen prüfen."
+        },
+        {
+          "label": "Austritt",
+          "detail": "Zugangspfade sperren; Übergabe und Wirkung nachweisen."
+        },
+        {
+          "label": "Vertretung",
+          "detail": "Zusatzbedarf mit Start, Ende und Entzugskontrolle."
+        }
+      ]
+    },
+    {
+      "id": "offboarding-pruefebenen",
+      "type": "layers",
+      "title": "Entzug auf mehreren Ebenen prüfen",
+      "description": "Kontosperre betrifft neue Anmeldung. Sitzungen und Token brauchen systemabhängige Behandlung. Eigenständige Anwendungszugänge und persönliche Schlüssel sind eigene Zugangspfade. Ein belastbarer Nachweis prüft diese Ebenen, nicht nur den Status eines Tickets.",
+      "items": [
+        {
+          "label": "Konto",
+          "detail": "Neue Anmeldung am betroffenen Konto gesperrt?"
+        },
+        {
+          "label": "Sitzung",
+          "detail": "Bestehende Sitzungen und Token wirksam behandelt?"
+        },
+        {
+          "label": "Zielsystem",
+          "detail": "Lokaler App-Zugang und persönlicher Schlüssel entzogen?"
+        },
+        {
+          "label": "Nachweis",
+          "detail": "Verbotene Zugriffe weg; Übergabe ohne Kontofreigabe?"
+        }
+      ]
+    },
+    {
+      "id": "vertretung-zeitgrenzen",
+      "type": "flow",
+      "title": "Miras Vertretung hat zwei Zeitgrenzen",
+      "description": "Vor dem 27. Oktober um 08:00 hat Mira nur Basisrechte. Vom 27. Oktober 08:00 bis vor dem 29. Oktober 16:00 darf sie zusätzlich den Prüfplan lesen. Ab dem 29. Oktober 16:00 ist die Vertretungszuweisung entzogen; Basisrechte bleiben. Positive und negative Zugriffstests belegen beide Grenzen.",
+      "items": [
+        {
+          "label": "Vor Start · nur Basisprofil",
+          "detail": "Bis 27.10., 08:00: kein Prüfplan-Zusatzrecht."
+        },
+        {
+          "label": "Aktiv · genehmigte Vertretung",
+          "detail": "Ab 27.10., 08:00: Prüfplan lesen, nicht ändern."
+        },
+        {
+          "label": "Ab Ende · Zusatzrecht entzogen",
+          "detail": "Ab 29.10., 16:00: kein Prüfplanzugriff, Basis bleibt."
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Diagnose: Ein neues Team, aber alte Rechte?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "personalwechsel-diagnose",
+          "diagnostic": true,
+          "question": "Noah wechselt vom Lager ins Messlabor. Die IT fügt die Laborrolle hinzu, lässt Lagerrolle und einen alten direkten Archivgrant bestehen. Was ist noch nicht erledigt?",
+          "options": [
+            {
+              "text": "Nur den Namen der Lagerrolle ändern.",
+              "rationale": "Ein anderer Name entfernt weder ihre Rechte noch den separaten Archivgrant. Vergleiche beide Vergabewege mit der neuen Aufgabe.",
+              "correct": false
+            },
+            {
+              "text": "Noah dauerhaft zwei vollständige Profile geben.",
+              "rationale": "Der Wechsel belegt keinen fortbestehenden Lagerbedarf. Zusätzliche Rechte allein erledigen den Entzug alter Rechte nicht.",
+              "correct": false
+            },
+            {
+              "text": "Altrolle und Direktgrant gegen den neuen Bedarf prüfen.",
+              "rationale": "Richtig. Eine neue Rolle beantwortet nur die Vergabe. Nicht mehr benötigte alte Rechte müssen separat entzogen und ihre Wirkung geprüft werden.",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Joiner, Mover, Leaver** sind die gebräuchlichen Kategorien für **Eintritt, Wechsel und Austritt**. Eine zeitweilige Vertretung ist ein zusätzlicher begrenzter Bedarf. Die gemeinsame Frage lautet: **Welche Person braucht welche Aktion an welcher Ressource – ab wann und bis wann?** Ein Personalereignis löst den Abgleich aus; der nächste reguläre Berechtigungsreview ersetzt die rechtzeitige Änderung nicht."
+        },
+        {
+          "type": "figure",
+          "diagramId": "personalereignisse-rechtebedarf",
+          "alt": "Vier getrennte Zeilen: Eintritt prüft Identität, Aufgabe, Freigabe und Startzeit. Wechsel prüft neues Soll und alte Ausnahmen. Austritt sperrt Zugänge und sichert die Übergabe. Vertretung hat einen begrenzten Zusatzbedarf mit Start und Ende.",
+          "caption": "Eigenes technisches Modell: Die Zeilen sind vier Anlässe, keine zeitliche Abfolge eines Mitarbeitenden."
+        }
+      ]
+    },
+    {
+      "title": "Onboarding: Nicht das Konto der Vorgängerin kopieren",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Bei **Havelblick Messservice** beginnt Nika am 12. Oktober um 08:00 im Messlabor. Die Fachverantwortliche genehmigt das Basisprofil `Mitarbeitende` mit **Handbuch lesen** und das Laborprofil mit **Prüfberichte lesen und ändern**. Die Vorgängerin besaß zusätzlich einen einmaligen Exportzugang. Dieser gehört nicht zu Nikas Aufgabe.\n\n**Vorgemacht:** Die Personalstelle bestätigt Nika und den Eintrittszeitpunkt. Die Fachverantwortliche legt das benötigte Profil fest; die freigabeberechtigte Stelle genehmigt es. Die IT bereitet Nikas eigenes Konto und dessen Authentifikatoren vor und setzt die Vergabe zum genehmigten Start um. Ein positiver Test prüft Lesen und Ändern eines freigegebenen Testberichts. Ein negativer Test prüft, dass der alte Exportzugang nicht verfügbar ist. Das Ticket enthält Person, Zweck, Ressourcen, Aktionen, Freigabe, Zeitpunkt und Prüfergebnis."
+        },
+        {
+          "type": "callout",
+          "tone": "note",
+          "title": "Vorbereiten ist nicht vorzeitig freischalten",
+          "body": "Die IT darf im Lehrfall das Konto vor dem ersten Arbeitstag vorbereiten. Wirksamer Zugriff beginnt erst zum freigegebenen Zeitpunkt. Ein früherer Zugriff für eine konkrete Vorbereitungsaufgabe braucht eine eigene genehmigte Grundlage."
+        },
+        {
+          "type": "quiz",
+          "id": "personalwechsel-eintritt-praxis",
+          "question": "Nikas Konto ist am Freitag vorbereitet; ihr genehmigter Start ist Montag um 08:00. Es gibt keinen Auftrag für Arbeit vor Montag. Welcher Plan passt?",
+          "options": [
+            {
+              "text": "Aktivierung für Montag 08:00 vorbereiten und protokollieren.",
+              "rationale": "Richtig. Vorbereitete Technik und genehmigter Zugriffsbeginn sind getrennt. Auch die vergebenen Profile und Zugriffstests gehören zum Nachweis.",
+              "correct": true
+            },
+            {
+              "text": "Am Freitag alle Rechte der Vorgängerin aktivieren.",
+              "rationale": "Weder der frühe Zeitpunkt noch deren Sonderzugang ist für Nika genehmigt. Ein Profilvergleich ist genauer als eine Kontokopie.",
+              "correct": false
+            },
+            {
+              "text": "Nika bis Montag mit dem Konto der Vorgängerin arbeiten lassen.",
+              "rationale": "Die Nutzung eines fremden Kontos verschleiert die Zuordnung von Handlungen und übernimmt dessen Berechtigungsumfang. Nika braucht ihre eigene Zuordnung.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Rollenwechsel: Behalten, entziehen und neu zuweisen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Noah wechselt am 15. Oktober vom Lager ins Messlabor. **Soll nach dem Wechsel:** Handbuch lesen sowie Prüfberichte lesen und ändern. **Ist davor:** Basisprofil, Lagerprofil mit Bestandsänderung sowie ein direkter Grant auf ein Sonderarchiv. Für Lager und Archiv besteht ab dem Wechsel kein Auftrag mehr.\n\n| Eintrag | Entscheidung | Begründung |\n| --- | --- | --- |\n| Basisprofil | Behalten | Handbuch bleibt für die Arbeit erforderlich |\n| Lagerprofil | Entziehen | Bestandsänderung gehört nicht zur neuen Aufgabe |\n| Direkter Archivgrant | Separat entziehen | Keine aktuelle Archivaufgabe; nicht Teil der Lagerrolle |\n| Laborprofil | Nach Freigabe zuweisen | Prüfberichte sind der neue Arbeitsauftrag |\n\n**Wirksam prüfen:** Noah kann danach einen Testbericht lesen und ändern, aber weder Lagerbestand ändern noch das Sonderarchiv öffnen. Die Prüfung erfolgt mit Noahs betroffenen Zugangspfaden, nicht mit einem Administratorkonto. Sitzungs- und Aktualisierungsverhalten der Systeme sind zu berücksichtigen. Ein verbleibender Altzugriff ist ein offener Fehler, kein erfolgreich erledigter Wechsel."
+        },
+        {
+          "type": "quiz",
+          "id": "personalwechsel-wechsel-praxis",
+          "question": "Nach Entfernung der Lagerrolle kann Noah das Sonderarchiv weiter öffnen. Der Ist-Bestand enthält einen direkten Archivgrant. Was ist die passende Folgemaßnahme?",
+          "options": [
+            {
+              "text": "Das notwendige Basisprofil entfernen.",
+              "rationale": "Das Handbuchprofil erklärt den direkten Archivgrant nicht. Sein Entzug würde erforderliche Rechte beseitigen und den falschen Zugangspfad behandeln.",
+              "correct": false
+            },
+            {
+              "text": "Den direkten Grant entfernen und den Archivpfad erneut prüfen.",
+              "rationale": "Richtig. Der alte Sonderzugang liegt außerhalb der entfernten Rolle. Der Nachweis ist erst vollständig, wenn auch dieser Zugriff wirksam beendet ist.",
+              "correct": true
+            },
+            {
+              "text": "Den Wechsel als erledigt markieren, weil die Rolle entfernt wurde.",
+              "rationale": "Der beobachtete Archivzugriff widerspricht dem Soll. Ein technischer Teilschritt genügt nicht als Nachweis des gewünschten Ergebnisses.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Offboarding: Eine Sperre ist kein Löschkonzept",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Alinas Arbeitszugriff endet genehmigt am 20. Oktober um 17:00. Sie besitzt ein zentrales Konto, eine bereits geöffnete Lieferantenanwendung mit eigener Sitzung und einen persönlichen API-Schlüssel. **API-Schlüssel** meint hier ein zusätzliches Geheimnis, mit dem eine Anwendung Zugriff erhält. Außerdem ist Alina bisher für einen betrieblichen Report zuständig.\n\n**Vorgemacht:** Die IT erfasst vorab Zugangspfade und Übergabebedarf. Zum wirksamen Ende sperrt sie das betroffene Konto, behandelt Sitzungen und Token nach den jeweiligen Systemmöglichkeiten und entzieht den persönlichen Schlüssel sowie den eigenständigen App-Zugang. Für den Report wird eine berechtigte Nachfolge festgelegt; Alinas Konto bleibt dafür nicht aktiv. Sperre und Übergabe sind getrennte Aufgaben. Kontolöschung, Datenaufbewahrung und spätere Bereinigung folgen einem eigenen freigegebenen Verfahren.\n\nEin realer Entzugsplan braucht Verantwortliche und Zeiten je Zielsystem. Eine verzögerte oder fehlgeschlagene Maßnahme bleibt sichtbar und wird eskaliert. Notwendige Sperrmaßnahmen warten nicht auf eine noch unfertige Übergabe und dürfen parallel umgesetzt werden."
+        },
+        {
+          "type": "figure",
+          "diagramId": "offboarding-pruefebenen",
+          "alt": "Vier Prüfebenen des Entzugs: neue Kontoanmeldung, vorhandene Sitzungen und Token, eigene Anwendungszugänge und persönliche Schlüssel, sowie dokumentierte Wirkung mit gesicherter betrieblicher Übergabe.",
+          "caption": "Keine Behauptung, dass ein einzelner Sperrknopf alle vier Ebenen abdeckt. Die tatsächliche Wirkung hängt vom Zielsystem ab."
+        },
+        {
+          "type": "callout",
+          "tone": "note",
+          "title": "Produktgrenze: bestehende Anwendungssitzung",
+          "body": "Microsoft Entra ID kann eine von einer Anwendung selbst ausgegebene Sitzung nicht direkt widerrufen. Deshalb darf aus der zentralen Sperre allein keine sofortige Beendigung aller App-Zugriffe abgeleitet werden. Die Anwendung und weitere Zugangspfade gehören in die Prüfung."
+        },
+        {
+          "type": "quiz",
+          "id": "personalwechsel-austritt-praxis",
+          "question": "Um 17:05 ist Alinas zentrale Neuanmeldung gesperrt, die bereits geöffnete Lieferanten-App zeigt aber weiter Daten. Wie bewertest du das Ergebnis?",
+          "options": [
+            {
+              "text": "Der Entzug ist erfolgreich, weil nur der Kontostatus zählt.",
+              "rationale": "Der weiterhin mögliche Zugriff ist ein Gegenbeleg. Das Ticket muss die App-Sitzung als offenen Zugangspfad behandeln.",
+              "correct": false
+            },
+            {
+              "text": "Alle betrieblichen Reportdaten müssen sofort gelöscht werden.",
+              "rationale": "Datenlöschung beseitigt keine Sitzung als solche und ist kein Ersatz für Entzug. Der betriebliche Übergabebedarf bleibt eine gesonderte Aufgabe.",
+              "correct": false
+            },
+            {
+              "text": "Die App-Sitzung ist weiter zu behandeln; der Entzug ist noch offen.",
+              "rationale": "Richtig. Prüfe die Entzugsmöglichkeiten der Anwendung und bestätige anschließend die Wirkung. Konto- und App-Sitzung sind nicht dasselbe.",
+              "correct": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Vertretung: Zusatzrechte mit Anfang und Ende",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Mira hat dauerhaft das Basisprofil `Mitarbeitende`. Sie vertritt die Prüfplanung **ab 27. Oktober 08:00 bis vor 29. Oktober 16:00**. Dafür ist nur **Prüfplan lesen** genehmigt; Änderungen übernimmt weiter die zuständige Planung. Die IT weist das begrenzte Vertretungsprofil Miras eigenem Konto zu. Sie gibt weder das Passwort der vertretenen Person weiter noch kopiert deren ganze Rolle.\n\nDie Vergabe nennt Person, Aufgabe, Ressource, Aktion, Start, Ende und Freigabe. Der Entzug wird schon beim Einrichten mitgeplant – bevorzugt technisch terminiert, sonst mit verbindlichem Auftrag und Verantwortlichen. **Ab 29. Oktober 16:00** gilt wieder nur das Basisprofil. Positiver und negativer Zugriffstest unterscheiden dabei benötigte Basisrechte vom abgelaufenen Zusatzrecht."
+        },
+        {
+          "type": "figure",
+          "diagramId": "vertretung-zeitgrenzen",
+          "alt": "Zeitfolge für Mira: vor dem 27. Oktober 08:00 nur Basisprofil; ab diesem Zeitpunkt zusätzlich Prüfplan lesen, nicht ändern; ab dem 29. Oktober 16:00 kein Prüfplan-Zusatzrecht mehr, Basisprofil bleibt.",
+          "caption": "Die Endgrenze ist ausdrücklich exklusiv: Schon um 16:00 ist das Zusatzrecht nicht mehr vorgesehen."
+        },
+        {
+          "type": "permission-matrix",
+          "id": "personalwechsel-vertretung-profil",
+          "title": "Den Umfang der Vertretung selbst festlegen",
+          "prompt": "Plane die beiden getrennten Rollenprofile für Miras Fall. Das Basisprofil erlaubt nur Handbuch lesen, das Vertretungsprofil nur Prüfplan lesen. Befristung gilt für Miras Vertretungszuweisung, nicht automatisch für das Basisprofil.",
+          "roles": [
+            {
+              "id": "basis",
+              "label": "Basisprofil"
+            },
+            {
+              "id": "vertretung",
+              "label": "Vertretungsprofil"
+            }
+          ],
+          "resources": [
+            {
+              "id": "handbuch",
+              "label": "Handbuch"
+            },
+            {
+              "id": "pruefplan",
+              "label": "Prüfplan"
+            }
+          ],
+          "choices": [
+            {
+              "id": "none",
+              "label": "Kein Recht aus dieser Rolle"
+            },
+            {
+              "id": "read",
+              "label": "Lesen"
+            },
+            {
+              "id": "edit",
+              "label": "Lesen + Ändern"
+            }
+          ],
+          "cells": [
+            {
+              "roleId": "basis",
+              "resourceId": "handbuch",
+              "expected": "read",
+              "feedback": "Das Handbuch ist der dauerhaft nötige Basiszugriff. Dieser bleibt auch nach Ende der Vertretung erhalten."
+            },
+            {
+              "roleId": "basis",
+              "resourceId": "pruefplan",
+              "expected": "none",
+              "feedback": "Der Prüfplan gehört nicht zum Basisprofil. Sonst würde sein Zugriff nach Entzug der Vertretungsrolle weiterbestehen."
+            },
+            {
+              "roleId": "vertretung",
+              "resourceId": "handbuch",
+              "expected": "none",
+              "feedback": "Das Handbuch wird schon über das Basisprofil gewährt. Das begrenzte Zusatzprofil enthält hier nur den Prüfplan."
+            },
+            {
+              "roleId": "vertretung",
+              "resourceId": "pruefplan",
+              "expected": "read",
+              "feedback": "Die Aufgabe benötigt Lesen, nicht Ändern. Zusätzlich braucht Miras Zuweisung die im Fall genehmigten Zeitgrenzen."
+            }
+          ],
+          "correctFeedback": "Die vier Zellen passen zum Auftrag. Mira erhält während der Vertretung beide Profile; die begrenzte Zuweisung muss separat beginnen und enden.",
+          "wrongFeedback": "Trenne dauerhaftes Basisrecht von befristetem Zusatzbedarf. Keine Rolle braucht Prüfplan ändern; eine Matrixzelle allein setzt noch kein Ablaufdatum."
+        }
+      ]
+    },
+    {
+      "title": "Aus dem Gedächtnis erklären",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "personalwechsel-karte-eintritt",
+              "label": "Eintritt",
+              "front": "Was muss vor der wirksamen Rechtevergabe beim Eintritt geklärt sein?",
+              "back": "Identität, aktuelle Aufgabe, benötigte Ressource und Aktion, Freigabe sowie wirksamer Start. Ein vorbereitetes Konto bedeutet nicht automatisch genehmigten Zugriff."
+            },
+            {
+              "id": "personalwechsel-karte-wechsel",
+              "label": "Wechsel",
+              "front": "Warum reicht das Hinzufügen einer neuen Rolle beim Wechsel nicht?",
+              "back": "Altrollen und direkte Ausnahmen können weiter Rechte gewähren. Benötigte Basisrechte bleiben, unbegründeter Überhang wird gezielt entzogen und der Zugriff danach geprüft."
+            },
+            {
+              "id": "personalwechsel-karte-sitzung",
+              "label": "Sitzung",
+              "front": "Welche Grenze hat eine zentrale Kontosperre?",
+              "back": "Sie beweist nicht, dass jede bestehende App-Sitzung oder jeder alternative Zugang sofort endet. Diese Pfade brauchen eine systembezogene Maßnahme und Wirkungskontrolle."
+            },
+            {
+              "id": "personalwechsel-karte-uebergabe",
+              "label": "Übergabe",
+              "front": "Warum wird ein persönliches Konto nicht einfach für die Nachfolge aktiv gelassen?",
+              "back": "Nachfolge erhält eine eigene genehmigte Zuordnung. Der Betrieb sichert notwendige Informationen und Verantwortlichkeiten ohne den persönlichen Zugang der ausgeschiedenen Person offenzuhalten."
+            },
+            {
+              "id": "personalwechsel-karte-vertretung",
+              "label": "Vertretung",
+              "front": "Was begrenzt eine saubere Vertretung neben dem Rechteumfang?",
+              "back": "Eine eigene personenbezogene Zuweisung mit Zweck, Freigabe, Anfang und Ende. Entzug und Kontrolle werden bereits bei Einrichtung eingeplant."
+            },
+            {
+              "id": "personalwechsel-karte-tests",
+              "label": "Zugriffstest",
+              "front": "Was prüfen positiver und negativer Test nach einem Wechsel?",
+              "back": "Positiv: die weiterhin benötigte Aktion ist möglich. Negativ: die entfallene Aktion ist nicht mehr möglich. Tests müssen den betroffenen Zugangspfad und relevante Sitzungszustände abdecken."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "personalwechsel-freier-abruf",
+          "title": "Vier Ereignisse ohne Vorlage unterscheiden",
+          "prompt": "Erkläre aus dem Gedächtnis je eine entscheidende Maßnahme für Eintritt, Rollenwechsel, Austritt und Vertretung. Nenne bei Austritt eine Grenze der zentralen Sperre und bei Vertretung sowohl Zeitgrenze als auch verbleibendes Basisrecht.",
+          "label": "Dein Ablauf mit Begründungen",
+          "minLength": 180,
+          "model": "Beim Eintritt prüfe ich Identität, Aufgabe, Freigabe und Start, bevor passende Rechte wirksam werden. Beim Wechsel gleiche ich Ist und neues Soll ab: nötige Basisrechte bleiben, alte Rollen und direkte Sonderrechte ohne Bedarf werden entfernt, neue Rechte nach Freigabe zugewiesen. Beim Austritt sperre ich zum festgelegten Ende die betroffenen Zugänge, behandle Sitzungen und eigenständige Zugänge und überprüfe die Wirkung; zentrale Sperre allein beendet nicht zwingend jede App-Sitzung. Betriebliche Übergabe ist separat sicherzustellen. Vertretung bekommt nur den benötigten Zusatzumfang am eigenen Konto mit Anfang, Ende und geplantem Entzug. Ab dem Ende verschwindet das Zusatzrecht, das notwendige Basisrecht bleibt."
+        }
+      ]
+    },
+    {
+      "title": "Lernziel-Check: vier neue Entscheidungen",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "personalwechsel-eintritt-gate",
+          "question": "Ein neuer Servicetechniker soll ab Dienstag 09:00 Störmeldungen lesen. Nur diese Aufgabe ist freigegeben. Die Vorgängerin durfte zusätzlich Verträge exportieren. Welche Vergabe erfüllt den Auftrag?",
+          "options": [
+            {
+              "text": "Alle Rechte der Vorgängerin ab Dienstag kopieren.",
+              "rationale": "Der Zeitpunkt passt, aber der Exportzugang ist nicht beauftragt. Eine Kontokopie ersetzt keinen Aufgabenabgleich.",
+              "correct": false
+            },
+            {
+              "text": "Eigenes Konto mit Leserecht ab Dienstag 09:00 zuweisen.",
+              "rationale": "Richtig. Identität und Aufgabe werden dem genehmigten Umfang und Beginn zugeordnet. Der nicht benötigte Exportzugang bleibt außen vor.",
+              "correct": true
+            },
+            {
+              "text": "Eigenes Konto mit Leserecht schon heute freischalten.",
+              "rationale": "Der Umfang passt, der frühere Start ist ohne zusätzliche Grundlage nicht freigegeben. Vorbereitung und wirksame Vergabe sind getrennt.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "eintritt-freigeben"
+        },
+        {
+          "type": "quiz",
+          "id": "personalwechsel-wechsel-gate",
+          "question": "Dana wechselt aus der Tourenplanung in die Geräteprüfung. Danach benötigt sie weiter das Handbuch und neu Prüfprotokolle; Tourenänderung und ein direkter Preisarchivgrant werden nicht mehr gebraucht. Welche Änderung passt vollständig?",
+          "options": [
+            {
+              "text": "Basis behalten; Altrolle und Archivgrant entziehen; Prüfrolle zuweisen.",
+              "rationale": "Richtig. Alle vorhandenen Vergabewege werden gegen das neue Soll behandelt. Danach werden erforderlicher Zugriff und beide entzogenen Pfade geprüft.",
+              "correct": true
+            },
+            {
+              "text": "Basis und Altrolle behalten; nur den Archivgrant entfernen; Prüfrolle zuweisen.",
+              "rationale": "Der direkte Überhang wird entfernt, Tourenänderung bleibt aber ohne neue Aufgabe bestehen. Auch die alte Rollenzuweisung muss behandelt werden.",
+              "correct": false
+            },
+            {
+              "text": "Basis und Altrolle entfernen; Archivgrant behalten; Prüfrolle zuweisen.",
+              "rationale": "Hier verschwinden benötigte Basisrechte, während der unbegründete Direktgrant bleibt. Der Abgleich braucht Erhalt und Entzug je tatsächlichem Bedarf.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "rollenwechsel-abgleichen"
+        },
+        {
+          "type": "sequence",
+          "id": "personalwechsel-austritt-gate",
+          "title": "Den Entzug prüfbar abschließen",
+          "prompt": "Ravi scheidet morgen um 18:00 aus. Das Lehrfallverfahren verlangt zunächst die bestätigte Endzeit und erfasste Zugänge, dann wirksame Sperrmaßnahmen, danach Zugriffstests und erst zuletzt den dokumentierten Abschluss. Ordne diese vier Nachweisphasen. Die Sperrmaßnahmen innerhalb einer Phase dürfen parallel erfolgen.",
+          "tag": "Entzug und Nachweis",
+          "steps": [
+            {
+              "id": "nachweis",
+              "label": "Ergebnisse, offene Fehler und Übergabestatus dokumentieren; nur bei erfülltem Soll abschließen"
+            },
+            {
+              "id": "zugriffstest",
+              "label": "Neue Anmeldung, bestehende App-Sitzung und persönlichen Schlüssel auf verbleibenden Zugriff testen"
+            },
+            {
+              "id": "vorbereitung",
+              "label": "Bestätigte Endzeit, Konten, Sitzungen, weitere Zugänge und Übergabebedarf erfassen"
+            },
+            {
+              "id": "sperren",
+              "label": "Zum Ende Kontozugänge sperren, Sitzungen behandeln und persönliche Schlüssel sowie App-Zugänge entziehen"
+            }
+          ],
+          "expected": [
+            "vorbereitung",
+            "sperren",
+            "zugriffstest",
+            "nachweis"
+          ],
+          "correctFeedback": "Die Nachweiskette ist richtig: Bedarf und Termin erfassen, Entzug umsetzen, Wirkung testen und erst mit passendem Ergebnis abschließen. Unfertige Übergabe darf nötige Sperren nicht verzögern.",
+          "wrongFeedback": "Ein geschlossenes Ticket ist kein Entzugstest. Erfasse zuerst den bestätigten Anlass und die Pfade; dann folgen Sperrmaßnahmen, Wirkungskontrolle und begründeter Abschluss.",
+          "requiredObjective": "austritt-wirksam-pruefen"
+        },
+        {
+          "type": "quiz",
+          "id": "personalwechsel-vertretung-gate",
+          "question": "Omar darf für eine Vertretung ab Mittwoch 10:00 bis vor Freitag 15:00 den Einsatzplan lesen. Basisrechte bleiben dauerhaft nötig. Welche Kontrolle passt um Freitag 15:00?",
+          "options": [
+            {
+              "text": "Prüfen, dass Basis und Zusatzrolle zusammen entfernt sind.",
+              "rationale": "Der Zusatzbedarf endet, die Basisrechte bleiben erforderlich. Ein Gesamtentzug wäre zu weitgehend.",
+              "correct": false
+            },
+            {
+              "text": "Prüfen, dass Lesen über das Konto der vertretenen Person weitergeht.",
+              "rationale": "Die Vertretung ist eine personenbezogene und jetzt abgelaufene Zuweisung. Ein fremdes Konto ist weder der richtige Pfad noch ein Ende des Zusatzbedarfs.",
+              "correct": false
+            },
+            {
+              "text": "Prüfen, dass Planlesen entzogen ist und Basisrechte bleiben.",
+              "rationale": "Richtig. Die Endgrenze ist exklusiv: Bereits um 15:00 ist Planlesen nicht mehr vorgesehen. Prüfe auch andere mögliche Grants auf den Plan und relevante Sitzungen.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "vertretung-begrenzen"
+        }
+      ]
+    },
+    {
+      "title": "Wiederholen und auf den Betrieb übertragen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**Merksatz:** Eintritt begründet Vergabe. Wechsel prüft auch Entzug. Austritt prüft alle Zugangspfade. Vertretung endet geplant.\n\nRufe die vier Fälle morgen ohne Vorlage ab. Wiederhole unsichere Karten nach einem Tag und sichere nach vier Tagen. Beim zweiten Durchlauf ändere im Kopf je eine Bedingung: Was wäre bei einem genehmigten vorgezogenen Start anders? Welche Basisrechte bleiben beim Teamwechsel? Welcher zusätzliche Pfad fehlt im Entzugsplan? Was muss passieren, wenn die Vertretung früher endet?\n\n**Übertragungsgrenze:** Zeitpunkte und Verantwortlichkeiten dieses Lehrfalls sind erfunden. Ein echter Betrieb legt sie risikogerecht fest, einschließlich Eskalation bei fehlgeschlagenem Entzug. Der NIST-Kontrollkatalog liefert dafür Sicherheitsanforderungen, keine pauschale gesetzliche Frist für jeden Betrieb."
+        }
+      ]
+    }
+  ]
+}
