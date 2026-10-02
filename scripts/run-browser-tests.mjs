@@ -141,6 +141,7 @@ async function runFullSuite() {
   await import('./verify-tom-browser.mjs');
   await import('./verify-system-network-browser.mjs');
   await import('./verify-zero-trust-browser.mjs');
+  await import('./verify-cryptography-browser.mjs');
   useSignedInFixture = false;
   await import('./verify-space-browser.mjs');
 }
@@ -194,6 +195,9 @@ try {
   } else if (process.env.AP2_BROWSER_ONLY === 'zero-trust') {
     useSignedInFixture = true;
     await import('./verify-zero-trust-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'cryptography') {
+    useSignedInFixture = true;
+    await import('./verify-cryptography-browser.mjs');
   } else {
     await runFullSuite();
   }
