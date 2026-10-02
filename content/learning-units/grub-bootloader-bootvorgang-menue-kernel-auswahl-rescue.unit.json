@@ -1,0 +1,169 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "grub-bootloader-bootvorgang-menue-kernel-auswahl-rescue",
+    "slug": "grub-bootloader-bootvorgang-menue-kernel-auswahl-rescue",
+    "title": "GRUB: Bootweg und sichere Fehlersuche",
+    "description": "GRUB zwischen Firmware und Linux-Kernel einordnen, einen vorhandenen Kernel im Menü testen und bei grub rescue erst den Bootpfad lesen, bevor eine plattformgerechte Reparatur erfolgt.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-6",
+    "groupLabel": "Betriebssysteme und Administration",
+    "itemId": "ga1-6__13",
+    "week": "KW 40",
+    "estimatedMinutes": 40,
+    "relevance": "hoch",
+    "sources": ["gnu-grub-manual", "gnu-grub-rescue", "gnu-grub-install", "debian-update-grub", "debian-reference-rescue", "ubuntu-secure-boot"],
+    "contentRevision": "2026-10-02.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {"id": "grub-startkette-erklaeren", "label": "Firmware, GRUB, Menüeintrag, Kernel und frühes Userspace im Bootweg unterscheiden"},
+    {"id": "grub-rescue-lesend-diagnostizieren", "label": "GRUB-Menü und grub rescue unterscheiden und mit lesenden Befunden die nächste Prüfung begründen"},
+    {"id": "grub-reparaturziel-absichern", "label": "Vor einer GRUB-Reparatur UEFI/BIOS, Systempfade, Sicherung und anschließenden Starttest klären"}
+  ],
+  "intro": "Die fiktive Brückenwerk GmbH betreibt eine Debian-basierte VM mit UEFI-Start für ein internes Wiki. Nach einer Wartung am Partitionslayout zeigt die Konsole beim Neustart nur `grub rescue>`. Ob die Wartung die Ursache ist, steht noch nicht fest. Ein Kollege schlägt vor, im GRUB-Menü einen älteren Kernel zu wählen; eine andere Kollegin möchte sofort `grub-install` ausführen. Du sollst zuerst erkennen, welche Startphase erreicht wurde, welche Befunde ohne Schreibzugriff möglich sind und wann welche Reparatur überhaupt verantwortbar ist.",
+  "curation": {
+    "evidence": [
+      {"sourceId": "gnu-grub-manual", "sourceLocator": "GNU GRUB Manual 2.14, Introduction, Configuration, User interface, Booting und Commands", "use": "GRUB als Bootloader, Menü- und Kernelwahl, Konfiguration und Abgrenzung der Startphasen", "reviewStatus": "Offizielles GNU-Handbuch am 02.10.2026 geprüft"},
+      {"sourceId": "gnu-grub-rescue", "sourceLocator": "GNU GRUB Manual 2.14, GRUB only offers a rescue shell; verfügbare Rescue-Befehle", "use": "Minimalmodus, mögliche fehlende Module beziehungsweise falsche root-/prefix-Bezüge sowie lesende Erstdiagnose mit set und ls", "reviewStatus": "Offizielles GNU-Handbuch am 02.10.2026 geprüft; Symptome beweisen keine einzelne Ursache"},
+      {"sourceId": "gnu-grub-install", "sourceLocator": "GNU GRUB Manual 2.14, Installing GRUB using grub-install und Installation", "use": "Reinstallation als Schreiboperation mit plattform- und gerätespezifischem Ziel statt blindem Musterbefehl", "reviewStatus": "Offizielles GNU-Handbuch am 02.10.2026 geprüft"},
+      {"sourceId": "debian-update-grub", "sourceLocator": "Debian update-grub(8), Description", "use": "Debian-spezifischer Wrapper für die Erzeugung von /boot/grub/grub.cfg; getrennt von der Installation des Bootloaders", "reviewStatus": "Offizielle Debian-Manpage am 02.10.2026 geprüft"},
+      {"sourceId": "debian-reference-rescue", "sourceLocator": "Debian Reference, Kapitel 3 System initialization, Rettungssystem und UEFI-/BIOS-Bootweg", "use": "Rettungsumgebung, Firmwaremodus und identifizierte Root-, /boot- und ESP-Pfade als Voraussetzungen einer Reparatur", "reviewStatus": "Offizielle Debian-Referenz am 02.10.2026 geprüft"},
+      {"sourceId": "ubuntu-secure-boot", "sourceLocator": "Ubuntu Security Documentation, UEFI Secure Boot: Boot process und signierte shim-/GRUB-Kette", "use": "Secure Boot als mögliche Bootpfad-Abhängigkeit berücksichtigen und nicht pauschal zur Fehlerbehebung deaktivieren", "reviewStatus": "Offizielle Ubuntu-Dokumentation am 02.10.2026 geprüft; Ubuntu-spezifische Signaturkette nicht auf alle Distributionen übertragen"}
+    ],
+    "notes": [
+      "In den fünf bereitgestellten lokalen Buchbeständen wurde kein belastbarer direkter GRUB-Locator gefunden; deshalb wird kein Buchbeleg fingiert. Der Fall, alle Aufgaben, Antworten und technischen Diagramme sind eigenständig.",
+      "Die Einheit ist eine Entscheidungsübung, keine allgemeine Reparaturanleitung. Reale Datenträger- und Partitionsnamen, Verschlüsselung, RAID, Secure Boot, Mount-Punkte und Distributionswerkzeuge sind vor Schreiboperationen am Zielsystem zu prüfen. Menschliche Fach- und Didaktikfreigabe offen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "grub-startkette",
+      "type": "flow",
+      "title": "Wer übernimmt wann den Start?",
+      "description": "Firmware lädt einen Bootloader; GRUB verarbeitet seine Konfiguration und einen Menüeintrag und lädt den gewählten Linux-Kernel samt initramfs. Danach übernimmt der Kernel und startet die frühe Userspace-Phase.",
+      "items": [
+        {"label": "Firmware", "detail": "UEFI oder BIOS wählt den Startpfad"},
+        {"label": "GRUB", "detail": "Liest Module und Konfiguration"},
+        {"label": "Menüeintrag", "detail": "Bestimmt Kernel, initramfs und Parameter"},
+        {"label": "Kernel", "detail": "GRUB lädt Kernel und initramfs; danach Übergabe"},
+        {"label": "Userspace", "detail": "initramfs zuerst, später PID 1 und Dienste"}
+      ]
+    },
+    {
+      "id": "grub-fehlerort",
+      "type": "comparison",
+      "title": "Bildschirmzustand statt Verdacht",
+      "description": "Ein sichtbares Menü, ein minimaler GRUB-Rescue-Prompt und eine spätere Kernelmeldung liegen an unterschiedlichen Stellen des Bootwegs. Zuerst den tatsächlich sichtbaren Zustand dokumentieren.",
+      "items": [
+        {"label": "GRUB-Menü", "detail": "Alter Kernel nur als Test"},
+        {"label": "grub rescue>", "detail": "Kein Menü; Grund noch offen"},
+        {"label": "Befund", "detail": "set und ls: Werte prüfen"},
+        {"label": "Kernel", "detail": "Meldung erst nach GRUB"}
+      ]
+    },
+    {
+      "id": "grub-installationsziel",
+      "type": "comparison",
+      "title": "UEFI und BIOS nicht gleich reparieren",
+      "description": "Vor einem schreibenden GRUB-Eingriff müssen Bootmodus, Datenträger und tatsächliche Mount-Punkte zum installierten System passen. Ein Pfadname allein beweist noch keine Partitionsrolle.",
+      "items": [
+        {"label": "ESP (UEFI)", "detail": "EFI-Dateien; Mount prüfen"},
+        {"label": "/boot", "detail": "Konfig + Kernel"},
+        {"label": "Root", "detail": "System und UUID prüfen"},
+        {"label": "BIOS", "detail": "Zielplatte vorher prüfen"}
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Diagnose: Welche Startphase siehst du?",
+      "blocks": [
+        {"type": "quiz", "id": "grub-diagnose", "diagnostic": true, "question": "Brückenwerks VM zeigt `grub rescue>` statt des Boot-Menüs. Was lässt sich daraus als Erstes ableiten?", "options": [
+          {"text": "Der neue Linux-Kernel ist nachweislich defekt; ich wähle im nicht sichtbaren Menü sofort einen älteren Kernel.", "rationale": "Ein Kernelproblem ist aus dem Rescue-Prompt nicht belegt. Solange kein Menü sichtbar ist, kannst du dort auch keinen älteren Eintrag wählen.", "correct": false},
+          {"text": "Ein Teil von GRUB wurde erreicht, aber der normale Menüpfad ist nicht verfügbar. Ich halte die Meldung fest und lese zunächst Variablen und erreichbare Laufwerke/Pfade.", "rationale": "Richtig. Der Prompt ordnet den Fehler vor der Kernel-Übergabe ein; sein genauer Grund bleibt ohne weitere Befunde offen.", "correct": true},
+          {"text": "Die Firmware hat überhaupt keinen Bootloader geladen; `grub-install` auf irgendeinem Datenträger ist die zwingende Erstmaßnahme.", "rationale": "Der sichtbare GRUB-Prompt widerlegt 'kein GRUB geladen'. Ein blindes Installationsziel kann den falschen Bootpfad überschreiben.", "correct": false}
+        ]},
+        {"type": "markdown", "markdown": "Der Bildschirm ist ein Diagnosehinweis, keine fertige Ursachenanalyse. **`grub rescue>`** ist der eingeschränkte Rettungsmodus von GRUB. Er kann beispielsweise auftreten, wenn GRUB das Modul für den Normalmodus über den eingestellten `prefix` nicht findet; das beweist weder einen kaputten Kernel noch Datenverlust. Halte die genaue Fehlermeldung und den Zeitpunkt der letzten Änderungen fest. Am Prompt liefern `set` **ohne Argumente** und `ls` zunächst lesende Informationen zu GRUB-Variablen, Geräten und auffindbaren Pfaden. Verändere `root` oder `prefix` nicht auf Verdacht und führe noch keine Datenträgerschreiboperation aus. Für eine vollständige Bestandsaufnahme brauchst du gegebenenfalls ein passendes Rettungssystem und die tatsächlichen Geräte-/UUID- und Mount-Zuordnungen."}
+      ]
+    },
+    {
+      "title": "GRUB zwischen Firmware und Linux einordnen",
+      "blocks": [
+        {"type": "markdown", "markdown": "Die **Firmware** wählt einen Startpfad und lädt den passenden Bootloader; sie ist nicht selbst GRUB. **GRUB** liest seine Module und Konfiguration und kann ein Menü mit vorhandenen Starteinträgen anzeigen. Der gewählte Eintrag lädt einen **Linux-Kernel**, meist zusammen mit einem **initramfs**, und übergibt die Kontrolle. Das initramfs stellt frühes Userspace bereit; später starten PID 1 und Systemdienste. Auf einem UEFI-System liegt der EFI-Startpfad auf einer EFI-Systempartition; bei Legacy-BIOS ist der Installationsweg anders. Auf Brückenwerks UEFI-VM heißt ein GRUB-Rescue-Prompt: Die Firmware hat GRUB weit genug geladen, um diesen Prompt auszugeben, doch der normale Menüpfad ist nicht erreicht. Es ist kein Beweis dafür, dass die ESP, `/boot` oder das Root-Dateisystem insgesamt gesund sind."},
+        {"type": "figure", "diagramId": "grub-startkette", "alt": "Technische Startkette: Firmware lädt GRUB; ein GRUB-Menüeintrag bestimmt Kernel, initramfs und Parameter; Linux übernimmt und startet Userspace mit PID 1.", "caption": "Eigene technische Startkette. Ein Ausfall vor der Kernel-Übergabe und ein Kernel-Fehler benötigen verschiedene Diagnosen."},
+        {"type": "quiz", "id": "grub-menue-kernel", "question": "Nach einer anderen Wartung erscheint das GRUB-Menü normal, aber der neueste Kernel startet nicht. Ein älterer installierter Kernel ist im Menü vorhanden. Was ist ein sinnvoller erster Test?", "options": [
+          {"text": "Den älteren vorhandenen Kernel einmal aus dem Menü starten und das Ergebnis dokumentieren; daraus allein folgt noch keine dauerhafte Reparatur.", "rationale": "Richtig. Ein Vergleich grenzt einen Kernel-/Treiberfehler ein, wenn der Menüpfad funktioniert. Ursache und Dauerlösung bleiben gesondert zu prüfen.", "correct": true},
+          {"text": "Sofort GRUB neu installieren, denn jedes Problem nach der Menüanzeige beweist einen defekten Bootloader.", "rationale": "Wenn das Menü sichtbar ist, arbeitet GRUB zumindest bis zur Auswahl. Ein Problem nach Übergabe kann in einer späteren Startphase liegen.", "correct": false},
+          {"text": "Im `grub rescue>`-Prompt denselben älteren Eintrag anklicken.", "rationale": "Der Rescue-Prompt bietet gerade kein normales GRUB-Menü. Die beiden Bildschirmzustände dürfen nicht verwechselt werden.", "correct": false}
+        ]}
+      ]
+    },
+    {
+      "title": "Minimalprompt lesend eingrenzen",
+      "blocks": [
+        {"type": "markdown", "markdown": "GRUBs **normaler Modus** bietet Menü und weitere Befehle; der **Rescue-Modus** stellt nur eine kleine Befehlssammlung bereit. `set` ohne Argumente zeigt unter anderem Werte wie `root` und `prefix`, `ls` zeigt erkannte GRUB-Geräte und kann vorhandene Pfade prüfen. Diese Anzeigen sind Hinweise, aber keine sichere Linux-Gerätezuordnung: `(hd0,gpt2)` darfst du nicht automatisch mit einem geratenen `/dev/sdX2` gleichsetzen. Vergleiche aus einer vertrauenswürdigen Rettungsumgebung Firmwaremodus, reale Datenträger, Partitionen, Dateisysteme und UUIDs mit dem installierten System. Ein vorübergehend wieder sichtbares Menü durch eine GRUB-Sitzungsänderung wäre nur ein Zugang zur weiteren Prüfung, **keine** dauerhafte Reparatur auf dem Datenträger."},
+        {"type": "figure", "diagramId": "grub-fehlerort", "alt": "Vergleich der Boot-Befunde: Das GRUB-Menü erlaubt die Auswahl vorhandener Kerneleinträge; grub rescue zeigt einen eingeschränkten Modus ohne Menü; lesende Befehle set und ls liefern zuerst einen Befund. Eine spätere Kernelmeldung gehört nicht zur Rescue-Phase.", "caption": "Eigene technische Befundkarte. Für Brückenwerk gilt zuerst die Rescue-Spur, nicht die Kernel-Auswahl aus einem unsichtbaren Menü."},
+        {"type": "quiz", "id": "grub-rescue-befund", "question": "Am Prompt steht `grub rescue>`. Welches Vorgehen hält den ersten Diagnose-Schritt nachweisbar und ohne blinden Schreibzugriff?", "options": [
+          {"text": "`grub-install /dev/sda` im nächsten Live-System sofort ausführen; `/dev/sda` ist immer die Startplatte.", "rationale": "Gerätenamen und Bootmodus sind nicht belegt. `grub-install` schreibt am Bootpfad und kann auf dem falschen Ziel Schaden anrichten.", "correct": false},
+          {"text": "Einen alten Kernel als alleinige Ursache festlegen und nur `update-grub` ausführen.", "rationale": "Ein alter Kernel ist aus dem Prompt nicht ableitbar. Der Debian-Wrapper regeneriert Konfiguration, ersetzt aber keine geprüfte Analyse oder notwendige Loader-Installation.", "correct": false},
+          {"text": "Meldung dokumentieren, `set` ohne Zuweisung und `ls` lesen; Bootmodus und tatsächliche Root-/Boot-/ESP-Zuordnung im Rettungssystem abgleichen.", "rationale": "Richtig. Das trennt beobachtete GRUB-Werte von realen Systempfaden und verschiebt Schreiboperationen bis nach Sicherung und Freigabe.", "correct": true}
+        ]},
+        {"type": "callout", "kind": "warning", "label": "Rescue ist nicht gleich Neuinstallation", "markdown": "Fehlender Menüpfad, falscher `prefix`, beschädigte Dateien, geänderte Partitionierung oder eine andere Bootquelle sind verschiedene Hypothesen. `set root=...` oder `insmod normal` kann im konkreten Einzelfall eine Sitzung vorübergehend wiederherstellen; ohne geprüfte Geräte- und Pfadangaben ist das kein Rezept und ersetzt keine dauerhafte Ursachenbehebung. Erst lesender Befund, dann passende Reparatur."}
+      ]
+    },
+    {
+      "title": "Reparaturziel statt Musterbefehl wählen",
+      "blocks": [
+        {"type": "markdown", "markdown": "Vor einem Eingriff sichert Brückenwerk die VM beziehungsweise den Datenstand und den erreichbaren Rückweg. Im Rettungssystem werden der **Bootmodus des installierten Systems**, die korrekte Systemplatte, Root-Dateisystem, gegebenenfalls eine eigene `/boot`-Partition und auf UEFI-Systemen die **EFI-Systempartition (ESP)** identifiziert und passend eingehängt. Der Mount-Punkt der ESP kann je nach Distribution und Installation variieren; `/boot` und ESP sind nicht allein anhand des Pfadnamens gleichzusetzen. Eine Reparatur per `grub-install` ist eine **Schreiboperation** am Bootpfad. Je nach UEFI-Installationsart schreibt sie EFI-Dateien auf die passend gemountete ESP und kann Firmware-Starteinträge anlegen oder ändern; Fallback- und Wechselmedien können anders eingerichtet sein. Der Legacy-BIOS-Weg benötigt dagegen das korrekte Installationsziel auf dem Datenträger. Beides ist nicht derselbe Aufruf. Die Konfiguration ist wieder ein eigener Schritt: Auf Debian erzeugt `update-grub` als Wrapper von `grub-mkconfig` die Datei `/boot/grub/grub.cfg`. Das bloße Erzeugen der Datei installiert keinen fehlenden EFI-Loader; umgekehrt beweist eine Loader-Installation noch keinen passenden Kernel-Eintrag. Die konkrete Reihenfolge und Befehlsoptionen folgen der dokumentierten Distribution und dem zuvor ermittelten Befund — nicht einem ungeprüften `/dev/sda`-Beispiel. Secure Boot wird nicht pauschal deaktiviert, nur um den Start zu erzwingen."},
+        {"type": "figure", "diagramId": "grub-installationsziel", "alt": "Vier zu prüfende Ziele vor einer GRUB-Reparatur: EFI-Systempartition für UEFI-Startdateien, /boot für GRUB-Konfiguration und Kernel, Root-Dateisystem des installierten Systems und der gesonderte BIOS-Installationsweg zum korrekt identifizierten Datenträger.", "caption": "Eigene technische Pfadkarte. Erst Bootmodus und reale Mount-Punkte zuordnen, dann ein plattformgerechtes Schreibziel freigeben."},
+        {"type": "sequence", "id": "grub-reparaturfolge", "title": "Brückenwerks Startweg wiederherstellen", "prompt": "Ordne die Schritte für eine sichere Incident-Entscheidung. Der schreibende Reparaturschritt ist nur bei geklärter Ursache und Freigabe zulässig.", "tag": "Diagnose vor Eingriff", "steps": [
+          {"id": "reparatur", "label": "Nur die zur Ursache passende GRUB-Installation oder Konfigurationsgenerierung freigegeben ausführen"},
+          {"id": "sicherung", "label": "VM-/Datenstand und erreichbaren Rückweg vor jeder Schreibaktion sichern"},
+          {"id": "test", "label": "Normalstart, Menü/Kerneleintrag und Wiki-Dienst nach Neustart prüfen und Ergebnis dokumentieren"},
+          {"id": "befund", "label": "Exakte Konsolenmeldung, letzte Änderungen sowie set-/ls-Anzeigen lesend erfassen"},
+          {"id": "pfade", "label": "Root, optionales /boot, ESP und UUIDs im Rettungssystem mit dem installierten System abgleichen"},
+          {"id": "modus", "label": "Bootmodus und tatsächliche Datenträger statt eines geratenen Gerätenamens bestimmen"}
+        ], "expected": ["befund", "modus", "sicherung", "pfade", "reparatur", "test"], "correctFeedback": "Richtig. Erst Beobachtung und Plattform, dann Sicherung und verifizierte Pfade; eine freigegebene Schreiboperation folgt nur bei passender Ursache. Nach dem Neustart werden Boot- und Dienstfunktion getrennt belegt.", "wrongFeedback": "Ein blindes grub-install vor Bootmodus, Sicherung und Pfadzuordnung ist riskant. Lies den Befund zuerst; teste nach einer gezielten Reparatur nicht nur das Menü, sondern auch Kernel- und Dienststart."}
+      ]
+    },
+    {
+      "title": "Abrufen und im Fall entscheiden",
+      "blocks": [
+        {"type": "flashcards", "cards": [
+          {"id": "grub-karte-rescue", "label": "Rescue-Prompt", "front": "Was sagt `grub rescue>` aus – und was noch nicht?", "back": "Ein GRUB-Minimalmodus läuft; der normale Menüpfad ist nicht verfügbar. Die genaue Ursache, die Integrität von /boot und der Zustand des Kernels sind damit nicht bewiesen."},
+          {"id": "grub-karte-menue", "label": "Kernelwahl", "front": "Wann hilft ein älterer Kernel als Diagnose?", "back": "Wenn das GRUB-Menü erreichbar ist und ein älterer Kernel installiert wurde, kann ein Test die Störung eingrenzen. Das ist keine automatische Dauerlösung."},
+          {"id": "grub-karte-config", "label": "Debian", "front": "Was trennt `grub-install` von `update-grub`?", "back": "grub-install schreibt den Bootloader für die passende Plattform an das geprüfte Ziel; update-grub regeneriert auf Debian die GRUB-Konfiguration. Beides braucht einen konkreten Befund."}
+        ]},
+        {"type": "recall", "id": "grub-fallbegruendung", "title": "Brückenwerks VM begründet behandeln", "prompt": "Die VM zeigt `grub rescue>` nach einer Partitionswartung. Formuliere eine kurze, sichere Vorgehensweise: Welche Startphase ist erreicht, was liest du zuerst, warum hilft die Kernelwahl noch nicht, und welche Informationen brauchst du vor einer UEFI-Reparatur? Nenne auch den Nachweis danach.", "label": "Deine Incident-Entscheidung", "minLength": 190, "model": "Der Prompt zeigt, dass GRUB im Minimalmodus läuft, aber kein normales Menü bereitsteht; ein Kerneldefekt ist nicht bewiesen. Ich dokumentiere die genaue Meldung und lese mit set ohne Argumente sowie ls zuerst GRUB-Variablen, Geräte und erreichbare Pfade. Einen älteren Kernel kann ich nur aus einem verfügbaren Menü testweise wählen, nicht aus diesem Rescue-Bildschirm. Vor einer Schreibaktion ermittle ich in einer passenden Rettungsumgebung den UEFI-Bootmodus, den echten Datenträger, Root, /boot, ESP und UUIDs, sichere VM und Datenstand und bestätige Freigabe und Rückweg. Erst dann führe ich die zum Befund passende Loader- oder Konfigurationsreparatur aus. Nach dem Neustart prüfe ich Menü, gewünschten Kernel und Wiki-Dienst getrennt."}
+      ]
+    },
+    {
+      "title": "Lernziel-Checks",
+      "blocks": [
+        {"type": "quiz", "id": "grub-rolle-gate", "question": "Das GRUB-Menü ist sichtbar und bietet zwei installierte Linux-Kernel. Welche Rolle übernimmt GRUB an dieser Stelle?", "options": [
+          {"text": "Es wählt einen Menüeintrag, lädt den zugehörigen Kernel und typischerweise initramfs; der eigentliche Betriebssystemstart folgt danach.", "rationale": "Richtig. GRUB ist Bootloader und Menü, nicht Firmware oder der bereits laufende Linux-Kernel.", "correct": true},
+          {"text": "Es ist die UEFI-Firmware selbst und startet alle Linux-Dienste als PID 1.", "rationale": "Firmware lädt den Bootpfad; PID 1 gehört zum späteren Userspace, nicht zu GRUB.", "correct": false},
+          {"text": "Es repariert automatisch jeden Kernel, sobald ein Menüeintrag gewählt wird.", "rationale": "Ein Menüeintrag ist eine Startauswahl, keine automatische Reparatur defekter Kernel-Dateien.", "correct": false}
+        ], "requiredObjective": "grub-startkette-erklaeren"},
+        {"type": "quiz", "id": "grub-rescue-gate", "question": "Beim Neustart steht `grub rescue>` auf der Konsole. Welche Aussage ist für die erste Entscheidung korrekt?", "options": [
+          {"text": "Der Kernel ist bereits gestartet und seine Dienste müssen über systemctl untersucht werden.", "rationale": "Der Prompt liegt vor der Übergabe an den Kernel; systemctl steht dort nicht zur Verfügung.", "correct": false},
+          {"text": "GRUB ist im eingeschränkten Modus; `set` ohne Zuweisung und `ls` liefern zuerst lesende Hinweise, die im Rettungssystem abgeglichen werden.", "rationale": "Richtig. So bleibt der Befund von Ursache und Reparatur getrennt.", "correct": true},
+          {"text": "Die einzige mögliche Ursache ist ein fehlender älterer Kernel im Menü.", "rationale": "Das Menü ist gerade nicht sichtbar, und der Prompt legt keine einzelne Ursache fest.", "correct": false}
+        ], "requiredObjective": "grub-rescue-lesend-diagnostizieren"},
+        {"type": "quiz", "id": "grub-ziel-gate", "question": "Brückenwerks VM startete bisher im UEFI-Modus. Ein Kollege nennt pauschal `grub-install /dev/sda` als Reparatur. Was ist fachlich richtig?", "options": [
+          {"text": "Der Befehl passt zu jeder UEFI-VM; Datenträger und ESP müssen nicht geprüft werden.", "rationale": "Ein geratenes BIOS-artiges Gerätebeispiel ist keine sichere UEFI-Reparatur. ESP, Mount-Punkt und Zielsystem müssen stimmen.", "correct": false},
+          {"text": "Zuerst nur update-grub ausführen; das installiert auf UEFI immer auch den fehlenden EFI-Loader.", "rationale": "Der Debian-Wrapper erzeugt die GRUB-Konfiguration und ersetzt keine fehlende Loader-Installation.", "correct": false},
+          {"text": "Bootmodus, tatsächliche ESP, /boot, Root und Datenträger nachweisen, Sicherung/Rückweg bestätigen und erst dann die zur Ursache passende UEFI-Reparatur freigeben und testen.", "rationale": "Richtig. Ein Ziel aus einer Anleitung wird nicht blind auf die reale VM übertragen; normaler Boot und Dienstfunktion sind nachzuweisen.", "correct": true}
+        ], "requiredObjective": "grub-reparaturziel-absichern"}
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {"type": "markdown", "markdown": "Fachliche Basis: [GNU GRUB Manual 2.14](https://www.gnu.org/software/grub/manual/grub/grub.html), [GRUB rescue shell](https://www.gnu.org/software/grub/manual/grub/html_node/GRUB-only-offers-a-rescue-shell.html), [GRUB-Installation](https://www.gnu.org/software/grub/manual/grub/html_node/Installing-GRUB-using-grub_002dinstall.html), [Debian update-grub(8)](https://manpages.debian.org/unstable/grub2-common/update-grub.8.en.html), [Debian Reference – System initialization](https://www.debian.org/doc/manuals/debian-reference/ch03.en.html) und [Ubuntu Secure Boot](https://documentation.ubuntu.com/security/security-features/platform-protections/secure-boot/), geprüft am 02.10.2026. In den bereitgestellten Büchern lag kein verlässlicher direkter GRUB-Beleg vor; Fall, Übungen und Grafiken wurden eigenständig erstellt. Diese Einheit ist keine Befehlsfolge für ein unbekanntes Produktivsystem und bleibt bis zur menschlichen Freigabe CURATED_DRAFT."}
+      ]
+    }
+  ]
+}

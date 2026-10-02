@@ -91,6 +91,15 @@ const cases = [
     recall: 'uefi-fallbegruendung',
     gates: ['uefi-signatur-gate', 'uefi-tpm-gate', 'uefi-recovery-gate'],
     sequences: [{ id: 'uefi-aenderungsfolge', expected: ['inventar', 'ziel', 'recovery', 'aendern', 'pruefen', 'nachweis'] }]
+  },
+  {
+    slug: 'grub-bootloader-bootvorgang-menue-kernel-auswahl-rescue',
+    figures: 3,
+    diagnostic: 'grub-diagnose',
+    card: 'grub-karte-rescue',
+    recall: 'grub-fallbegruendung',
+    gates: ['grub-rolle-gate', 'grub-rescue-gate', 'grub-ziel-gate'],
+    sequences: [{ id: 'grub-reparaturfolge', expected: ['befund', 'modus', 'sicherung', 'pfade', 'reparatur', 'test'] }]
   }
 ];
 const selectedCases = process.env.AP2_LINUX_SLUG
@@ -180,6 +189,14 @@ try {
       assert(['UEFI-Firmware', 'Boot-Image', 'Signaturprüfung', 'Startentscheidung'].every(label => bootLabels.includes(label)), `${testCase.slug}: Secure Boot trust chain is labelled`);
       assert(['Secure Boot', 'TPM', 'BitLocker'].every(label => protectionLabels.includes(label)), `${testCase.slug}: distinct protections are labelled`);
       assert(['Alltagsstart', 'Setup-Zugang', 'Recovery', 'Nachweis'].every(label => recoveryLabels.includes(label)), `${testCase.slug}: recovery path is labelled`);
+    } else if (testCase.slug === 'grub-bootloader-bootvorgang-menue-kernel-auswahl-rescue') {
+      const figures = page.locator('.learning-diagram');
+      const bootLabels = await figures.nth(0).textContent();
+      const diagnosisLabels = await figures.nth(1).textContent();
+      const partitionLabels = await figures.nth(2).textContent();
+      assert(['Firmware', 'GRUB', 'Kernel', 'Userspace'].every(label => bootLabels.includes(label)), `${testCase.slug}: boot stages are labelled`);
+      assert(['GRUB-Menü', 'grub rescue>', 'Befund'].every(label => diagnosisLabels.includes(label)), `${testCase.slug}: rescue split is labelled`);
+      assert(['ESP (UEFI)', '/boot', 'Root', 'BIOS'].every(label => partitionLabels.includes(label)), `${testCase.slug}: UEFI and BIOS targets are distinguished`);
     } else {
       assert((await firstDiagram.textContent()).includes('Lesender Befund'), `${testCase.slug}: diagnosis flow is labelled`);
     }
@@ -259,6 +276,20 @@ try {
       await serviceQuiz.locator('[data-quiz-reset]').click();
       await serviceQuiz.locator('[data-answer="1"]').click();
       assert((await serviceQuiz.locator('[data-selected-feedback]').textContent()).includes('geprüften Vor-Ort-Rückweg'), `${testCase.slug}: recovery path explained`);
+    } else if (testCase.slug === 'grub-bootloader-bootvorgang-menue-kernel-auswahl-rescue') {
+      const menuQuiz = page.locator('[data-quiz="grub-menue-kernel"]');
+      await menuQuiz.locator('[data-answer="1"]').click();
+      assert((await menuQuiz.locator('[data-selected-feedback]').textContent()).includes('nach Übergabe'), `${testCase.slug}: later boot phase distinguished from GRUB menu`);
+      await menuQuiz.locator('[data-quiz-reset]').click();
+      await menuQuiz.locator('[data-answer="0"]').click();
+      assert((await menuQuiz.locator('[data-selected-feedback]').textContent()).includes('Dauerlösung'), `${testCase.slug}: older kernel is only a diagnostic test`);
+
+      const rescueQuiz = page.locator('[data-quiz="grub-rescue-befund"]');
+      await rescueQuiz.locator('[data-answer="0"]').click();
+      assert((await rescueQuiz.locator('[data-selected-feedback]').textContent()).includes('Bootmodus'), `${testCase.slug}: blind install target rejected`);
+      await rescueQuiz.locator('[data-quiz-reset]').click();
+      await rescueQuiz.locator('[data-answer="2"]').click();
+      assert((await rescueQuiz.locator('[data-selected-feedback]').textContent()).includes('Schreiboperationen'), `${testCase.slug}: read-only diagnosis comes first`);
     }
 
     for (const { id, expected } of testCase.sequences) {
@@ -272,13 +303,17 @@ try {
         assert((await sequence.locator('[data-sequence-feedback]').textContent()).includes('breite Altregeln'), `${id}: corrected firewall policy is part of the accepted sequence`);
       } else if (id === 'uefi-aenderungsfolge') {
         assert((await sequence.locator('[data-sequence-feedback]').textContent()).includes('Recovery ist vorher verfügbar'), `${id}: recovery is established before firmware change`);
+      } else if (id === 'grub-reparaturfolge') {
+        assert((await sequence.locator('[data-sequence-feedback]').textContent()).includes('Sicherung'), `${id}: safety sequence includes backup before repair`);
       }
     }
 
     const recall = page.locator(`[data-recall="${testCase.recall}"]`);
     const recallAnswer = testCase.slug === 'uefi-bios-haertung-secure-boot-tpm-bootreihenfolge-schnittstellen'
       ? 'Ich prüfe Secure Boot, TPM und BitLocker getrennt, sichere den Recovery-Schlüssel und kläre den Bedarf für USB und PXE. Erst nach Freigabe ändere ich die Firmware. Danach prüfe ich Normalstart und Recovery-Pfad einzeln. Ein TPM-Clear ist kein Aktivieren und kann Schlüssel unzugänglich machen.'
-      : 'Ich prüfe erst die Voraussetzungen und den aktuellen Zustand. Dann lese ich die passende Meldung, ordne den Auslöser und die Aktion zu, teste die geplante Änderung und kontrolliere danach das wirkliche Ergebnis statt nur einen angelegten Plan zu sehen.';
+      : testCase.slug === 'grub-bootloader-bootvorgang-menue-kernel-auswahl-rescue'
+        ? 'Der Rescue-Prompt zeigt, dass GRUB nur seinen Minimalmodus erreicht; ein Kerneldefekt ist damit nicht bewiesen. Ich dokumentiere die Meldung und lese set ohne Zuweisung und ls. Erst nach Sicherung kläre ich UEFI-Modus, Datenträger, Root, /boot, ESP und UUIDs. Dann plane ich eine zur Ursache passende Reparatur und teste den Neustart sowie den Wiki-Dienst.'
+        : 'Ich prüfe erst die Voraussetzungen und den aktuellen Zustand. Dann lese ich die passende Meldung, ordne den Auslöser und die Aktion zu, teste die geplante Änderung und kontrolliere danach das wirkliche Ergebnis statt nur einen angelegten Plan zu sehen.';
     await recall.locator('[data-recall-input]').fill(recallAnswer);
     await recall.locator('[data-recall-reveal]').click();
     assert(await recall.locator('[data-recall-model]').isVisible(), `${testCase.slug}: model answer revealed`);
@@ -318,7 +353,7 @@ try {
           }
           assert(!await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), `${testCase.slug}: ${width}px ${theme} document overflow`);
           assert(await figure.evaluate(node => node.scrollWidth <= node.clientWidth + 2), `${testCase.slug}: ${width}px ${theme} diagram overflow`);
-          if (captureDir && (index < 2 || testCase.slug === 'uefi-bios-haertung-secure-boot-tpm-bootreihenfolge-schnittstellen')) {
+          if (captureDir && (index < 2 || ['uefi-bios-haertung-secure-boot-tpm-bootreihenfolge-schnittstellen', 'grub-bootloader-bootvorgang-menue-kernel-auswahl-rescue'].includes(testCase.slug))) {
             await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
             await page.screenshot({ path: path.join(captureDir, `${testCase.slug}-${width}-${theme}-figure-${index}.png`), animations: 'disabled' });
           }
