@@ -64,6 +64,15 @@ const cases = [
     recall: 'rechte-fall-erklaeren',
     gates: ['rechte-modus-gate', 'rechte-umask-gate', 'rechte-spezialbits-gate'],
     sequences: []
+  },
+  {
+    slug: 'benutzer-gruppenverwaltung-passwortrichtlinien-kontosperrung',
+    figures: 3,
+    diagnostic: 'konto-diagnose',
+    card: 'konto-karte-gruppe',
+    recall: 'konto-fallbegruendung',
+    gates: ['konto-gruppe-gate', 'passwort-policy-gate', 'kontosperre-gate'],
+    sequences: [{ id: 'konto-aenderungsfolge', expected: ['identitaet', 'soll', 'backup', 'aendern', 'test', 'nachweis'] }]
   }
 ];
 
@@ -125,6 +134,14 @@ try {
       const specialLabels = await figures.nth(2).textContent();
       assert(['0640', '0750'].every(label => umaskLabels.includes(label)), `${testCase.slug}: umask outcomes are labelled`);
       assert(['SUID', 'SGID', 'Sticky'].every(label => specialLabels.includes(label)), `${testCase.slug}: special bits are labelled`);
+    } else if (testCase.slug === 'benutzer-gruppenverwaltung-passwortrichtlinien-kontosperrung') {
+      const figures = page.locator('.learning-diagram');
+      const groupLabels = await figures.nth(0).textContent();
+      const policyLabels = await figures.nth(1).textContent();
+      const lockLabels = await figures.nth(2).textContent();
+      assert(['Vorher', 'Mit -aG'].every(label => groupLabels.includes(label)), `${testCase.slug}: before and after supplementary groups are labelled`);
+      assert(['Altregel', 'NIST-orientiert'].every(label => policyLabels.includes(label)), `${testCase.slug}: policy comparison is labelled`);
+      assert(['Passwort', 'Konto', 'PAM-Dienst'].every(label => lockLabels.includes(label)), `${testCase.slug}: independent lock states are labelled`);
     } else {
       assert((await firstDiagram.textContent()).includes('Lesender Befund'), `${testCase.slug}: diagnosis flow is labelled`);
     }
@@ -147,6 +164,20 @@ try {
       await umaskQuiz.locator('[data-quiz-reset]').click();
       await umaskQuiz.locator('[data-answer="1"]').click();
       assert((await umaskQuiz.locator('[data-selected-feedback]').textContent()).includes('u bleibt rw'), `${testCase.slug}: correct bitwise calculation explained`);
+    } else if (testCase.slug === 'benutzer-gruppenverwaltung-passwortrichtlinien-kontosperrung') {
+      const groupQuiz = page.locator('[data-quiz="konto-gruppen-anwendung"]');
+      await groupQuiz.locator('[data-answer="0"]').click();
+      assert((await groupQuiz.locator('[data-selected-feedback]').textContent()).includes('deploy'), `${testCase.slug}: -G replacement risk explained`);
+      await groupQuiz.locator('[data-quiz-reset]').click();
+      await groupQuiz.locator('[data-answer="1"]').click();
+      assert((await groupQuiz.locator('[data-selected-feedback]').textContent()).includes('neuen Sitzung'), `${testCase.slug}: new-session verification explained`);
+
+      const lockQuiz = page.locator('[data-quiz="konto-sperrfall"]');
+      await lockQuiz.locator('[data-answer="1"]').click();
+      assert((await lockQuiz.locator('[data-selected-feedback]').textContent()).includes('SSH-Key'), `${testCase.slug}: password lock is not full account lock`);
+      await lockQuiz.locator('[data-quiz-reset]').click();
+      await lockQuiz.locator('[data-answer="0"]').click();
+      assert((await lockQuiz.locator('[data-selected-feedback]').textContent()).includes('Passwortsperre'), `${testCase.slug}: lock-state distinction explained`);
     }
 
     for (const { id, expected } of testCase.sequences) {

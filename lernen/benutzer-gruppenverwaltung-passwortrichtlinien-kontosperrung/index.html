@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Zusatzgruppen ohne Rechteverlust ergänzen, Passwortrichtlinien bewerten und Passwort-, Konto- und PAM-Sperren unterscheiden.">
+<title>Benutzer, Gruppen und Kontozugänge verwalten – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="benutzer-gruppenverwaltung-passwortrichtlinien-kontosperrung" data-progress-id="ga1-6__10" data-content-revision="2026-10-02.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-6">Betriebssysteme und Administration</a><span class="sep">›</span>
+    <span class="here">Benutzer, Gruppen und Kontozugänge verwalten</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Benutzer, Gruppen und Kontozugänge verwalten</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 45 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Im fiktiven Betrieb Kranich verwaltet Mara den Bereitstellungsserver. Ihre Primärgruppe ist <code>staff</code>, zusätzlich gehört sie zu <code>deploy</code>. Für einen befristeten Prüfauftrag soll <code>audit</code> hinzukommen, ohne <code>deploy</code> zu verlieren. Später fallen fehlgeschlagene Passwortanmeldungen auf. Du prüfst zuerst die Gruppenänderung und entscheidest dann, ob eine neue Passwortregel oder eine der verschiedenen Sperren den jeweiligen Befund tatsächlich adressiert.</p>
+<section class="learning-goals" aria-labelledby="benutzer-gruppenverwaltung-passwortrichtlinien-kontosperrung-goals">
+  <h2 id="benutzer-gruppenverwaltung-passwortrichtlinien-kontosperrung-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Primär- und Zusatzgruppe unterscheiden und eine neue Zusatzgruppe ohne Verlust bestehender Gruppen ergänzen</li>
+    <li>Eine Passwortrichtlinie gegen aktuelle Empfehlungen prüfen und lokale Umsetzung von der Zielvorgabe trennen</li>
+    <li>Passwortsperre, Kontoablauf und PAM-Fehlversuchssperre nach Wirkung und Grenzen unterscheiden</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>1 · Diagnose: Eine Gruppenänderung kann Rechte entfernen</h2>
+<section class="quiz" data-quiz="konto-diagnose" data-correct="2">
+  <h3>Mara gehört zusätzlich zu deploy. Ein Admin führt usermod -G audit mara aus. Was ist das Risiko?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Ohne -a ersetzt -G die Liste der Zusatzgruppen. deploy kann verloren gehen."><span class="m">A</span> Keines: -G ergänzt audit immer zu vorhandenen Zusatzgruppen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die Primärgruppe wird mit -g gesetzt. -G betrifft die Zusatzgruppen und ersetzt sie ohne -a."><span class="m">B</span> audit wird zur Primärgruppe; deploy bleibt automatisch Zusatzgruppe.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Richtig. usermod -aG audit mara hängt audit an, statt die bestehende Zusatzgruppenliste zu ersetzen."><span class="m">C</span> deploy kann aus der Liste der Zusatzgruppen verschwinden; für Ergänzen braucht es -aG.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><p>Ein lokales Linux-Konto hat eine <strong>UID</strong> und eine <strong>primäre GID</strong>. Die Primärgruppe steht beim Konto in <code>/etc/passwd</code>; zusätzliche Gruppen kommen aus der lokalen Gruppenverwaltung. <code>useradd -g</code> beziehungsweise <code>usermod -g</code> setzen die Primärgruppe, <code>-G</code> bezeichnet Zusatzgruppen. Bei einem bestehenden Konto <strong>ersetzt</strong> <code>usermod -G audit mara</code> die Liste der Zusatzgruppen. Nur <code>usermod -aG audit mara</code> hängt <code>audit</code> an; <code>-a</code> ist mit <code>-G</code> zu verwenden. Prüfe deshalb den Ausgangszustand, bevor du die Liste änderst. Diese shadow-utils-Befehle bearbeiten lokale Kontodaten, nicht automatisch Identitäten in LDAP oder AD.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Mara: Zusatzgruppe ergänzen, nicht ersetzen">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-gruppenstand-vor-nach-title diagram-gruppenstand-vor-nach-desc">
+  <title id="diagram-gruppenstand-vor-nach-title">Mara: Zusatzgruppe ergänzen, nicht ersetzen</title>
+  <desc id="diagram-gruppenstand-vor-nach-desc">Mara hat vor der Änderung die Primärgruppe staff und die Zusatzgruppe deploy. Nach usermod -aG audit mara bleiben staff und deploy erhalten; audit kommt als Zusatzgruppe hinzu.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Mara: Zusatzgruppe ergänzen, nicht ersetzen</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="429" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">Vorher</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">Mara · primär staff · zusätzlich deploy</tspan></text></g><g><rect class="diagram-row" x="489" y="92" width="429" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="511" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="511" dy="0">Mit -aG</tspan></text><text x="511" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="511" dy="0">Mara · primär staff · zusätzlich deploy,</tspan><tspan x="511" dy="30">audit</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene technische Zustandsgegenüberstellung: -aG ergänzt eine Zusatzgruppe. -G allein wäre ein anderer Eingriff.</figcaption>
+</figure><h2 class="sec" id="s2"><span class="num">2</span>2 · Änderung planen und in neuer Sitzung prüfen</h2>
+<p>Mara braucht <code>deploy</code> weiterhin für Bereitstellungen; <code>audit</code> soll nur den zusätzlichen Prüfauftrag ermöglichen. Lege zuerst Identität, vorhandene Gruppen und den gewünschten Sollzustand fest. <strong>Prüfe, ob die lokale Gruppe <code>audit</code> bereits existiert</strong>; <code>usermod -G</code> setzt eine vorhandene Gruppe voraus. Fehlt sie, halte die Änderung an und lass ihre Anlage im freigegebenen Verfahren klären. Sichere eine Rückkehrmöglichkeit für die lokale Kontokonfiguration. Führe erst dann <code>usermod -aG audit mara</code> als berechtigte Administration aus. Prüfe danach die gespeicherte Gruppenliste und melde Mara für den Zugriffstest <strong>neu</strong> an: Eine bereits offene Sitzung belegt den neuen effektiven Gruppenstand nicht zuverlässig. Teste sowohl den bestehenden <code>deploy</code>-Zugriff als auch den neuen <code>audit</code>-Zugriff; dokumentiere die Wirkung. Ein Gruppenname allein sagt noch nichts über die konkreten Datei-, Verzeichnis- oder sudo-Rechte aus.</p>
+<section class="sequence-practice" data-sequence="konto-aenderungsfolge" data-expected="identitaet,soll,backup,aendern,test,nachweis" data-correct-feedback="Richtig: Erst Identität, Sollzustand und vorhandene Zielgruppe klären, dann Rückweg sichern, ergänzen, in einer neuen Sitzung beide Zugriffe testen und den Nachweis festhalten." data-wrong-feedback="Vor usermod müssen Identität, Ist-Gruppen, Soll und Existenz von audit geklärt sein. Sichere den Rückweg; prüfe nach -aG sowohl den alten als auch den neuen Zugriff in einer neuen Sitzung." aria-labelledby="konto-aenderungsfolge-title">
+  <div class="lab-heading"><div><h3 id="konto-aenderungsfolge-title">Zusatzgruppe ohne Rechteverlust ergänzen</h3><p>Sortiere die sichere Änderung für Mara. Der produktive deploy-Zugang soll erhalten bleiben.</p></div><span class="lab-tag">Änderungsfolge</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="aendern" tabindex="-1"><span class="step-position" data-step-position>1</span><span>audit lokal mit usermod -aG audit mara ergänzen</span></li>
+    <li data-step="test" tabindex="-1"><span class="step-position" data-step-position>2</span><span>In neuer Sitzung deploy und audit anhand der benötigten Zugriffe testen</span></li>
+    <li data-step="identitaet" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Mara und den bisherigen lokalen Gruppenstand eindeutig prüfen</span></li>
+    <li data-step="nachweis" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Endzustand, Testergebnis und Rückweg dokumentieren</span></li>
+    <li data-step="backup" tabindex="-1"><span class="step-position" data-step-position>5</span><span>Rückweg und Sicherung der betroffenen Kontokonfiguration vorbereiten</span></li>
+    <li data-step="soll" tabindex="-1"><span class="step-position" data-step-position>6</span><span>Soll festlegen: staff, deploy, audit; Existenz von audit prüfen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><section class="quiz" data-quiz="konto-gruppen-anwendung" data-correct="1">
+  <h3>Nach usermod -aG audit mara zeigt eine seit Stunden offene Shell noch den alten Gruppenstand. Welche Folgerung ist sinnvoll?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Das würde deploy gefährden. Eine alte Sitzung ist kein geeigneter Nachweis für den neuen Anmeldezustand."><span class="m">A</span> Die Änderung ist sicher fehlgeschlagen; -G audit muss ohne -a erneut ausgeführt werden.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Der Test muss den Zielzustand einer neuen Sitzung und die beiden tatsächlichen Zugriffe zeigen."><span class="m">B</span> Die lokale Kontokonfiguration und eine neu aufgebaute Anmeldung prüfen; bestehende Sitzungen können alte Gruppenrechte behalten.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Gruppenmitgliedschaft und Passwortalterung sind getrennte Mechanismen."><span class="m">C</span> audit wird erst wirksam, wenn das Passwort alle 90 Tage gewechselt wird.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s3"><span class="num">3</span>3 · Lokale Kontodaten richtig lesen</h2>
+<p><code>/etc/passwd</code> enthält beim lokalen Konto unter anderem Loginname, UID, <strong>primäre GID</strong>, Home-Verzeichnis und Login-Shell. Bei Shadow-Passwörtern steht im Passwortfeld typischerweise <code>x</code>; der Passwort-Hash und Angaben zur Passwortalterung liegen in der geschützten <code>/etc/shadow</code>. Das <code>x</code> ist weder Maras Passwort noch ein Zeichen dafür, dass das Konto gesperrt ist. Zusätzliche Gruppen stehen nicht im primären GID-Feld. Diese Dateien zeigen nur den lokalen Teil; ein System kann Konten oder Gruppen zusätzlich aus einem zentralen Verzeichnisdienst beziehen. Änderungen an solchen Identitäten gehören in dessen Verwaltung.</p>
+<section class="quiz" data-quiz="konto-dateien-lesen" data-correct="0">
+  <h3>In Maras /etc/passwd-Zeile steht im Passwortfeld x. Welche Interpretation passt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Das Feld verweist im üblichen Shadow-Setup auf /etc/shadow; der konkrete Status muss getrennt geprüft werden."><span class="m">A</span> x markiert üblicherweise die Shadow-Ablage; Passwort-Hash und Alterungsfelder stehen nicht offen in dieser Datei.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Der Shadow-Verweis belegt keine Sperre eines SSH-Schlüssels und keine vollständige Kontosperre."><span class="m">B</span> x beweist, dass das Konto per SSH-Key vollständig gesperrt ist.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die primäre GID ist ein separates numerisches Feld in /etc/passwd."><span class="m">C</span> x ist die Hex-Ziffer der primären Gruppe.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s4"><span class="num">4</span>4 · Passwortrichtlinie: Ziel und Linux-Umsetzung trennen</h2>
+<p>Kranich findet eine ältere Beispielregel: mindestens acht Zeichen, je ein Großbuchstabe, Kleinbuchstabe, eine Ziffer und ein Symbol sowie Wechsel alle 90 Tage. Das ist <strong>kein pauschaler Linux-Standard</strong> und muss als konkrete lokale Konfiguration geprüft werden. Als zeitgemäße Orientierung fordert <a href="https://pages.nist.gov/800-63-4/sp800-63b.html">NIST SP 800-63B-4</a> für Passwörter als <strong>alleinigen</strong> Anmeldefaktor mindestens <strong>15 Zeichen</strong>. Die Veröffentlichung verlangt eine Prüfung gegen bekannte, erwartbare oder kompromittierte Passwörter und eine Begrenzung fehlgeschlagener Versuche. Sie untersagt erzwungene Zeichentyp-Mischung und einen rein periodischen Wechsel; bei Hinweisen auf Kompromittierung ist ein Wechsel dagegen erforderlich. Für Passwörter innerhalb einer Mehrfaktor-Anmeldung gelten andere Mindestwerte. Das ist eine Richtlinienorientierung, keine Aussage darüber, was eine vorhandene Linux-/PAM-Installation bereits durchsetzt.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Passwortpolitik: Altregel und Zielvorgabe">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-richtlinien-alt-neu-title diagram-richtlinien-alt-neu-desc">
+  <title id="diagram-richtlinien-alt-neu-title">Passwortpolitik: Altregel und Zielvorgabe</title>
+  <desc id="diagram-richtlinien-alt-neu-desc">Links eine fiktive ältere lokale Regel mit acht Zeichen, vier Zeichentypen und Wechsel alle 90 Tage. Rechts eine NIST-orientierte Ein-Faktor-Zielregel mit mindestens 15 Zeichen, Blocklist, Begrenzung fehlgeschlagener Versuche und Wechsel bei Kompromittierung.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Passwortpolitik: Altregel und Zielvorgabe</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="429" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">Altregel</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">8 Zeichen · vier Zeichentypen · Wechsel</tspan><tspan x="64" dy="30">alle 90 Tage</tspan></text></g><g><rect class="diagram-row" x="489" y="92" width="429" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="511" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="511" dy="0">NIST-orientiert</tspan></text><text x="511" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="511" dy="0">Ab 15 Zeichen · Blocklist · Rate-Limit ·</tspan><tspan x="511" dy="30">Wechsel bei Kompromittierung</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigener technischer Richtlinienvergleich. Rechts steht ein Zielbild aus NIST SP 800-63B-4, nicht die automatische Linux-Konfiguration.</figcaption>
+</figure><p>Für ein <strong>lokales</strong> Konto zeigt <code>chage -l mara</code> Alterungs- und Ablaufangaben; <code>passwd -S mara</code> zeigt unter anderem den Passwortstatus. Beide Befehle beweisen weder, dass eine NIST-orientierte Mindestlänge, Blocklist und Rate-Begrenzung konfiguriert sind, noch wie sich ein zentraler Identitätsanbieter verhält. Die konkrete Umsetzung hängt von Distribution, PAM-Passwortmodulen und dem verwendeten Anmeldedienst ab. Ein <code>passwd</code>-Programm kann eine lokale Komplexitätsprüfung vornehmen; ihre tatsächlich wirksamen Regeln müssen vor Ort ermittelt und getestet werden. Automatisches <code>chage -M 90</code> wäre lediglich eine Alterungsregel, kein Qualitätsnachweis.</p>
+<section class="quiz" data-quiz="konto-policy-entscheidung" data-correct="0">
+  <h3>Welche Aussage trennt eine moderne Zielvorgabe von der realen Linux-Implementierung korrekt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Der Standard ist Orientierung für die Policy; die Durchsetzung ist eine gesonderte Implementierungs- und Testfrage."><span class="m">A</span> NIST fordert mindestens 15 Zeichen bei alleiniger Passwortanmeldung; ob Länge, Blocklist und Rate-Limit lokal gelten, muss in den eingesetzten Diensten geprüft werden.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="chage -l zeigt lokale Alterungsdaten, nicht die gesamte Passwortrichtlinie oder Durchsetzung."><span class="m">B</span> Sobald chage -l mara funktioniert, sind NIST-Blocklist und 15-Zeichen-Regel automatisch aktiv.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="NIST untersagt erzwungene Kompositionsregeln und rein periodische Wechsel; ein Wechsel ist etwa bei Kompromittierung geboten."><span class="m">C</span> Ein regelmäßiger Wechsel alle 90 Tage und vier Zeichentypen sind die NIST-Vorgabe für alle Passwörter.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>5 · Was wird tatsächlich gesperrt?</h2>
+<p>Bei Kranich scheitern mehrere Passwortversuche für Mara. Drei Maßnahmen klingen ähnlich, haben aber verschiedene Reichweiten. <code>passwd -l mara</code> macht das <strong>lokale Passwort</strong> unbrauchbar; ein anderer Authentifizierungstoken wie ein SSH-Schlüssel kann weiter funktionieren. <code>usermod --expiredate 1 mara</code> setzt beim lokalen Konto ein längst vergangenes <strong>Kontoablaufdatum</strong> und soll neue Logins über die beteiligte Kontoprüfung verweigern. Das ist vom Ablauf eines Passworts getrennt. <code>pam_faillock</code> zählt fehlgeschlagene Anmeldungen und kann den Zugang zeitweise verweigern, <strong>wenn</strong> das Modul in den PAM-Pfad des jeweiligen Dienstes eingebunden und passend konfiguriert ist. Die Parameter <code>deny</code>, <code>fail_interval</code> und <code>unlock_time</code> begrenzen Zahl, Fenster und Freigabezeit; sie sind keine universelle Sperre für jedes Protokoll.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Drei unterschiedliche Sperrmechanismen">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-layers" xmlns="http://www.w3.org/2000/svg" width="960" height="412" viewBox="0 0 960 412" role="img" aria-labelledby="diagram-konto-sperrpfade-title diagram-konto-sperrpfade-desc">
+  <title id="diagram-konto-sperrpfade-title">Drei unterschiedliche Sperrmechanismen</title>
+  <desc id="diagram-konto-sperrpfade-desc">Drei getrennte Ebenen: passwd -l sperrt das lokale Passwort, Kontoablauf kann neue Anmeldungen über Kontoprüfung verweigern, pam_faillock sperrt nur in eingebundenen PAM-Diensten nach Fehlversuchen.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Drei unterschiedliche Sperrmechanismen</tspan></text>
+  <g><rect class="diagram-row" x="42" y="82" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="82" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="130" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Passwort</tspan></text><text x="194" y="116" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">passwd -l: Passwort unbrauchbar; SSH-Key kann bleiben</tspan></text></g><g><rect class="diagram-row" x="42" y="182" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="182" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="230" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">Konto</tspan></text><text x="194" y="216" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Ablaufdatum: neue Logins über Konto-Prüfung verweigern</tspan></text></g><g><rect class="diagram-row" x="42" y="282" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="282" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="330" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">PAM-Dienst</tspan></text><text x="194" y="316" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">pam_faillock: nur im eingebundenen PAM-Dienstpfad</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene technische Schichtenansicht: Kein einzelner Schalter ersetzt die Prüfung aller tatsächlichen Zugangspfade.</figcaption>
+</figure><section class="quiz" data-quiz="konto-sperrfall" data-correct="0">
+  <h3>Nach passwd -l mara klappt eine Anmeldung mit Maras SSH-Schlüssel weiterhin. Welche Erklärung ist fachlich plausibel?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Passwortsperre und vollständige Zugangssperre sind nicht dasselbe."><span class="m">A</span> passwd -l sperrt nur das Passwort; der SSH-Key ist ein anderer Anmeldetoken und muss gesondert betrachtet werden.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Ein funktionierender SSH-Key sagt nichts darüber, ob das Passwort wieder nutzbar ist."><span class="m">B</span> Der SSH-Key beweist, dass passwd -l die Passwortsperre aufgehoben hat.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="PAM-faillock und SSH-Schlüssel sind getrennte Mechanismen; eine solche automatische Schlüsselentfernung folgt daraus nicht."><span class="m">C</span> PAM-faillock muss automatisch alle SSH-Schlüssel entfernen, sobald ein Passwort gesperrt wird.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout warn"><span class="lbl">Sicherheitsvorfall</span><p>Ist ein Zugang kompromittiert, reicht ein lokales <code>passwd -l</code> nicht als Gesamtmaßnahme. Kläre die Identitätsquelle, sperre die relevanten neuen Anmeldungen, widerrufe betroffene Schlüssel oder Token, prüfe bestehende Sitzungen separat und teste jeden produktiven Zugangspfad mit gesichertem Rückweg. Eine Kontosperre beendet bereits laufende Prozesse oder Sitzungen nicht automatisch.</p></aside><h2 class="sec" id="s6"><span class="num">6</span>6 · Anwenden und aus dem Kopf erklären</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="konto-karte-gruppe" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was unterscheidet usermod -aG audit mara von usermod -G audit mara?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>-aG ergänzt audit und behält bestehende Zusatzgruppen; -G allein ersetzt die Zusatzgruppenliste.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="konto-karte-shadow" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was sagt das x im Passwortfeld von /etc/passwd aus?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Im üblichen Shadow-Setup liegt der Passwort-Hash in der geschützten /etc/shadow; x ist kein Passwort und keine Kontosperre.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="konto-karte-richtlinie" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was ist an der NIST-orientierten Ein-Faktor-Regel anders als an einer 8-Zeichen-Kompositionsregel?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Mindestens 15 Zeichen, Blocklist und Rate-Limit; keine erzwungene Zeichenmischung oder rein periodische Wechsel. Lokale Durchsetzung gesondert prüfen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="konto-karte-sperre" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Sperrt passwd -l automatisch einen SSH-Key und alle bestehenden Sitzungen?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Nein. Es sperrt das lokale Passwort; andere Token und bereits laufende Sitzungen erfordern eigene Prüfung und Maßnahmen.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Zusatzgruppe“:</span><button type="button" data-card-id="konto-karte-gruppe" data-card-rate="known">gewusst</button><button type="button" data-card-id="konto-karte-gruppe" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="konto-karte-gruppe"></span></div>
+<div class="card-rating"><span>Karte „Shadow“:</span><button type="button" data-card-id="konto-karte-shadow" data-card-rate="known">gewusst</button><button type="button" data-card-id="konto-karte-shadow" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="konto-karte-shadow"></span></div>
+<div class="card-rating"><span>Karte „Richtlinie“:</span><button type="button" data-card-id="konto-karte-richtlinie" data-card-rate="known">gewusst</button><button type="button" data-card-id="konto-karte-richtlinie" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="konto-karte-richtlinie"></span></div>
+<div class="card-rating"><span>Karte „Sperrpfad“:</span><button type="button" data-card-id="konto-karte-sperre" data-card-rate="known">gewusst</button><button type="button" data-card-id="konto-karte-sperre" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="konto-karte-sperre"></span></div><section class="recall-practice" data-recall="konto-fallbegruendung" data-min-length="190" aria-labelledby="konto-fallbegruendung-title">
+  <div class="recall-prompt"><h3 id="konto-fallbegruendung-title">Maras Änderung und den Vorfall begründen</h3><p>Erkläre in eigenen Worten die sichere Ergänzung von audit ohne Verlust von deploy. Vergleiche danach passwd -l, Kontoablauf und PAM-faillock und nenne zwei Prüfungen, die bei einem möglichen Zugangsmissbrauch zusätzlich nötig sind.</p></div>
+  <label class="sr-only" for="konto-fallbegruendung-answer">Deine Fallbegründung</label>
+  <textarea id="konto-fallbegruendung-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Ich prüfe zunächst Maras Identität, Primärgruppe staff und bestehende Zusatzgruppe deploy. Nach Sollklärung und Rückweg ergänze ich audit mit usermod -aG audit mara; -G ohne -a würde die Zusatzgruppenliste ersetzen. Ich prüfe den Zielzustand in einer neuen Sitzung sowie den bisherigen deploy- und neuen audit-Zugriff. passwd -l sperrt nur das lokale Passwort, nicht sicher einen SSH-Key. Ein abgelaufenes Konto soll neue Logins über eine Kontoprüfung verweigern, beendet aber bestehende Sitzungen nicht automatisch. PAM-faillock greift nach Fehlversuchen nur in angebundenen PAM-Diensten. Bei Missbrauch prüfe ich alle Anmeldemethoden und Widerruf betroffener Schlüssel oder Token; laufende Sitzungen werden separat bewertet. Jede Sperre teste ich im konkreten Dienst mit gesichertem Rückweg.</div>
+</section><h2 class="sec" id="s7"><span class="num">7</span>7 · Lernziel-Check</h2>
+<section class="quiz" data-quiz="konto-gruppe-gate" data-correct="1" data-required-objective="gruppen-sicher-aendern">
+  <h3>Mara hat primär staff und zusätzlich deploy. Sie soll audit erhalten und deploy behalten. Welche Anweisung passt für ein lokales Konto?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Ohne -a ersetzt -G die Zusatzgruppenliste; deploy wäre gefährdet."><span class="m">A</span> usermod -G audit mara, denn -G fügt immer nur hinzu.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. -aG ergänzt die Zusatzgruppe; der Test weist alten und neuen Zugriff nach."><span class="m">B</span> usermod -aG audit mara, danach Gruppenstand und beide Zugriffe in einer neuen Sitzung prüfen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="-g ändert die Primärgruppe und erfüllt nicht die beauftragte Zusatzgruppenänderung."><span class="m">C</span> usermod -g audit mara, denn jede neue Zusatzgruppe ist zunächst primär.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="passwort-policy-gate" data-correct="0" data-required-objective="passwortregel-bewerten">
+  <h3>Welche Zielregel ist für eine alleinige Passwortanmeldung an NIST SP 800-63B-4 orientiert, ohne sie als Linux-Default auszugeben?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. NIST beschreibt die Zielregel; PAM und Anmeldedienste müssen dafür tatsächlich konfiguriert und geprüft sein."><span class="m">A</span> Mindestens 15 Zeichen, Blocklist und Begrenzung fehlgeschlagener Versuche; keine erzwungene Zeichentyp-Mischung oder rein periodischen Wechsel. Lokale Durchsetzung separat testen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Das ist nicht die aktuelle NIST-Empfehlung. chage -l zeigt Alterungsdaten, nicht Blocklist oder Durchsetzung der Länge."><span class="m">B</span> Acht Zeichen plus vier Zeichentypen und Wechsel alle 90 Tage; chage -l beweist automatisch die gesamte Umsetzung.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein vorhandenes Konto ersetzt keine geprüfte Passwortregel und keine Begrenzung von Online-Rateversuchen."><span class="m">C</span> Ohne Mindestlänge und ohne Fehlversuchsbegrenzung, sofern ein Linux-Konto existiert.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="kontosperre-gate" data-correct="2" data-required-objective="sperrwirkung-pruefen">
+  <h3>Ein Passwort ist gesperrt, ein SSH-Key funktioniert noch und in einem Dienst greift eine PAM-Fehlversuchssperre. Was folgt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Weder passwd -l noch PAM-faillock garantieren das für alle Wege oder bestehende Sitzungen."><span class="m">A</span> Alle Anmeldewege sind automatisch gesperrt und aktive Sitzungen beendet.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="PAM-faillock verwaltet Fehlversuche in angebundenen PAM-Diensten, keine SSH-Schlüsseldateien."><span class="m">B</span> PAM-faillock hat den SSH-Key aus authorized_keys gelöscht; ein neuer Key ist die einzige Prüfung.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Richtig. Nur diese getrennte Prüfung zeigt, ob die beabsichtigte Sperre im konkreten System vollständig wirkt."><span class="m">C</span> Passwort, Kontoablauf und PAM-Dienstpfad getrennt prüfen; betroffene Keys/Token, laufende Sitzungen und weitere Zugangspfade zusätzlich behandeln.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s8"><span class="num">8</span>Quellen und Grenzen</h2>
+<p>Fachliche Primärquellen, geprüft am 02.10.2026: <a href="https://man7.org/linux/man-pages/man8/useradd.8.html">useradd(8)</a>, <a href="https://man7.org/linux/man-pages/man8/usermod.8.html">usermod(8)</a>, <a href="https://man7.org/linux/man-pages/man5/passwd.5.html">passwd(5)</a>, <a href="https://man7.org/linux/man-pages/man5/shadow.5.html">shadow(5)</a>, <a href="https://man7.org/linux/man-pages/man1/passwd.1.html">passwd(1)</a>, <a href="https://man7.org/linux/man-pages/man1/chage.1.html">chage(1)</a>, <a href="https://man7.org/linux/man-pages/man5/faillock.conf.5.html">faillock.conf(5)</a>, <a href="https://man7.org/linux/man-pages/man8/pam_faillock.8.html">pam_faillock(8)</a> und <a href="https://pages.nist.gov/800-63-4/sp800-63b.html">NIST SP 800-63B-4</a>. Der private Europa-Ausschnitt ist nur Themenanker; keine Formulierung und keine Grafik daraus sind enthalten. Das Beispiel setzt lokale shadow-utils-Konten voraus. Zentrale Identitäten, PAM- und SSH-Konfiguration, vorhandene Sitzungen und konkrete Richtlinien müssen vor produktiven Eingriffen am Zielsystem geprüft werden. Wiederhole die drei Lernziel-Fragen morgen ohne Blick auf die Antworten.</p>
+
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-6"><span class="d">zurück zu</span><span class="t">Betriebssysteme und Administration</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Betriebssysteme und Administration</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 3 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">1 · Diagnose: Eine Gruppenänderung kann Rechte entfernen</a></li>
+<li><a href="#s2" data-t="s2">2 · Änderung planen und in neuer Sitzung prüfen</a></li>
+<li><a href="#s3" data-t="s3">3 · Lokale Kontodaten richtig lesen</a></li>
+<li><a href="#s4" data-t="s4">4 · Passwortrichtlinie: Ziel und Linux-Umsetzung trennen</a></li>
+<li><a href="#s5" data-t="s5">5 · Was wird tatsächlich gesperrt?</a></li>
+<li><a href="#s6" data-t="s6">6 · Anwenden und aus dem Kopf erklären</a></li>
+<li><a href="#s7" data-t="s7">7 · Lernziel-Check</a></li>
+<li><a href="#s8" data-t="s8">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-6">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>
