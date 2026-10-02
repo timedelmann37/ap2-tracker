@@ -1,0 +1,326 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "privilegierte-zugaenge-admin-tier-jit-pam",
+    "slug": "privilegierte-zugaenge-admin-tier-jit-pam",
+    "title": "Privilegierte Zugänge sicher begrenzen",
+    "description": "Adminkonten, Vertrauensgrenzen und zeitlich begrenzte Aktivierung anhand eines Wartungsfalls prüfen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-7",
+    "groupLabel": "Berechtigungskonzepte",
+    "itemId": "ga1-7__7",
+    "week": "KW 41",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": [
+      "privileged-ad-tier-model",
+      "privileged-enterprise-access-model",
+      "privileged-entra-pim-activation",
+      "privileged-security-levels"
+    ],
+    "contentRevision": "2026-10-02.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "adminpfad",
+      "label": "Alltagskonto und privilegierte Identität samt geschütztem Gerätepfad unterscheiden"
+    },
+    {
+      "id": "vertrauensgrenze",
+      "label": "AD-Tiers anhand tatsächlicher Kontrolle und gefährlicher Anmeldungen beurteilen"
+    },
+    {
+      "id": "aktivierung",
+      "label": "Berechtigung zur Aktivierung, aktive Rechte und wirksamen Entzug unterscheiden"
+    }
+  ],
+  "intro": "Lea wartet den Dateiserver einer fiktiven Labortechnikfirma. Ein Domain-Admin-Konto wäre bequem, aber unnötig mächtig. Du planst einen sicheren Zugang, ordnest eine versteckte Kontrollabhängigkeit ein und prüfst, ob ein abgelaufenes Wartungsfenster wirklich beendet ist.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "privileged-ad-tier-model",
+        "sourceLocator": "Trust tiers, credential exposure and control dependencies",
+        "use": "Trust tiers, credential exposure and control dependencies",
+        "reviewStatus": "Offizielle Microsoft-Learn-Seite am 02.10.2026 direkt gelesen; produktbezogene Grenzen beachten"
+      },
+      {
+        "sourceId": "privileged-enterprise-access-model",
+        "sourceLocator": "AD tiers within the broader enterprise access model",
+        "use": "AD tiers within the broader enterprise access model",
+        "reviewStatus": "Offizielle Microsoft-Learn-Seite am 02.10.2026 direkt gelesen; produktbezogene Grenzen beachten"
+      },
+      {
+        "sourceId": "privileged-entra-pim-activation",
+        "sourceLocator": "Eligibility, activation, configured approval and application caching",
+        "use": "Eligibility, activation, configured approval and application caching",
+        "reviewStatus": "Offizielle Microsoft-Learn-Seite am 02.10.2026 direkt gelesen; produktbezogene Grenzen beachten"
+      },
+      {
+        "sourceId": "privileged-security-levels",
+        "sourceLocator": "Restricted accounts, devices and access paths",
+        "use": "Restricted accounts, devices and access paths",
+        "reviewStatus": "Offizielle Microsoft-Learn-Seite am 02.10.2026 direkt gelesen; produktbezogene Grenzen beachten"
+      }
+    ],
+    "notes": [
+      "Eigene Fälle, Formulierungen, Karten und technische SVG-Diagramme; keine Buchgrafik oder Buchaufgabe übernommen.",
+      "EUROPA-Mapping europa-integratoren-2026:00694 geprüft: behandelt Schnittstellen und Ergonomie, nicht privilegierte Zugänge. Dieser falsche Themenanker wird nicht als Beleg verwendet. ITLF205 enthält nur indirekten Gruppenkontext; keine direkte PAM-Evidenz behauptet.",
+      "Das AD-Tier-Modell bleibt ein Bestandteil des breiteren Enterprise Access Model, nicht pauschal als veraltet bezeichnet.",
+      "PAM ist hier ein Oberbegriff für die Steuerung privilegierter Zugänge; konkrete Vault-, Freigabe- und Sitzungsfunktionen hängen vom eingesetzten Produkt und seiner Konfiguration ab.",
+      "Bestehende Deep-Space-Tokens und Lernwidgets unverändert wiederverwendet. CURATED_DRAFT bis zur menschlichen Freigabe."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "admin-vertrauen",
+      "type": "layers",
+      "title": "Kontrolle bestimmt die Vertrauensgrenze",
+      "description": "Tier 0 kontrolliert Identitäten einschließlich ihrer Hosting-Systeme. Tier 1 umfasst gewöhnliche Mitgliedsserver. Tier 2 umfasst Benutzergeräte. Höhere Zugangsdaten gehören nicht auf niedriger vertrauenswürdige Systeme.",
+      "items": [
+        {
+          "label": "Tier 0",
+          "detail": "Identitätskontrolle: DC und dessen Hosting-System."
+        },
+        {
+          "label": "Tier 1",
+          "detail": "Mitgliedsserver: begrenzte Dateiserver-Verwaltung."
+        },
+        {
+          "label": "Tier 2",
+          "detail": "Benutzergeräte: getrennte Client-Verwaltung."
+        }
+      ]
+    },
+    {
+      "id": "jit-zustaende",
+      "type": "flow",
+      "title": "Eine Rolle ist nicht ständig aktiv",
+      "description": "Im Lehrfall folgt auf Aktivierungsberechtigung ein geprüfter Antrag mit MFA und Freigabe. Danach gilt eine begrenzte Rolle. Nach Ablauf wird die wirksame Entzugswirkung überprüft.",
+      "items": [
+        {
+          "label": "Aktivierbar",
+          "detail": "Lea darf die Wartungsrolle beantragen."
+        },
+        {
+          "label": "Antrag geprüft",
+          "detail": "Grund, Ziel, Zeit, MFA und Freigabe im Lehrfall."
+        },
+        {
+          "label": "Aktiv: 14:10–14:55",
+          "detail": "Nur die genehmigte Dateiserver-Aufgabe."
+        },
+        {
+          "label": "Abgelaufen",
+          "detail": "Zuweisung endet; tatsächlichen Zugriff prüfen."
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Diagnose: Reicht ein zweites Konto?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "privilegiert-diagnose",
+          "question": "Lea liest E-Mails am Büro-PC und startet dort eine Admin-Sitzung. Was ist die wichtigste verbleibende Schwäche?",
+          "options": [
+            {
+              "text": "Das zweite Konto macht den gesamten Pfad sicher.",
+              "rationale": "Die Identität ist getrennt, aber ein kompromittierter Ausgangs-PC kann den Admin-Pfad gefährden.",
+              "correct": false
+            },
+            {
+              "text": "Der Büro-PC bleibt Teil des privilegierten Zugangspfads.",
+              "rationale": "Richtig: Nicht nur Konten, auch das Ausgangsgerät und Zwischenstationen müssen zum Schutzbedarf passen.",
+              "correct": true
+            },
+            {
+              "text": "Nur das Wartungsfenster müsste länger sein.",
+              "rationale": "Eine längere Aktivierung löst die Vertrauensfrage nicht und vergrößert das Expositionsfenster.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        },
+        {
+          "type": "markdown",
+          "markdown": "Schreibe vor dem Weiterlesen zwei getrennte Entscheidungen auf: **Welche Rechte benötigt die Aufgabe? Von welchem Gerät darf sie ausgeführt werden?** Die erste begrenzt die Macht, die zweite schützt den Zugang. Eine gute Antwort braucht beides."
+        }
+      ]
+    },
+    {
+      "title": "Alltagsarbeit und Administration trennen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Leas Alltagskonto dient E-Mail und fachlicher Arbeit. Ihre personenbezogene Wartungsidentität erhält nur den benötigten Verwaltungsscope. Das ist keine Einladung, mit einem zweiten Konto dauerhaft Domain Admin zu werden.\n\nFür besonders schutzbedürftige Administration wird ein gehärteter, dafür vorgesehener Arbeitsplatz verwendet. Eine Zwischenstation heilt einen unsicheren Ausgangs-PC nicht. MFA erschwert bestimmte Kontoangriffe, ersetzt aber weder Geräteschutz noch angemessene Rechte.\n\n**Auftrag:** Auf FS-LAB-02 eine genehmigte Speicherwartung ausführen. Nicht benötigt: Domänenrichtlinien ändern, andere Server verwalten oder vertrauliche Projektdateien lesen. Das konkrete delegierte Rollenprofil muss die notwendigen Operationen ermöglichen; ein Rollenname allein ist noch kein Nachweis."
+        },
+        {
+          "type": "quiz",
+          "id": "privilegiert-pfad",
+          "question": "Welche Planung passt zum Auftrag?",
+          "options": [
+            {
+              "text": "Geschützter Admin-Arbeitsplatz, eigene begrenzte Identität und passender Server-Scope.",
+              "rationale": "Richtig: Aufgabenrechte, Identität und Ursprung des Zugangs werden gemeinsam geschützt.",
+              "correct": true
+            },
+            {
+              "text": "Domain Admin am Büro-PC; dafür nur zehn Minuten.",
+              "rationale": "Zeitbegrenzung reduziert Dauer, nicht die Reichweite unnötiger Rechte oder das Risiko am Ausgangsgerät.",
+              "correct": false
+            },
+            {
+              "text": "Gemeinsames Teamkonto auf einem gehärteten Gerät.",
+              "rationale": "Ein geschütztes Gerät ersetzt keine personenbezogene Nachvollziehbarkeit und passende Berechtigungen.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "adminpfad"
+        }
+      ]
+    },
+    {
+      "title": "Tier-Modell: Nicht nach Gerätenamen sortieren",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "admin-vertrauen",
+          "alt": "Drei AD-Vertrauensbereiche: Identitätskontrolle, Mitgliedsserver und Benutzergeräte.",
+          "caption": "Vereinfachte AD-Tiers: Die tatsächliche Kontrollabhängigkeit entscheidet."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Die Grafik ist eine vereinfachte AD-Umgebung. Entscheidend ist die **Kontrollmacht**: Kann ein System die Identitätsinfrastruktur verändern oder übernehmen? Ein Hypervisor, der einen Domänencontroller kontrolliert, gehört deshalb zur besonders kritischen Grenze – auch wenn er im Inventar nur als Server geführt wird.\n\nTier-0-Zugangsdaten dürfen nicht auf einem gewöhnlichen Tier-1-Dateiserver oder Benutzergerät landen. Eine Jump-Station für DC-Administration erbt diesen hohen Schutzbedarf. Netzsegmentierung unterstützt die Trennung, ersetzt die Zugangsdaten- und Kontrollgrenzen aber nicht.\n\nMicrosoft ordnet das AD-Tier-Modell in ein breiteres Enterprise Access Model ein. Für hybride Umgebungen müssen auch Cloud-, Management- und Anwendungspfade betrachtet werden; die drei AD-Tiers allein beschreiben nicht jede Architektur."
+        },
+        {
+          "type": "quiz",
+          "id": "privilegiert-tier",
+          "question": "HV-01 darf die VM des Domänencontrollers verändern. Das Team nennt ihn einen gewöhnlichen Tier-1-Server. Welche Bewertung ist richtig?",
+          "options": [
+            {
+              "text": "Die Bezeichnung im Inventar entscheidet.",
+              "rationale": "Ein Inventarlabel ändert die tatsächliche Kontrollmacht über den Domänencontroller nicht.",
+              "correct": false
+            },
+            {
+              "text": "Nur der Domänencontroller selbst braucht Tier-0-Schutz.",
+              "rationale": "Auch Systeme mit Kontrolle über dessen Hosting können die Identitätsgrenze kompromittieren.",
+              "correct": false
+            },
+            {
+              "text": "Die Hosting-Kontrolle macht HV-01 für diese Grenze Tier-0-kritisch.",
+              "rationale": "Richtig: Die Abhängigkeit muss mitgeschützt werden. Das bedeutet nicht, dass jeder Administrator automatisch Domain Admin erhalten sollte.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "vertrauensgrenze"
+        }
+      ]
+    },
+    {
+      "title": "JIT und PAM: Weniger stehende Rechte",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "jit-zustaende",
+          "alt": "Aktivierbare Rolle, geprüfter Antrag, begrenzte Aktivierung und Ablauf mit Wirkungstest.",
+          "caption": "Fallregeln: MFA und Freigabe; Aktivierung nur für das genehmigte Wartungsfenster."
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Just in Time (JIT)** bedeutet hier: benötigte privilegierte Rechte werden für ein begrenztes Fenster aktiviert. **Aktivierbar** ist nicht **aktiv**. Eine Person kann zur Beantragung berechtigt sein, ohne die Operation schon ausführen zu dürfen.\n\nUnser Lehrfall verlangt Antrag mit Wartungsgrund, Ziel FS-LAB-02, MFA und menschlicher Freigabe. Das sind ausdrücklich Fallregeln, keine Behauptung, dass jedes Produkt jede Aktivierung so prüft. Die Rolle gilt nach Freigabe von 14:10 bis vor 14:55. Weder Zeitdruck noch Freigabe erlauben zusätzliche Server oder eine stärkere Rolle.\n\n**Privileged Access Management (PAM)** bündelt organisatorische und technische Kontrollen um solche Zugänge. Je nach Lösung gehören dazu sichere Geheimnisverwaltung, geregelte Ausgabe, Aktivierung, Protokollierung oder Sitzungssteuerung. Ein Vault allein schafft noch keinen sicheren Gerätepfad; ein Sitzungsprotokoll verhindert nicht automatisch einen Angriff.\n\nMicrosoft Entra PIM ist ein konkretes Produktbeispiel für Rollenaktivierung. Anwendungen können einen vorherigen Rollenstatus zwischenspeichern. Deshalb unterscheiden wir das Ende der Zuweisung vom nachgewiesenen Ende aller relevanten Zugriffsmöglichkeiten."
+        },
+        {
+          "type": "quiz",
+          "id": "privilegiert-jit",
+          "question": "Um 14:56 ist Leas Zuweisung beendet, die Verwaltungskonsole lässt aber noch eine Operation zu. Was folgt?",
+          "options": [
+            {
+              "text": "Alles ist sicher, weil die Zuweisung abgelaufen ist.",
+              "rationale": "Die tatsächlich weiter mögliche Operation widerspricht dem gewünschten Ende. Ein Verwaltungsstatus allein genügt nicht.",
+              "correct": false
+            },
+            {
+              "text": "Zugangspfad und Sitzungs-/Cacheverhalten prüfen, verbleibenden Zugriff behandeln und erneut testen.",
+              "rationale": "Richtig: Das vorgesehene Ende muss wirksam sein. Dokumentiere die Abweichung und die systemspezifische Behebung; behaupte keine universelle Sofortsperre.",
+              "correct": true
+            },
+            {
+              "text": "Lea dauerhaft aktiv lassen, damit die Anzeige wieder stimmt.",
+              "rationale": "Dauerrechte umgehen die Sicherheitsanforderung und beheben die Abweichung nicht.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "aktivierung"
+        }
+      ]
+    },
+    {
+      "title": "Anwenden: Ein Wartungsticket prüfbar machen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Formuliere ein Ticket, das ein anderes Team nachvollziehen kann. Nenne Person und getrennte Identität, zulässiges Ausgangsgerät, Ziel, konkrete Operation, begrenztes Zeitfenster, Freigabeverantwortung und Nachweis nach Ende.\n\n**Fehlersuche:** Der Antrag ist genehmigt, aber vor Aktivierung schlägt die Operation fehl. Das kann korrekt sein: Freigabe und Aktivierung sind unterschiedliche Zustände. Prüfe den tatsächlichen Rollenstatus und Scope, statt vorschnell Domain Admin zu vergeben.\n\n**Transfer:** Der nächste Auftrag betrifft einen Domänencontroller statt FS-LAB-02. Übernimm nicht einfach dasselbe Konto, Gerät und Zwischenziel. Prüfe die höhere Vertrauensgrenze und die notwendigen getrennten Zugänge erneut."
+        },
+        {
+          "type": "flashcards",
+          "id": "privilegiert-karten",
+          "cards": [
+            {
+              "id": "konto",
+              "label": "Abruf",
+              "front": "Warum zwei Konten?",
+              "back": "Alltagsarbeit und privilegierte Aufgaben trennen; das privilegierte Konto bleibt personenbezogen und auf Bedarf begrenzt."
+            },
+            {
+              "id": "geraet",
+              "label": "Abruf",
+              "front": "Warum genügt das zweite Konto nicht?",
+              "back": "Ein unsicheres Ausgangsgerät oder eine ungeeignete Zwischenstation kann den privilegierten Zugang gefährden."
+            },
+            {
+              "id": "tier",
+              "label": "Abruf",
+              "front": "Was bestimmt eine AD-Tier-Grenze?",
+              "back": "Tatsächliche Kontrolle und Exposition von Zugangsdaten, nicht nur VLAN oder Inventarbezeichnung."
+            },
+            {
+              "id": "jit",
+              "label": "Abruf",
+              "front": "Aktivierbar oder aktiv?",
+              "back": "Aktivierbar erlaubt einen Aktivierungsantrag. Erst die wirksame aktive Zuweisung ermöglicht die genehmigten Operationen."
+            },
+            {
+              "id": "pam",
+              "label": "Abruf",
+              "front": "Ersetzt PAM den Gerätepfad?",
+              "back": "Nein. Funktionen wie Vault oder Aktivierungsfreigabe müssen mit passenden Konten, Geräten und Zielgrenzen zusammenspielen."
+            },
+            {
+              "id": "ende",
+              "label": "Abruf",
+              "front": "Was nach Ablauf prüfen?",
+              "back": "Ende der Zuweisung und tatsächliche Zugriffswirkung auf relevanten Zielsystemen; Sitzungen und Caches können abweichen."
+            }
+          ]
+        },
+        {
+          "type": "recall",
+          "id": "privilegiert-transfer",
+          "title": "Ohne Vorlage erklären",
+          "prompt": "Plane Leas Dateiserver-Wartung mit Konto, Gerätepfad, Scope, Aktivierung und Entzugstest. Erkläre anschließend, warum die Kontrolle über eine DC-VM eine andere Vertrauensgrenze erfordert.",
+          "minLength": 180,
+          "model": "Lea nutzt ihre getrennte personenbezogene Wartungsidentität von einem passenden geschützten Admin-Arbeitsplatz. Nur die genehmigte Operation auf FS-LAB-02 wird im begrenzten Fenster aktiviert; Antrag, MFA und Freigabe folgen den Fallregeln. Nach Ablauf werden Zuweisung und tatsächlicher Zielzugriff geprüft, Abweichungen behandelt und dokumentiert. Ein Host mit Kontrolle über eine DC-VM kann die Identitätsinfrastruktur beeinflussen und benötigt deshalb Tier-0-gerechte Schutzmaßnahmen und getrennte Zugänge."
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Wiederholung:** Morgen die Karten ohne Vorlage beantworten. Danach den Fall mit einer anderen Rolle und einem früheren Wartungsende erneut planen. Merksatz: **Wer, von wo, auf was, wofür, wie lange – und ist es wirklich beendet?**"
+        }
+      ]
+    }
+  ]
+}

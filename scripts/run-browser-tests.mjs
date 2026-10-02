@@ -133,6 +133,7 @@ async function runFullSuite() {
   await import('./verify-permission-matrix-browser.mjs');
   await import('./verify-role-review-browser.mjs');
   await import('./verify-personnel-lifecycle-browser.mjs');
+  await import('./verify-privileged-access-browser.mjs');
   useSignedInFixture = false;
   await import('./verify-space-browser.mjs');
 }
@@ -162,6 +163,9 @@ try {
   } else if (process.env.AP2_BROWSER_ONLY === 'personnel-lifecycle') {
     useSignedInFixture = true;
     await import('./verify-personnel-lifecycle-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'privileged-access') {
+    useSignedInFixture = true;
+    await import('./verify-privileged-access-browser.mjs');
   } else {
     await runFullSuite();
   }
