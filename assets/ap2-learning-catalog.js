@@ -3809,6 +3809,34 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "zahlensysteme-binaer-hex-dezimal-umrechnen",
+    "slug": "zahlensysteme-binaer-hex-dezimal-umrechnen",
+    "title": "Zahlensysteme: binär, hexadezimal und dezimal umrechnen",
+    "description": "Stellenwerte anwenden, Bytes in Nibbles zerlegen und Zahlenbasis von Bitbreite und Interpretation unterscheiden.",
+    "domain": "GA1",
+    "groupId": "ga1-11",
+    "groupLabel": "Rechnen und Prüfungstechnik",
+    "itemId": "ga1-11__12",
+    "week": "parallel",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "binaer",
+      "hex",
+      "rest",
+      "breite",
+      "nachweis"
+    ],
+    "sources": [
+      "basecalc-python-int",
+      "basecalc-python-literale"
+    ],
+    "contentHash": "50f6009278b822148cb501dd37d08a40cac945943c04416214e72dd714dc47d0",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "osi-model",
     "slug": "osi-model",
     "title": "Das OSI-Schichtenmodell sicher anwenden",
