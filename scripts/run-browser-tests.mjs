@@ -184,6 +184,7 @@ async function runFullSuite() {
   await import('./verify-retrieval-cards-browser.mjs');
   await import('./verify-oral-practice-browser.mjs');
   await import('./verify-final-week-browser.mjs');
+  await import('./verify-project-basics-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
   await import('./verify-scenario-link-browser.mjs');
   await import('./verify-working-units-browser.mjs');
@@ -251,6 +252,9 @@ try {
   } else if (process.env.AP2_BROWSER_ONLY === 'raid-calculation') {
     useSignedInFixture = true;
     await import('./verify-raid-calculation-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'project-basics') {
+    useSignedInFixture = true;
+    await import('./verify-project-basics-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'final-week') {
     useSignedInFixture = true;
     await import('./verify-final-week-browser.mjs');

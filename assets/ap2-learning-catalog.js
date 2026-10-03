@@ -4259,6 +4259,33 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "projektphasen-zielkonflikte-und-smart",
+    "slug": "projektphasen-zielkonflikte-und-smart",
+    "title": "IT-Projekte: Phasen, Zielkonflikte und SMART",
+    "description": "Ein Projekt vom laufenden Betrieb abgrenzen, Phasenergebnisse zuordnen und einen Änderungswunsch mit messbaren Zielen prüfen.",
+    "domain": "GA1",
+    "groupId": "ga1-13",
+    "groupLabel": "Projekt- & Qualitätsmanagement",
+    "itemId": "ga1-13__0",
+    "week": "Woche 11 · KW 45",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "phasen",
+      "konflikt",
+      "smart"
+    ],
+    "sources": [
+      "projekt-pmi-lifecycle",
+      "projekt-pmi-constraints",
+      "projekt-cdc-smart"
+    ],
+    "contentHash": "319b8e4eddfe67f3f2daca7ee936e601744a8e4e2e2553506a0b326d3dabe093",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "osi-model",
     "slug": "osi-model",
     "title": "Das OSI-Schichtenmodell sicher anwenden",
