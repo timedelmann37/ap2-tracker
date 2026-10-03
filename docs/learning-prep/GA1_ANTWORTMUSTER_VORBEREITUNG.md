@@ -1,6 +1,6 @@
 # Antwortmuster: Quellenprüfung und didaktischer Fall
 
-Stand 03.10.2026. Vorbereitung für ga1-11__17 abgeschlossen; Website-Einheit noch nicht implementiert. Abdeckung nicht verändert. Geplante Einheit bleibt CURATED_DRAFT bis menschliche Freigabe.
+Stand 03.10.2026. ga1-11__17 ist als Website-Einheit implementiert und geprüft: `/lernen/anforderung-loesung-begruendung-antwortmuster/`. Status CURATED_DRAFT bis menschliche Freigabe. Die folgenden Vorbereitungsnotizen dokumentieren die vorausgegangenen Abschnitte; der Abschluss steht unten.
 
 ## Direkt geprüfte Themenanker
 
@@ -46,6 +46,14 @@ Präzisierung für die Umsetzung: „Stündlich geplant“ ist nicht automatisch
 
 Diese technische Quellenprüfung ist abgeschlossen. Noch keine neue Website-Einheit und keine erhöhte Abdeckung; Build und Browserprüfung sind für diesen reinen Dokumentationsabschnitt nicht ausgeführt.
 
-## Noch ausstehend
+## Implementierung und tatsächlicher Abschluss
 
-Die jetzt geprüften technischen Primärquellen bei der Implementierung in content/sources.json verzeichnen. Danach Schema-Einheit, Diagramm, Tests, Build, Mobile/Desktop Dark/Light und Browserinteraktionen prüfen. Erst nach diesen Prüfungen Abdeckung erhöhen und die fertige Einheit dokumentieren. In diesem Abschnitt wurden keine Website-Tests oder visuelle Abnahme einer neuen Einheit behauptet.
+Die beiden technischen AWS-Primärquellen sind in `content/sources.json` verzeichnet. Die eigenständige Schema-Einheit enthält einen Diagnose-Quiz, drei Pflicht-Lernziel-Checks, eine Reparaturübung, einen Kriterienvergleich, eine freie Transferantwort mit erst anschließend sichtbarem Muster und drei tastaturbedienbare Lernkarten. Eine technische SVG zeigt die Argumentationskette; keine dekorative Rastergrafik und keine unnötige Formel.
+
+Gestaltungsentscheidung: bestehende Deep-Space-Leseflächen und Inter-Typografie nach dem Refero-Referenz-Lock; vorhandene Quiz-/Recall-Widgets statt einer neuen Bedienlogik. Die Grafik ist auf Mobile in einem beschrifteten, tastaturbedienbaren horizontalen Scrollbereich lesbar.
+
+Tatsächlich bestanden: `npm run build` (797 Dateien), vollständiges `npm test` sowie `AP2_BROWSER_ONLY=answer-pattern npm run test:browser`. Letztere Prüfung umfasst richtige/falsche Antworten, Feedback, Reset und Abschluss-Sperre, Diagnose ohne Pflichtzielwirkung, Freitext vor Muster, Enter/Space auf Lernkarten, Persistenz nach Reload, Markieren und Zurücksetzen. Keine JavaScript-Seitenfehler; keine seitliche Seitenüberbreite, SVG-Beschriftungen innerhalb des Canvas. Browser verwendet den lokalen Signed-in-Testfixture, keine echten Kontoschreibvorgänge.
+
+390 und 1440 Pixel jeweils Dark/Light aufgenommen; Einstieg, technische Grafik, Quiz-Feedback und Transferansicht visuell kontrolliert. Evidenz: `C:/Users/timed/AppData/Local/Temp/ap2-pattern-20261003/`. Keine wesentliche Abweichung von der bestehenden Lernseite festgestellt.
+
+Abdeckung nach erfolgreicher Prüfung: 252/380 insgesamt, GA1 144/164; ga1-11__17 ist zugeordnet. Menschliche Fachfreigabe und Veröffentlichung sind nicht erfolgt. Ausschließlich beabsichtigte lokale Änderungen; kein Push.

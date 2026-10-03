@@ -3916,6 +3916,33 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "anforderung-loesung-begruendung-antwortmuster",
+    "slug": "anforderung-loesung-begruendung-antwortmuster",
+    "title": "Prüfungsantworten: von der Anforderung zur Abwägung",
+    "description": "Technische Entscheidungen mit Fallbezug begründen und belegte Aussagen von offenen Nachweisen trennen.",
+    "domain": "GA1",
+    "groupId": "ga1-11",
+    "groupLabel": "Rechnen und Prüfungstechnik",
+    "itemId": "ga1-11__17",
+    "week": "parallel",
+    "estimatedMinutes": 22,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "anforderung",
+      "begruendung",
+      "abwaegung"
+    ],
+    "sources": [
+      "operator-ihk-workbook",
+      "antwort-aws-recovery",
+      "antwort-aws-backup"
+    ],
+    "contentHash": "261b1a3631086ed3fd6193c0da1ebdd6ea45011298476dc669ad6119b55b753f",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "osi-model",
     "slug": "osi-model",
     "title": "Das OSI-Schichtenmodell sicher anwenden",
