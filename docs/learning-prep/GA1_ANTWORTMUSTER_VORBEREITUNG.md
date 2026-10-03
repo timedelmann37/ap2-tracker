@@ -36,6 +36,16 @@ Lernziel-Checks: Anforderung, tragfähige Begründung und Abwägung. Fehlantwort
 
 Gestaltung: bestehende Deep-Space-Leseflächen und Quiz-/Recall-Widgets unverändert verwenden; Refero-Skill für die nächste Umsetzung gelesen. Kein neues UI in diesem Vorbereitungsabschnitt.
 
+## Technische Quellenprüfung (03.10.2026, zweiter Abschnitt)
+
+Direkt gelesen: AWS Whitepaper, Disaster recovery options in the cloud, Abschnitte Backup and restore (Zeilen 7, 23, 61 und 71): https://docs.aws.amazon.com/whitepapers/latest/disaster-recovery-workloads-on-aws/disaster-recovery-options-in-the-cloud.html . Sicherungstakt beeinflusst den erreichbaren Wiederherstellungspunkt; Wiederherstellung benötigt auch Konfiguration und Infrastruktur. Die Strategie muss getestet werden. Nur diese allgemeinen Beziehungen werden verwendet, keine AWS-Produktgarantien auf den lokalen Fall übertragen.
+
+AWS Business Continuity Plan: https://docs.aws.amazon.com/whitepapers/latest/disaster-recovery-workloads-on-aws/business-continuity-plan-bcp.html . RTO bezeichnet die maximal akzeptable Verzögerung bis zur Wiederherstellung des Dienstes; RPO die maximal akzeptable Zeit seit dem letzten Wiederherstellungspunkt. Für den eigenen Fall werden daraus RPO eine Stunde und RTO zwei Stunden, nicht umgekehrt.
+
+Präzisierung für die Umsetzung: „Stündlich geplant“ ist nicht automatisch „RPO erfüllt“. Sicherungsdauer, erfolgreicher Abschluss und Alter des tatsächlich nutzbaren Wiederherstellungspunkts müssen berücksichtigt werden. Ein Restore-Test muss den nutzbaren Dienst einschließlich notwendiger Konfiguration prüfen, nicht nur das Zurückkopieren einer einzelnen Datei. Beide Angebote bleiben hinsichtlich RTO unbelegt. Fehlende Angaben werden als fehlend gekennzeichnet, nicht ergänzt.
+
+Diese technische Quellenprüfung ist abgeschlossen. Noch keine neue Website-Einheit und keine erhöhte Abdeckung; Build und Browserprüfung sind für diesen reinen Dokumentationsabschnitt nicht ausgeführt.
+
 ## Noch ausstehend
 
-Vor Website-Implementierung technische Primärquelle für RPO/RTO und Restore-Nachweise direkt lesen und verzeichnen. Danach Schema-Einheit, Diagramm, Tests, Build, Mobile/Desktop Dark/Light und Browserinteraktionen prüfen. Erst nach diesen Prüfungen Abdeckung erhöhen und die fertige Einheit dokumentieren. In diesem Abschnitt wurden keine Website-Tests oder visuelle Abnahme einer neuen Einheit behauptet.
+Die jetzt geprüften technischen Primärquellen bei der Implementierung in content/sources.json verzeichnen. Danach Schema-Einheit, Diagramm, Tests, Build, Mobile/Desktop Dark/Light und Browserinteraktionen prüfen. Erst nach diesen Prüfungen Abdeckung erhöhen und die fertige Einheit dokumentieren. In diesem Abschnitt wurden keine Website-Tests oder visuelle Abnahme einer neuen Einheit behauptet.
