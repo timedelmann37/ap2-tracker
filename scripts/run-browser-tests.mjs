@@ -179,6 +179,7 @@ async function runFullSuite() {
   await import('./verify-answer-pattern-browser.mjs');
   await import('./verify-scenario-link-browser.mjs');
   await import('./verify-working-units-browser.mjs');
+  await import('./verify-time-budget-browser.mjs');
   useSignedInFixture = false;
   await import('./verify-space-browser.mjs');
 }
@@ -241,6 +242,9 @@ try {
   } else if (process.env.AP2_BROWSER_ONLY === 'raid-calculation') {
     useSignedInFixture = true;
     await import('./verify-raid-calculation-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'time-budget') {
+    useSignedInFixture = true;
+    await import('./verify-time-budget-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'working-units') {
     useSignedInFixture = true;
     await import('./verify-working-units-browser.mjs');
