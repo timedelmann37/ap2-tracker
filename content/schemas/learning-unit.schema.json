@@ -72,7 +72,23 @@
         "required": ["id", "type", "title"],
         "properties": {
           "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
-          "type": { "enum": ["layers", "flow", "comparison", "topology"] },
+          "type": { "enum": ["layers", "flow", "comparison", "topology", "gantt"] },
+          "end": { "type": "integer", "minimum": 1, "maximum": 15 },
+          "unit": { "type": "string", "minLength": 1, "maxLength": 60 },
+          "rows": {
+            "type": "array", "minItems": 2, "maxItems": 12,
+            "items": {
+              "type": "object", "required": ["id", "label", "start", "end", "predecessors"],
+              "properties": {
+                "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+                "label": { "type": "string", "minLength": 1, "maxLength": 24 },
+                "start": { "type": "number", "minimum": 0, "multipleOf": 0.5 },
+                "end": { "type": "number", "minimum": 0, "multipleOf": 0.5 },
+                "predecessors": { "type": "string", "minLength": 1, "maxLength": 28 }
+              },
+              "additionalProperties": false
+            }
+          },
           "title": { "type": "string" },
           "description": { "type": "string" },
           "items": {
@@ -142,7 +158,11 @@
           {
             "if": { "properties": { "type": { "const": "topology" } }, "required": ["type"] },
             "then": { "required": ["nodes", "edges"] },
-            "else": { "required": ["items"] }
+            "else": {
+              "if": { "properties": { "type": { "const": "gantt" } }, "required": ["type"] },
+              "then": { "required": ["end", "unit", "rows"] },
+              "else": { "required": ["items"] }
+            }
           }
         ],
         "additionalProperties": false

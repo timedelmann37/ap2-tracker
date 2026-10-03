@@ -1,6 +1,6 @@
 const STATUS_VALUES = new Set(['CURATED_DRAFT', 'DIDACTICALLY_REVIEWED', 'PUBLICATION_READY']);
 const BLOCK_TYPES = new Set(['markdown', 'quiz', 'callout', 'math', 'figure', 'recall', 'flashcards', 'numeric', 'sequence', 'permission-matrix']);
-const DIAGRAM_TYPES = new Set(['layers', 'flow', 'comparison', 'topology']);
+const DIAGRAM_TYPES = new Set(['layers', 'flow', 'comparison', 'topology', 'gantt']);
 
 function fail(fileName, message) {
   throw new Error(`${fileName}: ${message}`);
@@ -206,8 +206,14 @@ export function validateUnitSpec(spec, fileName = 'Lern-Spezifikation') {
     if (!DIAGRAM_TYPES.has(diagram.type) || !diagram.id || !diagram.title) {
       fail(fileName, 'jedes Diagramm benötigt id, title und einen unterstützten type.');
     }
-    if (diagram.type !== 'topology' && (!Array.isArray(diagram.items) || diagram.items.length < 2)) {
+    if (!['topology', 'gantt'].includes(diagram.type) && (!Array.isArray(diagram.items) || diagram.items.length < 2)) {
       fail(fileName, 'layers-, flow- und comparison-Diagramme benötigen mindestens zwei items.');
+    }
+    if (diagram.type === 'gantt') {
+      if (!Number.isInteger(diagram.end) || diagram.end < 1 || diagram.end > 15 || typeof diagram.unit !== 'string' || !diagram.unit.trim() || diagram.unit.length > 60 || !Array.isArray(diagram.rows) || diagram.rows.length < 2 || diagram.rows.length > 12) fail(fileName, 'gantt benötigt end (1–15), unit (1–60 Zeichen) und 2–12 rows.');
+      const ids = diagram.rows.map(row => row.id);
+      if (new Set(ids).size !== ids.length || ids.some(id => !/^[a-z0-9-]+$/.test(id || ''))) fail(fileName, 'gantt benötigt eindeutige Zeilen-IDs.');
+      if (diagram.rows.some(row => typeof row.label !== 'string' || !row.label.trim() || row.label.length > 24 || !Number.isInteger(row.start * 2) || !Number.isInteger(row.end * 2) || row.start < 0 || row.end < row.start || row.end > diagram.end || typeof row.predecessors !== 'string' || !row.predecessors.trim() || row.predecessors.length > 28)) fail(fileName, 'gantt enthält ungültige Zeitpunkte (halbe Einheiten) oder Zeilenbeschriftungen.');
     }
     if (diagram.type === 'topology') {
       if (!Array.isArray(diagram.nodes) || diagram.nodes.length < 2 || !Array.isArray(diagram.edges) || diagram.edges.length < 1) {
@@ -418,8 +424,24 @@ function renderTopologySvg(diagram) {
   return { width, height, body: `${zones}${edges}${nodes}` };
 }
 
+function renderGanttSvg(diagram) {
+  const width = 960;
+  const height = 184 + diagram.rows.length * 68;
+  const x = time => 310 + time * 600 / diagram.end;
+  const grid = Array.from({ length: diagram.end + 1 }, (_, time) => `${svgText(time, x(time), 132, { anchor: 'middle', size: 18 })}<path d="M${x(time)} 146V${height - 30}" stroke="var(--diagram-border, #5f526e)" stroke-width="1"/>`).join('');
+  const rows = diagram.rows.map((row, index) => {
+    const y = 164 + index * 68;
+    const shape = row.start === row.end
+      ? `<path class="gantt-milestone" data-row="${escapeXml(row.id)}" d="M${x(row.start)} ${y - 10}l10 10-10 10-10-10Z" fill="var(--diagram-line, #b997ff)"/>`
+      : `<rect class="gantt-bar" data-row="${escapeXml(row.id)}" x="${x(row.start)}" y="${y - 10}" width="${x(row.end) - x(row.start)}" height="20" rx="3" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-line, #b997ff)" stroke-width="2"/>`;
+    return `${svgText(row.label, 42, y + 5, { size: 20, max: 24, weight: 700 })}${svgText('Vorgänger: ' + row.predecessors, 42, y + 28, { size: 16, max: 40, fill: 'var(--diagram-muted, #c8c1d2)' })}${shape}${svgText(row.start === row.end ? `M bei ${row.start}` : `${row.start}–${row.end}`, (x(row.start) + x(row.end)) / 2, y + 33, { anchor: 'middle', size: 16 })}`;
+  }).join('');
+  return { width, height, body: `${svgText(diagram.unit, 310, 91, { size: 19, max: 60 })}${grid}${rows}` };
+}
+
 function diagramDescription(diagram) {
   if (diagram.description) return diagram.description;
+  if (diagram.type === 'gantt') return `${diagram.unit}. ${diagram.rows.map(row => `${row.label}: ${row.start} bis ${row.end}, Vorgänger ${row.predecessors}`).join('. ')}.`;
   if (diagram.type === 'topology') {
     const nodes = diagram.nodes.map(node => `${node.label}${node.detail ? `: ${node.detail}` : ''}`).join('. ');
     const edges = diagram.edges.map(edge => `${nodeLabel(diagram, edge.from)} verbunden mit ${nodeLabel(diagram, edge.to)}${edge.label ? ` (${edge.label})` : ''}`).join('. ');
@@ -439,7 +461,7 @@ export function renderDiagram(diagram, descriptionOverride = '') {
       ? renderFlowSvg(diagram)
       : diagram.type === 'comparison'
         ? renderComparisonSvg(diagram)
-        : renderTopologySvg(diagram);
+        : diagram.type === 'gantt' ? renderGanttSvg(diagram) : renderTopologySvg(diagram);
   const titleId = `diagram-${diagram.id}-title`;
   const descId = `diagram-${diagram.id}-desc`;
   return `<svg class="learning-diagram diagram-${escapeXml(diagram.type)}" xmlns="http://www.w3.org/2000/svg" width="${rendered.width}" height="${rendered.height}" viewBox="0 0 ${rendered.width} ${rendered.height}" role="img" aria-labelledby="${titleId} ${descId}">\n  <title id="${titleId}">${escapeXml(diagram.title)}</title>\n  <desc id="${descId}">${escapeXml(descriptionOverride || diagramDescription(diagram))}</desc>\n  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>\n  ${svgText(diagram.title, 42, 48, { weight: 700, size: 28, max: 60, className: 'diagram-title' })}\n  ${rendered.body}\n</svg>\n`;
