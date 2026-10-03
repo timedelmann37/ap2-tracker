@@ -3864,6 +3864,33 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "pruefungsoperatoren-antworttiefe-unterscheiden",
+    "slug": "pruefungsoperatoren-antworttiefe-unterscheiden",
+    "title": "Prüfungsoperatoren: die passende Antworttiefe",
+    "description": "Nennen, erklären, begründen, vergleichen und bewerten am selben technischen Fall unterscheiden und gezielt beantworten.",
+    "domain": "GA1",
+    "groupId": "ga1-11",
+    "groupLabel": "Rechnen und Prüfungstechnik",
+    "itemId": "ga1-11__15",
+    "week": "parallel",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "nennen",
+      "erklaeren",
+      "begruenden",
+      "vergleichen",
+      "bewerten"
+    ],
+    "sources": [
+      "operator-ihk-workbook"
+    ],
+    "contentHash": "e1de6182aaecc28b17063cd3899e370a1e5ed8710c6acf6b3061f6fd20db64d5",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "osi-model",
     "slug": "osi-model",
     "title": "Das OSI-Schichtenmodell sicher anwenden",
