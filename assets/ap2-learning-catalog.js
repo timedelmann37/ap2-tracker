@@ -3253,6 +3253,33 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "kennzahlen-kapazitaetsplanung-trends",
+    "slug": "kennzahlen-kapazitaetsplanung-trends",
+    "title": "Kennzahlen und Kapazitätsplanung",
+    "description": "CPU, RAM, Speicher, IO und Netzlast im Dienstkontext bewerten und aus einem überprüften Trend eine Kapazitätsentscheidung ableiten.",
+    "domain": "GA1",
+    "groupId": "ga1-10",
+    "groupLabel": "Betrieb, Monitoring und Prozesse",
+    "itemId": "ga1-10__1",
+    "week": "KW 44",
+    "estimatedMinutes": 40,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "kennzahlen",
+      "vergleich",
+      "prognose",
+      "entscheidung"
+    ],
+    "sources": [
+      "kap-kernel-meminfo",
+      "kap-zabbix-items"
+    ],
+    "contentHash": "8f153f856c1c6c18fe9ec9828026a6ff8ce946b7c953d4647e3ab1482264c37f",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "osi-model",
     "slug": "osi-model",
     "title": "Das OSI-Schichtenmodell sicher anwenden",
