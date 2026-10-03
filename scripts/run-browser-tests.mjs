@@ -157,6 +157,7 @@ async function runFullSuite() {
   await import('./verify-itil-basics-browser.mjs');
   await import('./verify-change-process-browser.mjs');
   await import('./verify-ticket-priority-browser.mjs');
+  await import('./verify-operations-docs-browser.mjs');
   useSignedInFixture = false;
   await import('./verify-space-browser.mjs');
 }
@@ -210,6 +211,9 @@ try {
   } else if (process.env.AP2_BROWSER_ONLY === 'zero-trust') {
     useSignedInFixture = true;
     await import('./verify-zero-trust-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'operations-docs') {
+    useSignedInFixture = true;
+    await import('./verify-operations-docs-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'ticket-priority') {
     useSignedInFixture = true;
     await import('./verify-ticket-priority-browser.mjs');
