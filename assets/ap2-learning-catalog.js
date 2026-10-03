@@ -4397,6 +4397,33 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "qualitaetsmanagement-pdca-merkmale-abnahmekriterien",
+    "slug": "qualitaetsmanagement-pdca-merkmale-abnahmekriterien",
+    "title": "Qualitätsmanagement: PDCA und prüfbare Abnahmekriterien",
+    "description": "PDCA am Restore-Pilot anwenden, Qualitätsmerkmale messbar formulieren und Abnahme anhand dokumentierter Ergebnisse entscheiden.",
+    "domain": "GA1",
+    "groupId": "ga1-13",
+    "groupLabel": "Projekt- & Qualitätsmanagement",
+    "itemId": "ga1-13__5",
+    "week": "Woche 11 · KW 45",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "pdca",
+      "merkmale",
+      "abnahme"
+    ],
+    "sources": [
+      "qm-iso-overview",
+      "qm-asq-pdca",
+      "qm-microsoft-criteria"
+    ],
+    "contentHash": "1f660c7424bd39e396c616cf46a50386dd21ee629edc3d18d61a7284a0be669c",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "osi-model",
     "slug": "osi-model",
     "title": "Das OSI-Schichtenmodell sicher anwenden",
