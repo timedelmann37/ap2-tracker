@@ -150,6 +150,7 @@ async function runFullSuite() {
   await import('./verify-incident-response-browser.mjs');
   await import('./verify-compromise-symptoms-browser.mjs');
   await import('./verify-bcm-browser.mjs');
+  await import('./verify-ki-browser.mjs');
   useSignedInFixture = false;
   await import('./verify-space-browser.mjs');
 }
@@ -203,6 +204,9 @@ try {
   } else if (process.env.AP2_BROWSER_ONLY === 'zero-trust') {
     useSignedInFixture = true;
     await import('./verify-zero-trust-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'ki') {
+    useSignedInFixture = true;
+    await import('./verify-ki-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'bcm') {
     useSignedInFixture = true;
     await import('./verify-bcm-browser.mjs');
