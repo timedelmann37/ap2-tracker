@@ -8156,6 +8156,35 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "abmahnung-zweck-voraussetzungen-folgen",
+    "slug": "abmahnung-zweck-voraussetzungen-folgen",
+    "title": "Abmahnung: Zweck, Voraussetzungen und Folgen",
+    "description": "Konkrete Rüge und Warnung erkennen, Form von Beweis unterscheiden und mögliche Kündigungsfolgen ohne Zählregel beurteilen.",
+    "domain": "WiSo",
+    "groupId": "wiso-3",
+    "groupLabel": "W3 · Arbeitsrecht II: Beendigung",
+    "itemId": "wiso-3__6",
+    "week": "KW 37",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "inhalt",
+      "form",
+      "folge",
+      "einwand"
+    ],
+    "sources": [
+      "abmahn-bag-inhalt",
+      "abmahn-bag-prognose",
+      "abmahn-ihk-form",
+      "abmahn-beschwerde"
+    ],
+    "contentHash": "afa4529ebe1afb00c79d2d4e1d5ec236e36b1b5a417b529db27264f8b65d93d1",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "company-goals",
     "slug": "company-goals",
     "title": "Unternehmensziele und Zielkonflikte sicher abwägen",
