@@ -7824,6 +7824,38 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "agg-merkmale-benachteiligung-bewerbung",
+    "slug": "agg-merkmale-benachteiligung-bewerbung",
+    "title": "AGG: geschützte Merkmale und Benachteiligung",
+    "description": "Geschützte Merkmale, unmittelbare und mittelbare Benachteiligung sowie faire Bewerbungsverfahren an eigenen IT-Betriebsfällen prüfen.",
+    "domain": "WiSo",
+    "groupId": "wiso-2",
+    "groupLabel": "W2 · Arbeitsrecht I",
+    "itemId": "wiso-2__9",
+    "week": "KW 36",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "merkmale",
+      "formen",
+      "anwendung"
+    ],
+    "sources": [
+      "agg-ziel",
+      "agg-form",
+      "agg-positiv",
+      "agg-personen",
+      "agg-verbot",
+      "agg-anforderung",
+      "agg-anzeige",
+      "agg-beschwerde"
+    ],
+    "contentHash": "776a537c788596e6d31d8210795d70014609943bfd609d0582d515eb7ffec183",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "company-goals",
     "slug": "company-goals",
     "title": "Unternehmensziele und Zielkonflikte sicher abwägen",
