@@ -175,6 +175,7 @@ async function runFullSuite() {
   await import('./verify-number-bases-browser.mjs');
   await import('./verify-proportion-percent-browser.mjs');
   await import('./verify-examination-operators-browser.mjs');
+  await import('./verify-answer-scope-browser.mjs');
   useSignedInFixture = false;
   await import('./verify-space-browser.mjs');
 }
@@ -237,6 +238,9 @@ try {
   } else if (process.env.AP2_BROWSER_ONLY === 'raid-calculation') {
     useSignedInFixture = true;
     await import('./verify-raid-calculation-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'answer-scope') {
+    useSignedInFixture = true;
+    await import('./verify-answer-scope-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'examination-operators') {
     useSignedInFixture = true;
     await import('./verify-examination-operators-browser.mjs');
