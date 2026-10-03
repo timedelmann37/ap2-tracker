@@ -4286,6 +4286,34 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "lastenheft-pflichtenheft-stakeholder-risiko",
+    "slug": "lastenheft-pflichtenheft-stakeholder-risiko",
+    "title": "Lastenheft, Pflichtenheft, Stakeholder und Risiken",
+    "description": "Anforderungen in Umsetzung und Abnahme übersetzen, Beteiligte gezielt einbeziehen und Projektrisiken mit Verantwortung und Maßnahmen bearbeiten.",
+    "domain": "GA1",
+    "groupId": "ga1-13",
+    "groupLabel": "Projekt- & Qualitätsmanagement",
+    "itemId": "ga1-13__1",
+    "week": "Woche 11 · KW 45",
+    "estimatedMinutes": 32,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "dokumente",
+      "stakeholder",
+      "risiko"
+    ],
+    "sources": [
+      "projekt-ihk-lasten",
+      "projekt-ihk-pflichten",
+      "projekt-pmi-stakeholder",
+      "projekt-pmi-risiken"
+    ],
+    "contentHash": "61fc47a0136d37f7abc10ba2dc4d902aab9de1e5a177c59fe3c89bdc0a7e524f",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "osi-model",
     "slug": "osi-model",
     "title": "Das OSI-Schichtenmodell sicher anwenden",
