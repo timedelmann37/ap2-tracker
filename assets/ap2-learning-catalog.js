@@ -7764,6 +7764,39 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "mutterschutz-elternzeit-pflegezeit-unterscheiden",
+    "slug": "mutterschutz-elternzeit-pflegezeit-unterscheiden",
+    "title": "Mutterschutz, Elternzeit und Pflegezeit unterscheiden",
+    "description": "Schutzmaßnahmen, Elternzeit-Anmeldung und akute oder längere Pflegefreistellung anhand eigener IT-Betriebsfälle prüfen.",
+    "domain": "WiSo",
+    "groupId": "wiso-2",
+    "groupLabel": "W2 · Arbeitsrecht I",
+    "itemId": "wiso-2__7",
+    "week": "KW 36",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "mutterschutz",
+      "elternzeit",
+      "pflegezeit"
+    ],
+    "sources": [
+      "familie-schutz",
+      "familie-beurteilung",
+      "familie-eltern-anspruch",
+      "familie-eltern-anmeldung",
+      "familie-uebergang",
+      "familie-eltern-portal",
+      "familie-akut",
+      "familie-pflege",
+      "familie-pflegedauer"
+    ],
+    "contentHash": "090d2e4ae288e5b3f263d616a4b92f3263935aefdd24e31ef948ecadbd424993",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "company-goals",
     "slug": "company-goals",
     "title": "Unternehmensziele und Zielkonflikte sicher abwägen",
