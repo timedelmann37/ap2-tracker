@@ -7704,6 +7704,37 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "bundesurlaubsgesetz-mindesturlaub-uebertragung-abgeltung",
+    "slug": "bundesurlaubsgesetz-mindesturlaub-uebertragung-abgeltung",
+    "title": "Bundesurlaubsgesetz: Mindesturlaub, Übertragung und Abgeltung",
+    "description": "Urlaubstage bei festen Wochenarbeitstagen berechnen, Fristen mit Arbeitgebermitwirkung prüfen und Abgeltung von bezahltem Urlaub unterscheiden.",
+    "domain": "WiSo",
+    "groupId": "wiso-2",
+    "groupLabel": "W2 · Arbeitsrecht I",
+    "itemId": "wiso-2__5",
+    "week": "KW 36",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "umfang",
+      "uebertragung",
+      "abgeltung"
+    ],
+    "sources": [
+      "urlaub-anspruch",
+      "urlaub-dauer",
+      "urlaub-wartezeit",
+      "urlaub-teilurlaub",
+      "urlaub-zeitpunkt",
+      "urlaub-mitwirkung",
+      "urlaub-umrechnung"
+    ],
+    "contentHash": "a2b82b496f3b5154c130885d1a4194a3d4c7fc99da1181b8ef476300fbcea3c9",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "company-goals",
     "slug": "company-goals",
     "title": "Unternehmensziele und Zielkonflikte sicher abwägen",
