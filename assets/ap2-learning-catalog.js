@@ -4314,6 +4314,33 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "netzplan-zeiten-kritischer-pfad-und-puffer",
+    "slug": "netzplan-zeiten-kritischer-pfad-und-puffer",
+    "title": "Netzplan: Zeiten, kritischer Pfad und Puffer",
+    "description": "Einen eigenen IT-Pilotnetzplan vorwärts und rückwärts rechnen, den kritischen Pfad erkennen und Gesamt- vom freien Puffer unterscheiden.",
+    "domain": "GA1",
+    "groupId": "ga1-13",
+    "groupLabel": "Projekt- & Qualitätsmanagement",
+    "itemId": "ga1-13__2",
+    "week": "Woche 11 · KW 45",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "zeiten",
+      "kritisch",
+      "puffer"
+    ],
+    "sources": [
+      "netzplan-gao-zeiten",
+      "netzplan-oracle-cpm",
+      "netzplan-oracle-float"
+    ],
+    "contentHash": "4f0e8b3bac1e591e4bc8128db0afa204ecf7ed34456f116622cf8962bbbf2864",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "osi-model",
     "slug": "osi-model",
     "title": "Das OSI-Schichtenmodell sicher anwenden",
