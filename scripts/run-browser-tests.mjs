@@ -163,6 +163,7 @@ async function runFullSuite() {
   await import('./verify-workplace-access-browser.mjs');
   await import('./verify-storage-units-browser.mjs');
   await import('./verify-transfer-duration-browser.mjs');
+  await import('./verify-raid-calculation-browser.mjs');
   useSignedInFixture = false;
   await import('./verify-space-browser.mjs');
 }
@@ -222,6 +223,9 @@ try {
   } else if (process.env.AP2_BROWSER_ONLY === 'transfer-duration') {
     useSignedInFixture = true;
     await import('./verify-transfer-duration-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'raid-calculation') {
+    useSignedInFixture = true;
+    await import('./verify-raid-calculation-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'workplace-access') {
     useSignedInFixture = true;
     await import('./verify-workplace-access-browser.mjs');

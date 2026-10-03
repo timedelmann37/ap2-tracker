@@ -1,0 +1,339 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "raid-kapazitaet-plattenanzahl-iops-rechnen",
+    "slug": "raid-kapazitaet-plattenanzahl-iops-rechnen",
+    "title": "RAID-Kapazität und IOPS zusammen rechnen",
+    "description": "Nutzkapazität, aktive Laufwerke und Hot-Spare unterscheiden; Plattenzahl nach Kapazität und gewichteter I/O-Last ableiten.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-11",
+    "groupLabel": "Rechnen und Prüfungstechnik",
+    "itemId": "ga1-11__3",
+    "week": "parallel",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "sources": [
+      "raidcalc-rhel",
+      "raidcalc-ibm"
+    ],
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "kapazitaet",
+      "label": "RAID-Nutzkapazität ohne Hot-Spare berechnen"
+    },
+    {
+      "id": "anzahl",
+      "label": "Mindestanzahl aktiver Laufwerke aufrunden"
+    },
+    {
+      "id": "iops",
+      "label": "Backend-IOPS mit Lese-/Schreibanteil berechnen"
+    },
+    {
+      "id": "grenzen",
+      "label": "Kapazitäts- und I/O-Grenze getrennt prüfen"
+    }
+  ],
+  "intro": "Die fiktive Firma Talwerk plant einen gesunden RAID-6-Verbund für mindestens 19 TB vor Dateisystem und Betriebsreserve. Gleiche Laufwerke haben je 4 TB und im vorgegebenen Lastprofil je 160 Backend-IOPS. Die Anwendung benötigt 600 IOPS, davon 75 % Lesen und 25 % kleine zufällige Updates. Ein separater Hot-Spare ist vorgesehen. Du prüfst zuerst Kapazität, dann I/O-Budget. Alle Zahlen sind eigene Modellwerte, keine Hardwaremessungen.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "raidcalc-rhel",
+        "sourceLocator": "Chapter 16, section 16.3, RAID levels 1, 5, 6 and 10",
+        "use": "Kapazitätsprinzipien und Grenzen implementationsabhängiger RAID-10-Layouts",
+        "reviewStatus": "Direkt gelesen 03.10.2026; Linux-md-Sonderlayouts nicht pauschal ausgeschlossen"
+      },
+      {
+        "sourceId": "raidcalc-ibm",
+        "sourceLocator": "Section 4.7, printed pages 78–79, table 4-3",
+        "use": "Kleine zufällige Read-Modify-Write-Updates und Backend-Faktoren; Modellgrenzen",
+        "reviewStatus": "Direkt gelesen 03.10.2026; keine DS8900F-Leistungs- oder Kapazitätszusage übertragen"
+      }
+    ],
+    "notes": [
+      "CURATED_DRAFT bis zur menschlichen Fachfreigabe.",
+      "Privater Themenanker europa-integratoren-2026:00200, Zeilen 2001–2015 gelesen: Kapazität und RAID/Backup-Abgrenzung. Keine Originalzahlen, Aufgaben oder Grafik übernommen.",
+      "Eigene Rechnungen. Gesunder Verbund, gleichmäßige Verteilung, konstantes gegebenes Einzelbudget, kleine zufällige Updates, keine Cache-Hits/Full-Stripe-Writes/Hintergrundlast. RAID 10 hier klassische Zweifach-Spiegelpaare.",
+      "Bestehender Refero-Lock bleibt Target; gemeinsame Widgets, drei MathML-Formeln und zwei technische SVG-Prüfwege."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "kapazitaet",
+      "type": "flow",
+      "title": "Kapazität bestimmt die erste Grenze",
+      "description": "Eigene Modellrechnung ohne Dateisystem- und Betriebsreserve.",
+      "items": [
+        {
+          "label": "Anforderung",
+          "detail": "Mindestens 19 TB, je Laufwerk 4 TB"
+        },
+        {
+          "label": "Aktive RAID-6-Laufwerke",
+          "detail": "Aufrunden: 19 ÷ 4, danach + 2 → 7"
+        },
+        {
+          "label": "Nutzkapazität prüfen",
+          "detail": "(7 − 2) × 4 TB = 20 TB"
+        },
+        {
+          "label": "Hot-Spare separat",
+          "detail": "7 aktive + 1 Reserve = 8 physische"
+        }
+      ]
+    },
+    {
+      "id": "iops",
+      "type": "flow",
+      "title": "IOPS ergeben eine zweite Grenze",
+      "description": "Kapazitätsentscheidung allein genügt nicht im eigenen Modell.",
+      "items": [
+        {
+          "label": "Anwendung",
+          "detail": "600 IOPS: 450 Reads + 150 Writes"
+        },
+        {
+          "label": "Backend-Arbeit",
+          "detail": "450 + 150 × 6 = 1 350 IOPS"
+        },
+        {
+          "label": "Aktive Anzahl",
+          "detail": "1 350 ÷ 160 aufrunden → 9"
+        },
+        {
+          "label": "Beide Grenzen",
+          "detail": "Maximalwert 9 aktive + 1 Spare = 10"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Diagnose: Reserve ist kein Nutzlaufwerk",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "raidcalc-diagnose",
+          "question": "Acht physische Laufwerke, davon eines als separater Hot-Spare: Mit welcher Anzahl rechnest du die normale RAID-6-Kapazität?",
+          "options": [
+            {
+              "text": "Mit acht; ein Hot-Spare speichert immer Nutzdaten.",
+              "rationale": "Ein separater Hot-Spare ist im gesunden Verbund kein aktives Mitglied.",
+              "correct": false
+            },
+            {
+              "text": "Mit sieben aktiven Laufwerken.",
+              "rationale": "Die Reserve zählt nicht zur normalen Nutzkapazität.",
+              "correct": true
+            },
+            {
+              "text": "Mit sechs; RAID 6 bedeutet sechs Laufwerke.",
+              "rationale": "Die RAID-Stufe gibt nicht die Laufwerksanzahl vor.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Kapazitätsmodell festlegen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Hier sind **n die aktiven Laufwerke**, C die gleiche Laufwerksgröße und U die rechnerische Nutzkapazität. Ein separater Hot-Spare steht außerhalb von n. Die Werte sind dezimale TB, vor Dateisystem, Controller-Metadaten und zusätzlicher Betriebsreserve.\n\n| Vereinbartes Layout | Rechnerische Nutzkapazität | Mindestzahl im klassischen Modell |\n|---|---|---|\n| RAID 0, gleiche Laufwerke | n × C | 2 |\n| RAID 1, Spiegel aller Mitglieder | C | 2 |\n| RAID 5 | (n − 1) × C | 3 |\n| RAID 6 | (n − 2) × C | 4 |\n| RAID 10, Zweifach-Spiegelpaare | n ÷ 2 × C | 4, gerade Anzahl |\n\nBei ungleichen Größen und speziellen Layouts ist die konkrete Implementierung zu prüfen. RAID 10 meint hier ausdrücklich klassische Spiegelpaare; Linux-md erlaubt auch andere Kopien-/Verteilungsmodelle. RAID 5/6 verteilen Parität: Der Abzug beschreibt Kapazitätsanteile, nicht dedizierte Paritätsplatten. RAID ist weiterhin kein Backup. Grundlagen: [RAID-Auswahl](/lernen/raid/)."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Nutzkapazität RAID sechs ist Anzahl aktiver Laufwerke minus zwei mal Laufwerksgröße",
+          "mathml": "<math display=\"block\"><mrow><mi>U</mi><mo>=</mo><mo>(</mo><mi>n</mi><mo>−</mo><mn>2</mn><mo>)</mo><mo>·</mo><mi>C</mi></mrow></math>",
+          "legend": [
+            "U = Kapazität vor weiteren Abzügen",
+            "n = aktive Laufwerke ohne separaten Spare",
+            "C = gleiche Laufwerksgröße"
+          ]
+        },
+        {
+          "type": "numeric",
+          "id": "raidcalc-kapazitaet",
+          "prompt": "Sieben aktive Laufwerke zu je 4 TB im RAID 6; ein weiterer separater Hot-Spare. Nutzkapazität vor Zusatzabzügen in TB?",
+          "expected": 20,
+          "tolerance": 0.000001,
+          "label": "Ergebnis in TB",
+          "placeholder": "Zahl ohne Einheit eingeben",
+          "correctFeedback": "(7 − 2) × 4 = 20 TB. Der separate Spare vergrößert U nicht.",
+          "wrongFeedback": "Nur sieben Laufwerke sind aktiv. Für RAID 6 zwei Kapazitätsanteile abziehen.",
+          "requiredObjective": "kapazitaet"
+        }
+      ]
+    },
+    {
+      "title": "Benötigte Laufwerke: nach oben, nicht kaufmännisch",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**Talwerk-Fall:** Mindestens 19 TB bei 4 TB je Laufwerk. 19 ÷ 4 = 4,75 Nutzanteile; diese werden auf fünf aufgerundet. RAID 6 benötigt zwei weitere Anteile: **sieben aktive Laufwerke**. Kontrolle: (7 − 2) × 4 = 20 TB; sechs aktive ergäben nur 16 TB. Mit separatem Hot-Spare sind es zunächst acht physische Laufwerke.\n\nFür RAID 5 gilt entsprechend aufrunden(U/C) + 1 und mindestens drei. Für klassische RAID-10-Spiegelpaare gilt 2 × aufrunden(U/C), mindestens vier; so bleibt die Anzahl gerade. Für RAID 1 schafft eine zusätzliche Spiegelkopie keine zusätzliche Nutzkapazität. Alle Regeln gelten im vereinbarten Layout, nicht als universelle Controller-Konfiguration."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Mindestzahl aktiver RAID sechs Laufwerke ist das Maximum aus vier und aufgerundeter Zielkapazität durch Laufwerksgröße plus zwei",
+          "mathml": "<math display=\"block\"><mrow><msub><mi>n</mi><mtext>min</mtext></msub><mo>=</mo><mi>max</mi><mo>(</mo><mn>4</mn><mo>,</mo><mo>⌈</mo><mfrac><mi>U</mi><mi>C</mi></mfrac><mo>⌉</mo><mo>+</mo><mn>2</mn><mo>)</mo></mrow></math>",
+          "legend": [
+            "⌈x⌉ = immer zur nächsten ganzen Zahl aufrunden",
+            "Mindestanzahl und Spare anschließend prüfen"
+          ]
+        },
+        {
+          "type": "figure",
+          "diagramId": "kapazitaet",
+          "alt": "19 TB durch 4 TB aufrunden und zwei RAID-6-Anteile addieren ergibt sieben aktive Laufwerke; ein Spare kommt separat dazu.",
+          "caption": "Kapazitätsbedarf und physische Beschaffung sind verschiedene Größen."
+        },
+        {
+          "type": "numeric",
+          "id": "raidcalc-anzahl",
+          "prompt": "Eigenes neues Ziel: mindestens 25 TB, gleiche 6-TB-Laufwerke, RAID 6, keine Reserve im Ziel. Wie viele aktive Laufwerke mindestens?",
+          "expected": 7,
+          "tolerance": 0.000001,
+          "label": "Aktive Laufwerke",
+          "placeholder": "Zahl ohne Einheit eingeben",
+          "correctFeedback": "25 ÷ 6 = 4,166…; aufrunden auf 5 und 2 addieren: 7 aktive. Kontrolle: 30 TB.",
+          "wrongFeedback": "Nicht auf vier abrunden. Erst erforderliche Nutzanteile aufrunden, dann zwei Paritätsanteile ergänzen.",
+          "requiredObjective": "anzahl"
+        }
+      ]
+    },
+    {
+      "title": "Write Penalty zählt Arbeit, nicht Sekunden",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Im vereinfachten Modell kleiner zufälliger Updates zählt ein Read einen Backend-I/O. Schreiben zählt mit **P**: RAID 0 P=1, Zweifach-Spiegelung RAID 1/10 P=2, RAID 5 Read-Modify-Write P=4, RAID 6 Read-Modify-Write P=6. Diese Faktoren sind kein universeller Geschwindigkeits- oder Latenzfaktor. Cache, Full-Stripe-Writes und reale Controller ändern die Arbeit.\n\n**Eigene Lastrechnung:** 600 Anwendungs-IOPS, 75 % Reads und 25 % Writes ergeben 450 Reads und 150 Writes. Im RAID-6-Modell: 450 + 150 × 6 = **1 350 Backend-IOPS**. Nicht alle Aufträge werden mit sechs multipliziert. Vertiefung: [Write Penalty](/lernen/write-penalty-raid-level-auswirkung-auf-iops/)."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Host-IOPS-Budget ist aktive Laufwerkszahl mal Einzel-IOPS geteilt durch Leseanteil plus Schreibanteil mal Write Penalty",
+          "mathml": "<math display=\"block\"><mrow><msub><mi>I</mi><mtext>host</mtext></msub><mo>=</mo><mfrac><mrow><mi>n</mi><mo>·</mo><msub><mi>I</mi><mtext>disk</mtext></msub></mrow><mrow><mi>r</mi><mo>+</mo><mi>w</mi><mo>·</mo><mi>P</mi></mrow></mfrac></mrow></math>",
+          "legend": [
+            "r + w = 1; beispielsweise 0,75 + 0,25",
+            "Idisk = gegebenes Backend-Budget je aktivem Laufwerk",
+            "P gilt nur für Writes; gesundes, gleichmäßig belastetes Modell"
+          ]
+        },
+        {
+          "type": "numeric",
+          "id": "raidcalc-iops",
+          "prompt": "Talwerk benötigt 600 Host-IOPS: 75 % Reads und 25 % Writes, RAID-6-Modell P=6. Benötigte Backend-IOPS?",
+          "expected": 1350,
+          "tolerance": 0.000001,
+          "label": "Backend-IOPS",
+          "placeholder": "Zahl ohne Einheit eingeben",
+          "correctFeedback": "450 Reads + 150 × 6 Writes = 1 350 Backend-IOPS.",
+          "wrongFeedback": "Berechne 600 × 0,75 + 600 × 0,25 × 6. Nur Writes tragen P=6.",
+          "requiredObjective": "iops"
+        }
+      ]
+    },
+    {
+      "title": "Beide Grenzen zusammenführen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Acht aktive Laufwerke mit je 160 Backend-IOPS liefern modellhaft 1 280 Backend-IOPS. Der gewichtete Faktor ist 0,75 + 0,25 × 6 = 2,25. Damit sind 1 280 ÷ 2,25 ≈ **568,89 Host-IOPS** möglich: weniger als geforderte 600.\n\nFür das I/O-Budget: 1 350 ÷ 160 = 8,4375, aufgerundet **neun aktive Laufwerke**. Kapazität verlangt sieben, I/O neun. Der größere Bedarf ist maßgeblich: neun aktive plus ein separater Spare = **zehn physische Laufwerke**. RAID-6-Modellkapazität: (9 − 2) × 4 = 28 TB. Das Budget von 1 440 Backend-IOPS übertrifft 1 350 nur knapp; eine gesonderte Betriebsreserve ist damit nicht nachgewiesen.\n\nDas ist eine Rechenlösung, keine Beschaffungsfreigabe. Slot-/Controllergrenzen, reale Lastprofile, Blockgröße, Queue Depth, Latenzziel, Cachezustand, Rebuild und Betriebsreserve müssen separat geprüft werden. Der Standby-Spare liefert im gesunden Verbund kein reguläres I/O-Budget."
+        },
+        {
+          "type": "figure",
+          "diagramId": "iops",
+          "alt": "600 Host-IOPS erzeugen 1350 Backend-IOPS; neun aktive Laufwerke werden benötigt. Plus Spare ergibt zehn physische Laufwerke.",
+          "caption": "Der größere aktive Bedarf entscheidet; Spare und reale Reserven bleiben getrennt."
+        },
+        {
+          "type": "numeric",
+          "id": "raidcalc-budget",
+          "prompt": "Bei 1 350 benötigten Backend-IOPS und vorgegebenen 160 IOPS je aktivem Laufwerk: mindestens wie viele aktive Laufwerke, nur nach diesem Budget?",
+          "expected": 9,
+          "tolerance": 0.000001,
+          "label": "Aktive Laufwerke",
+          "placeholder": "Zahl ohne Einheit eingeben",
+          "correctFeedback": "1 350 ÷ 160 = 8,4375; aufgerundet 9. Acht reichen im Modell nicht.",
+          "wrongFeedback": "Teile Backend-Bedarf durch das Einzelbudget und runde immer nach oben."
+        },
+        {
+          "type": "quiz",
+          "id": "raidcalc-grenzen",
+          "question": "Neun aktive Laufwerke erfüllen beide Talwerk-Rechenbedingungen. Was folgt?",
+          "options": [
+            {
+              "text": "Das Modell erfüllt Kapazität und I/O; reale Reserve, Latenz und Rebuild separat prüfen.",
+              "rationale": "Rechnerisches Budget ist kein Mess- oder Betriebsnachweis.",
+              "correct": true
+            },
+            {
+              "text": "Der Spare liefert im gesunden Verbund zusätzlich 160 reguläre IOPS.",
+              "rationale": "Der separate Spare ist kein aktives Nutzlaufwerk.",
+              "correct": false
+            },
+            {
+              "text": "Die Formel garantiert 600 IOPS bei jeder Last und beim Rebuild.",
+              "rationale": "Das Modell schließt diese Betriebszustände ausdrücklich nicht ein.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "grenzen"
+        },
+        {
+          "type": "recall",
+          "id": "raidcalc-transfer",
+          "prompt": "Schreibe Talwerk eine kurze Rechennotiz: Kapazitätsbedarf, I/O-Bedarf, gewählte aktive Zahl, separater Spare und Grenzen der Aussage. Warum genügt die erste Kapazitätsrechnung nicht?",
+          "minLength": 140,
+          "model": "19 TB bei 4 TB je Platte brauchen im RAID 6 mindestens sieben aktive Laufwerke. 600 Host-IOPS mit 75 % Lesen und 25 % Schreiben erzeugen bei P=6 insgesamt 1350 Backend-IOPS. Bei 160 IOPS pro Laufwerk sind mindestens neun aktive nötig. Ich nehme den größeren Bedarf; plus separater Spare ergeben sich zehn physische Laufwerke und rechnerisch 28 TB. Die knappe I/O-Reserve ersetzt keine Messung, kein Latenzziel und keine Rebuild-/Betriebsreserve."
+        }
+      ]
+    },
+    {
+      "title": "Abruftraining",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "id": "raidcalc-cards",
+          "cards": [
+            {
+              "id": "spare",
+              "label": "RAID-Rechnen",
+              "front": "Was zählt n?",
+              "back": "Aktive RAID-Mitglieder, nicht den separaten Hot-Spare."
+            },
+            {
+              "id": "aufrunden",
+              "label": "RAID-Rechnen",
+              "front": "Wie wird eine Mindestanzahl gerundet?",
+              "back": "Immer nach oben; danach Layout- und Mindestzahl prüfen."
+            },
+            {
+              "id": "writes",
+              "label": "RAID-Rechnen",
+              "front": "Worauf wirkt Write Penalty?",
+              "back": "Auf die Schreibaufträge im vereinbarten Modell, nicht auf alle IOPS."
+            },
+            {
+              "id": "bedarf",
+              "label": "RAID-Rechnen",
+              "front": "Welche aktive Anzahl entscheidet?",
+              "back": "Die größere aus Kapazitäts- und I/O-Bedarf; weitere Anforderungen separat prüfen."
+            },
+            {
+              "id": "messung",
+              "label": "RAID-Rechnen",
+              "front": "Was fehlt einer Formel als Leistungsnachweis?",
+              "back": "Repräsentative Messung samt Latenzziel, Betriebszustand und Reserve."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
