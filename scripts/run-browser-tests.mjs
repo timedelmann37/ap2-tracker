@@ -220,6 +220,7 @@ async function runFullSuite() {
   await import('./verify-bgm-browser.mjs');
   await import('./verify-kuendigungsarten-browser.mjs');
   await import('./verify-kuendigungsgruende-browser.mjs');
+  await import('./verify-kuendigungsfristen-browser.mjs');
   await import('./verify-maternity-periods-browser.mjs');
   await import('./verify-contract-types-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
@@ -328,6 +329,9 @@ try {
   } else if (process.env.AP2_BROWSER_ONLY === 'maternity-periods') {
     useSignedInFixture = true;
     await import('./verify-maternity-periods-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'kuendigungsfristen') {
+    useSignedInFixture = true;
+    await import('./verify-kuendigungsfristen-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'kuendigungsgruende') {
     useSignedInFixture = true;
     await import('./verify-kuendigungsgruende-browser.mjs');
