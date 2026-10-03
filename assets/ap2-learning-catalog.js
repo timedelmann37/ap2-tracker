@@ -7797,6 +7797,33 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "mutterschutzfristen-vor-nach-geburt-verlaengerung",
+    "slug": "mutterschutzfristen-vor-nach-geburt-verlaengerung",
+    "title": "Mutterschutzfristen: sechs Wochen davor, acht oder zwölf danach",
+    "description": "Arbeitsbereitschaft und Widerruf vor der Geburt, Beschäftigungsverbot danach und Verlängerungen mit eigenen Fällen und Kalenderdauer-Rechnung prüfen.",
+    "domain": "WiSo",
+    "groupId": "wiso-2",
+    "groupLabel": "W2 · Arbeitsrecht I",
+    "itemId": "wiso-2__8",
+    "week": "KW 36",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "vor",
+      "nach",
+      "verlaengerung"
+    ],
+    "sources": [
+      "fristen-gesetz",
+      "fristen-portal",
+      "fristen-bioeg"
+    ],
+    "contentHash": "83b24fa13ab06c7924c033fbe413d07acfa6693fa87ee49a44b4927323b3bea3",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "company-goals",
     "slug": "company-goals",
     "title": "Unternehmensziele und Zielkonflikte sicher abwägen",
