@@ -7526,6 +7526,34 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "arbeitszeugnis-einfach-qualifiziert-zeugnissprache",
+    "slug": "arbeitszeugnis-einfach-qualifiziert-zeugnissprache",
+    "title": "Arbeitszeugnis: Inhalt, Beurteilung und klare Sprache",
+    "description": "Einfaches und qualifiziertes Zeugnis unterscheiden, Ausbildungszeugnisse abgrenzen und eigene IT-Beispiele sachlich auf Vollständigkeit und Zeugnissprache prüfen.",
+    "domain": "WiSo",
+    "groupId": "wiso-1",
+    "groupLabel": "W1 · Berufsbildung und Arbeitswelt",
+    "itemId": "wiso-1__13",
+    "week": "KW 35",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "inhalt",
+      "sprache",
+      "pruefung"
+    ],
+    "sources": [
+      "zeug-bgb-form",
+      "zeug-gewo",
+      "zeug-bbig",
+      "zeug-bag"
+    ],
+    "contentHash": "48f99bbdeb78ffa92988c28164f154fb76cea7c5c2dc589a0235a1225eb981c8",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "company-goals",
     "slug": "company-goals",
     "title": "Unternehmensziele und Zielkonflikte sicher abwägen",
