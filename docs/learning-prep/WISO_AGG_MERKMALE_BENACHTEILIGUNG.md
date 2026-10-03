@@ -19,4 +19,3 @@ EUROPA-Quellenpaket im Hauptcheckout: AGG-Frage Zeile 5750 nur Themenanker, kein
 
 ## Lieferung
 Nur beabsichtigte Änderungen lokal gesichert. Kein Push, keine Veröffentlichung. Refero-Skill: vorhandene Referenzbindung und Lernkomponenten beibehalten, keine neue Seitenrichtung.
-
