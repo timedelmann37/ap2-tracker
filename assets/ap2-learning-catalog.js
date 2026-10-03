@@ -7222,6 +7222,35 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "ausbildereignung-persoenlich-fachlich-aevo",
+    "slug": "ausbildereignung-persoenlich-fachlich-aevo",
+    "title": "Ausbildereignung: Person, Berufspraxis und AEVO",
+    "description": "Persönliche und fachliche Eignung prüfen, AEVO-Nachweise einordnen und Funktionstitel von Voraussetzungen trennen.",
+    "domain": "WiSo",
+    "groupId": "wiso-1",
+    "groupLabel": "W1 · Berufsbildung und Arbeitswelt",
+    "itemId": "wiso-1__3",
+    "week": "KW 35",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "person",
+      "fach",
+      "nachweis"
+    ],
+    "sources": [
+      "eignung-bbig-rollen",
+      "eignung-bbig-person",
+      "eignung-bbig-fach",
+      "eignung-aevo",
+      "eignung-ihk-rheinneckar"
+    ],
+    "contentHash": "68f433acbb25c5a09c6737874d10da5f214ca4dd85f937a5b60f903eff4c5559",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "company-goals",
     "slug": "company-goals",
     "title": "Unternehmensziele und Zielkonflikte sicher abwägen",

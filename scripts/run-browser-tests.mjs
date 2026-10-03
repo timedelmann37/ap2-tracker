@@ -195,6 +195,7 @@ async function runFullSuite() {
   await import('./verify-training-contract-browser.mjs');
   await import('./verify-invalid-clauses-browser.mjs');
   await import('./verify-training-duties-browser.mjs');
+  await import('./verify-trainer-qualification-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
   await import('./verify-scenario-link-browser.mjs');
   await import('./verify-working-units-browser.mjs');
@@ -262,6 +263,9 @@ try {
   } else if (process.env.AP2_BROWSER_ONLY === 'raid-calculation') {
     useSignedInFixture = true;
     await import('./verify-raid-calculation-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'trainer-qualification') {
+    useSignedInFixture = true;
+    await import('./verify-trainer-qualification-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'training-duties') {
     useSignedInFixture = true;
     await import('./verify-training-duties-browser.mjs');
