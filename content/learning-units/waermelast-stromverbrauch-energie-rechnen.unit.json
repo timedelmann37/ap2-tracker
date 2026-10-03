@@ -1,0 +1,344 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "waermelast-stromverbrauch-energie-rechnen",
+    "slug": "waermelast-stromverbrauch-energie-rechnen",
+    "title": "Wärmelast und Stromverbrauch rechnen",
+    "description": "Leistung, Energie und Kosten unterscheiden und Raumwärme ohne doppelte USV-Verluste bilanzieren.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-11",
+    "groupLabel": "Rechnen und Prüfungstechnik",
+    "itemId": "ga1-11__8",
+    "week": "parallel",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": [
+      "heatcalc-eia",
+      "heatcalc-intel",
+      "heatcalc-energy"
+    ],
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "energie",
+      "label": "Konstantlast in Jahresenergie umrechnen"
+    },
+    {
+      "id": "kosten",
+      "label": "Verbrauchsabhängige Kosten berechnen"
+    },
+    {
+      "id": "waerme",
+      "label": "Wärmebilanz ohne Doppelzählung aufstellen"
+    },
+    {
+      "id": "grenze",
+      "label": "Kühlleistung und elektrische Aufnahme unterscheiden"
+    }
+  ],
+  "intro": "Das fiktive Rechenzimmer Nord betreibt eine USV mit 800 W gemessener elektrischer Eingangsleistung und 720 W Ausgang zur IT. Zusätzlich laufen 100 W Beleuchtung. Alle Werte bleiben im eigenen Modell 24 Stunden an 365 Tagen konstant. Vorgegebener Rechenpreis: 0,30 €/kWh, kein aktueller Tarif. Kühlanlage und weitere Verbraucher liegen außerhalb der betrachteten Stromgrenze.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "heatcalc-eia",
+        "sourceLocator": "Electricity use over time is measured in Watthours",
+        "use": "W, kW und kWh unterscheiden",
+        "reviewStatus": "Direkt gelesen 03.10.2026; Zahlen und Übungen eigenständig"
+      },
+      {
+        "sourceId": "heatcalc-intel",
+        "sourceLocator": "Understanding Heat Output Calculation; Steps 2–3",
+        "use": "Elektrische Aufnahme und Wärme; Faktor 3,41214",
+        "reviewStatus": "Direkt gelesen 03.10.2026; Zahlen und Übungen eigenständig"
+      },
+      {
+        "sourceId": "heatcalc-energy",
+        "sourceLocator": "Running costs",
+        "use": "Energie mal Preis",
+        "reviewStatus": "Direkt gelesen 03.10.2026; Zahlen und Übungen eigenständig"
+      }
+    ],
+    "notes": [
+      "CURATED_DRAFT bis menschliche Fachfreigabe.",
+      "Privater Themenanker europa-integratoren-2026:00451, Zeilen 4494–4500: wirtschaftlicher Nutzen geringeren Stromverbrauchs; nur Themenanker, keine Formelquelle.",
+      "Konstante Last, 365 Tage, keine Batterieladung oder Energiespeicherung und vollständige Wärmeabgabe im Raum sind explizite Modellannahmen.",
+      "Bestehender Refero-Deep-Space-Lock: gemeinsame Widgets, technische SVG und semantische MathML."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "energie",
+      "type": "flow",
+      "title": "Von Watt zu Jahreskosten",
+      "description": "Eigene Fallwerte, Kühlung nicht enthalten.",
+      "items": [
+        {
+          "label": "Messgrenze",
+          "detail": "800 W USV + 100 W Licht = 900 W"
+        },
+        {
+          "label": "Betriebszeit",
+          "detail": "24 × 365 = 8760 Stunden"
+        },
+        {
+          "label": "Energie",
+          "detail": "0,9 kW × 8760 h = 7884 kWh"
+        },
+        {
+          "label": "Variable Kosten",
+          "detail": "7884 × 0,30 = 2365,20 Euro"
+        }
+      ]
+    },
+    {
+      "id": "waerme",
+      "type": "flow",
+      "title": "Wärme nur einmal zählen",
+      "description": "Stationär: keine Batterie lädt oder entlädt.",
+      "items": [
+        {
+          "label": "USV-Eingang",
+          "detail": "800 W enthalten bereits die IT-Leistung"
+        },
+        {
+          "label": "Aufteilung",
+          "detail": "720 W IT + 80 W USV-Verlust"
+        },
+        {
+          "label": "Licht hinzufügen",
+          "detail": "720 + 80 + 100 = 900 W Wärme"
+        },
+        {
+          "label": "Grenze beachten",
+          "detail": "Kühlstrom und weitere Lasten separat"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Diagnose: Leistung ist keine Energie",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "heatcalc-diagnose",
+          "question": "Ein Messgerät zeigt momentan 900 W. Was ist daraus allein bekannt?",
+          "options": [
+            {
+              "text": "Die momentane Leistung, nicht der Jahresverbrauch.",
+              "rationale": "Für Energie fehlt die Betriebszeit beziehungsweise der Lastverlauf.",
+              "correct": true
+            },
+            {
+              "text": "Der Jahresverbrauch beträgt 900 kWh.",
+              "rationale": "W und kWh beschreiben unterschiedliche Größen.",
+              "correct": false
+            },
+            {
+              "text": "Die Kosten betragen 900 Euro.",
+              "rationale": "Betriebszeit und Preis fehlen.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Zeit und Messgrenze festlegen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**900 W = 0,9 kW** liegen an der Grenze USV-Eingang plus Beleuchtung an. Die 720 W IT werden nicht zusätzlich addiert: Sie stecken bereits in den 800 W am USV-Eingang. Bei konstantem Betrieb sind **24 × 365 = 8760 h** vorgegeben. Daraus folgen **7884 kWh** im Modelljahr.\n\nW beschreibt Leistung; kWh beschreibt Energie. kW/h wäre hier falsch. Bei wechselnder Last einzelne Zeitabschnitte mit ihrer mittleren Leistung berechnen und deren Energien summieren, oder einen Energiezähler über den Zeitraum auswerten. Eine einzelne Spitzenmessung ist kein verlässlicher Jahresmittelwert; die Netzteil-Nennleistung ebenfalls nicht. Das Modelljahr ist ausdrücklich kein Schaltjahr."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Energie E ist Leistung P mal Betriebszeit t",
+          "mathml": "<math display=\"block\"><mrow><mi>E</mi><mo>=</mo><mi>P</mi><mo>·</mo><mi>t</mi></mrow></math>",
+          "legend": [
+            "P in kW; t in h",
+            "E in kWh, nicht kW/h"
+          ]
+        },
+        {
+          "type": "figure",
+          "diagramId": "energie",
+          "alt": "900 Watt über 8760 Stunden ergeben 7884 Kilowattstunden. Mit dem eigenen Preis 0,30 Euro pro Kilowattstunde entstehen 2365,20 Euro variable Kosten.",
+          "caption": "Konstante Falllast; kein vollständiger Rechenzentrumsverbrauch."
+        },
+        {
+          "type": "numeric",
+          "id": "heatcalc-energie",
+          "prompt": "900 W konstant für 24 × 365 Stunden: Energie in kWh?",
+          "expected": 7884,
+          "tolerance": 0.000001,
+          "label": "Ergebnis ohne Einheit",
+          "placeholder": "Zahl ohne Einheit eingeben",
+          "correctFeedback": "0,9 × 8760 = 7884 kWh.",
+          "wrongFeedback": "W zunächst durch 1000 in kW umrechnen; anschließend mit Stunden multiplizieren.",
+          "requiredObjective": "energie"
+        }
+      ]
+    },
+    {
+      "title": "Kosten mit transparentem Preis",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Mit dem **vorgegebenen Rechenpreis 0,30 €/kWh** kosten 7884 kWh **2365,20 €**. Das sind ausschließlich verbrauchsabhängige Kosten an unserer Messgrenze. Grundpreis, Leistungspreis oder weitere Vertragsbestandteile sind nicht eingerechnet. Der Preis ist kein Marktangebot und keine Tarifempfehlung.\n\nSinkt dieselbe durchgehend gemessene Gesamtlast um 100 W, spart das Modell **0,1 × 8760 = 876 kWh**, entsprechend **262,80 €** im Jahr. Reale Einsparungen hängen vom Lastprofil ab. Kühlstrom kann sich ebenfalls ändern, ist in dieser Rechnung aber nicht enthalten."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Variable Kosten C sind Energie E mal Preis p",
+          "mathml": "<math display=\"block\"><mrow><mi>C</mi><mo>=</mo><mi>E</mi><mo>·</mo><mi>p</mi></mrow></math>",
+          "legend": [
+            "E in kWh; p in Euro je kWh",
+            "C in Euro; ohne Grundpreis"
+          ]
+        },
+        {
+          "type": "numeric",
+          "id": "heatcalc-kosten",
+          "prompt": "7884 kWh zu vorgegebenen 0,30 €/kWh: variable Jahreskosten in Euro?",
+          "expected": 2365.2,
+          "tolerance": 0.000001,
+          "label": "Ergebnis ohne Einheit",
+          "placeholder": "Zahl ohne Einheit eingeben",
+          "correctFeedback": "7884 × 0,30 = 2365,20 €.",
+          "wrongFeedback": "Energie mit Euro je kWh multiplizieren, nicht nochmals mit Betriebsstunden.",
+          "requiredObjective": "kosten"
+        }
+      ]
+    },
+    {
+      "title": "Wärmelast am richtigen Rand bilanzieren",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Im **stationären Modell** lädt oder entlädt die USV-Batterie nicht. Die USV-Verluste ergeben sich aus **800 − 720 = 80 W**. IT, USV und Licht geben ihre aufgenommene Energie hier vollständig als Wärme im Raum ab; kein relevanter Energieexport oder Speicheraufbau ist vorgesehen. Damit entstehen **720 + 80 + 100 = 900 W** Wärmelast. Gleichwertig: **800 + 100 = 900 W**. Falsch wäre 800 + 720 + 80 + 100: dabei werden IT und Verluste doppelt gezählt.\n\nDie 900 W sind thermische Leistung, keine Jahresenergie. Für die Einheit BTU/h: **900 × 3,41214 = 3070,926 BTU/h**, auf zwei Stellen **3070,93 BTU/h**. Der Faktor wird nur zur Umrechnung verwendet, nicht als Wirkungsgrad. Bei extern stehender USV gehört ihre Verlustwärme nicht in diese Raumgrenze."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Raumwärmeleistung Q Punkt ist IT Leistung plus USV Verlustleistung plus Lichtleistung",
+          "mathml": "<math display=\"block\"><mrow><mover><mi>Q</mi><mo>˙</mo></mover><mo>=</mo><msub><mi>P</mi><mtext>IT</mtext></msub><mo>+</mo><msub><mi>P</mi><mtext>Verlust</mtext></msub><mo>+</mo><msub><mi>P</mi><mtext>Licht</mtext></msub></mrow></math>",
+          "legend": [
+            "Alle Summanden in W",
+            "Nur Wärmequellen innerhalb des Raums"
+          ]
+        },
+        {
+          "type": "figure",
+          "diagramId": "waerme",
+          "alt": "800 Watt USV-Eingang teilen sich in 720 Watt IT und 80 Watt Verlust. Mit 100 Watt Licht entstehen stationär 900 Watt Raumwärme.",
+          "caption": "Die Eingangsleistung enthält bereits IT und USV-Verluste."
+        },
+        {
+          "type": "numeric",
+          "id": "heatcalc-waerme",
+          "prompt": "720 W IT, 80 W USV-Verluste und 100 W Licht, alles im Raum: Wärmeleistung in W?",
+          "expected": 900,
+          "tolerance": 0.000001,
+          "label": "Ergebnis ohne Einheit",
+          "placeholder": "Zahl ohne Einheit eingeben",
+          "correctFeedback": "720 + 80 + 100 = 900 W. Die 800 W nicht nochmals addieren.",
+          "wrongFeedback": "Nur disjunkte Wärmequellen addieren; USV-Eingang nicht zusätzlich zur IT zählen.",
+          "requiredObjective": "waerme"
+        },
+        {
+          "type": "numeric",
+          "id": "heatcalc-btu",
+          "prompt": "900 W Wärme × 3,41214: BTU/h auf zwei Nachkommastellen?",
+          "expected": 3070.93,
+          "tolerance": 0.000001,
+          "label": "Ergebnis ohne Einheit",
+          "placeholder": "Zahl ohne Einheit eingeben",
+          "correctFeedback": "3070,926 wird zu 3070,93 BTU/h.",
+          "wrongFeedback": "Mit 3,41214 multiplizieren und erst am Ende auf zwei Stellen runden."
+        }
+      ]
+    },
+    {
+      "title": "Kühlung braucht zusätzliche Angaben",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Eine Kühlanlage mit **900 W thermischer Kühlleistung** nimmt nicht automatisch 900 W elektrisch auf. Für den Kühlstrom fehlen passende Gerätedaten und Betriebsbedingungen. Zusätzlich können Menschen, Sonnenstrahlung, Außenwärme und weitere Geräte Wärme eintragen. Eine reale Auslegung berücksichtigt Spitzen, Luftführung, Standortbedingungen und geeignete Reserven; diese kleine Bilanz ersetzt keine Fachplanung.\n\n[EIA: Leistung und Energie](https://www.eia.gov/energyexplained/electricity/measuring-electricity.php), [Intel: Wärmeumrechnung](https://www.intel.com/content/www/us/en/support/articles/000006784/server-products.html) und [Energy.gov.au: Betriebskosten](https://www.energy.gov.au/households/energy-rating) liefern die Grundlagen. Keine Arbeiten an Netzverdrahtung oder elektrischen Verteilungen selbst durchführen."
+        },
+        {
+          "type": "quiz",
+          "id": "heatcalc-grenze",
+          "question": "900 W Raumwärme wurden berechnet. Welche Entscheidung ist fachlich vertretbar?",
+          "options": [
+            {
+              "text": "Kühlstrom separat anhand geeigneter Daten bestimmen; weitere Wärmequellen und Spitzen prüfen.",
+              "rationale": "Thermische Kühlleistung ist nicht gleich elektrische Aufnahme der Kühlanlage.",
+              "correct": true
+            },
+            {
+              "text": "Exakt 900 W Kühlstrom ohne weitere Angaben hinzufügen.",
+              "rationale": "Für die elektrische Aufnahme fehlen Wirkungsdaten und Betriebsbedingungen.",
+              "correct": false
+            },
+            {
+              "text": "720 W IT nochmals zur gemessenen USV-Eingangsleistung addieren.",
+              "rationale": "Das würde dieselbe Energie doppelt zählen.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "grenze"
+        },
+        {
+          "type": "recall",
+          "id": "heatcalc-transfer",
+          "prompt": "Erkläre Nord die Jahresenergie, Kosten und Wärmebilanz. Benenne Messgrenze, USV-Doppelzählung und die fehlenden Angaben zur Kühlanlage.",
+          "minLength": 140,
+          "model": "800 W USV-Eingang plus 100 W Licht ergeben 900 W. Bei 8760 h sind das 7884 kWh und zum eigenen Preis 2365,20 Euro variable Kosten. Die USV teilt 800 W in 720 W IT und 80 W Verlust. Daher entstehen stationär 900 W Raumwärme, nicht 1700 W. Kühlstrom, zusätzliche Wärmequellen und reale Lastspitzen sind nicht enthalten und müssen separat ermittelt werden."
+        }
+      ]
+    },
+    {
+      "title": "Abruftraining",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "id": "heatcalc-cards",
+          "cards": [
+            {
+              "id": "energie",
+              "label": "Energie & Wärme",
+              "front": "W oder kWh?",
+              "back": "W ist Leistung; kWh ist Energie über eine Zeit."
+            },
+            {
+              "id": "kosten",
+              "label": "Energie & Wärme",
+              "front": "Wie entstehen variable Kosten?",
+              "back": "kWh mit dem vorgegebenen Preis je kWh multiplizieren."
+            },
+            {
+              "id": "waerme",
+              "label": "Energie & Wärme",
+              "front": "USV-Verlust berechnen?",
+              "back": "Stationär Eingang minus Ausgang; hier 80 W."
+            },
+            {
+              "id": "btu",
+              "label": "Energie & Wärme",
+              "front": "Wie W in BTU/h umrechnen?",
+              "back": "Mit 3,41214 multiplizieren."
+            },
+            {
+              "id": "grenze",
+              "label": "Energie & Wärme",
+              "front": "Ist Kühlleistung gleich Kühlstrom?",
+              "back": "Nein. Thermische Leistung und elektrische Aufnahme unterscheiden."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
