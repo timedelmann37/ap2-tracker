@@ -3505,6 +3505,32 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "speichereinheiten-bit-byte-dezimal-binaer",
+    "slug": "speichereinheiten-bit-byte-dezimal-binaer",
+    "title": "Speichereinheiten sicher umrechnen",
+    "description": "Bit und Byte sowie dezimale und binäre Präfixe unterscheiden; Umrechnungen mit Einheiten nachvollziehbar prüfen.",
+    "domain": "GA1",
+    "groupId": "ga1-11",
+    "groupLabel": "Rechnen und Prüfungstechnik",
+    "itemId": "ga1-11__1",
+    "week": "parallel",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "bitbyte",
+      "praefix",
+      "rechnen",
+      "bewerten"
+    ],
+    "sources": [
+      "units-nist"
+    ],
+    "contentHash": "e68834daf5c92c1a5c02d011d4d2226c70c8249a7e1cec5cb9bcdd7b5b900484",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "osi-model",
     "slug": "osi-model",
     "title": "Das OSI-Schichtenmodell sicher anwenden",
