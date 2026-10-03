@@ -4097,6 +4097,33 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "pruefungssimulation-bedingungen-und-protokoll",
+    "slug": "pruefungssimulation-bedingungen-und-protokoll",
+    "title": "Prüfungssimulation vorbereiten und protokollieren",
+    "description": "Vollständige GA1-Durchläufe mit passenden Unterlagen, festem Zeitende und getrennten Übungs- und Auswertungsphasen planen.",
+    "domain": "GA1",
+    "groupId": "ga1-12",
+    "groupLabel": "Prüfungssimulation GA1",
+    "itemId": "ga1-12__0",
+    "week": "parallel",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "vorbereitung",
+      "durchlauf",
+      "protokoll"
+    ],
+    "sources": [
+      "zeit-aka-fisi",
+      "start-ihk-genaulesen",
+      "zeit-ihk-strategie"
+    ],
+    "contentHash": "a3eff79d641d2444fc098f473caa13af234651f71042a48a9960604454d9d882",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "osi-model",
     "slug": "osi-model",
     "title": "Das OSI-Schichtenmodell sicher anwenden",
