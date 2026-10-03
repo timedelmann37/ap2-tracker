@@ -7444,6 +7444,34 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "ausbildungsende-ergebnis-verlaengerung-weiterarbeit",
+    "slug": "ausbildungsende-ergebnis-verlaengerung-weiterarbeit",
+    "title": "Ende der Ausbildung: Ergebnis, Verlängerung und Weiterarbeit",
+    "description": "Enddatum anhand eigener Fälle bestimmen, Nichtbestehen und Verlängerung unterscheiden und Zeugnis sowie Weiterbeschäftigung prüfen.",
+    "domain": "WiSo",
+    "groupId": "wiso-1",
+    "groupLabel": "W1 · Berufsbildung und Arbeitswelt",
+    "itemId": "wiso-1__10",
+    "week": "KW 35",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "zeitpunkt",
+      "verlaengerung",
+      "anschluss"
+    ],
+    "sources": [
+      "ende-bbig-21",
+      "ende-bbig-24",
+      "ende-bbig-16",
+      "ende-ihk-berlin"
+    ],
+    "contentHash": "7781f7ab1b0d14d1e24a8b99af8391a6bd64f3729e552a08e5f502323ec4d8ce",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "company-goals",
     "slug": "company-goals",
     "title": "Unternehmensziele und Zielkonflikte sicher abwägen",

@@ -202,6 +202,7 @@ async function runFullSuite() {
   await import('./verify-adult-trainees-browser.mjs');
   await import('./verify-training-plan-browser.mjs');
   await import('./verify-exam-paths-browser.mjs');
+  await import('./verify-training-end-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
   await import('./verify-scenario-link-browser.mjs');
   await import('./verify-working-units-browser.mjs');
@@ -272,6 +273,9 @@ try {
   } else if (process.env.AP2_BROWSER_ONLY === 'exam-paths') {
     useSignedInFixture = true;
     await import('./verify-exam-paths-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'training-end') {
+    useSignedInFixture = true;
+    await import('./verify-training-end-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'training-plan') {
     useSignedInFixture = true;
     await import('./verify-training-plan-browser.mjs');
