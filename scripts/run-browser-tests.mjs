@@ -169,6 +169,7 @@ async function runFullSuite() {
   await import('./verify-mtbf-mttr-browser.mjs');
   await import('./verify-ups-calculation-browser.mjs');
   await import('./verify-heat-calculation-browser.mjs');
+  await import('./verify-economics-calculation-browser.mjs');
   useSignedInFixture = false;
   await import('./verify-space-browser.mjs');
 }
@@ -231,6 +232,9 @@ try {
   } else if (process.env.AP2_BROWSER_ONLY === 'raid-calculation') {
     useSignedInFixture = true;
     await import('./verify-raid-calculation-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'economics-calculation') {
+    useSignedInFixture = true;
+    await import('./verify-economics-calculation-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'heat-calculation') {
     useSignedInFixture = true;
     await import('./verify-heat-calculation-browser.mjs');
