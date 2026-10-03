@@ -8185,6 +8185,35 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "betriebsuebergang-rechte-unterrichtung-widerspruch",
+    "slug": "betriebsuebergang-rechte-unterrichtung-widerspruch",
+    "title": "Betriebsübergang: Rechte, Unterrichtung und Widerspruch",
+    "description": "Eine übertragene IT-Serviceeinheit erkennen, Vertragskontinuität erklären und Unterrichtung sowie Widerspruch getrennt prüfen.",
+    "domain": "WiSo",
+    "groupId": "wiso-3",
+    "groupLabel": "W3 · Arbeitsrecht II: Beendigung",
+    "itemId": "wiso-3__7",
+    "week": "KW 37",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "tatbestand",
+      "folgen",
+      "information",
+      "widerspruch"
+    ],
+    "sources": [
+      "betrieb-613a",
+      "betrieb-textform",
+      "betrieb-identitaet",
+      "betrieb-zuordnung"
+    ],
+    "contentHash": "d900399e5272e33dcccc589eb171baf427803af332f8e95365ff69ed95ffa537",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "company-goals",
     "slug": "company-goals",
     "title": "Unternehmensziele und Zielkonflikte sicher abwägen",

@@ -225,6 +225,7 @@ async function runFullSuite() {
   await import('./verify-besonderer-kuendigungsschutz-browser.mjs');
   await import('./verify-aufhebungsvertrag-browser.mjs');
   await import('./verify-abmahnung-browser.mjs');
+  await import('./verify-betriebsuebergang-browser.mjs');
   await import('./verify-maternity-periods-browser.mjs');
   await import('./verify-contract-types-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
@@ -333,6 +334,9 @@ try {
   } else if (process.env.AP2_BROWSER_ONLY === 'maternity-periods') {
     useSignedInFixture = true;
     await import('./verify-maternity-periods-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'betriebsuebergang') {
+    useSignedInFixture = true;
+    await import('./verify-betriebsuebergang-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'abmahnung') {
     useSignedInFixture = true;
     await import('./verify-abmahnung-browser.mjs');
