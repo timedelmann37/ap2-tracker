@@ -1,0 +1,330 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "usv-dimensionierung-ueberbrueckungszeit-rechnen",
+    "slug": "usv-dimensionierung-ueberbrueckungszeit-rechnen",
+    "title": "USV: Leistung und Überbrückungszeit rechnen",
+    "description": "Watt und VA getrennt dimensionieren, Energiebilanz einordnen und die Shutdown-Zeit nachweisen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-11",
+    "groupLabel": "Rechnen und Prüfungstechnik",
+    "itemId": "ga1-11__7",
+    "week": "parallel",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": [
+      "upscalc-eaton"
+    ],
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "watt",
+      "label": "Wirkleistungsbedarf mit definierter Reserve berechnen"
+    },
+    {
+      "id": "va",
+      "label": "Scheinleistung aus passenden Leistungsfaktoren bestimmen"
+    },
+    {
+      "id": "zeit",
+      "label": "Modellenergie in Überbrückungszeit umrechnen"
+    },
+    {
+      "id": "nachweis",
+      "label": "Laufzeitnachweis und Shutdown-Anforderung prüfen"
+    }
+  ],
+  "intro": "Das fiktive Archiv Lindenhof schützt Server, Speicher und Netzwerk. Vorgegebene Lastwerte: Server 400 W bei Leistungsfaktor 0,8, Speicher 160 W bei 0,8, Netzwerk 80 W bei 1,0. Ein Zuschlag von 25 % auf Watt und konservativ summierte VA ist vorgeschrieben. Eigene Rechenwerte, keine tatsächlichen Produktdaten.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "upscalc-eaton",
+        "sourceLocator": "Capacity, Runtime, How to size your UPS solution",
+        "use": "Leistungsfaktor, Lastliste, Reserve und lastabhängige Laufzeit",
+        "reviewStatus": "Direkt gelesen 03.10.2026; eigene Reserve, keine Herstellerzahlen übernommen"
+      }
+    ],
+    "notes": [
+      "CURATED_DRAFT bis menschliche Fachfreigabe.",
+      "Privater Themenanker europa-integratoren-2026:00218, Zeilen 2187–2202 direkt gelesen: USV und Shutdown. Keine Originalaufgaben oder pauschalen Umschaltzeiten übernommen.",
+      "Energiebilanz ist eigener idealisierter Konstantlastfall mit ausdrücklich nutzbarer DC-Energie; nicht aus Ah/Nennspannung abgeleitet und kein realer Laufzeitnachweis.",
+      "Refero-Deep-Space-Lock bleibt bestehen: gemeinsame Widgets, MathML und technische SVG-Prüfwege."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "leistung",
+      "type": "flow",
+      "title": "Zwei Leistungsgrenzen prüfen",
+      "description": "Eigene Lastwerte und 25 Prozent Zuschlag.",
+      "items": [
+        {
+          "label": "Watt summieren",
+          "detail": "400 + 160 + 80 = 640 W"
+        },
+        {
+          "label": "VA je Gerät",
+          "detail": "500 + 200 + 80 = 780 VA"
+        },
+        {
+          "label": "Zuschlag anwenden",
+          "detail": "800 W und 975 VA geplant"
+        },
+        {
+          "label": "Beide Grenzen",
+          "detail": "W- und VA-Nennleistung müssen passen"
+        }
+      ]
+    },
+    {
+      "id": "shutdown",
+      "type": "flow",
+      "title": "Shutdown braucht Zeitreserve",
+      "description": "Eigener Ablauf, keine produktspezifische Zusage.",
+      "items": [
+        {
+          "label": "Netzausfall",
+          "detail": "2 min warten und Entscheidung auslösen"
+        },
+        {
+          "label": "Herunterfahren",
+          "detail": "8 min bis sicher abgeschaltet"
+        },
+        {
+          "label": "Zeitreserve",
+          "detail": "3 min zusätzlich vorgesehen"
+        },
+        {
+          "label": "Nachweis",
+          "detail": "Mindestens 13 min bei relevanter Last"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Diagnose: VA sind keine Batterieminuten",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "upscalc-diagnose",
+          "question": "Eine USV hat 1000 VA. Welche Aussage ist zulässig?",
+          "options": [
+            {
+              "text": "Die VA-Angabe beschreibt eine Leistungsgrenze; Laufzeit braucht weitere Daten.",
+              "rationale": "Batterieausstattung und Last bestimmen die Überbrückungszeit.",
+              "correct": true
+            },
+            {
+              "text": "Sie liefert immer genau 1000 Minuten.",
+              "rationale": "VA ist eine Leistungseinheit, keine Zeitangabe.",
+              "correct": false
+            },
+            {
+              "text": "Sie kann automatisch 1000 W liefern.",
+              "rationale": "Die Wattgrenze muss separat im Datenblatt geprüft werden.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Wattbedarf vollständig aufnehmen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Server, Speicher und notwendige Netzwerkkomponenten müssen gemeinsam versorgt werden. Lindenhofs Wirkbedarf **P = 400 + 160 + 80 = 640 W**. Der ausdrücklich verlangte **25-%-Zuschlag** ergibt **800 W**. Das bedeutet nicht, dass 25 % der Nennleistung frei bleiben müssen; diese andere Vorgabe ergäbe 640/0,75 ≈ 853,33 W.\n\nDie Werte sind Lastwerte, nicht die maximale Aufschrift aller Netzteile. Redundante Netzteile nicht automatisch doppelt als volle Serverlast zählen. Reale Planung prüft Lastspitzen, Wachstum, Betriebsmodus und verfügbare Mess-/Herstellerdaten. Die 25 % sind eine eigene Fallvorgabe, keine universelle Norm."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Geplante Wirkleistung P Plan ist Last P mal eins plus Zuschlag r",
+          "mathml": "<math display=\"block\"><mrow><msub><mi>P</mi><mtext>Plan</mtext></msub><mo>=</mo><mi>P</mi><mo>·</mo><mo>(</mo><mn>1</mn><mo>+</mo><mi>r</mi><mo>)</mo></mrow></math>",
+          "legend": [
+            "P in Watt; r = 0,25",
+            "Zuschlag auf Last, nicht freier Anteil"
+          ]
+        },
+        {
+          "type": "numeric",
+          "id": "upscalc-watt",
+          "prompt": "640 W Last mit 25 % Zuschlag: benötigte Watt-Nennleistung mindestens?",
+          "expected": 800,
+          "tolerance": 0.000001,
+          "label": "Ergebnis ohne Einheit",
+          "placeholder": "Zahl ohne Einheit eingeben",
+          "correctFeedback": "640 × 1,25 = 800 W.",
+          "wrongFeedback": "Mit 1,25 multiplizieren; nicht 25 W addieren.",
+          "requiredObjective": "watt"
+        }
+      ]
+    },
+    {
+      "title": "VA und Watt getrennt vergleichen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Der **Leistungsfaktor PF** ist das Verhältnis von Wirkleistung zu Scheinleistung: **S = P/PF**. Nicht ohne Prüfung mit einem reinen cos φ gleichsetzen: IT-Lasten können nicht sinusförmige Ströme haben. Für den eigenen konservativen Summenansatz ergeben sich 400/0,8 = 500 VA, 160/0,8 = 200 VA und 80/1 = 80 VA. Summe **780 VA**, mit Zuschlag **975 VA**. Die Summe einzelner Scheinleistungen ist hier ein konservativer Planwert, kein behaupteter exakter Aggregat-PF.\n\nFiktiver Kandidat A: **1000 VA / 700 W**. Die VA-Grenze reicht, die geplanten 800 W überschreiten aber 700 W: ablehnen. Kandidat B: **1200 VA / 1000 W** erfüllt beide statischen Leistungsgrenzen. Seine Batterielaufzeit ist damit noch nicht nachgewiesen."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Scheinleistung S ist Wirkleistung P geteilt durch Leistungsfaktor PF",
+          "mathml": "<math display=\"block\"><mrow><mi>S</mi><mo>=</mo><mfrac><mi>P</mi><mtext>PF</mtext></mfrac></mrow></math>",
+          "legend": [
+            "S in VA; P in W",
+            "PF gehört zur betrachteten Last"
+          ]
+        },
+        {
+          "type": "figure",
+          "diagramId": "leistung",
+          "alt": "640 Watt und konservativ 780 VA ergeben mit 25 Prozent Zuschlag 800 Watt und 975 VA. Beide USV-Grenzen sind getrennt zu prüfen.",
+          "caption": "Leistungsreserve und Energieinhalt sind unterschiedliche Anforderungen."
+        },
+        {
+          "type": "numeric",
+          "id": "upscalc-va",
+          "prompt": "Konservative VA-Summe 780 VA mit 25 % Zuschlag: geplanter Bedarf in VA?",
+          "expected": 975,
+          "tolerance": 0.000001,
+          "label": "Ergebnis ohne Einheit",
+          "placeholder": "Zahl ohne Einheit eingeben",
+          "correctFeedback": "780 × 1,25 = 975 VA. Zusätzlich die 800-W-Anforderung prüfen.",
+          "wrongFeedback": "VA-Summe mit 1,25 multiplizieren.",
+          "requiredObjective": "va"
+        }
+      ]
+    },
+    {
+      "title": "Energiebilanz als Modell, nicht als Zusage",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Zusatzfall: **160 Wh nutzbare DC-Energie** stehen unter den vorgegebenen Bedingungen tatsächlich zur Verfügung. Ein pauschaler Wirkungsgrad η = 0,8 bildet hier alle Verluste bis zur AC-Last ab. Bei konstanter Last 640 W folgt **t = 160 × 0,8 / 640 = 0,2 h = 12 min**. Die 160 Wh sind ausdrücklich nutzbare Energie, nicht bloß Nennspannung mal Ah. Wären bereits nutzbare AC-Wh angegeben, wäre ein erneuter Wirkungsgradabzug falsch.\n\nDiese vereinfachte Bilanz berücksichtigt keine veränderliche Last oder zusätzliche nicht bereits erfasste Batterieeffekte. Reale Batterieentladung, Abschaltschwellen, Alterung und Temperatur verlangen passende Hersteller-Laufzeitdaten und einen kontrollierten Test. **VA × Zeit ist kein Ersatz für die Wirkleistungs-Energiebilanz.** Nicht eigenständig an Batterieverdrahtung oder Netzinstallation arbeiten."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Überbrückungszeit t in Stunden ist nutzbare DC Energie E mal Wirkungsgrad eta geteilt durch Last P",
+          "mathml": "<math display=\"block\"><mrow><mi>t</mi><mo>=</mo><mfrac><mrow><mi>E</mi><mo>·</mo><mi>η</mi></mrow><mi>P</mi></mfrac></mrow></math>",
+          "legend": [
+            "E in Wh; P in W; Ergebnis in h",
+            "η hier nur einmal für DC nach AC"
+          ]
+        },
+        {
+          "type": "numeric",
+          "id": "upscalc-zeit",
+          "prompt": "160 Wh nutzbare DC-Energie, η = 0,8, konstante 640 W: Modelllaufzeit in Minuten?",
+          "expected": 12,
+          "tolerance": 0.000001,
+          "label": "Ergebnis ohne Einheit",
+          "placeholder": "Zahl ohne Einheit eingeben",
+          "correctFeedback": "160 × 0,8 ÷ 640 × 60 = 12 min. Nur das definierte Modell.",
+          "wrongFeedback": "Zuerst Stunden berechnen, dann mit 60 in Minuten umrechnen.",
+          "requiredObjective": "zeit"
+        },
+        {
+          "type": "numeric",
+          "id": "upscalc-energie",
+          "prompt": "Zusatzmodell: 640 W für 15 min bei η = 0,8. Erforderliche nutzbare DC-Energie in Wh?",
+          "expected": 200,
+          "tolerance": 0.000001,
+          "label": "Ergebnis ohne Einheit",
+          "placeholder": "Zahl ohne Einheit eingeben",
+          "correctFeedback": "640 × (15/60) ÷ 0,8 = 200 Wh nutzbare DC-Energie.",
+          "wrongFeedback": "15 min = 0,25 h; Verluste durch Division mit 0,8 berücksichtigen."
+        }
+      ]
+    },
+    {
+      "title": "Shutdown-Ziel und Lastkurve prüfen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Lindenhof wartet zwei Minuten nach Netzausfall, benötigt acht Minuten bis sicherer Abschaltung und verlangt drei Minuten Zeitreserve: **13 Minuten**. Das obige 12-Minuten-Modell unterschreitet diese Anforderung um eine Minute. Die Reserve ist nicht zusätzliche Batterieleistung, sondern Teil der Zeitplanung.\n\nEigene fiktive Laufzeitdaten für Kandidat B: bei 640 W 14 Minuten, bei 800 W nur 10 Minuten unter denselben definierten Testbedingungen. Für heutige 640 W liegt 14 über 13, für die geplante Last 800 W liegt 10 darunter: **keine Freigabe für den Ausbauzustand**. Keine lineare Laufzeitextrapolation zwischen Lastpunkten unterstellen. Batteriealter, Temperatur und Ladestand müssen zum Nachweis passen. Kommunikation, Reihenfolge und Dauer des automatischen Shutdowns kontrolliert testen.\n\n[Eaton: UPS sizing guide](https://www.eaton.com/us/en-us/products/backup-power-ups-surge-it-power-distribution/backup-power-ups/ups-sizing-guide.html) trennt Leistung und Laufzeit. Die Kandidaten, Werte und Abläufe dieser Einheit sind vollständig erfunden."
+        },
+        {
+          "type": "figure",
+          "diagramId": "shutdown",
+          "alt": "Zwei Minuten Wartezeit plus acht Minuten Shutdown plus drei Minuten Reserve ergeben mindestens 13 Minuten erforderliche Überbrückung.",
+          "caption": "Die Laufzeit wird bei der relevanten Last geprüft, nicht nur im Leerlauf."
+        },
+        {
+          "type": "quiz",
+          "id": "upscalc-nachweis",
+          "question": "Kandidat B erfüllt 800 W und 975 VA. Bei geplanten 800 W sind 10 min angegeben; nötig sind 13 min. Entscheidung?",
+          "options": [
+            {
+              "text": "Nicht für den Ausbau freigeben; Laufzeit reicht trotz passender Leistungsgrenzen nicht.",
+              "rationale": "10 Minuten liegen unter dem 13-Minuten-Ziel der geplanten Last.",
+              "correct": true
+            },
+            {
+              "text": "Freigeben, weil 1200 VA größer als 975 VA ist.",
+              "rationale": "Die Leistungsgrenze ersetzt den Batterielaufzeitnachweis nicht.",
+              "correct": false
+            },
+            {
+              "text": "Freigeben, weil bei heutiger Last 14 min erreicht werden.",
+              "rationale": "Die künftige Last hat eine andere vorgegebene Laufzeit.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "nachweis"
+        },
+        {
+          "type": "recall",
+          "id": "upscalc-transfer",
+          "prompt": "Begründe Lindenhofs Auswahl: Watt, VA, zwei Kandidaten, Modelllaufzeit und Shutdown-Ziel. Trenne die Energiebilanz von einem realen Laufzeitnachweis.",
+          "minLength": 140,
+          "model": "640 W mit 25 % Zuschlag ergeben 800 W. Die konservative VA-Summe 780 ergibt 975 VA. A mit 700 W scheitert trotz 1000 VA. B erfüllt 1200 VA/1000 W, aber seine fiktiven 10 min bei geplanten 800 W reichen nicht für 2+8+3=13 min. 160 Wh nutzbare DC-Energie ergeben bei η 0,8 und 640 W modellhaft 12 min. Herstellerkurve, Batteriezustand und kontrollierter Shutdown-Test bleiben nötig."
+        }
+      ]
+    },
+    {
+      "title": "Abruftraining",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "id": "upscalc-cards",
+          "cards": [
+            {
+              "id": "watt",
+              "label": "USV-Rechnen",
+              "front": "Welche Last zählt?",
+              "back": "Alle für Betrieb und Shutdown notwendigen Verbraucher."
+            },
+            {
+              "id": "va",
+              "label": "USV-Rechnen",
+              "front": "Wie rechnet man W in VA um?",
+              "back": "S = P/PF mit passendem Leistungsfaktor."
+            },
+            {
+              "id": "zeit",
+              "label": "USV-Rechnen",
+              "front": "Wovon hängt Laufzeit ab?",
+              "back": "Last, Batterieausstattung und Zustand; VA allein reichen nicht."
+            },
+            {
+              "id": "energie",
+              "label": "USV-Rechnen",
+              "front": "Wann Wirkungsgrad verwenden?",
+              "back": "Nur passend zur angegebenen Energiegrenze, ohne doppelte Verlustrechnung."
+            },
+            {
+              "id": "nachweis",
+              "label": "USV-Rechnen",
+              "front": "Was muss der Test abdecken?",
+              "back": "Relevante Last, Kommunikation und vollständigen Shutdown mit Reserve."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

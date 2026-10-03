@@ -3666,6 +3666,32 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "usv-dimensionierung-ueberbrueckungszeit-rechnen",
+    "slug": "usv-dimensionierung-ueberbrueckungszeit-rechnen",
+    "title": "USV: Leistung und Überbrückungszeit rechnen",
+    "description": "Watt und VA getrennt dimensionieren, Energiebilanz einordnen und die Shutdown-Zeit nachweisen.",
+    "domain": "GA1",
+    "groupId": "ga1-11",
+    "groupLabel": "Rechnen und Prüfungstechnik",
+    "itemId": "ga1-11__7",
+    "week": "parallel",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "watt",
+      "va",
+      "zeit",
+      "nachweis"
+    ],
+    "sources": [
+      "upscalc-eaton"
+    ],
+    "contentHash": "684c98921444c227057b1c8e9086101abde7ccd8a9c03060f8ec7e56e41fdb7c",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "osi-model",
     "slug": "osi-model",
     "title": "Das OSI-Schichtenmodell sicher anwenden",
