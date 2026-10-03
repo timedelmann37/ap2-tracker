@@ -1,0 +1,368 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "change-prozess-genehmigung-rollback-freeze",
+    "slug": "change-prozess-genehmigung-rollback-freeze",
+    "title": "Changes sicher planen und zurücknehmen",
+    "description": "Änderungsantrag, Bewertung, Freigabe und Umsetzung verbinden; Rückfallzeit berechnen und Change-Freeze mit geregelten Ausnahmen erklären.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-10",
+    "groupLabel": "Betrieb, Monitoring und Prozesse",
+    "itemId": "ga1-10__4",
+    "week": "KW 44",
+    "estimatedMinutes": 40,
+    "relevance": "hoch",
+    "sources": [
+      "chg-types",
+      "chg-safe",
+      "chg-freeze"
+    ],
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "antrag",
+      "label": "Änderungsantrag und Risikobewertung vollständig begründen"
+    },
+    {
+      "id": "freigabe",
+      "label": "Passende Autorisierung und Change-Freeze unterscheiden"
+    },
+    {
+      "id": "rollback",
+      "label": "Rückfallkriterien und spätesten Abbruchzeitpunkt ableiten"
+    },
+    {
+      "id": "nachweis",
+      "label": "Umsetzung und Abschluss anhand von Serviceprüfungen belegen"
+    }
+  ],
+  "intro": "Die fiktive Versandstelle Auenblick möchte ihren Etikettendienst aktualisieren. Ein Wartungsfenster ist vereinbart, danach muss der Versand wieder arbeiten können. Du ergänzt einen unvollständigen Antrag, prüfst Freigabe und Freeze-Regeln und entscheidest anhand eines Fehlerfalls über den Rückfall. Kennungen, Regeln, Zeitwerte und Tests sind eigene Fallannahmen; die Einheit verändert kein produktives System.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "chg-types",
+        "sourceLocator": "Standard changes; Normal changes; Emergency changes",
+        "use": "Risikoabhängige Änderungsarten und passende Autorisierung",
+        "reviewStatus": "Passagen direkt gelesen 03.10.2026"
+      },
+      {
+        "sourceId": "chg-safe",
+        "sourceLocator": "Implement failure-detection mechanisms; Establish deployment safety guardrails; Emergency SDP protocols",
+        "use": "Stopp, Rückfall, Zustandsdaten und kontrollierte Notfallverfahren",
+        "reviewStatus": "Passagen direkt gelesen 03.10.2026"
+      },
+      {
+        "sourceId": "chg-freeze",
+        "sourceLocator": "Prevent unintentional releases by setting a deploy freeze",
+        "use": "Zeitfenster und technische Durchsetzung einer Ausführungssperre",
+        "reviewStatus": "Passage direkt gelesen 03.10.2026"
+      }
+    ],
+    "notes": [
+      "CURATED_DRAFT bis zur menschlichen Freigabe.",
+      "Privater Themenanker europa-integratoren-2026:00038, Zeilen 443–468: Aktualisierungen evaluieren, Wiederherstellung und Tests dokumentieren. Keine Buchaufgaben übernommen.",
+      "Freeze-Ausnahmen, Testwerte und Zeitrechnung sind eigene Organisationsregeln, keine universellen ITIL-Vorgaben.",
+      "Keine Datenbankschemamigration im Rechenfall; mit Zustandsänderungen muss Rückfall separat validiert werden."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "freigabepfad",
+      "type": "flow",
+      "title": "Vom Antrag zum Nachweis",
+      "description": "Auenblicks eigener Ablauf mit Entscheidungstoren.",
+      "items": [
+        {
+          "label": "Antrag CHG-24",
+          "detail": "Ziel, betroffene CIs und Umfang beschreiben"
+        },
+        {
+          "label": "Bewertung",
+          "detail": "Risiko, Abhängigkeiten und Tests prüfen"
+        },
+        {
+          "label": "Autorisierung",
+          "detail": "Zuständige Rolle und zulässiges Fenster"
+        },
+        {
+          "label": "Umsetzung",
+          "detail": "Schritte protokollieren; bei Fehler stoppen"
+        },
+        {
+          "label": "Abschluss",
+          "detail": "Service prüfen und Ist-Stand nachführen"
+        }
+      ]
+    },
+    {
+      "id": "rueckfall",
+      "type": "flow",
+      "title": "Fehler im Wartungsfenster",
+      "description": "Eigener Fehlerzweig, keine Erfolgskette.",
+      "items": [
+        {
+          "label": "Fehler erkannt",
+          "detail": "Speichern oder Drucken schlägt fehl"
+        },
+        {
+          "label": "Weitere Schritte stoppen",
+          "detail": "Befund sichern; zuständige Rolle informieren"
+        },
+        {
+          "label": "Rückfall ausführen",
+          "detail": "Geprüften Ausgangsstand wiederherstellen"
+        },
+        {
+          "label": "Service erneut prüfen",
+          "detail": "Funktion, Daten und Monitoring kontrollieren"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Diagnose: Ein Wartungsfenster ist keine Freigabe",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "chg-diagnose",
+          "question": "Der Antrag nennt nur „Update Samstag 20 Uhr“. Ein Wartungsfenster ist reserviert. Darf das Team deshalb starten?",
+          "options": [
+            {
+              "text": "Ja, eine Kalendereintragung ersetzt die Genehmigung.",
+              "rationale": "Ein freies Zeitfenster belegt weder Bewertung noch Autorisierung.",
+              "correct": false
+            },
+            {
+              "text": "Nein, Umfang, Risiko, Zuständigkeit und prüfbare Freigabe fehlen.",
+              "rationale": "Terminplanung und Änderungsautorisierung sind verschiedene Voraussetzungen.",
+              "correct": true
+            },
+            {
+              "text": "Ja, Updates sind grundsätzlich Standard Changes.",
+              "rationale": "Ein Standard Change braucht ein dokumentiertes, vorgenehmigtes Verfahren.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Antrag und Bewertung: Was soll sich warum ändern?",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein Änderungsantrag beschreibt den gewünschten Zielzustand und die betroffenen Services beziehungsweise Configuration Items. Er ist noch keine Erlaubnis zur Durchführung. Die Bewertung prüft mögliche Auswirkungen, Abhängigkeiten, Umsetzbarkeit und Wiederherstellungsweg. Umfang und Risiko bestimmen den erforderlichen Prüf- und Freigabeweg.\n\n**Eigener Antrag CHG-24:** Auenblicks Etikettendienst label-01 soll von der erfundenen Version 3.2 auf 3.3 wechseln. Ziel ist die Behebung eines im Testsystem reproduzierten Druckfehlers. Anwendung, Druckwarteschlange, Datenbankzugriff und Clients der Versandstelle sind als betroffene Beziehungen zu prüfen. Ausdrücklich nicht enthalten ist eine Datenbankschemamigration. Wenn das Paket entgegen dieser Annahme ein Schema verändert, passt die Bewertung nicht mehr: Das Team stoppt und bewertet neu.\n\nDer Antrag erhält verantwortliche Durchführung und Vertretung, gewünschtes Fenster, erwartete Unterbrechung, betroffene Nutzende, Kommunikation, genaue Paketkennung, Testnachweise und Rückfallplan. „Neueste Version“ genügt nicht als eindeutige Paketbeschreibung. Eine Prüfsumme unterstützt die Identifikation, beweist aber weder Funktionsfähigkeit noch Freigabe.\n\n**Bewertung im Fall:** Kann die Versandstelle Aufträge zwischenspeichern? Welche Warteschlangen dürfen nicht verloren gehen? Ist das alte Paket verfügbar und zur vorhandenen Datenstruktur kompatibel? Wer darf im Fehlerfall den Rückfall auslösen? Fehlende Antworten werden sichtbar als offene Punkte geführt. Ein angehängtes Dokument ohne gelesenen Testbefund ist kein Nachweis."
+        },
+        {
+          "type": "figure",
+          "diagramId": "freigabepfad",
+          "alt": "Änderungsantrag führt über Bewertung und Autorisierung zur kontrollierten Umsetzung und Abschlussprüfung.",
+          "caption": "Die Tore haben unterschiedliche Aufgaben. Eine wesentliche Änderung an Umfang oder Voraussetzungen verlangt eine erneute passende Bewertung und Freigabe."
+        },
+        {
+          "type": "quiz",
+          "id": "chg-antrag",
+          "question": "CHG-24 enthält Paketkennung und Termin, aber keinen Datenzustand oder Rückfallnachweis. Was muss vor Freigabe ergänzt werden?",
+          "options": [
+            {
+              "text": "Auswirkungen, Abhängigkeiten und getesteten Rückfall einschließlich Datenverträglichkeit klären.",
+              "rationale": "Paket und Termin allein belegen keine kontrollierbare Wiederherstellung.",
+              "correct": true
+            },
+            {
+              "text": "Nur den Titel kürzen; der technische Inhalt ist ausreichend.",
+              "rationale": "Ein kurzer Titel ersetzt keine Bewertung des Service- und Datenrisikos.",
+              "correct": false
+            },
+            {
+              "text": "Die Paketprüfsumme als Genehmigung eintragen.",
+              "rationale": "Identität des Artefakts und Änderungsautorisierung sind nicht gleichbedeutend.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "antrag"
+        }
+      ]
+    },
+    {
+      "title": "Genehmigung und Freeze: Wer erlaubt welchen Umfang?",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein **Standard Change** ist risikoarm, wiederkehrend und nach einem dokumentierten Verfahren vorgenehmigt. Eine neue Tätigkeit wird nicht allein durch ihre Häufigkeit zum Standard Change. Ein **Normal Change** durchläuft den dafür festgelegten Bewertungs- und Autorisierungsweg. Ein **Emergency Change** braucht wegen einer konkreten dringenden Lage einen beschleunigten, geregelten Weg; „jemand möchte es heute“ ist noch kein Notfall.\n\nNicht jede Änderung benötigt dasselbe Gremium. Die zuständige Change Authority hängt von Risiko und Organisationsregeln ab. Die Genehmigung bezieht sich auf einen bestimmten Umfang und bestimmte Bedingungen; sie ist keine unbegrenzte Erlaubnis für weitere Pakete.\n\nEin **Change-Freeze** begrenzt Änderungen in einem definierten Zeitraum und Geltungsbereich, etwa während des Inventurabschlusses. Auenblicks eigene Regel sperrt normale Produktionsänderungen am Etikettendienst vom 30. November 18:00 bis 2. Dezember 08:00 Uhr, Zeitzone Europe/Berlin. Tests im isolierten Testsystem sind davon nicht betroffen. Eine Ausnahme erfordert im Fall eine dokumentierte Begründung und die benannte Notfallautorisierung; sie entsteht nicht automatisch durch das Etikett „Security Patch“.\n\nEine technische Freeze-Regel muss tatsächlich am Ausführungsweg greifen. GitLab zeigt beispielsweise Freeze-Zeitfenster und die Variable CI_DEPLOY_FREEZE; die Pipeline muss darauf reagieren. Ein Kalendereintrag oder eine Variable allein verhindert nicht jeden manuellen Eingriff. Auenblick prüft daher automatisierte und manuelle Wege, Zugriffsrechte und Ausnahmeprotokollierung. Das ist eine eigene Kontrollplanung, kein universelles Toolrezept."
+        },
+        {
+          "type": "quiz",
+          "id": "chg-freigabe",
+          "question": "Ein gewöhnliches Funktionsupdate liegt innerhalb Auenblicks Freeze. Es gibt keine genehmigte Ausnahme. Was passt?",
+          "options": [
+            {
+              "text": "Als Emergency markieren und ungeprüft starten.",
+              "rationale": "Eine Klassifizierung erzeugt weder Dringlichkeitsbeleg noch Autorisierung.",
+              "correct": false
+            },
+            {
+              "text": "Verschieben oder den festgelegten Ausnahmeweg mit Begründung und Autorisierung durchlaufen.",
+              "rationale": "Freeze und Freigabe gelten gemeinsam; Abweichungen brauchen den vorgesehenen Entscheidungsweg.",
+              "correct": true
+            },
+            {
+              "text": "Die Freeze-Variable löschen, weil das Paket schon geprüft ist.",
+              "rationale": "Tests ersetzen weder die organisatorische Regel noch den zugelassenen Ausführungsweg.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "freigabe"
+        }
+      ]
+    },
+    {
+      "title": "Rollback-Plan und Zeitreserve",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein **Rollback-Plan** benennt Rückfallauslöser, Entscheidungsrolle, Schritte, benötigte Artefakte, Datenbehandlung, Dauer und anschließende Prüfung. „Snapshot vorhanden“ reicht nicht: Wiederherstellbarkeit, Konsistenz und Kompatibilität müssen zu diesem Change passen. Bei neuen Schreibvorgängen kann ein alter Datenstand aktuelle Arbeit verlieren; dafür braucht es eine ausdrücklich geprüfte Behandlung.\n\n**Eigener, vereinfachter Zeitfall:** Fenster 20:00–21:00 Uhr. Für das Rücksetzen des Pakets und der Konfiguration wurden im passenden Test 10 Minuten benötigt, für die Funktions- und Datenprüfung weitere 10 Minuten. Zusätzlich plant Auenblick 10 Minuten Reserve. Diese Werte sind Fallannahmen, keine allgemeine Zusicherung für den Produktivbetrieb. Der letzte Start des Rückfalls liegt deshalb bei 20:30 Uhr. Das ist eine harte Planungsgrenze im Fall, kein Grund, mit einem bereits erkannten Funktionsfehler bis dahin weiterzumachen."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Rückfallbudget gleich zehn Minuten Rücksetzen plus zehn Minuten Prüfen plus zehn Minuten Reserve gleich dreißig Minuten.",
+          "mathml": "<math display=\"block\"><mrow><msub><mi>T</mi><mtext>Rückfallbudget</mtext></msub><mo>=</mo><mn>10</mn><mo>+</mo><mn>10</mn><mo>+</mo><mn>10</mn><mo>=</mo><mn>30</mn><mtext> min</mtext></mrow></math>",
+          "legend": [
+            "10 Minuten Rücksetzen + 10 Minuten Serviceprüfung + 10 Minuten Reserve.",
+            "Spätester Rückfallstart: 21:00 Uhr minus 30 Minuten = 20:30 Uhr. Eigene Fallwerte."
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "Um 20:18 Uhr schlägt der vereinbarte Test „Auftrag speichern und zugehöriges Etikett drucken“ fehl. Der im Fall genehmigte Rückfallauslöser ist damit erfüllt. Das Team stoppt weitere Installationsschritte, protokolliert den Befund, informiert die zuständige Rolle und beginnt den vorgesehenen Rückfall. Eine spontane zusätzliche Fehlersuche darf das verbleibende Wiederherstellungsbudget nicht aufbrauchen.\n\nPasst die reale Dauer nicht mehr zum Plan, wird das als Abweichung eskaliert; man verspricht nicht trotzdem die Einhaltung des Fensters. Bei einer inkompatiblen Datenmigration wäre ein einfacher Paket-Rollback möglicherweise ungeeignet. Dann muss vor Umsetzung ein anderer sicherer Wiederherstellungs- oder kontrollierter Vorwärtskorrekturweg bewertet sein."
+        },
+        {
+          "type": "figure",
+          "diagramId": "rueckfall",
+          "alt": "Fehler führt zu Stopp, geplanter Rücknahme und erneuter Serviceprüfung.",
+          "caption": "Rücknahme ist erst mit einem geprüften Servicezustand abgeschlossen. Eine verbleibende Störung wird weiter bearbeitet, nicht durch den Change-Status versteckt."
+        },
+        {
+          "type": "quiz",
+          "id": "chg-rollback",
+          "question": "Das Fenster endet 21:00 Uhr. Rücksetzen braucht 10 Minuten, Prüfung 10 und Reserve 10. Wann muss der Rückfall spätestens starten?",
+          "options": [
+            {
+              "text": "20:50 Uhr, weil nur das Paket zurückgesetzt wird.",
+              "rationale": "Die Serviceprüfung und Reserve würden außerhalb des Fensters liegen.",
+              "correct": false
+            },
+            {
+              "text": "21:00 Uhr, solange der Prozess noch läuft.",
+              "rationale": "Das Ende des Fensters ist keine verfügbare Rückfallzeit mehr.",
+              "correct": false
+            },
+            {
+              "text": "20:30 Uhr; ein erfülltes Fehlerkriterium kann einen früheren Start verlangen.",
+              "rationale": "Alle drei Zeitanteile gehören zum Budget; erkanntes Scheitern rechtfertigt kein Abwarten.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "rollback"
+        }
+      ]
+    },
+    {
+      "title": "Umsetzung und Abschluss: Nachweise statt Statuskosmetik",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Die Durchführung folgt dem autorisierten Umfang. Vor Beginn werden Freigabe, Fenster, Ist-Stand, Erreichbarkeit der zuständigen Personen und Rückfallmittel kontrolliert. Tatsächliche Schritte, Zeiten und Abweichungen gehören ins Protokoll. Eine erfolgreiche Installermeldung bestätigt nicht automatisch den Serviceerfolg.\n\n**Auenblicks Abnahme:** Ein Testauftrag muss gespeichert, das richtige Etikett gedruckt und die erwartete Warteschlangenverarbeitung nachgewiesen werden. Monitoring und vereinbarte Beobachtung ergänzen diese Prüfung. Das kurze Wartungsfenster ersetzt keine längerfristige Wirksamkeitskontrolle des ursprünglich reproduzierten Fehlers. Die Fallannahme ist, dass die reservierte Person die Funktion im Fenster abnimmt; eine spätere Beobachtung wird mit Zuständigkeit separat dokumentiert.\n\nIm Fehlerzweig wird nach Rücknahme dieselbe grundlegende Servicefunktion und die Datenkonsistenz geprüft. Der Change ist dann nicht „erfolgreich umgesetzt“, sondern zurückgenommen beziehungsweise gescheitert mit dokumentiertem Ergebnis. Eine noch bestehende Störung wird als Incident weiterverfolgt. Für einen erneuten Versuch werden Erkenntnisse, Testplan und nötige Freigaben aktualisiert.\n\nNach erfolgreicher Umsetzung werden tatsächlich eingesetzte Version, Konfiguration und passende CMDB-Angaben nachgeführt. Nach Rückfall steht dagegen der wiederhergestellte Ist-Stand in der Dokumentation. Die Abschlussprüfung hält Ergebnis, verbleibende Risiken, Kommunikation und nächste Verantwortliche fest."
+        },
+        {
+          "type": "quiz",
+          "id": "chg-nachweis",
+          "question": "Der Installer meldet Erfolg, aber der Drucktest scheitert. Welcher Abschluss ist sachlich?",
+          "options": [
+            {
+              "text": "Nicht als erfolgreich abschließen; Fehlerweg ausführen und den tatsächlich geprüften Servicezustand dokumentieren.",
+              "rationale": "Servicefunktion ist das Erfolgskriterium, nicht allein eine technische Statusmeldung.",
+              "correct": true
+            },
+            {
+              "text": "Change erfolgreich schließen und den Testbefund löschen.",
+              "rationale": "Damit würde ein widersprechender Befund verborgen statt bearbeitet.",
+              "correct": false
+            },
+            {
+              "text": "Nur die neue Version in der CMDB eintragen; Nutzende testen später.",
+              "rationale": "Konfigurationspflege ersetzt die vereinbarte Abnahme nicht.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "nachweis"
+        },
+        {
+          "type": "recall",
+          "id": "chg-transfer",
+          "prompt": "Ergänze CHG-24: Antrag, Auswirkungen, Autorisierung, Freeze-Prüfung und Abnahme. Begründe den spätesten Rückfallstart und das Vorgehen bei 20:18 Uhr. Erkläre, warum ein Snapshot und ein grüner Installerstatus nicht genügen.",
+          "minLength": 180,
+          "model": "Ich erfasse Ziel, Paketkennung, betroffene Services und CIs, Umfang und Zuständigkeiten. Ich kläre Datenverträglichkeit, Tests und Rückfallmittel, prüfe die passende Autorisierung und den Freeze samt geregelten Ausnahmen. Das Rückfallbudget beträgt 30 Minuten, der späteste Start ist 20:30 Uhr. Der fehlgeschlagene Funktionstest um 20:18 erfüllt bereits den genehmigten Auslöser: stoppen, Befund dokumentieren, zuständige Rolle informieren und Rückfall starten. Anschließend prüfe ich Speichern, Drucken, Warteschlangen und Datenzustand. Ein Snapshot belegt keine passende konsistente Rücknahme, eine Installermeldung keine Servicefunktion. Ich dokumentiere Erfolg oder Rücknahme ehrlich und aktualisiere den tatsächlichen Ist-Stand."
+        }
+      ]
+    },
+    {
+      "title": "Abruftraining",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "id": "chg-cards",
+          "cards": [
+            {
+              "id": "antrag",
+              "label": "Change-Prozess",
+              "front": "Ist ein Änderungsantrag schon eine Genehmigung?",
+              "back": "Nein. Gewünschten Umfang beschreiben, bewerten und passend autorisieren."
+            },
+            {
+              "id": "standard",
+              "label": "Change-Prozess",
+              "front": "Was braucht ein Standard Change?",
+              "back": "Risikoarmes wiederkehrendes Vorgehen mit dokumentiertem, vorgenehmigtem Verfahren."
+            },
+            {
+              "id": "freeze",
+              "label": "Change-Prozess",
+              "front": "Ist Freeze immer ein absolutes Verbot?",
+              "back": "Der definierte Geltungsbereich und ein geregelter autorisierter Ausnahmeweg zählen; kein eigenmächtiges Umgehen."
+            },
+            {
+              "id": "rollback",
+              "label": "Change-Prozess",
+              "front": "Welche Bestandteile hat ein Rückfallplan?",
+              "back": "Auslöser, Entscheidungsrolle, Schritte, Artefakte, Datenbehandlung, Dauer und Nachprüfung."
+            },
+            {
+              "id": "budget",
+              "label": "Change-Prozess",
+              "front": "Warum spätestens 20:30 Uhr zurückfallen?",
+              "back": "Zum Fensterende bleiben 30 Minuten für Rücksetzen, Prüfung und Reserve."
+            },
+            {
+              "id": "daten",
+              "label": "Change-Prozess",
+              "front": "Genügt ein Snapshot vor dem Update?",
+              "back": "Nein. Konsistenz, Kompatibilität, Wiederherstellbarkeit und neue Schreibvorgänge müssen berücksichtigt werden."
+            },
+            {
+              "id": "abnahme",
+              "label": "Change-Prozess",
+              "front": "Was zählt beim Abschluss?",
+              "back": "Geprüfte Servicefunktion und ehrlicher Ist-Stand, nicht nur die Installermeldung."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
