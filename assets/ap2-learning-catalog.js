@@ -7614,6 +7614,39 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "arbeitsvertragsarten-dauer-umfang-einsatz-werk",
+    "slug": "arbeitsvertragsarten-dauer-umfang-einsatz-werk",
+    "title": "Arbeitsvertragsarten: Dauer, Umfang und Einsatz trennen",
+    "description": "Befristung, Teilzeit, Minijob und Leiharbeit kombinierbar einordnen; einen Werkauftrag von weisungsgebundener Beschäftigung unterscheiden.",
+    "domain": "WiSo",
+    "groupId": "wiso-2",
+    "groupLabel": "W2 · Arbeitsrecht I",
+    "itemId": "wiso-2__2",
+    "week": "KW 36",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "merkmale",
+      "einsatz",
+      "leistung"
+    ],
+    "sources": [
+      "arten-teilzeit",
+      "arten-befristet",
+      "arten-form",
+      "arten-arbeit",
+      "arten-werk",
+      "arten-leiharbeit",
+      "arten-geringfuegig",
+      "arten-minijob-grenze",
+      "arten-minijob-rechte"
+    ],
+    "contentHash": "750b61233752fc231cac44ac27f3fc086d17a7c75cd27642e788736c7b6bd925",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "company-goals",
     "slug": "company-goals",
     "title": "Unternehmensziele und Zielkonflikte sicher abwägen",
