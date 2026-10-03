@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Syslog-Meldungen zentral erfassen, einen Ereignisverlauf begrenzt auswerten und Aufbewahrung sowie personenbezogene Einträge zweckbezogen schützen.">
+<title>Zentrales Logging mit Syslog – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="zentrales-logging-syslog-aufbewahrung-datenschutz" data-progress-id="ga1-10__2" data-content-revision="2026-10-03.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-10">Betrieb, Monitoring und Prozesse</a><span class="sep">›</span>
+    <span class="here">Zentrales Logging mit Syslog</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Zentrales Logging mit Syslog</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 40 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Die fiktive Werkstatt Talbogen sammelt Meldungen eines VPN-Gateways und eines Auftragsservers zentral. Nach mehreren fehlgeschlagenen Anmeldungen soll ein Dienstfehler untersucht werden. Du entwirfst einen überprüfbaren Logweg und einen datensparsamen Auswertungsprozess. Namen, Ereignisse, Regeln und Fristen sind erfunden. Die Übungen senden keine Nachrichten und verändern kein produktives Logging.</p>
+<section class="learning-goals" aria-labelledby="zentrales-logging-syslog-aufbewahrung-datenschutz-goals">
+  <h2 id="zentrales-logging-syslog-aufbewahrung-datenschutz-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Syslog-Erfassung und Transportnachweis unterscheiden</li>
+    <li>Ereignisse mit Zeitbezug und Aussagegrenzen auswerten</li>
+    <li>Zweckbezogene Aufbewahrung und Löschprüfung planen</li>
+    <li>Personenbezogene Logeinträge und Zugriffe begrenzen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Diagnose: Eine Verbindung ist noch kein gespeichertes Log</h2>
+<section class="quiz" data-quiz="zlog-diagnose" data-correct="1">
+  <h3>Das Gateway zeigt eine aktive TLS-Verbindung zum Collector. Sind seine Meldungen damit nachweislich gespeichert?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Die Verbindung zeigt nicht, ob Parser und Ablage das Testereignis verarbeitet haben."><span class="m">A</span> Ja, eine offene Verbindung beweist jede gespeicherte Meldung.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Erfassung, Verarbeitung und Speicherung brauchen einen Ende-zu-Ende-Nachweis."><span class="m">B</span> Nein, ein eigenes Testereignis muss am vorgesehenen Ziel wiedergefunden werden.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Dieser Zustand liefert keinen solchen Sicherheitsbefund."><span class="m">C</span> Nein, die Verbindung beweist einen Angriff.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2"><span class="num">2</span>Syslog und ein überprüfbarer Erfassungsweg</h2>
+<p><strong>Syslog</strong> übermittelt Ereignismeldungen. RFC 5424 trennt Nachricht und Transport. Ein Originator erzeugt die Meldung, ein Relay leitet sie weiter, ein Collector sammelt sie. Die Speicherdauer ist nicht durch das Nachrichtenformat festgelegt. Der Header enthält unter anderem Zeitstempel, Host und Anwendung; strukturierte Angaben ergänzen den Meldungstext.</p>
+<p>RFC 5425 beschreibt Syslog über TLS mit TCP-Port <strong>6514 als Standardport</strong>. Gegenstellenprüfung gehört zum Schutz des Transportwegs. Der Transport besitzt jedoch keine Bestätigung auf Anwendungsebene, die jede Speicherung garantiert. Eine unterbrochene Verbindung kann die Kenntnis über erfolgreiche Zustellung begrenzen. TLS schützt nicht automatisch die spätere Ablage.</p>
+<p><strong>Talbogens eigener Entwurf:</strong> Gateway und Auftragsserver senden an einen freigegebenen Collector im Managementnetz. Die Administration dokumentiert Quellen, erlaubte Verbindung, Zertifikatsprüfung, Parser, Speicherziel und zuständige Rolle. Es wird kein beliebiges Gerät aus dem Internet als Logquelle angenommen. Die verwendeten Geräte müssen Format und Transport tatsächlich unterstützen; eine Portfreigabe ersetzt diese Prüfung nicht.</p>
+<p>Ein kontrolliertes Testereignis trägt im Fall eine eindeutige Testkennung. Das Team sucht diese Kennung im vorgesehenen Index und prüft Host, Zeit und Ereignisart. Auch Parserfehler, voller Speicher und ausbleibende Meldungen werden im Test betrachtet. Falls eine Quelle einen lokalen Puffer bietet, wird dessen Verhalten bei Ausfall und Wiederanlauf separat geprüft; die bloße Annahme eines Puffers genügt nicht. Diese Lernübung liefert keine direkt ausführbare produktive Konfiguration.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Vom Ereignis zum Nachweis">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="542" viewBox="0 0 960 542" role="img" aria-labelledby="diagram-logweg-title diagram-logweg-desc">
+  <title id="diagram-logweg-title">Vom Ereignis zum Nachweis</title>
+  <desc id="diagram-logweg-desc">Quelle führt über geschützten Transport zum Collector und zur geprüften Auswertung.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Vom Ereignis zum Nachweis</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Quelle</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Gateway oder Server erzeugt Testereignis</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Transport</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Geschützte Verbindung zur erlaubten Gegenstelle</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Collector</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Eingang, Parser und Speicherung prüfen</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Auswertung</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Testereignis wiederfinden und Lücken überwachen</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigener Ende-zu-Ende-Test: Verbindung, Eingang und Wiederfinden sind getrennte Nachweise.</figcaption>
+</figure><section class="quiz" data-quiz="zlog-transport" data-correct="0" data-required-objective="transport">
+  <h3>Welche Abnahme prüft Talbogens geplanten Logweg?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Damit werden mehr Stufen als nur eine erreichbare Schnittstelle geprüft."><span class="m">A</span> Eindeutiges Testereignis auslösen, korrekt am Speicherziel wiederfinden und Ausfallfälle testen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Erlaubter Verkehr beweist weder Parserfunktion noch vorhandene Meldungen."><span class="m">B</span> Nur die Firewall-Freigabe bestätigen und die Ablage als erledigt markieren.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Transport und Aufbewahrung sind unterschiedliche Aufgaben."><span class="m">C</span> Nur einen TLS-Port sehen; das beweist unbegrenzte Aufbewahrung.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s3"><span class="num">3</span>Auswertung: Zeitfolge ist nicht automatisch Ursache</h2>
+<p>Talbogen untersucht folgende <strong>eigene, vereinfachte Ereignisübersicht</strong>. Zeitangaben sind UTC; Quellzeit und Empfangszeit wurden getrennt gespeichert. Die Kennung K17 ist nur innerhalb dieses erfundenen Falls zugeordnet.</p>
+<div class="twrap"><table class="knowledge-table">
+<thead>
+<tr>
+<th>Quellzeit</th>
+<th>Empfangszeit</th>
+<th>Quelle</th>
+<th>Ereignis</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>08:02:00</td>
+<td>08:02:01</td>
+<td>VPN-Gateway</td>
+<td>Anmeldung K17 fehlgeschlagen</td>
+</tr>
+<tr>
+<td>08:02:30</td>
+<td>08:02:31</td>
+<td>VPN-Gateway</td>
+<td>Anmeldung K17 fehlgeschlagen</td>
+</tr>
+<tr>
+<td>08:04:00</td>
+<td>08:04:02</td>
+<td>Auftragsserver</td>
+<td>Datenbankverbindung fehlgeschlagen</td>
+</tr>
+<tr>
+<td>08:05:00</td>
+<td>08:05:01</td>
+<td>VPN-Gateway</td>
+<td>Anmeldung K17 erfolgreich</td>
+</tr>
+</tbody></table></div>
+<p>Die Übersicht zeigt fehlgeschlagene und später erfolgreiche Anmeldung sowie einen Serverfehler. Sie beweist <strong>nicht</strong>, dass K17 die Datenbankstörung verursacht hat. Denkbare Erklärungen für die Anmeldung sind ein Eingabefehler, eine Fehlkonfiguration oder Missbrauch; für die Datenbank sind weitere Befunde nötig.</p>
+<p><strong>Eigener Prüfschritt:</strong> Das Team kontrolliert zuerst Uhrensynchronisation und bekannte Abweichungen, filtert dann ein begründetes Zeitfenster und die betroffenen Systeme. Es korreliert den Datenbankfehler mit Dienstprüfung und Datenbankmeldungen. Erst neue Belege stützen oder widerlegen die Hypothese. Eine verspätet empfangene Meldung muss nicht das zuletzt entstandene Ereignis sein.</p>
+<p>Ein Filter, der nur „Fehler“ anzeigt, kann die spätere erfolgreiche Anmeldung ausblenden. Eine Häufung ist ein Anlass zur Untersuchung, keine automatische Schuldzuweisung. Fehlt eine Quelle vollständig, werden Erfassungsweg und Lücken geprüft. „Keine Treffer“ heißt nicht zwingend „kein Ereignis“. Für Berichte verwendet Talbogen notwendige, reduzierte Angaben statt unkontrollierter Rohlog-Exporte.</p>
+<section class="quiz" data-quiz="zlog-auswertung" data-correct="1" data-required-objective="auswertung">
+  <h3>Welche Schlussfolgerung trägt die Übersicht allein?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Die zeitliche Nähe liefert keinen Ursachen- oder Täterbeweis."><span class="m">A</span> K17 hat nachweislich die Datenbank beschädigt.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Beobachtung und Hypothese bleiben bis zum passenden Nachweis getrennt."><span class="m">B</span> Es gibt Anmeldeereignisse und einen Serverfehler; Zeitqualität und weitere Befunde müssen geprüft werden.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Verzögerte Zustellung kann die Reihenfolge verändern."><span class="m">C</span> Der letzte Empfangszeitpunkt ist immer der letzte Ereigniszeitpunkt.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Aufbewahrungsdauer begründen und Löschung prüfen</h2>
+<p>Personenbezogene Daten erfordern einen festgelegten Zweck und eine rechtmäßige Verarbeitung. Die EU-Kommission erläutert Zweckbindung, Datenminimierung, begrenzte Speicherung und Schutz vor unbefugtem Zugriff. Aufbewahrung wird anhand des Zwecks und einschlägiger Pflichten bewertet, nicht pauschal für alle Logs festgelegt.</p>
+<p><strong>Eigene Planungsregel für die Übung:</strong> Talbogen schlägt für gewöhnliche technische Fehlerlogs sieben Tage, für erforderliche sicherheitsbezogene Anmeldeereignisse dreißig Tage vor. Diese Zahlen sind <strong>keine gesetzliche Vorgabe und keine bestätigte Rechtsfreigabe</strong>. Vor Betrieb müssen Verantwortliche Zweck, Rechtsgrundlage, tatsächlichen Untersuchungsbedarf, Datenfelder und andere Pflichten prüfen. Ein Debugmodus bekommt einen begrenzten Anlass und Abschalttermin statt dauerhaft alles zu protokollieren.</p>
+<p>Talbogen definiert im Fall die Frist ab Ereigniszeit. Eine verspätete Meldung erhält nicht ungeprüft eine neue volle Frist ab Empfang. Rotation erstellt beziehungsweise wechselt Logdateien, ist aber allein kein Löschkonzept: alte Archive, Suchindizes, Exporte und Sicherungskopien müssen im abgestimmten Lebenszyklus berücksichtigt werden.</p>
+<p><strong>Eigene Löschprüfung:</strong> Ein Testdatensatz außerhalb der Fallfrist darf nach dem Lauf nicht mehr im aktiven Index oder im dazugehörigen Roharchiv abrufbar sein. Für Kopien und Backups wird der dokumentierte Lebenszyklus geprüft; ein Restore darf abgelaufene Daten nicht unkontrolliert wieder in die laufende Auswertung bringen. Bei einem konkreten Vorfall bewertet die zuständige Rolle eine notwendige Ausnahme, begrenzt den gesicherten Ausschnitt und dokumentiert Anlass, Zugriff und erneuten Prüftermin. Nicht das gesamte Archiv auf unbestimmte Zeit behalten.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Zweckgebundene Logdaten">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="542" viewBox="0 0 960 542" role="img" aria-labelledby="diagram-lebenszyklus-title diagram-lebenszyklus-desc">
+  <title id="diagram-lebenszyklus-title">Zweckgebundene Logdaten</title>
+  <desc id="diagram-lebenszyklus-desc">Festlegung des Zwecks führt zur begrenzten Nutzung, Fristprüfung und dokumentierten Löschung.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Zweckgebundene Logdaten</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Festlegung</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Zweck, Datenfelder, Rechte und Frist freigeben</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Nutzung</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Nur erforderliche Ereignisse gezielt auswerten</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Prüfung</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Fristablauf oder begründete Ausnahme bewerten</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Abschluss</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Löschung nachweisen, auch Kopien berücksichtigen</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Fristen und Ausnahmen im Fall sind vorgeschlagene Regeln, keine pauschale Rechtsfreigabe.</figcaption>
+</figure><section class="quiz" data-quiz="zlog-aufbewahrung" data-correct="2" data-required-objective="aufbewahrung">
+  <h3>Der Collector rotiert täglich, alte Archive bleiben unbegrenzt abrufbar. Ist Talbogens Sieben-Tage-Regel damit umgesetzt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Rotation kann alte Dateien bestehen lassen; Löschung muss eigens geprüft werden."><span class="m">A</span> Ja, eine neue Datei löscht alle alten Daten automatisch.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Freier Speicher bestimmt keinen erforderlichen Verarbeitungszweck."><span class="m">B</span> Ja, ausreichender Plattenplatz ersetzt jede Aufbewahrungsprüfung.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Eine Frist braucht einen vollständigen, nachgewiesenen Lebenszyklus."><span class="m">C</span> Nein, Ablauf und Löschung müssen auch für Archive, Indizes und Kopien geregelt und geprüft werden.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Personenbezug und Zugriff schon beim Entwurf begrenzen</h2>
+<p><strong>Eigene Risikoanalyse:</strong> Talbogens ursprünglicher Entwurf würde Benutzernamen, zuordenbare Quelladressen, vollständige Suchtexte und Anmeldetoken in einem für alle Beschäftigten lesbaren Index sammeln. Schon die konkrete Zuordenbarkeit kann sensible Rückschlüsse auf einzelne Personen ermöglichen. Ein anderer Anzeigename macht den Datensatz nicht automatisch anonym.</p>
+<p>Das Team ändert seinen Entwurf: Für den geprüften Fehlerzweck werden Zeit, System, Ereignisart und notwendige technische Kontextfelder verwendet. Token, Passwörter und unnötige Suchinhalte werden nicht protokolliert. Wenn eine Kennung erforderlich bleibt, wird ihr Zugriff begrenzt; eine Zuordnungstabelle wird separat geschützt. Dieser technische Vorschlag ersetzt nicht die fachliche Prüfung des Personenbezugs und der zulässigen Verarbeitung.</p>
+<p><strong>Eigene Rollen:</strong> Betriebsverantwortliche sehen erforderliche technische Fehler, eine benannte Sicherheitsrolle untersucht freigegebene Anmeldeereignisse. Ein allgemeines Teamkonto erhält keinen Rohzugriff. Talbogen prüft erlaubte und verweigerte Suchen sowie Exporte in einer Testumgebung. Auch Administrationszugriffe und Änderungen an Löschregeln benötigen kontrollierte Rechte und einen überprüfbaren Nachweis. Logs werden nicht nebenbei zur Bewertung der Arbeitsleistung zweckentfremdet.</p>
+<p><strong>Abnahme:</strong> Ein Testtoken erscheint weder in Rohablage noch Suchindex oder Export. Die nicht berechtigte Rolle kann keine Anmeldekennungen abrufen. Die berechtigte Rolle findet das freigegebene Ereignis. Das Team protokolliert Prüfergebnis und offene Fragen für die menschliche Freigabe.</p>
+<section class="quiz" data-quiz="zlog-datenschutz" data-correct="0" data-required-objective="datenschutz">
+  <h3>Welche Änderung passt zu Talbogens datensparsamem Entwurf?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Der Entwurf begrenzt Datenfelder und Zugriff statt nur die Anzeige umzubenennen."><span class="m">A</span> Token entfernen, unnötige Inhalte vermeiden und erforderliche Kennungen nur zuständigen Rollen zugänglich machen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Eine ersetzte Kennung beseitigt weder jede Zuordenbarkeit noch das Zugriffsrisiko."><span class="m">B</span> Den Namen durch K17 ersetzen und alle Rohdaten für alle freigeben.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Transportschutz rechtfertigt keine unnötigen Geheimnisse in der Ablage."><span class="m">C</span> TLS einschalten und deshalb Passwörter im Index behalten.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="recall-practice" data-recall="zlog-transfer" data-min-length="180" aria-labelledby="zlog-transfer-title">
+  <div class="recall-prompt"><h3 id="zlog-transfer-title">Abruf aus dem Kopf</h3><p>Entwirf Talbogens Logweg und Abnahme. Trenne Verbindung von Speicherung, werte die vier Ereignisse ohne Schuldzuweisung aus und beschreibe Zeitqualität, Datenfelder, Rollen, vorgeschlagene Fristen und Löschprüfung.</p></div>
+  <label class="sr-only" for="zlog-transfer-answer">Deine freie Antwort</label>
+  <textarea id="zlog-transfer-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Ich plane erlaubte Quellen und geschützten Transport, prüfe aber ein eindeutiges Testereignis bis zur korrekt gespeicherten Meldung. Ich kontrolliere Quell- und Empfangszeit sowie Synchronisation. Fehlgeschlagene Anmeldungen und der Datenbankfehler sind Beobachtungen ohne belegte gemeinsame Ursache. Ich ergänze passende Dienst- und Datenbankbefunde. Ich entferne Token und unnötige Inhalte, begrenze Kennungen auf erforderliche Rollen und prüfe unberechtigte Abfragen. Sieben und dreißig Tage sind vorgeschlagene Fallfristen mit menschlicher Zweck- und Rechtsprüfung. Ich prüfe tatsächliche Löschung in Ablage, Index und Kopien sowie begründete, erneut zu prüfende Ausnahmen.</div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Abruftraining</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="syslog" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Ist Syslog schon ein Speicherprodukt?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Nein. Nachrichtenformat, Transport und eigene Ablageplanung unterscheiden.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="transport" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Beweist TLS jede gespeicherte Meldung?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Nein. Ein Testereignis bis zur Ablage prüfen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="zeit" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum Quell- und Empfangszeit trennen?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Verspätete Zustellung kann die Reihenfolge der Eingänge verändern.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="ursache" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Beweist zeitliche Nähe eine Ursache?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Nein. Hypothese durch zusätzliche passende Befunde prüfen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="frist" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Gelten sieben Tage für jedes Log?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Nein. Das ist nur eine eigene Fallannahme, die geprüft werden muss.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="rotation" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Ist Rotation gleich Löschung?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Nein. Alte Dateien und weitere Kopien brauchen einen kontrollierten Lebenszyklus.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="rechte" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche Daten nicht ins Falllog?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Token, Passwörter und unnötige Inhaltsdaten; erforderliche Felder und Zugriffe begrenzen.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Zentrales Logging“:</span><button type="button" data-card-id="syslog" data-card-rate="known">gewusst</button><button type="button" data-card-id="syslog" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="syslog"></span></div>
+<div class="card-rating"><span>Karte „Zentrales Logging“:</span><button type="button" data-card-id="transport" data-card-rate="known">gewusst</button><button type="button" data-card-id="transport" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="transport"></span></div>
+<div class="card-rating"><span>Karte „Zentrales Logging“:</span><button type="button" data-card-id="zeit" data-card-rate="known">gewusst</button><button type="button" data-card-id="zeit" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="zeit"></span></div>
+<div class="card-rating"><span>Karte „Zentrales Logging“:</span><button type="button" data-card-id="ursache" data-card-rate="known">gewusst</button><button type="button" data-card-id="ursache" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ursache"></span></div>
+<div class="card-rating"><span>Karte „Zentrales Logging“:</span><button type="button" data-card-id="frist" data-card-rate="known">gewusst</button><button type="button" data-card-id="frist" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="frist"></span></div>
+<div class="card-rating"><span>Karte „Zentrales Logging“:</span><button type="button" data-card-id="rotation" data-card-rate="known">gewusst</button><button type="button" data-card-id="rotation" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="rotation"></span></div>
+<div class="card-rating"><span>Karte „Zentrales Logging“:</span><button type="button" data-card-id="rechte" data-card-rate="known">gewusst</button><button type="button" data-card-id="rechte" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="rechte"></span></div>
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-10"><span class="d">zurück zu</span><span class="t">Betrieb, Monitoring und Prozesse</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Betrieb, Monitoring und Prozesse</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 4 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Diagnose: Eine Verbindung ist noch kein gespeichertes Log</a></li>
+<li><a href="#s2" data-t="s2">Syslog und ein überprüfbarer Erfassungsweg</a></li>
+<li><a href="#s3" data-t="s3">Auswertung: Zeitfolge ist nicht automatisch Ursache</a></li>
+<li><a href="#s4" data-t="s4">Aufbewahrungsdauer begründen und Löschung prüfen</a></li>
+<li><a href="#s5" data-t="s5">Personenbezug und Zugriff schon beim Entwurf begrenzen</a></li>
+<li><a href="#s6" data-t="s6">Abruftraining</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-10">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

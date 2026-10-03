@@ -153,6 +153,7 @@ async function runFullSuite() {
   await import('./verify-ki-browser.mjs');
   await import('./verify-monitoring-browser.mjs');
   await import('./verify-capacity-trends-browser.mjs');
+  await import('./verify-central-logging-browser.mjs');
   useSignedInFixture = false;
   await import('./verify-space-browser.mjs');
 }
@@ -206,6 +207,9 @@ try {
   } else if (process.env.AP2_BROWSER_ONLY === 'zero-trust') {
     useSignedInFixture = true;
     await import('./verify-zero-trust-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'central-logging') {
+    useSignedInFixture = true;
+    await import('./verify-central-logging-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'capacity-trends') {
     useSignedInFixture = true;
     await import('./verify-capacity-trends-browser.mjs');

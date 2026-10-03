@@ -3280,6 +3280,34 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "zentrales-logging-syslog-aufbewahrung-datenschutz",
+    "slug": "zentrales-logging-syslog-aufbewahrung-datenschutz",
+    "title": "Zentrales Logging mit Syslog",
+    "description": "Syslog-Meldungen zentral erfassen, einen Ereignisverlauf begrenzt auswerten und Aufbewahrung sowie personenbezogene Einträge zweckbezogen schützen.",
+    "domain": "GA1",
+    "groupId": "ga1-10",
+    "groupLabel": "Betrieb, Monitoring und Prozesse",
+    "itemId": "ga1-10__2",
+    "week": "KW 44",
+    "estimatedMinutes": 40,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "transport",
+      "auswertung",
+      "aufbewahrung",
+      "datenschutz"
+    ],
+    "sources": [
+      "zlog-rfc5424",
+      "zlog-rfc5425",
+      "zlog-eu-principles"
+    ],
+    "contentHash": "0df6248909a536a79c176b326164c6530a7e79173b8d836e18072ccf28338139",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "osi-model",
     "slug": "osi-model",
     "title": "Das OSI-Schichtenmodell sicher anwenden",
