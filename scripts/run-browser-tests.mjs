@@ -192,6 +192,7 @@ async function runFullSuite() {
   await import('./verify-quality-management-browser.mjs');
   await import('./verify-testing-browser.mjs');
   await import('./verify-industry-ai-browser.mjs');
+  await import('./verify-training-contract-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
   await import('./verify-scenario-link-browser.mjs');
   await import('./verify-working-units-browser.mjs');
@@ -259,6 +260,9 @@ try {
   } else if (process.env.AP2_BROWSER_ONLY === 'raid-calculation') {
     useSignedInFixture = true;
     await import('./verify-raid-calculation-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'training-contract') {
+    useSignedInFixture = true;
+    await import('./verify-training-contract-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'industry-ai') {
     useSignedInFixture = true;
     await import('./verify-industry-ai-browser.mjs');
