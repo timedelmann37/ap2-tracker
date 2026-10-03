@@ -8009,6 +8009,35 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "kuendigungsgruende-person-verhalten-betrieb",
+    "slug": "kuendigungsgruende-person-verhalten-betrieb",
+    "title": "Kündigungsgründe: Person, Verhalten oder Betrieb?",
+    "description": "Den tragenden Grund anhand eigener IT-Fälle zuordnen und fehlende Voraussetzungen vor einem Wirksamkeitsurteil erkennen.",
+    "domain": "WiSo",
+    "groupId": "wiso-3",
+    "groupLabel": "W3 · Arbeitsrecht II: Beendigung",
+    "itemId": "wiso-3__1",
+    "week": "KW 37",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "person",
+      "verhalten",
+      "betrieb"
+    ],
+    "sources": [
+      "grund-gesetz",
+      "grund-person",
+      "grund-verhalten",
+      "grund-abmahnung",
+      "grund-betrieb"
+    ],
+    "contentHash": "ac3431108e1122247a889a81d0b6128e9739df4f680617e447d48d80ac3a21a9",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "company-goals",
     "slug": "company-goals",
     "title": "Unternehmensziele und Zielkonflikte sicher abwägen",
