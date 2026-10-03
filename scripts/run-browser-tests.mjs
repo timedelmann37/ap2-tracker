@@ -180,6 +180,7 @@ async function runFullSuite() {
   await import('./verify-answer-structure-browser.mjs');
   await import('./verify-exam-rehearsal-browser.mjs');
   await import('./verify-error-analysis-browser.mjs');
+  await import('./verify-error-notes-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
   await import('./verify-scenario-link-browser.mjs');
   await import('./verify-working-units-browser.mjs');
@@ -247,6 +248,9 @@ try {
   } else if (process.env.AP2_BROWSER_ONLY === 'raid-calculation') {
     useSignedInFixture = true;
     await import('./verify-raid-calculation-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'error-notes') {
+    useSignedInFixture = true;
+    await import('./verify-error-notes-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'error-analysis') {
     useSignedInFixture = true;
     await import('./verify-error-analysis-browser.mjs');
