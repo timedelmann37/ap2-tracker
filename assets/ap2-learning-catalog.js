@@ -7499,6 +7499,33 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "lebenslanges-lernen-europass-mobilitaet",
+    "slug": "lebenslanges-lernen-europass-mobilitaet",
+    "title": "Lebenslanges Lernen: Europass und Mobilität gezielt nutzen",
+    "description": "Lernziele überprüfbar planen, Europass-Dokumente richtig einordnen und einen beruflichen Lernaufenthalt ohne falsche Förderzusagen vorbereiten.",
+    "domain": "WiSo",
+    "groupId": "wiso-1",
+    "groupLabel": "W1 · Berufsbildung und Arbeitswelt",
+    "itemId": "wiso-1__12",
+    "week": "KW 35",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "lernen",
+      "nachweis",
+      "planung"
+    ],
+    "sources": [
+      "mobil-cv",
+      "mobil-nachweis",
+      "mobil-erasmus"
+    ],
+    "contentHash": "e5b3785878fa2ad4a0fe0a7797ddffcfbf77ae3185610952be204fe09f7ba1df",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "company-goals",
     "slug": "company-goals",
     "title": "Unternehmensziele und Zielkonflikte sicher abwägen",
