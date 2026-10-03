@@ -165,6 +165,7 @@ async function runFullSuite() {
   await import('./verify-transfer-duration-browser.mjs');
   await import('./verify-raid-calculation-browser.mjs');
   await import('./verify-backup-calculation-browser.mjs');
+  await import('./verify-availability-calculation-browser.mjs');
   useSignedInFixture = false;
   await import('./verify-space-browser.mjs');
 }
@@ -227,6 +228,9 @@ try {
   } else if (process.env.AP2_BROWSER_ONLY === 'raid-calculation') {
     useSignedInFixture = true;
     await import('./verify-raid-calculation-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'availability-calculation') {
+    useSignedInFixture = true;
+    await import('./verify-availability-calculation-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'backup-calculation') {
     useSignedInFixture = true;
     await import('./verify-backup-calculation-browser.mjs');

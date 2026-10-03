@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Prozentwerte in Ausfallzeiten umrechnen und unabhängige Abhängigkeiten von Redundanz unterscheiden.">
+<title>Verfügbarkeit: Ausfallzeit, Reihe und Parallel – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="verfuegbarkeit-ausfallzeit-reihe-parallel" data-progress-id="ga1-11__5" data-content-revision="2026-10-03.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-11">Rechnen und Prüfungstechnik</a><span class="sep">›</span>
+    <span class="here">Verfügbarkeit: Ausfallzeit, Reihe und Parallel</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Verfügbarkeit: Ausfallzeit, Reihe und Parallel</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 30 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Das fiktive Messlabor Hafenblick plant einen internen Messdienst. Du rechnest mit eigenen Modellwerten, nicht mit Herstellerzusagen: ein 30-Tage-Monat, ein Jahr mit 365 Tagen und zwei unterschiedliche Dienstarchitekturen. Alle Zeiten zählen einschließlich Wartung; ein vollständig funktionsfähiger Dienst gilt als verfügbar.</p>
+<section class="learning-goals" aria-labelledby="verfuegbarkeit-ausfallzeit-reihe-parallel-goals">
+  <h2 id="verfuegbarkeit-ausfallzeit-reihe-parallel-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Ausfallzeit mit ausdrücklich festgelegtem Zeitraum berechnen</li>
+    <li>Unabhängige notwendige Komponenten multiplizieren</li>
+    <li>Unabhängige Redundanz über gemeinsame Nichtverfügbarkeit rechnen</li>
+    <li>Gemeinsame Ursachen und Grenzen des Modells erkennen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Diagnose: Zwei Server sind keine Garantie</h2>
+<section class="quiz" data-quiz="availcalc-diagnose" data-correct="0">
+  <h3>Zwei Server nutzen dieselbe einzige Stromversorgung. Was folgt daraus?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Ein gemeinsamer Auslöser kann beide Zweige gleichzeitig unbrauchbar machen."><span class="m">A</span> Gemeinsame Ausfälle sind möglich; das unabhängige Parallelmodell ist nicht belegt.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Redundanz beseitigt nicht jede gemeinsame Fehlerquelle."><span class="m">B</span> Die Verfügbarkeit ist automatisch 100 %.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Das Verhalten hängt von Dienstabhängigkeiten und überlappenden Ausfällen ab."><span class="m">C</span> Die Ausfallzeiten werden einfach addiert.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2"><span class="num">2</span>Zeitraum zuerst, Prozent danach</h2>
+<p>Eine Angabe wie <strong>99,9 %</strong> benötigt einen Zeitraum und eine Definition von „verfügbar“. Im eigenen Fall gilt: <strong>A = nutzbare Zeit ÷ Gesamtzeit</strong>. Prozentwerte vor dem Rechnen durch 100 teilen. Die Nichtverfügbarkeit ist <strong>1 − A</strong>, nicht A selbst.</p>
+<p>30 Tage enthalten 43 200 Minuten. Für 99,9 % ergeben sich <strong>43,2 Minuten</strong> rechnerisch zulässige Ausfallzeit. Bei 365 Tagen und 99,95 % sind es <strong>262,8 Minuten = 4 h 22 min 48 s</strong>. Nicht den Jahreswert durch zwölf teilen, wenn ein konkret 30-tägiger Monat vorgegeben ist. Ein Schaltjahr, Februar oder ein reines Betriebsstundenfenster hat einen anderen Nenner.</p>
+<p>Umkehrung: Bei 60 Minuten Ausfall in einem 30-Tage-Monat beträgt die gemessene zeitbezogene Verfügbarkeit (1 − 60/43 200) × 100 ≈ <strong>99,8611 %</strong>. Ein Zielwert ist keine Messung und keine garantierte maximale Länge eines einzelnen Ausfalls. Mehrere Unterbrechungen zählen zusammen.</p>
+<div class="math-display" role="group" aria-label="Ausfallzeit t ist Gesamtzeit T mal eins minus verfügbarer Anteil A"><math display="block" aria-label="Ausfallzeit t ist Gesamtzeit T mal eins minus verfügbarer Anteil A"><mrow><mi>t</mi><mo>=</mo><mi>T</mi><mo>·</mo><mo>(</mo><mn>1</mn><mo>−</mo><mi>A</mi><mo>)</mo></mrow></math><div class="math-legend"><span>A als Anteil: 99,9 % = 0,999</span><span>T und t in derselben Zeiteinheit</span></div></div><figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Vom Ziel zur Ausfallzeit">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="542" viewBox="0 0 960 542" role="img" aria-labelledby="diagram-zeit-title diagram-zeit-desc">
+  <title id="diagram-zeit-title">Vom Ziel zur Ausfallzeit</title>
+  <desc id="diagram-zeit-desc">30 Tage ergeben 43200 Minuten. Der nicht verfügbare Anteil 0,001 ergibt 43,2 Minuten Ausfallzeit.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Vom Ziel zur Ausfallzeit</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Zeitraum</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">30 × 24 × 60 = 43 200 Minuten</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Verfügbarer Anteil</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">99,9 % = 0,999</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Nicht verfügbar</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">1 − 0,999 = 0,001</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Ausfallzeit</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">43 200 × 0,001 = 43,2 Minuten</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigener Rechenweg; alle Unterbrechungen im festgelegten Fenster zählen.</figcaption>
+</figure><section class="numeric-practice transfer-number" data-numeric-practice="availcalc-monat" data-required-objective="zeit" data-expected="43.2" data-tolerance="0.000001" data-correct-feedback="43 200 × (1 − 0,999) = 43,2 Minuten. Der Monat hat hier genau 30 Tage." data-wrong-feedback="43 200 Minuten mit 0,001 multiplizieren, nicht mit 0,999.">
+  <h3>Berechne das Ergebnis</h3>
+  <p>99,9 % in einem Monat mit genau 30 Tagen: Ausfallzeit in Minuten?</p>
+  <label for="availcalc-monat-answer">Ergebnis ohne Einheit</label>
+  <div class="answer-row"><input id="availcalc-monat-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Zahl ohne Einheit eingeben"><button type="button" class="lbtn primary" data-numeric-check>Antwort prüfen</button></div>  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p>
+</section><section class="numeric-practice transfer-number" data-numeric-practice="availcalc-jahr" data-expected="262.8" data-tolerance="0.000001" data-correct-feedback="525 600 × (1 − 0,9995) = 262,8 Minuten, also 4 h 22 min 48 s." data-wrong-feedback="365 × 24 × 60 × (1 − 0,9995).">
+  <h3>Berechne das Ergebnis</h3>
+  <p>99,95 % in einem Jahr mit genau 365 Tagen: Ausfallzeit in Minuten?</p>
+  <label for="availcalc-jahr-answer">Ergebnis ohne Einheit</label>
+  <div class="answer-row"><input id="availcalc-jahr-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Zahl ohne Einheit eingeben"><button type="button" class="lbtn" data-numeric-check>Antwort prüfen</button></div>  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s3"><span class="num">3</span>Reihe: Jede notwendige Komponente zählt</h2>
+<p>Der Messdienst braucht <strong>Gateway und Auswertedienst gleichzeitig</strong>. Hafenblick nimmt statistisch unabhängige Zustände an: A₁ = 0,99 und A₂ = 0,98. Die Gesamtverfügbarkeit ist <strong>0,99 × 0,98 = 0,9702 = 97,02 %</strong>. Sie liegt unter beiden Einzelwerten. „Reihe“ bezeichnet hier notwendige logische Abhängigkeiten, nicht Kabelreihenfolge.</p>
+<p>Nicht 99 × 98 als Prozentwert lesen und nicht einfach 1 % + 2 % Ausfall addieren: Überlappung zählt sonst doppelt. Falls ein Dienst bei Ausfall einer Abhängigkeit dennoch seine vereinbarte Funktion erfüllt, ist diese keine harte Abhängigkeit in diesem Modell. Gleicher Bezugszeitraum und dieselbe Definition müssen gelten.</p>
+<div class="math-display" role="group" aria-label="Verfügbarkeit der Reihe ist A eins mal A zwei"><math display="block" aria-label="Verfügbarkeit der Reihe ist A eins mal A zwei"><mrow><msub><mi>A</mi><mtext>Reihe</mtext></msub><mo>=</mo><msub><mi>A</mi><mn>1</mn></msub><mo>·</mo><msub><mi>A</mi><mn>2</mn></msub></mrow></math><div class="math-legend"><span>Beide Komponenten müssen funktionieren</span><span>Statistisch unabhängige Zustände vorausgesetzt</span></div></div><section class="numeric-practice transfer-number" data-numeric-practice="availcalc-reihe" data-required-objective="reihe" data-expected="97.02" data-tolerance="0.000001" data-correct-feedback="0,99 × 0,98 × 100 = 97,02 %. Beide Komponenten sind notwendig und unabhängig." data-wrong-feedback="0,99 × 0,98 rechnen, dann mit 100 in Prozent umwandeln.">
+  <h3>Berechne das Ergebnis</h3>
+  <p>Unabhängige notwendige Komponenten: 99 % und 98 %. Gesamtverfügbarkeit in Prozent?</p>
+  <label for="availcalc-reihe-answer">Ergebnis ohne Einheit</label>
+  <div class="answer-row"><input id="availcalc-reihe-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Zahl ohne Einheit eingeben"><button type="button" class="lbtn primary" data-numeric-check>Antwort prüfen</button></div>  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Parallel: Ein funktionsfähiger Zweig reicht</h2>
+<p>Alternative: Zwei identische Dienstzweige haben jeweils A = 0,99. <strong>Jeder allein kann die vollständige Last und Funktion übernehmen</strong>. Ihre Zustände seien unabhängig; Umschaltung und gemeinsame Infrastruktur gelten hier idealisiert als fehlerfrei. Nur wenn beide gleichzeitig nicht verfügbar sind, fällt der Modellservice aus: <strong>1 − (0,01 × 0,01) = 0,9999 = 99,99 %</strong>.</p>
+<p>Nicht die Verfügbarkeiten addieren: 198 % wäre unmöglich. Auch das Produkt 0,99² beschreibt die falsche Anforderung „beide müssen laufen“. Ein Quorum oder eine Architektur, die beide Zweige für die Last braucht, ist kein einfaches Ein-aus-zwei-Parallelmodell.</p>
+<div class="math-display" role="group" aria-label="Verfügbarkeit parallel ist eins minus Produkt der beiden nicht verfügbaren Anteile"><math display="block" aria-label="Verfügbarkeit parallel ist eins minus Produkt der beiden nicht verfügbaren Anteile"><mrow><msub><mi>A</mi><mtext>Parallel</mtext></msub><mo>=</mo><mn>1</mn><mo>−</mo><mo>(</mo><mn>1</mn><mo>−</mo><msub><mi>A</mi><mn>1</mn></msub><mo>)</mo><mo>·</mo><mo>(</mo><mn>1</mn><mo>−</mo><msub><mi>A</mi><mn>2</mn></msub><mo>)</mo></mrow></math><div class="math-legend"><span>Ein vollständiger Zweig genügt</span><span>Unabhängigkeit und ideale Umschaltung</span></div></div><section class="numeric-practice transfer-number" data-numeric-practice="availcalc-parallel" data-required-objective="parallel" data-expected="99.99" data-tolerance="0.000001" data-correct-feedback="[1 − (0,01 × 0,01)] × 100 = 99,99 %. Ein Zweig genügt; unabhängige Zustände und ideale Umschaltung sind vorausgesetzt." data-wrong-feedback="1 − (0,01 × 0,01) rechnen; Ergebnis mal 100.">
+  <h3>Berechne das Ergebnis</h3>
+  <p>Zwei unabhängige Zweige zu je 99 %; ein Zweig genügt. Gesamtverfügbarkeit in Prozent?</p>
+  <label for="availcalc-parallel-answer">Ergebnis ohne Einheit</label>
+  <div class="answer-row"><input id="availcalc-parallel-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Zahl ohne Einheit eingeben"><button type="button" class="lbtn primary" data-numeric-check>Antwort prüfen</button></div>  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Modellprüfung statt erfundener Zusage</h2>
+<p>Eine gemeinsame Stromversorgung, ein einzelner vorgeschalteter Switch, derselbe Softwarefehler oder ein gleichzeitiges Update kann beide Zweige treffen. Dann ist die unabhängige Multiplikation nicht begründet. Eine zusätzliche unabhängige harte Komponente müsste im Gesamtmodell zusätzlich in Reihe berücksichtigt werden; das Parallelpaar allein beschreibt nicht den End-to-End-Dienst.</p>
+<p>Prüfe anhand von Ausfalltests: trägt ein Zweig die Last, funktioniert Umschaltung, bleibt die fachliche Funktion erhalten? <strong>SLA</strong> definiert vertraglich Messung, Zeitraum und mögliche Ausschlüsse. Die hier gezählte Wartung darf nicht stillschweigend entfernt werden. Anfragebasierte Erfolgsquoten sind eine andere Messgröße und nicht ohne Messdefinition mit zeitbezogener Verfügbarkeit austauschbar. <a href="https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/availability.html">AWS: Availability</a> beschreibt Definition und Modellvoraussetzungen; eigene Zahlen sind didaktische Annahmen.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Welches Modell passt?">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="542" viewBox="0 0 960 542" role="img" aria-labelledby="diagram-modell-title diagram-modell-desc">
+  <title id="diagram-modell-title">Welches Modell passt?</title>
+  <desc id="diagram-modell-desc">Zuerst notwendige Abhängigkeiten oder Ersatzpfade bestimmen, dann gemeinsame Ausfallursachen prüfen und den Dienst testen.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Welches Modell passt?</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Alle Komponenten nötig?</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Reihe: unabhängige Anteile multiplizieren</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Ein Zweig allein genügt?</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Parallel: gemeinsame Ausfälle betrachten</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Gemeinsame Ursache?</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Unabhängigkeit nicht einfach unterstellen</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Dienst prüfen</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Failover, Kapazität und Messfenster testen</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Die Voraussetzungen entscheiden über die Formel, nicht die Zahl der Server.</figcaption>
+</figure><section class="quiz" data-quiz="availcalc-modell" data-correct="0" data-required-objective="modell">
+  <h3>Beide Zweige teilen einen einzigen Switch. Darfst du 99,99 % als End-to-End-Nachweis aus dem Parallelpaar übernehmen?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Das Paarmodell schließt die gemeinsame Abhängigkeit und reale Umschaltverluste nicht ein."><span class="m">A</span> Nein; gemeinsame Abhängigkeit und reale Umschaltung müssen zusätzlich geprüft werden.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Gleiche gemeinsame Infrastruktur kann beide Zweige gleichzeitig treffen."><span class="m">B</span> Ja; zwei Server beweisen statistische Unabhängigkeit.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Vertragliches Ziel und technischer Nachweis sind verschiedene Dinge."><span class="m">C</span> Ja; ein SLA ersetzt Ausfalltests.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="recall-practice" data-recall="availcalc-transfer" data-min-length="140" aria-labelledby="availcalc-transfer-title">
+  <div class="recall-prompt"><h3 id="availcalc-transfer-title">Abruf aus dem Kopf</h3><p>Formuliere Hafenblicks Entscheidung: 30-Tage-Ausfallzeit, notwendige Reihe, ersetzbare Zweige und mindestens zwei Gründe, warum der Parallelwert keine Zusage für den realen Dienst ist.</p></div>
+  <label class="sr-only" for="availcalc-transfer-answer">Deine freie Antwort</label>
+  <textarea id="availcalc-transfer-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> 99,9 % über 30 Tage ergeben 43,2 Minuten Ausfallzeit. Die unabhängige notwendige Reihe 0,99 × 0,98 ergibt 97,02 %. Ein-aus-zwei mit je 0,99 ergibt idealisiert 99,99 %. Gemeinsamer Switch/Strom oder gleiche Softwarefehler verletzen die Unabhängigkeit; reale Umschaltung und Kapazität müssen getestet werden. Vertragsdefinition und Messfenster separat klären.</div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Abruftraining</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="zeit" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welcher Zeitraum zählt?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Der ausdrücklich definierte Mess- oder Zielzeitraum.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="reihe" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wann multipliziere ich A-Anteile?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Bei unabhängigen Komponenten, die alle nötig sind.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="parallel" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wann rechne ich mit 1 − A?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Bei unabhängigen Ersatzpfaden: erst gemeinsame Nichtverfügbarkeit bestimmen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="ursache" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was gefährdet Unabhängigkeit?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Gemeinsame Stromversorgung, Infrastruktur, Softwarefehler oder Updates.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="nachweis" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was beweist ein Modellwert nicht?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Reale End-to-End-Verfügbarkeit, funktionierendes Failover oder ein SLA.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Verfügbarkeit“:</span><button type="button" data-card-id="zeit" data-card-rate="known">gewusst</button><button type="button" data-card-id="zeit" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="zeit"></span></div>
+<div class="card-rating"><span>Karte „Verfügbarkeit“:</span><button type="button" data-card-id="reihe" data-card-rate="known">gewusst</button><button type="button" data-card-id="reihe" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="reihe"></span></div>
+<div class="card-rating"><span>Karte „Verfügbarkeit“:</span><button type="button" data-card-id="parallel" data-card-rate="known">gewusst</button><button type="button" data-card-id="parallel" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="parallel"></span></div>
+<div class="card-rating"><span>Karte „Verfügbarkeit“:</span><button type="button" data-card-id="ursache" data-card-rate="known">gewusst</button><button type="button" data-card-id="ursache" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ursache"></span></div>
+<div class="card-rating"><span>Karte „Verfügbarkeit“:</span><button type="button" data-card-id="nachweis" data-card-rate="known">gewusst</button><button type="button" data-card-id="nachweis" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="nachweis"></span></div>
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-11"><span class="d">zurück zu</span><span class="t">Rechnen und Prüfungstechnik</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Rechnen und Prüfungstechnik</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 4 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Diagnose: Zwei Server sind keine Garantie</a></li>
+<li><a href="#s2" data-t="s2">Zeitraum zuerst, Prozent danach</a></li>
+<li><a href="#s3" data-t="s3">Reihe: Jede notwendige Komponente zählt</a></li>
+<li><a href="#s4" data-t="s4">Parallel: Ein funktionsfähiger Zweig reicht</a></li>
+<li><a href="#s5" data-t="s5">Modellprüfung statt erfundener Zusage</a></li>
+<li><a href="#s6" data-t="s6">Abruftraining</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-11">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

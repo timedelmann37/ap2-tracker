@@ -1,0 +1,330 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "verfuegbarkeit-ausfallzeit-reihe-parallel",
+    "slug": "verfuegbarkeit-ausfallzeit-reihe-parallel",
+    "title": "Verfügbarkeit: Ausfallzeit, Reihe und Parallel",
+    "description": "Prozentwerte in Ausfallzeiten umrechnen und unabhängige Abhängigkeiten von Redundanz unterscheiden.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-11",
+    "groupLabel": "Rechnen und Prüfungstechnik",
+    "itemId": "ga1-11__5",
+    "week": "parallel",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": [
+      "availcalc-aws"
+    ],
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "zeit",
+      "label": "Ausfallzeit mit ausdrücklich festgelegtem Zeitraum berechnen"
+    },
+    {
+      "id": "reihe",
+      "label": "Unabhängige notwendige Komponenten multiplizieren"
+    },
+    {
+      "id": "parallel",
+      "label": "Unabhängige Redundanz über gemeinsame Nichtverfügbarkeit rechnen"
+    },
+    {
+      "id": "modell",
+      "label": "Gemeinsame Ursachen und Grenzen des Modells erkennen"
+    }
+  ],
+  "intro": "Das fiktive Messlabor Hafenblick plant einen internen Messdienst. Du rechnest mit eigenen Modellwerten, nicht mit Herstellerzusagen: ein 30-Tage-Monat, ein Jahr mit 365 Tagen und zwei unterschiedliche Dienstarchitekturen. Alle Zeiten zählen einschließlich Wartung; ein vollständig funktionsfähiger Dienst gilt als verfügbar.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "availcalc-aws",
+        "sourceLocator": "Availability: definition, hard dependencies and redundant components",
+        "use": "Zeitbezogene Verfügbarkeit sowie unabhängige notwendige und redundante Komponenten",
+        "reviewStatus": "Direkt gelesen 03.10.2026; eigene Zahlen, keine Produktgarantie"
+      }
+    ],
+    "notes": [
+      "CURATED_DRAFT bis menschliche Fachfreigabe.",
+      "Privater Themenanker europa-integratoren-2026:00204, Zeilen 2026–2077 direkt gelesen: redundante Systeme und Abgrenzung zur Verfügbarkeit. Keine Originalaufgaben oder Grafiken übernommen; kein Formelbeleg.",
+      "Eigene vereinfachte stationäre Modelle mit statistischer Unabhängigkeit. SLA, Messung und theoretische Verfügbarkeit nicht gleichsetzen.",
+      "Bestehender Refero-Deep-Space-Lock, gemeinsame Widgets, semantische MathML und technische SVG-Prüfwege."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "zeit",
+      "type": "flow",
+      "title": "Vom Ziel zur Ausfallzeit",
+      "description": "Eigener Monat mit genau 30 Tagen.",
+      "items": [
+        {
+          "label": "Zeitraum",
+          "detail": "30 × 24 × 60 = 43 200 Minuten"
+        },
+        {
+          "label": "Verfügbarer Anteil",
+          "detail": "99,9 % = 0,999"
+        },
+        {
+          "label": "Nicht verfügbar",
+          "detail": "1 − 0,999 = 0,001"
+        },
+        {
+          "label": "Ausfallzeit",
+          "detail": "43 200 × 0,001 = 43,2 Minuten"
+        }
+      ]
+    },
+    {
+      "id": "modell",
+      "type": "flow",
+      "title": "Welches Modell passt?",
+      "description": "Logische Dienstabhängigkeit, keine elektrische Schaltung.",
+      "items": [
+        {
+          "label": "Alle Komponenten nötig?",
+          "detail": "Reihe: unabhängige Anteile multiplizieren"
+        },
+        {
+          "label": "Ein Zweig allein genügt?",
+          "detail": "Parallel: gemeinsame Ausfälle betrachten"
+        },
+        {
+          "label": "Gemeinsame Ursache?",
+          "detail": "Unabhängigkeit nicht einfach unterstellen"
+        },
+        {
+          "label": "Dienst prüfen",
+          "detail": "Failover, Kapazität und Messfenster testen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Diagnose: Zwei Server sind keine Garantie",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "availcalc-diagnose",
+          "question": "Zwei Server nutzen dieselbe einzige Stromversorgung. Was folgt daraus?",
+          "options": [
+            {
+              "text": "Gemeinsame Ausfälle sind möglich; das unabhängige Parallelmodell ist nicht belegt.",
+              "rationale": "Ein gemeinsamer Auslöser kann beide Zweige gleichzeitig unbrauchbar machen.",
+              "correct": true
+            },
+            {
+              "text": "Die Verfügbarkeit ist automatisch 100 %.",
+              "rationale": "Redundanz beseitigt nicht jede gemeinsame Fehlerquelle.",
+              "correct": false
+            },
+            {
+              "text": "Die Ausfallzeiten werden einfach addiert.",
+              "rationale": "Das Verhalten hängt von Dienstabhängigkeiten und überlappenden Ausfällen ab.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Zeitraum zuerst, Prozent danach",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Eine Angabe wie **99,9 %** benötigt einen Zeitraum und eine Definition von „verfügbar“. Im eigenen Fall gilt: **A = nutzbare Zeit ÷ Gesamtzeit**. Prozentwerte vor dem Rechnen durch 100 teilen. Die Nichtverfügbarkeit ist **1 − A**, nicht A selbst.\n\n30 Tage enthalten 43 200 Minuten. Für 99,9 % ergeben sich **43,2 Minuten** rechnerisch zulässige Ausfallzeit. Bei 365 Tagen und 99,95 % sind es **262,8 Minuten = 4 h 22 min 48 s**. Nicht den Jahreswert durch zwölf teilen, wenn ein konkret 30-tägiger Monat vorgegeben ist. Ein Schaltjahr, Februar oder ein reines Betriebsstundenfenster hat einen anderen Nenner.\n\nUmkehrung: Bei 60 Minuten Ausfall in einem 30-Tage-Monat beträgt die gemessene zeitbezogene Verfügbarkeit (1 − 60/43 200) × 100 ≈ **99,8611 %**. Ein Zielwert ist keine Messung und keine garantierte maximale Länge eines einzelnen Ausfalls. Mehrere Unterbrechungen zählen zusammen."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Ausfallzeit t ist Gesamtzeit T mal eins minus verfügbarer Anteil A",
+          "mathml": "<math display=\"block\"><mrow><mi>t</mi><mo>=</mo><mi>T</mi><mo>·</mo><mo>(</mo><mn>1</mn><mo>−</mo><mi>A</mi><mo>)</mo></mrow></math>",
+          "legend": [
+            "A als Anteil: 99,9 % = 0,999",
+            "T und t in derselben Zeiteinheit"
+          ]
+        },
+        {
+          "type": "figure",
+          "diagramId": "zeit",
+          "alt": "30 Tage ergeben 43200 Minuten. Der nicht verfügbare Anteil 0,001 ergibt 43,2 Minuten Ausfallzeit.",
+          "caption": "Eigener Rechenweg; alle Unterbrechungen im festgelegten Fenster zählen."
+        },
+        {
+          "type": "numeric",
+          "id": "availcalc-monat",
+          "prompt": "99,9 % in einem Monat mit genau 30 Tagen: Ausfallzeit in Minuten?",
+          "expected": 43.2,
+          "tolerance": 0.000001,
+          "label": "Ergebnis ohne Einheit",
+          "placeholder": "Zahl ohne Einheit eingeben",
+          "correctFeedback": "43 200 × (1 − 0,999) = 43,2 Minuten. Der Monat hat hier genau 30 Tage.",
+          "wrongFeedback": "43 200 Minuten mit 0,001 multiplizieren, nicht mit 0,999.",
+          "requiredObjective": "zeit"
+        },
+        {
+          "type": "numeric",
+          "id": "availcalc-jahr",
+          "prompt": "99,95 % in einem Jahr mit genau 365 Tagen: Ausfallzeit in Minuten?",
+          "expected": 262.8,
+          "tolerance": 0.000001,
+          "label": "Ergebnis ohne Einheit",
+          "placeholder": "Zahl ohne Einheit eingeben",
+          "correctFeedback": "525 600 × (1 − 0,9995) = 262,8 Minuten, also 4 h 22 min 48 s.",
+          "wrongFeedback": "365 × 24 × 60 × (1 − 0,9995)."
+        }
+      ]
+    },
+    {
+      "title": "Reihe: Jede notwendige Komponente zählt",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Der Messdienst braucht **Gateway und Auswertedienst gleichzeitig**. Hafenblick nimmt statistisch unabhängige Zustände an: A₁ = 0,99 und A₂ = 0,98. Die Gesamtverfügbarkeit ist **0,99 × 0,98 = 0,9702 = 97,02 %**. Sie liegt unter beiden Einzelwerten. „Reihe“ bezeichnet hier notwendige logische Abhängigkeiten, nicht Kabelreihenfolge.\n\nNicht 99 × 98 als Prozentwert lesen und nicht einfach 1 % + 2 % Ausfall addieren: Überlappung zählt sonst doppelt. Falls ein Dienst bei Ausfall einer Abhängigkeit dennoch seine vereinbarte Funktion erfüllt, ist diese keine harte Abhängigkeit in diesem Modell. Gleicher Bezugszeitraum und dieselbe Definition müssen gelten."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Verfügbarkeit der Reihe ist A eins mal A zwei",
+          "mathml": "<math display=\"block\"><mrow><msub><mi>A</mi><mtext>Reihe</mtext></msub><mo>=</mo><msub><mi>A</mi><mn>1</mn></msub><mo>·</mo><msub><mi>A</mi><mn>2</mn></msub></mrow></math>",
+          "legend": [
+            "Beide Komponenten müssen funktionieren",
+            "Statistisch unabhängige Zustände vorausgesetzt"
+          ]
+        },
+        {
+          "type": "numeric",
+          "id": "availcalc-reihe",
+          "prompt": "Unabhängige notwendige Komponenten: 99 % und 98 %. Gesamtverfügbarkeit in Prozent?",
+          "expected": 97.02,
+          "tolerance": 0.000001,
+          "label": "Ergebnis ohne Einheit",
+          "placeholder": "Zahl ohne Einheit eingeben",
+          "correctFeedback": "0,99 × 0,98 × 100 = 97,02 %. Beide Komponenten sind notwendig und unabhängig.",
+          "wrongFeedback": "0,99 × 0,98 rechnen, dann mit 100 in Prozent umwandeln.",
+          "requiredObjective": "reihe"
+        }
+      ]
+    },
+    {
+      "title": "Parallel: Ein funktionsfähiger Zweig reicht",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Alternative: Zwei identische Dienstzweige haben jeweils A = 0,99. **Jeder allein kann die vollständige Last und Funktion übernehmen**. Ihre Zustände seien unabhängig; Umschaltung und gemeinsame Infrastruktur gelten hier idealisiert als fehlerfrei. Nur wenn beide gleichzeitig nicht verfügbar sind, fällt der Modellservice aus: **1 − (0,01 × 0,01) = 0,9999 = 99,99 %**.\n\nNicht die Verfügbarkeiten addieren: 198 % wäre unmöglich. Auch das Produkt 0,99² beschreibt die falsche Anforderung „beide müssen laufen“. Ein Quorum oder eine Architektur, die beide Zweige für die Last braucht, ist kein einfaches Ein-aus-zwei-Parallelmodell."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Verfügbarkeit parallel ist eins minus Produkt der beiden nicht verfügbaren Anteile",
+          "mathml": "<math display=\"block\"><mrow><msub><mi>A</mi><mtext>Parallel</mtext></msub><mo>=</mo><mn>1</mn><mo>−</mo><mo>(</mo><mn>1</mn><mo>−</mo><msub><mi>A</mi><mn>1</mn></msub><mo>)</mo><mo>·</mo><mo>(</mo><mn>1</mn><mo>−</mo><msub><mi>A</mi><mn>2</mn></msub><mo>)</mo></mrow></math>",
+          "legend": [
+            "Ein vollständiger Zweig genügt",
+            "Unabhängigkeit und ideale Umschaltung"
+          ]
+        },
+        {
+          "type": "numeric",
+          "id": "availcalc-parallel",
+          "prompt": "Zwei unabhängige Zweige zu je 99 %; ein Zweig genügt. Gesamtverfügbarkeit in Prozent?",
+          "expected": 99.99,
+          "tolerance": 0.000001,
+          "label": "Ergebnis ohne Einheit",
+          "placeholder": "Zahl ohne Einheit eingeben",
+          "correctFeedback": "[1 − (0,01 × 0,01)] × 100 = 99,99 %. Ein Zweig genügt; unabhängige Zustände und ideale Umschaltung sind vorausgesetzt.",
+          "wrongFeedback": "1 − (0,01 × 0,01) rechnen; Ergebnis mal 100.",
+          "requiredObjective": "parallel"
+        }
+      ]
+    },
+    {
+      "title": "Modellprüfung statt erfundener Zusage",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Eine gemeinsame Stromversorgung, ein einzelner vorgeschalteter Switch, derselbe Softwarefehler oder ein gleichzeitiges Update kann beide Zweige treffen. Dann ist die unabhängige Multiplikation nicht begründet. Eine zusätzliche unabhängige harte Komponente müsste im Gesamtmodell zusätzlich in Reihe berücksichtigt werden; das Parallelpaar allein beschreibt nicht den End-to-End-Dienst.\n\nPrüfe anhand von Ausfalltests: trägt ein Zweig die Last, funktioniert Umschaltung, bleibt die fachliche Funktion erhalten? **SLA** definiert vertraglich Messung, Zeitraum und mögliche Ausschlüsse. Die hier gezählte Wartung darf nicht stillschweigend entfernt werden. Anfragebasierte Erfolgsquoten sind eine andere Messgröße und nicht ohne Messdefinition mit zeitbezogener Verfügbarkeit austauschbar. [AWS: Availability](https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/availability.html) beschreibt Definition und Modellvoraussetzungen; eigene Zahlen sind didaktische Annahmen."
+        },
+        {
+          "type": "figure",
+          "diagramId": "modell",
+          "alt": "Zuerst notwendige Abhängigkeiten oder Ersatzpfade bestimmen, dann gemeinsame Ausfallursachen prüfen und den Dienst testen.",
+          "caption": "Die Voraussetzungen entscheiden über die Formel, nicht die Zahl der Server."
+        },
+        {
+          "type": "quiz",
+          "id": "availcalc-modell",
+          "question": "Beide Zweige teilen einen einzigen Switch. Darfst du 99,99 % als End-to-End-Nachweis aus dem Parallelpaar übernehmen?",
+          "options": [
+            {
+              "text": "Nein; gemeinsame Abhängigkeit und reale Umschaltung müssen zusätzlich geprüft werden.",
+              "rationale": "Das Paarmodell schließt die gemeinsame Abhängigkeit und reale Umschaltverluste nicht ein.",
+              "correct": true
+            },
+            {
+              "text": "Ja; zwei Server beweisen statistische Unabhängigkeit.",
+              "rationale": "Gleiche gemeinsame Infrastruktur kann beide Zweige gleichzeitig treffen.",
+              "correct": false
+            },
+            {
+              "text": "Ja; ein SLA ersetzt Ausfalltests.",
+              "rationale": "Vertragliches Ziel und technischer Nachweis sind verschiedene Dinge.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "modell"
+        },
+        {
+          "type": "recall",
+          "id": "availcalc-transfer",
+          "prompt": "Formuliere Hafenblicks Entscheidung: 30-Tage-Ausfallzeit, notwendige Reihe, ersetzbare Zweige und mindestens zwei Gründe, warum der Parallelwert keine Zusage für den realen Dienst ist.",
+          "minLength": 140,
+          "model": "99,9 % über 30 Tage ergeben 43,2 Minuten Ausfallzeit. Die unabhängige notwendige Reihe 0,99 × 0,98 ergibt 97,02 %. Ein-aus-zwei mit je 0,99 ergibt idealisiert 99,99 %. Gemeinsamer Switch/Strom oder gleiche Softwarefehler verletzen die Unabhängigkeit; reale Umschaltung und Kapazität müssen getestet werden. Vertragsdefinition und Messfenster separat klären."
+        }
+      ]
+    },
+    {
+      "title": "Abruftraining",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "id": "availcalc-cards",
+          "cards": [
+            {
+              "id": "zeit",
+              "label": "Verfügbarkeit",
+              "front": "Welcher Zeitraum zählt?",
+              "back": "Der ausdrücklich definierte Mess- oder Zielzeitraum."
+            },
+            {
+              "id": "reihe",
+              "label": "Verfügbarkeit",
+              "front": "Wann multipliziere ich A-Anteile?",
+              "back": "Bei unabhängigen Komponenten, die alle nötig sind."
+            },
+            {
+              "id": "parallel",
+              "label": "Verfügbarkeit",
+              "front": "Wann rechne ich mit 1 − A?",
+              "back": "Bei unabhängigen Ersatzpfaden: erst gemeinsame Nichtverfügbarkeit bestimmen."
+            },
+            {
+              "id": "ursache",
+              "label": "Verfügbarkeit",
+              "front": "Was gefährdet Unabhängigkeit?",
+              "back": "Gemeinsame Stromversorgung, Infrastruktur, Softwarefehler oder Updates."
+            },
+            {
+              "id": "nachweis",
+              "label": "Verfügbarkeit",
+              "front": "Was beweist ein Modellwert nicht?",
+              "back": "Reale End-to-End-Verfügbarkeit, funktionierendes Failover oder ein SLA."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -3613,6 +3613,32 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "verfuegbarkeit-ausfallzeit-reihe-parallel",
+    "slug": "verfuegbarkeit-ausfallzeit-reihe-parallel",
+    "title": "Verfügbarkeit: Ausfallzeit, Reihe und Parallel",
+    "description": "Prozentwerte in Ausfallzeiten umrechnen und unabhängige Abhängigkeiten von Redundanz unterscheiden.",
+    "domain": "GA1",
+    "groupId": "ga1-11",
+    "groupLabel": "Rechnen und Prüfungstechnik",
+    "itemId": "ga1-11__5",
+    "week": "parallel",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "zeit",
+      "reihe",
+      "parallel",
+      "modell"
+    ],
+    "sources": [
+      "availcalc-aws"
+    ],
+    "contentHash": "205ddf73e0e3b48519f69abaad7da9f57a88d9cd6a422d1279b242887913b3f4",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "osi-model",
     "slug": "osi-model",
     "title": "Das OSI-Schichtenmodell sicher anwenden",
