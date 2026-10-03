@@ -7554,6 +7554,37 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "arbeitsvertrag-einigung-nachweis-form-nebenabreden",
+    "slug": "arbeitsvertrag-einigung-nachweis-form-nebenabreden",
+    "title": "Arbeitsvertrag: Einigung, Nachweis und besondere Form",
+    "description": "Angebot und Annahme unterscheiden, wesentliche Vertragsbedingungen prüfen und Nachweis, Befristung sowie individuelle Nebenabreden getrennt einordnen.",
+    "domain": "WiSo",
+    "groupId": "wiso-2",
+    "groupLabel": "W2 · Arbeitsrecht I",
+    "itemId": "wiso-2__0",
+    "week": "KW 36",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "einigung",
+      "nachweis",
+      "abrede"
+    ],
+    "sources": [
+      "vertrag-bgb-arbeit",
+      "vertrag-gewo-form",
+      "vertrag-bgb-angebot",
+      "vertrag-bgb-aenderung",
+      "vertrag-nachwg",
+      "vertrag-befristung",
+      "vertrag-individuell"
+    ],
+    "contentHash": "00670d30c0b0269b9f50458cc01833257d01009040e299490b78b95ac96abd08",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "company-goals",
     "slug": "company-goals",
     "title": "Unternehmensziele und Zielkonflikte sicher abwägen",
