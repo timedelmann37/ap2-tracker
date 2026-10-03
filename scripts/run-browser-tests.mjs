@@ -218,6 +218,7 @@ async function runFullSuite() {
   await import('./verify-arbeitsschutzrolle-browser.mjs');
   await import('./verify-ergonomie-browser.mjs');
   await import('./verify-bgm-browser.mjs');
+  await import('./verify-kuendigungsarten-browser.mjs');
   await import('./verify-maternity-periods-browser.mjs');
   await import('./verify-contract-types-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
@@ -326,6 +327,9 @@ try {
   } else if (process.env.AP2_BROWSER_ONLY === 'maternity-periods') {
     useSignedInFixture = true;
     await import('./verify-maternity-periods-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'kuendigungsarten') {
+    useSignedInFixture = true;
+    await import('./verify-kuendigungsarten-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'bgm') {
     useSignedInFixture = true;
     await import('./verify-bgm-browser.mjs');
