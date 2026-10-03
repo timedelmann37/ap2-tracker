@@ -7282,6 +7282,37 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "duales-system-lernorte-zustaendige-stelle",
+    "slug": "duales-system-lernorte-zustaendige-stelle",
+    "title": "Duales System: Lernorte und zuständige Stelle",
+    "description": "Betrieb, Berufsschule und Kammer unterscheiden; Ausbildungsprobleme und Prüfungsfragen an die richtige Stelle richten.",
+    "domain": "WiSo",
+    "groupId": "wiso-1",
+    "groupLabel": "W1 · Berufsbildung und Arbeitswelt",
+    "itemId": "wiso-1__5",
+    "week": "KW 35",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "lernorte",
+      "kammer",
+      "fall"
+    ],
+    "sources": [
+      "dual-bbig-lernorte",
+      "dual-bbig-stelle",
+      "dual-bbig-beratung",
+      "dual-bbig-pruefung",
+      "dual-bbig-eintragung",
+      "dual-bbig-betrieb",
+      "dual-kmk"
+    ],
+    "contentHash": "6508ed159fa7732a754260676384038ca69e70b6e2370937c7bd3b7de39287c3",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "company-goals",
     "slug": "company-goals",
     "title": "Unternehmensziele und Zielkonflikte sicher abwägen",
