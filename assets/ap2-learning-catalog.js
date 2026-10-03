@@ -7735,6 +7735,35 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "entgeltfortzahlung-krankmeldung-nachweis-eau",
+    "slug": "entgeltfortzahlung-krankmeldung-nachweis-eau",
+    "title": "Entgeltfortzahlung: Krankmeldung, Nachweis und eAU",
+    "description": "Zahlungsanspruch, unverzügliche Krankmeldung und ärztlichen Nachweis getrennt prüfen; Kalendertage zählen und den eAU-Regelfall richtig abwickeln.",
+    "domain": "WiSo",
+    "groupId": "wiso-2",
+    "groupLabel": "W2 · Arbeitsrecht I",
+    "itemId": "wiso-2__6",
+    "week": "KW 36",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "anspruch",
+      "anzeige",
+      "nachweis"
+    ],
+    "sources": [
+      "krank-anspruch",
+      "krank-pflichten",
+      "krank-hoehe",
+      "krank-kbv",
+      "krank-abruf"
+    ],
+    "contentHash": "04515cfd6307172fd12d4efaa5330cf7b035695c34b6cfca394fff6a244d13e7",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "company-goals",
     "slug": "company-goals",
     "title": "Unternehmensziele und Zielkonflikte sicher abwägen",
