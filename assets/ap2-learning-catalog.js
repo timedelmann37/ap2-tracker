@@ -7673,6 +7673,37 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "arbeitszeitgesetz-pausen-ruhezeit-sonntag",
+    "slug": "arbeitszeitgesetz-pausen-ruhezeit-sonntag",
+    "title": "Arbeitszeitgesetz: Pausen, Ruhezeit und Sonntagsarbeit prüfen",
+    "description": "Nettoarbeitszeit aus einem IT-Dienstplan berechnen, Pausen und Ruhezeiten getrennt prüfen und Sonntagsarbeit mit Ausnahme und Ersatzruhe beurteilen.",
+    "domain": "WiSo",
+    "groupId": "wiso-2",
+    "groupLabel": "W2 · Arbeitsrecht I",
+    "itemId": "wiso-2__4",
+    "week": "KW 36",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "zeit",
+      "ruhe",
+      "sonntag"
+    ],
+    "sources": [
+      "zeit-definition",
+      "zeit-dauer",
+      "zeit-pause",
+      "zeit-ruhe",
+      "zeit-sonntag",
+      "zeit-ausnahme",
+      "zeit-ersatz"
+    ],
+    "contentHash": "270467f8268df3a377487bdea04fe62dee7783727e8dc653242d969db6b4b77a",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "company-goals",
     "slug": "company-goals",
     "title": "Unternehmensziele und Zielkonflikte sicher abwägen",

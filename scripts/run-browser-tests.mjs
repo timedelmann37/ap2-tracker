@@ -209,6 +209,7 @@ async function runFullSuite() {
   await import('./verify-employment-contract-browser.mjs');
   await import('./verify-labour-law-types-browser.mjs');
   await import('./verify-leiharbeit-browser.mjs');
+  await import('./verify-working-time-browser.mjs');
   await import('./verify-contract-types-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
   await import('./verify-scenario-link-browser.mjs');
@@ -301,6 +302,9 @@ try {
   } else if (process.env.AP2_BROWSER_ONLY === 'leiharbeit') {
     useSignedInFixture = true;
     await import('./verify-leiharbeit-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'working-time') {
+    useSignedInFixture = true;
+    await import('./verify-working-time-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'contract-types') {
     useSignedInFixture = true;
     await import('./verify-contract-types-browser.mjs');
