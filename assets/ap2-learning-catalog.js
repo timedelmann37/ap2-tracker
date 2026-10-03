@@ -3365,6 +3365,34 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "ticketsystem-priorisierung-support-level-eskalation",
+    "slug": "ticketsystem-priorisierung-support-level-eskalation",
+    "title": "Tickets priorisieren und gezielt eskalieren",
+    "description": "Auswirkung und Dringlichkeit begründen, eine Fallmatrix anwenden und Tickets mit klarer Verantwortung an passende Support-Rollen übergeben.",
+    "domain": "GA1",
+    "groupId": "ga1-10",
+    "groupLabel": "Betrieb, Monitoring und Prozesse",
+    "itemId": "ga1-10__5",
+    "week": "KW 44",
+    "estimatedMinutes": 40,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "befund",
+      "matrix",
+      "level",
+      "eskalation"
+    ],
+    "sources": [
+      "ticket-priority",
+      "ticket-levels",
+      "ticket-escalation"
+    ],
+    "contentHash": "db487dd121f63020d8d2caf09427594e0bda3baae733624a67cf0b849ca1367f",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "osi-model",
     "slug": "osi-model",
     "title": "Das OSI-Schichtenmodell sicher anwenden",
