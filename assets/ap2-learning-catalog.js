@@ -4021,6 +4021,32 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "aufgabenueberblick-und-startreihenfolge",
+    "slug": "aufgabenueberblick-und-startreihenfolge",
+    "title": "Aufgaben überblicken und sinnvoll beginnen",
+    "description": "Aufträge, Anlagen, Punkte und Abhängigkeiten erfassen und eine begründete Startreihenfolge statt bloßer Überschriftenwahl festlegen.",
+    "domain": "GA1",
+    "groupId": "ga1-11",
+    "groupLabel": "Rechnen und Prüfungstechnik",
+    "itemId": "ga1-11__21",
+    "week": "parallel",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "ueberblick",
+      "start",
+      "abhaengigkeit"
+    ],
+    "sources": [
+      "zeit-ihk-strategie",
+      "start-ihk-genaulesen"
+    ],
+    "contentHash": "5f7c75d4488b5e2e63fedfad54c94d3687733b6f78811e1d5d6ccd318a0f899f",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "osi-model",
     "slug": "osi-model",
     "title": "Das OSI-Schichtenmodell sicher anwenden",
