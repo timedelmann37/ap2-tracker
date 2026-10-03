@@ -207,6 +207,7 @@ async function runFullSuite() {
   await import('./verify-learning-mobility-browser.mjs');
   await import('./verify-employment-certificate-browser.mjs');
   await import('./verify-employment-contract-browser.mjs');
+  await import('./verify-labour-law-types-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
   await import('./verify-scenario-link-browser.mjs');
   await import('./verify-working-units-browser.mjs');
@@ -292,6 +293,9 @@ try {
   } else if (process.env.AP2_BROWSER_ONLY === 'employment-contract') {
     useSignedInFixture = true;
     await import('./verify-employment-contract-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'labour-law-types') {
+    useSignedInFixture = true;
+    await import('./verify-labour-law-types-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'training-plan') {
     useSignedInFixture = true;
     await import('./verify-training-plan-browser.mjs');
