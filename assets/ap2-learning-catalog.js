@@ -7647,6 +7647,32 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "leiharbeit-arbeitgeber-gleichstellung-tarif",
+    "slug": "leiharbeit-arbeitgeber-gleichstellung-tarif",
+    "title": "Leiharbeit: Arbeitgeber, Gleichstellung und Tarifabweichung",
+    "description": "Verleiher und Einsatzbetrieb trennen; Entgelt und Urlaub anhand des Gleichstellungsgrundsatzes und möglicher Tarifabweichungen prüfen.",
+    "domain": "WiSo",
+    "groupId": "wiso-2",
+    "groupLabel": "W2 · Arbeitsrecht I",
+    "itemId": "wiso-2__3",
+    "week": "KW 36",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "rollen",
+      "vergleich",
+      "tarif"
+    ],
+    "sources": [
+      "leih-gleichstellung",
+      "leih-bmas"
+    ],
+    "contentHash": "eb5da503882d4470e28e2fc4e262a872940645a289588d71def43a86e502f068",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "company-goals",
     "slug": "company-goals",
     "title": "Unternehmensziele und Zielkonflikte sicher abwägen",
