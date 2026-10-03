@@ -159,6 +159,7 @@ async function runFullSuite() {
   await import('./verify-ticket-priority-browser.mjs');
   await import('./verify-operations-docs-browser.mjs');
   await import('./verify-rollout-planning-browser.mjs');
+  await import('./verify-handover-training-browser.mjs');
   useSignedInFixture = false;
   await import('./verify-space-browser.mjs');
 }
@@ -212,6 +213,9 @@ try {
   } else if (process.env.AP2_BROWSER_ONLY === 'zero-trust') {
     useSignedInFixture = true;
     await import('./verify-zero-trust-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'handover-training') {
+    useSignedInFixture = true;
+    await import('./verify-handover-training-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'rollout-planning') {
     useSignedInFixture = true;
     await import('./verify-rollout-planning-browser.mjs');
