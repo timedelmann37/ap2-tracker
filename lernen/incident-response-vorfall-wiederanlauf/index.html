@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Verdachtsmeldungen einordnen, Schäden begrenzen und einen geprüften Wiederanlauf mit Nachbereitung planen.">
+<title>Incident Response: Vorfall und Wiederanlauf – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="incident-response-vorfall-wiederanlauf" data-progress-id="ga1-8__12" data-content-revision="2026-10-03.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-8">IT-Sicherheit und Datenschutz</a><span class="sep">›</span>
+    <span class="here">Incident Response: Vorfall und Wiederanlauf</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Incident Response: Vorfall und Wiederanlauf</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 40 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Beim fiktiven Fertigungsbetrieb Haintechnik meldet das Monitoring viele Dateiänderungen auf FS-02. Eine Mitarbeiterin kann Projektdateien nicht mehr öffnen; ein unbekanntes Administratorkonto erscheint im Protokoll. Du unterstützt die Vorfallleitung. Alle Systeme, Zeiten und Befunde sind erfunden; die Einheit ist ein Entscheidungs- und Dokumentationstraining, keine Anleitung für unkoordinierte Eingriffe in Produktivsysteme.</p>
+<section class="learning-goals" aria-labelledby="incident-response-vorfall-wiederanlauf-goals">
+  <h2 id="incident-response-vorfall-wiederanlauf-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Verdacht, Befund und Eskalation unterscheiden</li>
+    <li>Schadensbegrenzung mit Beweissicherung koordinieren</li>
+    <li>Ursache, Persistenz und betroffenen Umfang bearbeiten</li>
+    <li>Wiederanlauf freigeben und Verbesserungen nachhalten</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Diagnose: Alarm oder bestätigter Vorfall?</h2>
+<section class="quiz" data-quiz="ir-diagnose" data-correct="1">
+  <h3>Eine hohe CPU-Auslastung wird gemeldet. Welche Schlussfolgerung ist allein daraus zulässig?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Ein einzelnes unspezifisches Signal beweist keine Kompromittierung."><span class="m">A</span> Ein Angreifer ist sicher auf dem Server.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Last kann auch legitime Ursachen haben. Der Hinweis wird trotzdem geprüft."><span class="m">B</span> Es liegt ein prüfbarer Hinweis vor; Kontext und weitere Befunde fehlen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Fehlende Bestätigung ist kein Grund, einen Hinweis ungeprüft zu verwerfen."><span class="m">C</span> Ein Alarm kann grundsätzlich ignoriert werden.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2"><span class="num">2</span>Erkennen und koordinieren</h2>
+<p><strong>Erkennen</strong> bedeutet, Hinweise mit Kontext zu bewerten. Der definierte Vorfallplan legt fest, wann eskaliert und ein Incident erklärt wird. Befunde aus mehreren Quellen helfen, Umfang und Auswirkungen einzuschätzen. Die Priorität richtet sich nach Risiko, nicht nur nach der Reihenfolge eingehender Tickets.</p>
+<p><strong>Eigene Triage:</strong> Haintechnik protokolliert um 08:14 die Meldung zu FS-02. Die Vorfallleitung lässt betroffene Freigaben, Dateiänderungen und Kontoaktivität prüfen. „Dateien nicht lesbar“ ist ein Befund; „Ransomware“ zunächst eine Hypothese. Das Team notiert Zeit mit Zeitzone, Quelle, Host, beobachtetes Verhalten, bekannte Auswirkungen und offene Fragen. Laut Microsoft helfen Erstkenntniszeit, verwendete/neue Konten und fehlende Updates, die erste Untersuchung einzugrenzen.</p>
+<p><strong>Vorbereitung bleibt wichtig:</strong> Zuständigkeiten, Vertretung, erreichbare Kontaktwege, Befugnisse und getestete Wiederherstellung werden vor einem Vorfall festgelegt. Meldungen und externe Kommunikation werden im Einsatz koordiniert; Datenschutzpflichten sind gesondert zu prüfen.</p>
+<section class="quiz" data-quiz="ir-erkennen" data-correct="0" data-required-objective="erkennen">
+  <h3>Welcher erste Bericht ist für die Vorfallleitung am brauchbarsten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Der Bericht trennt Beobachtung von unbestätigter Erklärung."><span class="m">A</span> FS-02, 08:14 Europe/Berlin: Dateiänderungsalarm, Zugriffsfehler und unbekanntes Konto; Ursache und Umfang noch offen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die Behauptung überspringt Bewertung und Zuständigkeiten."><span class="m">B</span> Alles ist gehackt, sofort sämtliche Systeme löschen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Fehlende Attribution widerlegt die beobachteten Hinweise nicht."><span class="m">C</span> Das Monitoring hatte einen Fehler, weil noch kein Angreifer bewiesen ist.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Vorfall bearbeiten">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="650" viewBox="0 0 960 650" role="img" aria-labelledby="diagram-reaktionsweg-title diagram-reaktionsweg-desc">
+  <title id="diagram-reaktionsweg-title">Vorfall bearbeiten</title>
+  <desc id="diagram-reaktionsweg-desc">Fünf Schritte von Erkennen über Eindämmen und Beseitigen bis Wiederherstellen und Nachbereiten.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Vorfall bearbeiten</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Erkennen</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Befunde prüfen, Umfang und Priorität klären</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Eindämmen</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Weitere Schäden gezielt begrenzen</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Beseitigen</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Ursache und Persistenz bearbeiten</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Wiederherstellen</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Geprüft starten, überwachen, freigeben</tspan></text><path d="M480 472v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 494 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="512" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="541" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Nachbereiten</tspan></text><text x="178" y="568" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Maßnahmen mit Owner und Test nachhalten</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Didaktisches Muster. Analyse, Beweissicherung und Kommunikation laufen über mehrere Schritte weiter.</figcaption>
+</figure><h2 class="sec" id="s3"><span class="num">3</span>Eindämmen und Spuren erhalten</h2>
+<p><strong>Eindämmung</strong> begrenzt die weitere Ausbreitung und den Schaden; sie beweist noch nicht, dass ein System bereinigt ist. Maßnahmen werden durch autorisierte Verantwortliche ausgewählt. Untersuchungsschritte und erhobene Daten werden nachvollziehbar, zugriffsgeschützt und mit erhaltener Herkunft dokumentiert.</p>
+<p><strong>Eigene Entscheidung:</strong> Die Vorfallleitung autorisiert die gezielte Netzwerkisolation von FS-02 und überprüft, ob weitere Systeme betroffen sind. Eine qualifizierte Person sichert erreichbare relevante Logs und entscheidet über flüchtige Daten. Niemand startet aus Gewohnheit neu, löscht verdächtige Dateien oder setzt den Server zurück. Dringende Schadensbegrenzung darf aber nicht auf unbegrenzte Beweissammlung warten: Begründung, Zeitpunkt und mögliche Spurenverluste werden festgehalten. In dieser Übung wird kein universeller Abschaltbefehl vorgegeben.</p>
+<p>Das Einsatzjournal ergänzt zu jedem Eingriff: <strong>wer, wann, was, warum, Ergebnis</strong>. Eine Kopie eines Logs ohne Herkunft oder Zeitbezug reicht für eine nachvollziehbare Rekonstruktion nicht aus.</p>
+<section class="quiz" data-quiz="ir-eindaemmen" data-correct="2" data-required-objective="eindaemmen">
+  <h3>FS-02 ist isoliert; der Zugriff vom Produktionsnetz schlägt fehl. Was ist damit nachgewiesen?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Isolation allein untersucht oder entfernt keine Persistenz."><span class="m">A</span> Ursache und alle Hintertüren sind beseitigt.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Ein blockierter Netzpfad ist kein erfolgreicher Restore."><span class="m">B</span> Die Wiederherstellung ist abgeschlossen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Der Test belegt nur die konkrete Eindämmungswirkung."><span class="m">C</span> Die geprüfte Verbindung ist unterbrochen; Bereinigung und weitere Umfangsprüfung stehen noch aus.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s4"><span class="num">4</span>Beseitigen statt nur neu starten</h2>
+<p><strong>Beseitigung</strong> behandelt Eintrittswege und Persistenz im ermittelten Umfang. Dazu können kompromittierte Konten, schädliche Komponenten und ausgenutzte Schwachstellen gehören. Neue Befunde können den Umfang erweitern und erneute Eindämmung erfordern.</p>
+<p><strong>Eigene Untersuchung:</strong> Das Team bestätigt in seinem Trainingsfall, dass ein kompromittiertes Wartungskonto über einen ungepatchten Zugang genutzt wurde. Es plant den kontrollierten Entzug betroffener Zugänge, die Behebung des Eintrittswegs und den Neuaufbau aus vertrauenswürdiger Grundlage. Es prüft angrenzende Systeme und nicht nur FS-02. Welche Sitzungen, Zugangsdaten oder Abhängigkeiten betroffen sind, wird ausdrücklich untersucht – nicht pauschal behauptet.</p>
+<p>Ein einfacher Neustart oder das Entfernen einer sichtbaren Schad-Datei ist kein Beleg für behobene Ursache. Die Leitung hält für jede Maßnahme Befund, Verantwortliche, Auswirkung und Prüfung fest. Wiederherstellung und Beseitigung dürfen koordiniert überlappen; die Schritte sind kein starres Einbahnstraßenmodell.</p>
+<section class="quiz" data-quiz="ir-beseitigen" data-correct="1" data-required-objective="beseitigen">
+  <h3>Welcher Vorschlag bearbeitet im bestätigten Haintechnik-Fall die Ursache?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Das prüft weder Eintrittsweg noch kompromittierte Zugänge."><span class="m">A</span> Nur FS-02 neu starten und auf einen grünen Alarm warten.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Der Plan verbindet Ursache, Persistenz und angrenzende Systeme."><span class="m">B</span> Eintrittsweg schließen, betroffene Zugänge kontrolliert behandeln, Umfang prüfen und vertrauenswürdig neu aufbauen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Weitere Komponenten und Zugänge könnten erhalten bleiben."><span class="m">C</span> Nur die sichtbare verdächtige Datei entfernen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s5"><span class="num">5</span>Wiederanlauf und Nachbereitung</h2>
+<p>Vor Nutzung werden Wiederherstellungsquellen auf Integrität und Kompromittierungsanzeichen geprüft. Auch wiederhergestellte Systeme benötigen Prüfung und behobene Ursachen vor Produktivnutzung. Verantwortliche bestätigen den Wiederanlauf; Kriterien und ein Abschlussbericht halten das Ergebnis nachvollziehbar fest.</p>
+<p><strong>Eigene Freigabe:</strong> Haintechnik testet FS-02 zunächst isoliert. Das Team prüft Projektdateien, vorgesehenen Lese-/Schreibzugriff, verweigerte unerlaubte Zugriffe und die Erreichbarkeit notwendiger Dienste. Zusätzlich untersucht es, ob die bekannten verdächtigen Konto- und Dateimuster erneut auftreten. Die Fachverantwortliche bestätigt den Geschäftsprozess; die technische Leitung bestätigt Sicherheitsprüfungen. Ein gestarteter Dienst oder erfolgreicher Kopiervorgang allein genügt nicht. Nach Freigabe folgt verstärkte Überwachung mit festgelegtem Eskalationsweg.</p>
+<p><strong>Nachbereitung im eigenen Fall:</strong> Der Abschlussbericht trennt Fakten, offene Fragen und Auswirkungen. Aus „Patchprozess verbessern“ wird eine konkrete Maßnahme: Wartungszugänge inventarisieren, Owner benennen, Prüftermin setzen und die Wirksamkeit testen. Ein unbekannter Angriff wird nicht durch ein erfundenes Täteretikett erklärt.</p>
+<p>NIST SP 800-61r3 ordnet Incident Response in <strong>CSF 2.0</strong> ein. Vorbereitung und Verbesserung gehören dazu; das Fünf-Schritte-Muster dieser Einheit dient dem Lernen, nicht der Behauptung einer aktuellen NIST-Fünf-Phasen-Norm.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Wiederanlauf prüfen">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="542" viewBox="0 0 960 542" role="img" aria-labelledby="diagram-freigabe-title diagram-freigabe-desc">
+  <title id="diagram-freigabe-title">Wiederanlauf prüfen</title>
+  <desc id="diagram-freigabe-desc">Vier Freigabeschritte: Quelle prüfen, isolierter Restore, Funktionstest und begleitete Freigabe.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Wiederanlauf prüfen</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Quelle prüfen</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Sicherung auf Integrität und Befall prüfen</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Testumgebung</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Ursachenbehebung und Restore kontrollieren</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Funktion testen</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Projektzugriff und Berechtigungen prüfen</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Freigabe begleiten</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Verantwortliche bestätigen, weiter überwachen</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Kriterien für diesen Fall. Sicherheitsprüfung und Geschäftsprozess-Abnahme sind getrennte Nachweise.</figcaption>
+</figure><section class="quiz" data-quiz="ir-wiederanlauf" data-correct="0" data-required-objective="wiederanlauf">
+  <h3>Wann darf die Leitung FS-02 nach diesem Trainingsplan freigeben?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Die Freigabe basiert auf mehreren Nachweisen, nicht nur auf Erreichbarkeit."><span class="m">A</span> Nach Quellen- und Systemprüfung, behobener Ursache, erfolgreichem Funktionstest und dokumentierter verantwortlicher Freigabe.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Ping belegt weder Datenqualität noch bereinigte Zugänge oder Geschäftsprozesse."><span class="m">B</span> Sobald der Server auf Ping antwortet.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ungeprüfte Quellen können Fehler oder Kompromittierung zurückbringen."><span class="m">C</span> Sobald irgendein Backup kopiert wurde.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="recall-practice" data-recall="ir-transfer" data-min-length="180" aria-labelledby="ir-transfer-title">
+  <div class="recall-prompt"><h3 id="ir-transfer-title">Abruf aus dem Kopf</h3><p>Erstelle einen Einsatzplan für FS-02: erste Befunde und Eskalation, begründete Eindämmung mit Spuren, Ursachenbehebung, Restore-Freigabe und eine überprüfbare Verbesserungsmaßnahme. Erkläre, warum Isolation kein Bereinigungsnachweis ist.</p></div>
+  <label class="sr-only" for="ir-transfer-answer">Deine freie Antwort</label>
+  <textarea id="ir-transfer-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> Ich erfasse Zeitpunkt, Quelle, betroffene Systeme und beobachtete Auswirkungen getrennt von Hypothesen und informiere die Vorfallleitung. Autorisierte Eindämmung begrenzt den Schaden, belegt aber keine Bereinigung. Ich dokumentiere Eingriffe und sichere relevante Spuren koordiniert. Der bestätigte Eintrittsweg, kompromittierte Zugänge und weitere betroffene Systeme werden behandelt. Ich prüfe die Restore-Quelle, teste isoliert Daten, Rechte und Geschäftsprozess und hole die dokumentierte Freigabe ein. Danach überwache ich weiter. Die Nachbereitung erhält Maßnahmen mit Owner, Termin und Wirksamkeitsprüfung.</div>
+</section><h2 class="sec" id="s6"><span class="num">6</span>Abruftraining</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="hinweis" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Beweist hohe CPU-Last einen Angriff?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Nein. Kontext und weitere Befunde müssen geprüft werden.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="leitung" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wer koordiniert den Einsatz?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Die benannte Vorfallleitung mit klaren Zuständigkeiten und Befugnissen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="isolation" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Ist ein isolierter Host bereinigt?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Nein. Isolation begrenzt Verbindungen, nicht automatisch Ursache oder Persistenz.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="spuren" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche Angaben gehören zum Eingriff?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Wer, wann, was, warum und welches Ergebnis; Spuren mit Herkunft erhalten.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="ursache" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum genügt ein Neustart nicht?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Er belegt keine Beseitigung des Eintrittswegs oder kompromittierter Zugänge.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="restore" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Ist ein kopiertes Backup ein Freigabenachweis?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Nein. Quelle, wiederhergestelltes System und Geschäftsprozess müssen geprüft werden.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="lernen" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wann ist eine Verbesserung überprüfbar?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Mit konkreter Maßnahme, Owner, Termin und Wirksamkeitstest.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Incident Response“:</span><button type="button" data-card-id="hinweis" data-card-rate="known">gewusst</button><button type="button" data-card-id="hinweis" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="hinweis"></span></div>
+<div class="card-rating"><span>Karte „Incident Response“:</span><button type="button" data-card-id="leitung" data-card-rate="known">gewusst</button><button type="button" data-card-id="leitung" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="leitung"></span></div>
+<div class="card-rating"><span>Karte „Incident Response“:</span><button type="button" data-card-id="isolation" data-card-rate="known">gewusst</button><button type="button" data-card-id="isolation" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="isolation"></span></div>
+<div class="card-rating"><span>Karte „Incident Response“:</span><button type="button" data-card-id="spuren" data-card-rate="known">gewusst</button><button type="button" data-card-id="spuren" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="spuren"></span></div>
+<div class="card-rating"><span>Karte „Incident Response“:</span><button type="button" data-card-id="ursache" data-card-rate="known">gewusst</button><button type="button" data-card-id="ursache" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ursache"></span></div>
+<div class="card-rating"><span>Karte „Incident Response“:</span><button type="button" data-card-id="restore" data-card-rate="known">gewusst</button><button type="button" data-card-id="restore" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="restore"></span></div>
+<div class="card-rating"><span>Karte „Incident Response“:</span><button type="button" data-card-id="lernen" data-card-rate="known">gewusst</button><button type="button" data-card-id="lernen" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="lernen"></span></div>
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-8"><span class="d">zurück zu</span><span class="t">IT-Sicherheit und Datenschutz</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">IT-Sicherheit und Datenschutz</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 4 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Diagnose: Alarm oder bestätigter Vorfall?</a></li>
+<li><a href="#s2" data-t="s2">Erkennen und koordinieren</a></li>
+<li><a href="#s3" data-t="s3">Eindämmen und Spuren erhalten</a></li>
+<li><a href="#s4" data-t="s4">Beseitigen statt nur neu starten</a></li>
+<li><a href="#s5" data-t="s5">Wiederanlauf und Nachbereitung</a></li>
+<li><a href="#s6" data-t="s6">Abruftraining</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-8">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

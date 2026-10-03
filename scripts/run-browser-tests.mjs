@@ -147,6 +147,7 @@ async function runFullSuite() {
   await import('./verify-storage-encryption-browser.mjs');
   await import('./verify-authentication-browser.mjs');
   await import('./verify-gdpr-browser.mjs');
+  await import('./verify-incident-response-browser.mjs');
   useSignedInFixture = false;
   await import('./verify-space-browser.mjs');
 }
@@ -200,6 +201,9 @@ try {
   } else if (process.env.AP2_BROWSER_ONLY === 'zero-trust') {
     useSignedInFixture = true;
     await import('./verify-zero-trust-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'incident-response') {
+    useSignedInFixture = true;
+    await import('./verify-incident-response-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'gdpr') {
     useSignedInFixture = true;
     await import('./verify-gdpr-browser.mjs');

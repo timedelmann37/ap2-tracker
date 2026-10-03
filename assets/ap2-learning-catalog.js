@@ -2706,6 +2706,33 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "incident-response-vorfall-wiederanlauf",
+    "slug": "incident-response-vorfall-wiederanlauf",
+    "title": "Incident Response: Vorfall und Wiederanlauf",
+    "description": "Verdachtsmeldungen einordnen, Schäden begrenzen und einen geprüften Wiederanlauf mit Nachbereitung planen.",
+    "domain": "GA1",
+    "groupId": "ga1-8",
+    "groupLabel": "IT-Sicherheit und Datenschutz",
+    "itemId": "ga1-8__12",
+    "week": "KW 42",
+    "estimatedMinutes": 40,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "erkennen",
+      "eindaemmen",
+      "beseitigen",
+      "wiederanlauf"
+    ],
+    "sources": [
+      "ir-nist61r3",
+      "ir-ms-triage"
+    ],
+    "contentHash": "e6fb5cf3aee3badfaaff84965aae11bd77956d6a2001a7214bc1063c5b7a17a6",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "slug": "struktogramm-nassi-shneiderman-programmablaufplan-lesen-zeichnen",
     "title": "Struktogramm und Programmablaufplan",
