@@ -4072,6 +4072,31 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "lesbare-antworten-nummerierung-und-gliederung",
+    "slug": "lesbare-antworten-nummerierung-und-gliederung",
+    "title": "Antworten lesbar nummerieren und gliedern",
+    "description": "Teilantworten eindeutig zuordnen, mit aussagekräftigen Zwischenüberschriften strukturieren und Ergänzungen ohne widersprüchliche Fassungen einfügen.",
+    "domain": "GA1",
+    "groupId": "ga1-11",
+    "groupLabel": "Rechnen und Prüfungstechnik",
+    "itemId": "ga1-11__23",
+    "week": "parallel",
+    "estimatedMinutes": 25,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "zuordnung",
+      "gliederung",
+      "ergaenzung"
+    ],
+    "sources": [
+      "start-ihk-genaulesen"
+    ],
+    "contentHash": "488cc38799a80b01a510422f2057839421f5fbe345558eaf970e2748dee777f4",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "osi-model",
     "slug": "osi-model",
     "title": "Das OSI-Schichtenmodell sicher anwenden",
