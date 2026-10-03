@@ -7251,6 +7251,37 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "vorstellungsgespraech-fragerecht-privatsphaere",
+    "slug": "vorstellungsgespraech-fragerecht-privatsphaere",
+    "title": "Vorstellungsgespräch: Fragerecht und Privatsphäre",
+    "description": "Gehaltsvorstellung und berufliche Eignung von privaten Fragen unterscheiden; Gesundheitsfragen mit konkretem Tätigkeitsbezug prüfen.",
+    "domain": "WiSo",
+    "groupId": "wiso-1",
+    "groupLabel": "W1 · Berufsbildung und Arbeitswelt",
+    "itemId": "wiso-1__4",
+    "week": "KW 35",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "bezug",
+      "grenze",
+      "reaktion"
+    ],
+    "sources": [
+      "interview-agg-ziel",
+      "interview-agg-personen",
+      "interview-bdsg",
+      "interview-ihk-stuttgart",
+      "interview-ihk-hochrhein",
+      "interview-ba-gehalt",
+      "interview-ba-reaktion"
+    ],
+    "contentHash": "71621f12c3b988f3895f53c0614319ccf877ea18a69a21a068d0145e5085bc2f",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "company-goals",
     "slug": "company-goals",
     "title": "Unternehmensziele und Zielkonflikte sicher abwägen",
