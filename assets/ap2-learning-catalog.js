@@ -4367,6 +4367,36 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "vorgehensmodelle-wasserfall-v-modell-scrum-kanban",
+    "slug": "vorgehensmodelle-wasserfall-v-modell-scrum-kanban",
+    "title": "Vorgehensmodelle: Wasserfall, V-Modell, Scrum und Kanban",
+    "description": "Vorgehensmodelle begründet auswählen, Scrum-Verantwortlichkeiten, Artefakte und Events zuordnen und einen eigenen Kanban-Engpass lösen.",
+    "domain": "GA1",
+    "groupId": "ga1-13",
+    "groupLabel": "Projekt- & Qualitätsmanagement",
+    "itemId": "ga1-13__4",
+    "week": "Woche 11 · KW 45",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "auswahl",
+      "scrum",
+      "kanban"
+    ],
+    "sources": [
+      "modelle-ibm-sdlc",
+      "modelle-v-bund",
+      "modelle-agile-manifest",
+      "modelle-scrum-guide",
+      "modelle-scrum-events",
+      "modelle-kanban-guide"
+    ],
+    "contentHash": "127dc6bd0f4712541605133707c51b55d6e75ba396411c06750874c2e0a18c60",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "osi-model",
     "slug": "osi-model",
     "title": "Das OSI-Schichtenmodell sicher anwenden",
