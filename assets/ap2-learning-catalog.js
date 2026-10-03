@@ -3225,6 +3225,34 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "monitoring-agenten-snmp-alarmierung",
+    "slug": "monitoring-agenten-snmp-alarmierung",
+    "title": "Monitoring: Messung bis Eskalation",
+    "description": "Agenten und SNMP auswählen, Schwellwerte zeitlich bewerten und Alarmierung mit einer geprüften Eskalationskette verbinden.",
+    "domain": "GA1",
+    "groupId": "ga1-10",
+    "groupLabel": "Betrieb, Monitoring und Prozesse",
+    "itemId": "ga1-10__0",
+    "week": "KW 44",
+    "estimatedMinutes": 40,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "methode",
+      "snmp",
+      "schwelle",
+      "eskalation"
+    ],
+    "sources": [
+      "mon-zabbix-agent",
+      "mon-zabbix-snmp",
+      "mon-prom-alert"
+    ],
+    "contentHash": "b58b69c419edcd7053f6b18ca43c27f8999013679f1482409241ca925c245e01",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "osi-model",
     "slug": "osi-model",
     "title": "Das OSI-Schichtenmodell sicher anwenden",

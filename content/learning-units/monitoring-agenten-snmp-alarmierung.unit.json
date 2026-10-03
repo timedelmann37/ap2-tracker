@@ -1,0 +1,351 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "monitoring-agenten-snmp-alarmierung",
+    "slug": "monitoring-agenten-snmp-alarmierung",
+    "title": "Monitoring: Messung bis Eskalation",
+    "description": "Agenten und SNMP auswählen, Schwellwerte zeitlich bewerten und Alarmierung mit einer geprüften Eskalationskette verbinden.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-10",
+    "groupLabel": "Betrieb, Monitoring und Prozesse",
+    "itemId": "ga1-10__0",
+    "week": "KW 44",
+    "estimatedMinutes": 40,
+    "relevance": "hoch",
+    "sources": [
+      "mon-zabbix-agent",
+      "mon-zabbix-snmp",
+      "mon-prom-alert"
+    ],
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "methode",
+      "label": "Agenten und agentenlose Prüfungen passend wählen"
+    },
+    {
+      "id": "snmp",
+      "label": "SNMP-Zugriff und Aussagegrenzen beurteilen"
+    },
+    {
+      "id": "schwelle",
+      "label": "Schwellwerte mit Dauer und Datenlücken bewerten"
+    },
+    {
+      "id": "eskalation",
+      "label": "Alarmierung und bestätigte Übernahme prüfen"
+    }
+  ],
+  "intro": "Das fiktive Ersatzteillager Feldstrom betreibt einen Linux-Auftragsserver und einen Netzwerkswitch. Die Auftragsbearbeitung muss während der Schicht funktionieren. Du entwirfst Messung, Alarmregeln und einen überprüfbaren Bereitschaftsweg. Geräte, Zeiten, Regeln und Messwerte sind erfunden; die Übungen konfigurieren kein produktives Monitoring.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "mon-zabbix-agent",
+        "sourceLocator": "Overview; Passive and active checks",
+        "use": "Lokale Erfassung und Abfragerichtung abgegrenzt",
+        "reviewStatus": "Passagen am 03.10.2026 direkt gelesen"
+      },
+      {
+        "sourceId": "mon-zabbix-snmp",
+        "sourceLocator": "SNMPv3: Security level; Interface credentials",
+        "use": "AuthPriv gegenüber noAuthNoPriv eingegrenzt",
+        "reviewStatus": "Passagen am 03.10.2026 direkt gelesen"
+      },
+      {
+        "sourceId": "mon-prom-alert",
+        "sourceLocator": "Defining alerting rules: for; pending/firing",
+        "use": "Zeitliche Alarmbedingung als technische Referenz",
+        "reviewStatus": "Passagen am 03.10.2026 direkt gelesen"
+      }
+    ],
+    "notes": [
+      "CURATED_DRAFT bis zur menschlichen Freigabe.",
+      "Privater Themenanker europa-integratoren-2026:00038, Zeilen 443–468: Systemauslastung und Systemverhalten überwachen, Maßnahmen und dokumentierte Tests. Keine übernommenen Aufgaben.",
+      "Agentenlos bedeutet hier ohne zusätzlich installierten produktspezifischen Monitoring-Agenten; SNMP benötigt dennoch eine Gerätefunktion.",
+      "Alle Schwellen und Eskalationszeiten sind eigene Fallannahmen, keine allgemeinen Betriebsvorgaben."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "messweg",
+      "type": "flow",
+      "title": "Vom Ziel zum Messwert",
+      "description": "Eigener Messweg für Feldstrom.",
+      "items": [
+        {
+          "label": "Auftragsbetrieb",
+          "detail": "Funktion und benötigte Messgrößen festlegen"
+        },
+        {
+          "label": "Erfassungsweg",
+          "detail": "Server-Agent, Switch-SNMP und HTTP-Prüfung"
+        },
+        {
+          "label": "Auswertung",
+          "detail": "Zeitbezug, Datenqualität und Regel prüfen"
+        },
+        {
+          "label": "Alarmierung",
+          "detail": "Zuständigen Bereitschaftsweg auslösen"
+        }
+      ]
+    },
+    {
+      "id": "eskalation",
+      "type": "flow",
+      "title": "Alarm mit Verantwortung",
+      "description": "Eigene Bereitschaftskette, kein universeller Prozess.",
+      "items": [
+        {
+          "label": "Alarm erzeugt",
+          "detail": "Host, Zeit, Regel und Prüfweg mitgeben"
+        },
+        {
+          "label": "Bereitschaft",
+          "detail": "Empfang und Übernahme bestätigen lassen"
+        },
+        {
+          "label": "Vertretung",
+          "detail": "Nach Frist ohne Übernahme zuständig eskalieren"
+        },
+        {
+          "label": "Abschluss",
+          "detail": "Funktion prüfen und Ergebnis dokumentieren"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Diagnose: Ping ist nicht Auftragsbearbeitung",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "mon-diagnose",
+          "question": "Der Server antwortet auf Ping. Ist die Auftragsanwendung damit nachweislich verfügbar?",
+          "options": [
+            {
+              "text": "Ja, Ping prüft die vollständige Anwendung.",
+              "rationale": "Eine IP-Antwort prüft weder Anmeldung noch Auftragsfunktion.",
+              "correct": false
+            },
+            {
+              "text": "Nein, die geforderte Dienstfunktion braucht einen passenden zusätzlichen Test.",
+              "rationale": "Ein funktionaler Prüfweg ergänzt die Erreichbarkeit.",
+              "correct": true
+            },
+            {
+              "text": "Nein, Ping beweist einen Angriff.",
+              "rationale": "Die Antwort liefert keine solche Sicherheitsdiagnose.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Agent oder agentenlos?",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein **Monitoring-Agent** sammelt Daten auf dem Zielsystem. Zabbix nennt lokale Ressourcen und Anwendungen; passive Checks beantworten Server-/Proxy-Anfragen, aktive Checks beschaffen ihre Messaufträge und senden Werte selbst. Aktiv/passiv beschreibt dort die Abfragerichtung, nicht „mit/ohne Agent“.\n\n**Agentenlos** heißt in dieser Einheit: kein zusätzlicher produktspezifischer Monitoring-Agent auf dem Ziel. Vorhandene Schnittstellen oder externe Diensttests liefern trotzdem Daten. Es bedeutet weder „ohne Software auf dem Gerät“ noch „ohne Zugriffsrechte“.\n\n**Eigene Auswahl für Feldstrom:** Der Linux-Server erhält einen freigegebenen Agenten für lokalen freien Speicher und Prozesszustand. Der Switch liefert Gerätewerte über seine SNMP-Funktion. Eine separate HTTP-Prüfung kontrolliert einen definierten Testendpunkt der Anwendung. Die Kombination folgt dem Messziel; ein reiner Ping ersetzt keine Auftragsprüfung. Der Agent muss gepflegt und auf erlaubte Messungen begrenzt werden. Die externen Prüfwege benötigen ihrerseits passende Netzfreigaben und Schutz ihrer Zugangsdaten."
+        },
+        {
+          "type": "quiz",
+          "id": "mon-methode",
+          "question": "Welche Zuordnung passt zu Feldstrom?",
+          "options": [
+            {
+              "text": "Lokale Serverwerte über Agent, Switchwerte über SNMP und Anwendungsfunktion separat prüfen.",
+              "rationale": "Die Auswahl deckt unterschiedliche Beobachtungsebenen ab.",
+              "correct": true
+            },
+            {
+              "text": "Ein aktiver Zabbix-Check ist automatisch agentenlos.",
+              "rationale": "Auch aktive Checks werden durch den Agenten durchgeführt.",
+              "correct": false
+            },
+            {
+              "text": "Ein Ping liefert jeden lokalen Dateisystemwert.",
+              "rationale": "Ein Erreichbarkeitstest kennt nicht alle lokalen Ressourcen.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "methode"
+        },
+        {
+          "type": "figure",
+          "diagramId": "messweg",
+          "alt": "Geschäftsfunktion führt zur Auswahl der Erfassung, Auswertung und Alarmierung.",
+          "caption": "Eigene Messstrategie; unterschiedliche Tests dürfen unterschiedliche Fehler anzeigen."
+        }
+      ]
+    },
+    {
+      "title": "SNMP: Gerätewerte mit begrenztem Zugriff",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**SNMP** stellt Managementinformationen bereit. Ein **OID** bezeichnet ein Objekt; eine **MIB** beschreibt die zugehörigen Objekte und ihre Bedeutung. Eine gelesene Schnittstelleninformation muss zur richtigen Schnittstelle und zu ihrer Bedeutung passen.\n\nDie Zabbix-Dokumentation unterscheidet für SNMPv3 **noAuthNoPriv**, **AuthNoPriv** und **AuthPriv**. Erst die letzte Stufe kombiniert Authentifizierung und Vertraulichkeit. „Version 3“ allein bestätigt daher keine Verschlüsselung.\n\n**Eigene Fallentscheidung:** Feldstrom wählt unterstütztes SNMPv3 mit AuthPriv, einem nur lesenden Monitoring-Zugang und Zugriff aus dem Managementnetz. Die Zugangsdaten werden geschützt verwaltet. Die Administration überprüft vor Übernahme eines Templates, ob Werte und Zuordnung zum Switch passen. Diese konkrete Wahl wird auf Geräteunterstützung geprüft, nicht blind aus einer Produktbezeichnung abgeleitet.\n\n**Fehlerfall:** Bleibt die Abfrage aus, kann das an Erreichbarkeit, Berechtigungen oder falscher Konfiguration liegen. Das Team prüft den Messweg. Es trägt nicht „Switch gesund“ ein, nur weil kein Wert ankommt."
+        },
+        {
+          "type": "quiz",
+          "id": "mon-snmp",
+          "question": "Die Konfiguration nennt SNMPv3, Security Level noAuthNoPriv. Welche Aussage stimmt?",
+          "options": [
+            {
+              "text": "Damit sind Authentifizierung und Verschlüsselung garantiert.",
+              "rationale": "Diese Stufe verwendet beide Schutzmechanismen nicht.",
+              "correct": false
+            },
+            {
+              "text": "Die Versionsnummer allein beweist den Schutz nicht; Sicherheitsstufe und Zugang prüfen.",
+              "rationale": "Die konkrete Konfiguration bestimmt die verwendeten Schutzmechanismen.",
+              "correct": true
+            },
+            {
+              "text": "SNMPv3 benötigt grundsätzlich keine Konfiguration.",
+              "rationale": "Die Dokumentation nennt Identität und weitere Parameter.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "snmp"
+        }
+      ]
+    },
+    {
+      "title": "Schwellwert, Dauer und fehlende Daten",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein **Schwellwert** legt eine Auslösebedingung fest; die Zeitbedingung begrenzt, wie lange sie bestehen muss. Prometheus unterscheidet mit einer optionalen **for**-Dauer einen zunächst ausstehenden (pending) und später auslösenden (firing) Alarm. Die Bedingung muss bei den Auswertungen weiter aktiv bleiben. Das ist keine Garantie, dass unbeobachtete Zwischenzeiten bekannt sind.\n\n**Eigene Fallregel:** Feldstrom prüft freien Speicher minütlich. Unter 12 GiB soll erst nach drei Minuten fortbestehender Bedingung ein Alarm auslösen. Um 10:00 werden 11 GiB gemessen, um 10:01 sind es 10 GiB, um 10:02 wieder 14 GiB. Die Bedingung endet vor Ablauf: nach dieser Regel kein Alarm. Das Ereignis kann dennoch als Verlauf analysiert werden. Ab 10:05 folgen bei jeder Auswertung Werte unter 12 GiB; bei 10:08 ist die Dauer erfüllt.\n\nDie Werte und Zeiten sind keine universelle Empfehlung. Feldstrom muss die Schwelle mit Schreibbedarf, Reaktionszeit und verfügbarer Kapazität prüfen. Für ausbleibende Messungen plant das Team eine eigene Datenlücken-Erkennung. Ein fehlender Messwert wird nicht als freier Speicher interpretiert. Ein besonders schneller Ausfall der Auftragsfunktion hat im Fall eine andere Regel als die Speicherwarnung."
+        },
+        {
+          "type": "quiz",
+          "id": "mon-schwelle",
+          "question": "Die Speicherbedingung besteht von 10:00 bis zur guten Messung 10:02. Was folgt aus der beschriebenen Drei-Minuten-Regel?",
+          "options": [
+            {
+              "text": "Der Alarm muss unabhängig vom Folgewert um 10:03 auslösen.",
+              "rationale": "Die Bedingung bleibt nicht fortbestehend aktiv.",
+              "correct": false
+            },
+            {
+              "text": "Die gute Messung beweist, dass nie ein Engpass auftreten kann.",
+              "rationale": "Ein Zeitpunkt liefert keine solche Zukunftsgarantie.",
+              "correct": false
+            },
+            {
+              "text": "Die Zeitbedingung ist nicht erfüllt; Verlauf beobachten und Datenlücken separat behandeln.",
+              "rationale": "Die Regel filtert diese kurze Episode, nicht jeden möglichen Fehler.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "schwelle"
+        }
+      ]
+    },
+    {
+      "title": "Eine Meldung ist noch keine Übernahme",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**Eigene Eskalationskette:** Feldstroms Alarm enthält System, Zeitpunkt, Auslösebedingung, Auswirkungen und einen freigegebenen Prüfschritt. Die eingeteilte Bereitschaft erhält ihn über den vereinbarten Kanal. Bleibt eine bestätigte Übernahme im Fall länger als fünf Minuten aus, geht die Meldung an die benannte Vertretung. Bei weiterem Ausbleiben übernimmt der definierte Leitungsweg. Diese Zeiten und Rollen werden organisatorisch festgelegt; ein Tool erfindet sie nicht.\n\nEine versendete Mail beweist keinen gelesenen Alarm. Eine Quittierung bedeutet im Fall „ich übernehme“, nicht „die Störung ist beseitigt“. Nach der Maßnahme prüft das Team den ursprünglichen Diensttest und dokumentiert die Wiederherstellung sowie offene Befunde. Bei einem gemeinsamen Ausfall können viele Folgemeldungen entstehen; Zuständigkeit und betroffene Funktion bleiben wichtiger als die Anzahl der Benachrichtigungen.\n\n**Abnahme des eigenen Entwurfs:** In der Testumgebung wird ein kontrollierter Fehler ausgelöst. Das Team prüft Messwert, Zeitregel, Zustellung, Übernahme und absichtlich ausbleibende Übernahme mit Vertretung. Erst dieser Durchlauf weist den geplanten Alarmweg nach. Produktive Dienste werden für diese Lernübung nicht unterbrochen."
+        },
+        {
+          "type": "figure",
+          "diagramId": "eskalation",
+          "alt": "Alarm geht an die Bereitschaft, ohne bestätigte Übernahme an die Vertretung, danach folgt dokumentierter Abschluss.",
+          "caption": "Quittierung und tatsächliche Wiederherstellung sind getrennte Zustände."
+        },
+        {
+          "type": "quiz",
+          "id": "mon-eskalation",
+          "question": "Die Alarmmail ist versendet, aber nach fünf Minuten hat niemand übernommen. Was verlangt Feldstroms Fallregel?",
+          "options": [
+            {
+              "text": "An die benannte Vertretung eskalieren und den Ablauf dokumentieren.",
+              "rationale": "Versand ersetzt keine bestätigte Verantwortung.",
+              "correct": true
+            },
+            {
+              "text": "Den Alarm schließen, weil der Mailserver ihn angenommen hat.",
+              "rationale": "Die technische Zustellung beseitigt keine Störung.",
+              "correct": false
+            },
+            {
+              "text": "Die Übernahme automatisch als Reparatur bewerten.",
+              "rationale": "Auch eine spätere Quittierung wäre kein Funktionsnachweis.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "eskalation"
+        },
+        {
+          "type": "recall",
+          "id": "mon-transfer",
+          "prompt": "Entwirf Feldstroms Messwege. Trenne Agentenrichtung von agentenloser Erfassung, prüfe SNMP-Schutz, bewerte die kurze Speicherepisode und beschreibe Datenlücken-Erkennung sowie den Alarmtest bis zur Vertretung.",
+          "minLength": 180,
+          "model": "Ich nutze den freigegebenen Server-Agenten für lokale Werte, SNMP am Switch und einen separaten Diensttest. Aktiv/passiv beschreibt die Richtung der Agentenchecks. SNMPv3 braucht die passende Sicherheitsstufe; im Fall AuthPriv und nur lesenden Zugriff. Die kurze Speicherepisode erfüllt die Drei-Minuten-Dauer nicht. Fehlende Werte prüfe ich separat. Der Alarmtest umfasst Erfassung, Zeitregel, Zustellung, bestätigte Übernahme und Vertretung bei ausbleibender Übernahme."
+        }
+      ]
+    },
+    {
+      "title": "Abruftraining",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "id": "mon-cards",
+          "cards": [
+            {
+              "id": "agent",
+              "label": "Monitoring",
+              "front": "Was sammelt ein Agent?",
+              "back": "Messdaten auf dem Zielsystem über seine erlaubten Funktionen."
+            },
+            {
+              "id": "richtung",
+              "label": "Monitoring",
+              "front": "Ist aktiv gleich agentenlos?",
+              "back": "Nein. Bei Zabbix beschreibt aktiv die selbstständige Erfassung und Übertragung durch den Agenten."
+            },
+            {
+              "id": "snmp",
+              "label": "Monitoring",
+              "front": "Bedeutet agentenlos keine Gerätefunktion?",
+              "back": "Nein. SNMP benötigt weiterhin eine SNMP-Funktion auf dem Gerät."
+            },
+            {
+              "id": "schutz",
+              "label": "Monitoring",
+              "front": "Beweist SNMPv3 allein Verschlüsselung?",
+              "back": "Nein. Die konkrete Sicherheitsstufe prüfen."
+            },
+            {
+              "id": "dauer",
+              "label": "Monitoring",
+              "front": "Was begrenzt eine for-Dauer?",
+              "back": "Wann eine fortbestehende Alarmbedingung auslösen darf."
+            },
+            {
+              "id": "luecke",
+              "label": "Monitoring",
+              "front": "Ist keine Messung ein guter Messwert?",
+              "back": "Nein. Eine Datenlücke verlangt eine eigene Bewertung."
+            },
+            {
+              "id": "uebernahme",
+              "label": "Monitoring",
+              "front": "Bedeutet Quittierung behoben?",
+              "back": "Nein. Verantwortliche Übernahme und Wiederherstellungsnachweis unterscheiden."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
