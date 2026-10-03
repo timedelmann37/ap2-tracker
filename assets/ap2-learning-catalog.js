@@ -8069,6 +8069,33 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "kuendigungsschutz-geltungsbereich-klagefrist-sozialauswahl",
+    "slug": "kuendigungsschutz-geltungsbereich-klagefrist-sozialauswahl",
+    "title": "Kündigungsschutz: Geltung, Klagefrist und Sozialauswahl",
+    "description": "Den allgemeinen Kündigungsschutz anhand der Betriebsdaten prüfen, Klagefristen erkennen und soziale Auswahl begründen.",
+    "domain": "WiSo",
+    "groupId": "wiso-3",
+    "groupLabel": "W3 · Arbeitsrecht II: Beendigung",
+    "itemId": "wiso-3__3",
+    "week": "KW 37",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "geltung",
+      "klage",
+      "auswahl"
+    ],
+    "sources": [
+      "schutz-kschg",
+      "schutz-klage",
+      "schutz-auswahl"
+    ],
+    "contentHash": "be5c319634931f3b4744cc668e6102d3afba3d738c0cc0bf04bca00814b9c44c",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "company-goals",
     "slug": "company-goals",
     "title": "Unternehmensziele und Zielkonflikte sicher abwägen",
