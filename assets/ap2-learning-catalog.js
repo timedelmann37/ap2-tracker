@@ -7411,6 +7411,39 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "abschlusspruefung-verkuerzung-zulassung-wiederholung",
+    "slug": "abschlusspruefung-verkuerzung-zulassung-wiederholung",
+    "title": "Abschlussprüfung: Verkürzung, Zulassung und Wiederholung",
+    "description": "Prüfungsteile einordnen, Verkürzung von vorzeitiger Zulassung trennen und Wiederholung sowie Ergänzungsprüfung richtig beurteilen.",
+    "domain": "WiSo",
+    "groupId": "wiso-1",
+    "groupLabel": "W1 · Berufsbildung und Arbeitswelt",
+    "itemId": "wiso-1__9",
+    "week": "KW 35",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "pruefung",
+      "weg",
+      "wiederholen"
+    ],
+    "sources": [
+      "exam-dauer",
+      "exam-frueh",
+      "exam-wiederholung",
+      "exam-teile",
+      "exam-gewicht",
+      "exam-ergaenzung",
+      "exam-getrennt",
+      "exam-vertrag",
+      "exam-entscheidung"
+    ],
+    "contentHash": "1301f56ee2a472b31d927c287bba91122990bb27bdce5b0efc8bb758a3134fa7",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "company-goals",
     "slug": "company-goals",
     "title": "Unternehmensziele und Zielkonflikte sicher abwägen",
