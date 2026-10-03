@@ -1,0 +1,356 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "subnetting-ip-adressen-pruefungsfall",
+    "slug": "subnetting-ip-adressen-pruefungsfall",
+    "title": "Subnetting: IP-Adressen im Prüfungsfall berechnen",
+    "description": "Präfix, Netzadresse und Hostbereich ermitteln und einen eigenen VLSM-Plan auf Kapazität und Überlappung prüfen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-11",
+    "groupLabel": "Rechnen und Prüfungstechnik",
+    "itemId": "ga1-11__11",
+    "week": "parallel",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": [
+      "ipcalc-cidr",
+      "ipcalc-tabelle",
+      "ipcalc-p2p"
+    ],
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "hosts",
+      "label": "Nutzbare IPv4-Adressen im normalen LAN berechnen"
+    },
+    {
+      "id": "netz",
+      "label": "Netzadresse anhand der Blockgrenze bestimmen"
+    },
+    {
+      "id": "broadcast",
+      "label": "Broadcast und nutzbaren Hostbereich abgrenzen"
+    },
+    {
+      "id": "praefix",
+      "label": "Kleinsten passenden Adressblock aus Bedarf bestimmen"
+    },
+    {
+      "id": "nachweis",
+      "label": "VLSM-Plan und Sonderfälle prüfen"
+    }
+  ],
+  "intro": "Das fiktive Labor Mosaik erhält für drei normale IPv4-LANs den privaten Bereich 10.44.8.0/24. Bedarf einschließlich Gateway, Management und Reserve: Werkstatt 50, Büro 25 und Messgeräte 10 nutzbare Adressen. Zusätzlich soll die vorhandene Clientadresse 10.44.8.77/26 geprüft werden. Eigene Zahlen und Planung, keine produktive Netzkonfiguration.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "ipcalc-cidr",
+        "sourceLocator": "RFC 4632 §3.1",
+        "use": "Explizite Präfixlänge und 32-Bit-Adressraum",
+        "reviewStatus": "Direkt gelesen 03.10.2026"
+      },
+      {
+        "sourceId": "ipcalc-tabelle",
+        "sourceLocator": "RFC 1878: Table; Subnets and Networks",
+        "use": "Masken, Adressanzahl und normale Hostbereiche",
+        "reviewStatus": "Direkt gelesen 03.10.2026; historische Klassenbegriffe nicht übernommen"
+      },
+      {
+        "sourceId": "ipcalc-p2p",
+        "sourceLocator": "RFC 3021 §2.1",
+        "use": "Begrenzte /31-Ausnahme auf Punkt-zu-Punkt-Verbindungen",
+        "reviewStatus": "Direkt gelesen 03.10.2026"
+      }
+    ],
+    "notes": [
+      "CURATED_DRAFT bis menschliche Fachfreigabe.",
+      "Privater Themenanker europa-integratoren-2026:00315, Zeilen 3040–3041, und :00320, Zeilen 3082–3107 direkt gelesen. Nur Dokumentationsziele: Netz, Maske, Broadcast und Routeradressen. Keine fremden Zahlen, Topologie oder Aufgabe übernommen.",
+      "Bestehende GA2-Inhalte bleiben unverändert; eigener GA1-Rechenfall statt Kopie.",
+      "Refero-Ziel bleibt Deep Space: gemeinsame Übungen, semantische Formeln und technische SVG."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "adresse",
+      "type": "flow",
+      "title": "Clientadresse im /26-Block prüfen",
+      "description": "Der untersuchte Block umfasst das letzte Oktett 64 bis 127.",
+      "items": [
+        {
+          "label": "Maske und Block",
+          "detail": "255.255.255.192 → 64 Adressen"
+        },
+        {
+          "label": "Netzadresse",
+          "detail": "10.44.8.64 – Hostanteil vollständig null"
+        },
+        {
+          "label": "Nutzbarer Bereich",
+          "detail": "10.44.8.65 bis 10.44.8.126"
+        },
+        {
+          "label": "Broadcast",
+          "detail": "10.44.8.127 – Hostanteil vollständig eins"
+        }
+      ]
+    },
+    {
+      "id": "plan",
+      "type": "flow",
+      "title": "VLSM-Belegung ohne Überschneidung",
+      "description": "Eigener Plan innerhalb von 10.44.8.0/24.",
+      "items": [
+        {
+          "label": "Werkstatt: 50 benötigt",
+          "detail": "10.44.8.0/26 → 62 nutzbare Adressen"
+        },
+        {
+          "label": "Büro: 25 benötigt",
+          "detail": "10.44.8.64/27 → 30 nutzbare Adressen"
+        },
+        {
+          "label": "Messgeräte: 10 benötigt",
+          "detail": "10.44.8.96/28 → 14 nutzbare Adressen"
+        },
+        {
+          "label": "Unverplant",
+          "detail": "10.44.8.112 bis 10.44.8.255"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Diagnose: Präfix statt letzter Zahl",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "ipcalc-diagnose",
+          "question": "Ist 10.44.8.77/26 automatisch im Netz 10.44.8.0?",
+          "options": [
+            {
+              "text": "Ja, alle Adressen mit gleichen ersten drei Oktetten gehören zusammen",
+              "rationale": "Das trifft nur bei der entsprechenden /24-Maske zu. /26 teilt das letzte Oktett weiter.",
+              "correct": false
+            },
+            {
+              "text": "Nein, Präfix und Blockgrenze bestimmen die Zugehörigkeit",
+              "rationale": "Richtig: /26 bedeutet 64er-Blöcke. 77 liegt zwischen 64 und 127.",
+              "correct": true
+            },
+            {
+              "text": "Nein, 77 ist immer eine Broadcastadresse",
+              "rationale": "Ob eine Adresse Broadcast ist, hängt vom Präfix ab; hier ist 77 eine nutzbare Hostadresse.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        },
+        {
+          "type": "markdown",
+          "markdown": "Für IPv4 beschreibt `/p` die Zahl der Netzbits, nicht die Zahl der Hosts. 32 − p Bits bleiben für den Hostanteil. Die Maske besteht zuerst aus p Einsen und danach aus Nullen. Diese Einheit behandelt normale LANs bis /30; /31-Punkt-zu-Punkt und /32 werden getrennt eingeordnet."
+        }
+      ]
+    },
+    {
+      "title": "1. Kapazität und Maske",
+      "blocks": [
+        {
+          "type": "math",
+          "ariaLabel": "Nutzbare Hostadressen gleich zwei hoch 32 minus Präfix, minus zwei",
+          "mathml": "<math display=\"block\"><mrow><mi>H</mi><mo>=</mo><msup><mn>2</mn><mrow><mn>32</mn><mo>−</mo><mi>p</mi></mrow></msup><mo>−</mo><mn>2</mn></mrow></math>",
+          "legend": [
+            "p = Präfixlänge; H = nutzbare Adressen im normalen LAN",
+            "Netz- und Broadcastadresse werden hier nicht an Hosts vergeben"
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "Für /26 bleiben sechs Hostbits: 64 Kombinationen, davon 62 nutzbar. Die Maske lautet 255.255.255.192. Das letzte Maskenoktett hat die beiden hohen Bitgewichte 128 und 64 gesetzt; ihre Summe ist 192. Die verbleibenden Gewichte 32 + 16 + 8 + 4 + 2 + 1 ergeben 63 mögliche Hostanteile neben null."
+        },
+        {
+          "type": "numeric",
+          "id": "ipcalc-hosts",
+          "prompt": "Wie viele nutzbare Adressen hat das normale /26-LAN?",
+          "expected": 62,
+          "tolerance": 0.000001,
+          "label": "Ergebnis",
+          "placeholder": "Zahl ohne Einheit eingeben",
+          "correctFeedback": "Richtig. Sechs Hostbits ergeben 64 Adressen; Netz und Broadcast abziehen. Ein Gateway belegt eine dieser 62 Adressen.",
+          "wrongFeedback": "Sechs Hostbits ergeben 64 Adressen; Netz und Broadcast abziehen. Ein Gateway belegt eine dieser 62 Adressen.",
+          "requiredObjective": "hosts"
+        }
+      ]
+    },
+    {
+      "title": "2. Netz, Broadcast und Hostbereich",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Weil das Präfix hier im letzten Oktett liegt, kann die Blockschrittweite dort als 256 − 192 = 64 bestimmt werden. Die Blöcke beginnen bei 0, 64, 128 und 192. Die 77 liegt im Block 64 bis 127.\n\n**Rechenkontrolle:** 77 setzt die Bitgewichte 64 + 8 + 4 + 1. Die Maskierung mit 192 lässt davon nur das Gewicht 64 übrig. Netzadresse: 10.44.8.64. Die Broadcastadresse ist das Blockende 10.44.8.127. Nutzbar sind 10.44.8.65 bis 10.44.8.126. Der Client .77 ist deshalb zulässig.\n\nDie Schrittweitenmethode gilt im relevanten Maskenoktett. Bei Präfixen vor /24 darf sie nicht blind auf das letzte Oktett angewandt werden; alternativ alle 32 Bits maskieren."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Letztes Netzoktett gleich abgerundetes Adressoktett durch Schrittweite mal Schrittweite",
+          "mathml": "<math display=\"block\"><mrow><mi>N</mi><mo>=</mo><mo>⌊</mo><mfrac><mi>x</mi><mi>s</mi></mfrac><mo>⌋</mo><mo>×</mo><mi>s</mi></mrow></math>",
+          "legend": [
+            "Hier x = 77, s = 64; Ergebnis N = 64",
+            "Nur für das relevante Oktett dieses /26-Falls"
+          ]
+        },
+        {
+          "type": "figure",
+          "diagramId": "adresse",
+          "alt": "Die /26-Maske bildet 64er-Blöcke. Client 10.44.8.77 liegt im Netz .64 mit Hostbereich .65 bis .126 und Broadcast .127.",
+          "caption": "Netzadresse und Broadcast sind keine frei vergebbaren LAN-Hostadressen."
+        },
+        {
+          "type": "numeric",
+          "id": "ipcalc-netz",
+          "prompt": "Für 10.44.8.77/26: Welches letzte Oktett hat die Netzadresse? Nur das Oktett eingeben.",
+          "expected": 64,
+          "tolerance": 0.000001,
+          "label": "Ergebnis",
+          "placeholder": "Zahl ohne Einheit eingeben",
+          "correctFeedback": "Richtig. 77 / 64 abrunden ergibt 1; mal 64 ergibt 64. Die vollständige Adresse ist 10.44.8.64.",
+          "wrongFeedback": "77 / 64 abrunden ergibt 1; mal 64 ergibt 64. Die vollständige Adresse ist 10.44.8.64.",
+          "requiredObjective": "netz"
+        },
+        {
+          "type": "numeric",
+          "id": "ipcalc-broadcast",
+          "prompt": "Für denselben /26-Block: Welches letzte Oktett hat die Broadcastadresse?",
+          "expected": 127,
+          "tolerance": 0.000001,
+          "label": "Ergebnis",
+          "placeholder": "Zahl ohne Einheit eingeben",
+          "correctFeedback": "Richtig. Netzoktett 64 + 64 Adressen − 1 = 127. Letzter nutzbarer Host ist dagegen 126.",
+          "wrongFeedback": "Netzoktett 64 + 64 Adressen − 1 = 127. Letzter nutzbarer Host ist dagegen 126.",
+          "requiredObjective": "broadcast"
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Gateway prüfen:** 10.44.8.65/26 wäre im untersuchten Clientnetz; 10.44.8.1/26 liegt im anderen Block .0 bis .63. Die freie Hostadresse allein beweist weder Erreichbarkeit noch korrekte VLAN-/Firewall-/Routing-Konfiguration. Außerdem ist dieser einzelne Client-Prüffall vom folgenden neuen VLSM-Plan zu unterscheiden: dort bekommt der Bürobereich /27 statt /26."
+        }
+      ]
+    },
+    {
+      "title": "3. VLSM aus Bedarf planen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Der Bedarf ist bereits vollständig: Werkstatt 50, Büro 25, Messgeräte 10 inklusive Gateway und Reserve. Keine zusätzlichen pauschalen Prozentwerte addieren. Je Bedarf den kleinsten Zweierpotenzblock wählen, dessen nutzbare Kapazität reicht. Größte Blöcke zuerst platzieren; Netzadressen müssen auf ihre Blockgrenze fallen."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Zwei hoch Hostbits minus zwei muss mindestens dem Bedarf entsprechen",
+          "mathml": "<math display=\"block\"><mrow><msup><mn>2</mn><mi>h</mi></msup><mo>−</mo><mn>2</mn><mo>≥</mo><mi>B</mi><mspace width=\"1em\"/><mi>p</mi><mo>=</mo><mn>32</mn><mo>−</mo><mi>h</mi></mrow></math>",
+          "legend": [
+            "Kleinste ganze Hostbitzahl h wählen",
+            "B = vorgegebener Bedarf einschließlich Gateway und Reserve"
+          ]
+        },
+        {
+          "type": "numeric",
+          "id": "ipcalc-praefix",
+          "prompt": "Welches Präfix ist der kleinste ausreichende Block für die 25 Büro-Adressen? Nur die Zahl hinter / eingeben.",
+          "expected": 27,
+          "tolerance": 0.000001,
+          "label": "Ergebnis",
+          "placeholder": "Zahl ohne Einheit eingeben",
+          "correctFeedback": "Richtig. Vier Hostbits reichen mit 14 Adressen nicht. Fünf ergeben 30: Präfix 32 − 5 = 27.",
+          "wrongFeedback": "Vier Hostbits reichen mit 14 Adressen nicht. Fünf ergeben 30: Präfix 32 − 5 = 27.",
+          "requiredObjective": "praefix"
+        },
+        {
+          "type": "figure",
+          "diagramId": "plan",
+          "alt": "Werkstatt .0/26, Büro .64/27 und Messgeräte .96/28 belegen disjunkte Adressbereiche bis .111. Ab .112 bleibt der Adressraum unverplant.",
+          "caption": "Der ungenutzte Rest ist ein Adressbereich, nicht automatisch ein einzelnes CIDR-Netz."
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Plan dokumentieren:**\n\n- Werkstatt: Netz 10.44.8.0/26, Maske 255.255.255.192, Hosts .1–.62, Broadcast .63. Gateway nach eigener Konvention .1.\n- Büro: Netz 10.44.8.64/27, Maske 255.255.255.224, Hosts .65–.94, Broadcast .95. Gateway .65.\n- Messgeräte: Netz 10.44.8.96/28, Maske 255.255.255.240, Hosts .97–.110, Broadcast .111. Gateway .97.\n\nAlle drei liegen im /24, sind an ihren Blockgrenzen ausgerichtet und überlappen nicht. .112–.255 ist unverplant; eine spätere Zuteilung muss erneut ausgerichtet werden. „10.44.8.112/25“ wäre kein korrekt ausgerichtetes /25-Netz.\n\n**Fehlerfall:** Büro .64/27 und Messgeräte .80/28 überschneiden sich von .80 bis .95. Passende Hostzahlen allein genügen nicht. Bereits vergebene Adressen, DHCP-Bereiche, Gateway und Reserven separat dokumentieren."
+        },
+        {
+          "type": "quiz",
+          "id": "ipcalc-nachweis",
+          "question": "Welche Prüfung ist fachlich richtig?",
+          "options": [
+            {
+              "text": "Kapazität, Blockgrenzen, Überlappung und Gateway-Zugehörigkeit prüfen; /31 separat behandeln",
+              "rationale": "Richtig: Ein Plan benötigt mehrere Nachweise. Die Zwei-Abzüge-Formel ist nicht universell.",
+              "correct": true
+            },
+            {
+              "text": "Der Bedarf passt, deshalb darf Messgeräte .80/28 neben Büro .64/27 stehen",
+              "rationale": "Beide enthalten .80 bis .95; damit überschneidet sich der Adressplan.",
+              "correct": false
+            },
+            {
+              "text": "Ein /31 hat stets null nutzbare Adressen",
+              "rationale": "RFC 3021 erlaubt auf passenden Punkt-zu-Punkt-Verbindungen beide Adressen als Endpunkte.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "nachweis"
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Grenzen:** Auf einer passenden /31-Punkt-zu-Punkt-Verbindung sind beide Adressen Endpunktadressen; keine normale LAN-Broadcastberechnung übernehmen. /32 bezeichnet einen einzelnen Host/Hostroute. IPv6 hat andere Adressierungsregeln und ist nicht Gegenstand dieses IPv4-Rechenfalls."
+        }
+      ]
+    },
+    {
+      "title": "Transfer und Wiederholung",
+      "blocks": [
+        {
+          "type": "recall",
+          "id": "ipcalc-transfer",
+          "prompt": "Erkläre für 10.44.8.77/26 Netzadresse, Broadcast und Hostbereich. Begründe dann, warum der Büro-/Messgeräte-Plan .64/27 und .96/28 funktioniert, .80/28 aber nicht.",
+          "minLength": 140,
+          "model": "/26 ergibt 64er-Blöcke, 77 liegt im Block 64–127. Netz 10.44.8.64, Broadcast .127, Hosts .65–.126. Büro .64/27 endet bei .95; Messgeräte .96/28 beginnt direkt danach und endet bei .111. Die Kapazitäten 30 und 14 decken 25 und 10 Adressen ab. .80/28 würde sich mit dem Bürobereich überschneiden. Gateway und DHCP-Zuordnung zusätzlich prüfen."
+        },
+        {
+          "type": "flashcards",
+          "id": "ipcalc-karten",
+          "cards": [
+            {
+              "id": "hosts",
+              "label": "Kapazität",
+              "front": "Wie viele normale /26-LAN-Hosts?",
+              "back": "62: sechs Hostbits, 64 Adressen minus Netz und Broadcast."
+            },
+            {
+              "id": "netz",
+              "label": "Netzadresse",
+              "front": "Wie entsteht die Netzadresse?",
+              "back": "Adressbits mit der Maske verknüpfen; Hostanteil null. Im eigenen Fall .64."
+            },
+            {
+              "id": "broadcast",
+              "label": "Blockende",
+              "front": "Broadcast und letzter Host?",
+              "back": "Im Fall .127 und .126; nicht vertauschen."
+            },
+            {
+              "id": "praefix",
+              "label": "Bedarf",
+              "front": "25 nutzbare Adressen benötigen?",
+              "back": "Mindestens fünf Hostbits, also /27 mit 30 nutzbaren Adressen."
+            },
+            {
+              "id": "nachweis",
+              "label": "Planprüfung",
+              "front": "Reicht passende Hostzahl?",
+              "back": "Nein: Ausrichtung, Überlappung, übergeordnetes Netz und Gateway-Zugehörigkeit ebenfalls prüfen."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
