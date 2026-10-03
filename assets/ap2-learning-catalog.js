@@ -4450,6 +4450,35 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "industrie-vier-cps-ki-neuronale-netze",
+    "slug": "industrie-vier-cps-ki-neuronale-netze",
+    "title": "Industrie 4.0: CPS und KI im technischen Einsatz",
+    "description": "Sensor, Steuerung und Aktor unterscheiden, einen Neuronenbaustein berechnen und einen KI-Wartungspilot begründet bewerten.",
+    "domain": "GA1",
+    "groupId": "ga1-13",
+    "groupLabel": "Projekt- & Qualitätsmanagement",
+    "itemId": "ga1-13__7",
+    "week": "Woche 11 · KW 45",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "cps",
+      "neuron",
+      "pilot"
+    ],
+    "sources": [
+      "industrie-ibm",
+      "industrie-nist-cps",
+      "industrie-google-neuronen",
+      "industrie-google-relu",
+      "industrie-nist-risiken"
+    ],
+    "contentHash": "3649d3a139b4d685de346fbcb04e474ed44ac5ad2b832bc847389a81562a7667",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "osi-model",
     "slug": "osi-model",
     "title": "Das OSI-Schichtenmodell sicher anwenden",

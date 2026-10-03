@@ -1,0 +1,383 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "industrie-vier-cps-ki-neuronale-netze",
+    "slug": "industrie-vier-cps-ki-neuronale-netze",
+    "title": "Industrie 4.0: CPS und KI im technischen Einsatz",
+    "description": "Sensor, Steuerung und Aktor unterscheiden, einen Neuronenbaustein berechnen und einen KI-Wartungspilot begründet bewerten.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-13",
+    "groupLabel": "Projekt- & Qualitätsmanagement",
+    "itemId": "ga1-13__7",
+    "week": "Woche 11 · KW 45",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "sources": [
+      "industrie-ibm",
+      "industrie-nist-cps",
+      "industrie-google-neuronen",
+      "industrie-google-relu",
+      "industrie-nist-risiken"
+    ],
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "cps",
+      "label": "Physische Rückkopplung und vernetzte Produktionsdaten im eigenen Fall erklären"
+    },
+    {
+      "id": "neuron",
+      "label": "Training von Inferenz trennen und einen gewichteten ReLU-Baustein berechnen"
+    },
+    {
+      "id": "pilot",
+      "label": "Nutzen, Fehlerfolgen und Betriebsgrenzen eines KI-Piloten bewerten"
+    }
+  ],
+  "intro": "Der fiktive Betrieb Merin erprobt Wartungshinweise für einen Lüfter an einer Montageanlage. Alle Komponenten, Messwerte und Regeln sind eigene Übungsdaten. Die lokale Regelung bleibt vom Modell getrennt: Ein KI-Hinweis darf hier keinen Aktor unmittelbar verstellen.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "industrie-ibm",
+        "sourceLocator": "Industry 4.0 und Vernetzung",
+        "use": "Grundbegriffe gegen Primärdokumentation prüfen; eigener Fall statt Quellaufgabe",
+        "reviewStatus": "Abschnitt direkt gelesen 03.10.2026"
+      },
+      {
+        "sourceId": "industrie-nist-cps",
+        "sourceLocator": "Definitionen, digitaler und physischer Anteil",
+        "use": "Grundbegriffe gegen Primärdokumentation prüfen; eigener Fall statt Quellaufgabe",
+        "reviewStatus": "Abschnitt direkt gelesen 03.10.2026"
+      },
+      {
+        "sourceId": "industrie-google-neuronen",
+        "sourceLocator": "Gewichte, Bias und verborgene Schichten",
+        "use": "Grundbegriffe gegen Primärdokumentation prüfen; eigener Fall statt Quellaufgabe",
+        "reviewStatus": "Abschnitt direkt gelesen 03.10.2026"
+      },
+      {
+        "sourceId": "industrie-google-relu",
+        "sourceLocator": "Nichtlinearität und ReLU",
+        "use": "Grundbegriffe gegen Primärdokumentation prüfen; eigener Fall statt Quellaufgabe",
+        "reviewStatus": "Abschnitt direkt gelesen 03.10.2026"
+      },
+      {
+        "sourceId": "industrie-nist-risiken",
+        "sourceLocator": "AI RMF 1.0, Abschnitt 3 und 3.1",
+        "use": "Grundbegriffe gegen Primärdokumentation prüfen; eigener Fall statt Quellaufgabe",
+        "reviewStatus": "Abschnitt direkt gelesen 03.10.2026"
+      }
+    ],
+    "notes": [
+      "CURATED_DRAFT bis menschliche Fachfreigabe.",
+      "Private Themenanker europa-integratoren-2026:00179 (1855–1856, Überschrift), :00208 (2090–2126) und :00806 (7953–7958) direkt im Hauptrepository gelesen. Keine Buchgrafik, Aufgabe oder Kreditwürdigkeitsdaten übernommen.",
+      "Eigener fiktiver Merin-Fall, normalisierte Zahlen, Diagramme und Übungen. Beispielgewichte bewusst gesetzt, nicht trainiert; Aktivierung ist keine Wahrscheinlichkeit.",
+      "NIST-Risiken beziehen sich auf AI RMF 1.0 (2023), dessen Überarbeitung auf der Quellseite angekündigt ist. Keine Rechts- oder Zertifizierungsaussage.",
+      "Lokale Steuerung und Schutzmaßnahmen sind ein didaktischer Systementwurf, keine validierte industrielle Sicherheitsarchitektur.",
+      "Freier Transfer wird nicht automatisch fachlich benotet."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "rueckkopplung",
+      "type": "flow",
+      "title": "Merin: physischer Regelkreis",
+      "description": "Der Sensor misst Temperatur, die lokale Steuerung vergleicht sie mit dem Sollwert, der Aktor verändert die Lüfterdrehzahl und damit den Prozess. Die neue Temperatur wird wieder gemessen. KI gehört nicht in diesen dargestellten Regelkreis.",
+      "items": [
+        {
+          "label": "Sensor: Temperatur messen",
+          "detail": "Istwert des physischen Prozesses erfassen."
+        },
+        {
+          "label": "Lokale Steuerung: Soll/Ist vergleichen",
+          "detail": "Nach festgelegter Regel eine Stellgröße bilden."
+        },
+        {
+          "label": "Aktor: Lüfterdrehzahl verändern",
+          "detail": "Elektrischen Befehl in physische Wirkung umsetzen."
+        },
+        {
+          "label": "Prozess: Temperatur verändert sich",
+          "detail": "Rückkopplung: erneut am Sensor messen."
+        }
+      ]
+    },
+    {
+      "id": "neuron",
+      "type": "topology",
+      "height": 400,
+      "title": "Ein Neuronenbaustein – keine fertige Prognose",
+      "description": "Zwei normalisierte Eingangswerte x1 und x2 werden mit w1 und w2 gewichtet. Der Neuronenbaustein addiert den Bias b und wendet ReLU an. Seine Aktivierung h ist ein Zwischenwert für nachfolgende Verarbeitung.",
+      "nodes": [
+        {
+          "id": "x1",
+          "label": "x1 = 0,8",
+          "detail": "Vibration",
+          "x": 160,
+          "y": 145
+        },
+        {
+          "id": "x2",
+          "label": "x2 = 0,4",
+          "detail": "Temperatur",
+          "x": 160,
+          "y": 315
+        },
+        {
+          "id": "h",
+          "label": "Neuron h",
+          "detail": "Bias + ReLU",
+          "x": 480,
+          "y": 230
+        },
+        {
+          "id": "weiter",
+          "label": "Zwischenwert",
+          "detail": "h = 0,3",
+          "x": 800,
+          "y": 230
+        }
+      ],
+      "edges": [
+        {
+          "from": "x1",
+          "to": "h",
+          "label": "w1 = 0,5"
+        },
+        {
+          "from": "x2",
+          "to": "h",
+          "label": "w2 = 0,25"
+        },
+        {
+          "from": "h",
+          "to": "weiter",
+          "label": "Aktivierung"
+        }
+      ]
+    },
+    {
+      "id": "pilot",
+      "type": "layers",
+      "title": "Vom Messwert zum geprüften Wartungshinweis",
+      "description": "Messdaten werden geprüft und mit einer Modellversion ausgewertet. Ein Hinweis wird fachlich geprüft; erst eine verantwortliche Person plant die Wartung. Lokale Regelung und Schutzfunktionen bleiben unabhängig.",
+      "items": [
+        {
+          "label": "Daten prüfen",
+          "detail": "Einheit, Zeitstempel, Sensorausfall und Einsatzbereich."
+        },
+        {
+          "label": "Modell auswerten",
+          "detail": "Neue Daten mit freigegebener Modellversion verarbeiten."
+        },
+        {
+          "label": "Hinweis prüfen",
+          "detail": "Techniker vergleicht Meldung mit Zustand und Historie."
+        },
+        {
+          "label": "Wartung entscheiden",
+          "detail": "Verantwortliche Person; kein direkter Aktorzugriff."
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Diagnose: Nicht jeder Messwert ist schon KI",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "industrie-diagnose",
+          "diagnostic": true,
+          "question": "Ein Dashboard zeigt die aktuelle Temperatur. Was lässt sich allein daraus ableiten?",
+          "options": [
+            {
+              "text": "Es handelt sich sicher um ein neuronales Netz.",
+              "rationale": "Anzeige benötigt kein neuronales Netz.",
+              "correct": false
+            },
+            {
+              "text": "Das Dashboard ist bereits eine vollständige Regelung.",
+              "rationale": "Ohne Stellgröße, Aktor und Rückwirkung ist kein vollständiger Regelkreis beschrieben.",
+              "correct": false
+            },
+            {
+              "text": "Es zeigt Messdaten; KI und physische Rückwirkung sind damit nicht nachgewiesen.",
+              "rationale": "Messung, Anzeige, Regelung und Modell sind verschiedene Funktionen. Erst die konkrete Systembeschreibung zeigt ihre Rolle.",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Industrie 4.0** verbindet Produktionsanlagen, Daten und betriebliche Abläufe. Beispiel: Merin verknüpft Messreihen mit Anlagen-ID, Auftrag und Wartungshistorie. Ein vernetzter Ablauf ermöglicht Rückverfolgbarkeit; eine einzelne automatisierte Maschine beweist diese Vernetzung noch nicht. Cloud und KI können ergänzen, sind aber nicht für jeden Baustein erforderlich.\n\n**Cyber-physisches System (CPS):** Digitale Verarbeitung und physischer Prozess wirken zusammen. Bei Merin messen Sensoren den Zustand, eine lokale Steuerung verarbeitet ihn und ein Aktor beeinflusst den Prozess. Das gezeigte Beispiel nutzt Rückkopplung. Ein IIoT-Sensor kann Daten liefern, ohne allein den gesamten Regelkreis abzubilden."
+        }
+      ]
+    },
+    {
+      "title": "CPS: Informationsfluss von physischer Wirkung trennen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**Eigener Merin-Fall:** Ein Sensor liefert den Temperatur-Istwert. Die lokale Steuerung vergleicht ihn mit dem konfigurierten Sollwert. Ihr Stellbefehl verändert über den Aktor die Lüfterdrehzahl. Der Luftstrom beeinflusst die Temperatur, die erneut gemessen wird. Das ist die Rückkopplung; Messwert und Stellgröße sind nicht dasselbe.\n\nDie IT erhält ausgewählte Messreihen zur Wartungsanalyse. Eine Visualisierung im Leitstand zeigt Werte; sie übernimmt nicht automatisch die Regelung. Für den Übungsentwurf werden lokale Schutzfunktionen separat betrachtet und nicht von einem Cloud-Dienst abhängig gemacht. Das ist eine Entwurfsgrenze des Falls, keine fertige Sicherheitsfreigabe."
+        },
+        {
+          "type": "figure",
+          "diagramId": "rueckkopplung",
+          "alt": "Temperaturmessung, lokaler Soll-Ist-Vergleich, Stellbefehl an den Lüfter und physische Temperaturänderung mit erneuter Messung.",
+          "caption": "Von oben nach unten; nach dem Prozessschritt zurück zum Sensor. Der zusätzliche KI-Wartungspfad ist nicht Teil dieses Regelkreises."
+        },
+        {
+          "type": "quiz",
+          "id": "industrie-cps",
+          "requiredObjective": "cps",
+          "question": "Welcher Vorgang schließt die Rückkopplung im Merin-Fall?",
+          "options": [
+            {
+              "text": "Die geänderte Lüfterdrehzahl beeinflusst die Temperatur, die der Sensor erneut misst.",
+              "rationale": "Die physische Wirkung wird wieder als Istwert erfasst. Genau diese Rückwirkung verbindet Prozess und digitale Regelung.",
+              "correct": true
+            },
+            {
+              "text": "Ein Dashboard speichert seinen Screenshot.",
+              "rationale": "Ein Screenshot wirkt nicht auf den physischen Prozess zurück.",
+              "correct": false
+            },
+            {
+              "text": "Eine KI nennt eine Wartungsempfehlung, ohne den Prozess zu verändern.",
+              "rationale": "Eine Empfehlung ist Information. Sie ersetzt weder Aktorwirkung noch erneute Messung.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "KI und neuronale Netze: Lernen ist nicht Anwenden",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**KI** ist der Oberbegriff für Verfahren, die etwa Muster erkennen oder Entscheidungen unterstützen. **Maschinelles Lernen** ist ein Teilgebiet: Modellparameter werden anhand von Daten angepasst. **Neuronale Netze** sind eine Modellfamilie darin. KI ist nicht gleich Chatbot; eine feste Temperaturgrenze ist noch kein gelerntes Modell.\n\nBei **Training** werden Gewichte und Bias anhand von Beispielen und eines Lernziels angepasst. Bei **Inferenz** verarbeitet eine festgelegte Modellversion neue Eingaben. Merins Wartungsmodell lernt nicht bei jedem Hinweis automatisch weiter. Ein separates, geprüftes Training kann später eine neue Version ergeben.\n\nEin einfaches vorwärtsgerichtetes Netz verarbeitet Eingaben über verborgene Schichten zur Ausgabe. Neuronen bilden gewichtete Summen mit Bias; nichtlineare Aktivierungen ermöglichen nichtlineare Beziehungen. Die Skizze isoliert nur einen Baustein, nicht ein vollständiges Wartungsmodell."
+        },
+        {
+          "type": "figure",
+          "diagramId": "neuron",
+          "alt": "Zwei Eingänge Vibration x1 gleich 0,8 und Temperatur x2 gleich 0,4 führen mit Gewichten 0,5 und 0,25 zu einem Neuronenbaustein mit Bias und ReLU. Sein Zwischenwert h beträgt 0,3.",
+          "caption": "Leserichtung links nach rechts. Verbindungen stehen für Recheneingaben, nicht für Netzwerkkabel. Weitere Schichten und Ausgabe sind nicht dargestellt."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "z gleich w eins mal x eins plus w zwei mal x zwei plus b; h gleich Maximum von null und z",
+          "mathml": "<math display=\"block\"><mtable><mtr><mtd><mi>z</mi><mo>=</mo><msub><mi>w</mi><mn>1</mn></msub><mo>·</mo><msub><mi>x</mi><mn>1</mn></msub><mo>+</mo><msub><mi>w</mi><mn>2</mn></msub><mo>·</mo><msub><mi>x</mi><mn>2</mn></msub><mo>+</mo><mi>b</mi></mtd></mtr><mtr><mtd><mi>h</mi><mo>=</mo><mi mathvariant=\"normal\">max</mi><mo>(</mo><mn>0</mn><mo>,</mo><mi>z</mi><mo>)</mo></mtd></mtr></mtable></math>",
+          "legend": [
+            "x1 und x2: bereits normalisierte, einheitenlose Eingaben. w1 und w2: Beispielgewichte; b: Bias. z: gewichtete Summe; h: ReLU-Aktivierung.",
+            "Eigene Werte: x1 = 0,8; x2 = 0,4; w1 = 0,5; w2 = 0,25; b = −0,2. z = 0,4 + 0,1 − 0,2 = 0,3; h = 0,3."
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Rechenprobe:** Mit demselben Eingang und b = −0,7 ergibt sich z = −0,2 und h = 0. ReLU setzt negative Summen auf null. Die Aktivierung 0,3 bedeutet **nicht** „30 % Ausfallwahrscheinlichkeit“. Einheitenlose Normalisierung und eine passende Ausgabeinterpretation müssen im echten Modell festgelegt sein. Unsere Gewichte sind gesetzt, nicht aus realen Maschinendaten gelernt."
+        },
+        {
+          "type": "quiz",
+          "id": "industrie-neuron",
+          "requiredObjective": "neuron",
+          "question": "Für die erste Rechenprobe gilt b = −0,2. Welche Aussage ist richtig?",
+          "options": [
+            {
+              "text": "h = 0,5, weil der Bias weggelassen werden darf.",
+              "rationale": "0,5 ist die Summe der gewichteten Eingänge vor Bias. Der Bias gehört zum Baustein.",
+              "correct": false
+            },
+            {
+              "text": "z = 0,3 und h = 0,3; daraus folgt noch keine Ausfallwahrscheinlichkeit.",
+              "rationale": "0,5·0,8 + 0,25·0,4 − 0,2 = 0,3; ReLU lässt den positiven Wert stehen. Seine Bedeutung ist eine Aktivierung.",
+              "correct": true
+            },
+            {
+              "text": "h = −0,3, weil ReLU jedes Vorzeichen umkehrt.",
+              "rationale": "ReLU kehrt keine Vorzeichen um. Negative Eingaben werden null, positive bleiben erhalten.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Unternehmenseinsatz: Nutzen mit Fehlerfolgen abwägen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**Chance:** Ein Wartungshinweis könnte Techniker auf ungewöhnliche Verläufe aufmerksam machen und Untersuchungen früher auslösen. Merin muss den Nutzen im eigenen Pilot nachweisen; das Netz garantiert keine vermiedenen Ausfälle.\n\n**Eigene Pilotbedingungen:**\n\n- **Datenqualität:** Vibration und Temperatur tragen Einheiten, Zeitstempel, Anlagen-ID und dokumentierte Vorverarbeitung. Ein fehlender Sensorwert ist nicht automatisch null.\n- **Unabhängige Prüfung:** Training und abschließende Prüfung getrennt halten. Fast identische Messfenster derselben Störung nicht über beide Mengen verteilen. Für diesen Pilot werden ganze Störungsereignisse getrennt; eine später gesammelte Messperiode prüft zusätzlich veränderte Bedingungen. Kleine Stichproben erlauben keine sichere Produktionsaussage.\n- **Fehlerfolgen:** Fehlalarm bedeutet Hinweis ohne tatsächlichen Wartungsbedarf; übersehener Fall bedeutet fehlenden Hinweis trotz Bedarf. Beide getrennt zählen. Ein einziger Gesamt-Erfolgswert kann die gefährlicheren Fehler verdecken.\n- **Betriebsgrenze:** Modellversion und Einsatzbereich festhalten. Neue Lüftertypen oder veränderte Lasten können die Aussagekraft verändern. Bei ungeeigneten oder fehlenden Daten Hinweis als nicht belastbar kennzeichnen; konventionelle Kontrollen weiterführen.\n- **Zugriff und Verantwortung:** Messdatenpfad begrenzen, Rechte und Aufbewahrung festlegen. Personenbezug vermeiden, soweit für den Zweck nicht nötig. Zuständige Techniker prüfen Hinweise; das Modell besitzt im Fall keine Aktor-Schreibrechte.\n\n**Eigener Ergebnisfall:** In einer getrennten Pilotprüfung gibt es 8 tatsächliche Wartungsfälle. Das Modell meldet 6 davon, übersieht 2 und erzeugt zusätzlich 3 Fehlalarme. Ohne Anzahl aller Fälle lässt sich keine Gesamtgenauigkeit berechnen. Entscheidend: Zwei übersehene Fälle bleiben offen; vor Freigabe müssen Fehlerursachen, akzeptable Grenzen, Kontrollverfahren und Rückfallweg geklärt werden."
+        },
+        {
+          "type": "figure",
+          "diagramId": "pilot",
+          "alt": "Datenprüfung, versionierte Modellauswertung, fachliche Hinweisprüfung und Wartungsentscheidung ohne direkten Aktorzugriff.",
+          "caption": "Die KI unterstützt die Wartung. Der unabhängig betrachtete lokale Regelkreis läuft nicht über diesen Hinweisweg."
+        },
+        {
+          "type": "quiz",
+          "id": "industrie-pilot",
+          "requiredObjective": "pilot",
+          "question": "Merin entdeckt zwei übersehene Wartungsfälle und wechselt den Lüftertyp. Was ist der passende nächste Schritt?",
+          "options": [
+            {
+              "text": "Alle Aktor-Schreibrechte freigeben, weil 6 Fälle erkannt wurden.",
+              "rationale": "Sechs Treffer belegen weder ausreichende Sicherheit noch Eignung für den neuen Lüfter. Aktorfreigabe ist nicht Teil des Piloten.",
+              "correct": false
+            },
+            {
+              "text": "Nur die drei Fehlalarme löschen und damit den Pilot als bestanden markieren.",
+              "rationale": "Fehlalarme gehören zur Bewertung. Löschen verbessert nicht das Modell und behandelt die übersehenen Fälle nicht.",
+              "correct": false
+            },
+            {
+              "text": "Fehlerfolgen und neuen Einsatzbereich prüfen, unabhängige Tests ergänzen und lokale Kontrollen beibehalten.",
+              "rationale": "Veränderte Bedingungen und übersehene Fälle brauchen Nachweise und verantwortliche Entscheidung. Bis dahin bleibt der Hinweis begrenzt.",
+              "correct": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Transfer: Einen begrenzten KI-Piloten begründen",
+      "blocks": [
+        {
+          "type": "recall",
+          "id": "industrie-transfer",
+          "prompt": "Beschreibe Merins Rückkopplung und den getrennten KI-Hinweisweg. Rechne den Neuronenbaustein mit b = −0,7. Unterscheide Training und Inferenz. Nenne für den Pilot mit zwei übersehenen Wartungsfällen drei konkrete Prüf- oder Betriebsmaßnahmen und begründe ihre Wirkung.",
+          "minLength": 180,
+          "model": "Sensor misst Temperatur; lokale Steuerung bildet aus Soll/Ist einen Stellbefehl; Aktor verändert Lüfterdrehzahl und Temperatur; erneute Messung schließt den Kreis. Der KI-Hinweis geht an Techniker, nicht unmittelbar an den Aktor. Mit b = −0,7: z = 0,5·0,8 + 0,25·0,4 − 0,7 = −0,2; ReLU liefert h = 0. Keine Ausfallwahrscheinlichkeit. Training passt Parameter anhand von Beispielen an; Inferenz nutzt eine festgelegte Version für neue Eingaben. Ganze Störungsereignisse getrennt prüfen, damit ähnliche Fenster keinen scheinbaren Erfolg erzeugen. Übersehene Fälle und Fehlalarme getrennt analysieren, weil ihre Folgen verschieden sind. Neue Lüftertypen separat validieren und bei unpassenden Daten konventionelle Kontrollen fortführen. Rechte auf den Messdatenpfad begrenzen; verantwortliche Person prüft Hinweise. Keine automatisierte Aktorfreigabe aus diesem Pilot."
+        },
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "cps",
+              "label": "Rückkopplung",
+              "front": "Messwert oder Stellgröße?",
+              "back": "Der Sensor liefert den Istwert. Die Steuerung bildet die Stellgröße; der Aktor verändert den Prozess, der erneut gemessen wird."
+            },
+            {
+              "id": "neuron",
+              "label": "Modell",
+              "front": "Training oder Inferenz?",
+              "back": "Training passt Parameter an. Inferenz nutzt eine Modellversion für neue Daten; ein Hinweis trainiert sie nicht automatisch neu."
+            },
+            {
+              "id": "pilot",
+              "label": "Betrieb",
+              "front": "Treffer allein genügen?",
+              "back": "Nein. Übersehene Fälle, Fehlalarme, Einsatzbereich, Datenqualität und Rückfallweg müssen vor einer Freigabe bewertet werden."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
