@@ -1,0 +1,346 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "backup-speicherbedarf-fenster-rechnen",
+    "slug": "backup-speicherbedarf-fenster-rechnen",
+    "title": "Backup-Speicherbedarf und Fenster rechnen",
+    "description": "Aufbewahrte Ketten summieren, Reserve eindeutig definieren und Voll-/Inkrementalläufe mit dem Backup-Fenster vergleichen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-11",
+    "groupLabel": "Rechnen und Prüfungstechnik",
+    "itemId": "ga1-11__4",
+    "week": "parallel",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "sources": [
+      "backupcalc-veeam",
+      "backupcalc-aws",
+      "transfer-rfc6349"
+    ],
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "ketten",
+      "label": "Aufbewahrte Voll- und Inkrementdateien summieren"
+    },
+    {
+      "id": "reserve",
+      "label": "Reserve als Zuschlag oder freie Kapazität unterscheiden"
+    },
+    {
+      "id": "fenster",
+      "label": "Transfer und separate Zusatzzeiten mit dem Fenster vergleichen"
+    },
+    {
+      "id": "restore",
+      "label": "Backup-Fenster von Wiederherstellungsnachweis trennen"
+    }
+  ],
+  "intro": "Das fiktive Planungsbüro Uferplan behält zwei vollständige Sicherungsketten. Jede enthält eine Vollsicherung von 800 GB und sechs Inkremente von je 40 GB. Diese Werte sind im Fall bereits die tatsächlich zu speichernden und zu übertragenen Backup-Dateigrößen nach Verarbeitung. Ohne gemeinsame Deduplizierung, Reflinks oder weitere Kopien planst du Speicher und Laufzeit. Eigene Modellzahlen, keine Hersteller-Leistungswerte.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "backupcalc-veeam",
+        "sourceLocator": "Forward Incremental Backup Retention Policy, introductory body paragraphs",
+        "use": "Abhängigkeit inkrementeller Ketten und mögliche zusätzliche Aufbewahrung",
+        "reviewStatus": "Direkt gelesen 03.10.2026; keine Produkt-Retention pauschal auf den eigenen Zählfall übertragen"
+      },
+      {
+        "sourceId": "backupcalc-aws",
+        "sourceLocator": "Restore testing, Overview",
+        "use": "Restorezeit messen und Ergebnisvalidierung separat betrachten",
+        "reviewStatus": "Direkt gelesen 03.10.2026; keine AWS-Zeitgarantie übernommen"
+      },
+      {
+        "sourceId": "transfer-rfc6349",
+        "sourceLocator": "Sections 4.1 and 4.1.2",
+        "use": "Transfermenge geteilt durch passende Rate; idealen und tatsächlichen Durchsatz trennen",
+        "reviewStatus": "Direkt gelesen 03.10.2026"
+      }
+    ],
+    "notes": [
+      "CURATED_DRAFT bis zur menschlichen Fachfreigabe.",
+      "Privater Themenanker europa-integratoren-2026:00465, Zeilen 4666–4671 gelesen: Sicherungsstrategien/Lagerorte. Keine Originalaufgabe übernommen; belegt keine Rechenformel. Unpassender Berufsbildtreffer :00034 ausgeschlossen.",
+      "Eigene Datei- und Laufzeitmodelle. Keine doppelte Kompression oder pauschale Overhead-Minderung bei gemessener Nutzrate. Retention-Peaks, immutability und temporäre Full-Erzeugung sind separat zu prüfen.",
+      "Refero-Lock bleibt bestehende Deep-Space-Lernseite; gemeinsame Widgets, native MathML, präzise SVG-Prüfwege."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "ketten",
+      "type": "flow",
+      "title": "Dateien zählen, dann Reserve",
+      "description": "Zwei vollständige eigene Ketten, ohne gemeinsame Speicherblöcke.",
+      "items": [
+        {
+          "label": "Eine Kette",
+          "detail": "800 GB Voll + 6 × 40 GB = 1 040 GB"
+        },
+        {
+          "label": "Zwei Ketten",
+          "detail": "2 × 1 040 GB = 2 080 GB"
+        },
+        {
+          "label": "20 % Zuschlag",
+          "detail": "2 080 × 1,20 = 2 496 GB"
+        },
+        {
+          "label": "Peak separat prüfen",
+          "detail": "Zusatzketten, Arbeitsraum, weitere Kopien"
+        }
+      ]
+    },
+    {
+      "id": "fenster",
+      "type": "flow",
+      "title": "Vollsicherung im Zwei-Stunden-Fenster",
+      "description": "Eigene sequenzielle Zeiten; konstante gemessene Nutzrate.",
+      "items": [
+        {
+          "label": "Transfer",
+          "detail": "800 000 MB ÷ 100 MB/s = 8 000 s"
+        },
+        {
+          "label": "Separater Aufwand",
+          "detail": "300 s Vorbereitung + 600 s Prüfung"
+        },
+        {
+          "label": "Gesamter Lauf",
+          "detail": "8 000 + 900 = 8 900 s"
+        },
+        {
+          "label": "Fensterentscheidung",
+          "detail": "7 200 s verfügbar: 1 700 s zu lang"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Diagnose: Retention ist mehr als eine Vollsicherung",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "backupcalc-diagnose",
+          "question": "Zwei vollständige Ketten sind aufzubewahren. Darf die benötigte Vollsicherung der älteren Kette entfernt werden, solange deren Inkremente noch gebraucht werden?",
+          "options": [
+            {
+              "text": "Ja, Inkremente enthalten immer unabhängig alle Dateien.",
+              "rationale": "Inkremente können von Vollsicherung und früheren Inkrementen abhängen.",
+              "correct": false
+            },
+            {
+              "text": "Nein, die Abhängigkeiten müssen erhalten bleiben.",
+              "rationale": "Die gesamte benötigte Wiederherstellungskette zählt zur Planung.",
+              "correct": true
+            },
+            {
+              "text": "Ja, das Backup-Fenster erlaubt automatisch das Löschen.",
+              "rationale": "Zeitfenster und Aufbewahrungsabhängigkeit sind verschiedene Anforderungen.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Den Zählbereich ausdrücklich festlegen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Im eigenen Fall bestehen **zwei Ketten**, jede aus einer Vollsicherung F=800 GB und k=6 Inkrementen zu I=40 GB. Eine Kette belegt 1 040 GB, zwei zusammen **2 080 GB**. Es gibt im Modell keine gemeinsam belegten Blöcke und keine weiteren Sicherungskopien. Dezimale GB sind vorgegeben.\n\nDie Größen sind bereits verarbeitete Backup-Dateigrößen; Kompression wird nicht nochmals abgezogen. Inkremente speichern Änderungen seit dem vorherigen Sicherungspunkt. Bei differentiellen Sicherungen wären die jeweiligen Änderungen seit der Vollsicherung zu summieren: nicht einfach dieselbe konstante Inkrementgröße übernehmen. Bei unterschiedlichen Dateigrößen wird jede Datei einzeln addiert.\n\nVeeam dokumentiert für Forward-Incremental die Kettenabhängigkeit und dadurch zeitweise mehr gespeicherte Punkte als die Retentionzahl. Unser Fall gibt dagegen **die tatsächlich zu zählenden Dateien** vor, keine herstellerspezifische Retentionkonfiguration. Grundlagen: [Backup-Verfahren](/lernen/backup-methods/)."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Gespeicherte Menge S ist Anzahl Ketten c mal Vollgröße F plus Anzahl Inkremente k mal Inkrementgröße I",
+          "mathml": "<math display=\"block\"><mrow><mi>S</mi><mo>=</mo><mi>c</mi><mo>·</mo><mo>(</mo><mi>F</mi><mo>+</mo><mi>k</mi><mo>·</mo><mi>I</mi><mo>)</mo></mrow></math>",
+          "legend": [
+            "Gleich große Inkremente als eigene Modellannahme",
+            "c = Kettenzahl; k = Inkremente je Kette",
+            "Nur innerhalb derselben Einheit summieren"
+          ]
+        },
+        {
+          "type": "figure",
+          "diagramId": "ketten",
+          "alt": "800 GB plus sechs mal 40 GB ergibt 1040 GB pro Kette; zwei Ketten ergeben 2080 GB, mit 20 Prozent Zuschlag 2496 GB.",
+          "caption": "Aufbewahrte Dateien sind nicht identisch mit der Menge eines einzelnen Backup-Laufs."
+        },
+        {
+          "type": "numeric",
+          "id": "backupcalc-ketten",
+          "prompt": "Zwei vollständige Ketten, je 800 GB Vollsicherung und sechs Inkremente zu 40 GB: Gesamtmenge ohne Reserve in GB?",
+          "expected": 2080,
+          "tolerance": 0.000001,
+          "label": "Gespeicherte GB",
+          "placeholder": "Zahl ohne Einheit eingeben",
+          "correctFeedback": "2 × (800 + 6 × 40) = 2 080 GB.",
+          "wrongFeedback": "Zähle Vollsicherung und alle sechs Inkremente in jeder der beiden Ketten.",
+          "requiredObjective": "ketten"
+        }
+      ]
+    },
+    {
+      "title": "Was genau bedeutet 20 Prozent Reserve?",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**20 % Zuschlag auf den Bedarf** bedeutet 2 080 × 1,20 = **2 496 GB** Zielkapazität. Das ist nicht dasselbe wie **20 % der Zielkapazität müssen frei bleiben**: Dann darf der Bedarf nur 80 % der Kapazität belegen, also 2 080 ÷ 0,80 = **2 600 GB**. Die Aufgabenformulierung entscheidet; Reserve wird nicht stillschweigend umdefiniert.\n\nDie einfache Dateisumme ist kein maximaler Repository-Peak. Zusätzliche temporäre Dateien, überlappende alte/neue Ketten, weitere Kopien, Immutability-Fristen und Wachstum können zusätzlich zählen. Produktdokumentation und Messung klären, wann Speicher tatsächlich freigegeben wird. Reflinks oder Deduplizierung verlangen ein anderes Belegungsmodell, nicht bloß eine erfundene Einsparquote."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Bei Zuschlag a ist Kapazität C gleich S mal eins plus a; bei freiem Anteil f ist C gleich S geteilt durch eins minus f",
+          "mathml": "<math display=\"block\"><mtable columnalign=\"left\"><mtr><mtd><mi>C</mi><mo>=</mo><mi>S</mi><mo>·</mo><mo>(</mo><mn>1</mn><mo>+</mo><mi>a</mi><mo>)</mo></mtd></mtr><mtr><mtd><mi>C</mi><mo>=</mo><mfrac><mi>S</mi><mrow><mn>1</mn><mo>−</mo><mi>f</mi></mrow></mfrac></mtd></mtr></mtable></math>",
+          "legend": [
+            "a = Zuschlag auf Bedarf, z. B. 0,20",
+            "f = freier Anteil der Zielkapazität, z. B. 0,20"
+          ]
+        },
+        {
+          "type": "numeric",
+          "id": "backupcalc-reserve",
+          "prompt": "Auf 2 080 GB Bedarf wird ausdrücklich ein Zuschlag von 20 % gerechnet. Zielkapazität in GB?",
+          "expected": 2496,
+          "tolerance": 0.000001,
+          "label": "Zielkapazität in GB",
+          "placeholder": "Zahl ohne Einheit eingeben",
+          "correctFeedback": "2 080 × 1,20 = 2 496 GB. Ein freier Kapazitätsanteil wäre eine andere Vorgabe.",
+          "wrongFeedback": "Hier Zuschlag: multipliziere mit 1,20, nicht durch 0,80 teilen.",
+          "requiredObjective": "reserve"
+        },
+        {
+          "type": "numeric",
+          "id": "backupcalc-frei",
+          "prompt": "Zusatzfall: 2 080 GB Bedarf; 20 % der Zielkapazität müssen frei bleiben. Zielkapazität in GB?",
+          "expected": 2600,
+          "tolerance": 0.000001,
+          "label": "Zielkapazität in GB",
+          "placeholder": "Zahl ohne Einheit eingeben",
+          "correctFeedback": "2 080 ÷ 0,80 = 2 600 GB. Davon bleiben 520 GB frei.",
+          "wrongFeedback": "Der Bedarf darf hier 80 % der Zielkapazität belegen."
+        }
+      ]
+    },
+    {
+      "title": "Den richtigen Lauf ins Fenster rechnen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein **Voll-Lauf** überträgt im Fall 800 GB, nicht die Summe beider aufbewahrten Ketten. Bei konstanten, gemessenen 100 MB/s Nutzdurchsatz ergibt sich 800 000 ÷ 100 = **8 000 s** Transfer. Hinzu kommen außerhalb dieser Messung 300 s Vorbereitung und 600 s Prüfung, im Fall nacheinander. Insgesamt **8 900 s = 2 h 28 min 20 s**. Das Fenster von zwei Stunden umfasst 7 200 s: Der Lauf überschreitet es um **1 700 s**.\n\nEin einzelner Inkrement-Lauf mit 40 GB hätte bei derselben Nutzrate 400 s Transfer plus dieselben 900 s Zusatzzeiten: **1 300 s = 21 min 40 s**. Dass er passt, beweist nicht, dass der Voll-Lauf passt. Synthetische Vollsicherungen oder Zusammenführungen haben eigene Lese-/Schreiblast und dürfen nicht ohne Prozessmodell wie ein aktiver Volltransfer behandelt werden.\n\nDie Nutzrate passt zur übertragenen Backup-Dateimenge; bereits enthaltenen Protokolloverhead nicht erneut pauschal abziehen. Bei Pipeline-Stufen mit unterschiedlich großen Mengen (z. B. vor/nach Kompression) sind Raten zuerst auf eine gemeinsame Datenbasis zu beziehen. Vertiefung: [Backup-Fenster](/lernen/backup-window/) und [Übertragungszeiten](/lernen/uebertragungszeiten-bandbreite-datenmenge/)."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Gesamtlaufzeit ist Datenmenge D geteilt durch Nutzrate R plus getrennte Zusatzzeit z",
+          "mathml": "<math display=\"block\"><mrow><msub><mi>t</mi><mtext>Lauf</mtext></msub><mo>=</mo><mfrac><mi>D</mi><mi>R</mi></mfrac><mo>+</mo><mi>z</mi></mrow></math>",
+          "legend": [
+            "D und R: gleiche Datenbasis und Einheit",
+            "z = nicht überlappende Zusatzzeit außerhalb der R-Messung",
+            "Sekunden erst am Ende in Stunden/Minuten umrechnen"
+          ]
+        },
+        {
+          "type": "figure",
+          "diagramId": "fenster",
+          "alt": "800 GB bei 100 MB pro Sekunde erfordern 8000 Sekunden; plus 900 Sekunden ergeben 8900 Sekunden und überschreiten das 7200-Sekunden-Fenster.",
+          "caption": "Der Transfer ist nur ein Teil des im eigenen Fall sequenziellen Backup-Laufs."
+        },
+        {
+          "type": "numeric",
+          "id": "backupcalc-fenster",
+          "prompt": "Voll-Lauf: 800 GB bei 100 MB/s Nutzrate, zusätzlich nacheinander 300 s Vorbereitung und 600 s Prüfung. Gesamtdauer in Sekunden?",
+          "expected": 8900,
+          "tolerance": 0.000001,
+          "label": "Gesamtdauer in Sekunden",
+          "placeholder": "Zahl ohne Einheit eingeben",
+          "correctFeedback": "800 000 ÷ 100 + 300 + 600 = 8 900 s. Gegen 7 200 s vergleichen: 1 700 s zu lang.",
+          "wrongFeedback": "GB in MB umrechnen, Transferzeit berechnen und die getrennten Zusatzzeiten addieren.",
+          "requiredObjective": "fenster"
+        }
+      ]
+    },
+    {
+      "title": "Fensterentscheidung ist kein Restore-Nachweis",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Für das Zwei-Stunden-Fenster verbleiben nach 900 s Zusatzzeiten **6 300 s Transferzeit**. Die rechnerisch erforderliche konstante Nutzrate ist 800 000 ÷ 6 300 ≈ **126,984 MB/s**. Das ist nur die Schwelle ohne zusätzliche zeitliche Reserve; eine höhere Portgeschwindigkeit garantiert diese Nutzrate nicht.\n\nAufbewahrung definiert hier benötigte Sicherungspunkte und Dateien. Das Backup-Fenster begrenzt den Sicherungslauf. **RTO** begrenzt die zulässige Wiederherstellungsdauer; dazu können Bereitstellung, Restore, Dienststart und fachliche Prüfung gehören. **RPO** begrenzt den akzeptablen Datenverlustzeitraum und wird nicht allein aus der Speichergröße bewiesen.\n\nAWS dokumentiert Restoretests mit gemessener Jobdauer und zusätzlicher Ergebnisvalidierung. Im eigenen lokalen Fall verlangt Uferplan daher einen isolierten Test bis zur nutzbaren Anwendung und prüft vollständige Daten. Ein grüner Backupjob oder eine kurze Kopierzeit genügt dafür nicht."
+        },
+        {
+          "type": "quiz",
+          "id": "backupcalc-restore",
+          "question": "Das Inkrementbackup passt ins Fenster. Welche Aussage ist zulässig?",
+          "options": [
+            {
+              "text": "Der betreffende Modelllauf passt; Voll-Lauf und Wiederherstellung separat prüfen.",
+              "rationale": "Backup-Fenster und RTO sind unterschiedliche Nachweise.",
+              "correct": true
+            },
+            {
+              "text": "Damit ist jede Vollsicherung automatisch schnell genug.",
+              "rationale": "Die größere Datenmenge hat eine andere Transferdauer.",
+              "correct": false
+            },
+            {
+              "text": "Damit ist das RTO ohne Restoretest erfüllt.",
+              "rationale": "Die Sicherungsdauer belegt keine Wiederherstellungsdauer.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "restore"
+        },
+        {
+          "type": "recall",
+          "id": "backupcalc-transfer",
+          "prompt": "Formuliere Uferplans Planungsnotiz: Dateisumme, ausdrücklich 20 % Zuschlag, Voll-/Inkrementlauf im Zwei-Stunden-Fenster und fehlender Restore-Nachweis. Nenne mindestens eine separat zu prüfende Peak-Ursache.",
+          "minLength": 140,
+          "model": "Zwei Ketten belegen 2 × (800 + 6 × 40) = 2080 GB; 20 % Zuschlag ergeben 2496 GB. Der Voll-Lauf braucht 8900 s und überschreitet das 7200-s-Fenster um 1700 s. Der einzelne Inkrement-Lauf dauert 1300 s und passt modellhaft. Zusätzliche Ketten/Arbeitsdateien können den Speicher-Peak erhöhen. Konstante gemessene Nutzrate wird angenommen. RTO verlangt einen getrennten Restoretest bis zur nutzbaren und geprüften Anwendung."
+        }
+      ]
+    },
+    {
+      "title": "Abruftraining",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "id": "backupcalc-cards",
+          "cards": [
+            {
+              "id": "ketten",
+              "label": "Backup-Rechnen",
+              "front": "Welche Dateien zählen zur Aufbewahrung?",
+              "back": "Alle für die benötigten Wiederherstellungspunkte notwendigen Kettenbestandteile."
+            },
+            {
+              "id": "reserve",
+              "label": "Backup-Rechnen",
+              "front": "Sind Zuschlag und freier Anteil gleich?",
+              "back": "Nein. Bedarf × (1 + Zuschlag) oder Bedarf ÷ (1 − freier Anteil)."
+            },
+            {
+              "id": "lauf",
+              "label": "Backup-Rechnen",
+              "front": "Welche Menge zählt zur Laufzeit?",
+              "back": "Die in diesem Lauf tatsächlich übertragene Menge, nicht automatisch der gesamte Repository-Inhalt."
+            },
+            {
+              "id": "peak",
+              "label": "Backup-Rechnen",
+              "front": "Was kann den Speicher-Peak erhöhen?",
+              "back": "Temporäre Dateien, überlappende Ketten, weitere Kopien und verzögerte Freigabe."
+            },
+            {
+              "id": "restore",
+              "label": "Backup-Rechnen",
+              "front": "Was belegt die Backupdauer nicht?",
+              "back": "Die Wiederherstellung bis zur fachlich geprüften, nutzbaren Anwendung."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
