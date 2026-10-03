@@ -3639,6 +3639,33 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "mtbf-mttr-betriebszeit-wiederherstellung",
+    "slug": "mtbf-mttr-betriebszeit-wiederherstellung",
+    "title": "MTBF und MTTR aus Betriebsdaten rechnen",
+    "description": "Betriebszeiten und Störungsdauern getrennt auswerten, Verfügbarkeit ableiten und Mittelwerte richtig einordnen.",
+    "domain": "GA1",
+    "groupId": "ga1-11",
+    "groupLabel": "Rechnen und Prüfungstechnik",
+    "itemId": "ga1-11__6",
+    "week": "parallel",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "mtbf",
+      "mttr",
+      "anteil",
+      "grenze"
+    ],
+    "sources": [
+      "mtcalc-aws",
+      "mtcalc-ibm"
+    ],
+    "contentHash": "04ac43ec9276c1556bd949d25e7d7e5314a9a8e047b7e9c036538d76b5f28f71",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "osi-model",
     "slug": "osi-model",
     "title": "Das OSI-Schichtenmodell sicher anwenden",
