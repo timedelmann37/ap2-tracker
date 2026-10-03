@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Physische Cores, Standard-Lizenzsätze und Zugriffskosten im abgegrenzten Windows-Server-Fall kalkulieren.">
+<title>Lizenzkosten: Cores und CALs berechnen – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js"></script>
+<script src="/assets/ap2-learning.js?v=3.10.0" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.0">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="lizenzkosten-cores-cals-berechnen" data-progress-id="ga1-11__10" data-content-revision="2026-10-03.1" data-content-status="CURATED_DRAFT">
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-11">Rechnen und Prüfungstechnik</a><span class="sep">›</span>
+    <span class="here">Lizenzkosten: Cores und CALs berechnen</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Lizenzkosten: Cores und CALs berechnen</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 30 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Pilot · fachlich in Prüfung</span>
+      </div>
+      <div class="rule"></div>
+      <p>Das fiktive Ingenieurbüro Polar betreibt einen festen Host mit Windows Server 2025 Standard: zwei Prozessoren mit je zwölf physischen Cores und fünf Windows-Server-VMs. Die physische Betriebssystemumgebung dient ausschließlich zum Hosten und Verwalten der VMs. Es gilt die Lizenzierung nach physischen Cores, ohne Software Assurance, Abonnement, Cluster oder VM-Verschiebung. Alle Preise sind erfundene Nettorechenwerte, keine Angebote.</p>
+<section class="learning-goals" aria-labelledby="lizenzkosten-cores-cals-berechnen-goals">
+  <h2 id="lizenzkosten-cores-cals-berechnen-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Core-Basis mit Mindestwerten bestimmen</li>
+    <li>Standard-Sätze für virtuelle OSEs berechnen</li>
+    <li>User- und Device-CAL-Kosten vergleichen</li>
+    <li>Basis- und RDS-Zugriffskosten addieren</li>
+    <li>Rechenmodell und Lizenznachweis abgrenzen</li>
+  </ul>
+</section><h2 class="sec" id="s1"><span class="num">1</span>Diagnose: Was wird gezählt?</h2>
+<section class="quiz" data-quiz="liccalc-diagnose" data-correct="1">
+  <h3>Fünf VMs und 30 Mitarbeitende: Welche Größen gehören in getrennte Kostenblöcke?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Die VM-Anzahl bestimmt hier die Anzahl vollständiger Standard-Sätze, nicht die physischen Cores."><span class="m">A</span> VMs × Mitarbeitende als Core-Zahl</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Genau: Hardwarebasis, virtuelle Nutzungsrechte und Personen-/Gerätezugriff werden getrennt ermittelt."><span class="m">B</span> Host-Cores, OSE-Rechte und Zugriffslizenzen</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Im gewählten User-/Device-Modell zählt die Zuordnung, nicht die aktuelle Parallelität."><span class="m">C</span> Nur die sechs gleichzeitigen Sitzungen</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><p><strong>Modell festlegen, dann rechnen.</strong> Dieser Fall nutzt ausschließlich physische Core-Lizenzierung und User-/Device-CALs. Individuelle VM-Lizenzierung, Sonderzugriffe und andere Vertragsmodelle sind nicht Teil der Rechnung. Die Microsoft-Anleitung erklärt das Modell; verbindlich sind die für die Beschaffung geltenden Bedingungen.</p>
+<h2 class="sec" id="s2"><span class="num">2</span>1. Core-Basis und vollständige Sätze</h2>
+<p>Für einen vollständigen physischen Core-Satz werden alle physischen Cores erfasst, mit mindestens acht je Prozessor und mindestens 16 je Server. Hier: max(16, 12 + 12) = 24. Ein kleinerer Beispielhost mit zwei Vier-Core-Prozessoren käme deshalb ebenfalls auf 16, nicht acht.</p>
+<p>Ein vollständiger Standard-Satz erlaubt im gewählten Fall zwei virtuelle OSEs. Für weitere zwei wird die gesamte Core-Basis erneut lizenziert. Fünf VMs benötigen drei Sätze. Die zusätzliche physische OSE ist nur wegen ihrer ausschließlichen Host-/Verwaltungsrolle im beschriebenen Fall zulässig; eigene Anwendungsdienste auf dem Host ändern die Ausgangslage.</p>
+<div class="math-display" role="group" aria-label="Core-Lizenzen insgesamt gleich vollständige Sätze mal Core-Basis"><math display="block" aria-label="Core-Lizenzen insgesamt gleich vollständige Sätze mal Core-Basis"><mrow><msub><mi>L</mi><mi>gesamt</mi></msub><mo>=</mo><mi>S</mi><mo>×</mo><msub><mi>L</mi><mi>Basis</mi></msub></mrow></math><div class="math-legend"><span>S = aufgerundete Anzahl VMs / 2 im beschriebenen Host-Fall</span><span>L Basis = Core-Basis mit Mindestwerten</span></div></div><figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Vom Host zu Core-Packs">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="542" viewBox="0 0 960 542" role="img" aria-labelledby="diagram-cores-title diagram-cores-desc">
+  <title id="diagram-cores-title">Vom Host zu Core-Packs</title>
+  <desc id="diagram-cores-desc">24 Cores je Satz, drei Sätze für fünf VMs, 72 Core-Lizenzen und 36 Zweierpacks.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Vom Host zu Core-Packs</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Host erfassen</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">2 CPUs × 12 physische Cores</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Basis bestimmen</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">24 Core-Lizenzen je vollständigem Satz</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">OSEs abdecken</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">5 VMs → 3 Sätze → 72 Core-Lizenzen</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Packs kalkulieren</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">36 Zweierpacks × 140 € = 5.040 €</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Die Zahl der benötigten Lizenzsätze vervielfacht die vollständige Host-Basis.</figcaption>
+</figure><section class="numeric-practice transfer-number" data-numeric-practice="liccalc-basis" data-required-objective="basis" data-expected="24" data-tolerance="0.000001" data-correct-feedback="Richtig: 24. Zwölf je CPU überschreiten acht; 24 insgesamt überschreiten das Serverminimum 16." data-wrong-feedback="Zwölf je CPU überschreiten acht; 24 insgesamt überschreiten das Serverminimum 16.">
+  <h3>Berechne das Ergebnis</h3>
+  <p>Wie viele Core-Lizenzen umfasst ein vollständiger Satz für den Polar-Host?</p>
+  <label for="liccalc-basis-answer">Ergebnis</label>
+  <div class="answer-row"><input id="liccalc-basis-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Zahl ohne Einheit eingeben"><button type="button" class="lbtn primary" data-numeric-check>Antwort prüfen</button></div>  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p>
+</section><section class="numeric-practice transfer-number" data-numeric-practice="liccalc-saetze" data-required-objective="saetze" data-expected="72" data-tolerance="0.000001" data-correct-feedback="Richtig: 72. Fünf geteilt durch zwei aufrunden: drei vollständige Sätze mit jeweils 24 Cores. Ein halber Satz reicht nicht." data-wrong-feedback="Fünf geteilt durch zwei aufrunden: drei vollständige Sätze mit jeweils 24 Cores. Ein halber Satz reicht nicht.">
+  <h3>Berechne das Ergebnis</h3>
+  <p>Wie viele Core-Lizenzen braucht der Host insgesamt für fünf VMs?</p>
+  <label for="liccalc-saetze-answer">Ergebnis</label>
+  <div class="answer-row"><input id="liccalc-saetze-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Zahl ohne Einheit eingeben"><button type="button" class="lbtn primary" data-numeric-check>Antwort prüfen</button></div>  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p>
+</section><p>Für diesen eigenen Einkaufsfall werden ausschließlich Zweierpacks zu je 140 € angesetzt: 72 / 2 = 36 Packs; 36 × 140 € = 5.040 €. Die Packgröße ist nicht die Anzahl erlaubter VMs. Ein anderer Packmix oder tatsächlicher Preis verlangt eine neue Kalkulation.</p>
+<h2 class="sec" id="s3"><span class="num">3</span>2. User oder Device: dieselbe Abdeckung vergleichen</h2>
+<p>Polar hat 30 interne Personen und 60 zugreifende Geräte. Jede Person nutzt mehrere Geräte. Eigene Preise: Windows-Server-2025-User-CAL 45 €, Device-CAL 35 €. Für eine vollständige reine User-Abdeckung: 30 × 45 € = 1.350 €. Für die reine Device-Abdeckung: 60 × 35 € = 2.100 €. Im Fall ist User günstiger.</p>
+<p>Ein CAL ist ein Zugriffsrecht. User ist einer Person für ihre Geräte zugeordnet; Device einem Gerät für seine Nutzenden. Im gewählten User-/Device-Modell zählt nicht nur die gleichzeitige Anmeldung. Die 30 Basis-User-CALs werden in diesem Fall nicht für jede der fünf VMs erneut gekauft.</p>
+<div class="math-display" role="group" aria-label="Kosten der User-CALs gleich Personen mal Preis"><math display="block" aria-label="Kosten der User-CALs gleich Personen mal Preis"><mrow><msub><mi>K</mi><mi>User</mi></msub><mo>=</mo><mi>U</mi><mo>×</mo><msub><mi>p</mi><mi>User</mi></msub></mrow></math><div class="math-legend"><span>U = alle abzudeckenden Personen</span><span>p User = eigener Stückpreis</span></div></div><section class="numeric-practice transfer-number" data-numeric-practice="liccalc-zugriff" data-required-objective="zugriff" data-expected="1350" data-tolerance="0.000001" data-correct-feedback="Richtig: 1350. 30 Personen × 45 €. Nicht 60 Geräte, fünf VMs oder nur gleichzeitig aktive Personen multiplizieren." data-wrong-feedback="30 Personen × 45 €. Nicht 60 Geräte, fünf VMs oder nur gleichzeitig aktive Personen multiplizieren.">
+  <h3>Berechne das Ergebnis</h3>
+  <p>Wie hoch sind die Basis-User-CAL-Kosten für Polar in Euro?</p>
+  <label for="liccalc-zugriff-answer">Ergebnis</label>
+  <div class="answer-row"><input id="liccalc-zugriff-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Zahl ohne Einheit eingeben"><button type="button" class="lbtn primary" data-numeric-check>Antwort prüfen</button></div>  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p>
+</section><p><strong>Gegenfall Schichtbetrieb:</strong> 48 Personen teilen ausschließlich zwölf zugreifende Geräte. Mit denselben erfundenen Preisen kostet die vollständige Device-Abdeckung 12 × 35 € = 420 €; User würde 48 × 45 € = 2.160 € kosten. Zusätzliche Privatgeräte oder andere Zugriffswege würden diese Abdeckung verändern. Der kleinere Stückpreis allein entscheidet nicht.</p>
+<h2 class="sec" id="s4"><span class="num">4</span>3. RDS ergänzen und Budget prüfen</h2>
+<p>Sechs der bereits erfassten 30 Personen nutzen zusätzlich eine RDS-Sitzung für ihre Arbeit. Angesetzt sind sechs RDS-2025-User-CALs zu je 110 €: 660 €. Diese additiven Rechte ersetzen die Basis-CALs nicht. Windows-Server-2025-RDS-Sitzungshost und Lizenzserver sowie passende 2025-CALs sind vorgegeben; ältere RDS-CALs dürfen nicht einfach für einen neueren Host angenommen werden.</p>
+<div class="math-display" role="group" aria-label="Budget gleich Core-Kosten plus Basis-CAL-Kosten plus RDS-Kosten"><math display="block" aria-label="Budget gleich Core-Kosten plus Basis-CAL-Kosten plus RDS-Kosten"><mrow><mi>K</mi><mo>=</mo><msub><mi>K</mi><mi>Core</mi></msub><mo>+</mo><msub><mi>K</mi><mi>CAL</mi></msub><mo>+</mo><msub><mi>K</mi><mi>RDS</mi></msub></mrow></math><div class="math-legend"><span>Eigene Nettowerte: 5.040 € + 1.350 € + 660 €</span><span>Keine laufenden Kosten, Wartung oder Umsatzsteuer enthalten</span></div></div><figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Zugriffskosten getrennt zählen">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="542" viewBox="0 0 960 542" role="img" aria-labelledby="diagram-zugriff-title diagram-zugriff-desc">
+  <title id="diagram-zugriff-title">Zugriffskosten getrennt zählen</title>
+  <desc id="diagram-zugriff-desc">Core-Kosten 5040 Euro, Basiszugriff 1350 Euro, zusätzlicher RDS-Zugriff 660 Euro ergeben 7050 Euro.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Zugriffskosten getrennt zählen</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Grundzugriff</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">30 User-CALs × 45 € = 1.350 €</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">RDS zusätzlich</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">6 RDS-User-CALs × 110 € = 660 €</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Modellbudget</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">5.040 + 1.350 + 660 = 7.050 €</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Nachweis prüfen</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Version, Vertrag und Zuordnung prüfen</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Die drei Blöcke gelten nur für den ausdrücklich beschriebenen Lizenzumfang.</figcaption>
+</figure><section class="numeric-practice transfer-number" data-numeric-practice="liccalc-budget" data-required-objective="budget" data-expected="7050" data-tolerance="0.000001" data-correct-feedback="Richtig: 7050. 5.040 € für Core-Packs + 1.350 € Basis-User-CALs + 660 € RDS-User-CALs." data-wrong-feedback="5.040 € für Core-Packs + 1.350 € Basis-User-CALs + 660 € RDS-User-CALs.">
+  <h3>Berechne das Ergebnis</h3>
+  <p>Wie hoch ist das Modellbudget einschließlich RDS in Euro?</p>
+  <label for="liccalc-budget-answer">Ergebnis</label>
+  <div class="answer-row"><input id="liccalc-budget-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Zahl ohne Einheit eingeben"><button type="button" class="lbtn primary" data-numeric-check>Antwort prüfen</button></div>  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p>
+</section><section class="quiz" data-quiz="liccalc-nachweis" data-correct="0" data-required-objective="nachweis">
+  <h3>Was gehört vor einer tatsächlichen Beschaffung in die Prüfung?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig: Die Rechnung ersetzt keinen Lizenznachweis. Preis und Bedingungen müssen zum konkreten Erwerb passen."><span class="m">A</span> Vertrag, Versionen, Host-/OSE-Rollen und vollständige Zugriffszuordnung prüfen</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Im beschriebenen Fall ist RDS additiv; die Basiszugriffe bleiben erforderlich."><span class="m">B</span> RDS-CALs reichen statt Basis-CALs</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Diese Umgebungen und Produkte sind nicht Teil des abgegrenzten eigenen Modells."><span class="m">C</span> 7.050 € gilt auch für Cluster und SQL Server</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><p><strong>Nicht enthalten:</strong> SQL-/Office-Lizenzen, externe Nutzende, Cluster, Mobilität, Wartung, Software Assurance, Abonnement oder spätere Preisänderungen. Für diese Änderungen zuerst Bedingungen und Zugriffswege neu prüfen; dann Stückzahlen und Kosten neu ableiten. Kein pauschales „Core bedeutet keine CALs“ auf andere Produkte oder auf Windows Server übertragen.</p>
+<h2 class="sec" id="s5"><span class="num">5</span>Transfer und Wiederholung</h2>
+<section class="recall-practice" data-recall="liccalc-transfer" data-min-length="140" aria-labelledby="liccalc-transfer-title">
+  <div class="recall-prompt"><h3 id="liccalc-transfer-title">Abruf aus dem Kopf</h3><p>Erkläre die drei Kostenblöcke für Polar und warum fünf VMs nicht fünfmal 30 User-CALs bedeuten. Nenne außerdem zwei Grenzen dieses Rechenmodells.</p></div>
+  <label class="sr-only" for="liccalc-transfer-answer">Deine freie Antwort</label>
+  <textarea id="liccalc-transfer-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> 24 Core-Lizenzen je Satz, drei Sätze für fünf virtuelle OSEs, also 72 Core-Lizenzen bzw. 36 Zweierpacks: 5.040 €. 30 User-CALs kosten 1.350 € und decken die Personen im Fall ab, ohne VM-Multiplikation. Sechs zusätzliche RDS-User-CALs kosten 660 €; insgesamt 7.050 €. Nur physische Standard-Lizenzierung auf einem festen Host; erfundene Preise, keine Cluster-/SQL-/Office-Kalkulation. Vertrag und Versionen bleiben zu prüfen.</div>
+</section><div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="basis" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was gilt für einen vollständigen physischen Satz?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Alle physischen Cores, mindestens acht je Prozessor und 16 je Server.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="saetze" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was bewirkt ein weiterer vollständiger Satz im Fall?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Rechte für zwei weitere OSEs, nicht nur zwei zusätzliche Core-Lizenzen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="zugriff" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>User oder Device?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Alle Personen oder alle zugreifenden Geräte vollständig abdecken; Preise und Nutzung gemeinsam vergleichen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="budget" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Ersetzen RDS-CALs die Basisrechte?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Nein: im Fall zusätzlich sechs RDS-User-CALs für die RDS-Nutzenden.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="nachweis" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Ist das Budget eine allgemeine Lizenzfreigabe?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>Nein. Bedingungen, Versionen, Einsatz und tatsächliche Beschaffung müssen geprüft werden.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Core-Basis“:</span><button type="button" data-card-id="basis" data-card-rate="known">gewusst</button><button type="button" data-card-id="basis" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="basis"></span></div>
+<div class="card-rating"><span>Karte „Standard-Sätze“:</span><button type="button" data-card-id="saetze" data-card-rate="known">gewusst</button><button type="button" data-card-id="saetze" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="saetze"></span></div>
+<div class="card-rating"><span>Karte „CAL-Zuordnung“:</span><button type="button" data-card-id="zugriff" data-card-rate="known">gewusst</button><button type="button" data-card-id="zugriff" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="zugriff"></span></div>
+<div class="card-rating"><span>Karte „RDS additiv“:</span><button type="button" data-card-id="budget" data-card-rate="known">gewusst</button><button type="button" data-card-id="budget" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="budget"></span></div>
+<div class="card-rating"><span>Karte „Modellgrenze“:</span><button type="button" data-card-id="nachweis" data-card-rate="known">gewusst</button><button type="button" data-card-id="nachweis" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="nachweis"></span></div>
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-11"><span class="d">zurück zu</span><span class="t">Rechnen und Prüfungstechnik</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Rechnen und Prüfungstechnik</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 5 Pflichtzielen bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Checks.</div>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Diagnose: Was wird gezählt?</a></li>
+<li><a href="#s2" data-t="s2">1. Core-Basis und vollständige Sätze</a></li>
+<li><a href="#s3" data-t="s3">2. User oder Device: dieselbe Abdeckung vergleichen</a></li>
+<li><a href="#s4" data-t="s4">3. RDS ergänzen und Budget prüfen</a></li>
+<li><a href="#s5" data-t="s5">Transfer und Wiederholung</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-11">Zur Themengruppe</a>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>
