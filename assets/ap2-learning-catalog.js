@@ -3416,7 +3416,7 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
       "doku-ms-operations",
       "doku-netbox"
     ],
-    "contentHash": "7423267ad54c09cf90054246dad28bad95b4b08f28c0082e12d25a8773531381",
+    "contentHash": "07b5ace87ece9277dbd751982dcda57b3642f5261137d13d71fa25b86e4c72df",
     "sourceKind": "compact-spec"
   },
   {
