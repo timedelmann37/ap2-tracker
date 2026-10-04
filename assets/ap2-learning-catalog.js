@@ -10435,5 +10435,31 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     ],
     "contentHash": "4b19ff211c722b85218f4f13138a5944dfce271aea18f321eba8a605d81adc66",
     "sourceKind": "compact-spec"
+  },
+  {
+    "id": "wiso-antwortbogen-aufgabennummern-kontrollieren",
+    "slug": "wiso-antwortbogen-aufgabennummern-kontrollieren",
+    "title": "Antwortbogen: Nummern und Einträge kontrollieren",
+    "description": "Zeilenversatz nach übersprungenen Aufgaben vermeiden, Antwortformat und Reihenfolge einhalten, regelkonform korrigieren und vor Abgabe systematisch abgleichen.",
+    "domain": "WiSo",
+    "groupId": "wiso-9",
+    "groupLabel": "Prüfungstechnik programmierte Prüfung",
+    "itemId": "wiso-9__4",
+    "week": "parallel",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "nummer",
+      "format",
+      "korrektur",
+      "transfer"
+    ],
+    "sources": [
+      "pe-aka-hinweise"
+    ],
+    "contentHash": "6ad88aa3cac992e03249bf039d963adbd87ef231142792aeaac473919de9e2bb",
+    "sourceKind": "compact-spec"
   }
 ]);
