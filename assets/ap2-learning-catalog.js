@@ -9648,5 +9648,43 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     ],
     "contentHash": "94c4196d6070a143d7bc46e3d5e39457ce6b4c46d661f03799de8fbe74b5f015",
     "sourceKind": "compact-spec"
+  },
+  {
+    "id": "gewaehrleistung-nacherfuellung-fristen-garantie",
+    "slug": "gewaehrleistung-nacherfuellung-fristen-garantie",
+    "title": "Gewährleistung: Rechte, Fristen und Garantie unterscheiden",
+    "description": "Nacherfüllung und weitere Mängelrechte begründen, Verjährung von Beweisvermutung trennen und Garantie als zusätzlichen Anspruch an eigenen Gerätefällen prüfen.",
+    "domain": "WiSo",
+    "groupId": "wiso-7",
+    "groupLabel": "W7 · Markt und Vertragsrecht",
+    "itemId": "wiso-7__9",
+    "week": "KW 40",
+    "estimatedMinutes": 55,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "nach",
+      "rechte",
+      "fristen",
+      "garantie"
+    ],
+    "sources": [
+      "gew-437",
+      "gew-439",
+      "gew-440",
+      "gew-323",
+      "gew-441",
+      "gew-438",
+      "gew-443",
+      "gew-444",
+      "gew-474",
+      "gew-475d",
+      "gew-476",
+      "gew-477",
+      "gew-479"
+    ],
+    "contentHash": "bcc4f66ca79909f4300255e35036a522455af59db8196cad96bde1d82f26a040",
+    "sourceKind": "compact-spec"
   }
 ]);

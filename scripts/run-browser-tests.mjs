@@ -270,6 +270,7 @@ async function runFullSuite() {
   await import('./verify-vertragsarten-browser.mjs');
   await import('./verify-kaufvertrag-browser.mjs');
   await import('./verify-kaufstoerungen-browser.mjs');
+  await import('./verify-gewaehrleistung-browser.mjs');
   await import('./verify-maternity-periods-browser.mjs');
   await import('./verify-contract-types-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
@@ -282,7 +283,10 @@ async function runFullSuite() {
 }
 
 try {
-  if (process.env.AP2_BROWSER_ONLY === 'kaufstoerungen') {
+  if (process.env.AP2_BROWSER_ONLY === 'gewaehrleistung') {
+    useSignedInFixture = true;
+    await import('./verify-gewaehrleistung-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'kaufstoerungen') {
     useSignedInFixture = true;
     await import('./verify-kaufstoerungen-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'kaufvertrag') {
