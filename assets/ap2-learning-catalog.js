@@ -9178,5 +9178,45 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     ],
     "contentHash": "6173c8cfee6cb4bf42c5141c4a3578b9e6d1816384c69f7746b82e4e77fb6f89",
     "sourceKind": "compact-spec"
+  },
+  {
+    "id": "handelsregister-firma-kaufmann",
+    "slug": "handelsregister-firma-kaufmann",
+    "title": "Handelsregister, Firma und Kaufmann",
+    "description": "Kaufmannsarten, Firmenbegriff, Registerabteilungen und Eintragungswirkungen an eigenen IT-Fällen unterscheiden.",
+    "domain": "WiSo",
+    "groupId": "wiso-6",
+    "groupLabel": "W6 · Betrieb, Organisation und Rechtsformen",
+    "itemId": "wiso-6__8",
+    "week": "KW 40",
+    "estimatedMinutes": 40,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "status",
+      "name",
+      "wirkung",
+      "transfer"
+    ],
+    "sources": [
+      "register-ist",
+      "register-kann",
+      "register-form",
+      "register-fuehrung",
+      "register-einsicht",
+      "register-publizitaet",
+      "register-firma",
+      "register-name",
+      "register-anmeldung",
+      "register-gmbh-entstehung",
+      "register-gmbh-form",
+      "register-abteilungen",
+      "register-gbr",
+      "register-eg",
+      "register-zusatz"
+    ],
+    "contentHash": "a3ea6255854b8879b26c0cd040823471a92f8a0b6ee34be37f81d7787779354a",
+    "sourceKind": "compact-spec"
   }
 ]);
