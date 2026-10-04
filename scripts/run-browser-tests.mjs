@@ -283,6 +283,7 @@ async function runFullSuite() {
   await import('./verify-diversity-browser.mjs');
   await import('./verify-umweltschutz-browser.mjs');
   await import('./verify-verursacherprinzip-browser.mjs');
+  await import('./verify-emissionsschutz-browser.mjs');
   await import('./verify-maternity-periods-browser.mjs');
   await import('./verify-contract-types-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
@@ -295,7 +296,10 @@ async function runFullSuite() {
 }
 
 try {
-  if (process.env.AP2_BROWSER_ONLY === 'verursacherprinzip') {
+  if (process.env.AP2_BROWSER_ONLY === 'emissionsschutz') {
+    useSignedInFixture = true;
+    await import('./verify-emissionsschutz-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'verursacherprinzip') {
     useSignedInFixture = true;
     await import('./verify-verursacherprinzip-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'umweltschutz') {
