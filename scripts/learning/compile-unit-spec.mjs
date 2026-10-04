@@ -1,6 +1,7 @@
+import { renderEpkSvg, validateEpkDiagram } from './render-epk.mjs';
 const STATUS_VALUES = new Set(['CURATED_DRAFT', 'DIDACTICALLY_REVIEWED', 'PUBLICATION_READY']);
 const BLOCK_TYPES = new Set(['markdown', 'quiz', 'callout', 'math', 'figure', 'recall', 'flashcards', 'numeric', 'sequence', 'permission-matrix']);
-const DIAGRAM_TYPES = new Set(['layers', 'flow', 'comparison', 'topology', 'gantt']);
+const DIAGRAM_TYPES = new Set(['layers', 'flow', 'comparison', 'topology', 'gantt', 'epk']);
 
 function fail(fileName, message) {
   throw new Error(`${fileName}: ${message}`);
@@ -206,7 +207,8 @@ export function validateUnitSpec(spec, fileName = 'Lern-Spezifikation') {
     if (!DIAGRAM_TYPES.has(diagram.type) || !diagram.id || !diagram.title) {
       fail(fileName, 'jedes Diagramm benötigt id, title und einen unterstützten type.');
     }
-    if (!['topology', 'gantt'].includes(diagram.type) && (!Array.isArray(diagram.items) || diagram.items.length < 2)) {
+    if (diagram.type === 'epk') validateEpkDiagram(diagram, message => fail(fileName, message));
+    if (!['topology', 'gantt', 'epk'].includes(diagram.type) && (!Array.isArray(diagram.items) || diagram.items.length < 2)) {
       fail(fileName, 'layers-, flow- und comparison-Diagramme benötigen mindestens zwei items.');
     }
     if (diagram.type === 'gantt') {
@@ -442,7 +444,7 @@ function renderGanttSvg(diagram) {
 function diagramDescription(diagram) {
   if (diagram.description) return diagram.description;
   if (diagram.type === 'gantt') return `${diagram.unit}. ${diagram.rows.map(row => `${row.label}: ${row.start} bis ${row.end}, Vorgänger ${row.predecessors}`).join('. ')}.`;
-  if (diagram.type === 'topology') {
+  if (['topology', 'epk'].includes(diagram.type)) {
     const nodes = diagram.nodes.map(node => `${node.label}${node.detail ? `: ${node.detail}` : ''}`).join('. ');
     const edges = diagram.edges.map(edge => `${nodeLabel(diagram, edge.from)} verbunden mit ${nodeLabel(diagram, edge.to)}${edge.label ? ` (${edge.label})` : ''}`).join('. ');
     return `${nodes}. Verbindungen: ${edges}.`;
@@ -461,7 +463,7 @@ export function renderDiagram(diagram, descriptionOverride = '') {
       ? renderFlowSvg(diagram)
       : diagram.type === 'comparison'
         ? renderComparisonSvg(diagram)
-        : diagram.type === 'gantt' ? renderGanttSvg(diagram) : renderTopologySvg(diagram);
+        : diagram.type === 'gantt' ? renderGanttSvg(diagram) : diagram.type === 'epk' ? renderEpkSvg(diagram) : renderTopologySvg(diagram);
   const titleId = `diagram-${diagram.id}-title`;
   const descId = `diagram-${diagram.id}-desc`;
   return `<svg class="learning-diagram diagram-${escapeXml(diagram.type)}" xmlns="http://www.w3.org/2000/svg" width="${rendered.width}" height="${rendered.height}" viewBox="0 0 ${rendered.width} ${rendered.height}" role="img" aria-labelledby="${titleId} ${descId}">\n  <title id="${titleId}">${escapeXml(diagram.title)}</title>\n  <desc id="${descId}">${escapeXml(descriptionOverride || diagramDescription(diagram))}</desc>\n  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>\n  ${svgText(diagram.title, 42, 48, { weight: 700, size: 28, max: 60, className: 'diagram-title' })}\n  ${rendered.body}\n</svg>\n`;

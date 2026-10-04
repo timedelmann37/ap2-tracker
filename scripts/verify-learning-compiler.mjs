@@ -233,4 +233,31 @@ invalidMatrix(matrix => { matrix.cells[0].feedback = 'zu kurz'; }, /Zell-Feedbac
 invalidMatrix(matrix => { matrix.wrongFeedback = ''; }, /Ergebnis-Feedback/);
 pass('Berechtigungsmatrix lehnt fehlerhafte IDs, Zellen, Zielrechte und Feedback ab');
 
+const epkSpec = JSON.parse(await readFile(path.join(repoRoot, 'content/learning-units/ablauforganisation-prozessdenken-epk.unit.json'), 'utf8'));
+validateUnitSpec(epkSpec, 'epk.json');
+const epkOutput = compileUnitSpec(epkSpec, 'epk.json');
+assert.equal(epkOutput.assets.length, 3);
+assert(epkOutput.contentMarkdown.includes('epk-event'));
+assert(epkOutput.contentMarkdown.includes('<polygon'));
+assert(epkOutput.contentMarkdown.includes('<circle'));
+assert(epkOutput.contentMarkdown.includes('marker-end="url(#epk-'));
+const epkFallback = structuredClone(epkSpec);
+delete epkFallback.diagrams[0].description;
+assert(compileUnitSpec(epkFallback, 'epk-fallback.json').contentMarkdown.includes('Anfrage ist eingegangen'));
+const epkEscaped = structuredClone(epkSpec);
+epkEscaped.diagrams[0].nodes[0].label = '<script>&';
+const escapedOutput = compileUnitSpec(epkEscaped, 'epk-escape.json');
+assert(escapedOutput.contentMarkdown.includes('&lt;script&gt;&amp;'));
+assert(!escapedOutput.contentMarkdown.includes('<script>'));
+function invalidEpk(change, pattern) {
+  const bad = structuredClone(epkSpec); change(bad.diagrams[0]);
+  assert.throws(() => validateUnitSpec(bad, 'invalid-epk.json'), pattern);
+}
+invalidEpk(d => { d.nodes[0].kind = 'unknown'; }, /Ungültiger EPK/);
+invalidEpk(d => { d.nodes[0].x = NaN; }, /Ungültiger EPK/);
+invalidEpk(d => { d.nodes[0].id = d.nodes[1].id; }, /eindeutige node/);
+invalidEpk(d => { d.edges[0].to = 'missing'; }, /EPK-Kante/);
+invalidEpk(d => { d.edges.push(d.edges[0]); }, /doppelt/);
+invalidEpk(d => { d.edges.push({from: d.nodes[0].id, to: d.nodes[2].id}); }, /Verzweigung/);
+pass('EPK-Symbole, gerichtete Kanten, Escaping, Beschreibungsfallback und Strukturvalidierung geprüft');
 console.log('OK Compiler-Vertrag für kompakte Lerneinheiten verifiziert.');
