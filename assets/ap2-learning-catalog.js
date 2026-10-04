@@ -9111,5 +9111,40 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     ],
     "contentHash": "bf7637b32adac3dc94f8a54e7dbf87e418f6cbfa36c83be38414598c15a62ace",
     "sourceKind": "compact-spec"
+  },
+  {
+    "id": "kg-komplementaer-kommanditist-haftsumme-einlage",
+    "slug": "kg-komplementaer-kommanditist-haftsumme-einlage",
+    "title": "KG im Detail: Wer führt und wer haftet?",
+    "description": "Komplementär und Kommanditist sicher unterscheiden: Geschäftsführung, Vertretung, Haftsumme, Einlage, Rückzahlung und Prüfungsfälle.",
+    "domain": "WiSo",
+    "groupId": "wiso-6",
+    "groupLabel": "W6 · Betrieb, Organisation und Rechtsformen",
+    "itemId": "wiso-6__6",
+    "week": "KW 40",
+    "estimatedMinutes": 45,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "rollen",
+      "leitung",
+      "haftung",
+      "transfer"
+    ],
+    "sources": [
+      "kg-rollen",
+      "kg-vertrag",
+      "kg-leitung",
+      "kg-geschaefte",
+      "kg-vertretung",
+      "kg-aussenhaftung",
+      "kg-register-rueckzahlung",
+      "kg-information",
+      "kg-voreintragung",
+      "kg-vollhafter"
+    ],
+    "contentHash": "f8445ffae0ab3d90207f152af5cf48ffcd982e1790fc0cf2c90e31326bbc044d",
+    "sourceKind": "compact-spec"
   }
 ]);
