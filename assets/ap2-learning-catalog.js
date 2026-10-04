@@ -9492,5 +9492,51 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     ],
     "contentHash": "7b4dce1240e585226b1ae03effb1ad30552aa062f9eca5559bf74c985df35c38",
     "sourceKind": "compact-spec"
+  },
+  {
+    "id": "rechtsgeschaefte-willenserklaerung-geschaeftsfaehigkeit-anfechtung",
+    "slug": "rechtsgeschaefte-willenserklaerung-geschaeftsfaehigkeit-anfechtung",
+    "title": "Rechtsgeschäfte: Erklärung, Geschäftsfähigkeit und Anfechtung",
+    "description": "Willenserklärungen erkennen, Minderjährigenverträge beurteilen und Nichtigkeit, schwebende Unwirksamkeit und Anfechtbarkeit anhand eigener IT-Fälle unterscheiden.",
+    "domain": "WiSo",
+    "groupId": "wiso-7",
+    "groupLabel": "W7 · Markt und Vertragsrecht",
+    "itemId": "wiso-7__5",
+    "week": "KW 40",
+    "estimatedMinutes": 55,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "erklaerung",
+      "faehigkeit",
+      "zustand",
+      "anfechtung"
+    ],
+    "sources": [
+      "rechts-2",
+      "rechts-104",
+      "rechts-105",
+      "rechts-105a",
+      "rechts-106",
+      "rechts-107",
+      "rechts-108",
+      "rechts-110",
+      "rechts-111",
+      "rechts-119",
+      "rechts-121",
+      "rechts-122",
+      "rechts-123",
+      "rechts-124",
+      "rechts-125",
+      "rechts-130",
+      "rechts-134",
+      "rechts-138",
+      "rechts-142",
+      "rechts-143",
+      "rechts-we"
+    ],
+    "contentHash": "5391d02b02895482617c97ee80a6e6801a192c8429043f0a918fa25753732301",
+    "sourceKind": "compact-spec"
   }
 ]);

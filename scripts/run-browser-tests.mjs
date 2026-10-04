@@ -266,6 +266,7 @@ async function runFullSuite() {
   await import('./verify-macro-browser.mjs');
   await import('./verify-ordnung-browser.mjs');
   await import('./verify-global-browser.mjs');
+  await import('./verify-rechtsgeschaefte-browser.mjs');
   await import('./verify-maternity-periods-browser.mjs');
   await import('./verify-contract-types-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
@@ -278,7 +279,10 @@ async function runFullSuite() {
 }
 
 try {
-  if (process.env.AP2_BROWSER_ONLY === 'global') {
+  if (process.env.AP2_BROWSER_ONLY === 'rechtsgeschaefte') {
+    useSignedInFixture = true;
+    await import('./verify-rechtsgeschaefte-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'global') {
     useSignedInFixture = true;
     await import('./verify-global-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'ordnung') {
