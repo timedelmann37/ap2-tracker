@@ -119,5 +119,3 @@ try {
   assert(errors.length === 0, errors.join('; '));
   console.log('PASS Rechtsweggerichte: quizzes, recall, keyboard cards, persistence, completion, responsive diagrams and label containment');
 } finally { await browser.close(); }
-
-
