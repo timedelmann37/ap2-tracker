@@ -239,6 +239,7 @@ async function runFullSuite() {
   await import('./verify-sozialtraeger-browser.mjs');
   await import('./verify-arbeitsunfall-browser.mjs');
   await import('./verify-rechtsweg-browser.mjs');
+  await import('./verify-versicherungsgrenzen-browser.mjs');
   await import('./verify-maternity-periods-browser.mjs');
   await import('./verify-contract-types-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
@@ -251,7 +252,10 @@ async function runFullSuite() {
 }
 
 try {
-  if (process.env.AP2_BROWSER_ONLY === 'rechtsweg') {
+  if (process.env.AP2_BROWSER_ONLY === 'versicherungsgrenzen') {
+    useSignedInFixture = true;
+    await import('./verify-versicherungsgrenzen-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'rechtsweg') {
     useSignedInFixture = true;
     await import('./verify-rechtsweg-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'arbeitsunfall') {
