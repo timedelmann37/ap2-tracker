@@ -10264,5 +10264,35 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     ],
     "contentHash": "98ebf7ff635defa7360c11d3fb02e47ced35febb8a8431c8d2957ad82564f9e1",
     "sourceKind": "compact-spec"
+  },
+  {
+    "id": "sicherheitskennzeichen-farbe-form-bedeutung",
+    "slug": "sicherheitskennzeichen-farbe-form-bedeutung",
+    "title": "Sicherheitszeichen sicher lesen",
+    "description": "Verbot, Gebot, Warnung, Rettung und Brandschutz an Farbe und Form unterscheiden; Richtungspfeile und Gefahrstoff-Rauten im eigenen Betriebsfall erklären.",
+    "domain": "WiSo",
+    "groupId": "wiso-8",
+    "groupLabel": "W8 · Recht, Datenschutz und Nachhaltigkeit",
+    "itemId": "wiso-8__15",
+    "week": "KW 41",
+    "estimatedMinutes": 45,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "gruppen",
+      "ziele",
+      "ghs",
+      "transfer"
+    ],
+    "sources": [
+      "sk-asr",
+      "sk-wege",
+      "sk-hilfe",
+      "sk-ghs",
+      "sk-rauch"
+    ],
+    "contentHash": "de7071a851601b0a348185aef22b7a5b11a31423b9285d41898befe190e1a02e",
+    "sourceKind": "compact-spec"
   }
 ]);
