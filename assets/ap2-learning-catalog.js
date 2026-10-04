@@ -8427,6 +8427,36 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "tarifverhandlung-schlichtung-streik-aussperrung",
+    "slug": "tarifverhandlung-schlichtung-streik-aussperrung",
+    "title": "Tarifverhandlung, Schlichtung und Arbeitskampf",
+    "description": "Verhandlung und Schlichtung unterscheiden, Streik und Aussperrung zuordnen und Verhältnismäßigkeit ohne pauschale Freigabe prüfen.",
+    "domain": "WiSo",
+    "groupId": "wiso-4",
+    "groupLabel": "W4 · Mitbestimmung und Tarifrecht",
+    "itemId": "wiso-4__7",
+    "week": "KW 38",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "verhandlung",
+      "schlichtung",
+      "mittel",
+      "mass"
+    ],
+    "sources": [
+      "kampf-gew",
+      "kampf-wd",
+      "kampf-bag",
+      "kampf-dbb",
+      "kampf-bpb"
+    ],
+    "contentHash": "191cfd06386c5b5a6617b4eb1db7384073bc0b2916c841fa0e83960007cca31f",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "company-goals",
     "slug": "company-goals",
     "title": "Unternehmensziele und Zielkonflikte sicher abwägen",
