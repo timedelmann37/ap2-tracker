@@ -8678,6 +8678,39 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "gesetzliche-private-krankenversicherung-vergleich",
+    "slug": "gesetzliche-private-krankenversicherung-vergleich",
+    "title": "Gesetzliche und private Krankenversicherung vergleichen",
+    "description": "Zugang, Beitragsmaßstab, Familienabsicherung und Abrechnung trennen; Tarifangebote ohne automatische Wechsel- oder Leistungszusagen beurteilen.",
+    "domain": "WiSo",
+    "groupId": "wiso-5",
+    "groupLabel": "W5 · Sozialversicherung und Entgelt",
+    "itemId": "wiso-5__6",
+    "week": "KW 38",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "zugang",
+      "beitrag",
+      "familie",
+      "rechnung"
+    ],
+    "sources": [
+      "kv-vergleich-pkv",
+      "kv-vergleich-wechsel",
+      "kv-vergleich-frei",
+      "kv-vergleich-last",
+      "kv-vergleich-familie",
+      "kv-vergleich-sach",
+      "kv-vergleich-erstattung",
+      "kv-vergleich-bund"
+    ],
+    "contentHash": "50ff0a2ac7dd9245a8d5b128b781080f8d47d5a62702f0f82d97c799bf70e5ec",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "company-goals",
     "slug": "company-goals",
     "title": "Unternehmensziele und Zielkonflikte sicher abwägen",
