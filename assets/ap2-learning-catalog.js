@@ -9882,5 +9882,35 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     ],
     "contentHash": "a5ca6d85bf68acb16395e7c44e487e16271d8d4c9236e6b35747da2de914746d",
     "sourceKind": "compact-spec"
+  },
+  {
+    "id": "beschaeftigtendatenschutz-mitarbeiterdaten-it-systeme",
+    "slug": "beschaeftigtendatenschutz-mitarbeiterdaten-it-systeme",
+    "title": "Mitarbeiterdaten: Was darf die IT wissen?",
+    "description": "Mitarbeiterdaten zweckgebunden verarbeiten, Einwilligung und sensible Daten prüfen sowie technische Kontrollen und Zugriffsrechte begrenzen.",
+    "domain": "WiSo",
+    "groupId": "wiso-8",
+    "groupLabel": "W8 · Recht, Datenschutz und Nachhaltigkeit",
+    "itemId": "wiso-8__3",
+    "week": "KW 41",
+    "estimatedMinutes": 65,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "zweck",
+      "einwilligung",
+      "kontrolle",
+      "zugriff"
+    ],
+    "sources": [
+      "wiso-besch-bdsg26",
+      "wiso-besch-dsgvo",
+      "wiso-besch-betrvg87",
+      "wiso-besch-bag2025",
+      "wiso-besch-keylogger"
+    ],
+    "contentHash": "e81a3d5a9aaaa41e438d0fc08e18a37e1557a9658f58eb30d3d4f55feb3fabe4",
+    "sourceKind": "compact-spec"
   }
 ]);
