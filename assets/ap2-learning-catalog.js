@@ -8586,6 +8586,37 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "rechtsweg-gerichte-streitfaelle",
+    "slug": "rechtsweg-gerichte-streitfaelle",
+    "title": "Rechtsweg: Das passende Gericht erkennen",
+    "description": "Sozial-, Arbeits-, Verwaltungs- und Zivilsachen anhand des Streitgegenstands zuordnen; Familiengericht als Abteilung des Amtsgerichts einordnen.",
+    "domain": "WiSo",
+    "groupId": "wiso-5",
+    "groupLabel": "W5 · Sozialversicherung und Entgelt",
+    "itemId": "wiso-5__3",
+    "week": "KW 38",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "sozial",
+      "arbeit",
+      "verwaltung",
+      "zivil"
+    ],
+    "sources": [
+      "gericht-sozial",
+      "gericht-arbeit",
+      "gericht-verwaltung",
+      "gericht-zivil",
+      "gericht-familie",
+      "gericht-famfg"
+    ],
+    "contentHash": "7275fba7c883d6280d26c4125bb9b96a86978bc8127b519e0bb3d03795b5abf1",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "company-goals",
     "slug": "company-goals",
     "title": "Unternehmensziele und Zielkonflikte sicher abwägen",
