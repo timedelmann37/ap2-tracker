@@ -290,6 +290,7 @@ async function runFullSuite() {
   await import('./verify-betriebsschutz-browser.mjs');
   await import('./verify-brandfall-browser.mjs');
   await import('./verify-kennzeichen-browser.mjs');
+  await import('./verify-feuerloescher-browser.mjs');
   await import('./verify-maternity-periods-browser.mjs');
   await import('./verify-contract-types-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
@@ -302,7 +303,10 @@ async function runFullSuite() {
 }
 
 try {
-  if (process.env.AP2_BROWSER_ONLY === 'kennzeichen') {
+  if (process.env.AP2_BROWSER_ONLY === 'feuerloescher') {
+    useSignedInFixture = true;
+    await import('./verify-feuerloescher-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'kennzeichen') {
     useSignedInFixture = true;
     await import('./verify-kennzeichen-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'brandfall') {
