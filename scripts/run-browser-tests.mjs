@@ -284,6 +284,7 @@ async function runFullSuite() {
   await import('./verify-umweltschutz-browser.mjs');
   await import('./verify-verursacherprinzip-browser.mjs');
   await import('./verify-emissionsschutz-browser.mjs');
+  await import('./verify-blauer-engel-browser.mjs');
   await import('./verify-maternity-periods-browser.mjs');
   await import('./verify-contract-types-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
@@ -296,7 +297,10 @@ async function runFullSuite() {
 }
 
 try {
-  if (process.env.AP2_BROWSER_ONLY === 'emissionsschutz') {
+  if (process.env.AP2_BROWSER_ONLY === 'blauer-engel') {
+    useSignedInFixture = true;
+    await import('./verify-blauer-engel-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'emissionsschutz') {
     useSignedInFixture = true;
     await import('./verify-emissionsschutz-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'verursacherprinzip') {
