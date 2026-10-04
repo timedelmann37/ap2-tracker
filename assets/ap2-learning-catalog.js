@@ -10354,5 +10354,32 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     ],
     "contentHash": "31448ca1d4619acd42c6c29939dfde7b282f62f094a78825c9fdbcf788b9843a",
     "sourceKind": "compact-spec"
+  },
+  {
+    "id": "wiso-ausschlussverfahren-falsche-optionen",
+    "slug": "wiso-ausschlussverfahren-falsche-optionen",
+    "title": "Falsche Optionen begründet ausschließen",
+    "description": "Antwortoptionen gegen Auftrag und Fall prüfen, Widersprüche begründen und verbleibende Antworten kontrollieren statt aus Unkenntnis zu streichen.",
+    "domain": "WiSo",
+    "groupId": "wiso-9",
+    "groupLabel": "Prüfungstechnik programmierte Prüfung",
+    "itemId": "wiso-9__1",
+    "week": "parallel",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "auftrag",
+      "grund",
+      "rest",
+      "transfer"
+    ],
+    "sources": [
+      "pe-aka-hinweise",
+      "av-unisq"
+    ],
+    "contentHash": "0ecfb42bc2fc6f5bf91a392c5387e053ce4be534eb76cad358c96a76907f965b",
+    "sourceKind": "compact-spec"
   }
 ]);
