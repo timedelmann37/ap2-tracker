@@ -288,6 +288,7 @@ async function runFullSuite() {
   await import('./verify-nachhaltigkeit-green-it-browser.mjs');
   await import('./verify-qualitaetsmanagement-pdca-browser.mjs');
   await import('./verify-betriebsschutz-browser.mjs');
+  await import('./verify-brandfall-browser.mjs');
   await import('./verify-maternity-periods-browser.mjs');
   await import('./verify-contract-types-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
@@ -300,7 +301,10 @@ async function runFullSuite() {
 }
 
 try {
-  if (process.env.AP2_BROWSER_ONLY === 'betriebsschutz') {
+  if (process.env.AP2_BROWSER_ONLY === 'brandfall') {
+    useSignedInFixture = true;
+    await import('./verify-brandfall-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'betriebsschutz') {
     useSignedInFixture = true;
     await import('./verify-betriebsschutz-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'qualitaetsmanagement-pdca') {

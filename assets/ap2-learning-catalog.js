@@ -10231,5 +10231,38 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     ],
     "contentHash": "c17b3d26341c94fe5a82bb850c73673619f46146011f24483f0bc737481b1698",
     "sourceKind": "compact-spec"
+  },
+  {
+    "id": "sofortmassnahmen-brandfall-alarm-evakuierung",
+    "slug": "sofortmassnahmen-brandfall-alarm-evakuierung",
+    "title": "Brandfall: sicher entscheiden",
+    "description": "Alarmierung, sichere Evakuierung und Eigenschutz priorisieren; verrauchte Fluchtwege, Löschgrenzen und Informationen an Einsatzkräfte unterscheiden.",
+    "domain": "WiSo",
+    "groupId": "wiso-8",
+    "groupLabel": "W8 · Recht, Datenschutz und Nachhaltigkeit",
+    "itemId": "wiso-8__14",
+    "week": "KW 41",
+    "estimatedMinutes": 50,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "alarm",
+      "wege",
+      "grenzen",
+      "uebergabe"
+    ],
+    "sources": [
+      "bf-alarm",
+      "bf-rauch",
+      "bf-tueren",
+      "bf-sammel",
+      "bf-befaehigung",
+      "bf-asr",
+      "bf-evakuierung",
+      "bf-loeschgrenzen"
+    ],
+    "contentHash": "98ebf7ff635defa7360c11d3fb02e47ced35febb8a8431c8d2957ad82564f9e1",
+    "sourceKind": "compact-spec"
   }
 ]);
