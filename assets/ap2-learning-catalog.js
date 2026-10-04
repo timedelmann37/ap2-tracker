@@ -9037,5 +9037,32 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     ],
     "contentHash": "c17130208f39466163920bf92b59391be78def48dc1eb30844d9d7fd3123a827",
     "sourceKind": "compact-spec"
+  },
+  {
+    "id": "eigenkapitalrentabilitaet-reingewinn-berechnen-einordnen",
+    "slug": "eigenkapitalrentabilitaet-reingewinn-berechnen-einordnen",
+    "title": "Eigenkapitalrentabilität berechnen und einordnen",
+    "description": "Reingewinn und Kapital zuordnen, Jahreswerte berechnen und Aussagegrenzen begründen.",
+    "domain": "WiSo",
+    "groupId": "wiso-6",
+    "groupLabel": "W6 · Betrieb, Organisation und Rechtsformen",
+    "itemId": "wiso-6__4",
+    "week": "KW 40",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "daten",
+      "rechnen",
+      "vergleich",
+      "grenze"
+    ],
+    "sources": [
+      "oekonomie-rentabilitaet",
+      "rentabilitaet-ergebnis"
+    ],
+    "contentHash": "50db43c9b5878afa45f363593d2e9c33752a7a8a7d276afbc36c4a8e2a0c3988",
+    "sourceKind": "compact-spec"
   }
 ]);
