@@ -229,6 +229,7 @@ async function runFullSuite() {
   await import('./verify-betriebsrat-browser.mjs');
   await import('./verify-beteiligungsrechte-browser.mjs');
   await import('./verify-mitbestimmung-it-browser.mjs');
+  await import('./verify-betriebsvereinbarung-browser.mjs');
   await import('./verify-maternity-periods-browser.mjs');
   await import('./verify-contract-types-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
@@ -241,7 +242,10 @@ async function runFullSuite() {
 }
 
 try {
-  if (process.env.AP2_BROWSER_ONLY === 'mitbestimmung-it') {
+  if (process.env.AP2_BROWSER_ONLY === 'betriebsvereinbarung') {
+    useSignedInFixture = true;
+    await import('./verify-betriebsvereinbarung-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'mitbestimmung-it') {
     useSignedInFixture = true;
     await import('./verify-mitbestimmung-it-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'beteiligungsrechte') {
