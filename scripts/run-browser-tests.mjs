@@ -245,6 +245,7 @@ async function runFullSuite() {
   await import('./verify-kv-beitrag-browser.mjs');
   await import('./verify-rentenarten-browser.mjs');
   await import('./verify-entgelt-browser.mjs');
+  await import('./verify-einkommen-browser.mjs');
   await import('./verify-maternity-periods-browser.mjs');
   await import('./verify-contract-types-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
@@ -257,7 +258,10 @@ async function runFullSuite() {
 }
 
 try {
-  if (process.env.AP2_BROWSER_ONLY === 'entgelt') {
+  if (process.env.AP2_BROWSER_ONLY === 'einkommen') {
+    useSignedInFixture = true;
+    await import('./verify-einkommen-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'entgelt') {
     useSignedInFixture = true;
     await import('./verify-entgelt-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'rentenarten') {
