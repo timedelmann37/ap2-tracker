@@ -8214,6 +8214,41 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "betriebsrat-wahl-groesse-amtszeit-freistellung",
+    "slug": "betriebsrat-wahl-groesse-amtszeit-freistellung",
+    "title": "Betriebsrat: Wahl, Größe, Amtszeit und Freistellung",
+    "description": "Wahlrecht und Wählbarkeit unterscheiden, Betriebsratsgröße bestimmen und Amtszeit sowie Freistellung getrennt prüfen.",
+    "domain": "WiSo",
+    "groupId": "wiso-4",
+    "groupLabel": "W4 · Mitbestimmung und Tarifrecht",
+    "itemId": "wiso-4__0",
+    "week": "KW 38",
+    "estimatedMinutes": 28,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "wahlrecht",
+      "groesse",
+      "amtszeit",
+      "freistellung"
+    ],
+    "sources": [
+      "br-errichtung",
+      "br-wahlrecht",
+      "br-waehlbarkeit",
+      "br-groesse",
+      "br-wahlzeit",
+      "br-wahl",
+      "br-verfahren",
+      "br-amtszeit",
+      "br-befreiung",
+      "br-freistellung"
+    ],
+    "contentHash": "c43d0933b0248e1ef67eeabf2b24c8031357e76d7eb15dde1782a52f051232ff",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "company-goals",
     "slug": "company-goals",
     "title": "Unternehmensziele und Zielkonflikte sicher abwägen",

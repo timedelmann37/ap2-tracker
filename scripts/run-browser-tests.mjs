@@ -226,6 +226,7 @@ async function runFullSuite() {
   await import('./verify-aufhebungsvertrag-browser.mjs');
   await import('./verify-abmahnung-browser.mjs');
   await import('./verify-betriebsuebergang-browser.mjs');
+  await import('./verify-betriebsrat-browser.mjs');
   await import('./verify-maternity-periods-browser.mjs');
   await import('./verify-contract-types-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
@@ -238,7 +239,10 @@ async function runFullSuite() {
 }
 
 try {
-  if (process.env.AP2_BROWSER_ONLY === 'linux-admin') {
+  if (process.env.AP2_BROWSER_ONLY === 'betriebsrat') {
+    useSignedInFixture = true;
+    await import('./verify-betriebsrat-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'linux-admin') {
     useSignedInFixture = true;
     await import('./verify-linux-admin-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'access-principles') {
