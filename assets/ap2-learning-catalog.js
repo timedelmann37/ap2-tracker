@@ -10012,5 +10012,38 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     ],
     "contentHash": "1f54fcdf9d5bad8a20aaffef0b7c780675683d9bdaabf3c3191138d1315a51e2",
     "sourceKind": "compact-spec"
+  },
+  {
+    "id": "umweltschutz-betrieb-abfall-elektroaltgeraete-gefahrstoffe",
+    "slug": "umweltschutz-betrieb-abfall-elektroaltgeraete-gefahrstoffe",
+    "title": "Umweltschutz im Betrieb",
+    "description": "Abfälle vermeiden und trennen, Elektroaltgeräte korrekt zuordnen und Gefahrstoffe sicher organisieren: eigene IT-Fälle mit vier Lernziel-Checks.",
+    "domain": "WiSo",
+    "groupId": "wiso-8",
+    "groupLabel": "W8 · Recht, Datenschutz und Nachhaltigkeit",
+    "itemId": "wiso-8__7",
+    "week": "KW 41",
+    "estimatedMinutes": 60,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "hierarchie",
+      "trennung",
+      "elektro",
+      "gefahrstoffe"
+    ],
+    "sources": [
+      "umw-hierarchie",
+      "umw-trennung",
+      "umw-elektro10",
+      "umw-elektro3",
+      "umw-elektro19",
+      "umw-gefahr6",
+      "umw-gefahr8",
+      "umw-gefahr14"
+    ],
+    "contentHash": "1f88921265ceb5d79b016d9bf596bf9a5e067bf170412bfe0333398b650f4738",
+    "sourceKind": "compact-spec"
   }
 ]);
