@@ -10461,5 +10461,32 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     ],
     "contentHash": "6ad88aa3cac992e03249bf039d963adbd87ef231142792aeaac473919de9e2bb",
     "sourceKind": "compact-spec"
+  },
+  {
+    "id": "wiso-pruefungszeit-budget-kontrollpunkte",
+    "slug": "wiso-pruefungszeit-budget-kontrollpunkte",
+    "title": "Prüfungszeit: Budget und Kontrollpunkte",
+    "description": "60 Minuten für FISI-WiSo in eigene Arbeitsphasen einteilen, Kontrollreserve schützen und bei Zeitverlust begründet zur nächsten Aufgabe wechseln.",
+    "domain": "WiSo",
+    "groupId": "wiso-9",
+    "groupLabel": "Prüfungstechnik programmierte Prüfung",
+    "itemId": "wiso-9__5",
+    "week": "parallel",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "dauer",
+      "budget",
+      "wechsel",
+      "transfer"
+    ],
+    "sources": [
+      "zeit-fisi-wiso",
+      "av-unisq"
+    ],
+    "contentHash": "034efdb008c3581986a72cce6095b232c4b8884100b90561b13fbf8b81e2da68",
+    "sourceKind": "compact-spec"
   }
 ]);

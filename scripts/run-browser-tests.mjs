@@ -296,6 +296,7 @@ async function runFullSuite() {
   await import('./verify-signalwoerter-browser.mjs');
   await import('./verify-unsichere-antworten-browser.mjs');
   await import('./verify-antwortbogen-browser.mjs');
+  await import('./verify-zeitbudget-browser.mjs');
   await import('./verify-maternity-periods-browser.mjs');
   await import('./verify-contract-types-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
@@ -308,7 +309,10 @@ async function runFullSuite() {
 }
 
 try {
-  if (process.env.AP2_BROWSER_ONLY === 'antwortbogen') {
+  if (process.env.AP2_BROWSER_ONLY === 'zeitbudget') {
+    useSignedInFixture = true;
+    await import('./verify-zeitbudget-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'antwortbogen') {
     useSignedInFixture = true;
     await import('./verify-antwortbogen-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'unsichere-antworten') {
