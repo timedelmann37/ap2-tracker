@@ -251,6 +251,7 @@ async function runFullSuite() {
   await import('./verify-vermoegensbildung-browser.mjs');
   await import('./verify-betrieb-browser.mjs');
   await import('./verify-arbeitsteilung-browser.mjs');
+  await import('./verify-oekonomie-browser.mjs');
   await import('./verify-maternity-periods-browser.mjs');
   await import('./verify-contract-types-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
@@ -263,7 +264,10 @@ async function runFullSuite() {
 }
 
 try {
-  if (process.env.AP2_BROWSER_ONLY === 'arbeitsteilung') {
+  if (process.env.AP2_BROWSER_ONLY === 'oekonomie') {
+    useSignedInFixture = true;
+    await import('./verify-oekonomie-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'arbeitsteilung') {
     useSignedInFixture = true;
     await import('./verify-arbeitsteilung-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'betrieb') {
