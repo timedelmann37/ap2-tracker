@@ -9947,5 +9947,41 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     ],
     "contentHash": "d1ed43bb58834abc4f54718872b5ee0208de6ba264db83506340f8e42d2a9e3c",
     "sourceKind": "compact-spec"
+  },
+  {
+    "id": "staatsprinzipien-grundgesetz-beispiele-zuordnen",
+    "slug": "staatsprinzipien-grundgesetz-beispiele-zuordnen",
+    "title": "Staatsprinzipien: Beispiele richtig zuordnen",
+    "description": "Demokratie, Republik, Rechtsstaat, Sozialstaat und Bundesstaat an ihren Merkmalen erkennen und ähnliche Beispiele begründet unterscheiden.",
+    "domain": "WiSo",
+    "groupId": "wiso-8",
+    "groupLabel": "W8 · Recht, Datenschutz und Nachhaltigkeit",
+    "itemId": "wiso-8__5",
+    "week": "KW 41",
+    "estimatedMinutes": 60,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "demokratie",
+      "rechtsstaat",
+      "sozialstaat",
+      "bundesstaat"
+    ],
+    "sources": [
+      "gg-prinzip-20",
+      "gg-prinzip-28",
+      "gg-prinzip-1",
+      "gg-prinzip-19",
+      "gg-prinzip-30",
+      "gg-prinzip-38",
+      "gg-prinzip-50",
+      "gg-prinzip-54",
+      "gg-prinzip-79",
+      "gg-prinzip-97",
+      "gg-existenzminimum-2010"
+    ],
+    "contentHash": "9b358644ad472b8c5948f82d9a52a40cdb6730729f9291bfd4041b895db0712f",
+    "sourceKind": "compact-spec"
   }
 ]);
