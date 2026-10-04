@@ -8772,6 +8772,38 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "entgeltabrechnung-brutto-netto-abzuege",
+    "slug": "entgeltabrechnung-brutto-netto-abzuege",
+    "title": "Entgeltabrechnung: vom Brutto zur Auszahlung",
+    "description": "Steuern, Arbeitnehmerbeiträge und Nettoverrechnungen trennen; vorgegebene Abzüge kontrollieren und Nettoentgelt vom Auszahlungsbetrag unterscheiden.",
+    "domain": "WiSo",
+    "groupId": "wiso-5",
+    "groupLabel": "W5 · Sozialversicherung und Entgelt",
+    "itemId": "wiso-5__9",
+    "week": "KW 38",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "struktur",
+      "steuer",
+      "netto",
+      "auszahlung"
+    ],
+    "sources": [
+      "entgelt-ebv",
+      "entgelt-lohnsteuer",
+      "entgelt-soli-basis",
+      "entgelt-soli-satz",
+      "entgelt-kirche",
+      "entgelt-bmf-rechner",
+      "entgelt-bmf-faq"
+    ],
+    "contentHash": "ae1cbf497f6dd0a012dae7661f0b224106f82df6a9c266db39f3e80ebb4d5558",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "company-goals",
     "slug": "company-goals",
     "title": "Unternehmensziele und Zielkonflikte sicher abwägen",
