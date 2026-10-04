@@ -10,6 +10,7 @@ target_fingerprint: "sha256:85f789ac5699509e62e8e29366c1ae835d4ffddae8ec4e100524
 target_path: "C:\\Users\\timed\\.codex\\worktrees\\next-learning-ga1\\AP2-Tracker\\scripts\\templates\\learning-page.html"
 timestamp: 2026-10-04T18-30-17Z
 slug: scripts-templates-learning-page-html
+closed: true
 ---
 Method: dual-agent (A: /root/impeccable_design_a · B: /root/impeccable_evidence_b)
 

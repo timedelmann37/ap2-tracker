@@ -55,6 +55,7 @@ async function runFullSuite() {
   // Legacy lesson checks exercise progress as a signed-in learner. The dedicated
   // learning/account checks above cover anonymous and real auth transitions.
   useSignedInFixture = true;
+  await import('./verify-learning-tablet-browser.mjs');
   await import('./verify-n8-browser.mjs');
   await import('./verify-n9-browser.mjs');
   await import('./verify-source-cases-browser.mjs');
@@ -314,7 +315,10 @@ async function runFullSuite() {
 }
 
 try {
-  if (process.env.AP2_BROWSER_ONLY === 'learning-refinement') {
+  if (process.env.AP2_BROWSER_ONLY === 'learning-tablet') {
+    useSignedInFixture = true;
+    await import('./verify-learning-tablet-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'learning-refinement') {
     await import('./verify-learning-runtime-regressions.mjs');
     useSignedInFixture = false;
     await import('./verify-learning-browser.mjs');
