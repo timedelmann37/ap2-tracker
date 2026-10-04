@@ -276,6 +276,7 @@ async function runFullSuite() {
   await import('./verify-widerruf-browser.mjs');
   await import('./verify-wiso-dsgvo-browser.mjs');
   await import('./verify-betroffenenrechte-browser.mjs');
+  await import('./verify-datenschutz-organisation-browser.mjs');
   await import('./verify-maternity-periods-browser.mjs');
   await import('./verify-contract-types-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
@@ -288,7 +289,10 @@ async function runFullSuite() {
 }
 
 try {
-  if (process.env.AP2_BROWSER_ONLY === 'betroffenenrechte') {
+  if (process.env.AP2_BROWSER_ONLY === 'datenschutz-organisation') {
+    useSignedInFixture = true;
+    await import('./verify-datenschutz-organisation-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'betroffenenrechte') {
     useSignedInFixture = true;
     await import('./verify-betroffenenrechte-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'wiso-dsgvo') {

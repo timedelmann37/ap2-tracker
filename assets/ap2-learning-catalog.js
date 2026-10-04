@@ -9855,5 +9855,32 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     ],
     "contentHash": "ecb0aa42c003181ec2eb1ab39fada64327626dc7b3c5bd795aef21b916002828",
     "sourceKind": "compact-spec"
+  },
+  {
+    "id": "datenschutz-organisation-auftragsverarbeitung-verzeichnis-datenpannen",
+    "slug": "datenschutz-organisation-auftragsverarbeitung-verzeichnis-datenpannen",
+    "title": "Datenschutz organisieren: Wer handelt bei einer Datenpanne?",
+    "description": "Auftragsverarbeitung, Verzeichnis, Datenschutzbeauftragte und risikobezogene Pannenmeldung mit klaren Rollen und Fristen anwenden.",
+    "domain": "WiSo",
+    "groupId": "wiso-8",
+    "groupLabel": "W8 · Recht, Datenschutz und Nachhaltigkeit",
+    "itemId": "wiso-8__2",
+    "week": "KW 41",
+    "estimatedMinutes": 60,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "rollen",
+      "verzeichnis",
+      "beauftragter",
+      "panne"
+    ],
+    "sources": [
+      "wiso-dsorg-norm",
+      "wiso-dsorg-bdsg38"
+    ],
+    "contentHash": "a5ca6d85bf68acb16395e7c44e487e16271d8d4c9236e6b35747da2de914746d",
+    "sourceKind": "compact-spec"
   }
 ]);
