@@ -10408,5 +10408,32 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     ],
     "contentHash": "8efb4a8561377f5a53e546653cd57966a150045f75d18255b14b54b03f5a57c8",
     "sourceKind": "compact-spec"
+  },
+  {
+    "id": "wiso-unsichere-antworten-bewertungsregeln",
+    "slug": "wiso-unsichere-antworten-bewertungsregeln",
+    "title": "Unsichere Antworten: Erst die Bewertungsregeln",
+    "description": "Null Punkte und Punktabzug unterscheiden, Zweifelsfälle zurückholen und bei ausdrücklich vorgegebenen Regeln begründet entscheiden statt pauschal zu raten.",
+    "domain": "WiSo",
+    "groupId": "wiso-9",
+    "groupLabel": "Prüfungstechnik programmierte Prüfung",
+    "itemId": "wiso-9__3",
+    "week": "parallel",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "regeln",
+      "modell",
+      "rueckkehr",
+      "transfer"
+    ],
+    "sources": [
+      "pe-aka-hinweise",
+      "av-unisq"
+    ],
+    "contentHash": "4b19ff211c722b85218f4f13138a5944dfce271aea18f321eba8a605d81adc66",
+    "sourceKind": "compact-spec"
   }
 ]);

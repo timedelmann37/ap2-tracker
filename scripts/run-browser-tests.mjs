@@ -294,6 +294,7 @@ async function runFullSuite() {
   await import('./verify-pruefung-erstdurchgang-browser.mjs');
   await import('./verify-ausschlussverfahren-browser.mjs');
   await import('./verify-signalwoerter-browser.mjs');
+  await import('./verify-unsichere-antworten-browser.mjs');
   await import('./verify-maternity-periods-browser.mjs');
   await import('./verify-contract-types-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
@@ -306,7 +307,10 @@ async function runFullSuite() {
 }
 
 try {
-  if (process.env.AP2_BROWSER_ONLY === 'signalwoerter') {
+  if (process.env.AP2_BROWSER_ONLY === 'unsichere-antworten') {
+    useSignedInFixture = true;
+    await import('./verify-unsichere-antworten-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'signalwoerter') {
     useSignedInFixture = true;
     await import('./verify-signalwoerter-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'ausschlussverfahren') {
