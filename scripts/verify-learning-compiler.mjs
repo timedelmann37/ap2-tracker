@@ -279,3 +279,26 @@ for (const mutation of [d => d.items.pop(), d => d.items.reverse(), d => { d.ite
 }
 pass('Wirtschaftskreislauf: vier gerichtete Ströme, Geldarten, Escaping und enger Datenvertrag geprüft');
 console.log('OK Compiler-Vertrag für kompakte Lerneinheiten verifiziert.');
+const roundSpec = structuredClone(spec);
+roundSpec.sections[0].round = 'Runde 1 & Grundlage';
+const roundOutput = compileUnitSpec(roundSpec, 'round.json');
+assert(roundOutput.contentMarkdown.includes('data-learning-round="Runde 1 &amp; Grundlage"'));
+assert(roundOutput.contentMarkdown.includes('<dl class="diagram-mobile-list"'));
+assert(roundOutput.contentMarkdown.includes('<dt>' + roundSpec.diagrams[0].items[0].label + '</dt>'));
+roundSpec.sections[0].round = '';
+assert.throws(() => validateUnitSpec(roundSpec, 'round-invalid.json'), /Lernrunde/);
+const recallSpec = structuredClone(spec);
+blocksOf(recallSpec).find(block => block.type === 'recall').model = 'Erster <Absatz>\n\nZweiter & Absatz';
+const recallOutput = compileUnitSpec(recallSpec, 'recall-paragraphs.json');
+assert(recallOutput.contentMarkdown.includes('<p>Erster &lt;Absatz&gt;</p>'));
+assert(recallOutput.contentMarkdown.includes('<p>Zweiter &amp; Absatz</p>'));
+assert(recallOutput.contentMarkdown.includes('class="face back" aria-hidden="true"'));
+pass('Lernrunden, mobile Diagrammtexte und escaped Recall-Absätze behalten ihre Semantik');
+const modelMathSpec = structuredClone(recallSpec);
+const modelRecall = blocksOf(modelMathSpec).find(block => block.type === 'recall');
+modelRecall.model = 'Rechnung: 24 / 6 = 4.\n\nKein rohes HTML.';
+modelRecall.modelMath = [{ expression: '24 / 6 = 4', ariaLabel: '24 geteilt durch 6 gleich 4', mathml: '<mrow><mfrac><mn>24</mn><mn>6</mn></mfrac><mo>=</mo><mn>4</mn></mrow>' }];
+assert.match(compileUnitSpec(modelMathSpec).contentMarkdown, /<math class="math-inline" aria-label="24 geteilt durch 6 gleich 4"><mrow><mfrac>/);
+modelRecall.modelMath[0].mathml = '<img onerror="alert(1)">';
+assert.throws(() => validateUnitSpec(modelMathSpec), /modelMath/);
+pass('Recall-Rechenwege nutzen native Brüche und Textalternativen; unerlaubtes Markup wird abgewiesen');

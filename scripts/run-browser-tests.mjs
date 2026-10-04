@@ -30,7 +30,9 @@ const server = createServer(async (request, response) => {
       const needle = '<script src="/assets/ap2-learning.js';
       if (!html.includes(needle)) throw new Error('Lernseite ohne Runtime');
       response.writeHead(200, { 'content-type': contentTypes['.html'] });
-      response.end(html.replace(needle, signedInFixture + needle));
+      // A deferred remote SDK would execute after the inline fixture and overwrite it.
+      const fixtureHtml = html.replace(/<script src="https:\/\/cdn\.jsdelivr\.net\/npm\/@supabase\/supabase-js[^"]+"[^>]*><\/script>/, '');
+      response.end(fixtureHtml.replace(needle, signedInFixture + needle));
       return;
     }
     response.writeHead(200, { 'content-type': contentTypes[path.extname(target).toLowerCase()] || 'application/octet-stream' });
@@ -46,6 +48,7 @@ const address = server.address();
 process.env.AP2_BASE_URL = `http://127.0.0.1:${address.port}`;
 
 async function runFullSuite() {
+  await import('./verify-learning-runtime-regressions.mjs');
   await import('./verify-navigation.mjs');
   await import('./verify-theme-persistence.mjs');
   await import('./verify-learning-browser.mjs');
@@ -297,6 +300,8 @@ async function runFullSuite() {
   await import('./verify-unsichere-antworten-browser.mjs');
   await import('./verify-antwortbogen-browser.mjs');
   await import('./verify-zeitbudget-browser.mjs');
+  await import('./verify-simulationen-browser.mjs');
+  await import('./verify-learning-quality-browser.mjs');
   await import('./verify-maternity-periods-browser.mjs');
   await import('./verify-contract-types-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
@@ -309,7 +314,20 @@ async function runFullSuite() {
 }
 
 try {
-  if (process.env.AP2_BROWSER_ONLY === 'zeitbudget') {
+  if (process.env.AP2_BROWSER_ONLY === 'learning-refinement') {
+    await import('./verify-learning-runtime-regressions.mjs');
+    useSignedInFixture = false;
+    await import('./verify-learning-browser.mjs');
+    useSignedInFixture = true;
+    await import('./verify-simulationen-browser.mjs');
+    await import('./verify-learning-quality-browser.mjs');
+    await import('./verify-rechtsformen-browser.mjs');
+    await import('./verify-zeitbudget-browser.mjs');
+    await import('./verify-linux-admin-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'simulationen') {
+    useSignedInFixture = true;
+    await import('./verify-simulationen-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'zeitbudget') {
     useSignedInFixture = true;
     await import('./verify-zeitbudget-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'antwortbogen') {

@@ -143,6 +143,7 @@ export function validateUnitSpec(spec, fileName = 'Lern-Spezifikation') {
   const ids = [];
   for (const section of spec.sections) {
     if (typeof section.title !== 'string' || section.title.trim().length < 3) fail(fileName, 'jede section benötigt einen Titel.');
+    if (section.round !== undefined && (typeof section.round !== 'string' || section.round.trim().length < 3)) fail(fileName, 'eine Lernrunde benötigt einen verständlichen Namen.');
     if (!Array.isArray(section.blocks) || section.blocks.length === 0) fail(fileName, `section ${section.title} besitzt keine blocks.`);
   }
   for (const block of blocks) {
@@ -186,6 +187,15 @@ export function validateUnitSpec(spec, fileName = 'Lern-Spezifikation') {
     }
     if (block.type === 'permission-matrix') validatePermissionMatrix(block, fileName);
     if (block.type === 'math' && (!block.ariaLabel || !block.mathml)) fail(fileName, 'math benötigt ariaLabel und mathml.');
+    if (block.modelMath !== undefined) {
+      if (block.type !== 'recall' || !Array.isArray(block.modelMath) || !block.modelMath.length) fail(fileName, 'modelMath benötigt einen Recall und eine nichtleere Liste.');
+      const expressions = new Set();
+      for (const math of block.modelMath) {
+        if (!math.expression || !block.model.includes(math.expression) || expressions.has(math.expression) || !math.ariaLabel
+          || typeof math.mathml !== 'string' || !/^(?:<\/?(?:mrow|mfrac|mn|mo|mi|mtext)>|[^<>])*$/s.test(math.mathml)) fail(fileName, 'modelMath benötigt eindeutigen Modelltext, Textalternative und erlaubtes MathML.');
+        expressions.add(math.expression);
+      }
+    }
     if (block.type === 'figure' && (!block.diagramId && !block.src || !block.alt || !block.caption)) fail(fileName, 'figure benötigt diagramId/src, alt und caption.');
     if (block.requiredObjective && !objectiveIds.includes(block.requiredObjective)) fail(fileName, `unbekanntes Pflichtziel ${block.requiredObjective}.`);
     if (block.requiredObjective && !['quiz', 'numeric', 'sequence', 'permission-matrix'].includes(block.type)) {
@@ -279,7 +289,10 @@ function renderMath(block) {
 function renderFigure(block, meta, diagramsById) {
   if (block.diagramId) {
     const diagram = diagramsById.get(block.diagramId);
-    return `<figure class="learning-figure learning-figure-inline">\n  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: ${escapeHtml(diagram.title)}">\n    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>\n    ${renderDiagram(diagram, block.alt).trim()}\n  </div>\n  <figcaption>${escapeHtml(block.caption)}</figcaption>\n</figure>`;
+    const mobileList = diagram.type === 'layers'
+      ? `<dl class="diagram-mobile-list" aria-label="${escapeHtml(diagram.title)} – Textansicht">${diagram.items.map(item => `<div><dt>${escapeHtml(item.label)}</dt><dd>${escapeHtml(item.detail)}</dd></div>`).join('')}</dl>\n  `
+      : '';
+    return `<figure class="learning-figure learning-figure-inline">\n  ${mobileList}<div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: ${escapeHtml(diagram.title)}">\n    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>\n    ${renderDiagram(diagram, block.alt).trim()}\n  </div>\n  <figcaption>${escapeHtml(block.caption)}</figcaption>\n</figure>`;
   }
   const dimensions = Number.isInteger(block.width) && Number.isInteger(block.height) && block.width > 0 && block.height > 0
     ? ` width="${block.width}" height="${block.height}"`
@@ -291,11 +304,22 @@ function renderFigure(block, meta, diagramsById) {
 function renderRecall(block) {
   const titleId = `${block.id}-title`;
   const inputId = `${block.id}-answer`;
-  return `<section class="recall-practice" data-recall="${escapeHtml(block.id)}" data-min-length="${block.minLength}" aria-labelledby="${escapeHtml(titleId)}">\n  <div class="recall-prompt"><h3 id="${escapeHtml(titleId)}">${escapeHtml(block.title || 'Abruf aus dem Kopf')}</h3><p>${escapeHtml(block.prompt)}</p></div>\n  <label class="sr-only" for="${escapeHtml(inputId)}">${escapeHtml(block.label || 'Deine freie Antwort')}</label>\n  <textarea id="${escapeHtml(inputId)}" data-recall-input rows="${block.rows || 4}" placeholder="${escapeHtml(block.placeholder || 'Deine Antwort …')}"></textarea>\n  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>${escapeHtml(block.revealLabel || 'Muster vergleichen')}</button></div>\n  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> ${escapeHtml(block.model)}</div>\n</section>`;
+  const model = block.model.split(/\r?\n\s*\r?\n/).map(paragraph => {
+    const definitions = block.modelMath || [];
+    const escaped = escapeHtml(paragraph);
+    if (!definitions.length) return `<p>${escaped}</p>`;
+    const pattern = new RegExp(definitions.map(math => escapeHtml(math.expression).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'g');
+    const rendered = escaped.replace(pattern, expression => {
+      const math = definitions.find(item => escapeHtml(item.expression) === expression);
+      return `<math class="math-inline" aria-label="${escapeHtml(math.ariaLabel)}">${math.mathml}</math>`;
+    });
+    return `<p>${rendered}</p>`;
+  }).join('\n');
+  return `<section class="recall-practice" data-recall="${escapeHtml(block.id)}" data-min-length="${block.minLength}" aria-labelledby="${escapeHtml(titleId)}">\n  <div class="recall-prompt"><h3 id="${escapeHtml(titleId)}">${escapeHtml(block.title || 'Abruf aus dem Kopf')}</h3><p>${escapeHtml(block.prompt)}</p></div>\n  <label class="sr-only" for="${escapeHtml(inputId)}">${escapeHtml(block.label || 'Deine freie Antwort')}</label>\n  <textarea id="${escapeHtml(inputId)}" data-recall-input rows="${block.rows || 4}" placeholder="${escapeHtml(block.placeholder || 'Deine Antwort …')}"></textarea>\n  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>${escapeHtml(block.revealLabel || 'Muster vergleichen')}</button></div>\n  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong>\n  ${model}</div>\n</section>`;
 }
 
 function renderFlashcards(block) {
-  const cards = block.cards.map(card => `<button class="flashcard" type="button" data-flashcard="${escapeHtml(card.id)}" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>${escapeHtml(card.front)}</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>${escapeHtml(card.back)}</span></span></button>`).join('\n  ');
+  const cards = block.cards.map(card => `<button class="flashcard" type="button" data-flashcard="${escapeHtml(card.id)}" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>${escapeHtml(card.front)}</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>${escapeHtml(card.back)}</span></span></button>`).join('\n  ');
   const ratings = block.cards.map(card => `<div class="card-rating"><span>Karte „${escapeHtml(card.label)}“:</span><button type="button" data-card-id="${escapeHtml(card.id)}" data-card-rate="known">gewusst</button><button type="button" data-card-id="${escapeHtml(card.id)}" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="${escapeHtml(card.id)}"></span></div>`).join('\n');
   return `<div class="flashcard-grid">\n  ${cards}\n</div>\n${ratings}`;
 }
@@ -498,7 +522,7 @@ export function compileUnitSpec(spec, fileName = 'Lern-Spezifikation') {
   };
   const frontmatter = Object.entries(metadata).map(([key, value]) => `${key}: ${Array.isArray(value) ? jsonFrontmatter(value) : value}`).join('\n');
   const goals = `<section class="learning-goals" aria-labelledby="${escapeHtml(meta.slug)}-goals">\n  <h2 id="${escapeHtml(meta.slug)}-goals">Nach dieser Einheit kannst du …</h2>\n  <ul>\n${spec.objectives.map(objective => `    <li>${escapeHtml(objective.label)}</li>`).join('\n')}\n  </ul>\n</section>`;
-  const body = spec.sections.map(section => `## ${section.title}\n\n${section.blocks.map(block => renderBlock(block, meta, diagramsById)).join('\n\n')}`).join('\n\n');
+  const body = spec.sections.map(section => `${section.round ? `<p class="learning-round" data-learning-round="${escapeHtml(section.round)}">${escapeHtml(section.round)}</p>\n\n` : ''}## ${section.title}\n\n${section.blocks.map(block => renderBlock(block, meta, diagramsById)).join('\n\n')}`).join('\n\n');
   const contentMarkdown = `${spec.intro.trim()}\n\n${goals}\n\n${body}\n`;
   const markdown = `<!-- GENERATED from content/learning-units/${fileName}; edit the unit spec, not this file. -->\n---\n${frontmatter}\n---\n${contentMarkdown}`;
   const curation = {

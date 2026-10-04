@@ -355,7 +355,7 @@ try {
       await gate.locator(`[data-answer="${await gate.getAttribute('data-correct')}"]`).click();
       assert((await done.isDisabled()) === (index < testCase.gates.length - 1), `${testCase.slug}: objective gate ${index + 1}`);
     }
-    assert((await page.locator('[data-mastery-note]').textContent()).includes('Alle 3 Lernziele'), `${testCase.slug}: mastery message matches objective count`);
+    assert((await page.locator('[data-mastery-count]').allTextContents()).every(text => text === '3 von 3 Pflichtchecks bestanden'), `${testCase.slug}: both mastery counts match objectives`);
     await page.reload();
     assert(!await done.isDisabled(), `${testCase.slug}: objectives persist`);
     await done.click();
