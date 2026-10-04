@@ -280,6 +280,7 @@ async function runFullSuite() {
   await import('./verify-beschaeftigtendatenschutz-browser.mjs');
   await import('./verify-urheber-lizenz-browser.mjs');
   await import('./verify-staatsprinzipien-browser.mjs');
+  await import('./verify-diversity-browser.mjs');
   await import('./verify-maternity-periods-browser.mjs');
   await import('./verify-contract-types-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
@@ -292,7 +293,10 @@ async function runFullSuite() {
 }
 
 try {
-  if (process.env.AP2_BROWSER_ONLY === 'staatsprinzipien') {
+  if (process.env.AP2_BROWSER_ONLY === 'diversity') {
+    useSignedInFixture = true;
+    await import('./verify-diversity-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'staatsprinzipien') {
     useSignedInFixture = true;
     await import('./verify-staatsprinzipien-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'urheber-lizenz') {

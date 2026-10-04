@@ -1,0 +1,47 @@
+# Diversity Management und Charta der Vielfalt — Quellenprüfung
+
+Stand/Abruf: 2026-10-04. Kernthema: `wiso-8__6`. Recherche-Notiz, keine Freigabe einer Lerneinheit. Nur offizielle Primärquellen; eigene Anwendungsideen sind keine übernommenen Buchaufgaben.
+
+## Behauptung, Quelle und Grenze
+
+| Aussage für die Einheit | Primärquelle / geprüfte Fundstelle | Grenze |
+|---|---|---|
+| Die Charta ist eine Selbstverpflichtung zur wertschätzenden Organisationskultur; die Unterschrift ist ein Anfang der Umsetzung. | [Charta: Unterzeichnen](https://www.charta-der-vielfalt.de/unterzeichnen), Abschnitt „Klare Selbstverpflichtung“; aktuelle offizielle Suchausgabe gelesen. | Kein Gesetz und kein Nachweis, dass ein Betrieb bereits diskriminierungsfrei arbeitet. Keine Erfolgs- oder Zertifizierungszusage. |
+| Vielfalt wird als ganzheitliche Organisationsaufgabe behandelt, nicht als einmalige Veranstaltung. | [Charta: Wissen / Dimensionen](https://www.charta-der-vielfalt.de/wissen/vielfaltsdimensionen), Modell und Handlungshinweise; offizielle Suchausgabe gelesen. | Maßnahmen müssen zum konkreten Zugangshindernis und Arbeitskontext passen. Keine behaupteten wirtschaftlichen Effektgrößen. |
+| Die aktuellen sieben Dimensionen heißen: Alter; Migrationsgeschichte und Nationalität; Geschlecht und geschlechtliche Identität; körperliche und geistige Fähigkeiten; Religion und Weltanschauung; sexuelle Orientierung; soziale Herkunft. | [Charta: aktuelle Startseite](https://www.charta-der-vielfalt.de/de), vollständige Liste in offizieller Suchausgabe; ergänzend aktuelle Dimensionenseite. | Ältere Publikationen verwenden „ethnische Herkunft“ oder nennen sechs Dimensionen. Nicht als aktuellen Wortlaut ausgeben. Bezeichnungen des AGG sind davon getrennt. |
+| Persönliche Fähigkeiten müssen individuell geprüft werden; Zugangsbarrieren lassen sich etwa durch zugängliche Materialien und passende Arbeitsplätze abbauen. | [Charta: Dimensionen](https://www.charta-der-vielfalt.de/wissen/vielfaltsdimensionen), Alter / körperliche und geistige Fähigkeiten. | Keine stereotypen Zuschreibungen wie „alle Älteren können keine Technik“; auch positive Gruppenzuschreibungen ersetzen keine individuelle Kompetenzprüfung. |
+| Das AGG nennt bestimmte Benachteiligungsgründe; soziale Herkunft und Nationalität sind nicht eigenständig in § 1 aufgeführt. | [AGG § 1](https://www.gesetze-im-internet.de/agg/__1.html); vollständig über offizielle Suchausgabe und [AGG-PDF](https://www.gesetze-im-internet.de/agg/AGG.pdf), S. 1 geprüft. | Nicht folgern, jede ungerechte Behandlung sei automatisch AGG-Verstoß oder grundsätzlich erlaubt. Andere Normen sowie Überschneidungen etwa mit ethnischer Herkunft bleiben möglich. |
+| Der Beschäftigungsschutz betrifft unter anderem Auswahl, Arbeitsbedingungen und berufliche Bildung. | [AGG § 2](https://www.gesetze-im-internet.de/agg/__2.html); AGG-PDF S. 1. | Der konkrete Anwendungsbereich ist zu prüfen; nicht ungeprüft jede Alltagssituation gleich behandeln. |
+| Unmittelbar bedeutet ungünstigere Behandlung wegen eines geschützten Grundes in vergleichbarer Lage; mittelbar betrifft scheinbar neutrale Kriterien mit besonderer Benachteiligung, vorbehaltlich gesetzlicher Rechtfertigung. | [AGG § 3](https://www.gesetze-im-internet.de/agg/__3.html); AGG-PDF S. 2, Abs. 1–2. | Sachverhalt, geschützter Grund, Vergleich und Rechtfertigung prüfen; nicht jedes unterschiedliche Ergebnis genügt. |
+| Das Benachteiligungsverbot gilt auch bei lediglich angenommenem Merkmal. | [AGG § 7](https://www.gesetze-im-internet.de/agg/__7.html), Abs. 1 direkt gelesen. | Herkunft oder Identität muss nicht offengelegt sein, um geschützt zu sein; konkrete gesetzliche Ausnahmen bleiben gesondert zu prüfen. |
+| Stellen dürfen nicht entgegen dem Benachteiligungsverbot ausgeschrieben werden. | [AGG § 11](https://www.gesetze-im-internet.de/agg/__11.html), direkt gelesen. | Ein Zusatz wie „m/w/d“ allein heilt keine diskriminierende Auswahl oder andere problematische Anforderungen. |
+| Arbeitgebende müssen erforderlichen Schutz einschließlich Vorbeugung organisieren und bei Verstößen geeignete, erforderliche, angemessene Maßnahmen ergreifen. | [AGG § 12](https://www.gesetze-im-internet.de/agg/__12.html), Abs. 1–5 direkt gelesen. | Nicht automatisch Kündigung als einzige richtige Reaktion lehren. Gesetzliche Pflichten gelten unabhängig von einer Charta-Unterschrift. |
+| Beschäftigte können sich bei der zuständigen Stelle beschweren; Prüfung und Ergebnismitteilung sind vorgeschrieben. | [AGG § 13](https://www.gesetze-im-internet.de/agg/__13.html), offizielle Suchausgabe vollständig; AGG-PDF S. 4–5. | Beschwerde ist nicht automatisch Beweis oder zugesicherter Prozesserfolg. |
+| Unterschiedliche Behandlung zum Nachteilsausgleich kann bei geeigneten und angemessenen Maßnahmen zulässig sein. | [AGG § 5](https://www.gesetze-im-internet.de/agg/__5.html), direkt gelesen. | Kein Freibrief für beliebige Bevorzugung oder pauschale Auswahlquoten. |
+
+## Abrufstatus und Wortlautgrenze
+
+- AGG §§ 5, 7, 11, 12: Einzelnormen direkt vollständig gelesen. §§ 1, 2, 3, 13: direkte Web-Aufrufe wiederholt Timeout. Erfolgreicher offizieller PDF-Fallback: 13 Seiten, im Dokument Änderungsstand 22.12.2023; für diese Recherche relevante Abschnitte S. 1–5 vollständig im Textabruf gelesen. §§ 1 und 13 zusätzlich vollständige offizielle Suchausgabe.
+- Aktuelle Charta-HTML-Aufrufe `/de`, `/unterzeichnen`, `/vielfaltsdimensionen` lieferten im Web-Direktabruf 0 Textzeilen. Inhaltliche Aussagen oben stammen aus den ausdrücklich geprüften offiziellen Suchausgaben, nicht aus einem behaupteten vollständigen Direktabruf. `/wissen/vielfaltsdimensionen` lieferte ausführliche aktuelle offizielle Suchausgabe.
+- Alte Route `/fuer-arbeitgebende/vielfaltsdimensionen` gab 404. Die alte Wortlautroute `/die-charta/ueber-die-charta/charta-im-wortlaut/` war nicht verwertbar. Ein rein lesender Shell-Abruf der aktuellen Unterzeichnen-Seite fand keinen aktuellen Urkunden-PDF-Link.
+- Der vollständige aktuelle Urkunden-Wortlaut wurde in dieser Teilrecherche **nicht** verifiziert. Keine längere Urkundenabschrift und keine als aktuell behauptete exakte Sechs-Punkte-Liste verwenden. Für das Lernziel reichen belegte Selbstverpflichtung, wertschätzende Kultur, Prozessprüfung und konkrete Umsetzung. Ältere offizielle [Vorstellung Februar 2021](https://www.charta-der-vielfalt.de/fileadmin/user_upload/Studien_Publikationen_Charta/Charta_der_Vielfalt_allgemein_2021_Feb.pdf) enthält historisch Kultur, Personalprozesse, Potenziale, Dialog, öffentliche jährliche Auskunft und Beteiligung; sie ist kein Beleg für den exakten Urkunden-Wortlaut 2026.
+- Keine Unterzeichnendenzahlen, Paketpreise oder aktuellen Veranstaltungstermine in die Einheit übernehmen: für das Kernthema nicht nötig, zudem dynamisch.
+
+## Private Quelle — nur enger Themenanker
+
+### Ergänzende Prüfung durch Hauptagent
+
+Die aktuelle Seite `/fuer-organisationen/vielfaltsdimensionen/` leitete im Hauptagent-Abruf nach [Vielfaltsdimensionen](https://www.charta-der-vielfalt.de/vielfaltsdimensionen) weiter und lieferte 276 Textzeilen; Liste und Handlungshinweise wurden direkt gelesen. Die oben genannten 0-Text-Abrufe bleiben tatsächliche Grenzen der Teilrecherche, nicht sämtlicher Abrufwege.
+
+Der offizielle [Leitfaden 2017](https://www.charta-der-vielfalt.de/fileadmin/user_upload/Ueber_die_Charta/Materialien/Charta-der-Vielfalt-Leitfaden-2017-RZ-WEB-bf.pdf) war als 32-seitiges PDF lesbar. Eng geprüft: gedruckte S. 6–7 (PDF-Seiten 6–7), S. 10–11 (PDF-Seiten 10–11): freiwillige Selbstverpflichtung, Wertschätzung, Personalprozessprüfung, Beteiligung und Umsetzung. Ausschließlich historische Konzeptquelle; keine damaligen Zahlen, Gebühren, Beispielbetriebe oder Dimensionsliste übernommen und kein exakter Urkundenwortlaut 2026 behauptet. Der Hauptagent las zudem das offizielle AGG-PDF, §§ 1–3, 5, 7 und 11–13 auf S. 1–5.
+
+Datei: `C:/Users/timed/Desktop/AP2-Tracker/knowledge-base/local/europa-integratoren-2026/raw/EUROPA_Prüfungsvorbereitung_Teil_2_Integratoren_4._Auflage.md`.
+
+`rg` nach „Diversity“ und „Charta der Vielfalt“: keine Treffer. Eng gelesener Abschnitt Zeilen 488–503, insbesondere 497: Ausbildungsberufsbild „Vernetztes Zusammenarbeiten“, gegenseitige Wertschätzung unter Berücksichtigung gesellschaftlicher Vielfalt. Das ist ausschließlich ein allgemeiner Themenanker. Kein verifiziertes Charta-Kapitel, keine Buchaufgabe, kein eigener Beleg für die sieben Dimensionen. Keine Aufgaben oder Lösungstexte übernommen.
+
+## Eigene Anwendungsideen und Grenzen
+
+- IT-Schulung nur mit unzugänglichen Bildfolien: konkrete Lernbarriere ermitteln, zugängliche Materialien anbieten, Rückmeldung zur tatsächlichen Nutzbarkeit prüfen. Nicht Diagnose, Behinderung oder Gruppenzugehörigkeit erfinden.
+- Beförderung nur nach privatem Netzwerk statt dokumentierten Kompetenzen: transparente arbeitsbezogene Kriterien, strukturierte Bewertung und offenen Zugang schaffen. Soziale Herkunft als Diversity-Thema erklären; AGG-Zuordnung nicht ohne weiteren geschützten Grund behaupten.
+- Herabsetzende Altersannahme im Auswahlprozess: Verhalten konkret dokumentieren, zuständige Beschwerdestelle und Prüfung kennen. Eigene Beispiele nicht als echte Rechtsprechungsfälle ausgeben.
+- Maßnahmenbewertung: Barriere → passende Maßnahme → verantwortliche Stelle → beobachtbare Rückmeldung. Keine personenbezogenen Merkmalslisten oder Erfolgsquoten als Standard verlangen; Datenschutz und individuelle Bedürfnisse beachten.
