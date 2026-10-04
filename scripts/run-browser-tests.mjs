@@ -242,6 +242,7 @@ async function runFullSuite() {
   await import('./verify-versicherungsgrenzen-browser.mjs');
   await import('./verify-sozialprinzipien-browser.mjs');
   await import('./verify-krankenvergleich-browser.mjs');
+  await import('./verify-kv-beitrag-browser.mjs');
   await import('./verify-maternity-periods-browser.mjs');
   await import('./verify-contract-types-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
@@ -254,7 +255,10 @@ async function runFullSuite() {
 }
 
 try {
-  if (process.env.AP2_BROWSER_ONLY === 'krankenvergleich') {
+  if (process.env.AP2_BROWSER_ONLY === 'kv-beitrag') {
+    useSignedInFixture = true;
+    await import('./verify-kv-beitrag-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'krankenvergleich') {
     useSignedInFixture = true;
     await import('./verify-krankenvergleich-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'sozialprinzipien') {
