@@ -255,6 +255,7 @@ async function runFullSuite() {
   await import('./verify-rentabilitaet-browser.mjs');
   await import('./verify-rechtsformen-browser.mjs');
   await import('./verify-kg-browser.mjs');
+  await import('./verify-unternehmensverbindungen-browser.mjs');
   await import('./verify-maternity-periods-browser.mjs');
   await import('./verify-contract-types-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
@@ -267,7 +268,10 @@ async function runFullSuite() {
 }
 
 try {
-  if (process.env.AP2_BROWSER_ONLY === 'kg') {
+  if (process.env.AP2_BROWSER_ONLY === 'unternehmensverbindungen') {
+    useSignedInFixture = true;
+    await import('./verify-unternehmensverbindungen-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'kg') {
     useSignedInFixture = true;
     await import('./verify-kg-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'rechtsformen') {
