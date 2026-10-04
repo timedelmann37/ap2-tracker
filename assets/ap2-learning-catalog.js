@@ -9569,5 +9569,45 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     ],
     "contentHash": "3b6de5981252f7614da153c09802d60f460e33de7ad7638ac4f78f3e98f6db67",
     "sourceKind": "compact-spec"
+  },
+  {
+    "id": "kaufvertrag-angebot-annahme-agb-eigentumsvorbehalt",
+    "slug": "kaufvertrag-angebot-annahme-agb-eigentumsvorbehalt",
+    "title": "Kaufvertrag: Angebot, Annahme, AGB und Eigentumsvorbehalt",
+    "description": "Vertragsschluss an IT-Bestellungen prüfen, AGB-Einbeziehung von Wirksamkeit trennen und Besitz sowie Eigentum beim einfachen Eigentumsvorbehalt erklären.",
+    "domain": "WiSo",
+    "groupId": "wiso-7",
+    "groupLabel": "W7 · Markt und Vertragsrecht",
+    "itemId": "wiso-7__7",
+    "week": "KW 40",
+    "estimatedMinutes": 50,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "schluss",
+      "aenderung",
+      "agb",
+      "eigentum"
+    ],
+    "sources": [
+      "kauf-145",
+      "kauf-147",
+      "kauf-148",
+      "kauf-150",
+      "kauf-312i",
+      "kauf-305",
+      "kauf-305b",
+      "kauf-305c",
+      "kauf-307",
+      "kauf-310",
+      "kauf-306",
+      "kauf-433",
+      "kauf-854",
+      "kauf-929",
+      "kauf-449"
+    ],
+    "contentHash": "6c79684af69532bfa43badfa803915a81c7a3d8d71d2936e0a43df60c67fe3de",
+    "sourceKind": "compact-spec"
   }
 ]);
