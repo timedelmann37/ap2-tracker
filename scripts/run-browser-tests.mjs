@@ -260,6 +260,7 @@ async function runFullSuite() {
   await import('./verify-organisation-browser.mjs');
   await import('./verify-epk-browser.mjs');
   await import('./verify-fuehrung-browser.mjs');
+  await import('./verify-kennzahlen-browser.mjs');
   await import('./verify-maternity-periods-browser.mjs');
   await import('./verify-contract-types-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
@@ -272,7 +273,10 @@ async function runFullSuite() {
 }
 
 try {
-  if (process.env.AP2_BROWSER_ONLY === 'fuehrung') {
+  if (process.env.AP2_BROWSER_ONLY === 'kennzahlen') {
+    useSignedInFixture = true;
+    await import('./verify-kennzahlen-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'fuehrung') {
     useSignedInFixture = true;
     await import('./verify-fuehrung-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'epk') {
