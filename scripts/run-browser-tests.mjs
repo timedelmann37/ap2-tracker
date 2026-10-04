@@ -234,6 +234,7 @@ async function runFullSuite() {
   await import('./verify-tarifgrundlagen-browser.mjs');
   await import('./verify-tarifinhalte-browser.mjs');
   await import('./verify-arbeitskampf-browser.mjs');
+  await import('./verify-rechtsquellen-browser.mjs');
   await import('./verify-maternity-periods-browser.mjs');
   await import('./verify-contract-types-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
@@ -246,7 +247,10 @@ async function runFullSuite() {
 }
 
 try {
-  if (process.env.AP2_BROWSER_ONLY === 'arbeitskampf') {
+  if (process.env.AP2_BROWSER_ONLY === 'rechtsquellen') {
+    useSignedInFixture = true;
+    await import('./verify-rechtsquellen-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'arbeitskampf') {
     useSignedInFixture = true;
     await import('./verify-arbeitskampf-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'tarifinhalte') {

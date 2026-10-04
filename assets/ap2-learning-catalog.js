@@ -8457,6 +8457,36 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "guenstigkeit-rechtsquellen-sachgruppen",
+    "slug": "guenstigkeit-rechtsquellen-sachgruppen",
+    "title": "Rechtsquellen und Günstigkeitsprinzip",
+    "description": "Rangfolge nutzen, Tariföffnung und Günstigkeit unterscheiden und zusammenhängende Bedingungen ohne Rosinenpicken vergleichen.",
+    "domain": "WiSo",
+    "groupId": "wiso-4",
+    "groupLabel": "W4 · Mitbestimmung und Tarifrecht",
+    "itemId": "wiso-4__8",
+    "week": "KW 38",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "quellen",
+      "guenstig",
+      "sachgruppe",
+      "grenzen"
+    ],
+    "sources": [
+      "rang-tvg",
+      "rang-betrvg",
+      "rang-gewo",
+      "rang-bag",
+      "rang-bpb"
+    ],
+    "contentHash": "4d4eac3656505a70e29575d16efe71b631ae27e25f5e3280b245a5ead318a952",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "company-goals",
     "slug": "company-goals",
     "title": "Unternehmensziele und Zielkonflikte sicher abwägen",
