@@ -8279,6 +8279,34 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "mitbestimmung-arbeitszeit-urlaub-it-monitoring",
+    "slug": "mitbestimmung-arbeitszeit-urlaub-it-monitoring",
+    "title": "Mitbestimmung: Arbeitszeit, Urlaub und IT-Monitoring",
+    "description": "Typische Fälle nach § 87 einordnen, personenbeziehbare Logs prüfen und technische Sicherheit von einer Rollout-Freigabe unterscheiden.",
+    "domain": "WiSo",
+    "groupId": "wiso-4",
+    "groupLabel": "W4 · Mitbestimmung und Tarifrecht",
+    "itemId": "wiso-4__2",
+    "week": "KW 38",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "arbeitszeit",
+      "urlaub",
+      "monitoring",
+      "rollout"
+    ],
+    "sources": [
+      "monitor-87",
+      "monitor-bag",
+      "monitor-datenschutz"
+    ],
+    "contentHash": "5651b0ef5d4c6856b8bc61db5f31445db9f5c12d38b70c5978a72f629bf9d825",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "company-goals",
     "slug": "company-goals",
     "title": "Unternehmensziele und Zielkonflikte sicher abwägen",
