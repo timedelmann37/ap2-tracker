@@ -9064,5 +9064,52 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     ],
     "contentHash": "50db43c9b5878afa45f363593d2e9c33752a7a8a7d276afbc36c4a8e2a0c3988",
     "sourceKind": "compact-spec"
+  },
+  {
+    "id": "rechtsformen-haftung-kapital-leitung-gewinn",
+    "slug": "rechtsformen-haftung-kapital-leitung-gewinn",
+    "title": "Rechtsformen verstehen: Haftung, Kapital, Leitung und Gewinn",
+    "description": "Ausführlicher Vergleich von Einzelunternehmen, GbR, OHG, KG, GmbH, UG, AG und eG mit eigenen Fällen, Rechenübungen und typischen Prüfungsfallen.",
+    "domain": "WiSo",
+    "groupId": "wiso-6",
+    "groupLabel": "W6 · Betrieb, Organisation und Rechtsformen",
+    "itemId": "wiso-6__5",
+    "week": "KW 40",
+    "estimatedMinutes": 95,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "begriffe",
+      "personen",
+      "kg",
+      "kapital",
+      "organe",
+      "gewinn"
+    ],
+    "sources": [
+      "rechtsformen-einzel",
+      "rechtsformen-gbr",
+      "rechtsformen-beteiligung",
+      "rechtsformen-gbr-leitung",
+      "rechtsformen-ohg",
+      "rechtsformen-ohg-gewinn",
+      "rechtsformen-kg",
+      "rechtsformen-kg-haftung",
+      "rechtsformen-gmbh",
+      "rechtsformen-gmbh-kapital",
+      "rechtsformen-gmbh-einzahlung",
+      "rechtsformen-ug",
+      "rechtsformen-gmbh-leitung",
+      "rechtsformen-ag",
+      "rechtsformen-ag-kapital",
+      "rechtsformen-ag-leitung",
+      "rechtsformen-eg",
+      "rechtsformen-eg-zweck",
+      "rechtsformen-eg-gruender",
+      "rechtsformen-eg-gewinn"
+    ],
+    "contentHash": "bf7637b32adac3dc94f8a54e7dbf87e418f6cbfa36c83be38414598c15a62ace",
+    "sourceKind": "compact-spec"
   }
 ]);
