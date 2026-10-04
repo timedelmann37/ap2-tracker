@@ -9334,5 +9334,35 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     ],
     "contentHash": "346ac591b87e239c09c420450d57daa99044822f0d39770f494078319e7b9fdf",
     "sourceKind": "compact-spec"
+  },
+  {
+    "id": "beduerfnisse-gueter-knappheit-wirtschaftskreislauf",
+    "slug": "beduerfnisse-gueter-knappheit-wirtschaftskreislauf",
+    "title": "Bedürfnisse, Güter und Wirtschaftskreislauf",
+    "description": "Bedürfnis, Bedarf und Nachfrage trennen, Güter nach mehreren Kriterien einordnen und Knappheit sowie Geld- und Realströme an eigenen Fällen erklären.",
+    "domain": "WiSo",
+    "groupId": "wiso-7",
+    "groupLabel": "W7 · Markt und Vertragsrecht",
+    "itemId": "wiso-7__0",
+    "week": "KW 40",
+    "estimatedMinutes": 45,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "bedarf",
+      "gueter",
+      "knappheit",
+      "stroeme"
+    ],
+    "sources": [
+      "kreislauf-potsdam",
+      "kreislauf-gueter",
+      "kreislauf-bedarf",
+      "kreislauf-knappheit",
+      "kreislauf-bundesbank"
+    ],
+    "contentHash": "19b83b995b7a5566e9a9417e6b973a923236bd61a729b258a684ca71baf9523c",
+    "sourceKind": "compact-spec"
   }
 ]);

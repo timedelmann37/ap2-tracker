@@ -260,4 +260,22 @@ invalidEpk(d => { d.edges[0].to = 'missing'; }, /EPK-Kante/);
 invalidEpk(d => { d.edges.push(d.edges[0]); }, /doppelt/);
 invalidEpk(d => { d.edges.push({from: d.nodes[0].id, to: d.nodes[2].id}); }, /Verzweigung/);
 pass('EPK-Symbole, gerichtete Kanten, Escaping, Beschreibungsfallback und Strukturvalidierung geprüft');
+const cycleSpec = JSON.parse(await readFile(path.join(repoRoot, 'content/learning-units/beduerfnisse-gueter-knappheit-wirtschaftskreislauf.unit.json'), 'utf8'));
+validateUnitSpec(cycleSpec, 'economic-cycle.json');
+const cycleOutput = compileUnitSpec(cycleSpec, 'economic-cycle.json');
+assert.equal(cycleOutput.assets.length, 3);
+assert.equal((cycleOutput.contentMarkdown.match(/class="economic-flow"/g) || []).length, 4);
+assert.equal((cycleOutput.contentMarkdown.match(/data-flow="money"/g) || []).length, 2);
+assert.equal((cycleOutput.contentMarkdown.match(/marker-end="url\(#economic-arrow-/g) || []).length, 4);
+const cycleIndex = cycleSpec.diagrams.findIndex(d => d.type === 'economic-cycle');
+const cycleEscaped = structuredClone(cycleSpec);
+cycleEscaped.diagrams[cycleIndex].items[0].detail = '<script>& primitive';
+assert(compileUnitSpec(cycleEscaped, 'cycle-escape.json').contentMarkdown.includes('&lt;script&gt;&amp; primitive'));
+assert(!compileUnitSpec(cycleEscaped, 'cycle-escape.json').contentMarkdown.includes('<script>'));
+for (const mutation of [d => d.items.pop(), d => d.items.reverse(), d => { d.items[0].detail = 'x'; }, d => { d.items[0].detail = 'x'.repeat(46); }]) {
+  const bad = structuredClone(cycleSpec);
+  mutation(bad.diagrams[cycleIndex]);
+  assert.throws(() => validateUnitSpec(bad, 'invalid-cycle.json'), /economic-cycle/);
+}
+pass('Wirtschaftskreislauf: vier gerichtete Ströme, Geldarten, Escaping und enger Datenvertrag geprüft');
 console.log('OK Compiler-Vertrag für kompakte Lerneinheiten verifiziert.');

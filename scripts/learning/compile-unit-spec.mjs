@@ -1,7 +1,8 @@
 import { renderEpkSvg, validateEpkDiagram } from './render-epk.mjs';
+import { renderEconomicCycleSvg, validateEconomicCycle } from './render-economic-cycle.mjs';
 const STATUS_VALUES = new Set(['CURATED_DRAFT', 'DIDACTICALLY_REVIEWED', 'PUBLICATION_READY']);
 const BLOCK_TYPES = new Set(['markdown', 'quiz', 'callout', 'math', 'figure', 'recall', 'flashcards', 'numeric', 'sequence', 'permission-matrix']);
-const DIAGRAM_TYPES = new Set(['layers', 'flow', 'comparison', 'topology', 'gantt', 'epk']);
+const DIAGRAM_TYPES = new Set(['layers', 'flow', 'comparison', 'topology', 'gantt', 'epk', 'economic-cycle']);
 
 function fail(fileName, message) {
   throw new Error(`${fileName}: ${message}`);
@@ -208,6 +209,7 @@ export function validateUnitSpec(spec, fileName = 'Lern-Spezifikation') {
       fail(fileName, 'jedes Diagramm benötigt id, title und einen unterstützten type.');
     }
     if (diagram.type === 'epk') validateEpkDiagram(diagram, message => fail(fileName, message));
+    if (diagram.type === 'economic-cycle') validateEconomicCycle(diagram, fileName);
     if (!['topology', 'gantt', 'epk'].includes(diagram.type) && (!Array.isArray(diagram.items) || diagram.items.length < 2)) {
       fail(fileName, 'layers-, flow- und comparison-Diagramme benötigen mindestens zwei items.');
     }
@@ -457,7 +459,8 @@ function nodeLabel(diagram, nodeId) {
 }
 
 export function renderDiagram(diagram, descriptionOverride = '') {
-  const rendered = diagram.type === 'layers'
+  if (diagram.type === 'economic-cycle') validateEconomicCycle(diagram, 'Diagramm ' + diagram.id);
+  const rendered = diagram.type === 'economic-cycle' ? renderEconomicCycleSvg(diagram) : diagram.type === 'layers'
     ? renderLayersSvg(diagram)
     : diagram.type === 'flow'
       ? renderFlowSvg(diagram)
