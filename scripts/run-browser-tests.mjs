@@ -232,6 +232,7 @@ async function runFullSuite() {
   await import('./verify-betriebsvereinbarung-browser.mjs');
   await import('./verify-jav-browser.mjs');
   await import('./verify-tarifgrundlagen-browser.mjs');
+  await import('./verify-tarifinhalte-browser.mjs');
   await import('./verify-maternity-periods-browser.mjs');
   await import('./verify-contract-types-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
@@ -244,7 +245,10 @@ async function runFullSuite() {
 }
 
 try {
-  if (process.env.AP2_BROWSER_ONLY === 'tarifgrundlagen') {
+  if (process.env.AP2_BROWSER_ONLY === 'tarifinhalte') {
+    useSignedInFixture = true;
+    await import('./verify-tarifinhalte-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'tarifgrundlagen') {
     useSignedInFixture = true;
     await import('./verify-tarifgrundlagen-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'jav') {

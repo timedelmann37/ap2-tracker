@@ -8399,6 +8399,34 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "tarifvertrag-inhalt-entgelt-mantel-rahmen",
+    "slug": "tarifvertrag-inhalt-entgelt-mantel-rahmen",
+    "title": "Tarifvertrag: Betrag, Gruppe und Arbeitsbedingungen",
+    "description": "Entgelt-, Entgeltrahmen- und Manteltarif unterscheiden und im eigenen Fall zusammenführen.",
+    "domain": "WiSo",
+    "groupId": "wiso-4",
+    "groupLabel": "W4 · Mitbestimmung und Tarifrecht",
+    "itemId": "wiso-4__6",
+    "week": "KW 38",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "betrag",
+      "rahmen",
+      "mantel",
+      "zuordnung"
+    ],
+    "sources": [
+      "tarif-1",
+      "inhalt-igm",
+      "inhalt-vertraege"
+    ],
+    "contentHash": "075e97987415b04953576ea8d6c248fb6182a1260dc3d0cb42588598e69f0815",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "company-goals",
     "slug": "company-goals",
     "title": "Unternehmensziele und Zielkonflikte sicher abwägen",
