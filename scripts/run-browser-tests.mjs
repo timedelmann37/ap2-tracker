@@ -274,6 +274,7 @@ async function runFullSuite() {
   await import('./verify-mahnverfahren-browser.mjs');
   await import('./verify-zahlung-kredit-browser.mjs');
   await import('./verify-widerruf-browser.mjs');
+  await import('./verify-wiso-dsgvo-browser.mjs');
   await import('./verify-maternity-periods-browser.mjs');
   await import('./verify-contract-types-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
@@ -286,7 +287,10 @@ async function runFullSuite() {
 }
 
 try {
-  if (process.env.AP2_BROWSER_ONLY === 'widerruf') {
+  if (process.env.AP2_BROWSER_ONLY === 'wiso-dsgvo') {
+    useSignedInFixture = true;
+    await import('./verify-wiso-dsgvo-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'widerruf') {
     useSignedInFixture = true;
     await import('./verify-widerruf-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'zahlung-kredit') {
