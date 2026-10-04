@@ -9767,5 +9767,39 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     ],
     "contentHash": "0b50d8d79304f48138c5448368fcf6100a04a980366e8af5c5689043486f99b9",
     "sourceKind": "compact-spec"
+  },
+  {
+    "id": "verbraucherschutz-widerruf-fernabsatz",
+    "slug": "verbraucherschutz-widerruf-fernabsatz",
+    "title": "Online gekauft: Wann darf ich widerrufen?",
+    "description": "Verbraucherstatus, Fernabsatz, Widerrufsfrist, Ausnahmen und Rückabwicklung mit eigenen IT-Kauffällen begründet prüfen.",
+    "domain": "WiSo",
+    "groupId": "wiso-7",
+    "groupLabel": "W7 · Markt und Vertragsrecht",
+    "itemId": "wiso-7__12",
+    "week": "KW 40",
+    "estimatedMinutes": 55,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "basis",
+      "frist",
+      "ausnahme",
+      "folgen"
+    ],
+    "sources": [
+      "wid-13",
+      "wid-14",
+      "wid-312c",
+      "wid-312g",
+      "wid-355",
+      "wid-356",
+      "wid-357",
+      "wid-357a",
+      "wid-356a"
+    ],
+    "contentHash": "fbf1a5ec313218bb996a6b2c3d422fbae6e5f7e2aa90f4b4368c3160a7740c82",
+    "sourceKind": "compact-spec"
   }
 ]);
