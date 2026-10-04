@@ -9686,5 +9686,48 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     ],
     "contentHash": "bcc4f66ca79909f4300255e35036a522455af59db8196cad96bde1d82f26a040",
     "sourceKind": "compact-spec"
+  },
+  {
+    "id": "mahnung-verzugszinsen-mahnverfahren-verjaehrung",
+    "slug": "mahnung-verzugszinsen-mahnverfahren-verjaehrung",
+    "title": "Mahnung, Zinsen und gerichtliches Mahnverfahren",
+    "description": "Verzug begründen, Verzugszinsen mit vorgegebenem Basiszinssatz berechnen, gerichtliche Schritte unterscheiden und Verjährung von Hemmung und Neubeginn trennen.",
+    "domain": "WiSo",
+    "groupId": "wiso-7",
+    "groupLabel": "W7 · Markt und Vertragsrecht",
+    "itemId": "wiso-7__10",
+    "week": "KW 40",
+    "estimatedMinutes": 60,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "verzug",
+      "zinsen",
+      "gericht",
+      "frist"
+    ],
+    "sources": [
+      "mahn-286",
+      "mahn-288",
+      "mahn-247",
+      "mahn-195",
+      "mahn-199",
+      "mahn-204",
+      "mahn-212",
+      "mahn-214",
+      "mahn-688",
+      "mahn-692",
+      "mahn-694",
+      "mahn-696",
+      "mahn-699",
+      "mahn-700",
+      "mahn-339",
+      "mahn-167",
+      "mahn-701",
+      "mahn-209"
+    ],
+    "contentHash": "068f6a9bfbdd6e49dfeec070dc707026549d485dee899b161a5bb6a10c1e61bc",
+    "sourceKind": "compact-spec"
   }
 ]);
