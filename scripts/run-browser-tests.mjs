@@ -248,6 +248,7 @@ async function runFullSuite() {
   await import('./verify-einkommen-browser.mjs');
   await import('./verify-steuer-browser.mjs');
   await import('./verify-entgeltformen-browser.mjs');
+  await import('./verify-vermoegensbildung-browser.mjs');
   await import('./verify-maternity-periods-browser.mjs');
   await import('./verify-contract-types-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
@@ -260,7 +261,10 @@ async function runFullSuite() {
 }
 
 try {
-  if (process.env.AP2_BROWSER_ONLY === 'entgeltformen') {
+  if (process.env.AP2_BROWSER_ONLY === 'vermoegensbildung') {
+    useSignedInFixture = true;
+    await import('./verify-vermoegensbildung-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'entgeltformen') {
     useSignedInFixture = true;
     await import('./verify-entgeltformen-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'steuer') {
