@@ -8369,6 +8369,36 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "tarifvertrag-arten-autonomie-friedenspflicht",
+    "slug": "tarifvertrag-arten-autonomie-friedenspflicht",
+    "title": "Tarifvertrag: Arten, Autonomie und Friedenspflicht",
+    "description": "Tarifparteien und Vertragsreichweite bestimmen, Haus- und Firmentarif richtig einordnen und Friedenspflicht gegen pauschale Streikregeln abgrenzen.",
+    "domain": "WiSo",
+    "groupId": "wiso-4",
+    "groupLabel": "W4 · Mitbestimmung und Tarifrecht",
+    "itemId": "wiso-4__5",
+    "week": "KW 38",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "parteien",
+      "typen",
+      "autonomie",
+      "frieden"
+    ],
+    "sources": [
+      "tarif-1",
+      "tarif-2",
+      "tarif-gg",
+      "tarif-arten",
+      "tarif-frieden"
+    ],
+    "contentHash": "f6bf3553d64531f23be6e8439833571f5ff7f379ef5c4c512c2e56b1bd9b3f20",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "company-goals",
     "slug": "company-goals",
     "title": "Unternehmensziele und Zielkonflikte sicher abwägen",
