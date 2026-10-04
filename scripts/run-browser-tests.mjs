@@ -237,6 +237,7 @@ async function runFullSuite() {
   await import('./verify-rechtsquellen-browser.mjs');
   await import('./verify-sozialzweige-browser.mjs');
   await import('./verify-sozialtraeger-browser.mjs');
+  await import('./verify-arbeitsunfall-browser.mjs');
   await import('./verify-maternity-periods-browser.mjs');
   await import('./verify-contract-types-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
@@ -249,7 +250,10 @@ async function runFullSuite() {
 }
 
 try {
-  if (process.env.AP2_BROWSER_ONLY === 'sozialtraeger') {
+  if (process.env.AP2_BROWSER_ONLY === 'arbeitsunfall') {
+    useSignedInFixture = true;
+    await import('./verify-arbeitsunfall-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'sozialtraeger') {
     useSignedInFixture = true;
     await import('./verify-sozialtraeger-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'sozialzweige') {
