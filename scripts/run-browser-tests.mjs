@@ -293,6 +293,7 @@ async function runFullSuite() {
   await import('./verify-feuerloescher-browser.mjs');
   await import('./verify-pruefung-erstdurchgang-browser.mjs');
   await import('./verify-ausschlussverfahren-browser.mjs');
+  await import('./verify-signalwoerter-browser.mjs');
   await import('./verify-maternity-periods-browser.mjs');
   await import('./verify-contract-types-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
@@ -305,7 +306,10 @@ async function runFullSuite() {
 }
 
 try {
-  if (process.env.AP2_BROWSER_ONLY === 'ausschlussverfahren') {
+  if (process.env.AP2_BROWSER_ONLY === 'signalwoerter') {
+    useSignedInFixture = true;
+    await import('./verify-signalwoerter-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'ausschlussverfahren') {
     useSignedInFixture = true;
     await import('./verify-ausschlussverfahren-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'pruefung-erstdurchgang') {

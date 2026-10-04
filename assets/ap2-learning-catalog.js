@@ -10381,5 +10381,32 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     ],
     "contentHash": "0ecfb42bc2fc6f5bf91a392c5387e053ce4be534eb76cad358c96a76907f965b",
     "sourceKind": "compact-spec"
+  },
+  {
+    "id": "wiso-signalwoerter-aussageumfang-pruefen",
+    "slug": "wiso-signalwoerter-aussageumfang-pruefen",
+    "title": "Signalwörter: Den Aussageumfang prüfen",
+    "description": "Immer, nie, ausschließlich, kann und in der Regel genau lesen: Geltungsbereich, Ausnahmen, Erlaubnis und Verneinung anhand eigener Fälle prüfen.",
+    "domain": "WiSo",
+    "groupId": "wiso-9",
+    "groupLabel": "Prüfungstechnik programmierte Prüfung",
+    "itemId": "wiso-9__2",
+    "week": "parallel",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "umfang",
+      "modal",
+      "regel",
+      "transfer"
+    ],
+    "sources": [
+      "pe-aka-hinweise",
+      "av-unisq"
+    ],
+    "contentHash": "8efb4a8561377f5a53e546653cd57966a150045f75d18255b14b54b03f5a57c8",
+    "sourceKind": "compact-spec"
   }
 ]);
