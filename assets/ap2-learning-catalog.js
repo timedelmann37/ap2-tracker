@@ -9461,5 +9461,36 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     ],
     "contentHash": "a12a0474e8381f3ae3311cfe1232eb71c399be4281dd6fec3a62978b28d67b90",
     "sourceKind": "compact-spec"
+  },
+  {
+    "id": "globalisierung-freihandel-handelshemmnisse",
+    "slug": "globalisierung-freihandel-handelshemmnisse",
+    "title": "Globalisierung, Freihandel und Handelshemmnisse",
+    "description": "Internationale Arbeitsteilung erkennen, Zölle und nichttarifäre Hürden unterscheiden und Maßnahmen zur Förderung oder Hemmung des Handels an eigenen IT-Fällen begründen.",
+    "domain": "WiSo",
+    "groupId": "wiso-7",
+    "groupLabel": "W7 · Markt und Vertragsrecht",
+    "itemId": "wiso-7__4",
+    "week": "KW 40",
+    "estimatedMinutes": 45,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "merkmale",
+      "hemmnisse",
+      "freihandel",
+      "abwaegung"
+    ],
+    "sources": [
+      "global-kette",
+      "global-zoll",
+      "global-zugang",
+      "global-tbt",
+      "global-abkommen",
+      "global-ursprung"
+    ],
+    "contentHash": "7b4dce1240e585226b1ae03effb1ad30552aa062f9eca5559bf74c985df35c38",
+    "sourceKind": "compact-spec"
   }
 ]);
