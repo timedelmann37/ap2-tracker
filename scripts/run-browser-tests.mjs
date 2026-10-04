@@ -263,6 +263,7 @@ async function runFullSuite() {
   await import('./verify-kennzahlen-browser.mjs');
   await import('./verify-kreislauf-browser.mjs');
   await import('./verify-markt-browser.mjs');
+  await import('./verify-macro-browser.mjs');
   await import('./verify-maternity-periods-browser.mjs');
   await import('./verify-contract-types-browser.mjs');
   await import('./verify-answer-pattern-browser.mjs');
@@ -275,7 +276,10 @@ async function runFullSuite() {
 }
 
 try {
-  if (process.env.AP2_BROWSER_ONLY === 'markt') {
+  if (process.env.AP2_BROWSER_ONLY === 'macro') {
+    useSignedInFixture = true;
+    await import('./verify-macro-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'markt') {
     useSignedInFixture = true;
     await import('./verify-markt-browser.mjs');
   } else if (process.env.AP2_BROWSER_ONLY === 'kreislauf') {
