@@ -8487,6 +8487,38 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     "sourceKind": "compact-spec"
   },
   {
+    "id": "sozialversicherung-fuenf-zweige-risiken",
+    "slug": "sozialversicherung-fuenf-zweige-risiken",
+    "title": "Die fünf Zweige der Sozialversicherung",
+    "description": "Lebensrisiken den fünf Versicherungszweigen zuordnen und Krankheit, Pflegebedürftigkeit, Erwerbsminderung, Arbeitslosigkeit und Arbeitsunfall unterscheiden.",
+    "domain": "WiSo",
+    "groupId": "wiso-5",
+    "groupLabel": "W5 · Sozialversicherung und Entgelt",
+    "itemId": "wiso-5__0",
+    "week": "KW 38",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "system",
+      "gesundheit",
+      "einkommen",
+      "unfall"
+    ],
+    "sources": [
+      "sv-bmas",
+      "sv-kranken",
+      "sv-pflege",
+      "sv-rente",
+      "sv-unfall",
+      "sv-foerderung",
+      "sv-alg"
+    ],
+    "contentHash": "6a0f313b1cce1bc793af344e5c0136a5076f67395eb5b569e255cde5b26dca50",
+    "sourceKind": "compact-spec"
+  },
+  {
     "id": "company-goals",
     "slug": "company-goals",
     "title": "Unternehmensziele und Zielkonflikte sicher abwägen",
