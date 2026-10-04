@@ -9609,5 +9609,44 @@ window.AP2_LEARNING_TOPICS = Object.freeze([
     ],
     "contentHash": "6c79684af69532bfa43badfa803915a81c7a3d8d71d2936e0a43df60c67fe3de",
     "sourceKind": "compact-spec"
+  },
+  {
+    "id": "kaufvertragsstoerungen-sachmangel-liefer-zahlungs-annahmeverzug",
+    "slug": "kaufvertragsstoerungen-sachmangel-liefer-zahlungs-annahmeverzug",
+    "title": "Kaufvertragsstörungen: Sachmangel und drei Verzugslagen",
+    "description": "Sachmangel, Lieferverzug, Zahlungsverzug und Annahmeverzug an eigenen IT-Beschaffungsfällen mit Voraussetzungen und Gegenchecks unterscheiden.",
+    "domain": "WiSo",
+    "groupId": "wiso-7",
+    "groupLabel": "W7 · Markt und Vertragsrecht",
+    "itemId": "wiso-7__8",
+    "week": "KW 40",
+    "estimatedMinutes": 50,
+    "relevance": "hoch",
+    "contentRevision": "2026-10-04.1",
+    "contentStatus": "CURATED_DRAFT",
+    "learningObjectives": [
+      "mangel",
+      "liefer",
+      "zahlung",
+      "annahme"
+    ],
+    "sources": [
+      "stoer-433",
+      "stoer-434",
+      "stoer-446",
+      "stoer-271",
+      "stoer-286",
+      "stoer-280",
+      "stoer-293",
+      "stoer-294",
+      "stoer-295",
+      "stoer-296",
+      "stoer-297",
+      "stoer-298",
+      "stoer-299",
+      "stoer-304"
+    ],
+    "contentHash": "94c4196d6070a143d7bc46e3d5e39457ce6b4c46d661f03799de8fbe74b5f015",
+    "sourceKind": "compact-spec"
   }
 ]);
