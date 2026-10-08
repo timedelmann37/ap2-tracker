@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Datei- und Verzeichnisrechte lesen, neue Modi aus der umask ableiten und Spezialbits in einem Admin-Fall sicher einordnen.">
+<title>Linux-Dateirechte: rwx, umask und Spezialbits – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js" defer></script>
+<script src="/assets/ap2-learning.js?v=3.10.1" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="linux-dateirechte-umask-spezialbits" data-progress-id="ga1-6__9" data-content-revision="2026-10-02.1" data-content-status="CURATED_DRAFT">
+<a class="learning-skip" href="#main-content">Zum Lerninhalt</a>
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-6">Betriebssysteme und Administration</a><span class="sep">›</span>
+    <span class="here">Linux-Dateirechte: rwx, umask und Spezialbits</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content" tabindex="-1">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Linux-Dateirechte: rwx, umask und Spezialbits</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 40 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Entwurf · menschliche Freigabe ausstehend</span>
+      </div>
+      <div class="rule"></div>
+      <details class="learning-overview" id="lesson-overview">
+        <summary>Inhalt und Lernstand <small data-current-section>Abschnitt auswählen</small></summary>
+        <div class="overview-body">
+          <div class="mastery-box" data-mastery-box>
+            <div class="mastery-count" data-mastery-count>0 von 3 Pflichtchecks bestanden</div>
+            <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+            <p class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Pflichtchecks.</p>
+            <p class="mastery-note" data-action-reason>Lesen und üben ist ohne Konto möglich.</p>
+            <a class="next-check" href="/?konto=anmelden" data-learning-signin>Anmelden und Fortschritt speichern</a>
+            <a class="next-check" data-next-check hidden>Nächsten offenen Pflichtcheck bearbeiten</a>
+          </div>
+          <nav aria-label="Lernabschnitte"><ul class="toc" id="toc-mobile"><li><a href="#s1" data-t="s1">Diagnose: Wo liegt die Sperre?</a></li>
+<li><a href="#s2" data-t="s2">Oktal lesen: 644, 755 und 750</a></li>
+<li><a href="#s3" data-t="s3">umask: Bits beim Anlegen entfernen</a></li>
+<li><a href="#s4" data-t="s4">Sonderziffer: SUID, SGID und Sticky Bit</a></li>
+<li><a href="#s5" data-t="s5">Anwenden, erinnern, Lernziele nachweisen</a></li>
+<li><a href="#s6" data-t="s6">Quellen und Grenzen</a></li></ul></nav>
+        </div>
+      </details>
+      <p>Im fiktiven Messlabor Linde melden Teammitglieder ein Rechteproblem. Das gemeinsame Verzeichnis <code>/srv/linde/berichte</code> gehört der Gruppe <code>labor</code> und hat den Modus <code>2770</code>. Der Dienstaccount <code>ingest</code> erzeugt dort <code>messung.csv</code> als <code>0640</code>, obwohl Gruppenmitglieder im Verzeichnis schreiben dürfen. Du sollst den Befund erklären, die Rechte neuer Objekte mit <code>umask 0027</code> berechnen und entscheiden, wann ein Spezialbit hilft.</p>
+<section class="learning-goals" aria-labelledby="linux-dateirechte-umask-spezialbits-goals">
+  <h2 id="linux-dateirechte-umask-spezialbits-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>rwx an Datei und Verzeichnis unterscheiden und 644, 755 sowie 750 lesen</li>
+    <li>Die Rechte neuer Dateien und Verzeichnisse aus angefordertem Modus und umask bitweise ableiten</li>
+    <li>SUID, SGID und Sticky Bit ihrem jeweiligen Objekt und Sicherheitszweck zuordnen</li>
+  </ul>
+</section><h2 class="sec" id="s1" tabindex="-1"><span class="num" aria-hidden="true">1</span>Diagnose: Wo liegt die Sperre?</h2>
+<section class="quiz" data-quiz="rechte-diagnose" data-correct="1">
+  <h3>Die Gruppe `labor` darf in `/srv/linde/berichte` schreiben, aber Nora aus dieser Gruppe kann `messung.csv` nicht bearbeiten. Welcher Befund ist zuerst plausibel?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Verzeichnis- und Dateimodus sind getrennt. Das Verzeichnisrecht steuert Einträge, nicht automatisch den Dateiinhalt."><span class="m">A</span> Schreibrecht am Verzeichnis gibt automatisch Schreibrecht auf jede darin liegende Datei.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Der Dateimodus erklärt das fehlende Bearbeiten; das SGID-Bit des Verzeichnisses ändert daran nichts."><span class="m">B</span> `2770` erlaubt der Gruppe Eintragsänderungen; `0640` gibt ihr an der Datei nur Leserecht.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Das führende `2` ist hier SGID am Verzeichnis. Es setzt weder Schreib- noch Ausführungsrecht an der Datei."><span class="m">C</span> Das führende `2` macht die Datei für Gruppenmitglieder automatisch ausführbar.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><p><strong>Datei:</strong> <code>r</code> erlaubt Lesen des Inhalts, <code>w</code> das Ändern des Inhalts und <code>x</code> die Ausführung als Programm, sofern Dateityp und System das zulassen. <strong>Verzeichnis:</strong> <code>r</code> erlaubt das Auflisten der Eintragsnamen, <code>x</code> das Durchsuchen und Betreten über bekannte Namen. Dafür brauchen alle Verzeichnisse im Pfad das passende Suchrecht. Mit <code>w</code> <strong>und</strong> <code>x</code> im Elternverzeichnis kann ein normaler Nutzer dort Einträge anlegen, entfernen oder umbenennen. Das Schreibrecht der betroffenen Datei ist dafür allein nicht ausschlaggebend. Zusätzliche Regeln wie Sticky Bit oder ACLs können die Operation begrenzen.</p>
+<p>Im Fall liefert <code>ls -ld /srv/linde/berichte</code> den Modus des Verzeichnisses; <code>ls -l /srv/linde/berichte/messung.csv</code> zeigt den Modus der Datei. Prüfe außerdem Besitzer, Gruppe und Noras tatsächliche Gruppenmitgliedschaft. Eine Änderung der Rechte folgt erst aus dem geklärten Sollzugriff.</p>
+<section class="quiz" data-quiz="rechte-eintrag-loeschen" data-correct="1">
+  <h3>Nora darf im gemeinsamen Verzeichnis schreiben und suchen. Warum könnte sie dort eine fremde Datei entfernen, obwohl deren Modus `0640` ihr nur Leserecht gibt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Löschen betrifft den Eintrag im Elternverzeichnis, nicht das Lesebit der Datei."><span class="m">A</span> Weil `r` an der Datei immer auch Löschen erlaubt.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Das ist ein wichtiger Unterschied zwischen Dateiinhalt und Verzeichniseintrag."><span class="m">B</span> Weil `w+x` am Elternverzeichnis Änderungen an Einträgen erlaubt, solange keine weitere Regel wie Sticky Bit eingreift.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="SGID am Verzeichnis steuert die Gruppenzuordnung neuer Einträge, nicht die Löschberechtigung."><span class="m">C</span> Weil SGID das Löschen fremder Dateien grundsätzlich freigibt.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2" tabindex="-1"><span class="num" aria-hidden="true">2</span>Oktal lesen: 644, 755 und 750</h2>
+<p>Die letzten drei Oktalziffern stehen für <strong>u</strong> (Eigentümer), <strong>g</strong> (Gruppe) und <strong>o</strong> (andere). Pro Stelle gilt <code>r = 4</code>, <code>w = 2</code>, <code>x = 1</code>; addiere nur die gesetzten Bits. <strong>644</strong> bedeutet <code>rw- r-- r--</code>: typisch für eine lesbare, nicht ausführbare Datei. <strong>755</strong> bedeutet <code>rwx r-x r-x</code>: etwa für ein durchsuchbares Verzeichnis oder ein ausführbares Programm. <strong>750</strong> bedeutet <code>rwx r-x ---</code>: die Gruppe darf lesen beziehungsweise das Verzeichnis durchsuchen, andere haben aus diesen Bits keinen Zugriff. Der tatsächliche Zugriff kann durch weitere Regeln eingeschränkt sein.</p>
+<p>Oktalziffern sind <strong>Basis 8</strong>, auch wenn sie mit den Zeichen 0 bis 7 geschrieben werden. <code>chmod 750 pfad</code> setzt einen Modus am vorhandenen Objekt; die umask ist dagegen eine Maske für neu erzeugte Objekte. Beim GNU-<code>chmod</code> können SUID/SGID-Bits vorhandener Verzeichnisse unter bestimmten numerischen Schreibweisen erhalten bleiben. Prüfe Sonderbits nach einer Änderung ausdrücklich, statt aus <code>755</code> allein ihr Verschwinden abzuleiten.</p>
+<figure class="learning-figure learning-figure-inline">
+  <dl class="diagram-mobile-list" aria-label="750: drei Rollen, drei Bitgewichte – Textansicht"><div><dt>u = 7</dt><dd>Eigentümer: r (4) + w (2) + x (1) = 7</dd></div><div><dt>g = 5</dt><dd>Gruppe: r (4) + x (1) = 5; kein w</dd></div><div><dt>o = 0</dt><dd>Andere: keine dieser Rechte = 0</dd></div></dl>
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: 750: drei Rollen, drei Bitgewichte">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-layers" xmlns="http://www.w3.org/2000/svg" width="960" height="412" viewBox="0 0 960 412" role="img" aria-labelledby="diagram-oktalmatrix-750-title diagram-oktalmatrix-750-desc">
+  <title id="diagram-oktalmatrix-750-title">750: drei Rollen, drei Bitgewichte</title>
+  <desc id="diagram-oktalmatrix-750-desc">Oktalmatrix für 750: Eigentümer 7 aus r 4, w 2, x 1; Gruppe 5 aus r 4 und x 1; andere 0 ohne r, w und x.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">750: drei Rollen, drei Bitgewichte</tspan></text>
+  <g><rect class="diagram-row" x="42" y="82" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="82" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="130" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">u = 7</tspan></text><text x="194" y="116" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Eigentümer: r (4) + w (2) + x (1) = 7</tspan></text></g><g><rect class="diagram-row" x="42" y="182" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="182" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="230" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">g = 5</tspan></text><text x="194" y="216" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Gruppe: r (4) + x (1) = 5; kein w</tspan></text></g><g><rect class="diagram-row" x="42" y="282" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="282" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="330" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">o = 0</tspan></text><text x="194" y="316" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Andere: keine dieser Rechte = 0</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Jede Ziffer beschreibt genau eine Rolle. Bei Verzeichnissen heißt x Suchen und Durchqueren, nicht Ausführen des Verzeichnisses.</figcaption>
+</figure><section class="quiz" data-quiz="rechte-750-anwendung" data-correct="0">
+  <h3>Ein Verzeichnis hat `0750`. Welche Aussage folgt aus den Grundbits für ein Mitglied der Dateigruppe?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Die Gruppe hat r+x, aber kein w. Für neue Einträge ist zusätzlich w am Elternverzeichnis nötig."><span class="m">A</span> Es kann Eintragsnamen lesen und bekannte Einträge erreichen, aber nicht allein wegen `0750` neue Einträge anlegen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die Ziffer 5 setzt r+x am Verzeichnis. Dateiinhalte haben eigene Rechte; Gruppen-w fehlt hier."><span class="m">B</span> Es kann beliebige Dateien darin bearbeiten, weil die Gruppenziffer 5 größer als 4 ist.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Bei Verzeichnissen bedeutet x Durchsuchen, nicht Programmausführung."><span class="m">C</span> Es kann das Verzeichnis als Programm ausführen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s3" tabindex="-1"><span class="num" aria-hidden="true">3</span>umask: Bits beim Anlegen entfernen</h2>
+<p>Die <strong>umask</strong> gehört zum erzeugenden Prozess. Sie entfernt Bits aus dem Modus, den ein Programm für ein neues Objekt anfordert. Für eine normale Datei ist ein häufiger Anforderungsmodus <code>0666</code> ohne Ausführungsbits; für ein Verzeichnis häufig <code>0777</code>. Die Regel lautet <strong>angeforderter Modus bitweise UND NICHT umask</strong>. Mit <code>umask 0027</code> werden Gruppen-Schreibrecht (<code>2</code>) und alle Rechte anderer (<code>7</code>) gesperrt. Dadurch entstehen im einfachen Fall <code>0640</code> und <code>0750</code>. Eine umask vergibt keine zusätzlichen Bits: Aus <code>0666</code> kann sie kein <code>x</code> machen.</p>
+<p>Die verbreitete Rechnung „Startmodus minus umask“ ist nur in einfachen Fällen zufällig gleichwertig. Bei <code>0666</code> und <code>0027</code> ergäbe oktale Subtraktion <code>0637</code>, obwohl das bitweise Ergebnis <code>0640</code> ist. Auch eine Default-ACL im Elternverzeichnis kann bewirken, dass die umask ignoriert und die ACL vererbt wird. Programme dürfen außerdem von Anfang an weniger als <code>0666</code> oder <code>0777</code> anfordern; bestehende Dateien werden durch das Ändern der umask nicht nachträglich verändert.</p>
+<div class="math-display" role="group" aria-label="Neue normale Datei: Oktal 0666 bitweise UND NICHT 0027 ergibt Oktal 0640. Neues Verzeichnis: Oktal 0777 bitweise UND NICHT 0027 ergibt Oktal 0750."><math display="block" aria-label="Neue normale Datei: Oktal 0666 bitweise UND NICHT 0027 ergibt Oktal 0640. Neues Verzeichnis: Oktal 0777 bitweise UND NICHT 0027 ergibt Oktal 0750."><mtable columnalign="left"><mtr><mtd><mrow><msub><mn>0666</mn><mn>8</mn></msub><mo>∧</mo><mo>¬</mo><msub><mn>0027</mn><mn>8</mn></msub><mo>=</mo><msub><mn>0640</mn><mn>8</mn></msub><mspace width="0.3em"/><mtext>Datei</mtext></mrow></mtd></mtr><mtr><mtd><mrow><msub><mn>0777</mn><mn>8</mn></msub><mo>∧</mo><mo>¬</mo><msub><mn>0027</mn><mn>8</mn></msub><mo>=</mo><msub><mn>0750</mn><mn>8</mn></msub><mspace width="0.3em"/><mtext>Verzeichnis</mtext></mrow></mtd></mtr></mtable></math><div class="math-legend"><span>∧ bedeutet bitweises UND, ¬ bitweises NICHT innerhalb der neun rwx-Bits; der Index 8 kennzeichnet Oktalzahlen.</span></div></div><figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: umask 0027 filtert zwei Startmodi">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-umask-027-title diagram-umask-027-desc">
+  <title id="diagram-umask-027-title">umask 0027 filtert zwei Startmodi</title>
+  <desc id="diagram-umask-027-desc">Vergleich bei umask 0027: normale neue Datei mit angeforderten 0666 erhält 0640, weil Gruppen-Schreiben und Lesen und Schreiben für andere entfernt werden; deren Ausführungsbit war schon nicht gesetzt. Neues Verzeichnis mit angeforderten 0777 erhält 0750, weil Gruppen-Schreiben und alle Rechte anderer entfernt werden.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">umask 0027 filtert zwei Startmodi</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="429" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">Datei</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">0666 angefordert; 0027 entfernt g-w und</tspan><tspan x="64" dy="30">o-r/w. o-x war nicht gesetzt. Ergebnis</tspan><tspan x="64" dy="30">0640.</tspan></text></g><g><rect class="diagram-row" x="489" y="92" width="429" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="511" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="511" dy="0">Verzeichnis</tspan></text><text x="511" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="511" dy="0">0777 angefordert; 0027 entfernt g-w und</tspan><tspan x="511" dy="30">o-rwx. Ergebnis 0750.</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Die Grafik zeigt zwei Fälle derselben Bitmaske; ein Programm kann strengere Startrechte wählen, eine Default-ACL kann die Rechnung ändern.</figcaption>
+</figure><aside class="callout warn"><span class="lbl">Sonderbit getrennt rechnen</span><p><code>0750</code> beschreibt hier nur die neun rwx-Grundbits. Entsteht das neue Unterverzeichnis innerhalb des SGID-Verzeichnisses aus dem Laborfall, erbt es zusätzlich SGID und kann als <code>2750</code> erscheinen.</p></aside><section class="quiz" data-quiz="umask-transfer-027" data-correct="1">
+  <h3>`ingest` fordert für eine neue normale Datei `0666` an, seine umask ist `0027`, es gibt keine Default-ACL. Welche drei Oktalziffern ergeben sich für u/g/o?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Das ist eine oktale Subtraktion mit Übertrag. Die umask löscht Bits: 6 &amp; ~0 = 6, 6 &amp; ~2 = 4, 6 &amp; ~7 = 0."><span class="m">A</span> 637, weil man `666 − 027` rechnet.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig: u bleibt rw, g verliert w und behält r, o verliert alle Rechte."><span class="m">B</span> 640, weil nur die in `0027` markierten Bits entfernt werden.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="750 wäre das Ergebnis für ein Verzeichnis mit angeforderten 0777; gefragt ist eine normale Datei mit 0666."><span class="m">C</span> 750, weil Verzeichnisse grundsätzlich mit `0777` starten.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s4" tabindex="-1"><span class="num" aria-hidden="true">4</span>Sonderziffer: SUID, SGID und Sticky Bit</h2>
+<p>Eine <strong>vierte Oktalziffer vor u/g/o</strong> bündelt drei Sonderbits: <code>4</code> für <strong>SUID</strong>, <code>2</code> für <strong>SGID</strong>, <code>1</code> für <strong>Sticky</strong>. Bei einem geeigneten ausführbaren Programm bewirkt SUID beim Start eine effektive Benutzer-ID wie die des Dateieigentümers, SGID eine effektive Gruppen-ID wie die der Dateigruppe. Das ist sicherheitsrelevant: Solche Programme nur gezielt und geprüft einsetzen. Weitere Systemregeln können die Wirkung der gesetzten Bits begrenzen; ein gesetztes Bit allein beweist keinen privilegierten Lauf.</p>
+<p>Bei einem <strong>Verzeichnis</strong> bewirkt SGID auf Linux, dass neu angelegte Einträge seine Gruppe übernehmen und neue Unterverzeichnisse wiederum SGID erhalten. Das Verzeichnis <code>2770</code> im Fall steuert also die Gruppenzuordnung, gibt neuen Dateien aber nicht automatisch Gruppen-Schreibrecht. Das <strong>Sticky Bit</strong> am Verzeichnis begrenzt in einem gemeinsam beschreibbaren Verzeichnis das Entfernen oder Umbenennen fremder Einträge: Normale Nutzer brauchen dafür Eigentum am Eintrag oder am Verzeichnis; privilegierte Prozesse sind ausgenommen. <code>1777</code> ist ein bekanntes Muster für ein allgemeines temporäres Verzeichnis. Sticky schützt nicht vor Inhaltsänderung durch anderweitig vorhandenes Dateischreibrecht und wird nicht automatisch auf Unterverzeichnisse übertragen.</p>
+<figure class="learning-figure learning-figure-inline">
+  <dl class="diagram-mobile-list" aria-label="Sonderziffer vor u/g/o – Textansicht"><div><dt>4 · SUID</dt><dd>Programm: effektive UID des Dateieigentümers</dd></div><div><dt>2 · SGID</dt><dd>Programm: effektive GID; Verzeichnis: Gruppe erben</dd></div><div><dt>1 · Sticky</dt><dd>Verzeichnis: fremde Einträge nicht frei löschen</dd></div></dl>
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Sonderziffer vor u/g/o">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-layers" xmlns="http://www.w3.org/2000/svg" width="960" height="412" viewBox="0 0 960 412" role="img" aria-labelledby="diagram-spezialbits-rollen-title diagram-spezialbits-rollen-desc">
+  <title id="diagram-spezialbits-rollen-title">Sonderziffer vor u/g/o</title>
+  <desc id="diagram-spezialbits-rollen-desc">Sonderziffer: 4 ist SUID und setzt bei geeignetem Programm die effektive UID des Eigentümers; 2 ist SGID und setzt bei Programmen die effektive GID beziehungsweise vererbt am Verzeichnis die Gruppe; 1 ist Sticky und beschränkt am Verzeichnis das Löschen fremder Einträge.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Sonderziffer vor u/g/o</tspan></text>
+  <g><rect class="diagram-row" x="42" y="82" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="82" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="130" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">4 · SUID</tspan></text><text x="194" y="116" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Programm: effektive UID des Dateieigentümers</tspan></text></g><g><rect class="diagram-row" x="42" y="182" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="182" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="230" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">2 · SGID</tspan></text><text x="194" y="216" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Programm: effektive GID; Verzeichnis: Gruppe erben</tspan></text></g><g><rect class="diagram-row" x="42" y="282" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="282" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="330" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">1 · Sticky</tspan></text><text x="194" y="316" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Verzeichnis: fremde Einträge nicht frei löschen</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Die Sonderbits haben verschiedene Objektbezüge. Im Fall `2770` ist nur SGID gesetzt; für einen gemeinsamen Löschschutz wäre Sticky gesondert zu prüfen.</figcaption>
+</figure><section class="quiz" data-quiz="rechte-spezialbits-praxis" data-correct="1">
+  <h3>Das Team soll Dateien im gemeinsamen Verzeichnis bearbeiten, aber ein Mitglied soll fremde Einträge nicht beliebig löschen. Was ist der fachlich passende Prüfgedanke?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="SGID vererbt die Gruppe, aber weder Gruppen-Schreibbits noch Sticky-Löschschutz."><span class="m">A</span> SGID allein erfüllt beide Wünsche und setzt automatisch Gruppen-w sowie Löschschutz.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Inhaltsbearbeitung und Entfernen eines Verzeichniseintrags sind getrennte Vorgänge. Teste auch den Arbeitsablauf, falls Anwendungen per Umbenennung speichern."><span class="m">B</span> Datei-Gruppenrechte und Erzeugungsmodus für Bearbeitung prüfen; Sticky am beschreibbaren Elternverzeichnis für Löschbeschränkung erwägen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="SUID ist hier kein geeigneter Mechanismus. Eine pauschale Privilegienerhöhung wäre sicherheitskritisch."><span class="m">C</span> SUID auf das Verzeichnis setzen, damit alle Mitglieder fremde Dateien gefahrlos ändern können.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s5" tabindex="-1"><span class="num" aria-hidden="true">5</span>Anwenden, erinnern, Lernziele nachweisen</h2>
+<p>Für das Messlabor ist die <strong>Ist-Lage</strong> klar: <code>2770</code> am Elternverzeichnis ermöglicht der Gruppe dort Eintragsänderungen und hält die Gruppenzuordnung neuer Objekte fest. <code>0640</code> an <code>messung.csv</code> lässt Gruppenmitglieder den Dateiinhalt lesen, aber nicht bearbeiten. Wenn neue Dateien im Team bearbeitbar sein sollen, muss der Dienst einen passenden Modus anfordern und seine Erzeugungsregeln müssen Gruppen-w zulassen; bei üblichem <code>0666</code> ergäbe <code>umask 0007</code> die Datei <code>0660</code>, also Gruppen-w ohne Rechte für andere. Bereits vorhandene Dateien brauchen eine gesondert geprüfte Korrektur. Vor einer Änderung klärst du, ob die Gruppe wirklich bearbeiten und entfernen darf, und prüfst ACLs sowie den tatsächlichen Dienstprozess. Ein Sticky Bit kann das Entfernen fremder Einträge begrenzen, kann aber Arbeitsabläufe mit Ersetzen per Umbenennung beeinflussen.</p>
+<aside class="callout merk"><span class="lbl">Zwei getrennte Entscheidungen</span><p>Gruppenbearbeitung braucht ein Schreibbit <strong>an der Datei</strong>. Soll die Gruppe im Verzeichnis schreiben, aber fremde Einträge nicht löschen, wäre zusätzlich zu SGID ein Sticky Bit zu prüfen: <code>2770</code> plus Sticky ergibt <code>3770</code>. Ob das zum Speichervorgang der Anwendung passt, muss getestet werden.</p></aside><div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="rechte-karte-verzeichnis" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was unterscheiden `r`, `w` und `x` an einem Verzeichnis?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>r listet Namen; x erlaubt Suche/Traversal; w zusammen mit x ändert Einträge wie Anlegen, Löschen oder Umbenennen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="rechte-karte-umask" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum ist `0666 − 0027` keine sichere umask-Regel?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Die umask löscht gesetzte Bits mit Modus &amp; ~Maske. Bei 0666 und 0027 ergibt das 0640, arithmetische Oktalsubtraktion aber 0637.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="rechte-karte-sonderbits" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wozu dienen SUID, SGID und Sticky jeweils?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>SUID: effektive UID bei geeignetem Programm. SGID: effektive GID beim Programm oder Gruppenvererbung am Verzeichnis. Sticky: fremde Einträge im Verzeichnis nicht frei löschen/umbenennen.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Verzeichnis“:</span><button type="button" data-card-id="rechte-karte-verzeichnis" data-card-rate="known">gewusst</button><button type="button" data-card-id="rechte-karte-verzeichnis" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="rechte-karte-verzeichnis"></span></div>
+<div class="card-rating"><span>Karte „umask“:</span><button type="button" data-card-id="rechte-karte-umask" data-card-rate="known">gewusst</button><button type="button" data-card-id="rechte-karte-umask" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="rechte-karte-umask"></span></div>
+<div class="card-rating"><span>Karte „Sonderbits“:</span><button type="button" data-card-id="rechte-karte-sonderbits" data-card-rate="known">gewusst</button><button type="button" data-card-id="rechte-karte-sonderbits" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="rechte-karte-sonderbits"></span></div><section class="recall-practice" data-recall="rechte-fall-erklaeren" data-min-length="180" aria-labelledby="rechte-fall-erklaeren-title">
+  <div class="recall-prompt"><h3 id="rechte-fall-erklaeren-title">Den Laborfall aus dem Kopf erklären</h3><p>Erkläre Nora den Unterschied zwischen `2770` am Verzeichnis und `0640` an der Datei. Rechne für `umask 0027` eine neu angeforderte Datei mit `0666` und ein Verzeichnis mit `0777` aus. Nenne die Wirkung von SGID und eine Grenze des Sticky Bits.</p></div>
+  <label class="sr-only" for="rechte-fall-erklaeren-answer">Deine begründete Diagnose</label>
+  <textarea id="rechte-fall-erklaeren-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong>
+  <p>Die Gruppe darf im Verzeichnis mit w+x Einträge anlegen oder entfernen, sofern keine weitere Regel eingreift. Das SGID-Bit in 2770 vererbt die Gruppe an neue Einträge, nicht deren Schreibrecht. Die Datei 0640 hat für die Gruppe nur r, daher kann Nora ihren Inhalt nicht bearbeiten. Die umask 0027 löscht gesetzte Bits: aus 0666 wird 0640, aus 0777 wird 0750. Sticky am Elternverzeichnis kann das Entfernen fremder Einträge begrenzen, schützt aber nicht vor Änderungen am Dateiinhalt, wenn dafür ein Schreibrecht besteht.</p></div>
+</section><section class="quiz" data-quiz="rechte-modus-gate" data-correct="1" data-required-objective="datei-verzeichnis-modus">
+  <h3>Welche Zuordnung ist für die Grundbits richtig?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Alle drei Zuordnungen sind verdreht: 644 enthält kein x, 755 gibt g r+x, 750 gibt o keine Bits."><span class="m">A</span> `644` gibt allen Ausführungsrecht; `755` verbietet der Gruppe das Durchsuchen; `750` erlaubt anderen Lesen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Die drei Stellen stehen für u/g/o, mit 4/2/1 je Stelle."><span class="m">B</span> `750` gibt dem Eigentümer rwx, der Gruppe r+x und anderen keine Rechte; bei Verzeichnissen ist x das Suchrecht.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die Gruppe hat am Verzeichnis r+x, kein w; Dateiinhalte haben zusätzlich eigene Modi."><span class="m">C</span> `755` macht alle Inhalte in diesem Verzeichnis automatisch für die Gruppe beschreibbar.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="rechte-umask-gate" data-correct="0" data-required-objective="umask-bitweise">
+  <h3>Ein Programm fordert für eine neue normale Datei `0666` und für ein neues Verzeichnis `0777` an. Ohne Default-ACL gilt jeweils `umask 0027`. Welche Grundmodi entstehen?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Datei: 0666 &amp; ~0027 = 0640; Verzeichnis: 0777 &amp; ~0027 = 0750. Ein SGID-Bit des Elternverzeichnisses wäre separat zu betrachten."><span class="m">A</span> Datei `0640`, Verzeichnis `0750`: Die Maske entfernt nur zuvor gesetzte Bits; ein Ausführungsbit der Datei war nicht angefordert.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die umask ist in beiden Fällen eine Bitmaske. 0666 minus 0027 mit oktalem Übertrag ergibt nicht den Dateimodus."><span class="m">B</span> Datei `0637`, Verzeichnis `0750`: Bei Dateien wird die umask oktal subtrahiert, bei Verzeichnissen bitweise angewandt.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die normale Datei fordert 0666 ohne Ausführungsbits an. SGID am Elternverzeichnis betrifft die Gruppenzuordnung, nicht diese rwx-Bits."><span class="m">C</span> Datei `0750`, Verzeichnis `0750`: Neue Dateien erhalten das Suchbit des Elternverzeichnisses.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="rechte-spezialbits-gate" data-correct="2" data-required-objective="spezialbits-sicher">
+  <h3>Welche Aussage zu den drei Sonderbits trifft für GNU/Linux im beschriebenen Grundfall zu?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Sticky schützt hier Verzeichniseinträge vor fremdem Entfernen oder Umbenennen, nicht den Inhalt einer Datei."><span class="m">A</span> Sticky auf einer Datei verhindert, dass ihr Inhalt durch Gruppen-w geändert wird.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="SGID beeinflusst die Gruppenzuordnung; der Dateimodus folgt weiterhin angefordertem Modus, umask und gegebenenfalls ACL."><span class="m">B</span> SGID auf einem Verzeichnis verleiht jeder neu erzeugten Datei automatisch Gruppen-Schreibrecht.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Richtig. Ein gesetztes SUID/SGID-Bit ist kein Ersatz für die Prüfung von Programm, Dateisystem und Systemrichtlinien."><span class="m">C</span> SUID betrifft die effektive UID beim Start eines geeigneten Programms, SGID kann am Verzeichnis die Gruppe neuer Einträge bestimmen, Sticky begrenzt dort fremde Lösch- und Umbenennungsvorgänge.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s6" tabindex="-1"><span class="num" aria-hidden="true">6</span>Quellen und Grenzen</h2>
+<p>Die private ITLF10–12, PDF-Seiten 209–210 (Druckseiten 230–231), dient nach visueller Prüfung <strong>nur als Themenanker</strong>. Dortige Aussagen zu Mode-Bits, Zahlensystem, umask und Sticky sind fachlich unzuverlässig; keine davon wurde übernommen. Die Erklärungen stützen sich auf <a href="https://www.gnu.org/software/coreutils/manual/html_node/Setting-Permissions.html">GNU Coreutils: Setting Permissions</a>, <a href="https://www.gnu.org/software/coreutils/manual/html_node/Mode-Structure.html">Structure of File Mode Bits</a>, <a href="https://man7.org/linux/man-pages/man1/chmod.1.html">GNU chmod(1)</a>, <a href="https://man7.org/linux/man-pages/man2/umask.2.html">Linux umask(2)</a> und <a href="https://man7.org/linux/man-pages/man7/inode.7.html">Linux inode(7)</a>. Die Beispiele beschreiben Grundbits unter den ausdrücklich genannten Annahmen. ACLs, Mount-Optionen, Dateisystemattribute und Programmverhalten müssen am Zielsystem gesondert geprüft werden. Diese Einheit bleibt bis zur menschlichen Fach- und Didaktikfreigabe <code>CURATED_DRAFT</code>.</p>
+
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-6"><span class="d">zurück zu</span><span class="t">Betriebssysteme und Administration</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Betriebssysteme und Administration</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 3 Pflichtchecks bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Pflichtchecks.</div>
+      <a class="next-check" data-next-check hidden>Nächsten offenen Pflichtcheck bearbeiten</a>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Diagnose: Wo liegt die Sperre?</a></li>
+<li><a href="#s2" data-t="s2">Oktal lesen: 644, 755 und 750</a></li>
+<li><a href="#s3" data-t="s3">umask: Bits beim Anlegen entfernen</a></li>
+<li><a href="#s4" data-t="s4">Sonderziffer: SUID, SGID und Sticky Bit</a></li>
+<li><a href="#s5" data-t="s5">Anwenden, erinnern, Lernziele nachweisen</a></li>
+<li><a href="#s6" data-t="s6">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false" aria-describedby="learning-action-reason">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-6">Zur Themengruppe</a>
+  <span class="action-reason" id="learning-action-reason" data-action-reason>Pflichtchecks bearbeiten und anmelden, um Fortschritt zu speichern.</span>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

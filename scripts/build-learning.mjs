@@ -48,15 +48,30 @@ function plainText(value) {
 
 function renderMarkdown(markdown) {
   const headings = [];
+  let round = '';
   let html = marked.parse(markdown, { gfm: true, breaks: false });
-  html = html.replace(/<h2>([\s\S]*?)<\/h2>/g, (_, title) => {
+  html = html.replace(/(<p class="learning-round" data-learning-round="([^"]+)">[\s\S]*?<\/p>\s*)?<h2>([\s\S]*?)<\/h2>/g, (_, marker = '', label, rawTitle) => {
+    if (label) round = plainText(label);
+    const title = rawTitle.replace(/^\d+\s*[·.:–-]\s+/, '');
     const id = `s${headings.length + 1}`;
-    headings.push({ id, title: plainText(title) });
-    return `<h2 class="sec" id="${id}"><span class="num">${headings.length}</span>${title}</h2>`;
+    headings.push({ id, title: plainText(title), round });
+    return `${marker}<h2 class="sec" id="${id}" tabindex="-1"><span class="num" aria-hidden="true">${headings.length}</span>${title}</h2>`;
   });
-  html = html.replaceAll('<table>', '<div class="twrap"><table class="knowledge-table">');
-  html = html.replaceAll('</table>', '</table></div>');
+  html = html.replace(/<table>([\s\S]*?)<\/table>/g, '<div class="twrap"><table class="knowledge-table">$1</table></div>');
   return { html, headings };
+}
+
+function renderToc(headings) {
+  const link = item => `<li><a href="#${item.id}" data-t="${item.id}">${escapeHtml(item.title)}</a></li>`;
+  if (!headings.some(item => item.round)) return headings.map(link).join('\n');
+  const groups = [];
+  for (const item of headings) {
+    if (groups.at(-1)?.round !== item.round) groups.push({ round: item.round, items: [] });
+    groups.at(-1).items.push(item);
+  }
+  return groups.map(group => group.round
+    ? `<li class="toc-round"><details open><summary>${escapeHtml(group.round)}</summary><ul>${group.items.map(link).join('\n')}</ul></details></li>`
+    : group.items.map(link).join('\n')).join('\n');
 }
 
 function validate(metadata, markdown, knownSourceIds, fileName) {
@@ -105,7 +120,7 @@ function domainConfig(domain, fileName) {
 function fillTemplate(template, metadata, content, toc) {
   const domain = domainConfig(metadata.domain, metadata.id);
   const statusLabels = {
-    CURATED_DRAFT: 'Pilot · fachlich in Prüfung',
+    CURATED_DRAFT: 'Entwurf · menschliche Freigabe ausstehend',
     DIDACTICALLY_REVIEWED: 'Didaktisch geprüft',
     PUBLICATION_READY: 'Freigegeben'
   };
@@ -127,7 +142,7 @@ function fillTemplate(template, metadata, content, toc) {
     MINUTES: escapeHtml(metadata.estimated_minutes),
     RELEVANCE: escapeHtml(metadata.relevance),
     CONTENT: content,
-    TOC: toc.map(item => `<li><a href="#${item.id}" data-t="${item.id}">${escapeHtml(item.title)}</a></li>`).join('\n')
+    TOC: renderToc(toc)
   };
   return Object.entries(replacements).reduce(
     (output, [key, value]) => output.replaceAll(`{{${key}}}`, value),

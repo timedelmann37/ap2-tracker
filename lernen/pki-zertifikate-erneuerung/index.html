@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Zertifikatsaufbau, Vertrauenskette und Dienstnamen prüfen; TLS-Schlüsselrollen unterscheiden und Erneuerungen am echten Endpunkt nachweisen.">
+<title>PKI, Zertifikate und Erneuerung – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js" defer></script>
+<script src="/assets/ap2-learning.js?v=3.10.1" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="pki-zertifikate-erneuerung" data-progress-id="ga1-8__7" data-content-revision="2026-10-03.1" data-content-status="CURATED_DRAFT">
+<a class="learning-skip" href="#main-content">Zum Lerninhalt</a>
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-8">IT-Sicherheit und Datenschutz</a><span class="sep">›</span>
+    <span class="here">PKI, Zertifikate und Erneuerung</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content" tabindex="-1">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">PKI, Zertifikate und Erneuerung</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 40 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Entwurf · menschliche Freigabe ausstehend</span>
+      </div>
+      <div class="rule"></div>
+      <details class="learning-overview" id="lesson-overview">
+        <summary>Inhalt und Lernstand <small data-current-section>Abschnitt auswählen</small></summary>
+        <div class="overview-body">
+          <div class="mastery-box" data-mastery-box>
+            <div class="mastery-count" data-mastery-count>0 von 4 Pflichtchecks bestanden</div>
+            <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+            <p class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Pflichtchecks.</p>
+            <p class="mastery-note" data-action-reason>Lesen und üben ist ohne Konto möglich.</p>
+            <a class="next-check" href="/?konto=anmelden" data-learning-signin>Anmelden und Fortschritt speichern</a>
+            <a class="next-check" data-next-check hidden>Nächsten offenen Pflichtcheck bearbeiten</a>
+          </div>
+          <nav aria-label="Lernabschnitte"><ul class="toc" id="toc-mobile"><li><a href="#s1" data-t="s1">Diagnose: noch gültig, trotzdem falsch</a></li>
+<li><a href="#s2" data-t="s2">Aufbau: öffentliche Bindung, geheime Schlüssel</a></li>
+<li><a href="#s3" data-t="s3">Prüfung: Vertrauen ist mehr als ein Datum</a></li>
+<li><a href="#s4" data-t="s4">TLS: Identität und Verkehrsschlüssel unterscheiden</a></li>
+<li><a href="#s5" data-t="s5">Betrieb: die Datei ist nicht der Endpunkt</a></li>
+<li><a href="#s6" data-t="s6">Abruftraining</a></li></ul></nav>
+        </div>
+      </details>
+      <p>Das fiktive Werkstattportal Brückenfeld läuft unter portal.werk.example. Der Browser meldet einen Zertifikatsfehler, obwohl die Datei noch nicht abgelaufen ist. Später erneuert die Administration das Zertifikat, aber ein externer Test sieht weiterhin das alte. Du untersuchst beide Fehler und entwirfst eine überprüfbare Betriebsroutine.</p>
+<section class="learning-goals" aria-labelledby="pki-zertifikate-erneuerung-goals">
+  <h2 id="pki-zertifikate-erneuerung-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Zertifikatsfelder und CA-Aufgabe zuordnen</li>
+    <li>Vertrauenskette, Dienstnamen und Gültigkeit getrennt prüfen</li>
+    <li>Zertifikatsauthentisierung von TLS-Verkehrsschlüsseln trennen</li>
+    <li>Erneuerung, Bereitstellung und Endpunktprüfung planen</li>
+  </ul>
+</section><h2 class="sec" id="s1" tabindex="-1"><span class="num" aria-hidden="true">1</span>Diagnose: noch gültig, trotzdem falsch</h2>
+<section class="quiz" data-quiz="pki-diagnose" data-correct="1">
+  <h3>Das Zertifikat ist zeitlich gültig, nennt aber nur api.werk.example. Der Aufruf gilt portal.werk.example. Was folgt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Zeitliche Gültigkeit ersetzt keine Prüfung des Dienstnamens."><span class="m">A</span> Weiterarbeiten: Nur das Ablaufdatum zählt.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die angeforderte Identität muss zu einem passenden SAN-Eintrag passen."><span class="m">B</span> Der Dienstname passt nicht; den Zertifikatsfehler untersuchen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Der private Schlüssel bleibt geschützt am TLS-Endpunkt."><span class="m">C</span> Den privaten Schlüssel an den Browser senden.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2" tabindex="-1"><span class="num" aria-hidden="true">2</span>Aufbau: öffentliche Bindung, geheime Schlüssel</h2>
+<p>Ein Zertifikat bindet einen öffentlichen Schlüssel an Identitätsangaben. Die CA (Certification Authority) signiert diese Bindung. Eine PKI umfasst auch Prozesse für Ausstellung, Vertrauen und Widerruf.</p>
+<p>Im Portalbestand liest du <strong>Aussteller (Issuer)</strong>, <strong>Seriennummer</strong>, <strong>notBefore/notAfter</strong>, <strong>Subject</strong>, <strong>öffentlichen Schlüssel</strong> und Erweiterungen. Für DNS-Dienstnamen ist <strong>subjectAltName (SAN)</strong> entscheidend. Schlüsselverwendung und weitere Einschränkungen begrenzen den zulässigen Einsatz. Die Zertifikatsdatei enthält keinen privaten Schlüssel; eine getrennte Schlüsseldatei oder ein exportiertes Gesamtpaket kann ihn enthalten und muss entsprechend geschützt werden.</p>
+<section class="quiz" data-quiz="pki-aufbau" data-correct="0" data-required-objective="aufbau">
+  <h3>Welche Information gehört in das Serverzertifikat?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Der private Schlüssel gehört nicht in das öffentliche Zertifikat."><span class="m">A</span> Öffentlicher Schlüssel und signierte Identitätsangaben.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Verkehrsschlüssel entstehen für Verbindungen, nicht als feste Zertifikatsfelder."><span class="m">B</span> Der geheime Verkehrsschlüssel jeder künftigen Sitzung.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Anwendungszugang und Zertifikatsidentität sind verschiedene Aufgaben."><span class="m">C</span> Das Browserpasswort der Kundin.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s3" tabindex="-1"><span class="num" aria-hidden="true">3</span>Prüfung: Vertrauen ist mehr als ein Datum</h2>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Vertrauenskette">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="434" viewBox="0 0 960 434" role="img" aria-labelledby="diagram-pki-kette-title diagram-pki-kette-desc">
+  <title id="diagram-pki-kette-title">Vertrauenskette</title>
+  <desc id="diagram-pki-kette-desc">Ausstellerbeziehungen von Root-CA über Intermediate-CA zum Serverzertifikat.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Vertrauenskette</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Root-CA</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Vertrauensanker im Client bereitgestellt</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Intermediate-CA</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Von übergeordneter CA signiert</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Serverzertifikat</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Öffentlicher Schlüssel und Dienstname</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Die Pfeile zeigen Ausstellerbeziehungen. Üblicherweise liefert der Server sein Zertifikat und benötigte Zwischenzertifikate; der akzeptierte Vertrauensanker stammt aus dem Clientbestand.</figcaption>
+</figure><p>Für Brückenfeld sammelst du getrennte Befunde: Führt der Zertifikatspfad zu einem akzeptierten Vertrauensanker? Stimmen Signaturen und Einschränkungen? Passt der erwartete Dienstname zum SAN? Liegt die geprüfte Zeit im Gültigkeitsintervall? Ist der Verwendungszweck zulässig? Status-/Widerrufsinformationen werden gemäß Clientverfahren und Richtlinie behandelt – nicht jeder Client fragt bei jeder Verbindung die CA online ab.</p>
+<p><strong>Fallbefund:</strong> SAN enthält nur <code>api.werk.example</code>. Erforderlich ist <code>portal.werk.example</code>. Eine neue Laufzeit repariert diesen Namensfehler nicht. Ebenso macht die Selbstsignatur einer unbekannten Root-CA sie nicht vertrauenswürdig. Eine interne CA muss kontrolliert als Vertrauensanker bereitgestellt werden; die Prüfung abzuschalten ist keine Reparatur.</p>
+<section class="quiz" data-quiz="pki-pruefung" data-correct="2" data-required-objective="pruefung">
+  <h3>Eine unbekannte Root-CA signiert sich selbst; der SAN passt und das Datum stimmt. Was ist richtig?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Die Selbstsignatur ersetzt die bewusste Vertrauensentscheidung nicht."><span class="m">A</span> Selbstsigniert bedeutet automatisch vertrauenswürdig.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Dienstname und Vertrauen sind unabhängige Prüfungen."><span class="m">B</span> Ein passender SAN ersetzt die Kettenprüfung.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Erst eine bewusste Vertrauenskonfiguration macht den Anker für diesen Client akzeptiert."><span class="m">C</span> Der akzeptierte Vertrauensanker fehlt; kontrollierte Bereitstellung prüfen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s4" tabindex="-1"><span class="num" aria-hidden="true">4</span>TLS: Identität und Verkehrsschlüssel unterscheiden</h2>
+<p>Beim vereinfachten <strong>zertifikatsbasierten TLS-1.3-Vollhandshake</strong> stimmen die Partner Parameter und Schlüsselmaterial ab. Der Server präsentiert Zertifikatsinformationen und weist mit <strong>CertificateVerify</strong> die Nutzung des zugehörigen privaten Schlüssels nach. Der Client prüft Zertifikat und Dienstidentität; <strong>Finished</strong> bindet den Handshake an die ausgehandelten Schlüssel. Anwendungsdaten werden mit abgeleiteten symmetrischen Verkehrsschlüsseln geschützt.</p>
+<p>Der öffentliche Zertifikatsschlüssel ist nicht der geheime Sitzungsschlüssel. Auch die CA verschlüsselt nicht die Portalbestellungen. Brückenfeld terminiert TLS am Reverse Proxy: Der Nachweis gilt für diese Verbindung. Ein separater Backendweg benötigt ein eigenes Schutzkonzept. Sitzungswiederaufnahme, PSK und Clientzertifikate werden hier nicht als vollständige Abläufe behandelt.</p>
+<section class="quiz" data-quiz="pki-tls" data-correct="1" data-required-objective="tls">
+  <h3>Wofür nutzt der Server seinen Zertifikats-Privatschlüssel im beschriebenen TLS-1.3-Fall?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Private Schlüssel werden nicht zum Nachweis ihrer Nutzung offengelegt."><span class="m">A</span> Er versendet ihn zum Browser.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="CertificateVerify authentisiert den Handshake; Anwendungsdaten nutzen abgeleitete Verkehrsschlüssel."><span class="m">B</span> Für den Signaturnachweis im Handshake.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Verbindungsbezogene Verkehrsschlüssel sind nicht einfach der Zertifikats-Privatschlüssel."><span class="m">C</span> Als unveränderten Datenschlüssel für alle Kundinnen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s5" tabindex="-1"><span class="num" aria-hidden="true">5</span>Betrieb: die Datei ist nicht der Endpunkt</h2>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Erneuerung nachweisen">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="542" viewBox="0 0 960 542" role="img" aria-labelledby="diagram-pki-betrieb-title diagram-pki-betrieb-desc">
+  <title id="diagram-pki-betrieb-title">Erneuerung nachweisen</title>
+  <desc id="diagram-pki-betrieb-desc">Betriebsablauf mit Bestand, Erneuerung, Bereitstellung und unabhängiger Endpunktprüfung.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Erneuerung nachweisen</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Bestand und Zuständigkeit</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Dienstname, Endpunkt, Ablauf, Owner erfassen</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Rechtzeitig erneuern</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Ausstellung und Fehlerüberwachung prüfen</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Bereitstellen und laden</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Zertifikat, Kette und Schlüssel zuordnen</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Endpunkt unabhängig prüfen</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Ausgelieferten Stand und Ablauf überwachen</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Jeder Schritt braucht einen Nachweis. Ein erfolgreich erzeugtes Zertifikat beweist noch nicht, welches der Dienst ausliefert.</figcaption>
+</figure><p><strong>Eigener Betriebsfall:</strong> Die neue Datei hat Seriennummer B42. Der externe Portaltest sieht A17. Du prüfst den tatsächlich angesprochenen TLS-Endpunkt, die Zertifikatspfade und das Laden der Konfiguration. Bei mehreren Proxys prüfst du die betroffenen Instanzen. Anschließend vergleichst du am richtigen Hostnamen/SNI Seriennummer oder Fingerprint, Kette und Ablaufdatum mit dem Sollstand.</p>
+<p>Führe einen Bestand mit Owner, Vertretung, Dienstnamen, TLS-Endpunkt und Ablauf. Starte Erneuerungen mit ausreichendem Reaktionspuffer; überwache Fehlschläge und probe die Routine. Certbots <code>renew</code> kann erfolgreich enden, ohne ein Zertifikat zu erneuern. Ein <code>deploy-hook</code> kann an erfolgreiche Erneuerung anschließen; seine Bereitstellung muss trotzdem überprüft werden. Ein Testlauf ersetzt keine Endpunktprüfung.</p>
+<p><strong>Notfall:</strong> Bei kompromittiertem privatem Schlüssel nicht nur verlängern: betroffenen Schlüssel aus dem Betrieb nehmen, Widerruf veranlassen, neuen Schlüssel samt Zertifikat bereitstellen und den Vorfall untersuchen. Alarmwege und Zuständigkeit müssen vor dem Ablauf feststehen.</p>
+<section class="quiz" data-quiz="pki-erneuerung" data-correct="0" data-required-objective="erneuerung">
+  <h3>B42 liegt auf der Festplatte; der externe Test sieht A17. Welcher nächste Schritt liefert den nötigen Nachweis?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Erst die unabhängige Endpunktprüfung bestätigt die wirksame Bereitstellung."><span class="m">A</span> Endpunkt/Pfade und Laden prüfen; danach den ausgelieferten Stand erneut testen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Das beweist nicht den Zustand des laufenden Dienstes."><span class="m">B</span> Den erfolgreichen Dateiexport als Abschluss dokumentieren.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Das verdeckt den Fehler und schwächt die Sicherheitsprüfung."><span class="m">C</span> Alle Zertifikatswarnungen im Browser abschalten.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="recall-practice" data-recall="pki-transfer" data-min-length="180" aria-labelledby="pki-transfer-title">
+  <div class="recall-prompt"><h3 id="pki-transfer-title">Abruf aus dem Kopf</h3><p>Erkläre den SAN-Fehler und plane die Prüfung von B42 am Portal. Trenne Zertifikat, privaten Schlüssel und Verkehrsschlüssel; ergänze Zuständigkeit und den Kompromittierungsfall.</p></div>
+  <label class="sr-only" for="pki-transfer-answer">Deine freie Antwort</label>
+  <textarea id="pki-transfer-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong>
+  <p>api.werk.example passt nicht zu portal.werk.example; ich brauche das richtige SAN und eine akzeptierte Vertrauenskette. Das Zertifikat enthält den öffentlichen Schlüssel; der private Schlüssel bleibt geschützt. TLS leitet eigene Verkehrsschlüssel ab. Für B42 prüfe ich den tatsächlichen TLS-Endpunkt, Pfade und Laden der Konfiguration und kontrolliere anschließend den ausgelieferten Stand unabhängig. Owner und Vertretung überwachen Ablauf und Erneuerungsfehler. Bei Schlüsselkompromittierung veranlasse ich Widerruf, neuen Schlüssel und neues Zertifikat sowie Vorfallbearbeitung.</p></div>
+</section><h2 class="sec" id="s6" tabindex="-1"><span class="num" aria-hidden="true">6</span>Abruftraining</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="inhalt" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was steht im Zertifikat?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Öffentlicher Schlüssel, Identitätsangaben, Aussteller, Seriennummer, Gültigkeit, Erweiterungen und CA-Signatur. Kein privater Schlüssel.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="ca" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was bestätigt die CA-Signatur?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Die Bindung der Zertifikatsangaben an den öffentlichen Schlüssel; der Client braucht zusätzlich eine akzeptierte Vertrauenskette.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="san" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wo wird der DNS-Name geprüft?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Im passenden dNSName-Eintrag der subjectAltName-Erweiterung, gegen den erwarteten Dienstnamen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="anker" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wodurch vertraut der Client der Root-CA?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Durch einen bewusst bereitgestellten Vertrauensanker. Selbstsignatur allein schafft kein Vertrauen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="tls" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Ist der Zertifikatsschlüssel der Sitzungsschlüssel?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Nein. Zertifikatsbasierte Authentisierung und die abgeleiteten Verkehrsschlüssel haben verschiedene Rollen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="deploy" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Ist Erneuerung gleich erfolgreicher Betrieb?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Nein. Installation, Laden durch den Dienst und Prüfung am tatsächlichen Endpunkt folgen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="widerruf" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was tun bei kompromittiertem privatem Schlüssel?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Betroffenes Zertifikat widerrufen, neuen Schlüssel und neues Zertifikat bereitstellen sowie den Vorfall behandeln.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „PKI im Betrieb“:</span><button type="button" data-card-id="inhalt" data-card-rate="known">gewusst</button><button type="button" data-card-id="inhalt" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="inhalt"></span></div>
+<div class="card-rating"><span>Karte „PKI im Betrieb“:</span><button type="button" data-card-id="ca" data-card-rate="known">gewusst</button><button type="button" data-card-id="ca" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ca"></span></div>
+<div class="card-rating"><span>Karte „PKI im Betrieb“:</span><button type="button" data-card-id="san" data-card-rate="known">gewusst</button><button type="button" data-card-id="san" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="san"></span></div>
+<div class="card-rating"><span>Karte „PKI im Betrieb“:</span><button type="button" data-card-id="anker" data-card-rate="known">gewusst</button><button type="button" data-card-id="anker" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="anker"></span></div>
+<div class="card-rating"><span>Karte „PKI im Betrieb“:</span><button type="button" data-card-id="tls" data-card-rate="known">gewusst</button><button type="button" data-card-id="tls" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="tls"></span></div>
+<div class="card-rating"><span>Karte „PKI im Betrieb“:</span><button type="button" data-card-id="deploy" data-card-rate="known">gewusst</button><button type="button" data-card-id="deploy" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="deploy"></span></div>
+<div class="card-rating"><span>Karte „PKI im Betrieb“:</span><button type="button" data-card-id="widerruf" data-card-rate="known">gewusst</button><button type="button" data-card-id="widerruf" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="widerruf"></span></div>
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-8"><span class="d">zurück zu</span><span class="t">IT-Sicherheit und Datenschutz</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">IT-Sicherheit und Datenschutz</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 4 Pflichtchecks bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Pflichtchecks.</div>
+      <a class="next-check" data-next-check hidden>Nächsten offenen Pflichtcheck bearbeiten</a>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Diagnose: noch gültig, trotzdem falsch</a></li>
+<li><a href="#s2" data-t="s2">Aufbau: öffentliche Bindung, geheime Schlüssel</a></li>
+<li><a href="#s3" data-t="s3">Prüfung: Vertrauen ist mehr als ein Datum</a></li>
+<li><a href="#s4" data-t="s4">TLS: Identität und Verkehrsschlüssel unterscheiden</a></li>
+<li><a href="#s5" data-t="s5">Betrieb: die Datei ist nicht der Endpunkt</a></li>
+<li><a href="#s6" data-t="s6">Abruftraining</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false" aria-describedby="learning-action-reason">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-8">Zur Themengruppe</a>
+  <span class="action-reason" id="learning-action-reason" data-action-reason>Pflichtchecks bearbeiten und anmelden, um Fortschritt zu speichern.</span>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

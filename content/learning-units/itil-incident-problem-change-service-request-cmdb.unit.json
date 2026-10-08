@@ -1,0 +1,358 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "itil-incident-problem-change-service-request-cmdb",
+    "slug": "itil-incident-problem-change-service-request-cmdb",
+    "title": "ITIL: Störung, Ursache und Änderung",
+    "description": "Incident, Problem, Change und Service Request anhand eigener Fälle unterscheiden; Known Errors und CMDB-Beziehungen begründet nutzen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-10",
+    "groupLabel": "Betrieb, Monitoring und Prozesse",
+    "itemId": "ga1-10__3",
+    "week": "KW 44",
+    "estimatedMinutes": 40,
+    "relevance": "hoch",
+    "sources": [
+      "itil-axelos-basics",
+      "itil-atlassian-request",
+      "itil-atlassian-change",
+      "itil-servicenow-ci"
+    ],
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "zuordnung",
+      "label": "Incident und Service Request am Anliegen unterscheiden"
+    },
+    {
+      "id": "ursache",
+      "label": "Problem, Known Error und Workaround auseinanderhalten"
+    },
+    {
+      "id": "aenderung",
+      "label": "Änderung mit Risiko, Freigabe und Nachweis verbinden"
+    },
+    {
+      "id": "konfiguration",
+      "label": "CI-Beziehungen und Grenzen einer CMDB erklären"
+    }
+  ],
+  "intro": "Beim fiktiven Betrieb Brückenfeld fällt die Auftragsanwendung aus. Gleichzeitig benötigt eine neue Kollegin einen Zugang. Du ordnest die Anliegen ein, verknüpfst Störungs- und Ursachendokumentation und beurteilst einen geplanten Patch. Alle Namen, Kennungen und Befunde sind erfunden. Diese Einheit verwendet ausdrücklich ITIL-4-Grundbegriffe; sie ist keine vollständige Darstellung einer aktuellen Zertifizierungsedition und führt keine produktiven Änderungen aus.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itil-axelos-basics",
+        "sourceLocator": "Rationale, Seite 9: Verweise 5.2.8 und 5.2.16; Seite 10: 5.2.11",
+        "use": "ITIL-4-Abgrenzung Problem/Known Error sowie Konfigurationsinformationen",
+        "reviewStatus": "Definitionen direkt gelesen 03.10.2026; keine Prüfungsaufgaben übernommen"
+      },
+      {
+        "sourceId": "itil-atlassian-request",
+        "sourceLocator": "What is service request management?; Service request management vs incident management",
+        "use": "Normale Anforderung und Störung unterscheiden",
+        "reviewStatus": "Passagen direkt gelesen 03.10.2026"
+      },
+      {
+        "sourceId": "itil-atlassian-change",
+        "sourceLocator": "What is IT change management; Defining change management",
+        "use": "Servicewirksame Änderung und risikobezogene Steuerung",
+        "reviewStatus": "Passagen direkt gelesen 03.10.2026"
+      },
+      {
+        "sourceId": "itil-servicenow-ci",
+        "sourceLocator": "CI relationships in the CMDB: Depends on und Runs on",
+        "use": "Typisierte, gerichtete Konfigurationsbeziehungen",
+        "reviewStatus": "Dokumentationskörper direkt gelesen 03.10.2026; KI-Zusammenfassung nicht verwendet"
+      }
+    ],
+    "notes": [
+      "CURATED_DRAFT bis zur menschlichen Freigabe.",
+      "Privater Themenanker europa-integratoren-2026:00038, Zeilen 443–468: Benutzeranfragen analysieren, Systemverhalten bewerten und Tests dokumentieren. Keine Buchaufgaben übernommen.",
+      "Die ältere Known-Error-Definition mit zwingendem Workaround wird nicht als ITIL-4-Definition gelehrt.",
+      "Kennungen, Freigaberegeln und Testfälle sind eigene didaktische Annahmen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "fallakten",
+      "type": "flow",
+      "title": "Verknüpfte Fallakten",
+      "description": "Eigene Fallfolge, keine allgemeine Pflichtkette.",
+      "items": [
+        {
+          "label": "INC-41: Ausfall",
+          "detail": "Service wiederherstellen und Nutzung prüfen"
+        },
+        {
+          "label": "PRB-8: Analyse",
+          "detail": "Zusammenhang mehrerer Ausfälle untersuchen"
+        },
+        {
+          "label": "KE-8: Erkenntnis",
+          "detail": "Analysiertes Problem bleibt ungelöst"
+        },
+        {
+          "label": "CHG-12: Patch",
+          "detail": "Bewerten, freigeben, testen und nachprüfen"
+        }
+      ]
+    },
+    {
+      "id": "ci-kette",
+      "type": "flow",
+      "title": "CMDB: Abhängigkeiten",
+      "description": "Pfeile zeigen im Fall zum benötigten CI.",
+      "items": [
+        {
+          "label": "Auftragsservice",
+          "detail": "Benötigt die Anwendung app-01"
+        },
+        {
+          "label": "Anwendung app-01",
+          "detail": "Benötigt die Datenbank db-01"
+        },
+        {
+          "label": "Datenbank db-01",
+          "detail": "Läuft auf der virtuellen Maschine vm-07"
+        },
+        {
+          "label": "VM vm-07",
+          "detail": "Änderung kann abhängige CIs betreffen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Diagnose: Wieder online heißt nicht ursachenfrei",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "itil-diagnose",
+          "question": "Ein kontrollierter Neustart stellt die Anwendung wieder her. Ist damit die zugrunde liegende Ursache beseitigt?",
+          "options": [
+            {
+              "text": "Ja, erreichbare Dienste haben keine offenen Probleme.",
+              "rationale": "Erreichbarkeit allein belegt keine dauerhafte Ursachenbeseitigung.",
+              "correct": false
+            },
+            {
+              "text": "Nein, Wiederherstellung und Ursachenbeseitigung sind getrennte Nachweise.",
+              "rationale": "Ein Workaround kann den Betrieb ermöglichen, während die Analyse offen bleibt.",
+              "correct": true
+            },
+            {
+              "text": "Nein, jede Störung verlangt sofort einen produktiven Patch.",
+              "rationale": "Ein ungeprüfter Patch kann zusätzliche Störungen auslösen.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Incident oder Service Request?",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein **Incident** ist eine ungeplante Unterbrechung oder Qualitätsminderung eines Services. Ein **Service Request** ist dagegen eine normale, vereinbarte Anforderung im Rahmen der Servicebereitstellung. Entscheidend ist das Anliegen, nicht der Eingangskanal: Beide können über dasselbe Portal gemeldet werden.\n\n**Brückenfelds Eingang:** Um 08:20 Uhr können zwölf Mitarbeitende keine Aufträge speichern, obwohl diese Funktion verfügbar sein sollte. INC-41 dokumentiert betroffenen Service, Beginn, beobachtete Fehlermeldung und Auswirkung. Ein fehlgeschlagener Funktionstest bestätigt die Störung. Die neue Kollegin verlangt dagegen erstmals den im Servicekatalog angebotenen Standardzugang; REQ-17 dokumentiert benötigte Rolle, fachliche Genehmigung und vereinbarten Bereitstellungsweg.\n\n**Nicht vorschnell klassifizieren:** „Ich komme nicht hinein“ kann entweder einen neuen Zugangsbedarf oder einen Ausfall eines bestehenden Zugangs beschreiben. Frage deshalb nach bisheriger Nutzung, erwartetem Zustand, Umfang und Zeitpunkt. Ein Zugangswunsch erlaubt nicht automatisch Administrationsrechte. Ein Standardprozess kann Genehmigungen enthalten.\n\nDie Ticketart ist außerdem keine Priorität. Eine gewöhnliche Anforderung kann zeitkritisch sein; ein Incident ist nicht automatisch ein Großausfall. Wirkung und Dringlichkeit werden gesondert beurteilt. Im eigenen Fall prüft das Team nach Wiederherstellung sowohl Anmeldung als auch Speichern eines Testauftrags und meldet das Ergebnis an die Betroffenen."
+        },
+        {
+          "type": "quiz",
+          "id": "itil-zuordnung",
+          "question": "Die neue Kollegin beantragt erstmals den angebotenen Standardzugang. Bestehende Nutzende arbeiten störungsfrei. Welche Einordnung passt?",
+          "options": [
+            {
+              "text": "Service Request mit Prüfung der benötigten Rolle und Genehmigung.",
+              "rationale": "Es wird eine normale Leistung angefordert; eine bestehende Leistung ist nicht gestört.",
+              "correct": true
+            },
+            {
+              "text": "Incident, weil jedes Zugangsticket eine Störung ist.",
+              "rationale": "Der Eingangskanal und das Wort Zugang bestimmen nicht die Ticketart.",
+              "correct": false
+            },
+            {
+              "text": "Problem, weil die Kollegin noch keinen Zugang besitzt.",
+              "rationale": "Ein normaler Bereitstellungsbedarf ist keine untersuchte Incident-Ursache.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "zuordnung"
+        }
+      ]
+    },
+    {
+      "title": "Problem, Known Error und Workaround",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein **Problem** betrifft eine tatsächliche oder mögliche Ursache eines oder mehrerer Incidents. Es muss nicht erst nach vielen Wiederholungen angelegt werden. Ein **Workaround** verringert Auswirkungen oder ermöglicht Betrieb, ohne die Ursache dauerhaft zu beseitigen. Seine Bedingungen, Risiken und Grenzen gehören zur Dokumentation.\n\nIm ausdrücklich verwendeten **ITIL-4-Begriffsstand** ist ein **Known Error** ein analysiertes, noch nicht behobenes Problem. Ein vorhandener Workaround ist nützlich, aber keine zwingende Definitionsbedingung. Ältere Darstellungen verlangen eine dokumentierte Ursache und einen Workaround; diese Varianten darfst du nicht unbemerkt vermischen.\n\n**Eigener Befund:** Die Anwendung läuft nach einem kontrollierten Neustart wieder. INC-41 kann nach dem vereinbarten Funktionstest abgeschlossen werden. PRB-8 bleibt offen, weil ähnliche Ausfälle untersucht werden. Ein Testsystem reproduziert später einen Fehler im Verbindungspool der Anwendung. Das Team dokumentiert Testbedingungen, betroffene Version und Analyse als KE-8. Der Neustart ist nur eine begrenzte Überbrückung: Unterbrechung und erneutes Auftreten bleiben möglich.\n\nWichtig: Die zeitliche Nähe eines Datenbankalarms wäre allein noch kein Beweis für den Poolfehler. Der reproduzierte Befund gehört in die Problemakte. Eine vermutete Ursache wird als Hypothese gekennzeichnet, nicht als gesicherter Known Error präsentiert. Die Fallakten verlinken sich, damit die nächste Bereitschaft Beobachtung, Analyse und Hilfsmaßnahme auseinanderhalten kann."
+        },
+        {
+          "type": "figure",
+          "diagramId": "fallakten",
+          "alt": "Verknüpfte Akten für Incident, Problem, Known Error und geplanten Change.",
+          "caption": "Diese Folge gehört nur zum Brückenfeld-Fall. Nicht jeder Incident benötigt alle vier Akten, und ein Problem kann auch vorsorglich untersucht werden."
+        },
+        {
+          "type": "quiz",
+          "id": "itil-ursache",
+          "question": "INC-41 ist nach Funktionstest geschlossen. Der analysierte Poolfehler besteht weiterhin. Welche Aussage ist richtig?",
+          "options": [
+            {
+              "text": "Mit dem Incident muss auch das Problem geschlossen werden.",
+              "rationale": "Die Servicewiederherstellung belegt nicht die dauerhafte Fehlerbehebung.",
+              "correct": false
+            },
+            {
+              "text": "Das Problem bleibt offen; der analysierte, ungelöste Fehler kann als Known Error dokumentiert werden.",
+              "rationale": "In ITIL 4 sind Analyse und ungelöster Zustand entscheidend; der Neustart bleibt ein Workaround.",
+              "correct": true
+            },
+            {
+              "text": "Nur ohne Workaround darf ein Known Error angelegt werden.",
+              "rationale": "Ein Workaround ist weder verboten noch zwingende Definitionsbedingung.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "ursache"
+        }
+      ]
+    },
+    {
+      "title": "Change: Eine Lösung braucht kontrollierte Umsetzung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein **Change** ergänzt, verändert oder entfernt etwas, das Services direkt oder indirekt beeinflussen kann. Das umfasst nicht nur neue Funktionen, sondern beispielsweise auch Konfigurationen oder das Entfernen einer Abhängigkeit. Change Enablement verbindet Änderungen mit Risikobewertung, passender Autorisierung und kontrollierter Durchführung.\n\n**Brückenfelds Plan CHG-12:** Ein Patch soll den im Testsystem reproduzierten Poolfehler beheben. Die Akte verlinkt PRB-8, betroffene Version, Anwendungs-CI und Testnachweis. Vor Umsetzung werden Auswirkung auf Auftragserfassung, verantwortliche Rolle, geeignetes Zeitfenster, Rückfallmöglichkeit und Erfolgskriterien geklärt. Das eigene Erfolgskriterium ist nicht nur ein gestarteter Prozess: Ein Testauftrag muss gespeichert werden; die reproduzierende Lastprobe darf den Fehler nicht erneut auslösen.\n\nEine dringende Störung ist keine pauschale Erlaubnis, jeden Patch ungeprüft einzuspielen. Auch ein beschleunigter Notfallweg braucht die dafür festgelegte Autorisierung und Dokumentation. Umgekehrt verlangt nicht jede risikoarme, wiederholbare Änderung ein neu einberufenes Beratungsgremium: Zuständigkeiten und vorgenehmigte Verfahren sind organisationsabhängig.\n\nREQ-17 kann zur Erfüllung eine technische Änderung auslösen. Die Anforderung beschreibt den Nutzerbedarf, die Änderung die servicewirksame Umsetzung. Sie sind verknüpfbar, aber nicht gleichbedeutend. Nach CHG-12 wird die Wirksamkeit überprüft; erst der belegte Erfolg trägt zur Entscheidung bei, PRB-8 zu schließen und den Known-Error-Eintrag zu aktualisieren."
+        },
+        {
+          "type": "quiz",
+          "id": "itil-aenderung",
+          "question": "Ein Patch wurde angeboten, aber Freigabe, Rückfallweg und Funktionstest fehlen. Was ist der nächste begründete Schritt?",
+          "options": [
+            {
+              "text": "Sofort installieren, weil ein Known Error jede Freigabe ersetzt.",
+              "rationale": "Die Analyse liefert Wissen, aber keine Änderungsautorisierung.",
+              "correct": false
+            },
+            {
+              "text": "Nur das Incident-Ticket schließen und den Patch vergessen.",
+              "rationale": "Eine dauerhafte Lösung bleibt zu bewerten; Schließen ersetzt keine Planung.",
+              "correct": false
+            },
+            {
+              "text": "Änderung bewerten und autorisieren lassen; Rückfallweg und prüfbare Erfolgskriterien ergänzen.",
+              "rationale": "Risiko, Zuständigkeit und überprüfbare Wirkung gehören vor die produktive Durchführung.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "aenderung"
+        }
+      ]
+    },
+    {
+      "title": "CI und CMDB: Beziehungen statt bloßer Inventarliste",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein **Configuration Item (CI)** ist eine für die Servicebereitstellung zu verwaltende Komponente. Im Fall gehören Anwendung, Datenbank und virtuelle Maschine dazu. Eine **CMDB** hält Konfigurationsinformationen und Beziehungen zwischen CIs bereit. Kosten oder Seriennummern können nützlich sein; eine reine Einkaufsliste zeigt aber noch nicht, welcher Service von einer Komponente abhängt.\n\n**Eigene Modellgrenze:** Der Auftragsservice benötigt app-01. app-01 benötigt db-01. db-01 läuft auf vm-07. Die Pfeile der Illustration weisen jeweils zum benötigten beziehungsweise hostenden CI. Das ist ein bewusst vereinfachter Ausschnitt, kein vollständiger Netzplan. Er enthält keine erfundenen Ausweichpfade. Ein Ausfall oder Change an vm-07 kann deshalb den Auftragsservice betreffen; die konkrete Wirkung wird anhand des tatsächlichen Betriebs geprüft.\n\nBeziehungstyp und Richtung sind wichtig. „Datenbank läuft auf VM“ bedeutet nicht „VM läuft auf Datenbank“. Zur Verwendbarkeit gehören im eigenen Fall CI-Kennung, Version, zuständige Rolle, Beziehungstyp und letzter Prüfzeitpunkt. Nach einem Umzug der Datenbank wird die Beziehung mit dem tatsächlich eingesetzten Host abgeglichen.\n\n**Grenze der Aussage:** Ein CMDB-Pfad hilft bei Auswirkungen und Prüfplanung, beweist aber keine Incident-Ursache. Alte Beziehungen können sogar zur falschen Eingrenzung führen. Vor CHG-12 kontrolliert das Team daher die betroffenen CIs und ergänzt den Funktionstest des abhängigen Services. Nach erfolgreicher Änderung werden Version und Beziehungen aktualisiert."
+        },
+        {
+          "type": "figure",
+          "diagramId": "ci-kette",
+          "alt": "Auftragsservice benötigt app-01, diese benötigt db-01, die auf vm-07 läuft.",
+          "caption": "Gerichtete Abhängigkeiten im eigenen Modell: mögliche Auswirkungen werden vom geänderten CI zurück zu seinen Verbrauchern geprüft."
+        },
+        {
+          "type": "quiz",
+          "id": "itil-konfiguration",
+          "question": "db-01 wurde auf eine andere VM verschoben, die CMDB zeigt noch vm-07. Wie wird die CMDB sinnvoll genutzt?",
+          "options": [
+            {
+              "text": "Tatsächliche Beziehungen abgleichen und aktualisieren; abhängige Services für Tests ermitteln.",
+              "rationale": "Die CMDB unterstützt die Wirkungseinschätzung nur mit zuverlässigen Beziehungen und ersetzt keinen Ursachenbeweis.",
+              "correct": true
+            },
+            {
+              "text": "Die Zeichnung beweist, dass vm-07 die letzte Störung verursacht hat.",
+              "rationale": "Eine dokumentierte Abhängigkeit ist kein Nachweis eines konkreten Fehlers.",
+              "correct": false
+            },
+            {
+              "text": "Nur den Kaufpreis ändern; Hostbeziehungen sind irrelevant.",
+              "rationale": "Ohne Beziehung zum aktuellen Host werden Auswirkungen und Tests falsch eingegrenzt.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "konfiguration"
+        },
+        {
+          "type": "recall",
+          "id": "itil-transfer",
+          "prompt": "Ordne INC-41, REQ-17, PRB-8, KE-8 und CHG-12 ihren Aufgaben zu. Erkläre Neustart und dauerhafte Lösung, nenne zwei Voraussetzungen für den Patch und erläutere eine CMDB-Beziehung samt Aussagegrenze.",
+          "minLength": 180,
+          "model": "INC-41 dokumentiert die Störung und geprüfte Wiederherstellung; REQ-17 den normalen Zugangsbedarf mit Rollenprüfung. PRB-8 untersucht eine Ursache. KE-8 hält das analysierte, noch ungelöste Problem fest. Der Neustart ist ein Workaround, keine dauerhafte Beseitigung. CHG-12 benötigt Risikobewertung, passende Autorisierung, Rückfallweg und überprüfbare Funktionstests. db-01 läuft im Fall auf vm-07; die Beziehung muss aktuell sein. Sie hilft bei der Wirkungseinschätzung, beweist aber keine Störungsursache. Nach erfolgreichem Patch werden Problemstatus und Konfigurationsinformationen anhand der Nachweise aktualisiert."
+        }
+      ]
+    },
+    {
+      "title": "Abruftraining",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "id": "itil-cards",
+          "cards": [
+            {
+              "id": "incident",
+              "label": "ITIL-Grundbegriffe",
+              "front": "Was kennzeichnet einen Incident?",
+              "back": "Ungeplante Unterbrechung oder Qualitätsminderung eines Services."
+            },
+            {
+              "id": "request",
+              "label": "ITIL-Grundbegriffe",
+              "front": "Ist jeder Zugangsbedarf eine Störung?",
+              "back": "Nein. Erstmaliger vereinbarter Standardzugang ist ein Service Request; bestehenden Ausfall getrennt prüfen."
+            },
+            {
+              "id": "problem",
+              "label": "ITIL-Grundbegriffe",
+              "front": "Braucht ein Problem viele Incidents?",
+              "back": "Nein. Tatsächliche oder mögliche Ursache eines oder mehrerer Incidents."
+            },
+            {
+              "id": "known-error",
+              "label": "ITIL-Grundbegriffe",
+              "front": "Known Error im verwendeten ITIL-4-Begriffsstand?",
+              "back": "Analysiertes, noch nicht behobenes Problem; ein Workaround ist keine zwingende Bedingung."
+            },
+            {
+              "id": "workaround",
+              "label": "ITIL-Grundbegriffe",
+              "front": "Ist der Neustart eine dauerhafte Lösung?",
+              "back": "Nicht ohne Nachweis. Er kann nur die Auswirkungen zeitweise vermindern."
+            },
+            {
+              "id": "change",
+              "label": "ITIL-Grundbegriffe",
+              "front": "Ersetzt ein Known Error die Patch-Freigabe?",
+              "back": "Nein. Bewertung, Autorisierung und überprüfbare Umsetzung bleiben erforderlich."
+            },
+            {
+              "id": "cmdb",
+              "label": "ITIL-Grundbegriffe",
+              "front": "Beweist eine CMDB-Kante eine Ursache?",
+              "back": "Nein. Sie beschreibt eine Beziehung und hilft bei möglichen Auswirkungen; Aktualität prüfen."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

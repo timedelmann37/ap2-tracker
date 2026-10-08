@@ -168,4 +168,137 @@ invalidIds.sections[2].blocks[2].id = 'tcp-ip-diagnostic';
 assert.throws(() => validateUnitSpec(invalidIds, 'ids.json'), /IDs müssen eindeutig/);
 pass('Interaktions- und Karten-IDs sind innerhalb einer Einheit eindeutig');
 
+const matrixSpec = structuredClone(spec);
+const transferSection = matrixSpec.sections.find(section => section.blocks.some(block => block.requiredObjective === 'model-mapping'));
+const transferIndex = transferSection.blocks.findIndex(block => block.requiredObjective === 'model-mapping');
+transferSection.blocks[transferIndex] = {
+  type: 'permission-matrix',
+  id: 'permission-matrix-test',
+  title: 'Rechte <prüfen> & zuordnen',
+  prompt: 'Ordne jeder Rolle für jede Ressource das nötige Recht zu.',
+  roles: [
+    { id: 'team-a', label: 'Team "A" & Co.' },
+    { id: 'team-b', label: 'Team B' }
+  ],
+  resources: [
+    { id: 'share-a', label: 'Freigabe <A>' },
+    { id: 'share-b', label: 'Freigabe B' }
+  ],
+  choices: [
+    { id: 'none', label: 'Kein Recht' },
+    { id: 'read', label: 'Lesen & prüfen' }
+  ],
+  cells: [
+    { roleId: 'team-a', resourceId: 'share-a', expected: 'read', feedback: 'Team A benötigt hier Leserechte & keine Änderung.' },
+    { roleId: 'team-a', resourceId: 'share-b', expected: 'none', feedback: 'Team A hat für diese Freigabe keinen Auftrag.' },
+    { roleId: 'team-b', resourceId: 'share-a', expected: 'none', feedback: 'Team B benötigt hier ausdrücklich keinen Zugriff.' },
+    { roleId: 'team-b', resourceId: 'share-b', expected: 'read', feedback: 'Team B darf diese Freigabe nur lesend prüfen.' }
+  ],
+  correctFeedback: 'Alle Rechte folgen dem beschriebenen Arbeitsauftrag.',
+  wrongFeedback: 'Prüfe die markierten Felder anhand des Arbeitsauftrags.',
+  requiredObjective: 'model-mapping'
+};
+validateUnitSpec(matrixSpec, 'matrix.json');
+const matrixMarkup = compileUnitSpec(matrixSpec, 'matrix.json').contentMarkdown;
+assert.match(matrixMarkup, /<table class="permission-matrix-table"><caption class="sr-only">/);
+assert.match(matrixMarkup, /<th scope="col">Freigabe &lt;A&gt;<\/th>/);
+assert.match(matrixMarkup, /<th scope="row">Team &quot;A&quot; &amp; Co\.<\/th>/);
+assert.equal((matrixMarkup.match(/data-matrix-cell="/g) || []).length, 4);
+assert.match(matrixMarkup, /data-permission-matrix="permission-matrix-test"/);
+assert.match(matrixMarkup, /class="permission-matrix matrix-cols-2"/);
+assert.match(matrixMarkup, /data-matrix-cell="team-a:share-a"/);
+assert.match(matrixMarkup, /<option value="">Recht wählen<\/option>/);
+assert.match(matrixMarkup, /<option value="none">Kein Recht<\/option>/);
+assert.match(matrixMarkup, /data-cell-feedback="Team A benötigt hier Leserechte &amp; keine Änderung\."/);
+assert.doesNotMatch(matrixMarkup, /<prüfen>|<A>/);
+assert.equal((matrixMarkup.match(/data-required-objective="model-mapping"/g) || []).length, 1);
+pass('Berechtigungsmatrix rendert zugängliche Tabellenköpfe, echte Auswahl und escaped Texte');
+
+function invalidMatrix(change, message) {
+  const invalid = structuredClone(matrixSpec);
+  change(blocksOf(invalid).find(block => block.type === 'permission-matrix'));
+  assert.throws(() => validateUnitSpec(invalid, 'matrix-invalid.json'), message);
+}
+
+invalidMatrix(matrix => { matrix.id = 'wrong_id'; }, /slugförmige id/);
+invalidMatrix(matrix => { matrix.id = 'tcp-ip-diagnostic'; }, /IDs müssen eindeutig/);
+invalidMatrix(matrix => { matrix.roles[1].id = 'team-a'; }, /roles-IDs/);
+invalidMatrix(matrix => { matrix.resources[0].id = 'Share A'; }, /resources-IDs/);
+invalidMatrix(matrix => { matrix.choices[1].id = 'none'; }, /choices-IDs/);
+invalidMatrix(matrix => { matrix.cells.pop(); }, /genau eine Zelle/);
+invalidMatrix(matrix => { matrix.cells[3] = { ...matrix.cells[0] }; }, /mehrfach/);
+invalidMatrix(matrix => { matrix.cells[0].roleId = 'unknown'; }, /gültige Rolle/);
+invalidMatrix(matrix => { matrix.cells[0].expected = 'write'; }, /fehlt in choices/);
+invalidMatrix(matrix => { matrix.cells[0].feedback = 'zu kurz'; }, /Zell-Feedback/);
+invalidMatrix(matrix => { matrix.wrongFeedback = ''; }, /Ergebnis-Feedback/);
+pass('Berechtigungsmatrix lehnt fehlerhafte IDs, Zellen, Zielrechte und Feedback ab');
+
+const epkSpec = JSON.parse(await readFile(path.join(repoRoot, 'content/learning-units/ablauforganisation-prozessdenken-epk.unit.json'), 'utf8'));
+validateUnitSpec(epkSpec, 'epk.json');
+const epkOutput = compileUnitSpec(epkSpec, 'epk.json');
+assert.equal(epkOutput.assets.length, 3);
+assert(epkOutput.contentMarkdown.includes('epk-event'));
+assert(epkOutput.contentMarkdown.includes('<polygon'));
+assert(epkOutput.contentMarkdown.includes('<circle'));
+assert(epkOutput.contentMarkdown.includes('marker-end="url(#epk-'));
+const epkFallback = structuredClone(epkSpec);
+delete epkFallback.diagrams[0].description;
+assert(compileUnitSpec(epkFallback, 'epk-fallback.json').contentMarkdown.includes('Anfrage ist eingegangen'));
+const epkEscaped = structuredClone(epkSpec);
+epkEscaped.diagrams[0].nodes[0].label = '<script>&';
+const escapedOutput = compileUnitSpec(epkEscaped, 'epk-escape.json');
+assert(escapedOutput.contentMarkdown.includes('&lt;script&gt;&amp;'));
+assert(!escapedOutput.contentMarkdown.includes('<script>'));
+function invalidEpk(change, pattern) {
+  const bad = structuredClone(epkSpec); change(bad.diagrams[0]);
+  assert.throws(() => validateUnitSpec(bad, 'invalid-epk.json'), pattern);
+}
+invalidEpk(d => { d.nodes[0].kind = 'unknown'; }, /Ungültiger EPK/);
+invalidEpk(d => { d.nodes[0].x = NaN; }, /Ungültiger EPK/);
+invalidEpk(d => { d.nodes[0].id = d.nodes[1].id; }, /eindeutige node/);
+invalidEpk(d => { d.edges[0].to = 'missing'; }, /EPK-Kante/);
+invalidEpk(d => { d.edges.push(d.edges[0]); }, /doppelt/);
+invalidEpk(d => { d.edges.push({from: d.nodes[0].id, to: d.nodes[2].id}); }, /Verzweigung/);
+pass('EPK-Symbole, gerichtete Kanten, Escaping, Beschreibungsfallback und Strukturvalidierung geprüft');
+const cycleSpec = JSON.parse(await readFile(path.join(repoRoot, 'content/learning-units/beduerfnisse-gueter-knappheit-wirtschaftskreislauf.unit.json'), 'utf8'));
+validateUnitSpec(cycleSpec, 'economic-cycle.json');
+const cycleOutput = compileUnitSpec(cycleSpec, 'economic-cycle.json');
+assert.equal(cycleOutput.assets.length, 3);
+assert.equal((cycleOutput.contentMarkdown.match(/class="economic-flow"/g) || []).length, 4);
+assert.equal((cycleOutput.contentMarkdown.match(/data-flow="money"/g) || []).length, 2);
+assert.equal((cycleOutput.contentMarkdown.match(/marker-end="url\(#economic-arrow-/g) || []).length, 4);
+const cycleIndex = cycleSpec.diagrams.findIndex(d => d.type === 'economic-cycle');
+const cycleEscaped = structuredClone(cycleSpec);
+cycleEscaped.diagrams[cycleIndex].items[0].detail = '<script>& primitive';
+assert(compileUnitSpec(cycleEscaped, 'cycle-escape.json').contentMarkdown.includes('&lt;script&gt;&amp; primitive'));
+assert(!compileUnitSpec(cycleEscaped, 'cycle-escape.json').contentMarkdown.includes('<script>'));
+for (const mutation of [d => d.items.pop(), d => d.items.reverse(), d => { d.items[0].detail = 'x'; }, d => { d.items[0].detail = 'x'.repeat(46); }]) {
+  const bad = structuredClone(cycleSpec);
+  mutation(bad.diagrams[cycleIndex]);
+  assert.throws(() => validateUnitSpec(bad, 'invalid-cycle.json'), /economic-cycle/);
+}
+pass('Wirtschaftskreislauf: vier gerichtete Ströme, Geldarten, Escaping und enger Datenvertrag geprüft');
 console.log('OK Compiler-Vertrag für kompakte Lerneinheiten verifiziert.');
+const roundSpec = structuredClone(spec);
+roundSpec.sections[0].round = 'Runde 1 & Grundlage';
+const roundOutput = compileUnitSpec(roundSpec, 'round.json');
+assert(roundOutput.contentMarkdown.includes('data-learning-round="Runde 1 &amp; Grundlage"'));
+assert(roundOutput.contentMarkdown.includes('<dl class="diagram-mobile-list"'));
+assert(roundOutput.contentMarkdown.includes('<dt>' + roundSpec.diagrams[0].items[0].label + '</dt>'));
+roundSpec.sections[0].round = '';
+assert.throws(() => validateUnitSpec(roundSpec, 'round-invalid.json'), /Lernrunde/);
+const recallSpec = structuredClone(spec);
+blocksOf(recallSpec).find(block => block.type === 'recall').model = 'Erster <Absatz>\n\nZweiter & Absatz';
+const recallOutput = compileUnitSpec(recallSpec, 'recall-paragraphs.json');
+assert(recallOutput.contentMarkdown.includes('<p>Erster &lt;Absatz&gt;</p>'));
+assert(recallOutput.contentMarkdown.includes('<p>Zweiter &amp; Absatz</p>'));
+assert(recallOutput.contentMarkdown.includes('class="face back" aria-hidden="true"'));
+pass('Lernrunden, mobile Diagrammtexte und escaped Recall-Absätze behalten ihre Semantik');
+const modelMathSpec = structuredClone(recallSpec);
+const modelRecall = blocksOf(modelMathSpec).find(block => block.type === 'recall');
+modelRecall.model = 'Rechnung: 24 / 6 = 4.\n\nKein rohes HTML.';
+modelRecall.modelMath = [{ expression: '24 / 6 = 4', ariaLabel: '24 geteilt durch 6 gleich 4', mathml: '<mrow><mfrac><mn>24</mn><mn>6</mn></mfrac><mo>=</mo><mn>4</mn></mrow>' }];
+assert.match(compileUnitSpec(modelMathSpec).contentMarkdown, /<math class="math-inline" aria-label="24 geteilt durch 6 gleich 4"><mrow><mfrac>/);
+modelRecall.modelMath[0].mathml = '<img onerror="alert(1)">';
+assert.throws(() => validateUnitSpec(modelMathSpec), /modelMath/);
+pass('Recall-Rechenwege nutzen native Brüche und Textalternativen; unerlaubtes Markup wird abgewiesen');

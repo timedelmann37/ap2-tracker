@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Passwortrichtlinien begründen, Faktoren unterscheiden und Passkeys sowie Passwortmanager mit einem geprüften Wiederherstellungsweg einordnen.">
+<title>Authentifizierung: MFA und Passkeys – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js" defer></script>
+<script src="/assets/ap2-learning.js?v=3.10.1" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="authentifizierung-mfa-passkeys" data-progress-id="ga1-8__10" data-content-revision="2026-10-03.1" data-content-status="CURATED_DRAFT">
+<a class="learning-skip" href="#main-content">Zum Lerninhalt</a>
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-8">IT-Sicherheit und Datenschutz</a><span class="sep">›</span>
+    <span class="here">Authentifizierung: MFA und Passkeys</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content" tabindex="-1">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Authentifizierung: MFA und Passkeys</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 40 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Entwurf · menschliche Freigabe ausstehend</span>
+      </div>
+      <div class="rule"></div>
+      <details class="learning-overview" id="lesson-overview">
+        <summary>Inhalt und Lernstand <small data-current-section>Abschnitt auswählen</small></summary>
+        <div class="overview-body">
+          <div class="mastery-box" data-mastery-box>
+            <div class="mastery-count" data-mastery-count>0 von 4 Pflichtchecks bestanden</div>
+            <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+            <p class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Pflichtchecks.</p>
+            <p class="mastery-note" data-action-reason>Lesen und üben ist ohne Konto möglich.</p>
+            <a class="next-check" href="/?konto=anmelden" data-learning-signin>Anmelden und Fortschritt speichern</a>
+            <a class="next-check" data-next-check hidden>Nächsten offenen Pflichtcheck bearbeiten</a>
+          </div>
+          <nav aria-label="Lernabschnitte"><ul class="toc" id="toc-mobile"><li><a href="#s1" data-t="s1">Diagnose: zwei Fragen sind nicht zwei Faktoren</a></li>
+<li><a href="#s2" data-t="s2">Passwörter: Regeln am Risiko ausrichten</a></li>
+<li><a href="#s3" data-t="s3">MFA: Faktoren und Verfahren getrennt beurteilen</a></li>
+<li><a href="#s4" data-t="s4">Passkeys: lokale Freigabe, gebundener Nachweis</a></li>
+<li><a href="#s5" data-t="s5">Anwendung: Manager und Recovery mitplanen</a></li>
+<li><a href="#s6" data-t="s6">Abruftraining</a></li></ul></nav>
+        </div>
+      </details>
+      <p>Der fiktive Ersatzteilbetrieb Kantenwerk überarbeitet den Zugang zu seinem Serviceportal. Bisher gelten kurze Passwörter mit monatlichem Wechsel und eine zusätzliche Sicherheitsfrage. Die Administration will MFA und Passkeys einführen. Du prüfst den Vorschlag und planst, was bei einem verlorenen Telefon passiert.</p>
+<section class="learning-goals" aria-labelledby="authentifizierung-mfa-passkeys-goals">
+  <h2 id="authentifizierung-mfa-passkeys-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Eine begründete Passwortrichtlinie auswählen</li>
+    <li>Zwei Faktoren von zwei Eingaben und Phishing-Resistenz unterscheiden</li>
+    <li>Passkey-Schlüsselrollen und lokale Freigabe erklären</li>
+    <li>Passwortmanager und sichere Wiederherstellung planen</li>
+  </ul>
+</section><h2 class="sec" id="s1" tabindex="-1"><span class="num" aria-hidden="true">1</span>Diagnose: zwei Fragen sind nicht zwei Faktoren</h2>
+<section class="quiz" data-quiz="auth-diagnose" data-correct="1">
+  <h3>Kantenwerk verlangt Passwort und den Namen des ersten Haustiers. Ist das bereits MFA?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Die Zahl der Eingaben bestimmt nicht die Zahl unterschiedlicher Faktoren."><span class="m">A</span> Ja, weil zwei Felder ausgefüllt werden.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Zwei Wissensabfragen ergeben keinen zweiten Faktortyp."><span class="m">B</span> Nein, beides sind Wissensabfragen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="TLS schützt den Transport, ergänzt aber keinen Besitz- oder biometrischen Faktor."><span class="m">C</span> Ja, sobald HTTPS verwendet wird.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2" tabindex="-1"><span class="num" aria-hidden="true">2</span>Passwörter: Regeln am Risiko ausrichten</h2>
+<p>Ein Passwort ist ein Wissensfaktor. <strong>Länge und Einzigartigkeit</strong> helfen gegen Erraten und Wiederverwendung; sie machen ein Passwort nicht phishing-resistent.</p>
+<p>Als fachlichen Referenzrahmen liest Kantenwerk <strong>NIST SP 800-63B-4</strong>: mindestens 15 Zeichen bei alleiniger Passwortauthentisierung; bei ausschließlich als Teil von MFA verwendeten Passwörtern darf der Mindestwert geringer sein, aber nicht unter acht. Das ist keine universelle deutsche Gesetzeszahl. Die Richtlinie verzichtet auf erzwungene Zeichenklassen und routinemäßige Wechsel; bei Kompromittierungsnachweis ist ein Wechsel nötig. Neue Passwörter werden gegen eine Sperrliste geprüft, Fehlversuche begrenzt. Auf Serverseite gehören geeignete gesalzene Passwort-Hashes zum Schutzkonzept.</p>
+<p><strong>Eigener Änderungsauftrag:</strong> Kantenwerk ersetzt das monatliche Anhängen einer Ziffer durch lange, einzigartige Passwörter, Sperrlistenprüfung und erlaubten Passwortmanager-Einsatz. Die konkrete Mindestlänge wird anhand des vorgesehenen Verfahrens dokumentiert.</p>
+<section class="quiz" data-quiz="auth-passwort" data-correct="0" data-required-objective="passwort">
+  <h3>Welche Änderung passt zum genannten NIST-Referenzrahmen für einen Zugang nur mit Passwort?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Länge, Prüfung schwacher Werte und begrenzte Versuche adressieren unterschiedliche Risiken."><span class="m">A</span> Mindestens 15 Zeichen, Sperrlistenprüfung und begrenzte Fehlversuche; keine pauschale Monatsrotation.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Vorhersehbare Änderungen und geringe Länge beheben die Schwäche nicht."><span class="m">B</span> Sechs Zeichen genügen, wenn jeden Monat eine Ziffer angehängt wird.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Phishing kann auch komplexe Passwörter abgreifen; Wiederverwendung bleibt riskant."><span class="m">C</span> Sonderzeichen machen ein wiederverwendetes Passwort phishing-resistent.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s3" tabindex="-1"><span class="num" aria-hidden="true">3</span>MFA: Faktoren und Verfahren getrennt beurteilen</h2>
+<p>Typische Faktoren sind <strong>Wissen</strong> (Passwort), <strong>Besitz</strong> (kontrollierter Authentikator) und <strong>Sein</strong> (biometrisches Merkmal). Passwort plus ein korrekt eingebundener Einmalcode aus einer Authenticator-App kann Wissen und Besitz nachweisen. Benutzername plus Passwort ist keine MFA: Der Benutzername ist eine Kennung, kein zusätzliches Geheimnis.</p>
+<p><strong>Kantenwerk-Befund:</strong> Eine gefälschte Loginseite nimmt Passwort und den aktuell gültigen OTP-Code entgegen und leitet beides sofort an den echten Dienst weiter. Einmaligkeit allein verhindert diese Weiterleitung nicht. Manuell eingegebene OTPs gelten nach NIST nicht als phishing-resistent. MFA verbessert den Schutz, aber Verfahren unterscheiden sich. Unangeforderte Bestätigungsanfragen werden nicht freigegeben; der Vorfall wird über den bekannten Meldeweg gemeldet.</p>
+<section class="quiz" data-quiz="auth-faktoren" data-correct="2" data-required-objective="faktoren">
+  <h3>Eine Angreiferin leitet einen eingegebenen OTP-Code unmittelbar weiter. Welche Bewertung ist richtig?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Der Code kann im gültigen Anmeldevorgang weitergeleitet werden."><span class="m">A</span> Einmalcode bedeutet automatisch phishing-resistent.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="MFA bleibt ein zusätzlicher Schutz; der konkrete Angriff zeigt eine Verfahrensgrenze."><span class="m">B</span> MFA ist deshalb immer wirkungslos.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein zweiter Faktor schützt nicht automatisch vor einer gefälschten Gegenstelle."><span class="m">C</span> OTP-MFA und Phishing-Resistenz sind getrennte Eigenschaften.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s4" tabindex="-1"><span class="num" aria-hidden="true">4</span>Passkeys: lokale Freigabe, gebundener Nachweis</h2>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Passkey: Anmeldung">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="542" viewBox="0 0 960 542" role="img" aria-labelledby="diagram-auth-passkey-title diagram-auth-passkey-desc">
+  <title id="diagram-auth-passkey-title">Passkey: Anmeldung</title>
+  <desc id="diagram-auth-passkey-desc">Passkey-Anmeldung: Challenge, lokale Nutzerprüfung, signierter Nachweis und Prüfung durch den Dienst.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Passkey: Anmeldung</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Dienst startet Anmeldung</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Neue Challenge für den registrierten Zugang</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Lokale Nutzerprüfung</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">PIN oder Biometrie aktiviert den Authentikator</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Authentikator erzeugt Nachweis</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Signierte Antwort, kein privater Schlüssel zum Dienst</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Dienst prüft die Antwort</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Challenge, Dienstbindung und Signatur prüfen</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Registrierung ist vorausgesetzt. Die Antwort bindet den Anmeldevorgang an den Dienst; PIN und biometrische Daten werden dabei nicht als Login-Geheimnis zum Portal geschickt.</figcaption>
+</figure><p>Ein <strong>Passkey</strong> verwendet ein kryptografisches Schlüsselpaar statt eines gemeinsam mit dem Dienst geteilten Passworts. WebAuthn bindet den Zugang an den Dienst (Relying Party). Beim Anmelden prüft der Server einen signierten Nachweis mit dem registrierten öffentlichen Schlüssel; der private Schlüssel wird nicht an das Portal gesendet.</p>
+<p>Im Kantenwerk-Modell wird <strong>User Verification</strong> verlangt: PIN oder Biometrie gibt die Nutzung lokal frei. Ein einzelner Bedienvorgang kann damit mehrere Faktoren abdecken; es müssen nicht zwei Dialoge erscheinen. Das Fingerabdruckbild wird nicht zur Serverprüfung übertragen.</p>
+<p>Passkeys können gerätegebunden oder über einen Anbieter synchronisiert sein. Deshalb wäre „der private Schlüssel verlässt niemals irgendein Gerät“ eine zu pauschale Aussage. Anbieterzugang, Geräteabsicherung und Wiederherstellung werden mitbewertet. Die Dienstbindung bietet Phishing-Resistenz, aber keine Garantie gegen kompromittierte Endpunkte oder unsichere Ersatzwege.</p>
+<section class="quiz" data-quiz="auth-passkeys" data-correct="1" data-required-objective="passkeys">
+  <h3>Was erhält das Kantenwerk-Portal bei der beschriebenen Passkey-Anmeldung?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Diese Geheimnisse werden im beschriebenen Verfahren nicht an das Portal gesendet."><span class="m">A</span> Den privaten Schlüssel und das Fingerabdruckbild.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Challenge und Dienstbindung gehören zum geprüften Anmeldevorgang."><span class="m">B</span> Einen signierten Nachweis zur Prüfung mit dem öffentlichen Schlüssel.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die PIN aktiviert den Authentikator lokal; sie ist kein geteiltes Portalpasswort."><span class="m">C</span> Die lokale Geräte-PIN als normales Websitepasswort.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s5" tabindex="-1"><span class="num" aria-hidden="true">5</span>Anwendung: Manager und Recovery mitplanen</h2>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Verlust sicher behandeln">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="542" viewBox="0 0 960 542" role="img" aria-labelledby="diagram-auth-betrieb-title diagram-auth-betrieb-desc">
+  <title id="diagram-auth-betrieb-title">Verlust sicher behandeln</title>
+  <desc id="diagram-auth-betrieb-desc">Verlustprozess mit Vorsorge, berechtigter Wiederherstellung, Sperren und kontrollierter Neuregistrierung sowie Nachweisen.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Verlust sicher behandeln</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Vor Verlust vorsorgen</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Ersatzzugang und geschützte Recovery festlegen</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Berechtigten Zugang prüfen</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Freigegebenes Wiederherstellungsverfahren nutzen</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Verlorenen Zugang sperren</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Neuen Authentikator kontrolliert registrieren</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Ergebnis nachweisen</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Benachrichtigung, Test und Bestand aktualisieren</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Der Ersatzweg ist Teil des Sicherheitsmodells. Ein starker regulärer Login kann durch schwache Wiederherstellung unterlaufen werden.</figcaption>
+</figure><p>Ein <strong>Passwortmanager</strong> hilft, für jeden Dienst ein eigenes generiertes Passwort zu verwenden. Autofill und Einfügen dürfen im genannten NIST-Rahmen unterstützt werden. Kantenwerk schützt den Tresorzugang, klärt Freigaben und Wiederherstellung und testet den Notfallweg. Manager-Einsatz allein macht einen Passwort-Login nicht phishing-resistent.</p>
+<p><strong>Eigener Verlustfall:</strong> Maras Telefon ist weg. Sie nutzt das vorab freigegebene Ersatz-/Recovery-Verfahren, nicht eine spontane Ausnahme per Chat. Gespeicherte Recovery-Codes bleiben sicher offline verfügbar; nach Nutzung wird ein solcher Code ungültig und ersetzt. Die Administration registriert einen neuen Authentikator kontrolliert, sperrt den verlorenen und benachrichtigt die betroffene Person. Der Test umfasst normalen Zugang und Geräteverlust. Owner und Vertretung halten den Bestand nach.</p>
+<section class="quiz" data-quiz="auth-betrieb" data-correct="0" data-required-objective="betrieb">
+  <h3>Welcher Recovery-Plan passt zum Kantenwerk-Fall?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Der Plan erhält einen kontrollierten Zugang und behandelt verlorene Authentikatoren gezielt."><span class="m">A</span> Vorab freigegebener Ersatzweg, geschützte Codes, kontrollierte Neuregistrierung und Sperren des verlorenen Zugangs.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Leicht recherchierbares Wissen ist kein ausreichender Ersatznachweis."><span class="m">B</span> Sicherheitsfrage nach einem öffentlich auffindbaren Haustiernamen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein ungeprüfter Ersatzweg kann den regulären Schutz umgehen."><span class="m">C</span> MFA auf jede unbestätigte E-Mail-Anfrage hin deaktivieren.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="recall-practice" data-recall="auth-transfer" data-min-length="180" aria-labelledby="auth-transfer-title">
+  <div class="recall-prompt"><h3 id="auth-transfer-title">Abruf aus dem Kopf</h3><p>Überarbeite Kantenwerks Login-Plan: begründe eine Passwortregel, erkläre die Schwäche der Sicherheitsfrage und OTP-Weiterleitung, beschreibe die Schlüsselrollen eines Passkeys und den Ablauf bei Telefonverlust.</p></div>
+  <label class="sr-only" for="auth-transfer-answer">Deine freie Antwort</label>
+  <textarea id="auth-transfer-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong>
+  <p>Ich dokumentiere Länge und Verfahren nach dem gewählten Referenzrahmen, verwende einzigartige Passwörter mit Sperrlistenprüfung und Manager. Passwort und Sicherheitsfrage sind beide Wissen. OTP-MFA ist nicht automatisch phishing-resistent. Beim Passkey wird lokal freigegeben; das Portal prüft einen signierten dienstgebundenen Nachweis mit dem öffentlichen Schlüssel, nicht PIN oder Fingerabdruckbild. Bei Telefonverlust nutze ich den freigegebenen Recovery-Weg, sperre den verlorenen Zugang, registriere kontrolliert neu und prüfe Benachrichtigung und Bestand.</p></div>
+</section><h2 class="sec" id="s6" tabindex="-1"><span class="num" aria-hidden="true">6</span>Abruftraining</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="wissen" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Sind zwei Wissensfragen MFA?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Nein. MFA verlangt unterschiedliche Faktoren, nicht bloß mehrere Felder.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="kennung" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Ist der Benutzername ein zweiter Faktor?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Nein. Er bezeichnet das Konto; das Passwort liefert einen Wissensnachweis.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="otp" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Ist jeder Einmalcode phishing-resistent?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Nein. Ein manuell eingegebener Code kann im aktuellen Vorgang an den echten Dienst weitergeleitet werden.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="schluessel" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welchen Schlüssel kennt das Portal?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Den registrierten öffentlichen Schlüssel; es prüft damit den signierten Passkey-Nachweis.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="lokal" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wohin geht die Passkey-PIN?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Sie wird lokal zur Freigabe geprüft, nicht als Login-Passwort an das Portal gesendet.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="manager" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was leistet der Passwortmanager?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Er unterstützt unterschiedliche generierte Passwörter pro Dienst; Tresorzugang und Recovery bleiben abzusichern.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="ersatz" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was gehört zum Geräteverlustfall?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Kontrollierte Recovery, verlorenen Zugang sperren, neuen registrieren, Benachrichtigung und Bestandsprüfung.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Authentifizierung“:</span><button type="button" data-card-id="wissen" data-card-rate="known">gewusst</button><button type="button" data-card-id="wissen" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="wissen"></span></div>
+<div class="card-rating"><span>Karte „Authentifizierung“:</span><button type="button" data-card-id="kennung" data-card-rate="known">gewusst</button><button type="button" data-card-id="kennung" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="kennung"></span></div>
+<div class="card-rating"><span>Karte „Authentifizierung“:</span><button type="button" data-card-id="otp" data-card-rate="known">gewusst</button><button type="button" data-card-id="otp" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="otp"></span></div>
+<div class="card-rating"><span>Karte „Authentifizierung“:</span><button type="button" data-card-id="schluessel" data-card-rate="known">gewusst</button><button type="button" data-card-id="schluessel" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="schluessel"></span></div>
+<div class="card-rating"><span>Karte „Authentifizierung“:</span><button type="button" data-card-id="lokal" data-card-rate="known">gewusst</button><button type="button" data-card-id="lokal" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="lokal"></span></div>
+<div class="card-rating"><span>Karte „Authentifizierung“:</span><button type="button" data-card-id="manager" data-card-rate="known">gewusst</button><button type="button" data-card-id="manager" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="manager"></span></div>
+<div class="card-rating"><span>Karte „Authentifizierung“:</span><button type="button" data-card-id="ersatz" data-card-rate="known">gewusst</button><button type="button" data-card-id="ersatz" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ersatz"></span></div>
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-8"><span class="d">zurück zu</span><span class="t">IT-Sicherheit und Datenschutz</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">IT-Sicherheit und Datenschutz</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 4 Pflichtchecks bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Pflichtchecks.</div>
+      <a class="next-check" data-next-check hidden>Nächsten offenen Pflichtcheck bearbeiten</a>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Diagnose: zwei Fragen sind nicht zwei Faktoren</a></li>
+<li><a href="#s2" data-t="s2">Passwörter: Regeln am Risiko ausrichten</a></li>
+<li><a href="#s3" data-t="s3">MFA: Faktoren und Verfahren getrennt beurteilen</a></li>
+<li><a href="#s4" data-t="s4">Passkeys: lokale Freigabe, gebundener Nachweis</a></li>
+<li><a href="#s5" data-t="s5">Anwendung: Manager und Recovery mitplanen</a></li>
+<li><a href="#s6" data-t="s6">Abruftraining</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false" aria-describedby="learning-action-reason">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-8">Zur Themengruppe</a>
+  <span class="action-reason" id="learning-action-reason" data-action-reason>Pflichtchecks bearbeiten und anmelden, um Fortschritt zu speichern.</span>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

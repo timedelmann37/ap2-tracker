@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="LDAP, Kerberos, RADIUS/AAA und Web-SSO nach ihrer Aufgabe unterscheiden und MFA sowie Tokenprüfung für konkrete Zugänge begründen.">
+<title>Identität ist nicht gleich Zugriff – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js" defer></script>
+<script src="/assets/ap2-learning.js?v=3.10.1" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="verzeichnisdienste-authentifizierung-ldap-kerberos-radius-sso-mfa" data-progress-id="ga1-6__14" data-content-revision="2026-10-02.1" data-content-status="CURATED_DRAFT">
+<a class="learning-skip" href="#main-content">Zum Lerninhalt</a>
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-6">Betriebssysteme und Administration</a><span class="sep">›</span>
+    <span class="here">Identität ist nicht gleich Zugriff</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content" tabindex="-1">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Identität ist nicht gleich Zugriff</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 45 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Entwurf · menschliche Freigabe ausstehend</span>
+      </div>
+      <div class="rule"></div>
+      <details class="learning-overview" id="lesson-overview">
+        <summary>Inhalt und Lernstand <small data-current-section>Abschnitt auswählen</small></summary>
+        <div class="overview-body">
+          <div class="mastery-box" data-mastery-box>
+            <div class="mastery-count" data-mastery-count>0 von 3 Pflichtchecks bestanden</div>
+            <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+            <p class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Pflichtchecks.</p>
+            <p class="mastery-note" data-action-reason>Lesen und üben ist ohne Konto möglich.</p>
+            <a class="next-check" href="/?konto=anmelden" data-learning-signin>Anmelden und Fortschritt speichern</a>
+            <a class="next-check" data-next-check hidden>Nächsten offenen Pflichtcheck bearbeiten</a>
+          </div>
+          <nav aria-label="Lernabschnitte"><ul class="toc" id="toc-mobile"><li><a href="#s1" data-t="s1">Diagnose: Ein Verzeichnis ist keine Pauschalfreigabe</a></li>
+<li><a href="#s2" data-t="s2">LDAP lesen, Kerberos-Tickets verstehen</a></li>
+<li><a href="#s3" data-t="s3">AAA und Netzzugang mit RADIUS</a></li>
+<li><a href="#s4" data-t="s4">Web-SSO: Assertion, Access Token oder ID Token?</a></li>
+<li><a href="#s5" data-t="s5">MFA wirkt nur am tatsächlichen Anmeldepfad</a></li>
+<li><a href="#s6" data-t="s6">Aus dem Kopf abrufen und anwenden</a></li>
+<li><a href="#s7" data-t="s7">Lernziel-Check</a></li>
+<li><a href="#s8" data-t="s8">Quellen und Grenzen</a></li></ul></nav>
+        </div>
+      </details>
+      <p>Die fiktive Elbwerk GmbH hat ein zentrales Benutzerverzeichnis. Lea meldet sich am Domänen-PC an, nutzt das Büro-WLAN und öffnet eine externe Projektakte. Nach einer Umstellung kommt sie ins WLAN, erhält in der Projektakte aber „keine Berechtigung“. Im Team heißt es: „LDAP hat sie doch angemeldet, also müssen RADIUS und die Web-App sie freigeben.“ Du ordnest jedem Zugang den richtigen Nachweis und die eigene Berechtigungsentscheidung zu, bevor jemand Konten oder Richtlinien auf Verdacht ändert.</p>
+<section class="learning-goals" aria-labelledby="verzeichnisdienste-authentifizierung-ldap-kerberos-radius-sso-mfa-goals">
+  <h2 id="verzeichnisdienste-authentifizierung-ldap-kerberos-radius-sso-mfa-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>LDAP-Bind und -Suche von Kerberos-TGT und Dienstticket unterscheiden</li>
+    <li>802.1X, EAP, RADIUS und die drei AAA-Aufgaben im Netzzugang richtig zuordnen</li>
+    <li>SAML, OAuth 2.0, OIDC, SSO und MFA im Webzugang nach Zweck und Sicherheitsgrenze unterscheiden</li>
+  </ul>
+</section><h2 class="sec" id="s1" tabindex="-1"><span class="num" aria-hidden="true">1</span>Diagnose: Ein Verzeichnis ist keine Pauschalfreigabe</h2>
+<section class="quiz" data-quiz="identitaet-diagnose" data-correct="1">
+  <h3>Lea ist im Büro-WLAN, die externe Projektakte meldet aber „keine Berechtigung“. Welche erste Aussage ist belastbar?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Der Netzzugang und die Berechtigung in der Projektakte sind getrennte Entscheidungen."><span class="m">A</span> RADIUS hat Lea akzeptiert; damit ist ihre Web-App-Berechtigung automatisch bewiesen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Ein erreichbares Netz beweist weder eine gültige SSO-Aussage noch die Anwendungsberechtigung."><span class="m">B</span> Der WLAN-Zugang funktioniert in diesem Test. Für die Projektakte sind IdP-Anmeldung, übermittelte Identität und die lokale Rollenprüfung gesondert zu prüfen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein Verzeichniseintrag ist kein universeller Zugriffsnachweis. Jedes System prüft seinen eigenen Anmelde- und Rechtepfad."><span class="m">C</span> LDAP enthält Lea; deshalb ist jeder weitere Authentisierungs- und Autorisierungsschritt überflüssig.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><p><strong>Identität</strong> beschreibt, wer oder was bekannt ist. <strong>Authentisierung</strong> prüft einen Nachweis. <strong>Autorisierung</strong> entscheidet anschließend, was diese Identität an einer konkreten Ressource darf. <strong>Accounting</strong> erfasst gegebenenfalls Nutzungsereignisse. Elbwerks zentrales Verzeichnis kann mehrere Dienste mit Kontodaten versorgen; es ersetzt aber weder das jeweilige Anmeldeverfahren noch die lokale Rechteprüfung. Die folgenden drei Pfade — Domäne, WLAN und Web-App — müssen deshalb separat belegt werden.</p>
+<h2 class="sec" id="s2" tabindex="-1"><span class="num" aria-hidden="true">2</span>LDAP lesen, Kerberos-Tickets verstehen</h2>
+<p><strong>LDAP</strong> ist ein Protokoll für den Zugriff auf Verzeichniseinträge. Eine <strong>Search</strong> fragt Einträge anhand von Suchbasis, Suchbereich und Filter ab. <strong>Bind</strong> setzt den Authentifizierungszustand einer LDAP-Sitzung; ein geeigneter Bind kann also einen Nachweis prüfen. Eine erfolgreiche Suche allein beweist aber nicht, dass Leas Anmeldung an einem anderen Dienst gelungen ist. Ein passwortbasierter Simple Bind benötigt passenden Transportschutz und eine geprüfte Serveridentität; ein leeres Passwort darf nicht als erfolgreiche Benutzeranmeldung fehlinterpretiert werden. Das Verzeichnisprodukt, seine Daten und das LDAP-Protokoll sind nicht dasselbe.</p>
+<p>Bei <strong>Kerberos</strong> vertraut der Client einem <strong>Key Distribution Center (KDC)</strong>. Nach dem initialen Nachweis erhält er ein <strong>Ticket-Granting Ticket (TGT)</strong>. Mit diesem fordert er beim KDC ein Ticket für den gewünschten Dienst an und präsentiert <strong>das Dienstticket</strong>, nicht das TGT, zusammen mit einem frischen Authenticator diesem Dienst. So muss das Benutzerpasswort nicht jedem Dienst erneut vorgelegt werden. In einer AD-Domäne können Verzeichnis und KDC auf Domain Controllern zusammenkommen; LDAP-Search und Kerberos-Ticketausgabe bleiben unterschiedliche Vorgänge. Ein Verzeichnistreffer oder ein vorhandenes TGT beweist noch nicht, dass das Ticket für genau diesen Dienst gültig ist oder Lea dessen Daten lesen darf.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Verzeichnisoperation oder Ticket?">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-ldap-kerberos-rollen-title diagram-ldap-kerberos-rollen-desc">
+  <title id="diagram-ldap-kerberos-rollen-title">Verzeichnisoperation oder Ticket?</title>
+  <desc id="diagram-ldap-kerberos-rollen-desc">Technischer Viererschritt: LDAP Bind setzt den Zustand einer LDAP-Sitzung, LDAP Search liest Einträge per Filter; mit einem Kerberos-TGT wird beim KDC ein Dienstticket angefordert, das zusammen mit einem frischen Authenticator zum Dienst geht.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Verzeichnisoperation oder Ticket?</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">LDAP Bind</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">Sitzungszustand</tspan><tspan x="64" dy="30">setzen</tspan></text></g><g><rect class="diagram-row" x="265" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="287" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="287" dy="0">LDAP Search</tspan></text><text x="287" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="287" dy="0">Einträge per Filter</tspan><tspan x="287" dy="30">lesen</tspan></text></g><g><rect class="diagram-row" x="488" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="510" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="510" dy="0">Kerberos TGT</tspan></text><text x="510" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="510" dy="0">Beim KDC</tspan><tspan x="510" dy="30">Dienstticket holen</tspan></text></g><g><rect class="diagram-row" x="711" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="733" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="733" dy="0">Dienstticket</tspan></text><text x="733" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="733" dy="0">Mit Authenticator</tspan><tspan x="733" dy="30">zum Dienst</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigener Rollenvergleich. Ein Verzeichniseintrag ersetzt kein dienstbezogenes Ticket und keine Berechtigungsprüfung.</figcaption>
+</figure><section class="quiz" data-quiz="identitaet-ldap-kerberos" data-correct="1">
+  <h3>Die LDAP-Suche findet Leas Konto, aber ein Kerberos-geschützter Dienst lehnt den Zugriff ab. Was folgt fachlich?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Eine Suche sagt nichts über das passende Kerberos-Dienstticket oder die Rechte am Dienst aus."><span class="m">A</span> Die erfolgreiche LDAP-Suche beweist, dass Kerberos-Ticket und Dienstberechtigung gültig sind.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Ein bekannter Benutzer ist nicht automatisch für jeden Dienst authentisiert und autorisiert."><span class="m">B</span> Suchergebnis, Kerberos-Ticket für den konkreten Dienst und dessen Rechteprüfung sind getrennt zu untersuchen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Das TGT dient zur Anforderung eines Diensttickets beim KDC; an den Zieldienst geht das passende Dienstticket."><span class="m">C</span> Das TGT muss als universelles Passwort direkt an alle Dienste gesendet werden.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s3" tabindex="-1"><span class="num" aria-hidden="true">3</span>AAA und Netzzugang mit RADIUS</h2>
+<p>Für Elbwerks Büro-WLAN ist <strong>802.1X</strong> die Zugangskontrolle: Leas Endgerät ist der <strong>Supplicant</strong>, der Access Point der <strong>Authenticator</strong>. EAP-Nachrichten laufen zwischen diesen Rollen über die 802.1X-Verbindung; der AP transportiert sie typischerweise in <strong>RADIUS</strong> zum Authentifizierungsserver. Eine Access-Challenge setzt den EAP-Austausch fort und ist noch keine Freigabe. Erst auf Access-Accept oder Access-Reject setzt der AP die Netzentscheidung und gegebenenfalls Richtlinienattribute wie eine VLAN-Zuordnung um. Auch bei abgelehnter Anmeldung bleibt der Authentifizierungsverkehr möglich; der physische Port ist nicht pauschal administrativ abgeschaltet.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: 802.1X und RADIUS: wer entscheidet?">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="542" viewBox="0 0 960 542" role="img" aria-labelledby="diagram-radius-zugangspfad-title diagram-radius-zugangspfad-desc">
+  <title id="diagram-radius-zugangspfad-title">802.1X und RADIUS: wer entscheidet?</title>
+  <desc id="diagram-radius-zugangspfad-desc">Technischer 802.1X-Ablauf: Endgerät als Supplicant, AP oder Switch als Authenticator und RADIUS-Server. Eine Access-Challenge wird als weitere EAP-Runde zum Endgerät weitergegeben; erst Access-Accept oder -Reject führt zur Netzentscheidung. Accounting ist ein separater RADIUS-Pfad.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">802.1X und RADIUS: wer entscheidet?</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Endgerät</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Supplicant: EAP über 802.1X</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">AP oder Switch</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Authenticator: EAP in RADIUS</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">RADIUS-Server</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Challenge: EAP weiter; Accept/Reject: final</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">AP oder Switch</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Challenge weiter; final: Netzregel</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigener Protokoll- und Rollenfluss. Challenge setzt EAP fort; der AP oder Switch erzwingt die finale Netzregel, nicht die Web-App-Berechtigung.</figcaption>
+</figure><p><strong>AAA</strong> trennt drei Fragen: Authentication — stimmt der Nachweis? Authorization — welche Netzrolle oder welcher Zugriff ist erlaubt? Accounting — welche Nutzungsereignisse werden erfasst? RADIUS unterstützt die ersten beiden über Access-Nachrichten und Accounting über gesonderte Requests/Responses, sofern diese Funktion eingerichtet ist. Ein Access-Accept allein sagt nicht, welche Anwendungsrechte Lea später besitzt. Ebenso verschlüsselt 802.1X/RADIUS nicht automatisch alle Nutzdaten; die gewählte EAP-Methode, Funkabsicherung und der Schutz der RADIUS-Verbindung müssen im konkreten System separat betrachtet werden.</p>
+<section class="quiz" data-quiz="identitaet-radius-rolle" data-correct="0">
+  <h3>Der RADIUS-Server sendet Access-Accept mit einer vorgesehenen Mitarbeiterrolle, doch Lea landet im Gastnetz. Wo setzt die Fehlersuche an?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Das Zugangsgerät setzt die RADIUS-Entscheidung und Rollenabbildung im Netz um."><span class="m">A</span> Beim AP beziehungsweise Switch: empfangene Attribute, lokale Zuordnung und tatsächlich angewandte Netzregel prüfen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Der Web-API-Token ist kein Ersatz für die 802.1X-/RADIUS-Netzregel."><span class="m">B</span> Beim OAuth Access Token der Projektakte; dieses legt direkt die WLAN-VLAN-ID fest.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein Verzeichnistreffer ist keine nachgewiesene VLAN-Policy am Access-Gerät."><span class="m">C</span> Bei LDAP Search allein; ein gefundener Benutzer legt automatisch das VLAN fest.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s4" tabindex="-1"><span class="num" aria-hidden="true">4</span>Web-SSO: Assertion, Access Token oder ID Token?</h2>
+<p><strong>Single Sign-On (SSO)</strong> bedeutet, dass eine Anmeldung Zugang zu mehreren angebundenen Systemen ermöglichen kann. SSO ist ein Nutzungsmuster, kein einzelnes Protokoll und keine Garantie für ein globales Logout. Für eine Web-App kann ein <strong>Identity Provider (IdP)</strong> per <strong>SAML</strong> eine Assertion über die Anmeldung bereitstellen; der <strong>Service Provider (SP)</strong> prüft diese und entscheidet weiterhin über Leas lokale Rechte. Eine SAML-Assertion kann auch Attribute oder Autorisierungsentscheidungen enthalten. Sie ist weder eine Passwortdatenbank noch ein Freibrief für alle Ressourcen.</p>
+<p><strong>OAuth 2.0</strong> beschreibt delegierte Autorisierung: Ein Client erhält mit passendem Grant einen <strong>Access Token</strong>, um eine Ressource beziehungsweise API im vereinbarten Umfang aufzurufen. Ein Access Token ist nicht automatisch ein interoperabler Beleg dafür, wer sich in der Web-App angemeldet hat; sein Format ist ebenfalls nicht immer JWT. Im <strong>Authorization-Code-Flow</strong> erhält der Client nach der Umleitung zunächst einen <strong>Code</strong> und tauscht ihn anschließend am Token-Endpunkt gegen Token. <strong>OpenID Connect (OIDC)</strong> ergänzt OAuth 2.0 um Authentisierung; das <strong>ID Token</strong> ist für den Client zur Prüfung der Anmeldung bestimmt. Die Projektakte prüft unter anderem Aussteller, Empfänger, Gültigkeit und Signatur des für sie vorgesehenen Identitätsnachweises. Die API prüft getrennt den für sie bestimmten Access Token und dessen erlaubten Umfang. ID Token und Access Token dürfen nicht vertauscht werden.</p>
+<figure class="learning-figure learning-figure-inline">
+  <dl class="diagram-mobile-list" aria-label="Vier Begriffe, vier Aufgaben – Textansicht"><div><dt>SAML</dt><dd>IdP-Assertion für Web-SSO; Dienst prüft sie</dd></div><div><dt>OAuth 2.0</dt><dd>Access Token für begrenzten API-Zugriff</dd></div><div><dt>OIDC</dt><dd>ID Token für Anmeldung auf OAuth-2.0-Basis</dd></div><div><dt>MFA</dt><dd>Zusätzlicher Faktor am tatsächlich genutzten Login</dd></div></dl>
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Vier Begriffe, vier Aufgaben">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-layers" xmlns="http://www.w3.org/2000/svg" width="960" height="512" viewBox="0 0 960 512" role="img" aria-labelledby="diagram-web-zugang-grenzen-title diagram-web-zugang-grenzen-desc">
+  <title id="diagram-web-zugang-grenzen-title">Vier Begriffe, vier Aufgaben</title>
+  <desc id="diagram-web-zugang-grenzen-desc">Vier technische Ebenen: SAML-Assertion für Web-SSO vom Identity Provider; OAuth-Access-Token für begrenzten Ressourcenzugriff; OIDC-ID-Token als Anmeldenachweis für den Client; MFA als zusätzlicher Faktor im tatsächlichen Anmeldepfad.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Vier Begriffe, vier Aufgaben</tspan></text>
+  <g><rect class="diagram-row" x="42" y="82" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="82" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="130" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">SAML</tspan></text><text x="194" y="116" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">IdP-Assertion für Web-SSO; Dienst prüft sie</tspan></text></g><g><rect class="diagram-row" x="42" y="182" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="182" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="230" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">OAuth 2.0</tspan></text><text x="194" y="216" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Access Token für begrenzten API-Zugriff</tspan></text></g><g><rect class="diagram-row" x="42" y="282" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="282" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="330" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">OIDC</tspan></text><text x="194" y="316" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">ID Token für Anmeldung auf OAuth-2.0-Basis</tspan></text></g><g><rect class="diagram-row" x="42" y="382" width="876" height="82" rx="12" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><rect class="diagram-key" x="42" y="382" width="126" height="82" rx="12" fill="var(--diagram-key, #342c40)"/><text x="105" y="430" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="105" dy="0">MFA</tspan></text><text x="194" y="416" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="194" dy="0">Zusätzlicher Faktor am tatsächlich genutzten Login</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Zweckkarte. SSO, Protokoll, Token und zusätzlicher Faktor beantworten verschiedene Fragen.</figcaption>
+</figure><section class="quiz" data-quiz="identitaet-token-zweck" data-correct="1">
+  <h3>Die Projektakte erhält einen OAuth Access Token für ihre Inventar-API. Darf sie ihn allein als Leas interoperablen Login-Nachweis behandeln?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Access Token und ID Token haben unterschiedliche Empfänger und Zwecke; OAuth allein definiert keinen interoperablen Login-Nachweis."><span class="m">A</span> Ja. Jeder OAuth Access Token ist automatisch ein OIDC ID Token mit derselben Zielgruppe.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Identität und API-Autorisierung werden mit den jeweils vorgesehenen Nachweisen und Zielgruppen geprüft."><span class="m">B</span> Nein. Für den Web-Login braucht sie einen passenden, validierten OIDC-ID-Token oder eine validierte SAML-Assertion; den Access Token prüft die API für ihren Zugriff.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="OAuth verwendet Access Tokens; Web-SSO kann etwa über SAML oder OIDC erfolgen."><span class="m">C</span> Nein, weil OAuth grundsätzlich keine Token nutzt und nur LDAP-Bind eine Web-Anmeldung ermöglicht.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s5" tabindex="-1"><span class="num" aria-hidden="true">5</span>MFA wirkt nur am tatsächlichen Anmeldepfad</h2>
+<p><strong>Mehrfaktor-Authentisierung (MFA)</strong> kombiniert Nachweise aus unterschiedlichen Faktorarten, etwa Wissen und Besitz. Zwei Passwörter sind zweimal Wissen und damit keine zwei Faktoren. Elbwerk kann am Web-IdP MFA verlangen; daraus folgt nicht automatisch dieselbe Pflicht bei Domänen-Anmeldung, WLAN oder einem lokalen Notfallkonto. Die Richtlinie muss für jeden tatsächlich genutzten Einstieg, Ausnahme- und Wiederherstellungspfad geprüft werden. Auch eine erfolgreiche MFA-Anmeldung ersetzt weder die Rollenentscheidung der Projektakte noch ihre Tokenprüfung.</p>
+<p><strong>MFA ist nicht gleich phishingresistent.</strong> Manuell eingegebene Einmalcodes können an eine täuschend echte Anmeldeseite weitergegeben werden und erfüllen nach NIST keine Phishingresistenz. Passend eingesetztes WebAuthn/FIDO2 kann den Nachweis kryptografisch an den echten Dienstnamen binden. Elbwerk wählt für besonders schützenswerte Zugänge den zum Schutzbedarf passenden Mechanismus und testet, ob SSO-Sitzung, Wiederanmeldung und Notfallwege die beabsichtigte MFA-Regel tatsächlich durchsetzen. Eine vorhandene IdP-Sitzung bedeutet nicht, dass die Anwendung nie wieder eine Prüfung verlangen darf.</p>
+<section class="sequence-practice" data-sequence="identitaet-stoerfolge" data-expected="befund,web-idp,app,test" data-correct-feedback="Richtig. Der funktionierende Netzpfad ist bereits belegt. Die Meldung der erreichten Web-App lenkt die Fehlersuche auf SSO-Nachweis und lokale Rolle. Korrigiere erst nach einem konkreten Befund und teste die betroffenen Pfade erneut." data-wrong-feedback="Beginne mit der beobachteten Fehlermeldung. Prüfe dann IdP-Nachweis und lokale Anwendungsrolle. RADIUS wird erst wieder relevant, wenn ein Befund auf Netzrolle oder Erreichbarkeit weist; ein pauschaler Kontoreset ist keine Diagnose." aria-labelledby="identitaet-stoerfolge-title">
+  <div class="lab-heading"><div><h3 id="identitaet-stoerfolge-title">WLAN funktioniert, Projektakte verweigert Zugriff</h3><p>Ordne eine zielgerichtete, lesende Fehlersuche für Lea. Die Projektakte selbst meldet „keine Berechtigung“; der funktionierende WLAN-Zugang ist bereits ein abgegrenzter Befund. Niemand ändert Konten, Token oder Rollen auf Verdacht.</p></div><span class="lab-tag">Pfad für Pfad</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="web-idp" tabindex="-1"><span class="step-position" data-step-position>1</span><span>IdP-Anmeldung und für die Projektakte ausgestellte Assertion oder ID Token prüfen</span></li>
+    <li data-step="befund" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Zeitpunkt, Fehlermeldung und betroffenen Zugangspfad dokumentieren</span></li>
+    <li data-step="test" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Nur die belegte Ursache korrigieren und WLAN-, Web- und Rollenpfad erneut testen</span></li>
+    <li data-step="app" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Gültigkeit des Nachweises sowie Rollenabbildung und lokale Freigabe der Projektakte prüfen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><aside class="callout warn"><span class="lbl">Keine universelle MFA-Abkürzung</span><p>Eine MFA-Einstellung am Web-IdP schützt nicht automatisch den Domänen-PC, 802.1X oder einen lokalen Rettungszugang. Liste jeden realen Einstieg und seine Ausnahmen auf; prüfe die wirksame Policy und den Rückweg mit Testkonten, bevor ein produktiver Pfad gesperrt wird.</p></aside><h2 class="sec" id="s6" tabindex="-1"><span class="num" aria-hidden="true">6</span>Aus dem Kopf abrufen und anwenden</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="identitaet-karte-ldap" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was trennt LDAP Bind von LDAP Search?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Bind setzt den Authentifizierungszustand einer LDAP-Sitzung; Search fragt Verzeichniseinträge ab. Ein Suchtreffer ist kein universeller Login-Nachweis.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="identitaet-karte-kerberos" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wozu dienen TGT und Dienstticket?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Das TGT dient beim KDC zur Anforderung eines dienstbezogenen Tickets; dieses Ticket wird dem jeweiligen Dienst vorgelegt.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="identitaet-karte-aaa" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche der drei AAA-Aufgaben protokolliert Nutzungsereignisse?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Accounting. Authentisierung prüft den Nachweis, Autorisierung die erlaubte Rolle; Accounting nutzt bei RADIUS einen gesonderten Nachrichtenpfad.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="identitaet-karte-web" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welcher Nachweis ist für OIDC-Login und welcher für API-Zugriff gedacht?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Das ID Token belegt die Anmeldung gegenüber dem OIDC-Client; ein Access Token ist für die Zielressource oder API und ihren begrenzten Zugriff bestimmt.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="identitaet-karte-mfa" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum ist ein Einmalcode nicht automatisch phishingresistent?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Ein manuell eingegebener Code kann an einen falschen Verifier weitergeleitet werden. Passend eingesetztes WebAuthn/FIDO2 bindet den Nachweis an den echten Dienstnamen.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „LDAP“:</span><button type="button" data-card-id="identitaet-karte-ldap" data-card-rate="known">gewusst</button><button type="button" data-card-id="identitaet-karte-ldap" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="identitaet-karte-ldap"></span></div>
+<div class="card-rating"><span>Karte „Kerberos“:</span><button type="button" data-card-id="identitaet-karte-kerberos" data-card-rate="known">gewusst</button><button type="button" data-card-id="identitaet-karte-kerberos" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="identitaet-karte-kerberos"></span></div>
+<div class="card-rating"><span>Karte „AAA“:</span><button type="button" data-card-id="identitaet-karte-aaa" data-card-rate="known">gewusst</button><button type="button" data-card-id="identitaet-karte-aaa" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="identitaet-karte-aaa"></span></div>
+<div class="card-rating"><span>Karte „Web-SSO“:</span><button type="button" data-card-id="identitaet-karte-web" data-card-rate="known">gewusst</button><button type="button" data-card-id="identitaet-karte-web" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="identitaet-karte-web"></span></div>
+<div class="card-rating"><span>Karte „MFA“:</span><button type="button" data-card-id="identitaet-karte-mfa" data-card-rate="known">gewusst</button><button type="button" data-card-id="identitaet-karte-mfa" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="identitaet-karte-mfa"></span></div><section class="recall-practice" data-recall="identitaet-fallbegruendung" data-min-length="220" aria-labelledby="identitaet-fallbegruendung-title">
+  <div class="recall-prompt"><h3 id="identitaet-fallbegruendung-title">Elbwerks drei Zugänge erklären</h3><p>Erkläre Lea in eigenen Worten: Wofür nutzt die Domäne Verzeichnis/LDAP und Kerberos, wer entscheidet im 802.1X-WLAN mit RADIUS, und welche Prüfung fehlt bei der Projektakte trotz funktionierendem WLAN? Grenze außerdem OAuth Access Token, OIDC ID Token und MFA ab.</p></div>
+  <label class="sr-only" for="identitaet-fallbegruendung-answer">Deine Architektur- und Störungsbegründung</label>
+  <textarea id="identitaet-fallbegruendung-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong>
+  <p>LDAP kann Einträge suchen und mit Bind eine LDAP-Sitzung authentisieren; Kerberos stellt nach dem initialen Nachweis ein TGT und danach ein Ticket für den konkreten Dienst aus. Im WLAN spricht das Endgerät EAP über 802.1X mit dem AP; der AP transportiert den Nachweis über RADIUS, erhält ein Ergebnis und setzt die Netzrolle um. Das beweist keine Rechte in der Projektakte. Dort prüfe ich die SAML-Assertion oder das OIDC ID Token und anschließend die lokale Rollenabbildung. Ein OAuth Access Token ist für begrenzten API-Zugriff gedacht, nicht automatisch für den Login. MFA stärkt nur den tatsächlich angebundenen Anmeldepfad; Einmalcode und phishingresistentes WebAuthn sind nicht gleichwertig.</p></div>
+</section><h2 class="sec" id="s7" tabindex="-1"><span class="num" aria-hidden="true">7</span>Lernziel-Check</h2>
+<section class="quiz" data-quiz="identitaet-verzeichnis-gate" data-correct="0" data-required-objective="verzeichnis-und-tickets-trennen">
+  <h3>Welche Aussage zu LDAP und Kerberos trifft auf Elbwerks Domäne zu?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Verzeichnisoperation, dienstbezogener Nachweis und lokale Autorisierung bleiben unterscheidbar."><span class="m">A</span> LDAP Search kann Einträge liefern; Kerberos nutzt ein TGT zur Anforderung eines Diensttickets. Keines davon allein beweist eine Berechtigung an jeder Ressource.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="LDAP Search und Kerberos-Tickets sind verschiedene Operationen. Das TGT wird dem KDC, nicht jedem Zieldienst, vorgelegt."><span class="m">B</span> LDAP Search gibt immer ein Kerberos-TGT zurück, das direkt jedem Dienst als Passwort übermittelt wird.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein Eintrag belegt weder erfolgreiche Authentisierung noch konkrete Autorisierung."><span class="m">C</span> Ein vorhandener Benutzereintrag ersetzt jeden Bind, jedes Ticket und jede spätere Rechteprüfung.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="identitaet-radius-gate" data-correct="1" data-required-objective="radius-aaa-im-netz-zuordnen">
+  <h3>Wie ist Leas 802.1X-WLAN fachlich zuzuordnen?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Rollen und Systeme sind vertauscht. Die Projektakte entscheidet nicht über den 802.1X-Netzzugang."><span class="m">A</span> Das Endgerät ist Authenticator; der AP liefert das Passwort an die Projektakte; Accounting entscheidet über die App-Rolle.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. EAP/802.1X, RADIUS und die Netzregel haben getrennte Aufgaben."><span class="m">B</span> Das Endgerät ist Supplicant, AP/Switch Authenticator und RADIUS der Prüfserver. AP/Switch setzt die Netzregel um; Accounting ist gesondert.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Netzfreigabe ist nicht Web-Autorisierung; Accounting nutzt einen eigenen, zu konfigurierenden Pfad."><span class="m">C</span> Ein RADIUS Access-Accept gibt automatisch alle Web-Anwendungen frei und protokolliert jede Sitzung ohne Konfiguration.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="identitaet-web-gate" data-correct="1" data-required-objective="federation-token-mfa-bewerten">
+  <h3>Elbwerk will Web-SSO und MFA für die Projektakte. Welche Entscheidung trennt die Rollen korrekt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="OAuth Access Token ist nicht automatisch ein Login-Nachweis. Manuelle OTP-Eingabe ist nicht phishingresistent; MFA-Reichweite ist pfadabhängig."><span class="m">A</span> OAuth Access Token als universellen Login-Nachweis nutzen; jeder Einmalcode ist phishingresistent und gilt automatisch auch im WLAN.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Web-Nachweis, lokale Freigabe und tatsächliche MFA-Durchsetzung sind getrennte Prüfungen."><span class="m">B</span> SAML-Assertion oder OIDC ID Token für den Web-Login passend validieren, Anwendungsrolle getrennt prüfen und MFA am tatsächlich genutzten IdP-Pfad mit seinen Ausnahmen testen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="SAML und OIDC sind keine Verzeichnisdatenbank beziehungsweise VLAN-Regel. SSO garantiert kein globales Logout."><span class="m">C</span> SAML ist die Passwortdatenbank, OIDC ein WLAN-VLAN, und SSO beendet automatisch jede Sitzung aller verbundenen Dienste.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s8" tabindex="-1"><span class="num" aria-hidden="true">8</span>Quellen und Grenzen</h2>
+<p>Primärquellen, geprüft am 02.10.2026: <a href="https://www.rfc-editor.org/rfc/rfc4511.html">LDAP-Protokoll RFC 4511</a>, <a href="https://www.rfc-editor.org/rfc/rfc4513.html">LDAP-Sicherheit RFC 4513</a>, <a href="https://www.rfc-editor.org/rfc/rfc4120.html">Kerberos RFC 4120</a>, <a href="https://www.rfc-editor.org/rfc/rfc2865.html">RADIUS RFC 2865</a>, <a href="https://www.rfc-editor.org/rfc/rfc2866.html">RADIUS Accounting RFC 2866</a>, <a href="https://www.rfc-editor.org/rfc/rfc3579.html">EAP in RADIUS RFC 3579</a>, <a href="https://docs.oasis-open.org/security/saml/v2.0/saml-core-2.0-os.pdf">OASIS SAML 2.0</a>, <a href="https://www.rfc-editor.org/rfc/rfc6749.html">OAuth 2.0 RFC 6749</a>, <a href="https://openid.net/specs/openid-connect-core-1_0.html">OpenID Connect Core</a>, <a href="https://csrc.nist.gov/glossary/term/single_sign_on">NIST zu SSO</a> und <a href="https://pages.nist.gov/800-63-4/sp800-63b.html">NIST zu Phishingresistenz</a>. Die privaten Buchstellen dienten nur als Themenanker; alle Fälle, Aufgaben und Diagramme sind eigenständig. Protokolle, Policy und Tokenformate einer konkreten Plattform müssen vor einem produktiven Eingriff geprüft werden. Diese Einheit bleibt bis zur menschlichen Freigabe CURATED_DRAFT.</p>
+
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-6"><span class="d">zurück zu</span><span class="t">Betriebssysteme und Administration</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Betriebssysteme und Administration</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 3 Pflichtchecks bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Pflichtchecks.</div>
+      <a class="next-check" data-next-check hidden>Nächsten offenen Pflichtcheck bearbeiten</a>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Diagnose: Ein Verzeichnis ist keine Pauschalfreigabe</a></li>
+<li><a href="#s2" data-t="s2">LDAP lesen, Kerberos-Tickets verstehen</a></li>
+<li><a href="#s3" data-t="s3">AAA und Netzzugang mit RADIUS</a></li>
+<li><a href="#s4" data-t="s4">Web-SSO: Assertion, Access Token oder ID Token?</a></li>
+<li><a href="#s5" data-t="s5">MFA wirkt nur am tatsächlichen Anmeldepfad</a></li>
+<li><a href="#s6" data-t="s6">Aus dem Kopf abrufen und anwenden</a></li>
+<li><a href="#s7" data-t="s7">Lernziel-Check</a></li>
+<li><a href="#s8" data-t="s8">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false" aria-describedby="learning-action-reason">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-6">Zur Themengruppe</a>
+  <span class="action-reason" id="learning-action-reason" data-action-reason>Pflichtchecks bearbeiten und anmelden, um Fortschritt zu speichern.</span>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

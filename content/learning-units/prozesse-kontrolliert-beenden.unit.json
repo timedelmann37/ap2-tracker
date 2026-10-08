@@ -1,0 +1,505 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "prozesse-kontrolliert-beenden",
+    "slug": "prozesse-kontrolliert-beenden",
+    "title": "Prozesse kontrolliert beenden: Signal, Task und Nachweis",
+    "description": "Einen hängenden Prozess eindeutig zuordnen, den schonendsten Stopp wählen und Betrieb sowie Daten danach prüfen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-6",
+    "groupLabel": "Betriebssysteme und Administration",
+    "itemId": "ga1-6__8",
+    "week": "KW 40",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "sources": [
+      "util-linux-kill-man",
+      "linux-signal-man",
+      "procps-ps-man",
+      "systemd-systemctl-man",
+      "systemd-service-man",
+      "microsoft-taskkill",
+      "microsoft-tasklist",
+      "microsoft-process-id"
+    ],
+    "contentRevision": "2026-10-02.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "prozess-eindeutig-zuordnen",
+      "label": "Prozess und PID vor einem Eingriff anhand von Aufgabe, Konto und Zustand zuordnen"
+    },
+    {
+      "id": "stoppwirkung-abwaegen",
+      "label": "SIGTERM, SIGKILL und Windows-Taskkill nach Wirkung und Eingriffsbreite unterscheiden"
+    },
+    {
+      "id": "betrieb-nachweisen",
+      "label": "Nach dem Stopp Prozesszustand, Dienstfunktion und mögliche Datenfolgen verifizieren"
+    }
+  ],
+  "intro": "Bei Kranich hängt ein Berichtsexport. Auf dem Linux-Server laufen zwei Prozesse mit demselben Namen: Einer bearbeitet einen freigegebenen Produktionsauftrag, der andere einen abgebrochenen Testlauf. Auf einem Windows-Arbeitsplatz reagiert zusätzlich das Berichtsprogramm nicht. Du sollst nur die tatsächlich betroffene Instanz beenden, unnötige Datenverluste vermeiden und anschließend belegen, dass der Dienst wieder korrekt arbeitet. Alle PIDs in dieser Einheit sind fiktive Beispiele, keine auszuführenden Zielangaben.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "util-linux-kill-man",
+        "sourceLocator": "kill(1), DESCRIPTION sowie EXIT STATUS und Hinweise zu PID-Wiederverwendung",
+        "use": "Standard-Signal TERM, mögliche Reaktion des Prozesses, KILL als Ausnahme und Unterschied zwischen Signalversand und abgeschlossenem Stopp",
+        "reviewStatus": "Upstream-Manpage am 02.10.2026 geprüft"
+      },
+      {
+        "sourceId": "linux-signal-man",
+        "sourceLocator": "signal(7), Signal dispositions und Standard signals",
+        "use": "SIGTERM-Standardwirkung sowie die Nichtabfangbarkeit, Nichtblockierbarkeit und Nichtignorierbarkeit von SIGKILL",
+        "reviewStatus": "Linux-man-pages am 02.10.2026 geprüft"
+      },
+      {
+        "sourceId": "procps-ps-man",
+        "sourceLocator": "ps(1), -p pidlist und -o format",
+        "use": "PID-bezogene lesende Prozesssicht mit Nutzer, Elternprozess, Programm und Status",
+        "reviewStatus": "procps-ng-Manpage am 02.10.2026 geprüft"
+      },
+      {
+        "sourceId": "systemd-systemctl-man",
+        "sourceLocator": "systemctl(1), stop und status",
+        "use": "Bei einer systemd-Unit den verwalteten Dienstweg und die anschließende Statusprüfung dem rohen PID-Signal vorziehen",
+        "reviewStatus": "systemd-Manpage am 02.10.2026 geprüft; konkrete Unit-Policy bleibt anlagenabhängig"
+      },
+      {
+        "sourceId": "systemd-service-man",
+        "sourceLocator": "systemd.service(5), Restart= und ExecStop=",
+        "use": "Möglichen automatischen Neustart nach direktem Prozessende von der verwalteten Stop-Operation unterscheiden; auch deren Stop-Policy nicht pauschal als garantiert schonend darstellen",
+        "reviewStatus": "Debian-Upstream-Manpage am 02.10.2026 geprüft"
+      },
+      {
+        "sourceId": "microsoft-taskkill",
+        "sourceLocator": "taskkill, Syntax und Parameter /PID, /F, /T",
+        "use": "Windows-Task nach PID beenden; /T erweitert auf gestartete Kindprozesse, /F erzwingt das Ende",
+        "reviewStatus": "Microsoft Learn am 02.10.2026 geprüft"
+      },
+      {
+        "sourceId": "microsoft-tasklist",
+        "sourceLocator": "tasklist, PID-Filter und Syntax",
+        "use": "Windows-PID vor und nach einer Aktion lesend prüfen",
+        "reviewStatus": "Microsoft Learn am 02.10.2026 geprüft"
+      },
+      {
+        "sourceId": "microsoft-process-id",
+        "sourceLocator": "Find the process ID, Task Manager: Details und PID-Spalte",
+        "use": "Eine konkrete Windows-Instanz im Task-Manager identifizieren statt alle gleichnamigen Prozesse auszuwählen",
+        "reviewStatus": "Microsoft Learn am 02.10.2026 geprüft"
+      }
+    ],
+    "notes": [
+      "Kranich, Test-/Produktionsprozess, PIDs, Entscheidungsfolge, Diagramme und Aufgaben sind eigenständig. Ein passender privater Buchbeleg für SIGTERM/SIGKILL und taskkill wurde nicht verifiziert; die vorliegenden Shell-Seiten dienen hier nicht als Fachbeleg. Keine Buchabbildung oder OCR-Tabelle wird veröffentlicht.",
+      "Die Linux-Beispiele setzen ein System mit procps-ng und util-linux beziehungsweise Shell-Builtin voraus, der Dienstfall zusätzlich systemd. Windows-Beispiele betreffen einen lokalen Windows-Prozess. Vor realen Eingriffen Zielsystem, Rechte, Prozessidentität, Dienstanweisung und Sicherungs-/Rückweg prüfen. Menschliche Fach-, Didaktik- und Grafikfreigabe steht aus."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "prozess-eingriffsfolge",
+      "type": "flow",
+      "title": "Regelweg für gezielten Stopp",
+      "description": "Technischer Regelweg: Prozessidentität prüfen, normalen Stopp versuchen, bei Bedarf TERM senden, Wirkung beobachten und Betrieb nachweisen. KILL gehört nicht zu dieser linearen Hauptfolge, sondern ist ein gesondert zu begründender Ausnahmeweg.",
+      "items": [
+        {
+          "label": "PID bestätigen",
+          "detail": "Prozess, Konto und Auftrag abgleichen"
+        },
+        {
+          "label": "Normaler Stopp",
+          "detail": "App- oder Dienstweg; Erfolg prüfen"
+        },
+        {
+          "label": "Falls nötig: TERM",
+          "detail": "Gezielt senden; Reaktion abwarten"
+        },
+        {
+          "label": "Wirkung prüfen",
+          "detail": "Noch aktiv? Ausnahme separat bewerten"
+        },
+        {
+          "label": "Nachweis",
+          "detail": "PID, Dienst und Datenzustand prüfen"
+        }
+      ]
+    },
+    {
+      "id": "prozess-mechanismen-vergleichen",
+      "type": "comparison",
+      "title": "Linux-Signale und Windows-Taskkill",
+      "description": "Technischer Vergleich der konkreten Eingriffswege; Windows-Taskkill ist keine direkte Übersetzung von POSIX-Signalen.",
+      "items": [
+        {
+          "label": "Linux: TERM",
+          "detail": "Signal; Reaktion und Cleanup möglich"
+        },
+        {
+          "label": "Linux: KILL",
+          "detail": "Nicht abfangbar; kein Cleanup im Prozess"
+        },
+        {
+          "label": "Windows: /PID",
+          "detail": "Gezielte Instanz; Ergebnis prüfen"
+        },
+        {
+          "label": "Windows: /T, /F",
+          "detail": "/T erfasst Kinder; /F erzwingt Ende"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "1 · Die betroffene Instanz erkennen",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "prozess-einstieg",
+          "diagnostic": true,
+          "question": "Auf dem Linux-Server erscheinen zwei `report-worker`-Prozesse. Einer verarbeitet produktive Daten. Was ist der erste sichere Schritt?",
+          "options": [
+            {
+              "text": "Beide PIDs sofort mit `kill -9` beenden; einer davon wird schon der richtige sein.",
+              "rationale": "Das würde auch den produktiven Auftrag abrupt abbrechen und dem Prozess keine Aufräummöglichkeit geben.",
+              "correct": false
+            },
+            {
+              "text": "Beide PIDs, Konten, Elternprozesse und Aufträge lesend prüfen und den hängenden Auftrag eindeutig zuordnen.",
+              "rationale": "Richtig. Ein gleicher Prozessname identifiziert nicht die betroffene Instanz. Erst der Abgleich macht einen gezielten Eingriff möglich.",
+              "correct": true
+            },
+            {
+              "text": "Alle gleichnamigen Prozesse beenden; der Name reicht als Identitätsnachweis.",
+              "rationale": "Mehrere Instanzen können verschiedene Konten und Aufträge bedienen. Eine breite Auswahl ist gerade hier unsicher.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "figure",
+          "diagramId": "prozess-eingriffsfolge",
+          "alt": "Fünfstufiger Regelweg: PID und Auftrag prüfen, normalen Stopp versuchen, bei Bedarf gezielt TERM senden, Wirkung und weiteren Bedarf beurteilen, anschließend Betrieb und Daten nachprüfen. Ein möglicher KILL-Eingriff ist als bedingte Ausnahme außerhalb des Regelwegs erläutert.",
+          "caption": "Nach erfolgreichem normalen Stopp direkt zum Nachweis; TERM nur bei weiterem Hänger. KILL gehört nicht automatisch dazu: Folgen und Freigabe sind gesondert zu prüfen, danach folgt ebenfalls der Nachweis."
+        },
+        {
+          "type": "markdown",
+          "markdown": "**PID vor Befehl:** Unter Linux liefert etwa `ps -p 4182,4197 -o pid,ppid,user,comm,stat` eine lesende Sicht auf die beiden *fiktiven* Kandidaten. PID, Nutzer, Elternprozess, Programm und Zustand helfen beim Zuordnen. Auftrag, Dienstzugehörigkeit und mögliche Kindprozesse müssen zusätzlich anhand der konkreten Umgebung geprüft werden; gleicher Name ist kein Beweis. Unter Windows findest du die PID im Task-Manager unter **Details** oder mit `tasklist /fi \"PID eq 6924\"`. Ein Name wie `bericht.exe` kann ebenfalls mehrfach vorkommen.\n\nEine PID bezeichnet einen Prozess zu einem bestimmten Zeitpunkt und kann nach dessen Ende wiederverwendet werden. Prüfe unmittelbar vor einer späteren Aktion erneut, ob PID und Ziel noch zusammenpassen. Verwende für verwaltete Dienste den freigegebenen App- oder Dienstweg: Ein direkt beendeter systemd-Dienstprozess kann je `Restart=`-Policy automatisch neu starten, während `systemctl stop` eine verwaltete Stop-Operation ist. Die Beispiel-PIDs in dieser Einheit sind keine Handlungsanweisung für einen echten Rechner."
+        },
+        {
+          "type": "quiz",
+          "id": "pid-nicht-name",
+          "question": "Windows zeigt zwei `bericht.exe`-Instanzen für verschiedene Sitzungen. Wie grenzt du den blockierten Task vor `taskkill` ein?",
+          "options": [
+            {
+              "text": "Nur den Image-Namen verwenden; Windows startet pro Programmname immer genau einen Prozess.",
+              "rationale": "Mehrere Instanzen desselben Programms sind möglich. Der Name allein reicht nicht.",
+              "correct": false
+            },
+            {
+              "text": "Im Task-Manager unter Details oder mit `tasklist` die konkrete PID ermitteln und Sitzung sowie Aufgabe abgleichen.",
+              "rationale": "Richtig. `taskkill /PID` kann dann die geprüfte Instanz ansprechen, statt pauschal alle gleichnamigen Prozesse zu erfassen.",
+              "correct": true
+            },
+            {
+              "text": "Ohne Prüfung `/T /F` für beide Instanzen einsetzen.",
+              "rationale": "Das erweitert den Eingriff auch auf Kindprozesse und erzwingt das Ende, ohne das Ziel zu sichern.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "2 · Linux: TERM anfragen, KILL begründen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "`kill -TERM 4182` sendet der geprüften PID ein **SIGTERM**; beim üblichen Linux-`kill` ist TERM auch ohne `-TERM` die Voreinstellung. Die Standardwirkung ist Beenden. Ein Programm kann TERM jedoch behandeln, für Aufräumarbeiten nutzen, verzögern oder ignorieren. Das Signal ist deshalb eine *Aufforderung* zum Ende, kein Beweis für ein sauberes oder bereits abgeschlossenes Ende. Erst Reaktion und Ergebnis beobachten. Für einen systemd-Dienst gehört grundsätzlich der verwaltete Weg wie `systemctl stop name.service` nach Betriebsanweisung geprüft; auch dessen konkrete Stop-Policy kann nach einem Timeout eskalieren und ist nicht automatisch garantiert schonend.\n\n`kill -KILL 4182` beziehungsweise `kill -9 4182` sendet **SIGKILL**. Der Prozess kann dieses Signal nicht abfangen, blockieren oder ignorieren und damit keinen eigenen Cleanup-Handler ausführen. Das Betriebssystem räumt zwar Prozessressourcen auf, aber ein teilweise geschriebener Export, externe Sperren oder ein unfertiger Auftrag können fachliche Nacharbeit verlangen. KILL ist nur nach eindeutiger Identifikation, abgewarteter Reaktion, Folgenabschätzung und Freigabe zu erwägen. Es ist keine Beschleunigung des Diagnosebeginns. Selbst nach erfolgreichem Signalversand ist zu prüfen, ob der Prozess wirklich verschwunden ist und ob ein Manager ihn neu gestartet hat."
+        },
+        {
+          "type": "figure",
+          "diagramId": "prozess-mechanismen-vergleichen",
+          "alt": "Vier technische Mechanismen im Vergleich: Linux SIGTERM lässt eine Prozessreaktion zu, SIGKILL kann nicht abgefangen werden; Windows taskkill /PID wählt eine Instanz, /T erweitert auf Kindprozesse und /F erzwingt das Ende.",
+          "caption": "Keine direkte Übersetzung: Windows-`taskkill` hat nicht die gleiche Semantik wie Linux-SIGTERM oder SIGKILL."
+        },
+        {
+          "type": "quiz",
+          "id": "term-ist-kein-nachweis",
+          "question": "`kill -TERM` meldet einen erfolgreichen Aufruf. Welche Aussage folgt sicher daraus?",
+          "options": [
+            {
+              "text": "Der Prozess ist garantiert beendet und alle Daten sind vollständig gespeichert.",
+              "rationale": "Das bestätigt der Rückgabewert des Signalbefehls nicht. Prozess-, Dienst- und Datenprüfung bleiben nötig.",
+              "correct": false
+            },
+            {
+              "text": "Der Befehl hat automatisch alle Kindprozesse und die ganze systemd-Unit gestoppt.",
+              "rationale": "Ein Signal an eine PID ist nicht pauschal ein Stopp des Prozessbaums oder der verwalteten Unit.",
+              "correct": false
+            },
+            {
+              "text": "Der Signalversand gelang; ob der Prozess beendet ist und der Auftrag konsistent blieb, muss gesondert geprüft werden.",
+              "rationale": "Richtig. Ein empfangenes TERM kann verarbeitet oder verzögert werden; die Anwendungslage ist damit noch nicht bewiesen.",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "kill-als-ausnahme",
+          "question": "Der exakt identifizierte Testprozess reagiert nach angemessener Wartezeit nicht auf TERM. Wann ist SIGKILL vertretbar?",
+          "options": [
+            {
+              "text": "Wenn Ursache und Auswirkungen bewertet, der Eingriff freigegeben und Nachprüfungen für Auftrag und Daten vorbereitet sind.",
+              "rationale": "Richtig. Das nicht abfangbare Signal bleibt ein begründeter Ausnahmeweg für den konkreten Prozess.",
+              "correct": true
+            },
+            {
+              "text": "Immer sofort nach TERM, ohne dessen Reaktion zu beobachten.",
+              "rationale": "So ginge die Chance auf geordnetes Aufräumen unnötig verloren.",
+              "correct": false
+            },
+            {
+              "text": "Nur weil dieselbe Programmdatei im Task-Manager zweimal sichtbar ist.",
+              "rationale": "Ein gleicher Name belegt weder die Prozessidentität noch die Notwendigkeit eines erzwungenen Abbruchs.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "3 · Windows: Task-Manager und taskkill gezielt nutzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Bei einer nicht mehr reagierenden Windows-Anwendung prüfst du zuerst, ob sie sich über ihre Oberfläche regulär schließen lässt und ob ungespeicherte Arbeit betroffen ist. Der **Task-Manager** zeigt unter **Details** einzelne Prozesse samt PID; `tasklist /fi \"PID eq 6924\"` filtert eine *fiktive* PID. `taskkill /PID 6924` richtet sich an genau diese lokale Prozess-ID. Die Option `/T` nimmt auch von dieser Instanz gestartete Kindprozesse in den Stopp auf. `/F` erzwingt das Ende. Diese Optionen sind keine neutrale Verbesserung: `/T` vergrößert den Wirkungsbereich, `/F` erhöht das Risiko für ungespeicherte Daten.\n\nDer Task-Manager-Befehl **Task beenden** und `taskkill` sind Werkzeuge für hängende Programme, aber kein Nachweis für einen fachlich sauberen Abschluss. Verwende `/IM bericht.exe` nicht als Abkürzung, wenn mehrere Instanzen existieren. Eine Windows-`taskkill`-Variante ohne `/F` darf nicht als exakte Entsprechung zu Linux-SIGTERM erklärt werden. Diese Einheit betrachtet nur lokale Aufgaben; Remote-`taskkill` besitzt andere Erzwingungsregeln. Nach dem Stopp gehören Prozessliste, Anwendung, offene Dateien und betroffene Aufträge zur Nachkontrolle."
+        },
+        {
+          "type": "quiz",
+          "id": "taskkill-optionen",
+          "question": "Eine identifizierte Windows-Instanz hat einen Kindprozess gestartet, der einen Export fortsetzt. Welche Aussage zu `taskkill` ist korrekt?",
+          "options": [
+            {
+              "text": "`/T` zeigt nur eine Vorschau, `/F` prüft nur den Dateipfad.",
+              "rationale": "Beide Optionen verändern die Wirkung des Abbruchs, sie sind keine lesenden Prüfoptionen.",
+              "correct": false
+            },
+            {
+              "text": "`/IM bericht.exe /T /F` trifft garantiert nur die eine zuvor geprüfte Sitzung.",
+              "rationale": "Ein Image-Name kann mehrere Instanzen treffen; `/T` und `/F` machen den Eingriff noch breiter und härter.",
+              "correct": false
+            },
+            {
+              "text": "`/PID` wählt die Instanz, `/T` erweitert auf von ihr gestartete Kindprozesse und `/F` erzwingt das Ende; jedes zusätzliche Flag muss begründet sein.",
+              "rationale": "Richtig. Gerade der mögliche Datenexport im Kindprozess macht die Reichweite entscheidungsrelevant.",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "prozess-karte-pid",
+              "label": "PID",
+              "front": "Warum reicht ein Programmname vor einem Prozess-Stopp nicht?",
+              "back": "Mehrere Instanzen können verschiedene Konten oder Aufträge bedienen. Die konkrete PID und Aufgabe müssen unmittelbar vor dem Eingriff abgeglichen werden."
+            },
+            {
+              "id": "prozess-karte-term",
+              "label": "SIGTERM",
+              "front": "Was beweist ein erfolgreicher `kill -TERM`-Aufruf nicht?",
+              "back": "Weder das tatsächliche Ende des Prozesses noch einen konsistent abgeschlossenen Auftrag. Beides muss nachgeprüft werden."
+            },
+            {
+              "id": "prozess-karte-kill",
+              "label": "SIGKILL",
+              "front": "Warum ist `kill -9` kein normaler erster Schritt?",
+              "back": "SIGKILL kann nicht abgefangen werden; der Prozess erhält keine Gelegenheit zu eigenem Cleanup. Mögliche Datenfolgen brauchen eine Prüfung."
+            },
+            {
+              "id": "prozess-karte-taskkill",
+              "label": "taskkill",
+              "front": "Welche Wirkung haben `/PID`, `/T` und `/F`?",
+              "back": "`/PID` wählt eine konkrete Prozess-ID, `/T` umfasst ihre gestarteten Kindprozesse und `/F` erzwingt das Ende."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "4 · Entscheidung und Nachkontrolle üben",
+      "blocks": [
+        {
+          "type": "sequence",
+          "id": "prozess-kontrollfolge",
+          "title": "Einen Testlauf kontrolliert stoppen",
+          "prompt": "Ordne die Schritte für den hängenden Linux-Testlauf. Der KILL-Schritt wird nur ausgeführt, falls der Prozess nach der Prüfung weiter blockiert und der Ausnahmeweg freigegeben ist.",
+          "steps": [
+            {
+              "id": "nachweis",
+              "label": "PID, Dienstfunktion, Auftrag und Datenzustand nach dem Eingriff prüfen"
+            },
+            {
+              "id": "term",
+              "label": "Falls nötig, TERM an die erneut geprüfte PID senden"
+            },
+            {
+              "id": "normal",
+              "label": "Freigegebenen normalen App- oder Dienst-Stopp zuerst versuchen"
+            },
+            {
+              "id": "abwarten",
+              "label": "Reaktion innerhalb einer angemessenen Frist beobachten"
+            },
+            {
+              "id": "identitaet",
+              "label": "Prozess, PID, Konto und betroffenen Auftrag eindeutig bestätigen"
+            },
+            {
+              "id": "ausnahme",
+              "label": "Nur bei weiterem Hänger Folgen und Freigabe prüfen; KILL bleibt bedingt"
+            }
+          ],
+          "expected": [
+            "identitaet",
+            "normal",
+            "term",
+            "abwarten",
+            "ausnahme",
+            "nachweis"
+          ],
+          "correctFeedback": "Richtig. Identität und normaler Weg kommen zuerst. TERM braucht Beobachtung; KILL ist nur eine freigegebene Ausnahme. Am Ende zählen Dienst- und Datenzustand.",
+          "wrongFeedback": "Beginne mit der eindeutigen PID und dem normalen Stoppweg. Nach TERM erst beobachten; bei weiterem Hänger die Ausnahme bewerten und nach jedem tatsächlich ausgeführten Eingriff Betrieb und Daten prüfen."
+        },
+        {
+          "type": "quiz",
+          "id": "pid-weg-dienst-noch-gestoert",
+          "question": "Die ursprüngliche PID ist nach TERM verschwunden, aber der Berichtsexport funktioniert weiter nicht. Was folgt fachlich?",
+          "options": [
+            {
+              "text": "Neue Prozessinstanzen und Dienststatus prüfen, Auftrag und Datenkonsistenz untersuchen; das Verschwinden der alten PID reicht nicht als Abnahme.",
+              "rationale": "Richtig. Ein Manager kann neu starten, ein Kindprozess kann weiterlaufen und ein Auftrag kann unfertig bleiben.",
+              "correct": true
+            },
+            {
+              "text": "Die Störung gilt als behoben, weil genau eine PID fehlt.",
+              "rationale": "Die fachliche Funktion und der betroffene Datenstand sind damit nicht nachgewiesen.",
+              "correct": false
+            },
+            {
+              "text": "Sofort `kill -9` an die alte PID senden, ohne erneut nachzusehen.",
+              "rationale": "Die alte PID kann verschwunden oder neu vergeben sein. Ein weiterer Eingriff ohne neue Zuordnung ist riskant und klärt die Störung nicht.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "5 · Transfer: zwei Plattformen, ein Prüfprinzip",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Neuer Fall: Auf Linux-Host Lerche meldet die Überwachung einen hängenden Import. `ps` zeigt zwei Instanzen, eine gehört zur aktiven Produktion, die andere zu einem Testauftrag. Auf dem Windows-Client Schwalbe sind zwei Instanzen von `import-ui.exe` geöffnet. Ein Kollege schlägt `kill -9` für beide Linux-PIDs und `taskkill /IM import-ui.exe /T /F` vor. Das wäre auf beiden Systemen zu breit.\n\nDein Plan muss die konkrete Instanz über PID und Auftrag identifizieren, einen normalen Stoppweg versuchen und beim Linux-Testlauf TERM mit Beobachtungsfrist von KILL trennen. Bei Windows ist die geprüfte PID statt des gemeinsamen Image-Namens zu wählen. `/T` ist nur nötig, wenn die gestarteten Kindprozesse **ebenfalls** zum freigegebenen Stoppumfang gehören; `/F` braucht eine eigene Begründung. Danach prüfst du nicht nur die Prozessliste, sondern Importfunktion, Arbeitsdateien und eventuell erneut gestartete Instanzen. Ein fehlender Prozess ist kein erfolgreicher Import."
+        },
+        {
+          "type": "recall",
+          "id": "prozess-fallbegruendung",
+          "title": "Den sicheren Stoppplan begründen",
+          "prompt": "Erkläre für Lerche und Schwalbe, warum die beiden vorgeschlagenen Sammelbefehle falsch sind. Nenne je eine gezielte Identitätsprüfung, den bevorzugten Stoppweg, eine Bedingung für erzwungenes Beenden und zwei Nachweise nach der Aktion.",
+          "label": "Deine begründete Entscheidung",
+          "minLength": 190,
+          "model": "Auf Lerche identifiziere ich mit ps PID, Konto und Auftrag; der gleichnamige Produktionsprozess bleibt unberührt. Zuerst prüfe ich den normalen App- oder Dienst-Stopp, sonst sende ich TERM an die erneut bestätigte Test-PID und beobachte die Reaktion. KILL kommt erst nach angemessener Frist, Folgenabschätzung und Freigabe infrage. Auf Schwalbe finde ich die konkrete PID im Task-Manager unter Details oder mit tasklist und vermeide /IM für beide Instanzen. /T und /F nutze ich nur, wenn Kindprozesse beziehungsweise ein erzwungenes Ende ausdrücklich nötig sind. Danach prüfe ich Prozessliste oder neue PIDs, Anwendung und Importauftrag sowie Arbeitsdateien auf konsistenten Zustand."
+        }
+      ]
+    },
+    {
+      "title": "6 · Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "prozess-zuordnung-gate",
+          "requiredObjective": "prozess-eindeutig-zuordnen",
+          "question": "Zwei gleichnamige Prozesse laufen, nur einer hängt. Welche Prüfung begrenzt den Eingriff korrekt?",
+          "options": [
+            {
+              "text": "Alle Prozesse mit demselben Namen beenden, weil sie dieselbe Aufgabe haben müssen.",
+              "rationale": "Gleichnamige Instanzen können unterschiedliche Aufgaben und Nutzer betreffen.",
+              "correct": false
+            },
+            {
+              "text": "Die älteste PID aus einem gestrigen Screenshot ungeprüft verwenden.",
+              "rationale": "PIDs sind zeitgebunden und können wiederverwendet werden; das Ziel muss neu geprüft werden.",
+              "correct": false
+            },
+            {
+              "text": "PID, Konto, Dienst-/Auftragsbezug und aktuelle Existenz der Instanz unmittelbar vor dem Stopp bestätigen.",
+              "rationale": "Richtig. Eine zuvor notierte PID oder ein gemeinsamer Name allein ist kein dauerhafter Identitätsbeleg.",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "prozess-wirkung-gate",
+          "requiredObjective": "stoppwirkung-abwaegen",
+          "question": "Welche Aussage beschreibt SIGTERM, SIGKILL und Windows-`taskkill` richtig?",
+          "options": [
+            {
+              "text": "TERM beendet immer sofort sauber; `taskkill /F` macht nur eine Vorschau.",
+              "rationale": "TERM kann verzögert oder ignoriert werden; /F ist ein erzwungener Eingriff.",
+              "correct": false
+            },
+            {
+              "text": "TERM erlaubt eine Prozessreaktion; KILL ist nicht abfangbar; `taskkill /T` erweitert auf Kinder und `/F` erzwingt das Ende.",
+              "rationale": "Richtig. Windows-Optionen und Linux-Signale sind dabei keine eins-zu-eins identischen Mechanismen.",
+              "correct": true
+            },
+            {
+              "text": "KILL ruft garantiert den Cleanup-Handler auf; `/T` begrenzt `taskkill` auf den Elternprozess.",
+              "rationale": "SIGKILL kann nicht abgefangen werden. `/T` nimmt gerade gestartete Kindprozesse hinzu.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "prozess-nachweis-gate",
+          "requiredObjective": "betrieb-nachweisen",
+          "question": "Ein Stoppbefehl war erfolgreich und die ursprüngliche PID fehlt. Was muss für eine belastbare Abnahme folgen?",
+          "options": [
+            {
+              "text": "Nichts: Der Befehlsstatus beweist automatisch einen fehlerfreien Datenabschluss.",
+              "rationale": "Ein erfolgreicher Signalversand oder Task-Stopp beweist weder fachliche Funktion noch konsistente Daten.",
+              "correct": false
+            },
+            {
+              "text": "Neue Instanzen oder Kindprozesse, Dienst- beziehungsweise App-Funktion und betroffenen Auftrag samt Datenzustand prüfen.",
+              "rationale": "Richtig. Erst diese Nachweise zeigen, ob der Eingriff das Problem gelöst oder neue Folgen erzeugt hat.",
+              "correct": true
+            },
+            {
+              "text": "Die alte PID erneut ohne Identitätsprüfung erzwingen, damit ein Neustart ausgeschlossen ist.",
+              "rationale": "Ein neuer oder wiederverwendeter PID-Wert wäre ein anderes Ziel; zuerst neu beobachten und zuordnen.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Technische Primärquellen, geprüft am 02.10.2026: [util-linux kill(1)](https://man7.org/linux/man-pages/man1/kill.1.html), [Linux signal(7)](https://man7.org/linux/man-pages/man7/signal.7.html), [procps-ng ps(1)](https://man7.org/linux/man-pages/man1/ps.1.html), [systemctl(1)](https://manpages.debian.org/trixie/systemd/systemctl.1.en.html), [systemd.service(5)](https://manpages.debian.org/trixie/systemd/systemd.service.5.en.html), [Microsoft taskkill](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/taskkill), [Microsoft tasklist](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/tasklist) und [Task-Manager-PID](https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/finding-the-process-id). Die privaten Shell-Unterlagen belegen die hier erläuterte Signal- oder Taskkill-Semantik nicht und wurden deshalb nicht als Fachbeleg benutzt. Beispiele und PIDs sind fiktiv. Rechte, Dienstverwaltung, Prozessneustart, Eltern-/Kindbeziehung und Datenfolgen sind am konkreten System zu prüfen. Wiederhole die drei Lernziel-Fragen später ohne Blick auf die Lösungen."
+        }
+      ]
+    }
+  ]
+}

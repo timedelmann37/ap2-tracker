@@ -1,6 +1,8 @@
+import { renderEpkSvg, validateEpkDiagram } from './render-epk.mjs';
+import { renderEconomicCycleSvg, validateEconomicCycle } from './render-economic-cycle.mjs';
 const STATUS_VALUES = new Set(['CURATED_DRAFT', 'DIDACTICALLY_REVIEWED', 'PUBLICATION_READY']);
-const BLOCK_TYPES = new Set(['markdown', 'quiz', 'callout', 'math', 'figure', 'recall', 'flashcards', 'numeric', 'sequence']);
-const DIAGRAM_TYPES = new Set(['layers', 'flow', 'comparison', 'topology']);
+const BLOCK_TYPES = new Set(['markdown', 'quiz', 'callout', 'math', 'figure', 'recall', 'flashcards', 'numeric', 'sequence', 'permission-matrix']);
+const DIAGRAM_TYPES = new Set(['layers', 'flow', 'comparison', 'topology', 'gantt', 'epk', 'economic-cycle']);
 
 function fail(fileName, message) {
   throw new Error(`${fileName}: ${message}`);
@@ -35,6 +37,65 @@ function allBlocks(sections) {
 
 function interactiveId(block) {
   return block.id || null;
+}
+
+function meaningfulText(value, minimum = 12) {
+  return typeof value === 'string' && value.trim().length >= minimum;
+}
+
+function validatePermissionMatrix(block, fileName) {
+  const id = block.id;
+  if (typeof id !== 'string' || !/^[a-z0-9-]+$/.test(id)) {
+    fail(fileName, 'permission-matrix benötigt eine slugförmige id.');
+  }
+  if (!meaningfulText(block.title, 3) || !meaningfulText(block.prompt)) {
+    fail(fileName, `permission-matrix ${id} benötigt title und eine verständliche prompt.`);
+  }
+  for (const [name, minimum, maximum] of [['roles', 2, 4], ['resources', 2, 4], ['choices', 2, Infinity]]) {
+    const entries = block[name];
+    if (!Array.isArray(entries) || entries.length < minimum || entries.length > maximum) {
+      fail(fileName, `permission-matrix ${id} benötigt ${minimum}${Number.isFinite(maximum) ? `–${maximum}` : '+'} ${name}.`);
+    }
+    const entryIds = entries.map(entry => entry?.id);
+    if (entryIds.some(entryId => typeof entryId !== 'string' || !/^[a-z0-9-]+$/.test(entryId))
+      || new Set(entryIds).size !== entryIds.length) {
+      fail(fileName, `permission-matrix ${id}: ${name}-IDs müssen eindeutig und slugförmig sein.`);
+    }
+    if (entries.some(entry => !meaningfulText(entry?.label, 1))) {
+      fail(fileName, `permission-matrix ${id}: ${name} benötigen lesbare Labels.`);
+    }
+  }
+  if (!meaningfulText(block.correctFeedback) || !meaningfulText(block.wrongFeedback)) {
+    fail(fileName, `permission-matrix ${id} benötigt aussagekräftiges Ergebnis-Feedback.`);
+  }
+  if (!Array.isArray(block.cells) || block.cells.length !== block.roles.length * block.resources.length) {
+    fail(fileName, `permission-matrix ${id} benötigt genau eine Zelle je Rolle und Ressource.`);
+  }
+  const roles = new Set(block.roles.map(role => role.id));
+  const resources = new Set(block.resources.map(resource => resource.id));
+  const choices = new Set(block.choices.map(choice => choice.id));
+  const cellKeys = new Set();
+  for (const cell of block.cells) {
+    if (!cell || !roles.has(cell.roleId) || !resources.has(cell.resourceId)) {
+      fail(fileName, `permission-matrix ${id} enthält eine Zelle ohne gültige Rolle oder Ressource.`);
+    }
+    const key = `${cell.roleId}:${cell.resourceId}`;
+    if (cellKeys.has(key)) fail(fileName, `permission-matrix ${id} enthält die Zelle ${key} mehrfach.`);
+    cellKeys.add(key);
+    if (!choices.has(cell.expected)) {
+      fail(fileName, `permission-matrix ${id}: erwartetes Recht für ${key} fehlt in choices.`);
+    }
+    if (!meaningfulText(cell.feedback)) {
+      fail(fileName, `permission-matrix ${id}: ${key} benötigt aussagekräftiges Zell-Feedback.`);
+    }
+  }
+  for (const role of block.roles) {
+    for (const resource of block.resources) {
+      if (!cellKeys.has(`${role.id}:${resource.id}`)) {
+        fail(fileName, `permission-matrix ${id}: Zelle ${role.id}:${resource.id} fehlt.`);
+      }
+    }
+  }
 }
 
 function validateMeta(spec, fileName) {
@@ -82,6 +143,7 @@ export function validateUnitSpec(spec, fileName = 'Lern-Spezifikation') {
   const ids = [];
   for (const section of spec.sections) {
     if (typeof section.title !== 'string' || section.title.trim().length < 3) fail(fileName, 'jede section benötigt einen Titel.');
+    if (section.round !== undefined && (typeof section.round !== 'string' || section.round.trim().length < 3)) fail(fileName, 'eine Lernrunde benötigt einen verständlichen Namen.');
     if (!Array.isArray(section.blocks) || section.blocks.length === 0) fail(fileName, `section ${section.title} besitzt keine blocks.`);
   }
   for (const block of blocks) {
@@ -123,10 +185,20 @@ export function validateUnitSpec(spec, fileName = 'Lern-Spezifikation') {
         fail(fileName, `sequence ${id} besitzt keine konsistente Sollreihenfolge.`);
       }
     }
+    if (block.type === 'permission-matrix') validatePermissionMatrix(block, fileName);
     if (block.type === 'math' && (!block.ariaLabel || !block.mathml)) fail(fileName, 'math benötigt ariaLabel und mathml.');
+    if (block.modelMath !== undefined) {
+      if (block.type !== 'recall' || !Array.isArray(block.modelMath) || !block.modelMath.length) fail(fileName, 'modelMath benötigt einen Recall und eine nichtleere Liste.');
+      const expressions = new Set();
+      for (const math of block.modelMath) {
+        if (!math.expression || !block.model.includes(math.expression) || expressions.has(math.expression) || !math.ariaLabel
+          || typeof math.mathml !== 'string' || !/^(?:<\/?(?:mrow|mfrac|mn|mo|mi|mtext)>|[^<>])*$/s.test(math.mathml)) fail(fileName, 'modelMath benötigt eindeutigen Modelltext, Textalternative und erlaubtes MathML.');
+        expressions.add(math.expression);
+      }
+    }
     if (block.type === 'figure' && (!block.diagramId && !block.src || !block.alt || !block.caption)) fail(fileName, 'figure benötigt diagramId/src, alt und caption.');
     if (block.requiredObjective && !objectiveIds.includes(block.requiredObjective)) fail(fileName, `unbekanntes Pflichtziel ${block.requiredObjective}.`);
-    if (block.requiredObjective && !['quiz', 'numeric', 'sequence'].includes(block.type)) {
+    if (block.requiredObjective && !['quiz', 'numeric', 'sequence', 'permission-matrix'].includes(block.type)) {
       fail(fileName, `Blocktyp ${block.type} kann kein Pflichtziel nachweisen.`);
     }
   }
@@ -146,8 +218,16 @@ export function validateUnitSpec(spec, fileName = 'Lern-Spezifikation') {
     if (!DIAGRAM_TYPES.has(diagram.type) || !diagram.id || !diagram.title) {
       fail(fileName, 'jedes Diagramm benötigt id, title und einen unterstützten type.');
     }
-    if (diagram.type !== 'topology' && (!Array.isArray(diagram.items) || diagram.items.length < 2)) {
+    if (diagram.type === 'epk') validateEpkDiagram(diagram, message => fail(fileName, message));
+    if (diagram.type === 'economic-cycle') validateEconomicCycle(diagram, fileName);
+    if (!['topology', 'gantt', 'epk'].includes(diagram.type) && (!Array.isArray(diagram.items) || diagram.items.length < 2)) {
       fail(fileName, 'layers-, flow- und comparison-Diagramme benötigen mindestens zwei items.');
+    }
+    if (diagram.type === 'gantt') {
+      if (!Number.isInteger(diagram.end) || diagram.end < 1 || diagram.end > 15 || typeof diagram.unit !== 'string' || !diagram.unit.trim() || diagram.unit.length > 60 || !Array.isArray(diagram.rows) || diagram.rows.length < 2 || diagram.rows.length > 12) fail(fileName, 'gantt benötigt end (1–15), unit (1–60 Zeichen) und 2–12 rows.');
+      const ids = diagram.rows.map(row => row.id);
+      if (new Set(ids).size !== ids.length || ids.some(id => !/^[a-z0-9-]+$/.test(id || ''))) fail(fileName, 'gantt benötigt eindeutige Zeilen-IDs.');
+      if (diagram.rows.some(row => typeof row.label !== 'string' || !row.label.trim() || row.label.length > 24 || !Number.isInteger(row.start * 2) || !Number.isInteger(row.end * 2) || row.start < 0 || row.end < row.start || row.end > diagram.end || typeof row.predecessors !== 'string' || !row.predecessors.trim() || row.predecessors.length > 28)) fail(fileName, 'gantt enthält ungültige Zeitpunkte (halbe Einheiten) oder Zeilenbeschriftungen.');
     }
     if (diagram.type === 'topology') {
       if (!Array.isArray(diagram.nodes) || diagram.nodes.length < 2 || !Array.isArray(diagram.edges) || diagram.edges.length < 1) {
@@ -209,19 +289,37 @@ function renderMath(block) {
 function renderFigure(block, meta, diagramsById) {
   if (block.diagramId) {
     const diagram = diagramsById.get(block.diagramId);
-    return `<figure class="learning-figure learning-figure-inline">\n  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: ${escapeHtml(diagram.title)}">\n    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>\n    ${renderDiagram(diagram, block.alt).trim()}\n  </div>\n  <figcaption>${escapeHtml(block.caption)}</figcaption>\n</figure>`;
+    const mobileList = diagram.type === 'layers'
+      ? `<dl class="diagram-mobile-list" aria-label="${escapeHtml(diagram.title)} – Textansicht">${diagram.items.map(item => `<div><dt>${escapeHtml(item.label)}</dt><dd>${escapeHtml(item.detail)}</dd></div>`).join('')}</dl>\n  `
+      : '';
+    return `<figure class="learning-figure learning-figure-inline">\n  ${mobileList}<div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: ${escapeHtml(diagram.title)}">\n    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>\n    ${renderDiagram(diagram, block.alt).trim()}\n  </div>\n  <figcaption>${escapeHtml(block.caption)}</figcaption>\n</figure>`;
   }
-  return `<figure class="learning-figure">\n  <img src="${escapeHtml(block.src)}" alt="${escapeHtml(block.alt)}">\n  <figcaption>${escapeHtml(block.caption)}</figcaption>\n</figure>`;
+  const dimensions = Number.isInteger(block.width) && Number.isInteger(block.height) && block.width > 0 && block.height > 0
+    ? ` width="${block.width}" height="${block.height}"`
+    : '';
+  const imageDecoding = dimensions ? ' decoding="async"' : '';
+  return `<figure class="learning-figure">\n  <img src="${escapeHtml(block.src)}" alt="${escapeHtml(block.alt)}"${dimensions}${imageDecoding}>\n  <figcaption>${escapeHtml(block.caption)}</figcaption>\n</figure>`;
 }
 
 function renderRecall(block) {
   const titleId = `${block.id}-title`;
   const inputId = `${block.id}-answer`;
-  return `<section class="recall-practice" data-recall="${escapeHtml(block.id)}" data-min-length="${block.minLength}" aria-labelledby="${escapeHtml(titleId)}">\n  <div class="recall-prompt"><h3 id="${escapeHtml(titleId)}">${escapeHtml(block.title || 'Abruf aus dem Kopf')}</h3><p>${escapeHtml(block.prompt)}</p></div>\n  <label class="sr-only" for="${escapeHtml(inputId)}">${escapeHtml(block.label || 'Deine freie Antwort')}</label>\n  <textarea id="${escapeHtml(inputId)}" data-recall-input rows="${block.rows || 4}" placeholder="${escapeHtml(block.placeholder || 'Deine Antwort …')}"></textarea>\n  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>${escapeHtml(block.revealLabel || 'Muster vergleichen')}</button></div>\n  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong> ${escapeHtml(block.model)}</div>\n</section>`;
+  const model = block.model.split(/\r?\n\s*\r?\n/).map(paragraph => {
+    const definitions = block.modelMath || [];
+    const escaped = escapeHtml(paragraph);
+    if (!definitions.length) return `<p>${escaped}</p>`;
+    const pattern = new RegExp(definitions.map(math => escapeHtml(math.expression).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'g');
+    const rendered = escaped.replace(pattern, expression => {
+      const math = definitions.find(item => escapeHtml(item.expression) === expression);
+      return `<math class="math-inline" aria-label="${escapeHtml(math.ariaLabel)}">${math.mathml}</math>`;
+    });
+    return `<p>${rendered}</p>`;
+  }).join('\n');
+  return `<section class="recall-practice" data-recall="${escapeHtml(block.id)}" data-min-length="${block.minLength}" aria-labelledby="${escapeHtml(titleId)}">\n  <div class="recall-prompt"><h3 id="${escapeHtml(titleId)}">${escapeHtml(block.title || 'Abruf aus dem Kopf')}</h3><p>${escapeHtml(block.prompt)}</p></div>\n  <label class="sr-only" for="${escapeHtml(inputId)}">${escapeHtml(block.label || 'Deine freie Antwort')}</label>\n  <textarea id="${escapeHtml(inputId)}" data-recall-input rows="${block.rows || 4}" placeholder="${escapeHtml(block.placeholder || 'Deine Antwort …')}"></textarea>\n  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>${escapeHtml(block.revealLabel || 'Muster vergleichen')}</button></div>\n  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong>\n  ${model}</div>\n</section>`;
 }
 
 function renderFlashcards(block) {
-  const cards = block.cards.map(card => `<button class="flashcard" type="button" data-flashcard="${escapeHtml(card.id)}" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>${escapeHtml(card.front)}</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back"><span class="k">Antwort</span><span>${escapeHtml(card.back)}</span></span></button>`).join('\n  ');
+  const cards = block.cards.map(card => `<button class="flashcard" type="button" data-flashcard="${escapeHtml(card.id)}" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>${escapeHtml(card.front)}</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>${escapeHtml(card.back)}</span></span></button>`).join('\n  ');
   const ratings = block.cards.map(card => `<div class="card-rating"><span>Karte „${escapeHtml(card.label)}“:</span><button type="button" data-card-id="${escapeHtml(card.id)}" data-card-rate="known">gewusst</button><button type="button" data-card-id="${escapeHtml(card.id)}" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="${escapeHtml(card.id)}"></span></div>`).join('\n');
   return `<div class="flashcard-grid">\n  ${cards}\n</div>\n${ratings}`;
 }
@@ -242,6 +340,23 @@ function renderSequence(block) {
   return `<section class="sequence-practice" data-sequence="${escapeHtml(block.id)}" data-expected="${escapeHtml(block.expected.join(','))}" data-correct-feedback="${escapeHtml(block.correctFeedback)}" data-wrong-feedback="${escapeHtml(block.wrongFeedback)}"${required} aria-labelledby="${escapeHtml(block.id)}-title">\n  <div class="lab-heading"><div><h3 id="${escapeHtml(block.id)}-title">${escapeHtml(block.title)}</h3><p>${escapeHtml(block.prompt)}</p></div><span class="lab-tag">${escapeHtml(block.tag || 'Ablauf')}</span></div>\n  <ol class="sequence-list" data-sequence-list>\n${steps}\n  </ol>\n  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>\n  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>\n</section>`;
 }
 
+function renderPermissionMatrix(block) {
+  const id = escapeHtml(block.id);
+  const required = block.requiredObjective ? ` data-required-objective="${escapeHtml(block.requiredObjective)}"` : '';
+  const cellsByKey = new Map(block.cells.map(cell => [`${cell.roleId}:${cell.resourceId}`, cell]));
+  const headers = block.resources.map(resource => `      <th scope="col">${escapeHtml(resource.label)}</th>`).join('\n');
+  const rows = block.roles.map((role, rowIndex) => {
+    const cells = block.resources.map((resource, columnIndex) => {
+      const cell = cellsByKey.get(`${role.id}:${resource.id}`);
+      const selectId = `${block.id}-cell-${rowIndex}-${columnIndex}`;
+      const options = block.choices.map(choice => `          <option value="${escapeHtml(choice.id)}">${escapeHtml(choice.label)}</option>`).join('\n');
+      return `      <td><label class="sr-only" for="${escapeHtml(selectId)}">${escapeHtml(role.label)} – ${escapeHtml(resource.label)}: Recht</label><select id="${escapeHtml(selectId)}" data-matrix-cell="${escapeHtml(role.id)}:${escapeHtml(resource.id)}" data-role-label="${escapeHtml(role.label)}" data-resource-label="${escapeHtml(resource.label)}" data-expected="${escapeHtml(cell.expected)}" data-cell-feedback="${escapeHtml(cell.feedback)}" required><option value="">Recht wählen</option>\n${options}\n        </select></td>`;
+    }).join('\n');
+    return `    <tr><th scope="row">${escapeHtml(role.label)}</th>\n${cells}\n    </tr>`;
+  }).join('\n');
+  return `<section class="permission-matrix matrix-cols-${block.resources.length}" data-permission-matrix="${id}" data-correct-feedback="${escapeHtml(block.correctFeedback)}" data-wrong-feedback="${escapeHtml(block.wrongFeedback)}"${required} aria-labelledby="${id}-title" aria-describedby="${id}-prompt">\n  <div class="lab-heading"><div><h3 id="${id}-title">${escapeHtml(block.title)}</h3><p id="${id}-prompt">${escapeHtml(block.prompt)}</p></div></div>\n  <p class="matrix-scroll-hint">Tabelle seitlich verschieben, um alle Ressourcen zu sehen.</p>\n  <div class="permission-matrix-scroll" tabindex="0" role="region" aria-label="Berechtigungsmatrix: ${escapeHtml(block.title)}">\n    <table class="permission-matrix-table"><caption class="sr-only">Recht je Rolle und Ressource wählen</caption><thead><tr><th scope="col">Rolle / Ressource</th>\n${headers}\n    </tr></thead><tbody>\n${rows}\n    </tbody></table>\n  </div>\n  <div class="sequence-actions"><button class="lbtn${block.requiredObjective ? ' primary' : ''}" type="button" data-matrix-check>Rechte prüfen</button><button class="lbtn" type="button" data-matrix-reset>Zurücksetzen</button></div>\n  <div class="practice-feedback" data-matrix-feedback aria-live="polite" hidden></div>\n</section>`;
+}
+
 function renderBlock(block, meta, diagramsById) {
   if (block.type === 'markdown') return block.markdown.trim();
   if (block.type === 'quiz') return renderQuiz(block);
@@ -252,6 +367,7 @@ function renderBlock(block, meta, diagramsById) {
   if (block.type === 'flashcards') return renderFlashcards(block);
   if (block.type === 'numeric') return renderNumeric(block);
   if (block.type === 'sequence') return renderSequence(block);
+  if (block.type === 'permission-matrix') return renderPermissionMatrix(block);
   throw new Error(`Unbekannter Blocktyp ${block.type}`);
 }
 
@@ -336,9 +452,25 @@ function renderTopologySvg(diagram) {
   return { width, height, body: `${zones}${edges}${nodes}` };
 }
 
+function renderGanttSvg(diagram) {
+  const width = 960;
+  const height = 184 + diagram.rows.length * 68;
+  const x = time => 310 + time * 600 / diagram.end;
+  const grid = Array.from({ length: diagram.end + 1 }, (_, time) => `${svgText(time, x(time), 132, { anchor: 'middle', size: 18 })}<path d="M${x(time)} 146V${height - 30}" stroke="var(--diagram-border, #5f526e)" stroke-width="1"/>`).join('');
+  const rows = diagram.rows.map((row, index) => {
+    const y = 164 + index * 68;
+    const shape = row.start === row.end
+      ? `<path class="gantt-milestone" data-row="${escapeXml(row.id)}" d="M${x(row.start)} ${y - 10}l10 10-10 10-10-10Z" fill="var(--diagram-line, #b997ff)"/>`
+      : `<rect class="gantt-bar" data-row="${escapeXml(row.id)}" x="${x(row.start)}" y="${y - 10}" width="${x(row.end) - x(row.start)}" height="20" rx="3" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-line, #b997ff)" stroke-width="2"/>`;
+    return `${svgText(row.label, 42, y + 5, { size: 20, max: 24, weight: 700 })}${svgText('Vorgänger: ' + row.predecessors, 42, y + 28, { size: 16, max: 40, fill: 'var(--diagram-muted, #c8c1d2)' })}${shape}${svgText(row.start === row.end ? `M bei ${row.start}` : `${row.start}–${row.end}`, (x(row.start) + x(row.end)) / 2, y + 33, { anchor: 'middle', size: 16 })}`;
+  }).join('');
+  return { width, height, body: `${svgText(diagram.unit, 310, 91, { size: 19, max: 60 })}${grid}${rows}` };
+}
+
 function diagramDescription(diagram) {
   if (diagram.description) return diagram.description;
-  if (diagram.type === 'topology') {
+  if (diagram.type === 'gantt') return `${diagram.unit}. ${diagram.rows.map(row => `${row.label}: ${row.start} bis ${row.end}, Vorgänger ${row.predecessors}`).join('. ')}.`;
+  if (['topology', 'epk'].includes(diagram.type)) {
     const nodes = diagram.nodes.map(node => `${node.label}${node.detail ? `: ${node.detail}` : ''}`).join('. ');
     const edges = diagram.edges.map(edge => `${nodeLabel(diagram, edge.from)} verbunden mit ${nodeLabel(diagram, edge.to)}${edge.label ? ` (${edge.label})` : ''}`).join('. ');
     return `${nodes}. Verbindungen: ${edges}.`;
@@ -351,13 +483,14 @@ function nodeLabel(diagram, nodeId) {
 }
 
 export function renderDiagram(diagram, descriptionOverride = '') {
-  const rendered = diagram.type === 'layers'
+  if (diagram.type === 'economic-cycle') validateEconomicCycle(diagram, 'Diagramm ' + diagram.id);
+  const rendered = diagram.type === 'economic-cycle' ? renderEconomicCycleSvg(diagram) : diagram.type === 'layers'
     ? renderLayersSvg(diagram)
     : diagram.type === 'flow'
       ? renderFlowSvg(diagram)
       : diagram.type === 'comparison'
         ? renderComparisonSvg(diagram)
-        : renderTopologySvg(diagram);
+        : diagram.type === 'gantt' ? renderGanttSvg(diagram) : diagram.type === 'epk' ? renderEpkSvg(diagram) : renderTopologySvg(diagram);
   const titleId = `diagram-${diagram.id}-title`;
   const descId = `diagram-${diagram.id}-desc`;
   return `<svg class="learning-diagram diagram-${escapeXml(diagram.type)}" xmlns="http://www.w3.org/2000/svg" width="${rendered.width}" height="${rendered.height}" viewBox="0 0 ${rendered.width} ${rendered.height}" role="img" aria-labelledby="${titleId} ${descId}">\n  <title id="${titleId}">${escapeXml(diagram.title)}</title>\n  <desc id="${descId}">${escapeXml(descriptionOverride || diagramDescription(diagram))}</desc>\n  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>\n  ${svgText(diagram.title, 42, 48, { weight: 700, size: 28, max: 60, className: 'diagram-title' })}\n  ${rendered.body}\n</svg>\n`;
@@ -389,7 +522,7 @@ export function compileUnitSpec(spec, fileName = 'Lern-Spezifikation') {
   };
   const frontmatter = Object.entries(metadata).map(([key, value]) => `${key}: ${Array.isArray(value) ? jsonFrontmatter(value) : value}`).join('\n');
   const goals = `<section class="learning-goals" aria-labelledby="${escapeHtml(meta.slug)}-goals">\n  <h2 id="${escapeHtml(meta.slug)}-goals">Nach dieser Einheit kannst du …</h2>\n  <ul>\n${spec.objectives.map(objective => `    <li>${escapeHtml(objective.label)}</li>`).join('\n')}\n  </ul>\n</section>`;
-  const body = spec.sections.map(section => `## ${section.title}\n\n${section.blocks.map(block => renderBlock(block, meta, diagramsById)).join('\n\n')}`).join('\n\n');
+  const body = spec.sections.map(section => `${section.round ? `<p class="learning-round" data-learning-round="${escapeHtml(section.round)}">${escapeHtml(section.round)}</p>\n\n` : ''}## ${section.title}\n\n${section.blocks.map(block => renderBlock(block, meta, diagramsById)).join('\n\n')}`).join('\n\n');
   const contentMarkdown = `${spec.intro.trim()}\n\n${goals}\n\n${body}\n`;
   const markdown = `<!-- GENERATED from content/learning-units/${fileName}; edit the unit spec, not this file. -->\n---\n${frontmatter}\n---\n${contentMarkdown}`;
   const curation = {

@@ -1,0 +1,164 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "linux-dateirechte-umask-spezialbits",
+    "slug": "linux-dateirechte-umask-spezialbits",
+    "title": "Linux-Dateirechte: rwx, umask und Spezialbits",
+    "description": "Datei- und Verzeichnisrechte lesen, neue Modi aus der umask ableiten und Spezialbits in einem Admin-Fall sicher einordnen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-6",
+    "groupLabel": "Betriebssysteme und Administration",
+    "itemId": "ga1-6__9",
+    "week": "KW 40",
+    "estimatedMinutes": 40,
+    "relevance": "hoch",
+    "sources": ["itlf10-12-2023", "gnu-coreutils-permissions", "gnu-coreutils-mode-structure", "linux-chmod-man", "linux-umask-man", "linux-inode-man"],
+    "contentRevision": "2026-10-02.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {"id": "datei-verzeichnis-modus", "label": "rwx an Datei und Verzeichnis unterscheiden und 644, 755 sowie 750 lesen"},
+    {"id": "umask-bitweise", "label": "Die Rechte neuer Dateien und Verzeichnisse aus angefordertem Modus und umask bitweise ableiten"},
+    {"id": "spezialbits-sicher", "label": "SUID, SGID und Sticky Bit ihrem jeweiligen Objekt und Sicherheitszweck zuordnen"}
+  ],
+  "intro": "Im fiktiven Messlabor Linde melden Teammitglieder ein Rechteproblem. Das gemeinsame Verzeichnis `/srv/linde/berichte` gehört der Gruppe `labor` und hat den Modus `2770`. Der Dienstaccount `ingest` erzeugt dort `messung.csv` als `0640`, obwohl Gruppenmitglieder im Verzeichnis schreiben dürfen. Du sollst den Befund erklären, die Rechte neuer Objekte mit `umask 0027` berechnen und entscheiden, wann ein Spezialbit hilft.",
+  "curation": {
+    "evidence": [
+      {"sourceId": "itlf10-12-2023", "sourceLocator": "Private PDF-Seiten 209–210 (gedruckte Seiten 230–231), OCR-Chunks itlf10-12-2023:page:0209 und :page:0210; private-source-only", "use": "Nur Themenanker für Linux-Rechte, Oktalschreibweise und Spezialbits", "reviewStatus": "Originalseiten visuell geprüft; der Druck enthält fachlich unzuverlässige Aussagen zu Anzahl und Zahlensystem der Modusbits sowie Sticky/umask. Keine Aussage, Grafik oder Übung daraus als Fachbeleg übernommen."},
+      {"sourceId": "gnu-coreutils-permissions", "sourceLocator": "GNU Coreutils 9.11, § 27.2.1 Setting Permissions, Abschnitte users und permissions", "use": "u/g/o und Bedeutung von r, w und x beziehungsweise search bei Verzeichnissen", "reviewStatus": "Offizielle GNU-Dokumentation am 02.10.2026 geprüft"},
+      {"sourceId": "gnu-coreutils-mode-structure", "sourceLocator": "GNU Coreutils 9.11, § 27.1 Structure of File Mode Bits, Regular files und Directories", "use": "Unterschied zwischen Dateiinhalt und Verzeichniseinträgen sowie Verzeichnis-r/w/x", "reviewStatus": "Offizielle GNU-Dokumentation am 02.10.2026 geprüft"},
+      {"sourceId": "linux-chmod-man", "sourceLocator": "GNU chmod(1), DESCRIPTION (rwxXst und numeric mode), SETUID AND SETGID BITS, RESTRICTED DELETION FLAG OR STICKY BIT", "use": "Oktalgewichte 4/2/1, führende Sonderziffer 4/2/1, GNU-chmod-Verhalten und Sticky-Grenze", "reviewStatus": "Offizielle GNU-Coreutils-9.11-Manpage über Linux man-pages am 02.10.2026 geprüft"},
+      {"sourceId": "linux-umask-man", "sourceLocator": "Linux umask(2), DESCRIPTION, insbesondere mode argument zu open(2)/mkdir(2), 0666 & ~022 = 0644 und Default-ACL-Ausnahme", "use": "umask als bitweise Löschmaske bei Erzeugung und Grenzen der Rechnung", "reviewStatus": "Linux man-pages 6.19 am 02.10.2026 geprüft"},
+      {"sourceId": "linux-inode-man", "sourceLocator": "Linux inode(7), The file type and mode: S_ISUID, S_ISGID, S_ISVTX und Permission bits", "use": "Auswirkung des SGID-Bits auf Verzeichnisse und Einordnung der Mode-Bits", "reviewStatus": "Linux man-pages 6.19 am 02.10.2026 geprüft"}
+    ],
+    "notes": [
+      "Messlabor, Befund, Rechnungen, Aufgaben und SVG-Diagrammdefinitionen sind eigenständig. Keine private Buchformulierung und keine Buchgrafik wird veröffentlicht.",
+      "Die Rechenbeispiele setzen normale Linux-Mode-Bits ohne Default-ACL und einen an open(2) beziehungsweise mkdir(2) übergebenen Modus von 0666 beziehungsweise 0777 voraus. Programme dürfen strengere Modi anfordern. Dateisystem, Mount-Optionen, ACLs und Privilegien können die tatsächliche Wirkung weiter begrenzen. Menschliche Fach- und Didaktikfreigabe offen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "oktalmatrix-750",
+      "type": "layers",
+      "title": "750: drei Rollen, drei Bitgewichte",
+      "description": "Dreizeilige technische Oktalmatrix. Jede Stelle gilt für eine Zugriffsrolle; 4 ist Lesen, 2 Schreiben und 1 Ausführen beziehungsweise Verzeichnissuche.",
+      "items": [
+        {"label": "u = 7", "detail": "Eigentümer: r (4) + w (2) + x (1) = 7"},
+        {"label": "g = 5", "detail": "Gruppe: r (4) + x (1) = 5; kein w"},
+        {"label": "o = 0", "detail": "Andere: keine dieser Rechte = 0"}
+      ]
+    },
+    {
+      "id": "umask-027",
+      "type": "comparison",
+      "title": "umask 0027 filtert zwei Startmodi",
+      "description": "Zwei gleichzeitige Fälle: 0666 für eine normale neue Datei ergibt 0640; 0777 für ein neues Verzeichnis ergibt 0750. In beiden Fällen werden nur gesetzte Maskenbits entfernt.",
+      "items": [
+        {"label": "Datei", "detail": "0666 angefordert; 0027 entfernt g-w und o-r/w. o-x war nicht gesetzt. Ergebnis 0640."},
+        {"label": "Verzeichnis", "detail": "0777 angefordert; 0027 entfernt g-w und o-rwx. Ergebnis 0750."}
+      ]
+    },
+    {
+      "id": "spezialbits-rollen",
+      "type": "layers",
+      "title": "Sonderziffer vor u/g/o",
+      "description": "Drei unabhängige Mode-Bits: 4 für SUID bei ausführbaren Dateien, 2 für SGID bei Programmen und Verzeichnissen, 1 für Sticky als Löschbeschränkung im Verzeichnis.",
+      "items": [
+        {"label": "4 · SUID", "detail": "Programm: effektive UID des Dateieigentümers"},
+        {"label": "2 · SGID", "detail": "Programm: effektive GID; Verzeichnis: Gruppe erben"},
+        {"label": "1 · Sticky", "detail": "Verzeichnis: fremde Einträge nicht frei löschen"}
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "1 · Diagnose: Wo liegt die Sperre?",
+      "blocks": [
+        {"type": "quiz", "id": "rechte-diagnose", "diagnostic": true, "question": "Die Gruppe `labor` darf in `/srv/linde/berichte` schreiben, aber Nora aus dieser Gruppe kann `messung.csv` nicht bearbeiten. Welcher Befund ist zuerst plausibel?", "options": [
+          {"text": "Schreibrecht am Verzeichnis gibt automatisch Schreibrecht auf jede darin liegende Datei.", "rationale": "Verzeichnis- und Dateimodus sind getrennt. Das Verzeichnisrecht steuert Einträge, nicht automatisch den Dateiinhalt.", "correct": false},
+          {"text": "`2770` erlaubt der Gruppe Eintragsänderungen; `0640` gibt ihr an der Datei nur Leserecht.", "rationale": "Richtig. Der Dateimodus erklärt das fehlende Bearbeiten; das SGID-Bit des Verzeichnisses ändert daran nichts.", "correct": true},
+          {"text": "Das führende `2` macht die Datei für Gruppenmitglieder automatisch ausführbar.", "rationale": "Das führende `2` ist hier SGID am Verzeichnis. Es setzt weder Schreib- noch Ausführungsrecht an der Datei.", "correct": false}
+        ]},
+        {"type": "markdown", "markdown": "**Datei:** `r` erlaubt Lesen des Inhalts, `w` das Ändern des Inhalts und `x` die Ausführung als Programm, sofern Dateityp und System das zulassen. **Verzeichnis:** `r` erlaubt das Auflisten der Eintragsnamen, `x` das Durchsuchen und Betreten über bekannte Namen. Dafür brauchen alle Verzeichnisse im Pfad das passende Suchrecht. Mit `w` **und** `x` im Elternverzeichnis kann ein normaler Nutzer dort Einträge anlegen, entfernen oder umbenennen. Das Schreibrecht der betroffenen Datei ist dafür allein nicht ausschlaggebend. Zusätzliche Regeln wie Sticky Bit oder ACLs können die Operation begrenzen.\n\nIm Fall liefert `ls -ld /srv/linde/berichte` den Modus des Verzeichnisses; `ls -l /srv/linde/berichte/messung.csv` zeigt den Modus der Datei. Prüfe außerdem Besitzer, Gruppe und Noras tatsächliche Gruppenmitgliedschaft. Eine Änderung der Rechte folgt erst aus dem geklärten Sollzugriff."},
+        {"type": "quiz", "id": "rechte-eintrag-loeschen", "question": "Nora darf im gemeinsamen Verzeichnis schreiben und suchen. Warum könnte sie dort eine fremde Datei entfernen, obwohl deren Modus `0640` ihr nur Leserecht gibt?", "options": [
+          {"text": "Weil `r` an der Datei immer auch Löschen erlaubt.", "rationale": "Löschen betrifft den Eintrag im Elternverzeichnis, nicht das Lesebit der Datei.", "correct": false},
+          {"text": "Weil `w+x` am Elternverzeichnis Änderungen an Einträgen erlaubt, solange keine weitere Regel wie Sticky Bit eingreift.", "rationale": "Richtig. Das ist ein wichtiger Unterschied zwischen Dateiinhalt und Verzeichniseintrag.", "correct": true},
+          {"text": "Weil SGID das Löschen fremder Dateien grundsätzlich freigibt.", "rationale": "SGID am Verzeichnis steuert die Gruppenzuordnung neuer Einträge, nicht die Löschberechtigung.", "correct": false}
+        ]}
+      ]
+    },
+    {
+      "title": "2 · Oktal lesen: 644, 755 und 750",
+      "blocks": [
+        {"type": "markdown", "markdown": "Die letzten drei Oktalziffern stehen für **u** (Eigentümer), **g** (Gruppe) und **o** (andere). Pro Stelle gilt `r = 4`, `w = 2`, `x = 1`; addiere nur die gesetzten Bits. **644** bedeutet `rw- r-- r--`: typisch für eine lesbare, nicht ausführbare Datei. **755** bedeutet `rwx r-x r-x`: etwa für ein durchsuchbares Verzeichnis oder ein ausführbares Programm. **750** bedeutet `rwx r-x ---`: die Gruppe darf lesen beziehungsweise das Verzeichnis durchsuchen, andere haben aus diesen Bits keinen Zugriff. Der tatsächliche Zugriff kann durch weitere Regeln eingeschränkt sein.\n\nOktalziffern sind **Basis 8**, auch wenn sie mit den Zeichen 0 bis 7 geschrieben werden. `chmod 750 pfad` setzt einen Modus am vorhandenen Objekt; die umask ist dagegen eine Maske für neu erzeugte Objekte. Beim GNU-`chmod` können SUID/SGID-Bits vorhandener Verzeichnisse unter bestimmten numerischen Schreibweisen erhalten bleiben. Prüfe Sonderbits nach einer Änderung ausdrücklich, statt aus `755` allein ihr Verschwinden abzuleiten."},
+        {"type": "figure", "diagramId": "oktalmatrix-750", "alt": "Oktalmatrix für 750: Eigentümer 7 aus r 4, w 2, x 1; Gruppe 5 aus r 4 und x 1; andere 0 ohne r, w und x.", "caption": "Jede Ziffer beschreibt genau eine Rolle. Bei Verzeichnissen heißt x Suchen und Durchqueren, nicht Ausführen des Verzeichnisses."},
+        {"type": "quiz", "id": "rechte-750-anwendung", "question": "Ein Verzeichnis hat `0750`. Welche Aussage folgt aus den Grundbits für ein Mitglied der Dateigruppe?", "options": [
+          {"text": "Es kann Eintragsnamen lesen und bekannte Einträge erreichen, aber nicht allein wegen `0750` neue Einträge anlegen.", "rationale": "Richtig. Die Gruppe hat r+x, aber kein w. Für neue Einträge ist zusätzlich w am Elternverzeichnis nötig.", "correct": true},
+          {"text": "Es kann beliebige Dateien darin bearbeiten, weil die Gruppenziffer 5 größer als 4 ist.", "rationale": "Die Ziffer 5 setzt r+x am Verzeichnis. Dateiinhalte haben eigene Rechte; Gruppen-w fehlt hier.", "correct": false},
+          {"text": "Es kann das Verzeichnis als Programm ausführen.", "rationale": "Bei Verzeichnissen bedeutet x Durchsuchen, nicht Programmausführung.", "correct": false}
+        ]}
+      ]
+    },
+    {
+      "title": "3 · umask: Bits beim Anlegen entfernen",
+      "blocks": [
+        {"type": "markdown", "markdown": "Die **umask** gehört zum erzeugenden Prozess. Sie entfernt Bits aus dem Modus, den ein Programm für ein neues Objekt anfordert. Für eine normale Datei ist ein häufiger Anforderungsmodus `0666` ohne Ausführungsbits; für ein Verzeichnis häufig `0777`. Die Regel lautet **angeforderter Modus bitweise UND NICHT umask**. Mit `umask 0027` werden Gruppen-Schreibrecht (`2`) und alle Rechte anderer (`7`) gesperrt. Dadurch entstehen im einfachen Fall `0640` und `0750`. Eine umask vergibt keine zusätzlichen Bits: Aus `0666` kann sie kein `x` machen.\n\nDie verbreitete Rechnung „Startmodus minus umask“ ist nur in einfachen Fällen zufällig gleichwertig. Bei `0666` und `0027` ergäbe oktale Subtraktion `0637`, obwohl das bitweise Ergebnis `0640` ist. Auch eine Default-ACL im Elternverzeichnis kann bewirken, dass die umask ignoriert und die ACL vererbt wird. Programme dürfen außerdem von Anfang an weniger als `0666` oder `0777` anfordern; bestehende Dateien werden durch das Ändern der umask nicht nachträglich verändert."},
+        {"type": "math", "ariaLabel": "Neue normale Datei: Oktal 0666 bitweise UND NICHT 0027 ergibt Oktal 0640. Neues Verzeichnis: Oktal 0777 bitweise UND NICHT 0027 ergibt Oktal 0750.", "mathml": "<math display=\"block\"><mtable columnalign=\"left\"><mtr><mtd><mrow><msub><mn>0666</mn><mn>8</mn></msub><mo>∧</mo><mo>¬</mo><msub><mn>0027</mn><mn>8</mn></msub><mo>=</mo><msub><mn>0640</mn><mn>8</mn></msub><mspace width=\"0.3em\"/><mtext>Datei</mtext></mrow></mtd></mtr><mtr><mtd><mrow><msub><mn>0777</mn><mn>8</mn></msub><mo>∧</mo><mo>¬</mo><msub><mn>0027</mn><mn>8</mn></msub><mo>=</mo><msub><mn>0750</mn><mn>8</mn></msub><mspace width=\"0.3em\"/><mtext>Verzeichnis</mtext></mrow></mtd></mtr></mtable></math>", "legend": ["∧ bedeutet bitweises UND, ¬ bitweises NICHT innerhalb der neun rwx-Bits; der Index 8 kennzeichnet Oktalzahlen."]},
+        {"type": "figure", "diagramId": "umask-027", "alt": "Vergleich bei umask 0027: normale neue Datei mit angeforderten 0666 erhält 0640, weil Gruppen-Schreiben und Lesen und Schreiben für andere entfernt werden; deren Ausführungsbit war schon nicht gesetzt. Neues Verzeichnis mit angeforderten 0777 erhält 0750, weil Gruppen-Schreiben und alle Rechte anderer entfernt werden.", "caption": "Die Grafik zeigt zwei Fälle derselben Bitmaske; ein Programm kann strengere Startrechte wählen, eine Default-ACL kann die Rechnung ändern."},
+        {"type": "callout", "kind": "warning", "label": "Sonderbit getrennt rechnen", "markdown": "`0750` beschreibt hier nur die neun rwx-Grundbits. Entsteht das neue Unterverzeichnis innerhalb des SGID-Verzeichnisses aus dem Laborfall, erbt es zusätzlich SGID und kann als `2750` erscheinen."},
+        {"type": "quiz", "id": "umask-transfer-027", "question": "`ingest` fordert für eine neue normale Datei `0666` an, seine umask ist `0027`, es gibt keine Default-ACL. Welche drei Oktalziffern ergeben sich für u/g/o?", "options": [
+          {"text": "637, weil man `666 − 027` rechnet.", "rationale": "Das ist eine oktale Subtraktion mit Übertrag. Die umask löscht Bits: 6 & ~0 = 6, 6 & ~2 = 4, 6 & ~7 = 0.", "correct": false},
+          {"text": "640, weil nur die in `0027` markierten Bits entfernt werden.", "rationale": "Richtig: u bleibt rw, g verliert w und behält r, o verliert alle Rechte.", "correct": true},
+          {"text": "750, weil Verzeichnisse grundsätzlich mit `0777` starten.", "rationale": "750 wäre das Ergebnis für ein Verzeichnis mit angeforderten 0777; gefragt ist eine normale Datei mit 0666.", "correct": false}
+        ]}
+      ]
+    },
+    {
+      "title": "4 · Sonderziffer: SUID, SGID und Sticky Bit",
+      "blocks": [
+        {"type": "markdown", "markdown": "Eine **vierte Oktalziffer vor u/g/o** bündelt drei Sonderbits: `4` für **SUID**, `2` für **SGID**, `1` für **Sticky**. Bei einem geeigneten ausführbaren Programm bewirkt SUID beim Start eine effektive Benutzer-ID wie die des Dateieigentümers, SGID eine effektive Gruppen-ID wie die der Dateigruppe. Das ist sicherheitsrelevant: Solche Programme nur gezielt und geprüft einsetzen. Weitere Systemregeln können die Wirkung der gesetzten Bits begrenzen; ein gesetztes Bit allein beweist keinen privilegierten Lauf.\n\nBei einem **Verzeichnis** bewirkt SGID auf Linux, dass neu angelegte Einträge seine Gruppe übernehmen und neue Unterverzeichnisse wiederum SGID erhalten. Das Verzeichnis `2770` im Fall steuert also die Gruppenzuordnung, gibt neuen Dateien aber nicht automatisch Gruppen-Schreibrecht. Das **Sticky Bit** am Verzeichnis begrenzt in einem gemeinsam beschreibbaren Verzeichnis das Entfernen oder Umbenennen fremder Einträge: Normale Nutzer brauchen dafür Eigentum am Eintrag oder am Verzeichnis; privilegierte Prozesse sind ausgenommen. `1777` ist ein bekanntes Muster für ein allgemeines temporäres Verzeichnis. Sticky schützt nicht vor Inhaltsänderung durch anderweitig vorhandenes Dateischreibrecht und wird nicht automatisch auf Unterverzeichnisse übertragen."},
+        {"type": "figure", "diagramId": "spezialbits-rollen", "alt": "Sonderziffer: 4 ist SUID und setzt bei geeignetem Programm die effektive UID des Eigentümers; 2 ist SGID und setzt bei Programmen die effektive GID beziehungsweise vererbt am Verzeichnis die Gruppe; 1 ist Sticky und beschränkt am Verzeichnis das Löschen fremder Einträge.", "caption": "Die Sonderbits haben verschiedene Objektbezüge. Im Fall `2770` ist nur SGID gesetzt; für einen gemeinsamen Löschschutz wäre Sticky gesondert zu prüfen."},
+        {"type": "quiz", "id": "rechte-spezialbits-praxis", "question": "Das Team soll Dateien im gemeinsamen Verzeichnis bearbeiten, aber ein Mitglied soll fremde Einträge nicht beliebig löschen. Was ist der fachlich passende Prüfgedanke?", "options": [
+          {"text": "SGID allein erfüllt beide Wünsche und setzt automatisch Gruppen-w sowie Löschschutz.", "rationale": "SGID vererbt die Gruppe, aber weder Gruppen-Schreibbits noch Sticky-Löschschutz.", "correct": false},
+          {"text": "Datei-Gruppenrechte und Erzeugungsmodus für Bearbeitung prüfen; Sticky am beschreibbaren Elternverzeichnis für Löschbeschränkung erwägen.", "rationale": "Richtig. Inhaltsbearbeitung und Entfernen eines Verzeichniseintrags sind getrennte Vorgänge. Teste auch den Arbeitsablauf, falls Anwendungen per Umbenennung speichern.", "correct": true},
+          {"text": "SUID auf das Verzeichnis setzen, damit alle Mitglieder fremde Dateien gefahrlos ändern können.", "rationale": "SUID ist hier kein geeigneter Mechanismus. Eine pauschale Privilegienerhöhung wäre sicherheitskritisch.", "correct": false}
+        ]}
+      ]
+    },
+    {
+      "title": "5 · Anwenden, erinnern, Lernziele nachweisen",
+      "blocks": [
+        {"type": "markdown", "markdown": "Für das Messlabor ist die **Ist-Lage** klar: `2770` am Elternverzeichnis ermöglicht der Gruppe dort Eintragsänderungen und hält die Gruppenzuordnung neuer Objekte fest. `0640` an `messung.csv` lässt Gruppenmitglieder den Dateiinhalt lesen, aber nicht bearbeiten. Wenn neue Dateien im Team bearbeitbar sein sollen, muss der Dienst einen passenden Modus anfordern und seine Erzeugungsregeln müssen Gruppen-w zulassen; bei üblichem `0666` ergäbe `umask 0007` die Datei `0660`, also Gruppen-w ohne Rechte für andere. Bereits vorhandene Dateien brauchen eine gesondert geprüfte Korrektur. Vor einer Änderung klärst du, ob die Gruppe wirklich bearbeiten und entfernen darf, und prüfst ACLs sowie den tatsächlichen Dienstprozess. Ein Sticky Bit kann das Entfernen fremder Einträge begrenzen, kann aber Arbeitsabläufe mit Ersetzen per Umbenennung beeinflussen."},
+        {"type": "callout", "kind": "merksatz", "label": "Zwei getrennte Entscheidungen", "markdown": "Gruppenbearbeitung braucht ein Schreibbit **an der Datei**. Soll die Gruppe im Verzeichnis schreiben, aber fremde Einträge nicht löschen, wäre zusätzlich zu SGID ein Sticky Bit zu prüfen: `2770` plus Sticky ergibt `3770`. Ob das zum Speichervorgang der Anwendung passt, muss getestet werden."},
+        {"type": "flashcards", "cards": [
+          {"id": "rechte-karte-verzeichnis", "label": "Verzeichnis", "front": "Was unterscheiden `r`, `w` und `x` an einem Verzeichnis?", "back": "r listet Namen; x erlaubt Suche/Traversal; w zusammen mit x ändert Einträge wie Anlegen, Löschen oder Umbenennen."},
+          {"id": "rechte-karte-umask", "label": "umask", "front": "Warum ist `0666 − 0027` keine sichere umask-Regel?", "back": "Die umask löscht gesetzte Bits mit Modus & ~Maske. Bei 0666 und 0027 ergibt das 0640, arithmetische Oktalsubtraktion aber 0637."},
+          {"id": "rechte-karte-sonderbits", "label": "Sonderbits", "front": "Wozu dienen SUID, SGID und Sticky jeweils?", "back": "SUID: effektive UID bei geeignetem Programm. SGID: effektive GID beim Programm oder Gruppenvererbung am Verzeichnis. Sticky: fremde Einträge im Verzeichnis nicht frei löschen/umbenennen."}
+        ]},
+        {"type": "recall", "id": "rechte-fall-erklaeren", "title": "Den Laborfall aus dem Kopf erklären", "prompt": "Erkläre Nora den Unterschied zwischen `2770` am Verzeichnis und `0640` an der Datei. Rechne für `umask 0027` eine neu angeforderte Datei mit `0666` und ein Verzeichnis mit `0777` aus. Nenne die Wirkung von SGID und eine Grenze des Sticky Bits.", "label": "Deine begründete Diagnose", "minLength": 180, "model": "Die Gruppe darf im Verzeichnis mit w+x Einträge anlegen oder entfernen, sofern keine weitere Regel eingreift. Das SGID-Bit in 2770 vererbt die Gruppe an neue Einträge, nicht deren Schreibrecht. Die Datei 0640 hat für die Gruppe nur r, daher kann Nora ihren Inhalt nicht bearbeiten. Die umask 0027 löscht gesetzte Bits: aus 0666 wird 0640, aus 0777 wird 0750. Sticky am Elternverzeichnis kann das Entfernen fremder Einträge begrenzen, schützt aber nicht vor Änderungen am Dateiinhalt, wenn dafür ein Schreibrecht besteht."},
+        {"type": "quiz", "id": "rechte-modus-gate", "requiredObjective": "datei-verzeichnis-modus", "question": "Welche Zuordnung ist für die Grundbits richtig?", "options": [
+          {"text": "`644` gibt allen Ausführungsrecht; `755` verbietet der Gruppe das Durchsuchen; `750` erlaubt anderen Lesen.", "rationale": "Alle drei Zuordnungen sind verdreht: 644 enthält kein x, 755 gibt g r+x, 750 gibt o keine Bits.", "correct": false},
+          {"text": "`750` gibt dem Eigentümer rwx, der Gruppe r+x und anderen keine Rechte; bei Verzeichnissen ist x das Suchrecht.", "rationale": "Richtig. Die drei Stellen stehen für u/g/o, mit 4/2/1 je Stelle.", "correct": true},
+          {"text": "`755` macht alle Inhalte in diesem Verzeichnis automatisch für die Gruppe beschreibbar.", "rationale": "Die Gruppe hat am Verzeichnis r+x, kein w; Dateiinhalte haben zusätzlich eigene Modi.", "correct": false}
+        ]},
+        {"type": "quiz", "id": "rechte-umask-gate", "requiredObjective": "umask-bitweise", "question": "Ein Programm fordert für eine neue normale Datei `0666` und für ein neues Verzeichnis `0777` an. Ohne Default-ACL gilt jeweils `umask 0027`. Welche Grundmodi entstehen?", "options": [
+          {"text": "Datei `0640`, Verzeichnis `0750`: Die Maske entfernt nur zuvor gesetzte Bits; ein Ausführungsbit der Datei war nicht angefordert.", "rationale": "Richtig. Datei: 0666 & ~0027 = 0640; Verzeichnis: 0777 & ~0027 = 0750. Ein SGID-Bit des Elternverzeichnisses wäre separat zu betrachten.", "correct": true},
+          {"text": "Datei `0637`, Verzeichnis `0750`: Bei Dateien wird die umask oktal subtrahiert, bei Verzeichnissen bitweise angewandt.", "rationale": "Die umask ist in beiden Fällen eine Bitmaske. 0666 minus 0027 mit oktalem Übertrag ergibt nicht den Dateimodus.", "correct": false},
+          {"text": "Datei `0750`, Verzeichnis `0750`: Neue Dateien erhalten das Suchbit des Elternverzeichnisses.", "rationale": "Die normale Datei fordert 0666 ohne Ausführungsbits an. SGID am Elternverzeichnis betrifft die Gruppenzuordnung, nicht diese rwx-Bits.", "correct": false}
+        ]},
+        {"type": "quiz", "id": "rechte-spezialbits-gate", "requiredObjective": "spezialbits-sicher", "question": "Welche Aussage zu den drei Sonderbits trifft für GNU/Linux im beschriebenen Grundfall zu?", "options": [
+          {"text": "Sticky auf einer Datei verhindert, dass ihr Inhalt durch Gruppen-w geändert wird.", "rationale": "Sticky schützt hier Verzeichniseinträge vor fremdem Entfernen oder Umbenennen, nicht den Inhalt einer Datei.", "correct": false},
+          {"text": "SGID auf einem Verzeichnis verleiht jeder neu erzeugten Datei automatisch Gruppen-Schreibrecht.", "rationale": "SGID beeinflusst die Gruppenzuordnung; der Dateimodus folgt weiterhin angefordertem Modus, umask und gegebenenfalls ACL.", "correct": false},
+          {"text": "SUID betrifft die effektive UID beim Start eines geeigneten Programms, SGID kann am Verzeichnis die Gruppe neuer Einträge bestimmen, Sticky begrenzt dort fremde Lösch- und Umbenennungsvorgänge.", "rationale": "Richtig. Ein gesetztes SUID/SGID-Bit ist kein Ersatz für die Prüfung von Programm, Dateisystem und Systemrichtlinien.", "correct": true}
+        ]}
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {"type": "markdown", "markdown": "Die private ITLF10–12, PDF-Seiten 209–210 (Druckseiten 230–231), dient nach visueller Prüfung **nur als Themenanker**. Dortige Aussagen zu Mode-Bits, Zahlensystem, umask und Sticky sind fachlich unzuverlässig; keine davon wurde übernommen. Die Erklärungen stützen sich auf [GNU Coreutils: Setting Permissions](https://www.gnu.org/software/coreutils/manual/html_node/Setting-Permissions.html), [Structure of File Mode Bits](https://www.gnu.org/software/coreutils/manual/html_node/Mode-Structure.html), [GNU chmod(1)](https://man7.org/linux/man-pages/man1/chmod.1.html), [Linux umask(2)](https://man7.org/linux/man-pages/man2/umask.2.html) und [Linux inode(7)](https://man7.org/linux/man-pages/man7/inode.7.html). Die Beispiele beschreiben Grundbits unter den ausdrücklich genannten Annahmen. ACLs, Mount-Optionen, Dateisystemattribute und Programmverhalten müssen am Zielsystem gesondert geprüft werden. Diese Einheit bleibt bis zur menschlichen Fach- und Didaktikfreigabe `CURATED_DRAFT`."}
+      ]
+    }
+  ]
+}

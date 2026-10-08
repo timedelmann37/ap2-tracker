@@ -1,0 +1,401 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "zero-trust-mikrosegmentierung",
+    "slug": "zero-trust-mikrosegmentierung",
+    "title": "Zero Trust und Mikrosegmentierung",
+    "description": "Kontextbezogene Zugriffe, PE/PA/PEP und begrenzte Dienstwege anhand eines eigenen Wartungsfalls unterscheiden und testen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-8",
+    "groupLabel": "IT-Sicherheit und Datenschutz",
+    "itemId": "ga1-8__5",
+    "week": "KW 42",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "sources": [
+      "zt-nist-207",
+      "zt-ms-principles",
+      "zt-cisa-micro"
+    ],
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "kontext",
+      "label": "Netzposition von einer konkreten Zugriffsberechtigung trennen"
+    },
+    {
+      "id": "durchsetzung",
+      "label": "Entscheidung, Steuerung und Durchsetzung auseinanderhalten"
+    },
+    {
+      "id": "dienstwege",
+      "label": "Mikrosegmentierung auf notwendige Dienstwege begrenzen"
+    },
+    {
+      "id": "nachweis",
+      "label": "Kontextänderungen und gesperrte Wege überprüfbar testen"
+    }
+  ],
+  "intro": "Die fiktive Wartungsfirma Nordbogen betreibt eine Auftragsanwendung. Technikerin Mira darf zugewiesene Aufträge lesen, aber keinen Gesamtexport starten. Ein Dienstkonto der Auftrags-API darf Daten abfragen, nicht die Lohnabrechnung erreichen. Ein Kollege schlägt vor: „Alle sind im VPN, also können wir intern alles freigeben.“ Du prüfst diese Entscheidung.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "zt-nist-207",
+        "sourceLocator": "Grundlagenpublikation August 2020; Abschnitte 2.1, 2.2 und 3: dynamische Zugriffsentscheidung, PE/PA/PEP",
+        "use": "Komponentenbegriffe und Trennung von Netzposition und Zugriff",
+        "reviewStatus": "Relevante Passagen geprüft 03.10.2026; direkt gelesen"
+      },
+      {
+        "sourceId": "zt-ms-principles",
+        "sourceLocator": "Zero Trust principles, outcomes und structured adoption journey; Stand der Seite 31.05.2026",
+        "use": "Prinzipien und schrittweise Einführung",
+        "reviewStatus": "Relevante Passagen geprüft 03.10.2026; direkt gelesen"
+      },
+      {
+        "sourceId": "zt-cisa-micro",
+        "sourceLocator": "Offizieller Suchindextext der Bekanntmachung 29.07.2025; enger Beleg für Begrenzung lateraler Bewegung. Direkter Seitenabruf 403, PDF nicht abrufbar; kein vollständiger Leitfadenreview.",
+        "use": "Begrenzung lateraler Bewegung als eng umrissener Grundsatz",
+        "reviewStatus": "Übersicht im Suchindex geprüft 03.10.2026; kein direkt gelesener Volltext"
+      }
+    ],
+    "notes": [
+      "Private Quelle europa-integratoren-2026:00350, Markdown-Zeilen 3335–3340, als angrenzender Firewall-/DMZ-Themenanker geprüft. Kein Zero-Trust-Beleg aus dieser Buchpassage behauptet; keine Aufgabe oder Abbildung übernommen.",
+      "Nordbogen, Akteure, Berechtigungen, Tests und Illustrationen sind eigenständige didaktische Beispiele. Kein universeller Trust-Score, kein Produktversprechen und keine mathematische Formel erforderlich.",
+      "Refero-Direct-Build: vorhandener Deep-Space-Lock und gemeinsame Lernkomponenten unverändert; native technische SVGs statt Rasterdekoration."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "zt-entscheidung",
+      "type": "flow",
+      "title": "Entscheiden und steuern",
+      "description": "Steuerablauf: Anfrage mit Kontext zur Policy Engine, Entscheidung über Policy Administrator an Policy Enforcement Point; keine Darstellung des Nutzdatenwegs.",
+      "items": [
+        {
+          "label": "Anfrage und Kontext",
+          "detail": "Mira, Gerät, Auftrag 481 und Aktion Lesen"
+        },
+        {
+          "label": "Policy Engine (PE)",
+          "detail": "Entscheidet: erlauben, ablehnen oder widerrufen"
+        },
+        {
+          "label": "Policy Administrator (PA)",
+          "detail": "Setzt die Entscheidung durch Steuerbefehle um"
+        },
+        {
+          "label": "Policy Enforcement Point (PEP)",
+          "detail": "Erlaubt, überwacht oder beendet den Zugriffsweg"
+        }
+      ]
+    },
+    {
+      "id": "zt-dienstwege",
+      "type": "topology",
+      "title": "Gezielte Dienstwege",
+      "description": "Eigene logische Freigaben: Arbeitsplatz zur Auftrags-API, API zur Auftragsdatenbank. Die Lohnabrechnung hat keine Freigabe zu diesen Akteuren. Jeder dargestellte Weg braucht Durchsetzung; Linien bedeuten keine pauschale gegenseitige Berechtigung.",
+      "nodes": [
+        {
+          "id": "client",
+          "label": "Arbeitsplatz",
+          "detail": "Miras Sitzung",
+          "x": 150,
+          "y": 260
+        },
+        {
+          "id": "api",
+          "label": "Auftrags-API",
+          "detail": "Dienstidentität",
+          "x": 480,
+          "y": 260
+        },
+        {
+          "id": "db",
+          "label": "Auftrags-DB",
+          "detail": "Datenzugriff",
+          "x": 810,
+          "y": 260
+        },
+        {
+          "id": "pay",
+          "label": "Lohnabrechnung",
+          "detail": "Keine Freigabe",
+          "x": 480,
+          "y": 440
+        }
+      ],
+      "edges": [
+        {
+          "from": "client",
+          "to": "api",
+          "label": "Lesen"
+        },
+        {
+          "from": "api",
+          "to": "db",
+          "label": "Abfragen"
+        }
+      ],
+      "zones": [
+        {
+          "id": "app",
+          "label": "Auftragsdienst: zwei gezielte Wege",
+          "x": 40,
+          "y": 140,
+          "width": 880,
+          "height": 185
+        },
+        {
+          "id": "payzone",
+          "label": "Separater Schutzbereich",
+          "x": 340,
+          "y": 355,
+          "width": 280,
+          "height": 145
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Diagnose: im VPN ist nicht automatisch erlaubt",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "zt-diagnose",
+          "question": "Mira ist erfolgreich am VPN angemeldet. Welche Aussage ist richtig?",
+          "options": [
+            {
+              "text": "Damit darf sie jeden internen Dienst nutzen.",
+              "rationale": "Das VPN stellt einen Zugangsweg bereit, aber keine fachliche Vollmacht.",
+              "correct": false
+            },
+            {
+              "text": "Der Gesamtexport braucht weiterhin eine eigene Berechtigungsentscheidung.",
+              "rationale": "Die Anmeldung am Zugangsweg beantwortet nicht die Frage, ob Mira diese Datenaktion ausführen darf.",
+              "correct": true
+            },
+            {
+              "text": "Eine zusätzliche VLAN-Nummer erteilt Exportrechte.",
+              "rationale": "Ein VLAN benennt eine Netztrennung, keine fachliche Berechtigung.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Kontext statt Vertrauenszone",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**Zero Trust** erteilt kein pauschales Vertrauen allein wegen LAN, VPN oder Firmeneigentum. Identität, Gerätezustand, Ressource und Aktion fließen in eine dynamische Policy ein. Die drei Merksätze: ausdrücklich prüfen, nur benötigte Rechte vergeben und einen bereits eingedrungenen Angreifer mitdenken.\n\n### Nordbogens eigene Policy\nMira darf **Auftrag 481 lesen**, wenn ihre Technikerrolle diesen Auftrag umfasst und ihr verwaltetes Gerät den festgelegten Sicherheitszustand erfüllt. Der Gesamtexport bleibt für diese Rolle gesperrt. Ein gültiges Passwort ersetzt keine Geräteprüfung; ein aktuelles Gerät ersetzt keine Exportberechtigung.\n\nEin nach der Firmenpolicy nicht konformes Testgerät erhält für die Auftragsanwendung keine Freigabe. Ein separat freigegebener Wartungsweg kann zur Behebung dienen. Das ist eine Entscheidung dieses Beispiels, keine allgemeine Pflicht, jedes unbekannte Gerät überall zu sperren."
+        },
+        {
+          "type": "quiz",
+          "id": "zt-kontext",
+          "question": "Miras Gerät ist aktuell und ihr Konto gültig, aber ihre Rolle enthält kein Exportrecht. Was folgt?",
+          "options": [
+            {
+              "text": "Export bleibt abgelehnt; Gerätezustand ersetzt keine Aktionsberechtigung.",
+              "rationale": "Alle notwendigen Bedingungen müssen zum konkreten Zugriff passen. Mira kann weiterhin die für sie freigegebenen Aufträge lesen.",
+              "correct": true
+            },
+            {
+              "text": "Das aktuelle Gerät hebt Rollenbeschränkungen auf.",
+              "rationale": "Geräteintegrität und fachliche Befugnis beantworten verschiedene Fragen.",
+              "correct": false
+            },
+            {
+              "text": "VPN-Zugang genügt für den Export.",
+              "rationale": "Der Netzweg erteilt keine Exportvollmacht.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "kontext"
+        }
+      ]
+    },
+    {
+      "title": "Die Entscheidung muss wirken",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Die **Policy Engine (PE)** trifft und protokolliert die Entscheidung. Der **Policy Administrator (PA)** steuert deren Umsetzung. Der **Policy Enforcement Point (PEP)** kontrolliert den tatsächlichen Zugriffsweg. Es sind logische Rollen; sie müssen nicht drei einzelne Geräte sein."
+        },
+        {
+          "type": "figure",
+          "diagramId": "zt-entscheidung",
+          "alt": "Steuerablauf von Anfrage und Kontext über PE und PA zum PEP.",
+          "caption": "Steuerablauf, nicht Nutzdatenroute: Der PEP liegt am kontrollierten Zugriffsweg zur Ressource. Er meldet relevante Informationen zurück; dieser Rückweg ist hier ausgeblendet."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Bei Nordbogen weist die Engine den Export zurück. Der Administrator übermittelt die Entscheidung an den Durchsetzungspunkt. Dieser lässt die Exportanforderung nicht zur geschützten Funktion durch. Ein Dashboard mit „abgelehnt“ wäre kein ausreichender Nachweis, wenn ein direkter Alternativweg den Export dennoch erlaubt."
+        },
+        {
+          "type": "quiz",
+          "id": "zt-durchsetzung",
+          "question": "Das Policy-Dashboard meldet Ablehnung, aber die Exportfunktion lässt sich über einen zweiten Endpunkt aufrufen. Was ist der Fehler?",
+          "options": [
+            {
+              "text": "Es fehlt nur eine schönere Anzeige.",
+              "rationale": "Die Umgehung ist ein Zugriffskontrollproblem, kein Darstellungsproblem.",
+              "correct": false
+            },
+            {
+              "text": "Die Entscheidung ist richtig, deshalb ist die Anwendung geschützt.",
+              "rationale": "Eine nicht wirksam durchgesetzte Entscheidung schützt die alternative Route nicht.",
+              "correct": false
+            },
+            {
+              "text": "Die Durchsetzung ist unvollständig; auch der zweite Weg muss kontrolliert werden.",
+              "rationale": "Der Test muss den tatsächlichen Zugriff umfassen. Eine protokollierte Entscheidung allein genügt nicht.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "durchsetzung"
+        }
+      ]
+    },
+    {
+      "title": "Mikrosegmentierung begrenzt Querbewegung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**Mikrosegmentierung** kontrolliert Kommunikation zu einzelnen Ressourcen oder kleinen Ressourcengruppen granular. Sie begrenzt unnötige laterale Bewegung: Ein kompromittierter Dienst soll nicht automatisch seine Nachbarn erreichen. Durchsetzung kann beispielsweise am Host oder an einem Gateway erfolgen. Eine größere VLAN-Anzahl allein ist kein Nachweis; Mikrosegmentierung ist ein Baustein, nicht die gesamte Zero-Trust-Architektur."
+        },
+        {
+          "type": "figure",
+          "diagramId": "zt-dienstwege",
+          "alt": "Arbeitsplatz mit gezieltem Zugriff auf Auftrags-API, API mit gezieltem Datenbankzugriff; Lohnabrechnung ohne Freigabe.",
+          "caption": "Linien zeigen nur die im eigenen Fall freigegebenen Initiierungen. Rechte und Durchsetzung gelten pro Weg. DNS, Zeitdienst, Wartung und Antwortverkehr sind ausgelassen und separat zu planen."
+        },
+        {
+          "type": "markdown",
+          "markdown": "### Nordbogens Freigaben\n- Mira → Auftrags-API: zugewiesene Aufträge lesen.\n- API-Dienstidentität → Auftragsdatenbank: benötigte Abfragen.\n- API → Lohnabrechnung: keine fachliche Abhängigkeit, daher keine Freigabe.\n\nNetzregeln können Ziel und Dienst begrenzen; eine Anwendung muss zusätzlich festlegen, welche Aufträge und Aktionen erlaubt sind. Ein freigegebener TCP-Port unterscheidet nicht automatisch zwischen Lesen und Gesamtexport. Die Zeichnung ist kein vollständiger Installationsplan."
+        },
+        {
+          "type": "quiz",
+          "id": "zt-dienstwege",
+          "question": "Nach einer Übernahme der API versucht deren Dienstkonto die Lohnabrechnung zu erreichen. Welche Planung begrenzt diesen Weg?",
+          "options": [
+            {
+              "text": "Alle internen Server gegenseitig freigeben.",
+              "rationale": "Das ermöglicht zusätzliche Querbewegung ohne Bedarf.",
+              "correct": false
+            },
+            {
+              "text": "Nur benötigte API-Abhängigkeiten freigeben und den Lohnzugriff ausdrücklich sperren und testen.",
+              "rationale": "Im eigenen Fall besteht kein Bedarf zur Lohnabrechnung. Die Kontrolle muss am tatsächlichen Weg wirksam sein.",
+              "correct": true
+            },
+            {
+              "text": "Den API-Server anders benennen.",
+              "rationale": "Ein Name schafft keine Zugriffssperre.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "dienstwege"
+        }
+      ]
+    },
+    {
+      "title": "Einführung und Nachweis",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Zero Trust wird schrittweise eingeführt: Ressourcen und Abhängigkeiten erfassen, einen wichtigen Anwendungsfall wählen und seine Policy überprüfbar umsetzen. Laufende Zugriffe werden bei relevant verändertem Kontext neu bewertet. Das heißt nicht, bei jedem Netzwerkpaket erneut einen MFA-Dialog einzublenden.\n\n### Autorisierte Tests für Nordbogen\n1. Mira liest Auftrag 481 vom freigegebenen Testgerät: erfolgreich.\n2. Mira versucht den Gesamtexport: abgelehnt, einschließlich alternativer Route.\n3. Das Testgerät wird als nicht konform gemeldet: die festgelegte Neubewertung und Sitzungsreaktion nachweisen.\n4. Das API-Testkonto ruft die Lohnabrechnung auf: gesperrt.\n5. Policy-Komponente fällt aus: das vorher festgelegte Verhalten prüfen.\n\nFür **neue Zugriffe** legt Nordbogen bei fehlender Entscheidung Ablehnung fest. Bereits laufende Sitzungen brauchen eine eigene Ausfallregel. Notfallausnahmen sind begrenzt, begründet und überprüfbar – kein stilles „alle intern freigeben“. Nur im freigegebenen Testumfeld arbeiten."
+        },
+        {
+          "type": "quiz",
+          "id": "zt-nachweis",
+          "question": "Die Policy Engine fällt im Test aus. Welche Aussage belegt eine belastbare Betriebsvorbereitung?",
+          "options": [
+            {
+              "text": "Neue Zugriffe werden wie festgelegt abgelehnt; laufende Sitzungen und eine begrenzte Notfallregel werden gesondert geprüft.",
+              "rationale": "Ausfallverhalten ist eine vorher festgelegte und getestete Entscheidung, keine automatische Folge eines Produktnamens.",
+              "correct": true
+            },
+            {
+              "text": "Alle Verbindungen freigeben, weil das einfacher ist.",
+              "rationale": "Die pauschale Freigabe widerspricht Nordbogens definierter Ausfallpolicy.",
+              "correct": false
+            },
+            {
+              "text": "Nur den VPN-Login prüfen.",
+              "rationale": "Das prüft weder Policy-Ausfall noch Ressourcen- und Aktionskontrolle.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "nachweis"
+        },
+        {
+          "type": "recall",
+          "id": "zt-transfer",
+          "title": "Begründe deinen Zugriffsentwurf",
+          "prompt": "Der Kollege fordert volle Rechte nach VPN-Anmeldung. Begründe Miras Exportablehnung, ordne PE/PA/PEP zu und plane einen erlaubten sowie einen gesperrten Diensttest. Ergänze eine Kontextänderung und das Ausfallverhalten.",
+          "minLength": 180,
+          "model": "VPN ist nur ein Zugangsweg. Mira besitzt kein Gesamtexportrecht, auch mit aktuellem Gerät nicht. PE entscheidet, PA steuert, PEP kontrolliert den Zugriff einschließlich alternativer Endpunkte. Ich prüfe Lesen von Auftrag 481 und den gesperrten API-Zugriff auf Lohnabrechnung im Testnetz. Ein nicht konform gemeldetes Gerät löst die definierte Neubewertung aus. Ohne neue Policy-Entscheidung werden neue Zugriffe abgelehnt; laufende Sitzungen und eine begrenzte Notfallregel prüfe ich separat."
+        }
+      ]
+    },
+    {
+      "title": "Abruftraining",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "id": "zt-cards",
+          "cards": [
+            {
+              "id": "vpn",
+              "label": "Zugriffsentscheidung",
+              "front": "Warum erteilt VPN keine Exportvollmacht?",
+              "back": "Zugangsweg und fachliche Aktionsberechtigung sind getrennt."
+            },
+            {
+              "id": "kontext",
+              "label": "Zugriffsentscheidung",
+              "front": "Welche Informationen braucht Nordbogens Leseentscheidung?",
+              "back": "Miras Rolle, zugewiesener Auftrag, Aktion Lesen und der festgelegte Gerätezustand."
+            },
+            {
+              "id": "pe",
+              "label": "Zugriffsentscheidung",
+              "front": "Was entscheidet die PE?",
+              "back": "Erlauben, ablehnen oder widerrufen; die Entscheidung wird protokolliert."
+            },
+            {
+              "id": "pa",
+              "label": "Zugriffsentscheidung",
+              "front": "Was übernimmt der PA?",
+              "back": "Die Entscheidung durch Steuerung des Durchsetzungspunkts umsetzen."
+            },
+            {
+              "id": "pep",
+              "label": "Zugriffsentscheidung",
+              "front": "Warum einen zweiten Endpunkt testen?",
+              "back": "Er darf den kontrollierten Zugriff nicht umgehen."
+            },
+            {
+              "id": "micro",
+              "label": "Zugriffsentscheidung",
+              "front": "Was begrenzt Mikrosegmentierung?",
+              "back": "Unnötige Kommunikation zu Ressourcen und damit laterale Bewegung; kein vollständiges Zero Trust allein."
+            },
+            {
+              "id": "ausfall",
+              "label": "Zugriffsentscheidung",
+              "front": "Warum neue und laufende Zugriffe getrennt prüfen?",
+              "back": "Für laufende Sitzungen kann ein anderes definiertes Ausfallverhalten gelten als für neue Anfragen."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

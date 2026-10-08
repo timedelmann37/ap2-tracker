@@ -1,0 +1,358 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "zahlensysteme-binaer-hex-dezimal-umrechnen",
+    "slug": "zahlensysteme-binaer-hex-dezimal-umrechnen",
+    "title": "Zahlensysteme: binär, hexadezimal und dezimal umrechnen",
+    "description": "Stellenwerte anwenden, Bytes in Nibbles zerlegen und Zahlenbasis von Bitbreite und Interpretation unterscheiden.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-11",
+    "groupLabel": "Rechnen und Prüfungstechnik",
+    "itemId": "ga1-11__12",
+    "week": "parallel",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": [
+      "basecalc-python-int",
+      "basecalc-python-literale"
+    ],
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "binaer",
+      "label": "Binärwerte mit Stellengewichten in Dezimalwerte umrechnen"
+    },
+    {
+      "id": "hex",
+      "label": "Hexwerte mit Basis 16 auswerten"
+    },
+    {
+      "id": "rest",
+      "label": "Dezimalwerte über Division und Reste zerlegen"
+    },
+    {
+      "id": "breite",
+      "label": "Maximalwert eines vorzeichenlosen Bytes bestimmen"
+    },
+    {
+      "id": "nachweis",
+      "label": "Gleichen Wert in mehreren Basen und korrekte Bitbreite erkennen"
+    }
+  ],
+  "intro": "Die fiktive Teststation Kiesel meldet ein vorzeichenloses 8-Bit-Statusregister als 0xB6. Im Prüfbericht stehen außerdem der Binärwert 10110110 und die Dezimalzahl 182. Du sollst nachweisen, ob dieselbe Zahl gemeint ist, und den unabhängigen Sollwert 205 in eine andere Darstellung umrechnen. Eigene Werte; keine echte Gerätespezifikation.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "basecalc-python-int",
+        "sourceLocator": "int(string, base); bin; hex; bytearray",
+        "use": "Basen, gültige Ziffern und softwaregestützte Gegenprüfung",
+        "reviewStatus": "Direkt gelesen 03.10.2026; eigene Zahlen"
+      },
+      {
+        "sourceId": "basecalc-python-literale",
+        "sourceLocator": "Integer literals",
+        "use": "0b/0x-Präfixe und A–F als Ziffernwerte 10–15",
+        "reviewStatus": "Direkt gelesen 03.10.2026"
+      }
+    ],
+    "notes": [
+      "CURATED_DRAFT bis menschliche Fachfreigabe.",
+      "Privater Themenanker europa-integratoren-2026:00065, Zeilen 784–791 direkt gelesen: Gleichwertigkeit zwischen Zahlensystemen. Fremde Zahl und Antwortoptionen nicht übernommen.",
+      "Alle Rechenfälle sind nichtnegative ganze Zahlen; das Register ist ausdrücklich unsigned. Keine unbenannte Zweierkomplement-Interpretation.",
+      "Deep-Space-Referenz-Lock: vorhandene Leseflächen, Übungen, MathML und technische SVG ohne Shelländerung."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "nibbles",
+      "type": "flow",
+      "title": "Ein Byte in zwei Nibbles zerlegen",
+      "description": "Die Darstellung ändert nicht den Zahlenwert.",
+      "items": [
+        {
+          "label": "8-Bit-Register",
+          "detail": "10110110 binär, ohne Vorzeichen"
+        },
+        {
+          "label": "Hohes Nibble",
+          "detail": "1011 → 8 + 2 + 1 = 11 → B"
+        },
+        {
+          "label": "Niedriges Nibble",
+          "detail": "0110 → 4 + 2 = 6 → 6"
+        },
+        {
+          "label": "Hex und Dezimal",
+          "detail": "B6 → 11 × 16 + 6 = 182"
+        }
+      ]
+    },
+    {
+      "id": "division",
+      "type": "flow",
+      "title": "205 durch wiederholte Division",
+      "description": "Reste für die Hexdarstellung rückwärts lesen.",
+      "items": [
+        {
+          "label": "Erste Division",
+          "detail": "205 / 16 → Quotient 12, Rest 13"
+        },
+        {
+          "label": "Zweite Division",
+          "detail": "12 / 16 → Quotient 0, Rest 12"
+        },
+        {
+          "label": "Reste übersetzen",
+          "detail": "12 entspricht C; 13 entspricht D"
+        },
+        {
+          "label": "Ergebnis prüfen",
+          "detail": "CD → 12 × 16 + 13 = 205"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Diagnose: Darstellung oder Wert?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "basecalc-diagnose",
+          "question": "Was bedeutet das Präfix 0x in 0xB6?",
+          "options": [
+            {
+              "text": "Die Zahl ist negativ",
+              "rationale": "Das Präfix benennt die Basis, nicht das Vorzeichen oder einen Datentyp.",
+              "correct": false
+            },
+            {
+              "text": "Die nachfolgenden Ziffern werden hexadezimal gelesen",
+              "rationale": "Richtig: 0x kennzeichnet hier Basis 16; B ist ein Ziffernwert und kein Variablenname.",
+              "correct": true
+            },
+            {
+              "text": "Die Zahl belegt immer 16 Bit",
+              "rationale": "Hexdarstellung schreibt keine feste Speicherbreite vor. Der Fall gibt acht Bit gesondert an.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Basis markieren:** Dezimal verwendet Ziffern 0–9, binär 0–1, hexadezimal 0–9 und A–F. Dabei A = 10, B = 11, C = 12, D = 13, E = 14, F = 15. Klein- und Großbuchstaben sind bei den hier gezeigten Python-/Hex-Literalen gleichwertig. Im Text kennzeichnen wir Werte durch „binär“, „dezimal“, „hex“ oder durch 0b/0x. Eine bloße Zeichenfolge 10 wäre mehrdeutig: dezimal zehn, binär zwei, hex sechzehn."
+        }
+      ]
+    },
+    {
+      "title": "1. Stellenwerte statt Ziffernsumme",
+      "blocks": [
+        {
+          "type": "math",
+          "ariaLabel": "Zahlenwert gleich Summe aus Ziffer mal Basis hoch Stellenindex",
+          "mathml": "<math display=\"block\"><mrow><mi>W</mi><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>0</mn></mrow><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow></munderover><msub><mi>d</mi><mi>i</mi></msub><mo>×</mo><msup><mi>b</mi><mi>i</mi></msup></mrow></math>",
+          "legend": [
+            "b = Basis, d i = Ziffernwert an Stelle i",
+            "Rechte Stelle hat Index 0 und Gewicht 1"
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "Beim Byte lauten die Gewichte von links nach rechts: 128, 64, 32, 16, 8, 4, 2, 1. Im Binärwert 10110110 sind die Gewichte 128, 32, 16, 4 und 2 gesetzt. Ihre Summe ist 182. Die Anzahl der Einsen ist dagegen fünf und nicht der Zahlenwert.\n\nRückrichtung: 182 − 128 = 54, 64 passt nicht, 32 passt mit Rest 22, 16 mit Rest 6, 8 passt nicht, 4 mit Rest 2, 2 mit Rest 0, 1 nicht. Genau die zugehörigen Stellen erhalten eine Eins."
+        },
+        {
+          "type": "numeric",
+          "id": "basecalc-binaer",
+          "prompt": "Welchen Dezimalwert hat der vorzeichenlose Binärwert 10110110?",
+          "expected": 182,
+          "tolerance": 0.000001,
+          "label": "Dezimales Ergebnis",
+          "placeholder": "Zahl ohne Einheit eingeben",
+          "correctFeedback": "Richtig. 128 + 32 + 16 + 4 + 2 = 182. Gewichte addieren, nicht nur Einsen zählen.",
+          "wrongFeedback": "128 + 32 + 16 + 4 + 2 = 182. Gewichte addieren, nicht nur Einsen zählen.",
+          "requiredObjective": "binaer"
+        },
+        {
+          "type": "markdown",
+          "markdown": "Eine führende Null ändert bei diesen nichtnegativen Zahlen den Wert nicht: 00110110 und 110110 sind beide dezimal 54. Sie kann aber für die dokumentierte Bitbreite wichtig sein. Acht angezeigte Stellen sind etwas anderes als die minimale Stellenzahl."
+        }
+      ]
+    },
+    {
+      "title": "2. Vier Bits pro Hexziffer",
+      "blocks": [
+        {
+          "type": "math",
+          "ariaLabel": "Zwei Hexziffern ergeben hohes Nibble mal 16 plus niedriges Nibble",
+          "mathml": "<math display=\"block\"><mrow><mi>W</mi><mo>=</mo><mi>a</mi><mo>×</mo><mn>16</mn><mo>+</mo><mi>c</mi></mrow></math>",
+          "legend": [
+            "a und c sind Ziffernwerte 0 bis 15",
+            "B6: a = 11, c = 6"
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "Vier Bits heißen ein Nibble. Weil 2 hoch 4 = 16 gilt, entsprechen vier Binärstellen genau einer Hexziffer. Von rechts in Vierergruppen zerlegen, links bei Bedarf mit Nullen auffüllen: 1011 und 0110 ergeben B und 6. **0xB6 = 182 dezimal**.\n\nDer Wert 0x6B wäre dagegen 6 × 16 + 11 = 107. Die Ziffernposition darf nicht vertauscht werden. Das betrifft hier Stellenwerte, nicht die Byte-Reihenfolge eines Mehrbyteformats."
+        },
+        {
+          "type": "figure",
+          "diagramId": "nibbles",
+          "alt": "Das Byte 10110110 wird in 1011 und 0110 zerlegt. Diese Nibbles ergeben B und 6, zusammen B6 hex und 182 dezimal.",
+          "caption": "Zwei Hexziffern können ein Byte darstellen; die Basis allein legt keinen Datentyp fest."
+        },
+        {
+          "type": "numeric",
+          "id": "basecalc-hex",
+          "prompt": "Welchen Dezimalwert hat der vorzeichenlose Hexwert 0x3A?",
+          "expected": 58,
+          "tolerance": 0.000001,
+          "label": "Dezimales Ergebnis",
+          "placeholder": "Zahl ohne Einheit eingeben",
+          "correctFeedback": "Richtig. 3 × 16 + 10 = 58. A bedeutet zehn, nicht eins oder ein zusätzlicher Faktor.",
+          "wrongFeedback": "3 × 16 + 10 = 58. A bedeutet zehn, nicht eins oder ein zusätzlicher Faktor.",
+          "requiredObjective": "hex"
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Gegenrichtung:** Für Dezimal 58 ist 58 / 16 = 3 mit Rest 10. Ergebnis 3A hex; als Byte 00111010 binär. Eine Hexziffer G ist ungültig; binär sind weder 2 noch A erlaubt."
+        }
+      ]
+    },
+    {
+      "title": "3. Division mit Rest und Gegenprobe",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Für eine nichtnegative ganze Zahl kann man wiederholt durch die Zielbasis teilen. Quotient ganzzahlig weiterteilen, Rest notieren, bis der Quotient null ist. Dann die Reste von unten nach oben lesen. Bei der Zahl null lautet die Darstellung direkt 0.\n\nEigener Sollwert 205: durch 16 ergibt Quotient 12, Rest 13. 12 erneut durch 16 ergibt Quotient 0, Rest 12. Rückwärts: 12 und 13 → C und D → 0xCD. Binär ergeben die Nibbles C = 1100 und D = 1101 also 11001101."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Division zerlegt eine Zahl in Basis mal Quotient plus Rest",
+          "mathml": "<math display=\"block\"><mrow><mi>W</mi><mo>=</mo><mi>b</mi><mo>×</mo><mi>q</mi><mo>+</mo><mi>r</mi></mrow></math>",
+          "legend": [
+            "0 ≤ r < b; q ist der ganzzahlige Quotient",
+            "Für 205 und b = 16: q = 12, r = 13"
+          ]
+        },
+        {
+          "type": "figure",
+          "diagramId": "division",
+          "alt": "205 geteilt durch 16 ergibt 12 Rest 13; 12 geteilt durch 16 ergibt 0 Rest 12. Rückwärts gelesen entstehen die Hexziffern C und D.",
+          "caption": "Die erste Division liefert die niedrigste, nicht die höchste Stelle."
+        },
+        {
+          "type": "numeric",
+          "id": "basecalc-rest",
+          "prompt": "Welcher dezimale Rest entsteht bei 205 geteilt durch 16?",
+          "expected": 13,
+          "tolerance": 0.000001,
+          "label": "Dezimales Ergebnis",
+          "placeholder": "Zahl ohne Einheit eingeben",
+          "correctFeedback": "Richtig. 16 × 12 = 192; 205 − 192 = 13. Der Rest wird als Hexziffer D geschrieben.",
+          "wrongFeedback": "16 × 12 = 192; 205 − 192 = 13. Der Rest wird als Hexziffer D geschrieben.",
+          "requiredObjective": "rest"
+        },
+        {
+          "type": "markdown",
+          "markdown": "Dasselbe Verfahren funktioniert mit Basis 2. Für 13 lauten die Quotient-/Rest-Paare: 6/1, 3/0, 1/1, 0/1. Rückwärts entsteht 1101 binär. Nicht 1011: das wäre dezimal elf.\n\n**Optionale Software-Gegenprobe (Python 3):** `int('B6', 16)` liefert 182; `int('10110110', 2)` ebenfalls. `hex(205)` liefert `0xcd`, `bin(205)` liefert `0b11001101`. Der Basisparameter ist entscheidend. Keine beliebigen Logtexte mit eval ausführen; die Handrechnung soll die Stellenwerte erklären."
+        }
+      ]
+    },
+    {
+      "title": "4. Bitbreite und Interpretation prüfen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein vorzeichenloses 8-Bit-Feld hat 256 mögliche Muster, aber der größte Zahlenwert ist 255: von 0 bis 255. Dezimal 256 benötigt neun Binärstellen und passt nicht in das vorgegebene Byte. Nicht still abschneiden.\n\n0xB6, 10110110 binär und 182 dezimal sind im unsigned-Fall gleichwertig. Ein anderes Format, etwa vorzeichenbehaftetes Zweierkomplement, müsste ausdrücklich spezifiziert werden; bloßes Umbenennen der Basis beantwortet diese Frage nicht. Mehrbyte-Reihenfolge und Zeichenkodierung sind ebenfalls eigene Formatfragen."
+        },
+        {
+          "type": "numeric",
+          "id": "basecalc-breite",
+          "prompt": "Welcher Dezimalwert ist maximal in einem vorzeichenlosen 8-Bit-Feld darstellbar?",
+          "expected": 255,
+          "tolerance": 0.000001,
+          "label": "Dezimales Ergebnis",
+          "placeholder": "Zahl ohne Einheit eingeben",
+          "correctFeedback": "Richtig. 2 hoch 8 ergibt 256 Muster; der größte Wert ist 256 − 1 = 255.",
+          "wrongFeedback": "2 hoch 8 ergibt 256 Muster; der größte Wert ist 256 − 1 = 255.",
+          "requiredObjective": "breite"
+        },
+        {
+          "type": "quiz",
+          "id": "basecalc-nachweis",
+          "question": "Welche Darstellung dokumentiert den Sollwert 205 korrekt als vorzeichenloses Byte?",
+          "options": [
+            {
+              "text": "205 dezimal = 0xCD = 11001101 binär",
+              "rationale": "Richtig: 12 × 16 + 13 = 205 und acht Bits. Gegenprobe über die gesetzten Stellengewichte möglich.",
+              "correct": true
+            },
+            {
+              "text": "205 dezimal = 0xDC = 11011100 binär",
+              "rationale": "DC ist 13 × 16 + 12 = 220. Vertauschte Nibbles ändern den Wert.",
+              "correct": false
+            },
+            {
+              "text": "205 dezimal = 1100110 binär; ein Bit darf entfallen",
+              "rationale": "1100110 ergibt 102. Nur führende Nullen dürfen bei der Wertdarstellung entfallen, keine rechte Stelle.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "nachweis"
+        }
+      ]
+    },
+    {
+      "title": "Transfer und Wiederholung",
+      "blocks": [
+        {
+          "type": "recall",
+          "id": "basecalc-transfer",
+          "prompt": "Begründe die Gleichwertigkeit von 0xB6, 10110110 binär und 182 dezimal. Beschreibe außerdem den Weg von 205 zu CD hex und warum ein Byte nicht bis 256 reicht.",
+          "minLength": 140,
+          "model": "10110110 setzt 128, 32, 16, 4 und 2, Summe 182. Die Nibbles 1011 und 0110 stehen für B und 6; 11 × 16 + 6 ergibt denselben Wert. 205 / 16 ergibt 12 Rest 13, dann 12 / 16 ergibt 0 Rest 12. Rückwärts stehen C und D: 12 × 16 + 13 = 205. Ein unsigned Byte hat 256 Muster von 0 bis 255. Basis und Bitbreite sind getrennte Angaben."
+        },
+        {
+          "type": "flashcards",
+          "id": "basecalc-karten",
+          "cards": [
+            {
+              "id": "binaer",
+              "label": "Stellenwert",
+              "front": "Welches Gewicht hat die rechte Stelle?",
+              "back": "Basis hoch null, also eins. Nach links jeweils mit der Basis multiplizieren."
+            },
+            {
+              "id": "hex",
+              "label": "Nibble",
+              "front": "Warum passen vier Bits zu einer Hexziffer?",
+              "back": "Vier Bits haben 16 Muster; eine Hexziffer hat Werte 0–15."
+            },
+            {
+              "id": "rest",
+              "label": "Division",
+              "front": "In welcher Reihenfolge liest man Reste?",
+              "back": "Rückwärts: letzte Division zuerst. Erste Division liefert die niedrigste Stelle."
+            },
+            {
+              "id": "breite",
+              "label": "Unsigned Byte",
+              "front": "256 Muster: maximaler Wert?",
+              "back": "255, weil null mitgezählt wird."
+            },
+            {
+              "id": "nachweis",
+              "label": "Darstellung",
+              "front": "Legt 0x eine Speicherbreite fest?",
+              "back": "Nein, es kennzeichnet die Hexbasis. Bitbreite und Interpretation gesondert prüfen."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

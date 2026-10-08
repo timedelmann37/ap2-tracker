@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="GRUB zwischen Firmware und Linux-Kernel einordnen, einen vorhandenen Kernel im Menü testen und bei grub rescue erst den Bootpfad lesen, bevor eine plattformgerechte Reparatur erfolgt.">
+<title>GRUB: Bootweg und sichere Fehlersuche – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js" defer></script>
+<script src="/assets/ap2-learning.js?v=3.10.1" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="grub-bootloader-bootvorgang-menue-kernel-auswahl-rescue" data-progress-id="ga1-6__13" data-content-revision="2026-10-02.1" data-content-status="CURATED_DRAFT">
+<a class="learning-skip" href="#main-content">Zum Lerninhalt</a>
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-6">Betriebssysteme und Administration</a><span class="sep">›</span>
+    <span class="here">GRUB: Bootweg und sichere Fehlersuche</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content" tabindex="-1">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">GRUB: Bootweg und sichere Fehlersuche</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 40 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Entwurf · menschliche Freigabe ausstehend</span>
+      </div>
+      <div class="rule"></div>
+      <details class="learning-overview" id="lesson-overview">
+        <summary>Inhalt und Lernstand <small data-current-section>Abschnitt auswählen</small></summary>
+        <div class="overview-body">
+          <div class="mastery-box" data-mastery-box>
+            <div class="mastery-count" data-mastery-count>0 von 3 Pflichtchecks bestanden</div>
+            <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+            <p class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Pflichtchecks.</p>
+            <p class="mastery-note" data-action-reason>Lesen und üben ist ohne Konto möglich.</p>
+            <a class="next-check" href="/?konto=anmelden" data-learning-signin>Anmelden und Fortschritt speichern</a>
+            <a class="next-check" data-next-check hidden>Nächsten offenen Pflichtcheck bearbeiten</a>
+          </div>
+          <nav aria-label="Lernabschnitte"><ul class="toc" id="toc-mobile"><li><a href="#s1" data-t="s1">Diagnose: Welche Startphase siehst du?</a></li>
+<li><a href="#s2" data-t="s2">GRUB zwischen Firmware und Linux einordnen</a></li>
+<li><a href="#s3" data-t="s3">Minimalprompt lesend eingrenzen</a></li>
+<li><a href="#s4" data-t="s4">Reparaturziel statt Musterbefehl wählen</a></li>
+<li><a href="#s5" data-t="s5">Abrufen und im Fall entscheiden</a></li>
+<li><a href="#s6" data-t="s6">Lernziel-Checks</a></li>
+<li><a href="#s7" data-t="s7">Quellen und Grenzen</a></li></ul></nav>
+        </div>
+      </details>
+      <p>Die fiktive Brückenwerk GmbH betreibt eine Debian-basierte VM mit UEFI-Start für ein internes Wiki. Nach einer Wartung am Partitionslayout zeigt die Konsole beim Neustart nur <code>grub rescue&gt;</code>. Ob die Wartung die Ursache ist, steht noch nicht fest. Ein Kollege schlägt vor, im GRUB-Menü einen älteren Kernel zu wählen; eine andere Kollegin möchte sofort <code>grub-install</code> ausführen. Du sollst zuerst erkennen, welche Startphase erreicht wurde, welche Befunde ohne Schreibzugriff möglich sind und wann welche Reparatur überhaupt verantwortbar ist.</p>
+<section class="learning-goals" aria-labelledby="grub-bootloader-bootvorgang-menue-kernel-auswahl-rescue-goals">
+  <h2 id="grub-bootloader-bootvorgang-menue-kernel-auswahl-rescue-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Firmware, GRUB, Menüeintrag, Kernel und frühes Userspace im Bootweg unterscheiden</li>
+    <li>GRUB-Menü und grub rescue unterscheiden und mit lesenden Befunden die nächste Prüfung begründen</li>
+    <li>Vor einer GRUB-Reparatur UEFI/BIOS, Systempfade, Sicherung und anschließenden Starttest klären</li>
+  </ul>
+</section><h2 class="sec" id="s1" tabindex="-1"><span class="num" aria-hidden="true">1</span>Diagnose: Welche Startphase siehst du?</h2>
+<section class="quiz" data-quiz="grub-diagnose" data-correct="1">
+  <h3>Brückenwerks VM zeigt `grub rescue&gt;` statt des Boot-Menüs. Was lässt sich daraus als Erstes ableiten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Ein Kernelproblem ist aus dem Rescue-Prompt nicht belegt. Solange kein Menü sichtbar ist, kannst du dort auch keinen älteren Eintrag wählen."><span class="m">A</span> Der neue Linux-Kernel ist nachweislich defekt; ich wähle im nicht sichtbaren Menü sofort einen älteren Kernel.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Der Prompt ordnet den Fehler vor der Kernel-Übergabe ein; sein genauer Grund bleibt ohne weitere Befunde offen."><span class="m">B</span> Ein Teil von GRUB wurde erreicht, aber der normale Menüpfad ist nicht verfügbar. Ich halte die Meldung fest und lese zunächst Variablen und erreichbare Laufwerke/Pfade.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Der sichtbare GRUB-Prompt widerlegt 'kein GRUB geladen'. Ein blindes Installationsziel kann den falschen Bootpfad überschreiben."><span class="m">C</span> Die Firmware hat überhaupt keinen Bootloader geladen; `grub-install` auf irgendeinem Datenträger ist die zwingende Erstmaßnahme.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><p>Der Bildschirm ist ein Diagnosehinweis, keine fertige Ursachenanalyse. <strong><code>grub rescue&gt;</code></strong> ist der eingeschränkte Rettungsmodus von GRUB. Er kann beispielsweise auftreten, wenn GRUB das Modul für den Normalmodus über den eingestellten <code>prefix</code> nicht findet; das beweist weder einen kaputten Kernel noch Datenverlust. Halte die genaue Fehlermeldung und den Zeitpunkt der letzten Änderungen fest. Am Prompt liefern <code>set</code> <strong>ohne Argumente</strong> und <code>ls</code> zunächst lesende Informationen zu GRUB-Variablen, Geräten und auffindbaren Pfaden. Verändere <code>root</code> oder <code>prefix</code> nicht auf Verdacht und führe noch keine Datenträgerschreiboperation aus. Für eine vollständige Bestandsaufnahme brauchst du gegebenenfalls ein passendes Rettungssystem und die tatsächlichen Geräte-/UUID- und Mount-Zuordnungen.</p>
+<h2 class="sec" id="s2" tabindex="-1"><span class="num" aria-hidden="true">2</span>GRUB zwischen Firmware und Linux einordnen</h2>
+<p>Die <strong>Firmware</strong> wählt einen Startpfad und lädt den passenden Bootloader; sie ist nicht selbst GRUB. <strong>GRUB</strong> liest seine Module und Konfiguration und kann ein Menü mit vorhandenen Starteinträgen anzeigen. Der gewählte Eintrag lädt einen <strong>Linux-Kernel</strong>, meist zusammen mit einem <strong>initramfs</strong>, und übergibt die Kontrolle. Das initramfs stellt frühes Userspace bereit; später starten PID 1 und Systemdienste. Auf einem UEFI-System liegt der EFI-Startpfad auf einer EFI-Systempartition; bei Legacy-BIOS ist der Installationsweg anders. Auf Brückenwerks UEFI-VM heißt ein GRUB-Rescue-Prompt: Die Firmware hat GRUB weit genug geladen, um diesen Prompt auszugeben, doch der normale Menüpfad ist nicht erreicht. Es ist kein Beweis dafür, dass die ESP, <code>/boot</code> oder das Root-Dateisystem insgesamt gesund sind.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Wer übernimmt wann den Start?">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="650" viewBox="0 0 960 650" role="img" aria-labelledby="diagram-grub-startkette-title diagram-grub-startkette-desc">
+  <title id="diagram-grub-startkette-title">Wer übernimmt wann den Start?</title>
+  <desc id="diagram-grub-startkette-desc">Technische Startkette: Firmware lädt GRUB; ein GRUB-Menüeintrag bestimmt Kernel, initramfs und Parameter; Linux übernimmt und startet Userspace mit PID 1.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Wer übernimmt wann den Start?</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Firmware</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">UEFI oder BIOS wählt den Startpfad</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">GRUB</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Liest Module und Konfiguration</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Menüeintrag</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Bestimmt Kernel, initramfs und Parameter</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Kernel</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">GRUB lädt Kernel und initramfs; danach Übergabe</tspan></text><path d="M480 472v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 494 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="512" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="541" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Userspace</tspan></text><text x="178" y="568" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">initramfs zuerst, später PID 1 und Dienste</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene technische Startkette. Ein Ausfall vor der Kernel-Übergabe und ein Kernel-Fehler benötigen verschiedene Diagnosen.</figcaption>
+</figure><section class="quiz" data-quiz="grub-menue-kernel" data-correct="0">
+  <h3>Nach einer anderen Wartung erscheint das GRUB-Menü normal, aber der neueste Kernel startet nicht. Ein älterer installierter Kernel ist im Menü vorhanden. Was ist ein sinnvoller erster Test?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Ein Vergleich grenzt einen Kernel-/Treiberfehler ein, wenn der Menüpfad funktioniert. Ursache und Dauerlösung bleiben gesondert zu prüfen."><span class="m">A</span> Den älteren vorhandenen Kernel einmal aus dem Menü starten und das Ergebnis dokumentieren; daraus allein folgt noch keine dauerhafte Reparatur.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Wenn das Menü sichtbar ist, arbeitet GRUB zumindest bis zur Auswahl. Ein Problem nach Übergabe kann in einer späteren Startphase liegen."><span class="m">B</span> Sofort GRUB neu installieren, denn jedes Problem nach der Menüanzeige beweist einen defekten Bootloader.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Der Rescue-Prompt bietet gerade kein normales GRUB-Menü. Die beiden Bildschirmzustände dürfen nicht verwechselt werden."><span class="m">C</span> Im `grub rescue&gt;`-Prompt denselben älteren Eintrag anklicken.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s3" tabindex="-1"><span class="num" aria-hidden="true">3</span>Minimalprompt lesend eingrenzen</h2>
+<p>GRUBs <strong>normaler Modus</strong> bietet Menü und weitere Befehle; der <strong>Rescue-Modus</strong> stellt nur eine kleine Befehlssammlung bereit. <code>set</code> ohne Argumente zeigt unter anderem Werte wie <code>root</code> und <code>prefix</code>, <code>ls</code> zeigt erkannte GRUB-Geräte und kann vorhandene Pfade prüfen. Diese Anzeigen sind Hinweise, aber keine sichere Linux-Gerätezuordnung: <code>(hd0,gpt2)</code> darfst du nicht automatisch mit einem geratenen <code>/dev/sdX2</code> gleichsetzen. Vergleiche aus einer vertrauenswürdigen Rettungsumgebung Firmwaremodus, reale Datenträger, Partitionen, Dateisysteme und UUIDs mit dem installierten System. Ein vorübergehend wieder sichtbares Menü durch eine GRUB-Sitzungsänderung wäre nur ein Zugang zur weiteren Prüfung, <strong>keine</strong> dauerhafte Reparatur auf dem Datenträger.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Bildschirmzustand statt Verdacht">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-grub-fehlerort-title diagram-grub-fehlerort-desc">
+  <title id="diagram-grub-fehlerort-title">Bildschirmzustand statt Verdacht</title>
+  <desc id="diagram-grub-fehlerort-desc">Vergleich der Boot-Befunde: Das GRUB-Menü erlaubt die Auswahl vorhandener Kerneleinträge; grub rescue zeigt einen eingeschränkten Modus ohne Menü; lesende Befehle set und ls liefern zuerst einen Befund. Eine spätere Kernelmeldung gehört nicht zur Rescue-Phase.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Bildschirmzustand statt Verdacht</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">GRUB-Menü</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">Alter Kernel nur als</tspan><tspan x="64" dy="30">Test</tspan></text></g><g><rect class="diagram-row" x="265" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="287" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="287" dy="0">grub rescue&gt;</tspan></text><text x="287" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="287" dy="0">Kein Menü; Grund</tspan><tspan x="287" dy="30">noch offen</tspan></text></g><g><rect class="diagram-row" x="488" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="510" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="510" dy="0">Befund</tspan></text><text x="510" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="510" dy="0">set und ls: Werte</tspan><tspan x="510" dy="30">prüfen</tspan></text></g><g><rect class="diagram-row" x="711" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="733" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="733" dy="0">Kernel</tspan></text><text x="733" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="733" dy="0">Meldung erst nach</tspan><tspan x="733" dy="30">GRUB</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene technische Befundkarte. Für Brückenwerk gilt zuerst die Rescue-Spur, nicht die Kernel-Auswahl aus einem unsichtbaren Menü.</figcaption>
+</figure><section class="quiz" data-quiz="grub-rescue-befund" data-correct="2">
+  <h3>Am Prompt steht `grub rescue&gt;`. Welches Vorgehen hält den ersten Diagnose-Schritt nachweisbar und ohne blinden Schreibzugriff?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Gerätenamen und Bootmodus sind nicht belegt. `grub-install` schreibt am Bootpfad und kann auf dem falschen Ziel Schaden anrichten."><span class="m">A</span> `grub-install /dev/sda` im nächsten Live-System sofort ausführen; `/dev/sda` ist immer die Startplatte.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Ein alter Kernel ist aus dem Prompt nicht ableitbar. Der Debian-Wrapper regeneriert Konfiguration, ersetzt aber keine geprüfte Analyse oder notwendige Loader-Installation."><span class="m">B</span> Einen alten Kernel als alleinige Ursache festlegen und nur `update-grub` ausführen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Richtig. Das trennt beobachtete GRUB-Werte von realen Systempfaden und verschiebt Schreiboperationen bis nach Sicherung und Freigabe."><span class="m">C</span> Meldung dokumentieren, `set` ohne Zuweisung und `ls` lesen; Bootmodus und tatsächliche Root-/Boot-/ESP-Zuordnung im Rettungssystem abgleichen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout warn"><span class="lbl">Rescue ist nicht gleich Neuinstallation</span><p>Fehlender Menüpfad, falscher <code>prefix</code>, beschädigte Dateien, geänderte Partitionierung oder eine andere Bootquelle sind verschiedene Hypothesen. <code>set root=...</code> oder <code>insmod normal</code> kann im konkreten Einzelfall eine Sitzung vorübergehend wiederherstellen; ohne geprüfte Geräte- und Pfadangaben ist das kein Rezept und ersetzt keine dauerhafte Ursachenbehebung. Erst lesender Befund, dann passende Reparatur.</p></aside><h2 class="sec" id="s4" tabindex="-1"><span class="num" aria-hidden="true">4</span>Reparaturziel statt Musterbefehl wählen</h2>
+<p>Vor einem Eingriff sichert Brückenwerk die VM beziehungsweise den Datenstand und den erreichbaren Rückweg. Im Rettungssystem werden der <strong>Bootmodus des installierten Systems</strong>, die korrekte Systemplatte, Root-Dateisystem, gegebenenfalls eine eigene <code>/boot</code>-Partition und auf UEFI-Systemen die <strong>EFI-Systempartition (ESP)</strong> identifiziert und passend eingehängt. Der Mount-Punkt der ESP kann je nach Distribution und Installation variieren; <code>/boot</code> und ESP sind nicht allein anhand des Pfadnamens gleichzusetzen. Eine Reparatur per <code>grub-install</code> ist eine <strong>Schreiboperation</strong> am Bootpfad. Je nach UEFI-Installationsart schreibt sie EFI-Dateien auf die passend gemountete ESP und kann Firmware-Starteinträge anlegen oder ändern; Fallback- und Wechselmedien können anders eingerichtet sein. Der Legacy-BIOS-Weg benötigt dagegen das korrekte Installationsziel auf dem Datenträger. Beides ist nicht derselbe Aufruf. Die Konfiguration ist wieder ein eigener Schritt: Auf Debian erzeugt <code>update-grub</code> als Wrapper von <code>grub-mkconfig</code> die Datei <code>/boot/grub/grub.cfg</code>. Das bloße Erzeugen der Datei installiert keinen fehlenden EFI-Loader; umgekehrt beweist eine Loader-Installation noch keinen passenden Kernel-Eintrag. Die konkrete Reihenfolge und Befehlsoptionen folgen der dokumentierten Distribution und dem zuvor ermittelten Befund — nicht einem ungeprüften <code>/dev/sda</code>-Beispiel. Secure Boot wird nicht pauschal deaktiviert, nur um den Start zu erzwingen.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: UEFI und BIOS nicht gleich reparieren">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-comparison" xmlns="http://www.w3.org/2000/svg" width="960" height="390" viewBox="0 0 960 390" role="img" aria-labelledby="diagram-grub-installationsziel-title diagram-grub-installationsziel-desc">
+  <title id="diagram-grub-installationsziel-title">UEFI und BIOS nicht gleich reparieren</title>
+  <desc id="diagram-grub-installationsziel-desc">Vier zu prüfende Ziele vor einer GRUB-Reparatur: EFI-Systempartition für UEFI-Startdateien, /boot für GRUB-Konfiguration und Kernel, Root-Dateisystem des installierten Systems und der gesonderte BIOS-Installationsweg zum korrekt identifizierten Datenträger.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">UEFI und BIOS nicht gleich reparieren</tspan></text>
+  <g><rect class="diagram-row" x="42" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="64" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="64" dy="0">ESP (UEFI)</tspan></text><text x="64" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="64" dy="0">EFI-Dateien; Mount</tspan><tspan x="64" dy="30">prüfen</tspan></text></g><g><rect class="diagram-row" x="265" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="287" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="287" dy="0">/boot</tspan></text><text x="287" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="287" dy="0">Konfig + Kernel</tspan></text></g><g><rect class="diagram-row" x="488" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="510" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="510" dy="0">Root</tspan></text><text x="510" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="510" dy="0">System und UUID</tspan><tspan x="510" dy="30">prüfen</tspan></text></g><g><rect class="diagram-row" x="711" y="92" width="205" height="252" rx="16" fill="var(--diagram-surface-alt, #2c2438)" stroke="var(--diagram-border, #5f526e)"/><text x="733" y="132" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="733" dy="0">BIOS</tspan></text><text x="733" y="180" font-family="Inter, Arial, sans-serif" font-size="20" fill="var(--diagram-muted, #c8c1d2)"><tspan x="733" dy="0">Zielplatte vorher</tspan><tspan x="733" dy="30">prüfen</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene technische Pfadkarte. Erst Bootmodus und reale Mount-Punkte zuordnen, dann ein plattformgerechtes Schreibziel freigeben.</figcaption>
+</figure><section class="sequence-practice" data-sequence="grub-reparaturfolge" data-expected="befund,modus,sicherung,pfade,reparatur,test" data-correct-feedback="Richtig. Erst Beobachtung und Plattform, dann Sicherung und verifizierte Pfade; eine freigegebene Schreiboperation folgt nur bei passender Ursache. Nach dem Neustart werden Boot- und Dienstfunktion getrennt belegt." data-wrong-feedback="Ein blindes grub-install vor Bootmodus, Sicherung und Pfadzuordnung ist riskant. Lies den Befund zuerst; teste nach einer gezielten Reparatur nicht nur das Menü, sondern auch Kernel- und Dienststart." aria-labelledby="grub-reparaturfolge-title">
+  <div class="lab-heading"><div><h3 id="grub-reparaturfolge-title">Brückenwerks Startweg wiederherstellen</h3><p>Ordne die Schritte für eine sichere Incident-Entscheidung. Der schreibende Reparaturschritt ist nur bei geklärter Ursache und Freigabe zulässig.</p></div><span class="lab-tag">Diagnose vor Eingriff</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="reparatur" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Nur die zur Ursache passende GRUB-Installation oder Konfigurationsgenerierung freigegeben ausführen</span></li>
+    <li data-step="sicherung" tabindex="-1"><span class="step-position" data-step-position>2</span><span>VM-/Datenstand und erreichbaren Rückweg vor jeder Schreibaktion sichern</span></li>
+    <li data-step="test" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Normalstart, Menü/Kerneleintrag und Wiki-Dienst nach Neustart prüfen und Ergebnis dokumentieren</span></li>
+    <li data-step="befund" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Exakte Konsolenmeldung, letzte Änderungen sowie set-/ls-Anzeigen lesend erfassen</span></li>
+    <li data-step="pfade" tabindex="-1"><span class="step-position" data-step-position>5</span><span>Root, optionales /boot, ESP und UUIDs im Rettungssystem mit dem installierten System abgleichen</span></li>
+    <li data-step="modus" tabindex="-1"><span class="step-position" data-step-position>6</span><span>Bootmodus und tatsächliche Datenträger statt eines geratenen Gerätenamens bestimmen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s5" tabindex="-1"><span class="num" aria-hidden="true">5</span>Abrufen und im Fall entscheiden</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="grub-karte-rescue" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was sagt `grub rescue&gt;` aus – und was noch nicht?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Ein GRUB-Minimalmodus läuft; der normale Menüpfad ist nicht verfügbar. Die genaue Ursache, die Integrität von /boot und der Zustand des Kernels sind damit nicht bewiesen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="grub-karte-menue" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wann hilft ein älterer Kernel als Diagnose?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Wenn das GRUB-Menü erreichbar ist und ein älterer Kernel installiert wurde, kann ein Test die Störung eingrenzen. Das ist keine automatische Dauerlösung.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="grub-karte-config" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was trennt `grub-install` von `update-grub`?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>grub-install schreibt den Bootloader für die passende Plattform an das geprüfte Ziel; update-grub regeneriert auf Debian die GRUB-Konfiguration. Beides braucht einen konkreten Befund.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Rescue-Prompt“:</span><button type="button" data-card-id="grub-karte-rescue" data-card-rate="known">gewusst</button><button type="button" data-card-id="grub-karte-rescue" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="grub-karte-rescue"></span></div>
+<div class="card-rating"><span>Karte „Kernelwahl“:</span><button type="button" data-card-id="grub-karte-menue" data-card-rate="known">gewusst</button><button type="button" data-card-id="grub-karte-menue" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="grub-karte-menue"></span></div>
+<div class="card-rating"><span>Karte „Debian“:</span><button type="button" data-card-id="grub-karte-config" data-card-rate="known">gewusst</button><button type="button" data-card-id="grub-karte-config" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="grub-karte-config"></span></div><section class="recall-practice" data-recall="grub-fallbegruendung" data-min-length="190" aria-labelledby="grub-fallbegruendung-title">
+  <div class="recall-prompt"><h3 id="grub-fallbegruendung-title">Brückenwerks VM begründet behandeln</h3><p>Die VM zeigt `grub rescue&gt;` nach einer Partitionswartung. Formuliere eine kurze, sichere Vorgehensweise: Welche Startphase ist erreicht, was liest du zuerst, warum hilft die Kernelwahl noch nicht, und welche Informationen brauchst du vor einer UEFI-Reparatur? Nenne auch den Nachweis danach.</p></div>
+  <label class="sr-only" for="grub-fallbegruendung-answer">Deine Incident-Entscheidung</label>
+  <textarea id="grub-fallbegruendung-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong>
+  <p>Der Prompt zeigt, dass GRUB im Minimalmodus läuft, aber kein normales Menü bereitsteht; ein Kerneldefekt ist nicht bewiesen. Ich dokumentiere die genaue Meldung und lese mit set ohne Argumente sowie ls zuerst GRUB-Variablen, Geräte und erreichbare Pfade. Einen älteren Kernel kann ich nur aus einem verfügbaren Menü testweise wählen, nicht aus diesem Rescue-Bildschirm. Vor einer Schreibaktion ermittle ich in einer passenden Rettungsumgebung den UEFI-Bootmodus, den echten Datenträger, Root, /boot, ESP und UUIDs, sichere VM und Datenstand und bestätige Freigabe und Rückweg. Erst dann führe ich die zum Befund passende Loader- oder Konfigurationsreparatur aus. Nach dem Neustart prüfe ich Menü, gewünschten Kernel und Wiki-Dienst getrennt.</p></div>
+</section><h2 class="sec" id="s6" tabindex="-1"><span class="num" aria-hidden="true">6</span>Lernziel-Checks</h2>
+<section class="quiz" data-quiz="grub-rolle-gate" data-correct="0" data-required-objective="grub-startkette-erklaeren">
+  <h3>Das GRUB-Menü ist sichtbar und bietet zwei installierte Linux-Kernel. Welche Rolle übernimmt GRUB an dieser Stelle?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. GRUB ist Bootloader und Menü, nicht Firmware oder der bereits laufende Linux-Kernel."><span class="m">A</span> Es wählt einen Menüeintrag, lädt den zugehörigen Kernel und typischerweise initramfs; der eigentliche Betriebssystemstart folgt danach.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Firmware lädt den Bootpfad; PID 1 gehört zum späteren Userspace, nicht zu GRUB."><span class="m">B</span> Es ist die UEFI-Firmware selbst und startet alle Linux-Dienste als PID 1.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein Menüeintrag ist eine Startauswahl, keine automatische Reparatur defekter Kernel-Dateien."><span class="m">C</span> Es repariert automatisch jeden Kernel, sobald ein Menüeintrag gewählt wird.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="grub-rescue-gate" data-correct="1" data-required-objective="grub-rescue-lesend-diagnostizieren">
+  <h3>Beim Neustart steht `grub rescue&gt;` auf der Konsole. Welche Aussage ist für die erste Entscheidung korrekt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Der Prompt liegt vor der Übergabe an den Kernel; systemctl steht dort nicht zur Verfügung."><span class="m">A</span> Der Kernel ist bereits gestartet und seine Dienste müssen über systemctl untersucht werden.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. So bleibt der Befund von Ursache und Reparatur getrennt."><span class="m">B</span> GRUB ist im eingeschränkten Modus; `set` ohne Zuweisung und `ls` liefern zuerst lesende Hinweise, die im Rettungssystem abgeglichen werden.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Das Menü ist gerade nicht sichtbar, und der Prompt legt keine einzelne Ursache fest."><span class="m">C</span> Die einzige mögliche Ursache ist ein fehlender älterer Kernel im Menü.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="grub-ziel-gate" data-correct="2" data-required-objective="grub-reparaturziel-absichern">
+  <h3>Brückenwerks VM startete bisher im UEFI-Modus. Ein Kollege nennt pauschal `grub-install /dev/sda` als Reparatur. Was ist fachlich richtig?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Ein geratenes BIOS-artiges Gerätebeispiel ist keine sichere UEFI-Reparatur. ESP, Mount-Punkt und Zielsystem müssen stimmen."><span class="m">A</span> Der Befehl passt zu jeder UEFI-VM; Datenträger und ESP müssen nicht geprüft werden.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Der Debian-Wrapper erzeugt die GRUB-Konfiguration und ersetzt keine fehlende Loader-Installation."><span class="m">B</span> Zuerst nur update-grub ausführen; das installiert auf UEFI immer auch den fehlenden EFI-Loader.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Richtig. Ein Ziel aus einer Anleitung wird nicht blind auf die reale VM übertragen; normaler Boot und Dienstfunktion sind nachzuweisen."><span class="m">C</span> Bootmodus, tatsächliche ESP, /boot, Root und Datenträger nachweisen, Sicherung/Rückweg bestätigen und erst dann die zur Ursache passende UEFI-Reparatur freigeben und testen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s7" tabindex="-1"><span class="num" aria-hidden="true">7</span>Quellen und Grenzen</h2>
+<p>Fachliche Basis: <a href="https://www.gnu.org/software/grub/manual/grub/grub.html">GNU GRUB Manual 2.14</a>, <a href="https://www.gnu.org/software/grub/manual/grub/html_node/GRUB-only-offers-a-rescue-shell.html">GRUB rescue shell</a>, <a href="https://www.gnu.org/software/grub/manual/grub/html_node/Installing-GRUB-using-grub_002dinstall.html">GRUB-Installation</a>, <a href="https://manpages.debian.org/unstable/grub2-common/update-grub.8.en.html">Debian update-grub(8)</a>, <a href="https://www.debian.org/doc/manuals/debian-reference/ch03.en.html">Debian Reference – System initialization</a> und <a href="https://documentation.ubuntu.com/security/security-features/platform-protections/secure-boot/">Ubuntu Secure Boot</a>, geprüft am 02.10.2026. In den bereitgestellten Büchern lag kein verlässlicher direkter GRUB-Beleg vor; Fall, Übungen und Grafiken wurden eigenständig erstellt. Diese Einheit ist keine Befehlsfolge für ein unbekanntes Produktivsystem und bleibt bis zur menschlichen Freigabe CURATED_DRAFT.</p>
+
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-6"><span class="d">zurück zu</span><span class="t">Betriebssysteme und Administration</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Betriebssysteme und Administration</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 3 Pflichtchecks bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Pflichtchecks.</div>
+      <a class="next-check" data-next-check hidden>Nächsten offenen Pflichtcheck bearbeiten</a>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Diagnose: Welche Startphase siehst du?</a></li>
+<li><a href="#s2" data-t="s2">GRUB zwischen Firmware und Linux einordnen</a></li>
+<li><a href="#s3" data-t="s3">Minimalprompt lesend eingrenzen</a></li>
+<li><a href="#s4" data-t="s4">Reparaturziel statt Musterbefehl wählen</a></li>
+<li><a href="#s5" data-t="s5">Abrufen und im Fall entscheiden</a></li>
+<li><a href="#s6" data-t="s6">Lernziel-Checks</a></li>
+<li><a href="#s7" data-t="s7">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false" aria-describedby="learning-action-reason">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-6">Zur Themengruppe</a>
+  <span class="action-reason" id="learning-action-reason" data-action-reason>Pflichtchecks bearbeiten und anmelden, um Fortschritt zu speichern.</span>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

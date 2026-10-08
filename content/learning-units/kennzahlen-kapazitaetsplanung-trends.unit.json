@@ -1,0 +1,363 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "kennzahlen-kapazitaetsplanung-trends",
+    "slug": "kennzahlen-kapazitaetsplanung-trends",
+    "title": "Kennzahlen und Kapazitätsplanung",
+    "description": "CPU, RAM, Speicher, IO und Netzlast im Dienstkontext bewerten und aus einem überprüften Trend eine Kapazitätsentscheidung ableiten.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-10",
+    "groupLabel": "Betrieb, Monitoring und Prozesse",
+    "itemId": "ga1-10__1",
+    "week": "KW 44",
+    "estimatedMinutes": 40,
+    "relevance": "hoch",
+    "sources": [
+      "kap-kernel-meminfo",
+      "kap-zabbix-items"
+    ],
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "kennzahlen",
+      "label": "Ressourcenkennzahlen und Dienstfunktion unterscheiden"
+    },
+    {
+      "id": "vergleich",
+      "label": "Messbedingungen und Trends vergleichbar beurteilen"
+    },
+    {
+      "id": "prognose",
+      "label": "Restzeit bis zur Reservegrenze nachvollziehbar berechnen"
+    },
+    {
+      "id": "entscheidung",
+      "label": "Kapazitätsmaßnahme mit Vorlauf und Nachweis planen"
+    }
+  ],
+  "intro": "Das fiktive Dokumentenbüro Hainwerk betreibt einen Linux-Server für die Dokumentensuche. Die Suche soll während der Arbeitszeit innerhalb des vereinbarten Antwortzeit-Ziels funktionieren. Gleichzeitig wächst das Datenvolume. Du wählst Messgrößen, prüfst einen auffälligen Verlauf und planst eine Erweiterung. Unternehmen, Messwerte und Fristen sind eigene Fallannahmen; es werden keine produktiven Systeme verändert.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "kap-kernel-meminfo",
+        "sourceLocator": "meminfo: MemFree, MemAvailable und Cached",
+        "use": "Freien RAM von geschätztem für neue Anwendungen verfügbarem RAM abgrenzen",
+        "reviewStatus": "Passagen direkt gelesen am 03.10.2026"
+      },
+      {
+        "sourceId": "kap-zabbix-items",
+        "sourceLocator": "system.cpu.util; net.if.in/out; vfs.dev.read/write",
+        "use": "Messparameter, Zähler und Raten sowie Gerätezuordnung begrenzen",
+        "reviewStatus": "Passagen direkt gelesen am 03.10.2026"
+      }
+    ],
+    "notes": [
+      "CURATED_DRAFT bis zur menschlichen Freigabe.",
+      "Privater Themenanker europa-integratoren-2026:00038, Zeilen 443–468: Systemauslastung und Verhalten bewerten, Ressourcen verwalten, Tests dokumentieren. Keine Buchaufgaben übernommen.",
+      "Eigene lineare Speicherprognose, keine allgemeine Schwelle oder Produktgarantie. Linux-Messgrößen nicht ungeprüft auf andere Betriebssysteme übertragen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "messkette",
+      "type": "flow",
+      "title": "Messung ist kein Urteil",
+      "description": "Eigener Prüfweg für Hainwerk.",
+      "items": [
+        {
+          "label": "Dienstziel",
+          "detail": "Suche: Erfolg und Antwortzeit beobachten"
+        },
+        {
+          "label": "Ressourcen",
+          "detail": "CPU, RAM, Platz, IO und Netzwerk erfassen"
+        },
+        {
+          "label": "Vergleich",
+          "detail": "Gleiche Last, Zeitfenster und Messdefinition"
+        },
+        {
+          "label": "Folgetest",
+          "detail": "Engpasshypothese gezielt bestätigen oder verwerfen"
+        }
+      ]
+    },
+    {
+      "id": "planung",
+      "type": "flow",
+      "title": "Vor der Reserve handeln",
+      "description": "Eigene Kapazitätsentscheidung.",
+      "items": [
+        {
+          "label": "Messreihe",
+          "detail": "222 auf 250 GiB in sieben Tagen"
+        },
+        {
+          "label": "Modell",
+          "detail": "Nettozuwachs 4 GiB pro Tag, nur unter Annahmen"
+        },
+        {
+          "label": "Reservegrenze",
+          "detail": "340 GiB erreicht nach rechnerisch 22,5 Tagen"
+        },
+        {
+          "label": "Umsetzung",
+          "detail": "Vorlauf und Puffer abziehen, danach erneut messen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Diagnose: Viel CPU bedeutet nicht automatisch Ausfall",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "kap-diagnose",
+          "question": "Ein Batchlauf nutzt kurz 90 % CPU. Die Suche erfüllt weiterhin ihr Ziel. Ist ein CPU-Engpass bewiesen?",
+          "options": [
+            {
+              "text": "Ja, jeder Wert über 80 % beweist einen Engpass.",
+              "rationale": "Ohne Dienstwirkung und Verlauf ist diese pauschale Grenze kein Nachweis.",
+              "correct": false
+            },
+            {
+              "text": "Nein, Dauer, Vergleich und Dienstwirkung müssen gemeinsam geprüft werden.",
+              "rationale": "Eine hohe Nutzung kann auch sinnvolle Arbeit sein; ein Folgetest prüft die Hypothese.",
+              "correct": true
+            },
+            {
+              "text": "Nein, CPU-Werte sind immer bedeutungslos.",
+              "rationale": "Ressourcenwerte helfen, wenn sie zur Arbeitslast und Funktion passen.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Kennzahlen passend zum System wählen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Eine Kennzahl braucht **Objekt, Einheit, Zeitbezug und Messdefinition**. „CPU 70 %“ ohne Bezug auf Kern, Gesamtwert und Zeitraum ist unvollständig. Die Zabbix-Agentendokumentation zeigt beispielsweise unterschiedliche CPU-Anteile und Mittelungsfenster; ein Byte-Zähler ist nicht schon eine Übertragungsrate.\n\nFür Hainwerk wird dieses eigene Messkonzept vereinbart:\n\n| Bereich | Messgrößen | Was zusätzlich geprüft wird |\n|---|---|---|\n| CPU | Auslastung über ein festes Fenster, bei Bedarf je Kern | Suchantwortzeit und aktive Aufträge; ein Mittelwert kann einzelne ausgelastete Kerne verdecken |\n| RAM | Verfügbarer RAM, Prozessbedarf und Swap-Aktivität | Verlauf unter derselben Last; niedriger freier RAM allein reicht nicht |\n| Speicherplatz | Belegte und freie GiB auf dem Datenvolume | Reserve, Wachstum, Quotas und gegebenenfalls freie Inodes |\n| IO | Latenz, Operationen/s und Durchsatz am zugeordneten Gerät | Lese-/Schreibmuster und Warteschlangen; viel Platz bedeutet nicht schnelle IO |\n| Netz | Rate je Richtung, Schnittstellenkapazität, Fehler und Drops | Korrekte Schnittstelle und gleichzeitige Dienstwirkung |\n| Dienst | Erfolgreiche definierte Suchanfrage und Antwortzeit | Prüfstandort, Fehlerquote und fachlich korrektes Ergebnis |\n\n**Linux-RAM:** MemFree zählt freien RAM. MemAvailable schätzt, wie viel für neue Anwendungen ohne Swapping verfügbar ist; dabei wird unter anderem rückgewinnbarer Speicher berücksichtigt. Cached ist nicht pauschal verlorener Arbeitsspeicher. Diese Definition ersetzt trotzdem keinen Test der tatsächlichen Anwendung.\n\nEin erfolgreicher Ping weist keine korrekte Suche nach. Hainwerk prüft einen freigegebenen, rein lesenden Testdatensatz mit erwarteter Antwort. Der Prüfweg darf weder echte Daten verändern noch Zugangsdaten in Alarmtexte schreiben."
+        },
+        {
+          "type": "quiz",
+          "id": "kap-kennzahlen",
+          "question": "Welche Auswahl trennt Speicherplatz und Speicherleistung sinnvoll?",
+          "options": [
+            {
+              "text": "Freie GiB am Volume und IO-Latenz am passenden Gerät getrennt messen, dazu die Suche prüfen.",
+              "rationale": "Kapazität, Leistung und Dienstfunktion sind verschiedene Beobachtungsebenen.",
+              "correct": true
+            },
+            {
+              "text": "Nur freien Platz messen; 150 GiB frei garantiert schnelle Suche.",
+              "rationale": "Freier Platz sagt nichts über Latenz oder das Suchergebnis aus.",
+              "correct": false
+            },
+            {
+              "text": "Nur Ping prüfen; damit sind RAM und IO vollständig getestet.",
+              "rationale": "Die IP-Erreichbarkeit ersetzt keine Ressourcen- oder Funktionsprüfung.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "kennzahlen"
+        },
+        {
+          "type": "figure",
+          "diagramId": "messkette",
+          "alt": "Dienstziel, Ressourcenwerte, Vergleich und gezielter Folgetest als Entscheidungskette.",
+          "caption": "Eigene technische Entscheidungskette für den Übungsfall."
+        }
+      ]
+    },
+    {
+      "title": "Trends statt ungleicher Momentaufnahmen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Hainwerk vergleicht nicht einen ruhigen Sonntag mit dem Monatsabschluss. Für eine Baseline werden normaler Suchbetrieb, erwartete Tageslast und geplante Batchphasen getrennt betrachtet. Zu jedem Verlauf gehören Zeitstempel, Erfassungsintervall, Messfenster, Einheit, System und bekannte Änderungen. Fehlende Daten sind keine Nullwerte.\n\n**Eigener Befund:** Am Dienstag liegt die IO-Latenz während 200 vergleichbarer Suchanfragen deutlich über dem bisherigen Verlauf; CPU-Nutzung und Netzrate bleiben ähnlich. Das macht den Speicherpfad zu einer **Hypothese**, nicht zur bewiesenen Ursache. Das Team korreliert die Zeitpunkte mit einem neu gestarteten Import und wiederholt in der Testumgebung dieselbe Suchlast mit und ohne Import. Es beobachtet IO und Suchantworten gleichzeitig.\n\nDer tägliche CPU-Mittelwert kann kurze, geschäftlich wichtige Spitzen verdecken. Deshalb betrachtet Hainwerk auch den Verlauf und getrennte Spitzenphasen. Ein steigender kumulativer Byte-Zähler ist normal und beweist keine steigende Netzlast. Für eine Rate braucht man die Änderung im Zeitintervall, mit derselben Schnittstelle und Einheit. Zählerreset oder Messlücke darf nicht als verlässliche negative Rate interpretiert werden.\n\n**Eigene Netzprobe:** In zehn Sekunden steigt der Empfangszähler um 50.000.000 Byte. Das entspricht 5.000.000 Byte/s beziehungsweise 40.000.000 bit/s. Auf einer nominellen 1-Gbit/s-Schnittstelle sind das rechnerisch 4 % der nominellen Rate in Empfangsrichtung. Diese vereinfachte Rechnung berücksichtigt keine zusätzliche Protokollbelastung und beweist weder gute Latenz noch das Fehlen von Drops."
+        },
+        {
+          "type": "quiz",
+          "id": "kap-vergleich",
+          "question": "Nach einem Serverneustart ist der Byte-Zähler kleiner als vorher. Was ist der richtige nächste Schritt?",
+          "options": [
+            {
+              "text": "Den negativen Unterschied als negative Netzlast melden.",
+              "rationale": "Ein Reset unterbricht die Vergleichbarkeit dieser Differenz.",
+              "correct": false
+            },
+            {
+              "text": "Reset erkennen und eine neue zusammenhängende Messperiode für die Rate verwenden.",
+              "rationale": "Ein Zähler braucht gültige Zeitpunkte und einen vergleichbaren Ausgangswert.",
+              "correct": true
+            },
+            {
+              "text": "Die Messlücke durch Null ersetzen und den Verlauf als vollständig markieren.",
+              "rationale": "Eine erfundene Nullmessung verfälscht die Beobachtung.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "vergleich"
+        }
+      ]
+    },
+    {
+      "title": "Reservegrenze und Restzeit berechnen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**Eigener Speicherfall:** Hainwerks Datenvolume hat 400 GiB nutzbare Gesamtkapazität. Die Administration plant eine Reserve von 60 GiB für Betrieb und unerwarteten Zuwachs. Damit ist die Planungsgrenze **340 GiB belegt**, nicht 400 GiB. Vor sieben Tagen waren 222 GiB belegt, heute 250 GiB. Die Werte wurden am selben Volume zur gleichen Tageszeit gemessen.\n\nFür die erste Näherung wird gleichmäßiger **Nettozuwachs** angenommen. Einzelne Schreibmengen sind dafür ungeeignet: Löschungen und Aufbewahrung wirken auf die Belegung. Die folgende Rechnung ist keine statistisch abgesicherte Vorhersage; zwei Endpunkte geben noch keine verlässliche Saisonprognose."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Täglicher Nettozuwachs gleich 250 minus 222 GiB geteilt durch sieben Tage gleich vier GiB pro Tag.",
+          "mathml": "<math display=\"block\"><mrow><mi>g</mi><mo>=</mo><mfrac><mrow><mo>(</mo><mn>250</mn><mo>−</mo><mn>222</mn><mo>)</mo><mtext> GiB</mtext></mrow><mrow><mn>7</mn><mtext> Tage</mtext></mrow></mfrac><mo>=</mo><mn>4</mn><mtext> GiB/Tag</mtext></mrow></math>",
+          "legend": [
+            "g: mittlerer Nettozuwachs im eigenen Fall; gleiche Messbedingungen."
+          ]
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Restzeit bis zur Reservegrenze gleich 340 minus 250 GiB geteilt durch vier GiB pro Tag gleich 22 Komma fünf Tage.",
+          "mathml": "<math display=\"block\"><mrow><mi>t</mi><mo>=</mo><mfrac><mrow><mo>(</mo><mn>340</mn><mo>−</mo><mn>250</mn><mo>)</mo><mtext> GiB</mtext></mrow><mrow><mn>4</mn><mtext> GiB/Tag</mtext></mrow></mfrac><mo>=</mo><mn>22,5</mn><mtext> Tage</mtext></mrow></math>",
+          "legend": [
+            "t: rechnerische Zeit ab heute bis zur Planungsgrenze, nur bei gleichbleibendem positivem Wachstum."
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "Bis zum vollständig belegten Volume wären es rechnerisch 37,5 Tage. **Das ist nicht der Planungshorizont**, weil dabei die Reserve verbraucht wäre. Bei negativem oder null Wachstum lässt sich mit dieser Division kein sinnvoller zukünftiger Grenzzeitpunkt bestimmen. Ist die Grenze bereits erreicht, muss unmittelbar gehandelt werden.\n\n**Sensitivität:** Steigt der Zuwachs auf 6 GiB/Tag, bleiben bis 340 GiB nur 15 Tage. Eine neue Importserie, andere Aufbewahrung oder größere Dokumente verändern das Modell. Hainwerk prüft daher längere Verläufe und aktualisiert die Prognose nach Änderungen."
+        },
+        {
+          "type": "quiz",
+          "id": "kap-prognose",
+          "question": "Wie lange bleibt Hainwerk im linearen 4-GiB/Tag-Modell bis zur geplanten Reservegrenze?",
+          "options": [
+            {
+              "text": "37,5 Tage, weil nur die Vollbelegung zählt.",
+              "rationale": "Das ist die Zeit bis 400 GiB; die 60-GiB-Reserve wäre dann aufgebraucht.",
+              "correct": false
+            },
+            {
+              "text": "90 Tage, weil 90 GiB frei bis zur Grenze bleiben.",
+              "rationale": "90 GiB Restbudget muss durch den täglichen Zuwachs geteilt werden.",
+              "correct": false
+            },
+            {
+              "text": "22,5 Tage; danach wäre die Planungsgrenze erreicht, nicht zwingend der Dienst ausgefallen.",
+              "rationale": "90 GiB geteilt durch 4 GiB/Tag ergibt 22,5 Tage unter den Fallannahmen.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "prognose"
+        }
+      ]
+    },
+    {
+      "title": "Kapazitätsmaßnahme rechtzeitig und überprüfbar planen",
+      "blocks": [
+        {
+          "type": "figure",
+          "diagramId": "planung",
+          "alt": "Messwerte, Wachstumsmodell, Reservegrenze und rechtzeitige Umsetzung der Kapazitätsmaßnahme.",
+          "caption": "Eigene technische Entscheidungskette für den Übungsfall."
+        },
+        {
+          "type": "markdown",
+          "markdown": "Hainwerk benötigt im eigenen Fall **14 Kalendertage** für Freigabe, Bereitstellung, Umsetzung und Abnahmetest. Dazu plant das Team **3 Tage Puffer**. Vom rechnerischen Horizont von 22,5 Tagen bleiben somit nur **5,5 Tage**, bis der Ablauf spätestens angestoßen sein muss – sofern die Annahmen gelten. Das ist kein Freibrief zu warten: Bei 6 GiB/Tag reicht der 15-Tage-Horizont für 17 Tage Vorlauf einschließlich Puffer bereits nicht mehr.\n\nDie Administration entscheidet deshalb jetzt: Prognose prüfen, Erweiterung freigeben lassen und einen umsetzbaren Termin festlegen. Eine kurzfristige Überbrückung muss fachlich erlaubt und sicher sein. Ungeprüft Daten löschen ist keine Kapazitätsplanung; Aufbewahrung, Backup und Rechte bleiben verbindlich. Eine Erweiterung kann den Platzengpass lösen, muss aber nicht die IO-Latenz verbessern.\n\n**Abnahme:** Vorher und nachher werden das tatsächlich nutzbare Volume, freie Reserve, eine definierte Suchfunktion und die Antwortzeit unter gleicher Testlast geprüft. Zuständigkeit, Frist, Messwerte, Freigabe und Rückfallweg stehen im Änderungsplan. Danach laufen Trendmessung und Prognose weiter. Eine Bestellbestätigung ist noch kein Nachweis bereitgestellter Kapazität."
+        },
+        {
+          "type": "quiz",
+          "id": "kap-entscheidung",
+          "question": "Welcher Plan passt zum Fall mit 14 Tagen Vorlauf und 3 Tagen Puffer?",
+          "options": [
+            {
+              "text": "Jetzt validieren und freigeben lassen, spätestens innerhalb von 5,5 Tagen anstoßen; Wachstum weiter prüfen und Umsetzung abnehmen.",
+              "rationale": "Der Vorlauf wird vor der Reservegrenze berücksichtigt; die Prognose bleibt bedingt.",
+              "correct": true
+            },
+            {
+              "text": "Erst am Tag 22,5 bestellen, weil die Reserve dann noch 60 GiB beträgt.",
+              "rationale": "Während des weiteren Vorlaufs würde die geplante Grenze überschritten.",
+              "correct": false
+            },
+            {
+              "text": "Eine Bestellung automatisch als behobenes IO-Problem markieren.",
+              "rationale": "Bestellung, nutzbare Kapazität und gemessene Leistung sind getrennte Nachweise.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "entscheidung"
+        },
+        {
+          "type": "recall",
+          "id": "kap-transfer",
+          "prompt": "Entwirf Hainwerks Mess- und Kapazitätsentscheidung: nenne alle sechs Beobachtungsbereiche, begrenze die IO-Hypothese, rechne Reservegrenze und Restzeit vor und plane Vorlauf, Änderung und Abnahme. Was ändert ein Wachstum von 6 GiB/Tag?",
+          "minLength": 180,
+          "model": "Ich beobachte CPU, verfügbaren RAM, Platz, IO, Netz und die definierte Suchfunktion unter vergleichbarer Last. Auffällige IO-Latenz prüfe ich mit einem kontrollierten Importvergleich, statt sofort eine Ursache zu behaupten. Aus 400 minus 60 entstehen 340 GiB Planungsgrenze. 28 GiB in sieben Tagen sind 4 GiB/Tag; 90 GiB Restbudget reichen rechnerisch 22,5 Tage. Nach 14 Tagen Vorlauf und 3 Tagen Puffer bleiben 5,5 Tage zum Start. Ich validiere und plane jetzt, prüfe nach der Änderung Reserve und Suche erneut. Bei 6 GiB/Tag bleiben nur 15 Tage; der reguläre Ablauf reicht dann nicht und braucht einen neu abgestimmten sicheren Plan."
+        }
+      ]
+    },
+    {
+      "title": "Abruftraining",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "id": "kap-cards",
+          "cards": [
+            {
+              "id": "cpu",
+              "label": "Kapazitätsplanung",
+              "front": "Beweist hohe CPU-Nutzung einen Engpass?",
+              "back": "Nein. Dauer, Last, einzelne Kerne und Auswirkungen auf den Dienst prüfen."
+            },
+            {
+              "id": "ram",
+              "label": "Kapazitätsplanung",
+              "front": "Ist MemFree gleich MemAvailable?",
+              "back": "Nein. MemAvailable schätzt zusätzlich rückgewinnbaren Speicher für neue Anwendungen ohne Swapping."
+            },
+            {
+              "id": "io",
+              "label": "Kapazitätsplanung",
+              "front": "Beweist viel freier Platz geringe IO-Latenz?",
+              "back": "Nein. Kapazität und Leistung getrennt messen."
+            },
+            {
+              "id": "netz",
+              "label": "Kapazitätsplanung",
+              "front": "Wie wird aus einem Byte-Zähler eine Rate?",
+              "back": "Gültige Zählerdifferenz durch das Zeitintervall teilen; Reset und Messlücken erkennen."
+            },
+            {
+              "id": "dienst",
+              "label": "Kapazitätsplanung",
+              "front": "Reicht Ping als Suchtest?",
+              "back": "Nein. Eine definierte erfolgreiche Suchanfrage und ihre Antwortzeit prüfen."
+            },
+            {
+              "id": "reserve",
+              "label": "Kapazitätsplanung",
+              "front": "Welche Grenze gilt im Fall?",
+              "back": "340 GiB belegt: 400 GiB Gesamtkapazität minus 60 GiB geplante Reserve."
+            },
+            {
+              "id": "vorlauf",
+              "label": "Kapazitätsplanung",
+              "front": "Ist Restzeit gleich Wartezeit bis zur Bestellung?",
+              "back": "Nein. Bereitstellung, Umsetzung, Tests und Puffer vorher abziehen."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

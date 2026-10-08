@@ -1,0 +1,185 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "benutzer-gruppenverwaltung-passwortrichtlinien-kontosperrung",
+    "slug": "benutzer-gruppenverwaltung-passwortrichtlinien-kontosperrung",
+    "title": "Benutzer, Gruppen und Kontozugänge verwalten",
+    "description": "Zusatzgruppen ohne Rechteverlust ergänzen, Passwortrichtlinien bewerten und Passwort-, Konto- und PAM-Sperren unterscheiden.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-6",
+    "groupLabel": "Betriebssysteme und Administration",
+    "itemId": "ga1-6__10",
+    "week": "KW 40",
+    "estimatedMinutes": 45,
+    "relevance": "hoch",
+    "sources": ["europa-integratoren-2026", "linux-useradd-man", "linux-usermod-man", "linux-passwd5-man", "linux-shadow5-man", "linux-passwd1-man", "linux-chage-man", "linux-faillock-conf-man", "linux-pam-faillock-man", "nist-sp80063b4-passwords"],
+    "contentRevision": "2026-10-02.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {"id": "gruppen-sicher-aendern", "label": "Primär- und Zusatzgruppe unterscheiden und eine neue Zusatzgruppe ohne Verlust bestehender Gruppen ergänzen"},
+    {"id": "passwortregel-bewerten", "label": "Eine Passwortrichtlinie gegen aktuelle Empfehlungen prüfen und lokale Umsetzung von der Zielvorgabe trennen"},
+    {"id": "sperrwirkung-pruefen", "label": "Passwortsperre, Kontoablauf und PAM-Fehlversuchssperre nach Wirkung und Grenzen unterscheiden"}
+  ],
+  "intro": "Im fiktiven Betrieb Kranich verwaltet Mara den Bereitstellungsserver. Ihre Primärgruppe ist `staff`, zusätzlich gehört sie zu `deploy`. Für einen befristeten Prüfauftrag soll `audit` hinzukommen, ohne `deploy` zu verlieren. Später fallen fehlgeschlagene Passwortanmeldungen auf. Du prüfst zuerst die Gruppenänderung und entscheidest dann, ob eine neue Passwortregel oder eine der verschiedenen Sperren den jeweiligen Befund tatsächlich adressiert.",
+  "curation": {
+    "evidence": [
+      {"sourceId": "europa-integratoren-2026", "sourceLocator": "Private Markdown-Zeilen 6816–6826; Abschnitt zu Passwortrichtlinien", "use": "Nur Themenanker für die Gegenüberstellung von Passwortregeln; keine Buchformulierung, Tabelle oder Grafik übernommen", "reviewStatus": "Rohtext-Locator im Team gegengeprüft; nicht als technischer Fachbeleg verwendet. Fachbehauptungen gegen offizielle Primärquellen geprüft"},
+      {"sourceId": "linux-useradd-man", "sourceLocator": "useradd(8), DESCRIPTION sowie Optionen -g, -G und -m", "use": "Neuanlage eines lokalen Kontos, Primärgruppe und ergänzende Gruppen; distributionsabhängige Defaults", "reviewStatus": "Offizielle shadow-utils-Manpage am 02.10.2026 geprüft"},
+      {"sourceId": "linux-usermod-man", "sourceLocator": "usermod(8), Optionen -a, -g, -G, -L und -e; CAVEATS", "use": "Ergänzen versus Ersetzen von Zusatzgruppen und Ablaufdatum des lokalen Kontos", "reviewStatus": "Offizielle shadow-utils-Manpage am 02.10.2026 geprüft"},
+      {"sourceId": "linux-passwd5-man", "sourceLocator": "passwd(5), Format name:password:UID:GID:GECOS:directory:shell und shadow-Passwortfeld", "use": "Felder lokaler Konten und Primär-GID in /etc/passwd", "reviewStatus": "Linux man-pages am 02.10.2026 geprüft"},
+      {"sourceId": "linux-shadow5-man", "sourceLocator": "shadow(5), password field, password aging und account expiration date", "use": "Passwortstatus, Alterung und vom Passwort getrennten Kontoablauf erklären", "reviewStatus": "Offizielle shadow-utils-Manpage am 02.10.2026 geprüft"},
+      {"sourceId": "linux-passwd1-man", "sourceLocator": "passwd(1), Optionen -l und -S sowie CAVEATS", "use": "Nur Passwort sperren und Passwortstatus auslesen; andere Anmeldetoken bleiben möglich", "reviewStatus": "Offizielle shadow-utils-Manpage am 02.10.2026 geprüft"},
+      {"sourceId": "linux-chage-man", "sourceLocator": "chage(1), Optionen -l, -E und -M", "use": "Lokale Informationen zur Passwortalterung und zum Kontoablauf anzeigen, ohne dies mit Policy-Qualität gleichzusetzen", "reviewStatus": "Offizielle shadow-utils-Manpage am 02.10.2026 geprüft"},
+      {"sourceId": "linux-faillock-conf-man", "sourceLocator": "faillock.conf(5), deny, fail_interval, unlock_time und local_users_only", "use": "Konfigurierbare Fehlversuchsgrenze und zeitliche Freigabe erklären", "reviewStatus": "Offizielle Linux-PAM-Manpage am 02.10.2026 geprüft"},
+      {"sourceId": "linux-pam-faillock-man", "sourceLocator": "pam_faillock(8), DESCRIPTION, preauth/authfail/authsucc und PAM-Konfigurationsbeispiele", "use": "Wirkung nur bei Einbindung in den jeweiligen PAM-Dienstpfad und Abgrenzung von lokaler Passwortsperre", "reviewStatus": "Offizielle Linux-PAM-Manpage am 02.10.2026 geprüft"},
+      {"sourceId": "nist-sp80063b4-passwords", "sourceLocator": "NIST SP 800-63B-4, § 3.1.1.2 Password Verifiers und § 3.2.2 Rate Limiting", "use": "Aktuelle Orientierung für Ein-Faktor-Passwörter: mindestens 15 Zeichen, Blocklist, Rate-Limit, keine erzwungene Komposition oder periodischen Wechsel", "reviewStatus": "Offizielle NIST-Veröffentlichung am 02.10.2026 geprüft; nicht als automatische Linux-/PAM-Voreinstellung dargestellt"}
+    ],
+    "notes": [
+      "Kranich, Mara, Gruppenstand, Richtlinienvarianten, Vorfall und alle Diagrammdefinitionen sind eigenständig. Keine private Buchgrafik und kein Buchtext werden publiziert.",
+      "Befehle und Dateipfade betreffen lokale shadow-utils-Konten. LDAP/AD, NSS, PAM-Stacks, SSH-Konfiguration und Distribution können andere Zuständigkeiten und Wirkungen haben. Vor produktiven Änderungen sind Backup, Rückweg, neue Testanmeldung und Nachweis pro Zugangspfad erforderlich. Menschliche Fach- und Didaktikfreigabe offen."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "gruppenstand-vor-nach",
+      "type": "comparison",
+      "title": "Mara: Zusatzgruppe ergänzen, nicht ersetzen",
+      "description": "Zwei technische Zustände derselben lokalen Identität: Vorher Primärgruppe staff und Zusatzgruppe deploy; nach usermod -aG audit mara weiterhin staff und deploy sowie zusätzlich audit.",
+      "items": [
+        {"label": "Vorher", "detail": "Mara · primär staff · zusätzlich deploy"},
+        {"label": "Mit -aG", "detail": "Mara · primär staff · zusätzlich deploy, audit"}
+      ]
+    },
+    {
+      "id": "richtlinien-alt-neu",
+      "type": "comparison",
+      "title": "Passwortpolitik: Altregel und Zielvorgabe",
+      "description": "Vergleich einer fiktiven älteren Richtlinie mit einer an NIST SP 800-63B-4 orientierten Ein-Faktor-Zielvorgabe. Das Diagramm behauptet keine Linux-Standardeinstellung.",
+      "items": [
+        {"label": "Altregel", "detail": "8 Zeichen · vier Zeichentypen · Wechsel alle 90 Tage"},
+        {"label": "NIST-orientiert", "detail": "Ab 15 Zeichen · Blocklist · Rate-Limit · Wechsel bei Kompromittierung"}
+      ]
+    },
+    {
+      "id": "konto-sperrpfade",
+      "type": "layers",
+      "title": "Drei unterschiedliche Sperrmechanismen",
+      "description": "Passwortsperre, Kontoablauf und PAM-Fehlversuchssperre greifen an unterschiedlichen Stellen. Sie können im konkreten Anmeldepfad zusammenwirken, sind aber keine synonymen Vollsperren.",
+      "items": [
+        {"label": "Passwort", "detail": "passwd -l: Passwort unbrauchbar; SSH-Key kann bleiben"},
+        {"label": "Konto", "detail": "Ablaufdatum: neue Logins über Konto-Prüfung verweigern"},
+        {"label": "PAM-Dienst", "detail": "pam_faillock: nur im eingebundenen PAM-Dienstpfad"}
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "1 · Diagnose: Eine Gruppenänderung kann Rechte entfernen",
+      "blocks": [
+        {"type": "quiz", "id": "konto-diagnose", "diagnostic": true, "question": "Mara gehört zusätzlich zu deploy. Ein Admin führt usermod -G audit mara aus. Was ist das Risiko?", "options": [
+          {"text": "Keines: -G ergänzt audit immer zu vorhandenen Zusatzgruppen.", "rationale": "Ohne -a ersetzt -G die Liste der Zusatzgruppen. deploy kann verloren gehen.", "correct": false},
+          {"text": "audit wird zur Primärgruppe; deploy bleibt automatisch Zusatzgruppe.", "rationale": "Die Primärgruppe wird mit -g gesetzt. -G betrifft die Zusatzgruppen und ersetzt sie ohne -a.", "correct": false},
+          {"text": "deploy kann aus der Liste der Zusatzgruppen verschwinden; für Ergänzen braucht es -aG.", "rationale": "Richtig. usermod -aG audit mara hängt audit an, statt die bestehende Zusatzgruppenliste zu ersetzen.", "correct": true}
+        ]},
+        {"type": "markdown", "markdown": "Ein lokales Linux-Konto hat eine **UID** und eine **primäre GID**. Die Primärgruppe steht beim Konto in `/etc/passwd`; zusätzliche Gruppen kommen aus der lokalen Gruppenverwaltung. `useradd -g` beziehungsweise `usermod -g` setzen die Primärgruppe, `-G` bezeichnet Zusatzgruppen. Bei einem bestehenden Konto **ersetzt** `usermod -G audit mara` die Liste der Zusatzgruppen. Nur `usermod -aG audit mara` hängt `audit` an; `-a` ist mit `-G` zu verwenden. Prüfe deshalb den Ausgangszustand, bevor du die Liste änderst. Diese shadow-utils-Befehle bearbeiten lokale Kontodaten, nicht automatisch Identitäten in LDAP oder AD."},
+        {"type": "figure", "diagramId": "gruppenstand-vor-nach", "alt": "Mara hat vor der Änderung die Primärgruppe staff und die Zusatzgruppe deploy. Nach usermod -aG audit mara bleiben staff und deploy erhalten; audit kommt als Zusatzgruppe hinzu.", "caption": "Eigene technische Zustandsgegenüberstellung: -aG ergänzt eine Zusatzgruppe. -G allein wäre ein anderer Eingriff."}
+      ]
+    },
+    {
+      "title": "2 · Änderung planen und in neuer Sitzung prüfen",
+      "blocks": [
+        {"type": "markdown", "markdown": "Mara braucht `deploy` weiterhin für Bereitstellungen; `audit` soll nur den zusätzlichen Prüfauftrag ermöglichen. Lege zuerst Identität, vorhandene Gruppen und den gewünschten Sollzustand fest. **Prüfe, ob die lokale Gruppe `audit` bereits existiert**; `usermod -G` setzt eine vorhandene Gruppe voraus. Fehlt sie, halte die Änderung an und lass ihre Anlage im freigegebenen Verfahren klären. Sichere eine Rückkehrmöglichkeit für die lokale Kontokonfiguration. Führe erst dann `usermod -aG audit mara` als berechtigte Administration aus. Prüfe danach die gespeicherte Gruppenliste und melde Mara für den Zugriffstest **neu** an: Eine bereits offene Sitzung belegt den neuen effektiven Gruppenstand nicht zuverlässig. Teste sowohl den bestehenden `deploy`-Zugriff als auch den neuen `audit`-Zugriff; dokumentiere die Wirkung. Ein Gruppenname allein sagt noch nichts über die konkreten Datei-, Verzeichnis- oder sudo-Rechte aus."},
+        {"type": "sequence", "id": "konto-aenderungsfolge", "title": "Zusatzgruppe ohne Rechteverlust ergänzen", "prompt": "Sortiere die sichere Änderung für Mara. Der produktive deploy-Zugang soll erhalten bleiben.", "tag": "Änderungsfolge", "steps": [
+          {"id": "aendern", "label": "audit lokal mit usermod -aG audit mara ergänzen"},
+          {"id": "test", "label": "In neuer Sitzung deploy und audit anhand der benötigten Zugriffe testen"},
+          {"id": "identitaet", "label": "Mara und den bisherigen lokalen Gruppenstand eindeutig prüfen"},
+          {"id": "nachweis", "label": "Endzustand, Testergebnis und Rückweg dokumentieren"},
+          {"id": "backup", "label": "Rückweg und Sicherung der betroffenen Kontokonfiguration vorbereiten"},
+          {"id": "soll", "label": "Soll festlegen: staff, deploy, audit; Existenz von audit prüfen"}
+        ], "expected": ["identitaet", "soll", "backup", "aendern", "test", "nachweis"], "correctFeedback": "Richtig: Erst Identität, Sollzustand und vorhandene Zielgruppe klären, dann Rückweg sichern, ergänzen, in einer neuen Sitzung beide Zugriffe testen und den Nachweis festhalten.", "wrongFeedback": "Vor usermod müssen Identität, Ist-Gruppen, Soll und Existenz von audit geklärt sein. Sichere den Rückweg; prüfe nach -aG sowohl den alten als auch den neuen Zugriff in einer neuen Sitzung."},
+        {"type": "quiz", "id": "konto-gruppen-anwendung", "question": "Nach usermod -aG audit mara zeigt eine seit Stunden offene Shell noch den alten Gruppenstand. Welche Folgerung ist sinnvoll?", "options": [
+          {"text": "Die Änderung ist sicher fehlgeschlagen; -G audit muss ohne -a erneut ausgeführt werden.", "rationale": "Das würde deploy gefährden. Eine alte Sitzung ist kein geeigneter Nachweis für den neuen Anmeldezustand.", "correct": false},
+          {"text": "Die lokale Kontokonfiguration und eine neu aufgebaute Anmeldung prüfen; bestehende Sitzungen können alte Gruppenrechte behalten.", "rationale": "Richtig. Der Test muss den Zielzustand einer neuen Sitzung und die beiden tatsächlichen Zugriffe zeigen.", "correct": true},
+          {"text": "audit wird erst wirksam, wenn das Passwort alle 90 Tage gewechselt wird.", "rationale": "Gruppenmitgliedschaft und Passwortalterung sind getrennte Mechanismen.", "correct": false}
+        ]}
+      ]
+    },
+    {
+      "title": "3 · Lokale Kontodaten richtig lesen",
+      "blocks": [
+        {"type": "markdown", "markdown": "`/etc/passwd` enthält beim lokalen Konto unter anderem Loginname, UID, **primäre GID**, Home-Verzeichnis und Login-Shell. Bei Shadow-Passwörtern steht im Passwortfeld typischerweise `x`; der Passwort-Hash und Angaben zur Passwortalterung liegen in der geschützten `/etc/shadow`. Das `x` ist weder Maras Passwort noch ein Zeichen dafür, dass das Konto gesperrt ist. Zusätzliche Gruppen stehen nicht im primären GID-Feld. Diese Dateien zeigen nur den lokalen Teil; ein System kann Konten oder Gruppen zusätzlich aus einem zentralen Verzeichnisdienst beziehen. Änderungen an solchen Identitäten gehören in dessen Verwaltung."},
+        {"type": "quiz", "id": "konto-dateien-lesen", "question": "In Maras /etc/passwd-Zeile steht im Passwortfeld x. Welche Interpretation passt?", "options": [
+          {"text": "x markiert üblicherweise die Shadow-Ablage; Passwort-Hash und Alterungsfelder stehen nicht offen in dieser Datei.", "rationale": "Richtig. Das Feld verweist im üblichen Shadow-Setup auf /etc/shadow; der konkrete Status muss getrennt geprüft werden.", "correct": true},
+          {"text": "x beweist, dass das Konto per SSH-Key vollständig gesperrt ist.", "rationale": "Der Shadow-Verweis belegt keine Sperre eines SSH-Schlüssels und keine vollständige Kontosperre.", "correct": false},
+          {"text": "x ist die Hex-Ziffer der primären Gruppe.", "rationale": "Die primäre GID ist ein separates numerisches Feld in /etc/passwd.", "correct": false}
+        ]}
+      ]
+    },
+    {
+      "title": "4 · Passwortrichtlinie: Ziel und Linux-Umsetzung trennen",
+      "blocks": [
+        {"type": "markdown", "markdown": "Kranich findet eine ältere Beispielregel: mindestens acht Zeichen, je ein Großbuchstabe, Kleinbuchstabe, eine Ziffer und ein Symbol sowie Wechsel alle 90 Tage. Das ist **kein pauschaler Linux-Standard** und muss als konkrete lokale Konfiguration geprüft werden. Als zeitgemäße Orientierung fordert [NIST SP 800-63B-4](https://pages.nist.gov/800-63-4/sp800-63b.html) für Passwörter als **alleinigen** Anmeldefaktor mindestens **15 Zeichen**. Die Veröffentlichung verlangt eine Prüfung gegen bekannte, erwartbare oder kompromittierte Passwörter und eine Begrenzung fehlgeschlagener Versuche. Sie untersagt erzwungene Zeichentyp-Mischung und einen rein periodischen Wechsel; bei Hinweisen auf Kompromittierung ist ein Wechsel dagegen erforderlich. Für Passwörter innerhalb einer Mehrfaktor-Anmeldung gelten andere Mindestwerte. Das ist eine Richtlinienorientierung, keine Aussage darüber, was eine vorhandene Linux-/PAM-Installation bereits durchsetzt."},
+        {"type": "figure", "diagramId": "richtlinien-alt-neu", "alt": "Links eine fiktive ältere lokale Regel mit acht Zeichen, vier Zeichentypen und Wechsel alle 90 Tage. Rechts eine NIST-orientierte Ein-Faktor-Zielregel mit mindestens 15 Zeichen, Blocklist, Begrenzung fehlgeschlagener Versuche und Wechsel bei Kompromittierung.", "caption": "Eigener technischer Richtlinienvergleich. Rechts steht ein Zielbild aus NIST SP 800-63B-4, nicht die automatische Linux-Konfiguration."},
+        {"type": "markdown", "markdown": "Für ein **lokales** Konto zeigt `chage -l mara` Alterungs- und Ablaufangaben; `passwd -S mara` zeigt unter anderem den Passwortstatus. Beide Befehle beweisen weder, dass eine NIST-orientierte Mindestlänge, Blocklist und Rate-Begrenzung konfiguriert sind, noch wie sich ein zentraler Identitätsanbieter verhält. Die konkrete Umsetzung hängt von Distribution, PAM-Passwortmodulen und dem verwendeten Anmeldedienst ab. Ein `passwd`-Programm kann eine lokale Komplexitätsprüfung vornehmen; ihre tatsächlich wirksamen Regeln müssen vor Ort ermittelt und getestet werden. Automatisches `chage -M 90` wäre lediglich eine Alterungsregel, kein Qualitätsnachweis."},
+        {"type": "quiz", "id": "konto-policy-entscheidung", "question": "Welche Aussage trennt eine moderne Zielvorgabe von der realen Linux-Implementierung korrekt?", "options": [
+          {"text": "NIST fordert mindestens 15 Zeichen bei alleiniger Passwortanmeldung; ob Länge, Blocklist und Rate-Limit lokal gelten, muss in den eingesetzten Diensten geprüft werden.", "rationale": "Richtig. Der Standard ist Orientierung für die Policy; die Durchsetzung ist eine gesonderte Implementierungs- und Testfrage.", "correct": true},
+          {"text": "Sobald chage -l mara funktioniert, sind NIST-Blocklist und 15-Zeichen-Regel automatisch aktiv.", "rationale": "chage -l zeigt lokale Alterungsdaten, nicht die gesamte Passwortrichtlinie oder Durchsetzung.", "correct": false},
+          {"text": "Ein regelmäßiger Wechsel alle 90 Tage und vier Zeichentypen sind die NIST-Vorgabe für alle Passwörter.", "rationale": "NIST untersagt erzwungene Kompositionsregeln und rein periodische Wechsel; ein Wechsel ist etwa bei Kompromittierung geboten.", "correct": false}
+        ]}
+      ]
+    },
+    {
+      "title": "5 · Was wird tatsächlich gesperrt?",
+      "blocks": [
+        {"type": "markdown", "markdown": "Bei Kranich scheitern mehrere Passwortversuche für Mara. Drei Maßnahmen klingen ähnlich, haben aber verschiedene Reichweiten. `passwd -l mara` macht das **lokale Passwort** unbrauchbar; ein anderer Authentifizierungstoken wie ein SSH-Schlüssel kann weiter funktionieren. `usermod --expiredate 1 mara` setzt beim lokalen Konto ein längst vergangenes **Kontoablaufdatum** und soll neue Logins über die beteiligte Kontoprüfung verweigern. Das ist vom Ablauf eines Passworts getrennt. `pam_faillock` zählt fehlgeschlagene Anmeldungen und kann den Zugang zeitweise verweigern, **wenn** das Modul in den PAM-Pfad des jeweiligen Dienstes eingebunden und passend konfiguriert ist. Die Parameter `deny`, `fail_interval` und `unlock_time` begrenzen Zahl, Fenster und Freigabezeit; sie sind keine universelle Sperre für jedes Protokoll."},
+        {"type": "figure", "diagramId": "konto-sperrpfade", "alt": "Drei getrennte Ebenen: passwd -l sperrt das lokale Passwort, Kontoablauf kann neue Anmeldungen über Kontoprüfung verweigern, pam_faillock sperrt nur in eingebundenen PAM-Diensten nach Fehlversuchen.", "caption": "Eigene technische Schichtenansicht: Kein einzelner Schalter ersetzt die Prüfung aller tatsächlichen Zugangspfade."},
+        {"type": "quiz", "id": "konto-sperrfall", "question": "Nach passwd -l mara klappt eine Anmeldung mit Maras SSH-Schlüssel weiterhin. Welche Erklärung ist fachlich plausibel?", "options": [
+          {"text": "passwd -l sperrt nur das Passwort; der SSH-Key ist ein anderer Anmeldetoken und muss gesondert betrachtet werden.", "rationale": "Richtig. Passwortsperre und vollständige Zugangssperre sind nicht dasselbe.", "correct": true},
+          {"text": "Der SSH-Key beweist, dass passwd -l die Passwortsperre aufgehoben hat.", "rationale": "Ein funktionierender SSH-Key sagt nichts darüber, ob das Passwort wieder nutzbar ist.", "correct": false},
+          {"text": "PAM-faillock muss automatisch alle SSH-Schlüssel entfernen, sobald ein Passwort gesperrt wird.", "rationale": "PAM-faillock und SSH-Schlüssel sind getrennte Mechanismen; eine solche automatische Schlüsselentfernung folgt daraus nicht.", "correct": false}
+        ]},
+        {"type": "callout", "kind": "warning", "label": "Sicherheitsvorfall", "markdown": "Ist ein Zugang kompromittiert, reicht ein lokales `passwd -l` nicht als Gesamtmaßnahme. Kläre die Identitätsquelle, sperre die relevanten neuen Anmeldungen, widerrufe betroffene Schlüssel oder Token, prüfe bestehende Sitzungen separat und teste jeden produktiven Zugangspfad mit gesichertem Rückweg. Eine Kontosperre beendet bereits laufende Prozesse oder Sitzungen nicht automatisch."}
+      ]
+    },
+    {
+      "title": "6 · Anwenden und aus dem Kopf erklären",
+      "blocks": [
+        {"type": "flashcards", "cards": [
+          {"id": "konto-karte-gruppe", "label": "Zusatzgruppe", "front": "Was unterscheidet usermod -aG audit mara von usermod -G audit mara?", "back": "-aG ergänzt audit und behält bestehende Zusatzgruppen; -G allein ersetzt die Zusatzgruppenliste."},
+          {"id": "konto-karte-shadow", "label": "Shadow", "front": "Was sagt das x im Passwortfeld von /etc/passwd aus?", "back": "Im üblichen Shadow-Setup liegt der Passwort-Hash in der geschützten /etc/shadow; x ist kein Passwort und keine Kontosperre."},
+          {"id": "konto-karte-richtlinie", "label": "Richtlinie", "front": "Was ist an der NIST-orientierten Ein-Faktor-Regel anders als an einer 8-Zeichen-Kompositionsregel?", "back": "Mindestens 15 Zeichen, Blocklist und Rate-Limit; keine erzwungene Zeichenmischung oder rein periodische Wechsel. Lokale Durchsetzung gesondert prüfen."},
+          {"id": "konto-karte-sperre", "label": "Sperrpfad", "front": "Sperrt passwd -l automatisch einen SSH-Key und alle bestehenden Sitzungen?", "back": "Nein. Es sperrt das lokale Passwort; andere Token und bereits laufende Sitzungen erfordern eigene Prüfung und Maßnahmen."}
+        ]},
+        {"type": "recall", "id": "konto-fallbegruendung", "title": "Maras Änderung und den Vorfall begründen", "prompt": "Erkläre in eigenen Worten die sichere Ergänzung von audit ohne Verlust von deploy. Vergleiche danach passwd -l, Kontoablauf und PAM-faillock und nenne zwei Prüfungen, die bei einem möglichen Zugangsmissbrauch zusätzlich nötig sind.", "label": "Deine Fallbegründung", "minLength": 190, "model": "Ich prüfe zunächst Maras Identität, Primärgruppe staff und bestehende Zusatzgruppe deploy. Nach Sollklärung und Rückweg ergänze ich audit mit usermod -aG audit mara; -G ohne -a würde die Zusatzgruppenliste ersetzen. Ich prüfe den Zielzustand in einer neuen Sitzung sowie den bisherigen deploy- und neuen audit-Zugriff. passwd -l sperrt nur das lokale Passwort, nicht sicher einen SSH-Key. Ein abgelaufenes Konto soll neue Logins über eine Kontoprüfung verweigern, beendet aber bestehende Sitzungen nicht automatisch. PAM-faillock greift nach Fehlversuchen nur in angebundenen PAM-Diensten. Bei Missbrauch prüfe ich alle Anmeldemethoden und Widerruf betroffener Schlüssel oder Token; laufende Sitzungen werden separat bewertet. Jede Sperre teste ich im konkreten Dienst mit gesichertem Rückweg."}
+      ]
+    },
+    {
+      "title": "7 · Lernziel-Check",
+      "blocks": [
+        {"type": "quiz", "id": "konto-gruppe-gate", "question": "Mara hat primär staff und zusätzlich deploy. Sie soll audit erhalten und deploy behalten. Welche Anweisung passt für ein lokales Konto?", "options": [
+          {"text": "usermod -G audit mara, denn -G fügt immer nur hinzu.", "rationale": "Ohne -a ersetzt -G die Zusatzgruppenliste; deploy wäre gefährdet.", "correct": false},
+          {"text": "usermod -aG audit mara, danach Gruppenstand und beide Zugriffe in einer neuen Sitzung prüfen.", "rationale": "Richtig. -aG ergänzt die Zusatzgruppe; der Test weist alten und neuen Zugriff nach.", "correct": true},
+          {"text": "usermod -g audit mara, denn jede neue Zusatzgruppe ist zunächst primär.", "rationale": "-g ändert die Primärgruppe und erfüllt nicht die beauftragte Zusatzgruppenänderung.", "correct": false}
+        ], "requiredObjective": "gruppen-sicher-aendern"},
+        {"type": "quiz", "id": "passwort-policy-gate", "question": "Welche Zielregel ist für eine alleinige Passwortanmeldung an NIST SP 800-63B-4 orientiert, ohne sie als Linux-Default auszugeben?", "options": [
+          {"text": "Mindestens 15 Zeichen, Blocklist und Begrenzung fehlgeschlagener Versuche; keine erzwungene Zeichentyp-Mischung oder rein periodischen Wechsel. Lokale Durchsetzung separat testen.", "rationale": "Richtig. NIST beschreibt die Zielregel; PAM und Anmeldedienste müssen dafür tatsächlich konfiguriert und geprüft sein.", "correct": true},
+          {"text": "Acht Zeichen plus vier Zeichentypen und Wechsel alle 90 Tage; chage -l beweist automatisch die gesamte Umsetzung.", "rationale": "Das ist nicht die aktuelle NIST-Empfehlung. chage -l zeigt Alterungsdaten, nicht Blocklist oder Durchsetzung der Länge.", "correct": false},
+          {"text": "Ohne Mindestlänge und ohne Fehlversuchsbegrenzung, sofern ein Linux-Konto existiert.", "rationale": "Ein vorhandenes Konto ersetzt keine geprüfte Passwortregel und keine Begrenzung von Online-Rateversuchen.", "correct": false}
+        ], "requiredObjective": "passwortregel-bewerten"},
+        {"type": "quiz", "id": "kontosperre-gate", "question": "Ein Passwort ist gesperrt, ein SSH-Key funktioniert noch und in einem Dienst greift eine PAM-Fehlversuchssperre. Was folgt?", "options": [
+          {"text": "Alle Anmeldewege sind automatisch gesperrt und aktive Sitzungen beendet.", "rationale": "Weder passwd -l noch PAM-faillock garantieren das für alle Wege oder bestehende Sitzungen.", "correct": false},
+          {"text": "PAM-faillock hat den SSH-Key aus authorized_keys gelöscht; ein neuer Key ist die einzige Prüfung.", "rationale": "PAM-faillock verwaltet Fehlversuche in angebundenen PAM-Diensten, keine SSH-Schlüsseldateien.", "correct": false},
+          {"text": "Passwort, Kontoablauf und PAM-Dienstpfad getrennt prüfen; betroffene Keys/Token, laufende Sitzungen und weitere Zugangspfade zusätzlich behandeln.", "rationale": "Richtig. Nur diese getrennte Prüfung zeigt, ob die beabsichtigte Sperre im konkreten System vollständig wirkt.", "correct": true}
+        ], "requiredObjective": "sperrwirkung-pruefen"}
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {"type": "markdown", "markdown": "Fachliche Primärquellen, geprüft am 02.10.2026: [useradd(8)](https://man7.org/linux/man-pages/man8/useradd.8.html), [usermod(8)](https://man7.org/linux/man-pages/man8/usermod.8.html), [passwd(5)](https://man7.org/linux/man-pages/man5/passwd.5.html), [shadow(5)](https://man7.org/linux/man-pages/man5/shadow.5.html), [passwd(1)](https://man7.org/linux/man-pages/man1/passwd.1.html), [chage(1)](https://man7.org/linux/man-pages/man1/chage.1.html), [faillock.conf(5)](https://man7.org/linux/man-pages/man5/faillock.conf.5.html), [pam_faillock(8)](https://man7.org/linux/man-pages/man8/pam_faillock.8.html) und [NIST SP 800-63B-4](https://pages.nist.gov/800-63-4/sp800-63b.html). Der private Europa-Ausschnitt ist nur Themenanker; keine Formulierung und keine Grafik daraus sind enthalten. Das Beispiel setzt lokale shadow-utils-Konten voraus. Zentrale Identitäten, PAM- und SSH-Konfiguration, vorhandene Sitzungen und konkrete Richtlinien müssen vor produktiven Eingriffen am Zielsystem geprüft werden. Wiederhole die drei Lernziel-Fragen morgen ohne Blick auf die Antworten."}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Start, Dauer und Ende auf einer echten Zeitachse lesen, einen Pilotplan aus Abhängigkeiten erstellen und Terminänderungen beurteilen.">
+<title>Gantt-Diagramm: lesen und erstellen – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js" defer></script>
+<script src="/assets/ap2-learning.js?v=3.10.1" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="gantt-diagramm-lesen-und-erstellen" data-progress-id="ga1-13__3" data-content-revision="2026-10-03.1" data-content-status="CURATED_DRAFT">
+<a class="learning-skip" href="#main-content">Zum Lerninhalt</a>
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-13">Projekt- &amp; Qualitätsmanagement</a><span class="sep">›</span>
+    <span class="here">Gantt-Diagramm: lesen und erstellen</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content" tabindex="-1">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Gantt-Diagramm: lesen und erstellen</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 25 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Entwurf · menschliche Freigabe ausstehend</span>
+      </div>
+      <div class="rule"></div>
+      <details class="learning-overview" id="lesson-overview">
+        <summary>Inhalt und Lernstand <small data-current-section>Abschnitt auswählen</small></summary>
+        <div class="overview-body">
+          <div class="mastery-box" data-mastery-box>
+            <div class="mastery-count" data-mastery-count>0 von 3 Pflichtchecks bestanden</div>
+            <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+            <p class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Pflichtchecks.</p>
+            <p class="mastery-note" data-action-reason>Lesen und üben ist ohne Konto möglich.</p>
+            <a class="next-check" href="/?konto=anmelden" data-learning-signin>Anmelden und Fortschritt speichern</a>
+            <a class="next-check" data-next-check hidden>Nächsten offenen Pflichtcheck bearbeiten</a>
+          </div>
+          <nav aria-label="Lernabschnitte"><ul class="toc" id="toc-mobile"><li><a href="#s1" data-t="s1">Diagnose: Was sagt ein Balken?</a></li>
+<li><a href="#s2" data-t="s2">Erstellen: Von der Vorgangsliste zur Zeitachse</a></li>
+<li><a href="#s3" data-t="s3">Änderungen: Plan, Prognose und Ist unterscheiden</a></li>
+<li><a href="#s4" data-t="s4">Transfer: Einen eigenen Mini-Plan begründen</a></li></ul></nav>
+        </div>
+      </details>
+      <p>Die fiktive IT-Abteilung Vela überträgt ihren Pilotablauf in einen Balkenplan. Alle Vorgänge und Zahlen sind eigene Übungsdaten. Zeitpunkte beginnen bei 0; eine Einheit bedeutet einen Arbeitstag. Ausreichend getrennte Ressourcen erlauben die gezeigte Parallelität. Es handelt sich um einen Plan, nicht um tatsächliche Arbeitsergebnisse.</p>
+<section class="learning-goals" aria-labelledby="gantt-diagramm-lesen-und-erstellen-goals">
+  <h2 id="gantt-diagramm-lesen-und-erstellen-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Start, Ende, Dauer, Parallelität und Meilensteine auf einer Zeitachse lesen</li>
+    <li>Einen konsistenten Balkenplan aus Dauern und Vorgängerbeziehungen erstellen</li>
+    <li>Terminänderungen nachführen und Plantermine von tatsächlichem Fortschritt unterscheiden</li>
+  </ul>
+</section><h2 class="sec" id="s1" tabindex="-1"><span class="num" aria-hidden="true">1</span>Diagnose: Was sagt ein Balken?</h2>
+<section class="quiz" data-quiz="gantt-diagnose" data-correct="0">
+  <h3>Ein geplanter Balken reicht von Zeitpunkt 2 bis 7. Welche Aussage ist sicher?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Die Balkenlänge entspricht der Differenz 7 minus 2. Sie ist keine Aussage über erledigte Arbeit."><span class="m">A</span> Die geplante Dauer beträgt fünf Arbeitstage.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Ohne Statusdatum und Fortschrittsmessung lässt sich aus dem Endzeitpunkt kein Erledigungsgrad bestimmen."><span class="m">B</span> Der Vorgang ist heute zu 70 Prozent abgeschlossen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Dauer und Aufwand sind nicht gleich: Beteiligte, Auslastung und Wartezeiten fehlen."><span class="m">C</span> Der Vorgang benötigt zwingend fünf Personentage Aufwand.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><p>Ein <strong>Gantt-Diagramm</strong> zeigt Vorgänge zeilenweise auf einer gemeinsamen Zeitachse. Die linke Balkenkante steht für den Start, die rechte für das Ende, die Länge für die Dauer. Ein <strong>Meilenstein</strong> ist ein bedeutendes Ereignis ohne Dauer; hier kennzeichnet eine Raute den geplanten Abschluss des Pilottests. Die eigentliche Testarbeit steht in E.</p>
+<p><strong>Zeitkonvention:</strong> A reicht von 0 bis 2. Das umfasst die Abschnitte 0–1 und 1–2, also zwei Arbeitstage, nicht drei nummerierte Kalendertage. Wochenenden und Feiertage sind in unserem Modell nicht enthalten. Bei Kalenderdaten braucht der Plan einen ausdrücklich festgelegten Arbeitskalender.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Vela: geplanter Pilotablauf">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-gantt" xmlns="http://www.w3.org/2000/svg" width="960" height="592" viewBox="0 0 960 592" role="img" aria-labelledby="diagram-pilotplan-title diagram-pilotplan-desc">
+  <title id="diagram-pilotplan-title">Vela: geplanter Pilotablauf</title>
+  <desc id="diagram-pilotplan-desc">Plan mit A 0–2, B 2–7, C 2–4, D 4–5, E 7–9 und Meilenstein M bei 9. B und C überlappen. E wartet auf B und D.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Vela: geplanter Pilotablauf</tspan></text>
+  <text x="310" y="91" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="19" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="310" dy="0">Zeitpunkte ab 0 · eine Einheit = ein Arbeitstag</tspan></text><text x="310" y="132" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="310" dy="0">0</tspan></text><path d="M310 146V562" stroke="var(--diagram-border, #5f526e)" stroke-width="1"/><text x="370" y="132" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="370" dy="0">1</tspan></text><path d="M370 146V562" stroke="var(--diagram-border, #5f526e)" stroke-width="1"/><text x="430" y="132" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="430" dy="0">2</tspan></text><path d="M430 146V562" stroke="var(--diagram-border, #5f526e)" stroke-width="1"/><text x="490" y="132" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="490" dy="0">3</tspan></text><path d="M490 146V562" stroke="var(--diagram-border, #5f526e)" stroke-width="1"/><text x="550" y="132" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="550" dy="0">4</tspan></text><path d="M550 146V562" stroke="var(--diagram-border, #5f526e)" stroke-width="1"/><text x="610" y="132" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="610" dy="0">5</tspan></text><path d="M610 146V562" stroke="var(--diagram-border, #5f526e)" stroke-width="1"/><text x="670" y="132" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="670" dy="0">6</tspan></text><path d="M670 146V562" stroke="var(--diagram-border, #5f526e)" stroke-width="1"/><text x="730" y="132" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="730" dy="0">7</tspan></text><path d="M730 146V562" stroke="var(--diagram-border, #5f526e)" stroke-width="1"/><text x="790" y="132" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="790" dy="0">8</tspan></text><path d="M790 146V562" stroke="var(--diagram-border, #5f526e)" stroke-width="1"/><text x="850" y="132" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="850" dy="0">9</tspan></text><path d="M850 146V562" stroke="var(--diagram-border, #5f526e)" stroke-width="1"/><text x="910" y="132" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="910" dy="0">10</tspan></text><path d="M910 146V562" stroke="var(--diagram-border, #5f526e)" stroke-width="1"/><text x="42" y="169" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">A · Auftrag</tspan></text><text x="42" y="192" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="42" dy="0">Vorgänger: keine</tspan></text><rect class="gantt-bar" data-row="a" x="310" y="154" width="120" height="20" rx="3" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-line, #b997ff)" stroke-width="2"/><text x="370" y="197" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="370" dy="0">0–2</tspan></text><text x="42" y="237" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">B · Server</tspan></text><text x="42" y="260" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="42" dy="0">Vorgänger: A</tspan></text><rect class="gantt-bar" data-row="b" x="430" y="222" width="300" height="20" rx="3" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-line, #b997ff)" stroke-width="2"/><text x="580" y="265" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="580" dy="0">2–7</tspan></text><text x="42" y="305" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">C · Testfälle</tspan></text><text x="42" y="328" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="42" dy="0">Vorgänger: A</tspan></text><rect class="gantt-bar" data-row="c" x="430" y="290" width="120" height="20" rx="3" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-line, #b997ff)" stroke-width="2"/><text x="490" y="333" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="490" dy="0">2–4</tspan></text><text x="42" y="373" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">D · Prüfdaten</tspan></text><text x="42" y="396" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="42" dy="0">Vorgänger: C</tspan></text><rect class="gantt-bar" data-row="d" x="550" y="358" width="60" height="20" rx="3" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-line, #b997ff)" stroke-width="2"/><text x="580" y="401" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="580" dy="0">4–5</tspan></text><text x="42" y="441" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">E · Pilottest</tspan></text><text x="42" y="464" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="42" dy="0">Vorgänger: B und D</tspan></text><rect class="gantt-bar" data-row="e" x="730" y="426" width="120" height="20" rx="3" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-line, #b997ff)" stroke-width="2"/><text x="790" y="469" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="790" dy="0">7–9</tspan></text><text x="42" y="509" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">M · Test abgeschlossen</tspan></text><text x="42" y="532" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="42" dy="0">Vorgänger: E</tspan></text><path class="gantt-milestone" data-row="m" d="M850 494l10 10-10 10-10-10Z" fill="var(--diagram-line, #b997ff)"/><text x="850" y="537" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="850" dy="0">M bei 9</tspan></text>
+</svg>
+  </div>
+  <figcaption>Maßstäbliche Balken; Vorgänger stehen links ausdrücklich dabei. M ist eine Raute ohne Dauer. Keine Fortschrittsanzeige.</figcaption>
+</figure><div class="math-display" role="group" aria-label="Dauer gleich Endzeitpunkt minus Startzeitpunkt"><math display="block" aria-label="Dauer gleich Endzeitpunkt minus Startzeitpunkt"><mrow><mi>d</mi><mo>=</mo><mi>e</mi><mo>−</mo><mi>s</mi></mrow></math><div class="math-legend"><span>d: Dauer; s: Start; e: Ende. Alle Werte beziehen sich auf dieselbe Arbeitszeitachse.</span></div></div><section class="quiz" data-quiz="gantt-lesen" data-correct="1" data-required-objective="lesen">
+  <h3>Was lässt sich im Vela-Plan ablesen?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="B und C starten beide bei 2. Die Raute M hat Start und Ende bei 9 und damit keine Dauer."><span class="m">A</span> B und C arbeiten nacheinander; M dauert einen Tag.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Der gemeinsame Zeitabschnitt ist 2–4. Ein Meilenstein bezeichnet einen Zeitpunkt, keine zusätzliche Arbeit."><span class="m">B</span> B und C laufen von 2 bis 4 parallel; M liegt bei 9 ohne Dauer.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Parallel laufende Vorgänge werden für die Projektdauer nicht nacheinander summiert. M liegt bei 9."><span class="m">C</span> Das Projekt dauert zwölf Tage, weil alle Balkenlängen addiert werden.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2" tabindex="-1"><span class="num" aria-hidden="true">2</span>Erstellen: Von der Vorgangsliste zur Zeitachse</h2>
+<p><strong>Eigene Vorgangsliste:</strong></p>
+<ul>
+<li><strong>A:</strong> Auftrag klären, Dauer 2; kein Vorgänger.</li>
+<li><strong>B:</strong> Server einrichten, Dauer 5; nach A.</li>
+<li><strong>C:</strong> Testfälle festlegen, Dauer 2; nach A.</li>
+<li><strong>D:</strong> Prüfdaten bereitstellen, Dauer 1; nach C.</li>
+<li><strong>E:</strong> Pilottest durchführen, Dauer 2; nach B und D.</li>
+<li><strong>M:</strong> Ereignis „Test abgeschlossen“, Dauer 0; nach E.</li>
+</ul>
+<p><strong>Vorgehen:</strong> Zeiteinheit und Arbeitskalender festlegen; Vorgänge mit Dauern und Vorgängern erfassen; Start und Ende berechnen; Balken maßstäblich eintragen; Meilensteine markieren; Abhängigkeiten und Ressourcen prüfen. In diesem frühestmöglichen Plan beginnt A bei 0. B und C beginnen bei 2, D bei 4. E darf erst beginnen, wenn <strong>beide</strong> Vorgänger beendet sind: bei max(7, 5) = 7. Das Ende liegt bei 9.</p>
+<p>Alle Beziehungen sind hier <strong>Ende-Anfang ohne Zeitabstand</strong>. Abhängigkeiten müssen durch eine Vorgängerspalte oder eindeutige Verbindungslinien erklärt werden: Gleiche Starttermine allein beweisen keine Abhängigkeit. Ein Balkenplan könnte denselben optischen Abstand aus ganz anderen Gründen enthalten.</p>
+<div class="math-display" role="group" aria-label="Endzeitpunkt gleich Startzeitpunkt plus Dauer"><math display="block" aria-label="Endzeitpunkt gleich Startzeitpunkt plus Dauer"><mrow><mi>e</mi><mo>=</mo><mi>s</mi><mo>+</mo><mi>d</mi></mrow></math><div class="math-legend"><span>Bei mehreren erforderlichen Vorgängern wartet der früheste Start auf deren spätestes Ende.</span></div></div><section class="quiz" data-quiz="gantt-erstellen" data-correct="2" data-required-objective="erstellen">
+  <h3>In einem fehlerhaften Entwurf steht E bei 5–7. B läuft weiterhin bis 7 und E braucht B und D. Wie wird der Entwurf berichtigt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="D allein reicht nicht. B muss ebenfalls beendet sein."><span class="m">A</span> E bei 5–7 lassen: D ist bei 5 fertig.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Ein Start darf nicht durch eine unbegründete Änderung der festgelegten Dauer ausgeglichen werden."><span class="m">B</span> E auf 7–8 verkürzen, damit M bei 8 liegt.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="E wartet auf B bis 7, behält zwei Tage Dauer und endet bei 9. M folgt ohne Zusatzdauer."><span class="m">C</span> E auf 7–9 verschieben und M bei 9 setzen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s3" tabindex="-1"><span class="num" aria-hidden="true">3</span>Änderungen: Plan, Prognose und Ist unterscheiden</h2>
+<p><strong>Eigene Änderung:</strong> Die neue Schätzung für B beträgt sechs statt fünf Arbeitstage, sein Start bleibt 2. B endet nun bei 8. C und D bleiben unverändert; E wird auf 8–10 verschoben, M auf 10. Der ursprüngliche Plantermin 9 darf nicht stillschweigend als neue Referenz gelöscht werden: Dokumentiere alten Planstand, neue Prognose und Grund der Änderung.</p>
+<p>Die beiden Diagramme verwenden bewusst dieselbe Skala 0–10. So ist die Verschiebung um einen Arbeitstag direkt vergleichbar. <strong>Es sind zwei Planstände, keine gemessenen Ist-Daten.</strong> Eine Fortschrittsanzeige braucht zusätzlich einen Statuszeitpunkt und belastbare Rückmeldungen, etwa tatsächliche Start-/Endtermine oder geprüfte Ergebnisse. Ein erreichter Kalendertermin beweist keinen bestandenen Pilottest.</p>
+<p><strong>Ressourcenfrage:</strong> Falls dieselbe voll ausgelastete Fachkraft B und C erledigen soll, ist die geplante Parallelität nicht ausführbar. Ein neuer Ressourcenplan müsste die Belegung ändern und alle betroffenen Folgetermine erneut prüfen. Einfach mehr Balken gleichzeitig einzeichnen erzeugt keine zusätzliche Kapazität.</p>
+<p><strong>Grenzen:</strong> Die Lücke von D-Ende 5 bis E-Start 7 ist nicht automatisch zwei Tage frei verfügbarer Puffer für jeden Vorgang. Puffer und kritischer Pfad benötigen die vollständige Abhängigkeitsrechnung. Balkenfarben haben ohne Legende keine fachlich eindeutige Bedeutung.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Neue Prognose: Server braucht länger">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-gantt" xmlns="http://www.w3.org/2000/svg" width="960" height="592" viewBox="0 0 960 592" role="img" aria-labelledby="diagram-veraenderung-title diagram-veraenderung-desc">
+  <title id="diagram-veraenderung-title">Neue Prognose: Server braucht länger</title>
+  <desc id="diagram-veraenderung-desc">Neue Prognose: B läuft 2–8, E läuft 8–10, M liegt bei 10; A 0–2, C 2–4 und D 4–5 bleiben unverändert.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Neue Prognose: Server braucht länger</tspan></text>
+  <text x="310" y="91" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="19" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="310" dy="0">Zeitpunkte ab 0 · eine Einheit = ein Arbeitstag</tspan></text><text x="310" y="132" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="310" dy="0">0</tspan></text><path d="M310 146V562" stroke="var(--diagram-border, #5f526e)" stroke-width="1"/><text x="370" y="132" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="370" dy="0">1</tspan></text><path d="M370 146V562" stroke="var(--diagram-border, #5f526e)" stroke-width="1"/><text x="430" y="132" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="430" dy="0">2</tspan></text><path d="M430 146V562" stroke="var(--diagram-border, #5f526e)" stroke-width="1"/><text x="490" y="132" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="490" dy="0">3</tspan></text><path d="M490 146V562" stroke="var(--diagram-border, #5f526e)" stroke-width="1"/><text x="550" y="132" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="550" dy="0">4</tspan></text><path d="M550 146V562" stroke="var(--diagram-border, #5f526e)" stroke-width="1"/><text x="610" y="132" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="610" dy="0">5</tspan></text><path d="M610 146V562" stroke="var(--diagram-border, #5f526e)" stroke-width="1"/><text x="670" y="132" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="670" dy="0">6</tspan></text><path d="M670 146V562" stroke="var(--diagram-border, #5f526e)" stroke-width="1"/><text x="730" y="132" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="730" dy="0">7</tspan></text><path d="M730 146V562" stroke="var(--diagram-border, #5f526e)" stroke-width="1"/><text x="790" y="132" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="790" dy="0">8</tspan></text><path d="M790 146V562" stroke="var(--diagram-border, #5f526e)" stroke-width="1"/><text x="850" y="132" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="850" dy="0">9</tspan></text><path d="M850 146V562" stroke="var(--diagram-border, #5f526e)" stroke-width="1"/><text x="910" y="132" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="910" dy="0">10</tspan></text><path d="M910 146V562" stroke="var(--diagram-border, #5f526e)" stroke-width="1"/><text x="42" y="169" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">A · Auftrag</tspan></text><text x="42" y="192" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="42" dy="0">Vorgänger: keine</tspan></text><rect class="gantt-bar" data-row="a" x="310" y="154" width="120" height="20" rx="3" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-line, #b997ff)" stroke-width="2"/><text x="370" y="197" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="370" dy="0">0–2</tspan></text><text x="42" y="237" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">B · Server</tspan></text><text x="42" y="260" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="42" dy="0">Vorgänger: A</tspan></text><rect class="gantt-bar" data-row="b" x="430" y="222" width="360" height="20" rx="3" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-line, #b997ff)" stroke-width="2"/><text x="610" y="265" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="610" dy="0">2–8</tspan></text><text x="42" y="305" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">C · Testfälle</tspan></text><text x="42" y="328" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="42" dy="0">Vorgänger: A</tspan></text><rect class="gantt-bar" data-row="c" x="430" y="290" width="120" height="20" rx="3" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-line, #b997ff)" stroke-width="2"/><text x="490" y="333" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="490" dy="0">2–4</tspan></text><text x="42" y="373" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">D · Prüfdaten</tspan></text><text x="42" y="396" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="42" dy="0">Vorgänger: C</tspan></text><rect class="gantt-bar" data-row="d" x="550" y="358" width="60" height="20" rx="3" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-line, #b997ff)" stroke-width="2"/><text x="580" y="401" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="580" dy="0">4–5</tspan></text><text x="42" y="441" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">E · Pilottest</tspan></text><text x="42" y="464" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="42" dy="0">Vorgänger: B und D</tspan></text><rect class="gantt-bar" data-row="e" x="790" y="426" width="120" height="20" rx="3" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-line, #b997ff)" stroke-width="2"/><text x="850" y="469" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="850" dy="0">8–10</tspan></text><text x="42" y="509" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">M · Test abgeschlossen</tspan></text><text x="42" y="532" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="42" dy="0">Vorgänger: E</tspan></text><path class="gantt-milestone" data-row="m" d="M910 494l10 10-10 10-10-10Z" fill="var(--diagram-line, #b997ff)"/><text x="910" y="537" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="500" fill="var(--diagram-text, #f1f0ec)"><tspan x="910" dy="0">M bei 10</tspan></text>
+</svg>
+  </div>
+  <figcaption>Gleiche Zeitachse wie im ursprünglichen Plan. Die Prognose verschiebt M von 9 auf 10, ohne tatsächliche Fertigstellung zu behaupten.</figcaption>
+</figure><section class="quiz" data-quiz="gantt-aenderung" data-correct="0" data-required-objective="aenderung">
+  <h3>B wird mit sechs Tagen Dauer prognostiziert. Welche Aktualisierung ist konsistent?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Alle betroffenen Nachfolger werden berücksichtigt. Die neue Prognose ist vom ursprünglichen Plan und von Ist-Daten zu unterscheiden."><span class="m">A</span> B bis 8, E 8–10, M bei 10; ursprünglichen Planstand und Änderungsgrund festhalten.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Damit wäre die notwendige Ende-Anfang-Abhängigkeit verletzt."><span class="m">B</span> Nur B verlängern; E startet weiter bei 7.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein prognostiziertes Ende ist keine gemessene Leistung oder Fertigstellung."><span class="m">C</span> B bis 8 verlängern und daraus automatisch 80 Prozent Fortschritt melden.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s4" tabindex="-1"><span class="num" aria-hidden="true">4</span>Transfer: Einen eigenen Mini-Plan begründen</h2>
+<p><strong>Neue eigene Aufgabe:</strong> X (Auftrag) dauert 1, danach laufen Y (Konfiguration, Dauer 3) und Z (Testvorbereitung, Dauer 2) parallel. T (Test, Dauer 1) braucht Y und Z. M bezeichnet den Abschluss von T ohne Dauer. Nutze Zeitpunkte ab 0 und getrennte Ressourcen. Beschreibe jede Zeile so präzise, dass daraus ein Gantt-Diagramm gezeichnet werden könnte. Prüfe anschließend Y mit Dauer 4 statt 3.</p>
+<section class="recall-practice" data-recall="gantt-transfer" data-min-length="160" aria-labelledby="gantt-transfer-title">
+  <div class="recall-prompt"><h3 id="gantt-transfer-title">Abruf aus dem Kopf</h3><p>Nenne Start und Ende von X, Y, Z, T und M sowie den parallelen Abschnitt. Wie verschiebt sich der Plan bei Y mit Dauer 4? Welche zusätzliche Information brauchst du, bevor du die Ausführbarkeit mit einer einzigen Fachkraft bestätigst?</p></div>
+  <label class="sr-only" for="gantt-transfer-answer">Deine freie Antwort</label>
+  <textarea id="gantt-transfer-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong>
+  <p>Ursprünglich: X 0–1, Y 1–4, Z 1–3, T 4–5, M bei 5 mit Dauer 0. Y und Z überlappen von 1 bis 3. Bei Y = 4 läuft Y 1–5, T 5–6 und M liegt bei 6; X und Z bleiben gleich. Die Skala sollte beide Stände bis mindestens 6 zeigen. Für eine einzelne Fachkraft fehlen deren Zuordnung und verfügbare Kapazität je Vorgang. Falls Y und Z beide dieselbe Person voll benötigen, ist ihre Parallelität unmöglich; Ressourcen und Folgetermine müssen neu geplant werden. Weder Balkenlänge noch M-Termin beweisen tatsächlichen Fortschritt.</p></div>
+</section><div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="lesen" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Balken von 2 bis 7: was ist die Dauer?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Fünf Arbeitstage. Ende minus Start auf derselben Skala; keine Aussage über Aufwand oder Ist-Fortschritt.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="erstellen" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wie beginnt ein Vorgang nach zwei Vorgängern?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Bei Ende-Anfang ohne Abstand frühestens nach beiden: Der größere Endzeitpunkt entscheidet.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="aenderung" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was ist bei einer neuen Prognose zu bewahren?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Ursprünglicher Planstand und Änderungsgrund. Betroffene Nachfolger aktualisieren; Ist-Daten getrennt erfassen.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Zeitachse“:</span><button type="button" data-card-id="lesen" data-card-rate="known">gewusst</button><button type="button" data-card-id="lesen" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="lesen"></span></div>
+<div class="card-rating"><span>Karte „Vorgänger“:</span><button type="button" data-card-id="erstellen" data-card-rate="known">gewusst</button><button type="button" data-card-id="erstellen" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="erstellen"></span></div>
+<div class="card-rating"><span>Karte „Planstand“:</span><button type="button" data-card-id="aenderung" data-card-rate="known">gewusst</button><button type="button" data-card-id="aenderung" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="aenderung"></span></div>
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-13"><span class="d">zurück zu</span><span class="t">Projekt- &amp; Qualitätsmanagement</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Projekt- &amp; Qualitätsmanagement</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 3 Pflichtchecks bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Pflichtchecks.</div>
+      <a class="next-check" data-next-check hidden>Nächsten offenen Pflichtcheck bearbeiten</a>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Diagnose: Was sagt ein Balken?</a></li>
+<li><a href="#s2" data-t="s2">Erstellen: Von der Vorgangsliste zur Zeitachse</a></li>
+<li><a href="#s3" data-t="s3">Änderungen: Plan, Prognose und Ist unterscheiden</a></li>
+<li><a href="#s4" data-t="s4">Transfer: Einen eigenen Mini-Plan begründen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false" aria-describedby="learning-action-reason">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-13">Zur Themengruppe</a>
+  <span class="action-reason" id="learning-action-reason" data-action-reason>Pflichtchecks bearbeiten und anmelden, um Fortschritt zu speichern.</span>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

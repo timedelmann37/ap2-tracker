@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Hello-Nachrichten, Zertifikatsprüfung, Signaturnachweis und Schlüsselableitung getrennt erklären; einen Handshake rekonstruieren und Fehler eingrenzen.">
+<title>TLS 1.3: Handshake und Schlüssel – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js" defer></script>
+<script src="/assets/ap2-learning.js?v=3.10.1" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="tls13-handshake-schluesselableitung" data-progress-id="ga1-8__8" data-content-revision="2026-10-03.1" data-content-status="CURATED_DRAFT">
+<a class="learning-skip" href="#main-content">Zum Lerninhalt</a>
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-8">IT-Sicherheit und Datenschutz</a><span class="sep">›</span>
+    <span class="here">TLS 1.3: Handshake und Schlüssel</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content" tabindex="-1">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">TLS 1.3: Handshake und Schlüssel</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 40 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Entwurf · menschliche Freigabe ausstehend</span>
+      </div>
+      <div class="rule"></div>
+      <details class="learning-overview" id="lesson-overview">
+        <summary>Inhalt und Lernstand <small data-current-section>Abschnitt auswählen</small></summary>
+        <div class="overview-body">
+          <div class="mastery-box" data-mastery-box>
+            <div class="mastery-count" data-mastery-count>0 von 4 Pflichtchecks bestanden</div>
+            <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+            <p class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Pflichtchecks.</p>
+            <p class="mastery-note" data-action-reason>Lesen und üben ist ohne Konto möglich.</p>
+            <a class="next-check" href="/?konto=anmelden" data-learning-signin>Anmelden und Fortschritt speichern</a>
+            <a class="next-check" data-next-check hidden>Nächsten offenen Pflichtcheck bearbeiten</a>
+          </div>
+          <nav aria-label="Lernabschnitte"><ul class="toc" id="toc-mobile"><li><a href="#s1" data-t="s1">Diagnose: Zertifikat ist nicht Abschluss</a></li>
+<li><a href="#s2" data-t="s2">Hello: Angebot ist noch keine Auswahl</a></li>
+<li><a href="#s3" data-t="s3">Identität: drei Prüfungen nicht vermischen</a></li>
+<li><a href="#s4" data-t="s4">Schlüssel: ableiten statt verschicken</a></li>
+<li><a href="#s5" data-t="s5">Anwendung: den Befund sicher prüfen</a></li>
+<li><a href="#s6" data-t="s6">Abruftraining</a></li></ul></nav>
+        </div>
+      </details>
+      <p>Die fiktive Laborplattform Lumen überträgt Messaufträge an portal.lumen.example. Ein Mitschnitt zeigt Hello-Nachrichten und ein passendes Zertifikat, danach aber einen Abbruch. Eine Kollegin erklärt: „Das Zertifikat ist da, also muss TLS erfolgreich sein.“ Du ordnest Nachrichten und Nachweise und entscheidest, was der Befund tatsächlich aussagt.</p>
+<section class="learning-goals" aria-labelledby="tls13-handshake-schluesselableitung-goals">
+  <h2 id="tls13-handshake-schluesselableitung-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Angebot und Auswahl der Hello-Nachrichten unterscheiden</li>
+    <li>Zertifikatsprüfung und Handshake-Signatur getrennt beurteilen</li>
+    <li>Öffentliche Key Shares und geheime Verkehrsschlüssel unterscheiden</li>
+    <li>Handshakefehler mit einem sicheren Prüfplan eingrenzen</li>
+  </ul>
+</section><h2 class="sec" id="s1" tabindex="-1"><span class="num" aria-hidden="true">1</span>Diagnose: Zertifikat ist nicht Abschluss</h2>
+<section class="quiz" data-quiz="tls-diagnose" data-correct="1">
+  <h3>Lumen sieht ein Zertifikat, aber CertificateVerify ist ungültig. Darf die Auftragseingabe weitergehen?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Ein vorhandenes Zertifikat ersetzt keinen gültigen Handshake-Nachweis."><span class="m">A</span> Ja, ein Zertifikat genügt.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Der Signaturnachweis ist fehlgeschlagen; die Verbindung ist nicht erfolgreich authentisiert."><span class="m">B</span> Nein, den Abbruch untersuchen und keine Aufträge senden.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Markenbekanntheit ist kein kryptografischer Nachweis."><span class="m">C</span> Ja, wenn die CA ein bekanntes Logo hat.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2" tabindex="-1"><span class="num" aria-hidden="true">2</span>Hello: Angebot ist noch keine Auswahl</h2>
+<p><strong>Modellgrenze:</strong> Wir betrachten TLS 1.3 mit ECDHE und Serverzertifikat, ohne Wiederaufnahme oder Clientzertifikat. Ein älterer RSA-Schlüsseltransport ist nicht dieser Ablauf.</p>
+<p>TLS schützt übertragene Daten und unterstützt Serverauthentisierung. Eine erfolgreiche Verbindung sagt nichts darüber, ob Lumen die angemeldete Person für einen bestimmten Messauftrag berechtigt.</p>
+<p><strong>Lumen-Befund A:</strong> Die Clientliste enthält zwei mögliche Cipher Suites. <strong>Befund B:</strong> ServerHello nennt eine davon. Notiere Angebot und Auswahl getrennt; leite nicht aus einer angebotenen Suite ab, dass sie tatsächlich genutzt wurde.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: TLS 1.3 im Lernfall">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="542" viewBox="0 0 960 542" role="img" aria-labelledby="diagram-tls-ablauf-title diagram-tls-ablauf-desc">
+  <title id="diagram-tls-ablauf-title">TLS 1.3 im Lernfall</title>
+  <desc id="diagram-tls-ablauf-desc">Vier Nachrichtengruppen mit ausdrücklich benannter Senderichtung.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">TLS 1.3 im Lernfall</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Client sendet ClientHello</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Angebot und öffentlicher Key Share</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Server sendet ServerHello</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Auswahl und öffentlicher Key Share</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Server sendet geschützte Nachrichten</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">EncryptedExtensions, Certificate, Verify, Finished</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Client prüft und sendet Finished</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Zertifikat, Dienstname und Nachweise prüfen</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Clientprüfungen sind lokale Verarbeitung. CertificateVerify ist hier im Serverblock als Verify abgekürzt. Server-Anwendungsdaten können nach Server-Finished bereits beginnen; im Lernfall wartet die Auftragseingabe auf den abgeschlossenen Client-Handshake.</figcaption>
+</figure><section class="quiz" data-quiz="tls-hello" data-correct="0" data-required-objective="hello">
+  <h3>Im Protokoll bietet der Client Suite A und B an; ServerHello wählt B. Welche Suite dokumentierst du als ausgehandelt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Die Auswahl im ServerHello ist der Befund, nicht die bloße Angebotsliste."><span class="m">A</span> B, mit der tatsächlich gewählten Version und Gruppe.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Listenposition ist kein Beweis der Auswahl."><span class="m">B</span> A, weil sie zuerst angeboten wurde.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein Angebot mehrerer Möglichkeiten bedeutet keine gleichzeitige Nutzung aller."><span class="m">C</span> Beide gleichzeitig für dieselben Anwendungsdaten.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s3" tabindex="-1"><span class="num" aria-hidden="true">3</span>Identität: drei Prüfungen nicht vermischen</h2>
+<p>Im Serverblock folgen <strong>EncryptedExtensions</strong>, <strong>Certificate</strong>, <strong>CertificateVerify</strong> und <strong>Finished</strong>. Der Client prüft den Zertifikatspfad und die erwartete Dienstidentität. CertificateVerify ist der Signaturnachweis für diesen Handshake. Finished bestätigt Handshakeintegrität und Schlüsselbezug.</p>
+<p><strong>Lumen-Befund C:</strong> Der SAN enthält <code>portal.lumen.example</code>, der Pfad ist akzeptiert, die Zeitprüfung erfolgreich. <strong>Befund D:</strong> CertificateVerify schlägt fehl. Du darfst C dokumentieren, aber daraus nicht D als bestanden ableiten. Zertifikatsausstellung durch eine CA und Prüfung beim Client sind verschiedene Vorgänge. Status-/Widerrufsprüfungen hängen von Client und Richtlinie ab.</p>
+<section class="quiz" data-quiz="tls-identitaet" data-correct="2" data-required-objective="identitaet">
+  <h3>Das Zertifikat passt zum Portal, CertificateVerify scheitert. Welche Schlussfolgerung ist richtig?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Namensbindung und Handshake-Nachweis sind getrennte Prüfungen."><span class="m">A</span> Der passende SAN repariert die Handshake-Signatur.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die CA vergibt keine Anwendungsberechtigungen."><span class="m">B</span> Die CA muss alle Messaufträge freigeben.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Eine gültige Zertifikatsbindung allein ersetzt den Nachweis im konkreten Handshake nicht."><span class="m">C</span> Die Serverauthentisierung ist nicht erfolgreich abgeschlossen.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s4" tabindex="-1"><span class="num" aria-hidden="true">4</span>Schlüssel: ableiten statt verschicken</h2>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Schlüssel getrennt halten">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="434" viewBox="0 0 960 434" role="img" aria-labelledby="diagram-tls-schluessel-title diagram-tls-schluessel-desc">
+  <title id="diagram-tls-schluessel-title">Schlüssel getrennt halten</title>
+  <desc id="diagram-tls-schluessel-desc">ECDHE-Berechnung, HKDF-Ableitung und getrennte Schlüssel pro Richtung.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Schlüssel getrennt halten</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">ECDHE auf beiden Seiten</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Private Werte bleiben lokal, Shares sind öffentlich</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">HKDF mit Handshake-Kontext</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Getrennte Handshake- und Anwendungs-Secrets</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Schlüssel je Senderichtung</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Client- und Server-Verkehr getrennt schützen</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Dies ist eine Abstraktion, kein vollständiger RFC-Key-Schedule. Zertifikatsschlüssel und kurzlebige ECDHE-Werte erfüllen verschiedene Aufgaben.</figcaption>
+</figure><p>Die öffentlichen ECDHE-Shares werden ausgetauscht, private Werte bleiben lokal. Beide Seiten berechnen das gemeinsame Geheimnis. HKDF leitet mit Handshake-Kontext getrennte Traffic Secrets und daraus Schlüssel ab. Handshake- und Anwendungsverkehr sowie die beiden Senderichtungen sind getrennt.</p>
+<p><strong>Lumen-Befund E:</strong> Der Mitschnitt enthält öffentliche Shares. Die Kollegin nennt sie „die Session Keys“. Korrigiere die Beschriftung: Ein Share ist nicht der geheime Verkehrsschlüssel. Der Zertifikats-Privatschlüssel dient hier dem Signaturnachweis, nicht als universeller Datenschlüssel.</p>
+<section class="quiz" data-quiz="tls-schluessel-check" data-correct="1" data-required-objective="schluessel">
+  <h3>Was sollte Lumen im Mitschnitt als öffentliches Schlüsselmaterial kennzeichnen?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Der wird nicht einfach als Netzwerknachricht übermittelt."><span class="m">A</span> Den geheimen symmetrischen Anwendungsschlüssel.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die öffentlichen Beiträge ermöglichen die lokale Berechnung des gemeinsamen Geheimnisses."><span class="m">B</span> Die ECDHE-Key-Shares, nicht die lokalen privaten Werte.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Er bleibt geschützt und wird nicht zum Client geschickt."><span class="m">C</span> Den Zertifikats-Privatschlüssel.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s5" tabindex="-1"><span class="num" aria-hidden="true">5</span>Anwendung: den Befund sicher prüfen</h2>
+<p><strong>Eigener Prüfplan:</strong> Erfasse Zielendpunkt, erwarteten Hostnamen, gewählte Version, Zertifikatsbefund und genaue Abbruchstelle. Vergleiche einen funktionierenden und einen fehlschlagenden Client unter denselben Bedingungen. Untersuche bei D insbesondere den konkreten Signaturfehler und die zugehörige Serverkonfiguration; nicht ohne Befund auf „CA kaputt“ schließen.</p>
+<p>OpenSSL <code>s_client</code> ist ein Diagnosewerkzeug und kann Zertifikatsfehler anzeigen, ohne abzubrechen. Für einen gezielten Test sind Hostnamenprüfung (<code>-verify_hostname</code>), bewusst gewählte Vertrauensanker und Abbruch bei Prüfungsfehlern (<code>-verify_return_error</code>) relevant. Ein erfolgreicher TCP-Verbindungsaufbau oder eine ausgegebene Zertifikatsliste beweist keine erfolgreiche Identitätsprüfung. Hier werden keine Verbindungen zu fremden Diensten getestet und keine produktiven Einstellungen verändert.</p>
+<section class="quiz" data-quiz="tls-fehler" data-correct="0" data-required-objective="fehler">
+  <h3>Ein Test druckt eine Zertifikatskette und einen Prüfungsfehler, läuft aber weiter. Was protokollierst du?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Das Diagnosewerkzeug kann weiterlaufen. Die Abbruch- und Identitätsprüfung muss ausdrücklich beurteilt werden."><span class="m">A</span> Den Fehler und die Prüfoptionen; nicht bloß „Verbindung erfolgreich“.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Ausgabe allein sagt nichts über den Prüfstatus."><span class="m">B</span> Bestanden, weil Text ausgegeben wurde.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="TCP-Verfügbarkeit ist nicht gleich TLS-Authentisierung."><span class="m">C</span> Bestanden, weil TCP verbunden ist.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="sequence-practice" data-sequence="tls-reihenfolge" data-expected="ch,sh,auth,cf" data-correct-feedback="Richtig: Angebot, Auswahl, Servernachweise und geprüfte Clientantwort sind in der vorgesehenen Reihenfolge." data-wrong-feedback="Das Clientangebot kommt vor der Serverauswahl; der geschützte Serverblock folgt auf ServerHello." aria-labelledby="tls-reihenfolge-title">
+  <div class="lab-heading"><div><h3 id="tls-reihenfolge-title">Lumen-Ablauf rekonstruieren</h3><p>Ordne die vier Nachrichtengruppen des beschriebenen Vollhandshakes. Lokale Prüfungen stehen zusammen mit der Clientantwort, nicht als CA-Netzwerknachricht.</p></div><span class="lab-tag">Ablauf</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="auth" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Server: EncryptedExtensions, Certificate, CertificateVerify, Finished</span></li>
+    <li data-step="ch" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Client: ClientHello</span></li>
+    <li data-step="cf" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Client: Nachweise prüfen, Finished senden</span></li>
+    <li data-step="sh" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Server: ServerHello</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><section class="recall-practice" data-recall="tls-transfer" data-min-length="180" aria-labelledby="tls-transfer-title">
+  <div class="recall-prompt"><h3 id="tls-transfer-title">Abruf aus dem Kopf</h3><p>Erkläre Lumen, warum Befund C nicht den fehlerhaften Nachweis D ersetzt. Ordne die Hello-Nachrichten, öffentlichen Shares und geheimen Schlüssel und formuliere einen Prüfplan.</p></div>
+  <label class="sr-only" for="tls-transfer-answer">Deine freie Antwort</label>
+  <textarea id="tls-transfer-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong>
+  <p>Ich trenne angebotene von gewählten Parametern. Nach den Hellos folgt der geschützte Serverblock; der Client prüft Identität und Handshake-Nachweise und antwortet mit Finished. Ein passendes Zertifikat heilt keinen ungültigen CertificateVerify-Nachweis. Öffentliche Shares sind keine Verkehrsschlüssel. Ich dokumentiere Endpunkt, Hostnamen, Version und genaue Abbruchstelle und prüfe Diagnoseoptionen; erst danach entscheide ich über die Fehlereingrenzung.</p></div>
+</section><h2 class="sec" id="s6" tabindex="-1"><span class="num" aria-hidden="true">6</span>Abruftraining</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="hello" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was bietet ClientHello an?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Unter anderem unterstützte Versionen, Cipher Suites und öffentliche Key Shares.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="wahl" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was wählt ServerHello?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Die ausgehandelten Parameter und im betrachteten ECDHE-Fall den öffentlichen Server-Key-Share.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="ca" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wer prüft die CA-Signatur?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Der Client prüft den Zertifikatspfad zum akzeptierten Vertrauensanker; keine automatische Online-CA-Beteiligung je Verbindung.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="cv" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was beweist CertificateVerify?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Die Nutzung des zum Zertifikat gehörenden privaten Schlüssels und Bindung an den Handshake.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="finished" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wozu dient Finished?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Integritäts- und Schlüsselbestätigung für den Handshake; kein Ersatz für die Dienstnamenprüfung.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="secret" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was wird nicht über das Netz geschickt?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Die privaten ECDHE-Werte, das gemeinsame Geheimnis und die daraus abgeleiteten Verkehrsschlüssel.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="grenze" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Bedeutet TLS gleich Anmeldung im Portal?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Nein. Eine authentisierte Serververbindung ersetzt keine Anwendungsanmeldung oder Zugriffsrechte.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Handshake und Schlüsselrollen“:</span><button type="button" data-card-id="hello" data-card-rate="known">gewusst</button><button type="button" data-card-id="hello" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="hello"></span></div>
+<div class="card-rating"><span>Karte „Handshake und Schlüsselrollen“:</span><button type="button" data-card-id="wahl" data-card-rate="known">gewusst</button><button type="button" data-card-id="wahl" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="wahl"></span></div>
+<div class="card-rating"><span>Karte „Handshake und Schlüsselrollen“:</span><button type="button" data-card-id="ca" data-card-rate="known">gewusst</button><button type="button" data-card-id="ca" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="ca"></span></div>
+<div class="card-rating"><span>Karte „Handshake und Schlüsselrollen“:</span><button type="button" data-card-id="cv" data-card-rate="known">gewusst</button><button type="button" data-card-id="cv" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="cv"></span></div>
+<div class="card-rating"><span>Karte „Handshake und Schlüsselrollen“:</span><button type="button" data-card-id="finished" data-card-rate="known">gewusst</button><button type="button" data-card-id="finished" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="finished"></span></div>
+<div class="card-rating"><span>Karte „Handshake und Schlüsselrollen“:</span><button type="button" data-card-id="secret" data-card-rate="known">gewusst</button><button type="button" data-card-id="secret" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="secret"></span></div>
+<div class="card-rating"><span>Karte „Handshake und Schlüsselrollen“:</span><button type="button" data-card-id="grenze" data-card-rate="known">gewusst</button><button type="button" data-card-id="grenze" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="grenze"></span></div>
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-8"><span class="d">zurück zu</span><span class="t">IT-Sicherheit und Datenschutz</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">IT-Sicherheit und Datenschutz</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 4 Pflichtchecks bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Pflichtchecks.</div>
+      <a class="next-check" data-next-check hidden>Nächsten offenen Pflichtcheck bearbeiten</a>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Diagnose: Zertifikat ist nicht Abschluss</a></li>
+<li><a href="#s2" data-t="s2">Hello: Angebot ist noch keine Auswahl</a></li>
+<li><a href="#s3" data-t="s3">Identität: drei Prüfungen nicht vermischen</a></li>
+<li><a href="#s4" data-t="s4">Schlüssel: ableiten statt verschicken</a></li>
+<li><a href="#s5" data-t="s5">Anwendung: den Befund sicher prüfen</a></li>
+<li><a href="#s6" data-t="s6">Abruftraining</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false" aria-describedby="learning-action-reason">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-8">Zur Themengruppe</a>
+  <span class="action-reason" id="learning-action-reason" data-action-reason>Pflichtchecks bearbeiten und anmelden, um Fortschritt zu speichern.</span>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

@@ -13,11 +13,16 @@
   let cloudUser = null;
   let cloudTimer = null;
   let cloudSyncing = false;
+  let cloudPushPending = false;
+  let cloudWriteFailed = false;
   let cloudReady = false;
+  let cloudInitializing = Boolean(cloud && progressId);
+  let cloudLoadFailed = false;
 
   function load(key) {
     try {
-      return JSON.parse(localStorage.getItem(key) || '{}');
+      const value = JSON.parse(localStorage.getItem(key) || '{}');
+      return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
     } catch {
       return {};
     }
@@ -27,7 +32,10 @@
     try {
       localStorage.setItem(key, JSON.stringify(value));
       if (saveNote && !cloudUser) saveNote.innerHTML = '<a href="/?konto=anmelden">Anmelden, um Fortschritt zu speichern</a>';
-      else if (saveNote) saveNote.textContent = key === TRACKER_KEY ? 'wird synchronisiert …' : 'gespeichert';
+      // Local learning edits must not replace a pending/failed tracker sync or its retry.
+      else if (saveNote && (key === TRACKER_KEY || (!cloudInitializing && !cloudLoadFailed && !cloudSyncing && !cloudPushPending && !cloudWriteFailed))) {
+        saveNote.textContent = key === TRACKER_KEY ? 'wird synchronisiert …' : 'gespeichert';
+      }
       return true;
     } catch {
       if (saveNote) saveNote.textContent = 'Speichern nicht verfügbar';
@@ -57,7 +65,9 @@
     renderMastery();
     document.getElementById('mark-rep')?.toggleAttribute('disabled', !enabled);
     if (saveNote && !enabled) {
-      saveNote.innerHTML = '<a href="/?konto=anmelden">Anmelden, um Fortschritt zu speichern</a>';
+      if (cloudInitializing) saveNote.textContent = 'Kontostatus und Fortschritt werden geladen …';
+      else if (cloudLoadFailed) saveNote.textContent = 'Cloud-Fortschritt konnte nicht geladen werden. Lade die Seite neu, um den Abgleich erneut zu versuchen.';
+      else saveNote.innerHTML = '<a href="/?konto=anmelden">Anmelden, um Fortschritt zu speichern</a>';
     }
   }
 
@@ -69,20 +79,51 @@
 
   function scheduleCloudPush() {
     if (!cloud || !cloudUser) return;
+    cloudPushPending = true;
     clearTimeout(cloudTimer);
     cloudTimer = setTimeout(pushTrackerToCloud, 700);
   }
 
   async function pushTrackerToCloud() {
-    if (!cloud || !cloudUser || cloudSyncing) return;
+    if (!cloud || !cloudUser) return;
+    if (cloudSyncing) {
+      cloudPushPending = true;
+      return;
+    }
+    clearTimeout(cloudTimer);
+    cloudTimer = null;
+    cloudPushPending = false;
     cloudSyncing = true;
-    const { error } = await cloud.from('progress').upsert(
-      { user_id: cloudUser.id, state: tracker, updated_at: new Date().toISOString() },
-      { onConflict: 'user_id' }
-    );
-    cloudSyncing = false;
-    if (saveNote) saveNote.textContent = error ? 'Cloud-Sync fehlgeschlagen' : 'synchronisiert';
-    if (error) console.error('Cloud-Sync fehlgeschlagen:', error.message);
+    cloudWriteFailed = false;
+    const userId = cloudUser.id;
+    try {
+      // Keep each request's snapshot stable while later edits queue a trailing write.
+      const { error } = await cloud.from('progress').upsert(
+        { user_id: userId, state: JSON.parse(JSON.stringify(tracker)), updated_at: new Date().toISOString() },
+        { onConflict: 'user_id' }
+      );
+      if (error) throw error;
+      if (saveNote && cloudUser?.id === userId) saveNote.textContent = cloudPushPending ? 'wird synchronisiert …' : 'synchronisiert';
+    } catch (error) {
+      if (cloudUser?.id === userId) cloudWriteFailed = true;
+      if (saveNote && cloudUser?.id === userId) {
+        saveNote.textContent = 'Cloud-Sync fehlgeschlagen. Der Stand ist lokal gespeichert. ';
+        const retry = document.createElement('button');
+        retry.type = 'button';
+        retry.className = 'cloud-sync-retry';
+        retry.textContent = 'Erneut synchronisieren';
+        retry.addEventListener('click', () => {
+          retry.disabled = true;
+          pushTrackerToCloud();
+        });
+        saveNote.append(retry);
+      }
+      console.error('Cloud-Sync fehlgeschlagen:', error.message);
+    } finally {
+      cloudSyncing = false;
+      // A debounced save may have fired during the request. Never discard it.
+      if (cloudPushPending && cloudUser?.id === userId) pushTrackerToCloud();
+    }
   }
 
   function saveTracker() {
@@ -115,6 +156,7 @@
     status?.classList.toggle('is-done', done);
     if (status) status.textContent = done ? 'gelernt' : 'noch offen';
     if (railStatus) railStatus.textContent = done ? 'Dieses Kernthema ist gelernt' : 'Dieses Kernthema ist offen';
+    renderMastery();
   }
 
   document.getElementById('mark-done')?.addEventListener('click', () => {
@@ -143,11 +185,15 @@
       .find(container => container.querySelector(`[data-card-id="${cardId}"]`));
     card.classList.remove('is-flipped');
     card.setAttribute('aria-pressed', 'false');
+    card.querySelector('.front')?.setAttribute('aria-hidden', 'false');
+    card.querySelector('.back')?.setAttribute('aria-hidden', 'true');
     rating?.setAttribute('hidden', '');
     card.addEventListener('click', () => {
       const next = !card.classList.contains('is-flipped');
       card.classList.toggle('is-flipped', next);
       card.setAttribute('aria-pressed', String(next));
+      card.querySelector('.front')?.setAttribute('aria-hidden', String(next));
+      card.querySelector('.back')?.setAttribute('aria-hidden', String(!next));
       rating?.toggleAttribute('hidden', !next);
       learning[`${topicId}:card-seen:${cardId}`] = true;
       save(LEARNING_KEY, learning);
@@ -231,6 +277,7 @@
       save(LEARNING_KEY, learning);
       renderQuiz(quiz, undefined);
       renderMastery();
+      quiz.querySelector('[data-answer]')?.focus({ preventScroll: true });
     });
   }
 
@@ -282,7 +329,13 @@
     const key = `${topicId}:numeric:${id}`;
     if (input && learning[`${key}:value`] !== undefined) input.value = learning[`${key}:value`];
     const renderNumeric = (result, value = input?.value) => {
-      if (!feedback || !result) return;
+      if (!feedback) return;
+      if (!result) {
+        feedback.hidden = true;
+        feedback.replaceChildren();
+        feedback.removeAttribute('data-result');
+        return;
+      }
       feedback.hidden = false;
       feedback.dataset.result = result;
       const normalizedValue = String(value || '').replace(',', '.');
@@ -295,11 +348,19 @@
       else feedback.textContent = result === 'correct' ? practice.dataset.correctFeedback : practice.dataset.wrongFeedback;
     };
     renderNumeric(learning[`${key}:result`], learning[`${key}:value`]);
+    input?.addEventListener('input', () => {
+      learning[`${key}:value`] = input.value;
+      delete learning[`${key}:result`];
+      save(LEARNING_KEY, learning);
+      renderNumeric(null);
+      renderMastery();
+    });
     checkButton?.addEventListener('click', () => {
-      const value = Number(String(input?.value || '').replace(',', '.'));
+      const rawValue = String(input?.value || '').trim();
+      const value = Number(rawValue.replace(',', '.'));
       const expected = Number(practice.dataset.expected);
       const tolerance = practice.dataset.tolerance === undefined ? 0.001 : Number(practice.dataset.tolerance);
-      const correct = Number.isFinite(value) && Number.isFinite(expected) && Number.isFinite(tolerance)
+      const correct = rawValue !== '' && Number.isFinite(value) && Number.isFinite(expected) && Number.isFinite(tolerance)
         && tolerance >= 0 && Math.abs(value - expected) <= tolerance;
       learning[`${key}:value`] = input?.value || '';
       learning[`${key}:result`] = correct ? 'correct' : 'wrong';
@@ -435,6 +496,7 @@
     const feedback = sequence.querySelector('[data-sequence-feedback]');
     const expected = sequence.dataset.expected.split(',');
     const key = `${topicId}:sequence:${id}`;
+    const initialOrder = [...list.querySelectorAll('[data-step]')].map(step => step.dataset.step);
     const storedOrder = learning[`${key}:order`];
     if (Array.isArray(storedOrder)) {
       for (const stepId of storedOrder) {
@@ -487,41 +549,190 @@
       }
       renderMastery();
     });
+    sequence.querySelector('[data-sequence-reset]')?.addEventListener('click', () => {
+      for (const stepId of initialOrder) {
+        const step = list.querySelector(`[data-step="${stepId}"]`);
+        if (step) list.append(step);
+      }
+      learning[`${key}:correct`] = false;
+      learning[`${key}:attempts`] = 0;
+      saveSequence();
+      if (feedback) {
+        feedback.hidden = true;
+        feedback.textContent = '';
+        delete feedback.dataset.result;
+      }
+      updateButtons();
+      renderMastery();
+    });
     updateButtons();
+  }
+
+  for (const matrix of document.querySelectorAll('[data-permission-matrix]')) {
+    const id = matrix.dataset.permissionMatrix;
+    const key = `${topicId}:permission-matrix:${id}`;
+    const controls = [...matrix.querySelectorAll('[data-matrix-cell]')];
+    const feedback = matrix.querySelector('[data-matrix-feedback]');
+    const stored = learning[key] && typeof learning[key] === 'object' ? learning[key] : {};
+    const selections = {};
+    for (const control of controls) {
+      const cellId = control.dataset.matrixCell;
+      const savedValue = stored.selections?.[cellId];
+      if (typeof savedValue === 'string' && [...control.options].some(option => option.value === savedValue)) {
+        control.value = savedValue;
+      }
+      selections[cellId] = control.value;
+    }
+    let attempts = Number.isSafeInteger(stored.attempts) && stored.attempts >= 0 ? stored.attempts : 0;
+    let result = ['correct', 'wrong', 'incomplete'].includes(stored.result) ? stored.result : null;
+    const allSelected = () => controls.every(control => control.value !== '');
+    const allCorrect = () => controls.every(control => control.value === control.dataset.expected);
+    const persist = () => {
+      learning[key] = { selections: { ...selections }, result, attempts };
+      save(LEARNING_KEY, learning);
+    };
+    if (result === 'correct' && (!allSelected() || !allCorrect())
+      || result === 'wrong' && (!allSelected() || allCorrect())) {
+      result = null;
+      persist();
+    }
+    const renderMatrix = () => {
+      for (const control of controls) {
+        const wrong = result === 'wrong' && control.value !== control.dataset.expected;
+        const incomplete = result === 'incomplete' && control.value === '';
+        control.closest('td')?.classList.toggle('is-wrong', wrong);
+        control.closest('td')?.classList.toggle('is-incomplete', incomplete);
+        if (wrong || incomplete) control.setAttribute('aria-invalid', 'true');
+        else control.removeAttribute('aria-invalid');
+      }
+      if (!feedback) return;
+      feedback.replaceChildren();
+      feedback.hidden = !result;
+      if (!result) {
+        feedback.removeAttribute('data-result');
+        return;
+      }
+      feedback.dataset.result = result;
+      if (result === 'correct') {
+        feedback.textContent = matrix.dataset.correctFeedback;
+      } else if (result === 'incomplete') {
+        feedback.textContent = 'Wähle in allen Feldern ein Rechtebündel. „Kein zugewiesenes Recht“ ist eine auswählbare Antwort.';
+      } else {
+        const summary = document.createElement('p');
+        summary.textContent = matrix.dataset.wrongFeedback;
+        const details = document.createElement('ul');
+        for (const control of controls.filter(item => item.value !== item.dataset.expected)) {
+          const item = document.createElement('li');
+          item.textContent = `${control.dataset.roleLabel} – ${control.dataset.resourceLabel}: ${control.dataset.cellFeedback}`;
+          details.append(item);
+        }
+        feedback.append(summary, details);
+      }
+    };
+    for (const control of controls) {
+      control.addEventListener('change', () => {
+        selections[control.dataset.matrixCell] = control.value;
+        result = null;
+        persist();
+        renderMatrix();
+        renderMastery();
+      });
+    }
+    matrix.querySelector('[data-matrix-check]')?.addEventListener('click', () => {
+      if (!allSelected()) {
+        result = 'incomplete';
+        persist();
+        renderMatrix();
+        controls.find(control => control.value === '')?.focus();
+        return;
+      }
+      result = allCorrect() ? 'correct' : 'wrong';
+      attempts += 1;
+      persist();
+      renderMatrix();
+      feedback?.setAttribute('tabindex', '-1');
+      feedback?.focus({ preventScroll: true });
+      renderMastery();
+    });
+    matrix.querySelector('[data-matrix-reset]')?.addEventListener('click', () => {
+      for (const control of controls) {
+        control.value = '';
+        selections[control.dataset.matrixCell] = '';
+      }
+      result = null;
+      persist();
+      renderMatrix();
+      renderMastery();
+      controls[0]?.focus();
+    });
+    renderMatrix();
+  }
+
+  function activityPassed(activity) {
+    if (activity.dataset.quiz) return learning[`${topicId}:quiz:${activity.dataset.quiz}`] === Number(activity.dataset.correct);
+    if (activity.dataset.numericPractice) return learning[`${topicId}:numeric:${activity.dataset.numericPractice}:result`] === 'correct';
+    if (activity.dataset.sequence) return learning[`${topicId}:sequence:${activity.dataset.sequence}:correct`] === true;
+    if (activity.dataset.permissionMatrix) return learning[`${topicId}:permission-matrix:${activity.dataset.permissionMatrix}`]?.result === 'correct';
+    return false;
   }
 
   function masteryState() {
     const required = [...document.querySelectorAll('[data-required-objective]')];
-    if (!required.length) return { passed: true, completed: 0, total: 0 };
     const objectiveIds = [...new Set(required.map(item => item.dataset.requiredObjective))];
     const passedIds = objectiveIds.filter(objectiveId => required
       .filter(item => item.dataset.requiredObjective === objectiveId)
-      .some(activity => {
-        if (activity.dataset.quiz) return learning[`${topicId}:quiz:${activity.dataset.quiz}`] === Number(activity.dataset.correct);
-        if (activity.dataset.numericPractice) return learning[`${topicId}:numeric:${activity.dataset.numericPractice}:result`] === 'correct';
-        if (activity.dataset.sequence) return learning[`${topicId}:sequence:${activity.dataset.sequence}:correct`] === true;
-        return false;
-      }));
-    return { passed: passedIds.length === objectiveIds.length, completed: passedIds.length, total: objectiveIds.length };
+      .some(activityPassed));
+    return { passed: passedIds.length === objectiveIds.length, completed: passedIds.length, total: objectiveIds.length, objectiveIds, passedIds, required };
   }
 
   function renderMastery() {
     const state = masteryState();
     const button = document.getElementById('mark-done');
-    const count = document.querySelector('[data-mastery-count]');
-    const bar = document.querySelector('[data-mastery-bar]');
-    const note = document.querySelector('[data-mastery-note]');
-    if (state.total === 0) {
-      document.querySelector('[data-mastery-box]')?.setAttribute('hidden', '');
-    } else {
-      document.querySelector('[data-mastery-box]')?.removeAttribute('hidden');
-      if (count) count.textContent = `${state.completed} von ${state.total} Pflichtzielen bestanden`;
-      if (bar) bar.style.transform = `scaleX(${state.completed / state.total})`;
-      if (note) note.textContent = state.passed ? 'Beide Lernziele sind nachgewiesen.' : 'Bestehe die gekennzeichneten Lernziel-Checks.';
+    for (const box of document.querySelectorAll('[data-mastery-box]')) box.toggleAttribute('hidden', state.total === 0);
+    for (const count of document.querySelectorAll('[data-mastery-count]')) count.textContent = `${state.completed} von ${state.total} Pflichtchecks bestanden`;
+    for (const bar of document.querySelectorAll('[data-mastery-bar]')) bar.style.transform = `scaleX(${state.total ? state.completed / state.total : 0})`;
+    for (const note of document.querySelectorAll('[data-mastery-note]')) note.textContent = state.passed
+      ? 'Pflichtchecks bestanden. Prüfe vor dem Markieren, ob du die Lernziele selbstständig anwenden kannst.'
+      : 'Bestehe die gekennzeichneten Pflichtchecks, um das Kernthema als gelernt zu markieren.';
+    for (const activity of document.querySelectorAll('[data-quiz], [data-numeric-practice], [data-sequence], [data-permission-matrix]')) {
+      let label = activity.querySelector(':scope > .learning-check-label');
+      if (!label) {
+        label = document.createElement('p');
+        label.className = 'learning-check-label';
+        activity.prepend(label);
+      }
+      const requiredIndex = state.objectiveIds.indexOf(activity.dataset.requiredObjective);
+      if (requiredIndex !== -1) {
+        if (!activity.id) activity.id = `learning-check-${state.required.indexOf(activity) + 1}`;
+        const passed = activityPassed(activity);
+        label.textContent = `Pflichtcheck ${requiredIndex + 1} von ${state.total} · ${passed ? 'bestanden' : 'offen'}`;
+        label.dataset.state = passed ? 'passed' : 'open';
+      } else {
+        const diagnostic = /diagnos/i.test(`${activity.dataset.quiz || ''} ${activity.querySelector('h3')?.textContent || ''}`);
+        label.textContent = diagnostic ? 'Diagnose · kein Pflichtcheck' : 'Übung · kein Pflichtcheck';
+        label.dataset.state = 'optional';
+      }
+    }
+    const next = state.required.find(activity => !state.passedIds.includes(activity.dataset.requiredObjective));
+    for (const link of document.querySelectorAll('[data-next-check]')) {
+      link.toggleAttribute('hidden', !next);
+      if (next) {
+        link.href = `#${next.id}`;
+        link.textContent = 'Zum nächsten offenen Pflichtcheck';
+      } else link.removeAttribute('href');
     }
     const canToggle = state.passed || Boolean(tracker[progressId]);
     button?.toggleAttribute('disabled', !cloudReady || !canToggle);
-    if (button && !canToggle) button.title = 'Erst nach bestandenen Pflichtzielen verfügbar';
+    let reason;
+    if (cloudInitializing) reason = 'Kontostatus und Fortschritt werden geladen. Lesen und üben ist schon möglich.';
+    else if (cloudLoadFailed) reason = 'Der Kontofortschritt konnte nicht geladen werden. Lade die Seite neu, bevor du Markierungen änderst.';
+    else if (!cloudUser) reason = 'Anmelden, um dieses Kernthema als gelernt oder zur Wiederholung zu markieren. Lesen und üben ist ohne Konto möglich.';
+    else if (!canToggle) reason = `Noch ${state.total - state.completed} Pflichtcheck${state.total - state.completed === 1 ? '' : 's'} offen. Bestehe die gekennzeichneten Checks vor dem Markieren.`;
+    else if (tracker[progressId]) reason = 'Dieses Kernthema ist als gelernt markiert. Du kannst die Markierung zurücknehmen oder eine Wiederholung vormerken.';
+    else reason = 'Du kannst dieses Kernthema jetzt als gelernt markieren oder eine Wiederholung vormerken.';
+    for (const note of document.querySelectorAll('[data-action-reason]')) note.textContent = reason;
+    for (const link of document.querySelectorAll('[data-learning-signin]')) link.toggleAttribute('hidden', Boolean(cloudUser));
+    if (button?.disabled) button.title = reason;
     else button?.removeAttribute('title');
   }
 
@@ -536,11 +747,35 @@
   updateReadingProgress();
 
   const tocLinks = [...document.querySelectorAll('.toc a[data-t]')];
+  const mobileOverview = document.getElementById('lesson-overview');
+  mobileOverview?.addEventListener('toggle', () => {
+    if (!mobileOverview.open) return;
+    const contents = mobileOverview.querySelector('.overview-body');
+    if (contents) contents.scrollTop = 0;
+    mobileOverview.scrollIntoView({ block: 'start', behavior: 'instant' });
+  });
+  function setCurrentSection(sectionId) {
+    const link = tocLinks.find(item => item.dataset.t === sectionId);
+    if (!link) return;
+    for (const label of document.querySelectorAll('[data-current-section]')) label.textContent = link.textContent.trim();
+  }
+  for (const link of [...tocLinks, ...document.querySelectorAll('[data-next-check]')]) {
+    link.addEventListener('click', () => {
+      const section = document.getElementById(link.dataset.t || link.getAttribute('href')?.slice(1));
+      if (!section) return;
+      const overview = document.getElementById('lesson-overview');
+      if (overview) overview.open = false;
+      section.tabIndex = -1;
+      section.focus({ preventScroll: true });
+      if (link.dataset.t) setCurrentSection(link.dataset.t);
+    });
+  }
   if ('IntersectionObserver' in window) {
     const observer = new IntersectionObserver(entries => {
       for (const entry of entries) {
         if (!entry.isIntersecting) continue;
         for (const link of tocLinks) link.classList.toggle('active', link.dataset.t === entry.target.id);
+        setCurrentSection(entry.target.id);
       }
     }, { rootMargin: '-35% 0px -60% 0px' });
     for (const link of tocLinks) {
@@ -574,13 +809,15 @@
       }
       cloud.auth.onAuthStateChange((event, session) => {
         cloudUser = event === 'SIGNED_OUT' ? null : session?.user || cloudUser;
-        setProgressEnabled(Boolean(cloudUser));
+        setProgressEnabled(Boolean(cloudUser) && !cloudLoadFailed);
       });
     } catch (error) {
+      cloudLoadFailed = true;
       console.error('Cloud-Fortschritt konnte nicht geladen werden:', error.message);
       if (saveNote) saveNote.textContent = 'Cloud-Fortschritt konnte nicht geladen werden';
     } finally {
-      setProgressEnabled(Boolean(cloudUser));
+      cloudInitializing = false;
+      setProgressEnabled(Boolean(cloudUser) && !cloudLoadFailed);
     }
   }
 

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Rollenbasierte Rechte von direkten Benutzerrechten unterscheiden und bestehende Berechtigungen anhand aktueller Aufgaben nachvollziehbar überprüfen.">
+<title>Rollenrechte prüfen und erneut bestätigen – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js" defer></script>
+<script src="/assets/ap2-learning.js?v=3.10.1" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="rollenkonzept-rezertifizierung-berechtigungen" data-progress-id="ga1-7__5" data-content-revision="2026-10-02.1" data-content-status="CURATED_DRAFT">
+<a class="learning-skip" href="#main-content">Zum Lerninhalt</a>
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-7">Berechtigungskonzepte</a><span class="sep">›</span>
+    <span class="here">Rollenrechte prüfen und erneut bestätigen</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content" tabindex="-1">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">Rollenrechte prüfen und erneut bestätigen</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 32 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Entwurf · menschliche Freigabe ausstehend</span>
+      </div>
+      <div class="rule"></div>
+      <details class="learning-overview" id="lesson-overview">
+        <summary>Inhalt und Lernstand <small data-current-section>Abschnitt auswählen</small></summary>
+        <div class="overview-body">
+          <div class="mastery-box" data-mastery-box>
+            <div class="mastery-count" data-mastery-count>0 von 3 Pflichtchecks bestanden</div>
+            <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+            <p class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Pflichtchecks.</p>
+            <p class="mastery-note" data-action-reason>Lesen und üben ist ohne Konto möglich.</p>
+            <a class="next-check" href="/?konto=anmelden" data-learning-signin>Anmelden und Fortschritt speichern</a>
+            <a class="next-check" data-next-check hidden>Nächsten offenen Pflichtcheck bearbeiten</a>
+          </div>
+          <nav aria-label="Lernabschnitte"><ul class="toc" id="toc-mobile"><li><a href="#s1" data-t="s1">Diagnose: Woher stammt der Zugriff?</a></li>
+<li><a href="#s2" data-t="s2">Rollenprofil und Einzelgrant auseinanderhalten</a></li>
+<li><a href="#s3" data-t="s3">Was Rezertifizierung hier prüft</a></li>
+<li><a href="#s4" data-t="s4">Sonderrechte und unklare Aufgaben</a></li>
+<li><a href="#s5" data-t="s5">Aus dem Gedächtnis abrufen</a></li>
+<li><a href="#s6" data-t="s6">Lernziel-Check: neue Fälle</a></li>
+<li><a href="#s7" data-t="s7">Quellen und Grenzen</a></li></ul></nav>
+        </div>
+      </details>
+      <p>Eine Person kann ihre Rechte über eine Rolle bekommen; manche Systeme erlauben zusätzlich direkte Rechte am einzelnen Konto. Wenn sich Aufgaben ändern, können beide Wege alte Zugriffe erhalten. In dieser Einheit prüfst du zuerst die Herkunft eines Rechts und führst dann an einem konkreten Bestand eine Berechtigungsrezertifizierung durch.</p>
+<section class="learning-goals" aria-labelledby="rollenkonzept-rezertifizierung-berechtigungen-goals">
+  <h2 id="rollenkonzept-rezertifizierung-berechtigungen-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>Den Pfad Person zu Rolle zu Recht von einem direkten Benutzerrecht unterscheiden und die Auswirkung einer Rollenänderung ableiten</li>
+    <li>Ein Rollenprofil auf aufgabengerechte Rechte prüfen und die Wirkung einer Profiländerung auf alle Rollenträger erkennen</li>
+    <li>Bei einer Berechtigungsprüfung Aufgaben, Rollenzuweisungen, Rollenrechte und direkte Ausnahmen abgleichen und begründete Entscheidungen festhalten</li>
+  </ul>
+</section><h2 class="sec" id="s1" tabindex="-1"><span class="num" aria-hidden="true">1</span>Diagnose: Woher stammt der Zugriff?</h2>
+<section class="quiz" data-quiz="rollen-rezert-diagnose" data-correct="0">
+  <h3>Lea verliert ihre Rolle „Einsatzplanung“. Auf dem Projektarchiv steht zusätzlich ein Leserecht direkt für Leas Konto. Was folgt allein aus dem Entfernen der Rolle?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Der individuelle Grant liegt außerhalb der betrachteten Rollenzuweisung. Der tatsächliche Zugriff muss nach Änderungen im System geprüft werden."><span class="m">A</span> Das direkte Archivrecht muss separat geprüft und gegebenenfalls entfernt werden; die Rollenänderung löscht es nicht automatisch.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Das trifft im beschriebenen System nicht zu: Der Archivgrant ist ausdrücklich direkt am Konto eingetragen und bleibt ein eigener Prüfgegenstand."><span class="m">B</span> Alle Rechte des Kontos verschwinden, weil jede ACL ausschließlich aus Rollen berechnet wird.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Ein individueller Eintrag wandert nicht von selbst in eine andere Rolle. Dazu wäre eine eigene, fachlich begründete Änderung am Rollenprofil nötig."><span class="m">C</span> Der direkte Archivgrant wird automatisch zum Rollenrecht des Prüfteams.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><p><strong>RBAC</strong> (Role Based Access Control) trennt zwei Beziehungen: Eine <strong>Rolle</strong> bündelt Berechtigungen für Aufgaben; ein <strong>Konto</strong> wird einer oder mehreren passenden Rollen zugeordnet. Der Pfad lautet <code>Person → Rolle → Berechtigung</code>. Im reinen RBAC erhalten Personen Rechte über Rollen, nicht als individuelle Einzelrechte. Manche realen Produkte erlauben daneben direkte Grants an Benutzerkonten. Sobald ein solcher Weg genutzt wird, muss er im Berechtigungsbestand getrennt sichtbar sein: Eine Rollenliste allein erklärt dann nicht alle möglichen Rechte einer Person.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Zwei Wege zum Recht im angenommenen System">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-topology" xmlns="http://www.w3.org/2000/svg" width="960" height="560" viewBox="0 0 960 560" role="img" aria-labelledby="diagram-rollenweg-und-direktgrant-title diagram-rollenweg-und-direktgrant-desc">
+  <title id="diagram-rollenweg-und-direktgrant-title">Zwei Wege zum Recht im angenommenen System</title>
+  <desc id="diagram-rollenweg-und-direktgrant-desc">Zwei getrennte, beschriftete Rechtepfade für dasselbe Konto Lea: Über die Rolle Prüfteam erhält es Lesen auf Prüfprotokolle. Ein individueller Grant erteilt zusätzlich Lesen auf das Projektarchiv. Der zweite Pfad ist kein reiner RBAC-Rollenpfad.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Zwei Wege zum Recht im angenommenen System</tspan></text>
+  <g class="diagram-zone "><rect x="42" y="88" width="876" height="164" rx="18"/><text x="58" y="115">RBAC-Rollenpfad</text></g><g class="diagram-zone "><rect x="42" y="273" width="876" height="164" rx="18"/><text x="58" y="300">Zusätzlicher direkter Vergabeweg</text></g><g class="diagram-edge "><path d="M140 170 L455 170"/><text class="diagram-edge-label" x="297.5" y="162" text-anchor="middle">zugewiesen</text></g><g class="diagram-edge "><path d="M455 170 L780 170"/><text class="diagram-edge-label" x="617.5" y="162" text-anchor="middle">Rollenrecht</text></g><g class="diagram-edge "><path d="M140 355 L455 355"/><text class="diagram-edge-label" x="297.5" y="347" text-anchor="middle">individuell</text></g><g class="diagram-edge "><path d="M455 355 L780 355"/><text class="diagram-edge-label" x="617.5" y="347" text-anchor="middle">Zusatzrecht</text></g><g class="diagram-node client" transform="translate(140 170)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="140" y="165" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="140" dy="0">Lea</tspan></text><text class="diagram-node-detail" x="140" y="189" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="140" dy="0">Konto</tspan></text><g class="diagram-node server" transform="translate(455 170)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="455" y="165" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="455" dy="0">Prüfteam</tspan></text><text class="diagram-node-detail" x="455" y="189" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="455" dy="0">Rolle</tspan></text><g class="diagram-node allowed" transform="translate(780 170)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="780" y="165" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="780" dy="0">Lesen</tspan></text><text class="diagram-node-detail" x="780" y="189" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="780" dy="0">Prüfprotokoll</tspan></text><g class="diagram-node client" transform="translate(140 355)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="140" y="350" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="140" dy="0">Lea</tspan></text><text class="diagram-node-detail" x="140" y="374" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="140" dy="0">dasselbe Konto</tspan></text><g class="diagram-node server" transform="translate(455 355)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="455" y="350" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="455" dy="0">Einzelgrant</tspan></text><text class="diagram-node-detail" x="455" y="374" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="455" dy="0">direkt am Konto</tspan></text><g class="diagram-node allowed" transform="translate(780 355)"><rect x="-76" y="-34" width="152" height="68" rx="14"/></g><text class="diagram-node-label" x="780" y="350" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="780" dy="0">Lesen</tspan></text><text class="diagram-node-detail" x="780" y="374" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="780" dy="0">Projektarchiv</tspan></text>
+</svg>
+  </div>
+  <figcaption>Eigenes technisches Modell. Beide Zeilen zeigen dasselbe Konto mit zwei verschiedenen Vergabewegen; die Grafik behauptet keine automatische Zusammenführung oder allgemeine Produktregel.</figcaption>
+</figure><h2 class="sec" id="s2" tabindex="-1"><span class="num" aria-hidden="true">2</span>Rollenprofil und Einzelgrant auseinanderhalten</h2>
+<p>Bei der fiktiven <strong>Nordhafen Analytik</strong> gibt es zwei fachliche Profile. <code>Einsatzplanung</code> enthält <strong>Einsatzplan lesen und ändern</strong>. <code>Prüfteam</code> enthält <strong>Prüfprotokolle lesen</strong>. Wird einer weiteren Person <code>Prüfteam</code> zugewiesen, erhält sie im angenommenen System dieselben Rollenrechte; wird nach fachlicher Freigabe das Rollenprofil geändert, betrifft das grundsätzlich alle Personen mit dieser Rolle. Ein direktes Recht wie <code>Lea → Projektarchiv lesen</code> ist dagegen ein eigener Eintrag für Lea. Das ist kein drittes Rollenprofil und keine typische Zuweisung im reinen RBAC-Modell.</p>
+<p><strong>Vollständig vorgemacht:</strong> Lea prüft inzwischen ausschließlich Prüfprotokolle. Ihr Soll aus dieser Aufgabe ist <code>Prüfteam → Prüfprotokolle lesen</code>. Der aktuelle Bestand zeigt <code>Prüfteam</code>, noch <code>Einsatzplanung</code> und einen alten direkten Grant <code>Projektarchiv lesen</code>. Vergleich 1: Das Prüfteamprofil passt zu Leas aktueller Aufgabe und bleibt. Vergleich 2: Für Einsatzplan-Änderungen gibt es keine aktuelle Aufgabe; die alte Rollenzuweisung wird zum Entzug vorgemerkt. Vergleich 3: Für den Archivgrant fehlt ebenfalls eine aktuelle Aufgabe; der individuelle Eintrag wird gesondert zum Entzug vorgemerkt. Nach Umsetzung sind Leas tatsächliche Rechte erneut zu kontrollieren. Dasselbe Review prüft zusätzlich, ob das <strong>Rollenprofil</strong> <code>Prüfteam</code> selbst nur die benötigten Aktionen enthält; eine korrekte Mitgliedschaft entschuldigt kein überbreites Profil.</p>
+<section class="quiz" data-quiz="rollen-rezert-profil-praxis" data-correct="1">
+  <h3>Nordhafen ergänzt nach Freigabe im Rollenprofil `Prüfteam` das Recht `Prüfprotokolle ändern`. Drei Personen besitzen diese Rolle. Welche Auswirkung muss die fachliche Prüfung betrachten?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Im beschriebenen Rollenmodell teilen die drei Personen das Rollenprofil. Ein Recht an der Rolle ist kein privater Einzelgrant."><span class="m">A</span> Nur Lea bekommt Ändern, denn jede Person hat automatisch eine private Kopie der Rolle.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Rollenrechte hängen am gemeinsamen Profil. Die Prüfung darf nicht nur Leas persönliche Zuordnung betrachten."><span class="m">B</span> Das zusätzliche Rollenrecht kann alle drei Rollenträger betreffen; der Bedarf für Ändern muss für die Rolle als Ganzes geprüft werden.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Gerade das Rollenprofil ist der Vergabeweg. Ein direkter Grant ist für das Rollenrecht nicht erforderlich."><span class="m">C</span> Die Änderung kann nichts bewirken, solange niemand zusätzlich einen direkten Benutzergrant erhält.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s3" tabindex="-1"><span class="num" aria-hidden="true">3</span>Was Rezertifizierung hier prüft</h2>
+<p><strong>Berechtigungsrezertifizierung</strong> bedeutet hier: In einem wiederkehrenden Review wird für vorhandene Rechte erneut begründet, ob sie zu aktuellen Aufgaben und Sicherheitsanforderungen passen. Prüfe dabei <strong>beide Beziehungen</strong>: Ist die Person noch der richtigen Rolle zugeordnet? Enthält die Rolle selbst noch passende Rechte? Wo zusätzliche direkte Grants existieren, gehören sie in denselben Bestandsabgleich. Das BSI verlangt in ORP.4.A3 die regelmäßige Prüfung der dokumentierten Konten, Gruppen und Rechteprofile gegen tatsächliche Vergabe und aktuelle Aufgaben; ORP.4.A2 fordert den Entzug nicht mehr benötigter Rechte bei personellen Änderungen. Aus diesen Stellen folgt kein pauschaler 90-Tage-Turnus für jeden Betrieb.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Rezertifizierung als Soll-Ist-Abgleich">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="650" viewBox="0 0 960 650" role="img" aria-labelledby="diagram-rezertifizierung-ablauf-title diagram-rezertifizierung-ablauf-desc">
+  <title id="diagram-rezertifizierung-ablauf-title">Rezertifizierung als Soll-Ist-Abgleich</title>
+  <desc id="diagram-rezertifizierung-ablauf-desc">Fünf Schritte der didaktischen Reviewfolge: Ist-Bestand aus Rollen, Rechten und Direktgrants erfassen; Soll aus Aufgaben bestimmen; Abweichungen abgleichen; Behalten, Entziehen oder Klären entscheiden; technische Wirksamkeit prüfen und Nachweis festhalten.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Rezertifizierung als Soll-Ist-Abgleich</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Ist erfassen</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Rollen, Rechte, Direktgrants</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Soll bestimmen</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Aktuelle Aufgaben und Profil</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Abgleichen</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Überhang und Lücken finden</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Entscheiden</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Behalten, entziehen, klären</tspan></text><path d="M480 472v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 494 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="512" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="541" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Prüfen</tspan></text><text x="178" y="568" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Wirksamkeit und Nachweis</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Eigene Prüffolge für den Lehrfall. Entscheidung und technische Umsetzung sind getrennte Schritte; ein unterschriebener Review ändert noch keine ACL.</figcaption>
+</figure><p>Für Leas Fall lautet der dokumentierte Entscheid: <code>Prüfteam</code> <strong>behalten</strong>, <code>Einsatzplanung</code> <strong>entziehen</strong>, direkten Archivgrant <strong>entziehen</strong>. Als Begründung stehen ihre aktuellen Prüfaufgaben und die jeweilige fehlende Aufgabe für die beiden Altberechtigungen. Der technische Betrieb setzt die freigegebenen Änderungen um; danach wird geprüft, ob die unerwünschten Zugriffe tatsächlich weg und das erforderliche Leserecht vorhanden sind. Ist ein behaupteter Sonderbedarf unklar, lautet die Reviewentscheidung zunächst <strong>klären</strong> und nicht stillschweigend „behalten“ oder „neu vergeben“. Der betrieblich festgelegte Prüfturnus, die verantwortliche Freigabe und der Nachweis müssen im echten Sicherheitskonzept geregelt sein.</p>
+<section class="sequence-practice" data-sequence="rollen-rezert-prueffolge-praxis" data-expected="ist,soll,abgleich,entscheidung,umsetzung" data-correct-feedback="Richtig. Erst der vollständige Bestand und das aktuelle Soll machen Abweichungen sichtbar. Danach folgen begründete Entscheidungen und die Kontrolle ihrer tatsächlichen Umsetzung." data-wrong-feedback="Beginne mit dem vollständigen Ist, auch mit direkten Grants. Lege dann das Soll aus Aufgaben fest, vergleiche jeden Eintrag, entscheide begründet und prüfe erst nach Umsetzung die Wirkung." aria-labelledby="rollen-rezert-prueffolge-praxis-title">
+  <div class="lab-heading"><div><h3 id="rollen-rezert-prueffolge-praxis-title">Leas Rechtebestand prüfen</h3><p>Ordne die fünf Arbeitsschritte für Leas Berechtigungsreview. Es ist eine begründete Prüffolge, keine technische Ausführungsreihenfolge eines Produkts.</p></div><span class="lab-tag">Soll-Ist-Prüfung</span></div>
+  <ol class="sequence-list" data-sequence-list>
+    <li data-step="umsetzung" tabindex="-1"><span class="step-position" data-step-position>1</span><span>Entzug und verbleibenden Zugriff technisch prüfen; Ergebnis dokumentieren</span></li>
+    <li data-step="soll" tabindex="-1"><span class="step-position" data-step-position>2</span><span>Aktuelle Aufgabe und freigegebenes Soll-Profil feststellen</span></li>
+    <li data-step="entscheidung" tabindex="-1"><span class="step-position" data-step-position>3</span><span>Behalten, Entziehen oder Klären für jeden Eintrag begründen</span></li>
+    <li data-step="ist" tabindex="-1"><span class="step-position" data-step-position>4</span><span>Rollenzuweisungen, Rollenrechte und direkte Grants erfassen</span></li>
+    <li data-step="abgleich" tabindex="-1"><span class="step-position" data-step-position>5</span><span>Jeden Ist-Eintrag mit Aufgabe und Soll vergleichen</span></li>
+  </ol>
+  <div class="sequence-actions"><button class="lbtn primary" type="button" data-sequence-check>Reihenfolge prüfen</button><button class="lbtn" type="button" data-sequence-reset>Zurücksetzen</button></div>
+  <p class="practice-feedback" data-sequence-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s4" tabindex="-1"><span class="num" aria-hidden="true">4</span>Sonderrechte und unklare Aufgaben</h2>
+<p>Ein <strong>Sonderrecht</strong> ist nicht schon deshalb korrekt, weil es irgendwann beantragt wurde. Für einen über das Standardprofil hinausgehenden Zugriff verlangt BSI ORP.4.A2 zusätzliche Begründung und Prüfung. Im Review gehören Zweck, betroffene Ressource, benötigte Aktion und aktueller Bedarf zur Entscheidung. Fehlt eine dieser Grundlagen, wird der Sachverhalt zur Klärung gegeben. Ist der Bedarf entfallen, ist der Grant zu entziehen. Ebenso muss ein zu breites <strong>Rollenprofil</strong> korrigiert werden: Ein einzelner Kontoentzug beseitigt dessen Rechte nicht für andere Rollenträger. Die konkrete technische Umsetzung hängt von Anwendung, Gruppen und Zugriffspfad ab.</p>
+<section class="quiz" data-quiz="rollen-rezert-ausnahme-praxis" data-correct="2">
+  <h3>Ein direktes Leserecht auf ein Sonderarchiv steht bei Ben im Ist-Bestand. Die Fachabteilung nennt keinen aktuellen Arbeitsauftrag, der Zugriff wurde früher aber einmal genehmigt. Was ist die passende Reviewentscheidung?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Die regelmäßige Prüfung vergleicht Rechte mit aktuellen Aufgaben. Eine historische Genehmigung belegt diesen Abgleich nicht."><span class="m">A</span> Den Grant ohne Prüfung bestätigen, weil eine einmalige Genehmigung dauerhaft gilt.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Eine zusätzliche Rollenzuweisung verdeckt den direkten Eintrag nicht und kann weitere, unbegründete Rechte erzeugen."><span class="m">B</span> Ben zur Rolle `Prüfteam` hinzufügen, damit der direkte Grant bei der nächsten Prüfung nicht mehr sichtbar ist.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Richtig. Eine frühere Genehmigung ersetzt keinen aktuellen Bedarf. Wenn der Bedarf nicht belegt wird, bleibt das Sonderrecht nicht bestehen."><span class="m">C</span> Den aktuellen Bedarf klären; ohne fortbestehende Aufgabe den Direktgrant entziehen und die Entscheidung samt Umsetzung nachhalten.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><aside class="callout"><span class="lbl">undefined</span><p>undefined</p></aside><h2 class="sec" id="s5" tabindex="-1"><span class="num" aria-hidden="true">5</span>Aus dem Gedächtnis abrufen</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="rollen-rezert-karte-pfad" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Über welche zwei Zuordnungen erhält eine Person im reinen RBAC-Modell ein Recht?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Berechtigungen werden einer Rolle zugeordnet; die Person wird dieser Rolle zugeordnet. Im reinen RBAC gibt es keinen direkten Benutzergrant als normalen Rechteweg.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="rollen-rezert-karte-direkt" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum reicht eine Liste der Rollenmitgliedschaften in einem gemischten System nicht für den Review?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Direkte Grants am einzelnen Konto können außerhalb der Rollen bestehen bleiben. Sie müssen gesondert erfasst und gegen die aktuelle Aufgabe geprüft werden.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="rollen-rezert-karte-profil" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was muss außer der Zuordnung Person zu Rolle überprüft werden?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Auch die Rechte innerhalb der Rolle müssen noch zu den Aufgaben der Rollenträger passen. Ein überbreites Rollenprofil kann mehrere Personen betreffen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="rollen-rezert-karte-soll" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Womit vergleichst du einen vorhandenen Berechtigungseintrag bei der Rezertifizierung?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Mit der aktuellen Aufgabe, dem freigegebenen Rechteprofil und den Sicherheitsanforderungen; danach werden Behalten, Entziehen oder Klären begründet.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="rollen-rezert-karte-wirkung" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Warum genügt der dokumentierte Entzugsbeschluss allein nicht?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Der Beschluss ändert das System noch nicht. Die technische Entfernung und der verbleibende erforderliche Zugriff müssen geprüft und dokumentiert werden.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „Rollenpfad“:</span><button type="button" data-card-id="rollen-rezert-karte-pfad" data-card-rate="known">gewusst</button><button type="button" data-card-id="rollen-rezert-karte-pfad" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="rollen-rezert-karte-pfad"></span></div>
+<div class="card-rating"><span>Karte „Direktgrant“:</span><button type="button" data-card-id="rollen-rezert-karte-direkt" data-card-rate="known">gewusst</button><button type="button" data-card-id="rollen-rezert-karte-direkt" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="rollen-rezert-karte-direkt"></span></div>
+<div class="card-rating"><span>Karte „Rollenprofil“:</span><button type="button" data-card-id="rollen-rezert-karte-profil" data-card-rate="known">gewusst</button><button type="button" data-card-id="rollen-rezert-karte-profil" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="rollen-rezert-karte-profil"></span></div>
+<div class="card-rating"><span>Karte „Soll-Ist“:</span><button type="button" data-card-id="rollen-rezert-karte-soll" data-card-rate="known">gewusst</button><button type="button" data-card-id="rollen-rezert-karte-soll" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="rollen-rezert-karte-soll"></span></div>
+<div class="card-rating"><span>Karte „Wirksamkeit“:</span><button type="button" data-card-id="rollen-rezert-karte-wirkung" data-card-rate="known">gewusst</button><button type="button" data-card-id="rollen-rezert-karte-wirkung" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="rollen-rezert-karte-wirkung"></span></div><section class="recall-practice" data-recall="rollen-rezert-freier-abruf" data-min-length="180" aria-labelledby="rollen-rezert-freier-abruf-title">
+  <div class="recall-prompt"><h3 id="rollen-rezert-freier-abruf-title">Einen Review ohne Vorlage erklären</h3><p>Erkläre einem neuen Mitglied des IT-Betriebs aus dem Gedächtnis, wie du bei Lea Rollenrechte und einen direkten Grant unterscheidest. Beschreibe die Prüfung von Ist, aktuellem Soll, Rollenzuweisung und Rollenprofil; nenne die drei Entscheidungen und warum nach einem Entzug der tatsächliche Zugriff kontrolliert werden muss.</p></div>
+  <label class="sr-only" for="rollen-rezert-freier-abruf-answer">Deine Erklärung der Berechtigungsprüfung</label>
+  <textarea id="rollen-rezert-freier-abruf-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong>
+  <p>Lea erhält das Leserecht auf Prüfprotokolle über die Rolle Prüfteam: Das Recht gehört zum Rollenprofil, Lea ist der Rolle zugeordnet. Das Archivrecht steht dagegen direkt am Konto und wäre im reinen RBAC kein normaler Rollenpfad. Für den Review erfasse ich alle Rollenzuweisungen, die Rechte der Rollen und individuelle Grants. Das Soll leite ich aus Leas aktuellen Aufgaben und genehmigten Profilen ab. Prüfteam passt und bleibt; Einsatzplanung und der alte Archivgrant haben keinen aktuellen Auftrag und sollen entzogen werden. Ist ein Sonderbedarf unklar, lasse ich ihn klären. Ich prüfe außerdem, ob Prüfteam selbst nur nötige Rechte enthält. Nach Freigabe und technischer Umsetzung kontrolliere ich mit dem betroffenen Zugriffspfad, ob Altzugriffe weg und nötige Rechte vorhanden sind, und halte Ergebnis und Begründung fest.</p></div>
+</section><h2 class="sec" id="s6" tabindex="-1"><span class="num" aria-hidden="true">6</span>Lernziel-Check: neue Fälle</h2>
+<section class="quiz" data-quiz="rollen-rezert-pfad-gate" data-correct="1" data-required-objective="rollenweg-und-direktrecht">
+  <h3>Bei einer fiktiven Druckerei gehört `Rechnung lesen` zur Rolle `Buchhaltung`. Armin und Dina haben diese Rolle. Nur Armin besitzt zusätzlich einen direkten Grant `Preisarchiv lesen`. Die Buchhaltung soll künftig `Rechnung ändern` erhalten. Welche Aussage trennt die Vergabewege korrekt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Ein einzelner Direktgrant ändert weder die Rechtezuordnung der Rolle noch die Rollenzuweisung von Dina."><span class="m">A</span> Das neue Änderungsrecht betrifft nur Armin, weil sein direkter Archivgrant alle Rechte der Rolle auf ihn umleitet.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Richtig. Rollenrechte gelten für zugewiesene Rollenträger; ein individueller Grant gehört nicht automatisch zur Rolle und wird durch ihre Änderung nicht mitverwaltet."><span class="m">B</span> Eine fachlich freigegebene Änderung am Rollenprofil kann Armin und Dina betreffen; Armins direkter Archivgrant bleibt ein gesonderter Benutzer-Eintrag und muss separat geprüft werden.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die Rolle bündelt Rechte für mehrere passende Personen. Ein individueller Grant an Armin ist eine eigene Zuordnung."><span class="m">C</span> Die Rolle ist nur ein anderer Name für Armins Konto; deshalb sind Rolle und Benutzergrant identisch.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="rollen-rezert-profil-gate" data-correct="2" data-required-objective="rollenprofil-pruefen">
+  <h3>In einer fiktiven Stadtbibliothek dürfen vier Personen der Rolle `Medienprüfung` Medienberichte lesen. Das Rollenprofil enthält zusätzlich `Medienberichte löschen`, obwohl keine dieser Personen löschen muss. Wie wird der Überhang sachgerecht behandelt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Die anderen drei behalten dieselbe Rolle und damit das zu breite Rollenprofil. Die Ursache liegt in der Rolle, nicht nur in einer Mitgliedschaft."><span class="m">A</span> Nur einer Person die Rolle entziehen; dann verschwindet das Löschrecht automatisch auch bei den drei anderen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Zusätzliche Einzelrechte beseitigen das unnötige Löschrecht nicht. Sie erschweren vielmehr die Übersicht über den Rechtebestand."><span class="m">B</span> Allen vier zusätzlich ein direktes Leserecht geben und das Rollenprofil unverändert lassen.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Richtig. Der Überhang liegt im Profil selbst und kann alle vier Personen betreffen. Ein nur personenbezogener Entzug würde den Profilfehler für andere nicht beheben."><span class="m">C</span> Das Löschrecht im gemeinsamen Rollenprofil nach fachlicher Prüfung entfernen und danach die Rechte aller vier Rollenträger kontrollieren; das benötigte Leserecht beibehalten.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="quiz" data-quiz="rollen-rezert-review-gate" data-correct="0" data-required-objective="rechte-rezertifizieren">
+  <h3>Im fiktiven Lager prüft Sana jetzt ausschließlich Bestandsberichte. Im Ist hat sie die passende Rolle `Bestandsprüfung`, noch die alte Rolle `Warenausgabe` mit Buchungsrecht und ein direktes Leserecht auf ein abgeschlossenes Sonderprojekt. Zudem enthält `Bestandsprüfung` für alle Rollenträger ein unbegründetes Löschrecht. Welche Reviewentscheidung ist vollständig?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Richtig. Die Prüfung umfasst Personen-Rollen-Zuordnung, Inhalt der Rolle und individuellen Grant. Ein Beschluss allein ändert die technischen Rechte noch nicht."><span class="m">A</span> Bestandsprüfung als benötigte Rolle behalten, ihr unbegründetes Löschrecht im Rollenprofil prüfen und entfernen lassen, alte Warenausgabe und den unnötigen Direktgrant entziehen; Umsetzung und wirksame Rechte kontrollieren und dokumentieren.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die alte Rollenzuweisung ist nur einer von drei Prüfgegenständen. Rechte in einer anderen Rolle und direkte Grants bleiben gesondert bestehen."><span class="m">B</span> Nur Warenausgabe entfernen; damit verschwinden auch das Löschrecht aus Bestandsprüfung und der direkte Projektgrant.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Gerade die aktuelle Aufgabe und die Sicherheitsanforderungen sind der Maßstab. Ein bestehender Eintrag ist kein Nachweis fortbestehender Notwendigkeit."><span class="m">C</span> Alle Ist-Rechte erneut unterschreiben, weil sie bereits eingerichtet sind; die aktuelle Aufgabe ist für eine Rezertifizierung unerheblich.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s7" tabindex="-1"><span class="num" aria-hidden="true">7</span>Quellen und Grenzen</h2>
+<p>Primärquellen: <a href="https://csrc.nist.gov/Projects/Role-Based-Access-Control/faqs">NIST CSRC RBAC-FAQ</a> für den Pfad Person–Rolle–Recht und die Abgrenzung direkter Benutzerrechte; <a href="https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final">NIST SP 800-53 Rev. 5, AC-2(j) und AC-6(7)</a> für organisationsdefinierte Prüfintervalle und den Review von Rollenrechten; <a href="https://www.bsi.bund.de/SharedDocs/Downloads/DE/BSI/Grundschutz/IT-GS-Kompendium_Einzel_PDFs_2023/02_ORP_Organisation_und_Personal/ORP_4_Identitaets_und_Berechtigungsmanagement_Editon_2023.pdf?__blob=publicationFile&amp;v=3">BSI ORP.4, Edition 2023</a>, besonders A2, A3 und A16, für erforderliche Rechte, regelmäßige Prüfung und Standard-Rechteprofile. Die BSI-Fundstellen wurden über den offiziellen Suchindex abgeglichen; direkter PDF-Abruf war nicht möglich. Alle Nordhafen-Fälle, Zahlen, Prüfschritte, Übungen und SVG-Diagramme sind eigene Lehrbeispiele. Die Quellen legen für diesen Lehrfall weder einen festen Rezertifizierungszeitraum noch eine konkrete Produktoberfläche fest. Die Einheit bleibt bis zur menschlichen Fach- und Verständlichkeitsprüfung CURATED_DRAFT.</p>
+
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-7"><span class="d">zurück zu</span><span class="t">Berechtigungskonzepte</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Berechtigungskonzepte</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 3 Pflichtchecks bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Pflichtchecks.</div>
+      <a class="next-check" data-next-check hidden>Nächsten offenen Pflichtcheck bearbeiten</a>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Diagnose: Woher stammt der Zugriff?</a></li>
+<li><a href="#s2" data-t="s2">Rollenprofil und Einzelgrant auseinanderhalten</a></li>
+<li><a href="#s3" data-t="s3">Was Rezertifizierung hier prüft</a></li>
+<li><a href="#s4" data-t="s4">Sonderrechte und unklare Aufgaben</a></li>
+<li><a href="#s5" data-t="s5">Aus dem Gedächtnis abrufen</a></li>
+<li><a href="#s6" data-t="s6">Lernziel-Check: neue Fälle</a></li>
+<li><a href="#s7" data-t="s7">Quellen und Grenzen</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false" aria-describedby="learning-action-reason">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-7">Zur Themengruppe</a>
+  <span class="action-reason" id="learning-action-reason" data-action-reason>Pflichtchecks bearbeiten und anmelden, um Fortschritt zu speichern.</span>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

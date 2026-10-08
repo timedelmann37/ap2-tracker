@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Nutzkapazität, aktive Laufwerke und Hot-Spare unterscheiden; Plattenzahl nach Kapazität und gewichteter I/O-Last ableiten.">
+<title>RAID-Kapazität und IOPS zusammen rechnen – AP2 Vorbereitung</title>
+<script src="/assets/ap2-theme.js?v=3.9.4"></script>
+<script src="/assets/ap2-navigation.js?v=3.9.4" defer></script>
+<script src="/assets/ap2-progress-merge.js?v=3.10.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.114.0/dist/umd/supabase.js" defer></script>
+<script src="/assets/ap2-learning.js?v=3.10.1" defer></script>
+<link rel="preload" href="/assets/fonts/InterDisplay-Semibold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/ap2-reference-ui.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-learning.css?v=3.10.2">
+<link rel="stylesheet" href="/assets/ap2-space.css?v=aurora-trails-2">
+<script defer src="/assets/ap2-space.js?v=aurora-trails-1"></script>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+<body class="area-page area-ga1 learning-page" data-topic-id="raid-kapazitaet-plattenanzahl-iops-rechnen" data-progress-id="ga1-11__3" data-content-revision="2026-10-03.1" data-content-status="CURATED_DRAFT">
+<a class="learning-skip" href="#main-content">Zum Lerninhalt</a>
+<div id="rp"></div>
+
+<nav class="topnav" aria-label="Hauptnavigation">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="/"><span class="brand-mark" aria-hidden="true"><img src="/assets/ap2-checkpoint.svg" width="24" height="24" alt=""></span>AP2 Vorbereitung</a>
+    <div class="topnav-links">
+      <a class="topnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg>Übersicht</a>
+      <div class="topnav-dropdown" id="navThemenWrap">
+        <button type="button" class="topnav-link topnav-dropbtn" id="navThemenBtn" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5"/></svg>Bereiche <span class="care" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+        <div class="topnav-dropmenu" id="navThemenMenu" hidden>
+          <a href="/konzeption-administration/">Konzeption &amp; Administration</a>
+          <a href="/netzwerke/">Netzwerke</a>
+          <a href="/sowi/">WiSo</a>
+        </div>
+      </div>
+      <a class="topnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+      <span class="topnav-disabled" title="Geplant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M15.5 4.5V8H19M8.5 12h7M8.5 15.5h5"/></svg>Nachschlagewerk <span class="soon">bald</span></span>
+    </div>
+    <div class="topnav-right">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Darstellung wechseln"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17Z" fill="currentColor" stroke="none"/></svg><span id="themeLabel">Darstellung</span></button>
+    </div>
+  </div>
+</nav>
+
+<nav class="bottomnav" aria-label="Bereichsnavigation">
+  <a class="bottomnav-link" href="/uebersicht/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>Übersicht</a>
+  <a class="bottomnav-link" href="/konzeption-administration/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>GA1</a>
+  <a class="bottomnav-link" href="/netzwerke/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4m0 0-5 6m5-6 5 6"/></svg>GA2</a>
+  <a class="bottomnav-link" href="/sowi/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/></svg>WiSo</a>
+  <a class="bottomnav-link active" href="/lernpfad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>Lernen</a>
+</nav>
+
+<div class="crumbbar">
+  <div class="crumbbar-inner">
+    <a href="/uebersicht/">Übersicht</a><span class="sep">›</span>
+    <a href="/konzeption-administration/">Konzeption &amp; Administration</a><span class="sep">›</span>
+    <a href="/konzeption-administration/#ga1-11">Rechnen und Prüfungstechnik</a><span class="sep">›</span>
+    <span class="here">RAID-Kapazität und IOPS zusammen rechnen</span>
+  </div>
+</div>
+
+<div class="layout">
+  <main id="main-content" tabindex="-1">
+    <article>
+      <span class="eyebrow">GA1 · Kernthema</span>
+      <h1 class="title">RAID-Kapazität und IOPS zusammen rechnen</h1>
+      <div class="meta">
+        <span class="pill rel">Prüfungsrelevanz: hoch</span>
+        <span class="pill">≈ 35 Min.</span>
+        <span class="pill" data-topic-status>noch offen</span>
+        <span class="pill">Entwurf · menschliche Freigabe ausstehend</span>
+      </div>
+      <div class="rule"></div>
+      <details class="learning-overview" id="lesson-overview">
+        <summary>Inhalt und Lernstand <small data-current-section>Abschnitt auswählen</small></summary>
+        <div class="overview-body">
+          <div class="mastery-box" data-mastery-box>
+            <div class="mastery-count" data-mastery-count>0 von 4 Pflichtchecks bestanden</div>
+            <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+            <p class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Pflichtchecks.</p>
+            <p class="mastery-note" data-action-reason>Lesen und üben ist ohne Konto möglich.</p>
+            <a class="next-check" href="/?konto=anmelden" data-learning-signin>Anmelden und Fortschritt speichern</a>
+            <a class="next-check" data-next-check hidden>Nächsten offenen Pflichtcheck bearbeiten</a>
+          </div>
+          <nav aria-label="Lernabschnitte"><ul class="toc" id="toc-mobile"><li><a href="#s1" data-t="s1">Diagnose: Reserve ist kein Nutzlaufwerk</a></li>
+<li><a href="#s2" data-t="s2">Kapazitätsmodell festlegen</a></li>
+<li><a href="#s3" data-t="s3">Benötigte Laufwerke: nach oben, nicht kaufmännisch</a></li>
+<li><a href="#s4" data-t="s4">Write Penalty zählt Arbeit, nicht Sekunden</a></li>
+<li><a href="#s5" data-t="s5">Beide Grenzen zusammenführen</a></li>
+<li><a href="#s6" data-t="s6">Abruftraining</a></li></ul></nav>
+        </div>
+      </details>
+      <p>Die fiktive Firma Talwerk plant einen gesunden RAID-6-Verbund für mindestens 19 TB vor Dateisystem und Betriebsreserve. Gleiche Laufwerke haben je 4 TB und im vorgegebenen Lastprofil je 160 Backend-IOPS. Die Anwendung benötigt 600 IOPS, davon 75 % Lesen und 25 % kleine zufällige Updates. Ein separater Hot-Spare ist vorgesehen. Du prüfst zuerst Kapazität, dann I/O-Budget. Alle Zahlen sind eigene Modellwerte, keine Hardwaremessungen.</p>
+<section class="learning-goals" aria-labelledby="raid-kapazitaet-plattenanzahl-iops-rechnen-goals">
+  <h2 id="raid-kapazitaet-plattenanzahl-iops-rechnen-goals">Nach dieser Einheit kannst du …</h2>
+  <ul>
+    <li>RAID-Nutzkapazität ohne Hot-Spare berechnen</li>
+    <li>Mindestanzahl aktiver Laufwerke aufrunden</li>
+    <li>Backend-IOPS mit Lese-/Schreibanteil berechnen</li>
+    <li>Kapazitäts- und I/O-Grenze getrennt prüfen</li>
+  </ul>
+</section><h2 class="sec" id="s1" tabindex="-1"><span class="num" aria-hidden="true">1</span>Diagnose: Reserve ist kein Nutzlaufwerk</h2>
+<section class="quiz" data-quiz="raidcalc-diagnose" data-correct="1">
+  <h3>Acht physische Laufwerke, davon eines als separater Hot-Spare: Mit welcher Anzahl rechnest du die normale RAID-6-Kapazität?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Ein separater Hot-Spare ist im gesunden Verbund kein aktives Mitglied."><span class="m">A</span> Mit acht; ein Hot-Spare speichert immer Nutzdaten.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Die Reserve zählt nicht zur normalen Nutzkapazität."><span class="m">B</span> Mit sieben aktiven Laufwerken.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Die RAID-Stufe gibt nicht die Laufwerksanzahl vor."><span class="m">C</span> Mit sechs; RAID 6 bedeutet sechs Laufwerke.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><h2 class="sec" id="s2" tabindex="-1"><span class="num" aria-hidden="true">2</span>Kapazitätsmodell festlegen</h2>
+<p>Hier sind <strong>n die aktiven Laufwerke</strong>, C die gleiche Laufwerksgröße und U die rechnerische Nutzkapazität. Ein separater Hot-Spare steht außerhalb von n. Die Werte sind dezimale TB, vor Dateisystem, Controller-Metadaten und zusätzlicher Betriebsreserve.</p>
+<div class="twrap"><table class="knowledge-table">
+<thead>
+<tr>
+<th>Vereinbartes Layout</th>
+<th>Rechnerische Nutzkapazität</th>
+<th>Mindestzahl im klassischen Modell</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>RAID 0, gleiche Laufwerke</td>
+<td>n × C</td>
+<td>2</td>
+</tr>
+<tr>
+<td>RAID 1, Spiegel aller Mitglieder</td>
+<td>C</td>
+<td>2</td>
+</tr>
+<tr>
+<td>RAID 5</td>
+<td>(n − 1) × C</td>
+<td>3</td>
+</tr>
+<tr>
+<td>RAID 6</td>
+<td>(n − 2) × C</td>
+<td>4</td>
+</tr>
+<tr>
+<td>RAID 10, Zweifach-Spiegelpaare</td>
+<td>n ÷ 2 × C</td>
+<td>4, gerade Anzahl</td>
+</tr>
+</tbody></table></div>
+<p>Bei ungleichen Größen und speziellen Layouts ist die konkrete Implementierung zu prüfen. RAID 10 meint hier ausdrücklich klassische Spiegelpaare; Linux-md erlaubt auch andere Kopien-/Verteilungsmodelle. RAID 5/6 verteilen Parität: Der Abzug beschreibt Kapazitätsanteile, nicht dedizierte Paritätsplatten. RAID ist weiterhin kein Backup. Grundlagen: <a href="/lernen/raid/">RAID-Auswahl</a>.</p>
+<div class="math-display" role="group" aria-label="Nutzkapazität RAID sechs ist Anzahl aktiver Laufwerke minus zwei mal Laufwerksgröße"><math display="block" aria-label="Nutzkapazität RAID sechs ist Anzahl aktiver Laufwerke minus zwei mal Laufwerksgröße"><mrow><mi>U</mi><mo>=</mo><mo>(</mo><mi>n</mi><mo>−</mo><mn>2</mn><mo>)</mo><mo>·</mo><mi>C</mi></mrow></math><div class="math-legend"><span>U = Kapazität vor weiteren Abzügen</span><span>n = aktive Laufwerke ohne separaten Spare</span><span>C = gleiche Laufwerksgröße</span></div></div><section class="numeric-practice transfer-number" data-numeric-practice="raidcalc-kapazitaet" data-required-objective="kapazitaet" data-expected="20" data-tolerance="0.000001" data-correct-feedback="(7 − 2) × 4 = 20 TB. Der separate Spare vergrößert U nicht." data-wrong-feedback="Nur sieben Laufwerke sind aktiv. Für RAID 6 zwei Kapazitätsanteile abziehen.">
+  <h3>Berechne das Ergebnis</h3>
+  <p>Sieben aktive Laufwerke zu je 4 TB im RAID 6; ein weiterer separater Hot-Spare. Nutzkapazität vor Zusatzabzügen in TB?</p>
+  <label for="raidcalc-kapazitaet-answer">Ergebnis in TB</label>
+  <div class="answer-row"><input id="raidcalc-kapazitaet-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Zahl ohne Einheit eingeben"><button type="button" class="lbtn primary" data-numeric-check>Antwort prüfen</button></div>  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s3" tabindex="-1"><span class="num" aria-hidden="true">3</span>Benötigte Laufwerke: nach oben, nicht kaufmännisch</h2>
+<p><strong>Talwerk-Fall:</strong> Mindestens 19 TB bei 4 TB je Laufwerk. 19 ÷ 4 = 4,75 Nutzanteile; diese werden auf fünf aufgerundet. RAID 6 benötigt zwei weitere Anteile: <strong>sieben aktive Laufwerke</strong>. Kontrolle: (7 − 2) × 4 = 20 TB; sechs aktive ergäben nur 16 TB. Mit separatem Hot-Spare sind es zunächst acht physische Laufwerke.</p>
+<p>Für RAID 5 gilt entsprechend aufrunden(U/C) + 1 und mindestens drei. Für klassische RAID-10-Spiegelpaare gilt 2 × aufrunden(U/C), mindestens vier; so bleibt die Anzahl gerade. Für RAID 1 schafft eine zusätzliche Spiegelkopie keine zusätzliche Nutzkapazität. Alle Regeln gelten im vereinbarten Layout, nicht als universelle Controller-Konfiguration.</p>
+<div class="math-display" role="group" aria-label="Mindestzahl aktiver RAID sechs Laufwerke ist das Maximum aus vier und aufgerundeter Zielkapazität durch Laufwerksgröße plus zwei"><math display="block" aria-label="Mindestzahl aktiver RAID sechs Laufwerke ist das Maximum aus vier und aufgerundeter Zielkapazität durch Laufwerksgröße plus zwei"><mrow><msub><mi>n</mi><mtext>min</mtext></msub><mo>=</mo><mi>max</mi><mo>(</mo><mn>4</mn><mo>,</mo><mo>⌈</mo><mfrac><mi>U</mi><mi>C</mi></mfrac><mo>⌉</mo><mo>+</mo><mn>2</mn><mo>)</mo></mrow></math><div class="math-legend"><span>⌈x⌉ = immer zur nächsten ganzen Zahl aufrunden</span><span>Mindestanzahl und Spare anschließend prüfen</span></div></div><figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: Kapazität bestimmt die erste Grenze">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="542" viewBox="0 0 960 542" role="img" aria-labelledby="diagram-kapazitaet-title diagram-kapazitaet-desc">
+  <title id="diagram-kapazitaet-title">Kapazität bestimmt die erste Grenze</title>
+  <desc id="diagram-kapazitaet-desc">19 TB durch 4 TB aufrunden und zwei RAID-6-Anteile addieren ergibt sieben aktive Laufwerke; ein Spare kommt separat dazu.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">Kapazität bestimmt die erste Grenze</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Anforderung</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Mindestens 19 TB, je Laufwerk 4 TB</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Aktive RAID-6-Laufwerke</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Aufrunden: 19 ÷ 4, danach + 2 → 7</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Nutzkapazität prüfen</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">(7 − 2) × 4 TB = 20 TB</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Hot-Spare separat</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">7 aktive + 1 Reserve = 8 physische</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Kapazitätsbedarf und physische Beschaffung sind verschiedene Größen.</figcaption>
+</figure><section class="numeric-practice transfer-number" data-numeric-practice="raidcalc-anzahl" data-required-objective="anzahl" data-expected="7" data-tolerance="0.000001" data-correct-feedback="25 ÷ 6 = 4,166…; aufrunden auf 5 und 2 addieren: 7 aktive. Kontrolle: 30 TB." data-wrong-feedback="Nicht auf vier abrunden. Erst erforderliche Nutzanteile aufrunden, dann zwei Paritätsanteile ergänzen.">
+  <h3>Berechne das Ergebnis</h3>
+  <p>Eigenes neues Ziel: mindestens 25 TB, gleiche 6-TB-Laufwerke, RAID 6, keine Reserve im Ziel. Wie viele aktive Laufwerke mindestens?</p>
+  <label for="raidcalc-anzahl-answer">Aktive Laufwerke</label>
+  <div class="answer-row"><input id="raidcalc-anzahl-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Zahl ohne Einheit eingeben"><button type="button" class="lbtn primary" data-numeric-check>Antwort prüfen</button></div>  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s4" tabindex="-1"><span class="num" aria-hidden="true">4</span>Write Penalty zählt Arbeit, nicht Sekunden</h2>
+<p>Im vereinfachten Modell kleiner zufälliger Updates zählt ein Read einen Backend-I/O. Schreiben zählt mit <strong>P</strong>: RAID 0 P=1, Zweifach-Spiegelung RAID 1/10 P=2, RAID 5 Read-Modify-Write P=4, RAID 6 Read-Modify-Write P=6. Diese Faktoren sind kein universeller Geschwindigkeits- oder Latenzfaktor. Cache, Full-Stripe-Writes und reale Controller ändern die Arbeit.</p>
+<p><strong>Eigene Lastrechnung:</strong> 600 Anwendungs-IOPS, 75 % Reads und 25 % Writes ergeben 450 Reads und 150 Writes. Im RAID-6-Modell: 450 + 150 × 6 = <strong>1 350 Backend-IOPS</strong>. Nicht alle Aufträge werden mit sechs multipliziert. Vertiefung: <a href="/lernen/write-penalty-raid-level-auswirkung-auf-iops/">Write Penalty</a>.</p>
+<div class="math-display" role="group" aria-label="Host-IOPS-Budget ist aktive Laufwerkszahl mal Einzel-IOPS geteilt durch Leseanteil plus Schreibanteil mal Write Penalty"><math display="block" aria-label="Host-IOPS-Budget ist aktive Laufwerkszahl mal Einzel-IOPS geteilt durch Leseanteil plus Schreibanteil mal Write Penalty"><mrow><msub><mi>I</mi><mtext>host</mtext></msub><mo>=</mo><mfrac><mrow><mi>n</mi><mo>·</mo><msub><mi>I</mi><mtext>disk</mtext></msub></mrow><mrow><mi>r</mi><mo>+</mo><mi>w</mi><mo>·</mo><mi>P</mi></mrow></mfrac></mrow></math><div class="math-legend"><span>r + w = 1; beispielsweise 0,75 + 0,25</span><span>Idisk = gegebenes Backend-Budget je aktivem Laufwerk</span><span>P gilt nur für Writes; gesundes, gleichmäßig belastetes Modell</span></div></div><section class="numeric-practice transfer-number" data-numeric-practice="raidcalc-iops" data-required-objective="iops" data-expected="1350" data-tolerance="0.000001" data-correct-feedback="450 Reads + 150 × 6 Writes = 1 350 Backend-IOPS." data-wrong-feedback="Berechne 600 × 0,75 + 600 × 0,25 × 6. Nur Writes tragen P=6.">
+  <h3>Berechne das Ergebnis</h3>
+  <p>Talwerk benötigt 600 Host-IOPS: 75 % Reads und 25 % Writes, RAID-6-Modell P=6. Benötigte Backend-IOPS?</p>
+  <label for="raidcalc-iops-answer">Backend-IOPS</label>
+  <div class="answer-row"><input id="raidcalc-iops-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Zahl ohne Einheit eingeben"><button type="button" class="lbtn primary" data-numeric-check>Antwort prüfen</button></div>  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p>
+</section><h2 class="sec" id="s5" tabindex="-1"><span class="num" aria-hidden="true">5</span>Beide Grenzen zusammenführen</h2>
+<p>Acht aktive Laufwerke mit je 160 Backend-IOPS liefern modellhaft 1 280 Backend-IOPS. Der gewichtete Faktor ist 0,75 + 0,25 × 6 = 2,25. Damit sind 1 280 ÷ 2,25 ≈ <strong>568,89 Host-IOPS</strong> möglich: weniger als geforderte 600.</p>
+<p>Für das I/O-Budget: 1 350 ÷ 160 = 8,4375, aufgerundet <strong>neun aktive Laufwerke</strong>. Kapazität verlangt sieben, I/O neun. Der größere Bedarf ist maßgeblich: neun aktive plus ein separater Spare = <strong>zehn physische Laufwerke</strong>. RAID-6-Modellkapazität: (9 − 2) × 4 = 28 TB. Das Budget von 1 440 Backend-IOPS übertrifft 1 350 nur knapp; eine gesonderte Betriebsreserve ist damit nicht nachgewiesen.</p>
+<p>Das ist eine Rechenlösung, keine Beschaffungsfreigabe. Slot-/Controllergrenzen, reale Lastprofile, Blockgröße, Queue Depth, Latenzziel, Cachezustand, Rebuild und Betriebsreserve müssen separat geprüft werden. Der Standby-Spare liefert im gesunden Verbund kein reguläres I/O-Budget.</p>
+<figure class="learning-figure learning-figure-inline">
+  <div class="learning-diagram-scroll" tabindex="0" role="group" aria-label="Diagramm: IOPS ergeben eine zweite Grenze">
+    <span class="diagram-scroll-hint" aria-hidden="true">Grafik seitlich verschieben</span>
+    <svg class="learning-diagram diagram-flow" xmlns="http://www.w3.org/2000/svg" width="960" height="542" viewBox="0 0 960 542" role="img" aria-labelledby="diagram-iops-title diagram-iops-desc">
+  <title id="diagram-iops-title">IOPS ergeben eine zweite Grenze</title>
+  <desc id="diagram-iops-desc">600 Host-IOPS erzeugen 1350 Backend-IOPS; neun aktive Laufwerke werden benötigt. Plus Spare ergibt zehn physische Laufwerke.</desc>
+  <rect class="diagram-canvas" width="100%" height="100%" rx="20" fill="var(--diagram-canvas, #17121f)"/>
+  <text class="diagram-title" x="42" y="48" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="42" dy="0">IOPS ergeben eine zweite Grenze</tspan></text>
+  <g><rect class="diagram-row" x="150" y="80" width="660" height="72" rx="14" fill="var(--diagram-key, #342c40)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="109" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Anwendung</tspan></text><text x="178" y="136" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">600 IOPS: 450 Reads + 150 Writes</tspan></text><path d="M480 148v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 170 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="188" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="217" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Backend-Arbeit</tspan></text><text x="178" y="244" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">450 + 150 × 6 = 1 350 IOPS</tspan></text><path d="M480 256v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 278 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="296" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="325" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Aktive Anzahl</tspan></text><text x="178" y="352" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">1 350 ÷ 160 aufrunden → 9</tspan></text><path d="M480 364v30" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/><path d="m470 386 10 10 10-10" fill="none" stroke="var(--diagram-line, #b997ff)" stroke-width="3"/></g><g><rect class="diagram-row" x="150" y="404" width="660" height="72" rx="14" fill="var(--diagram-surface, #241e2e)" stroke="var(--diagram-border, #5f526e)"/><text x="178" y="433" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="21" font-weight="700" fill="var(--diagram-text, #f1f0ec)"><tspan x="178" dy="0">Beide Grenzen</tspan></text><text x="178" y="460" text-anchor="start" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="500" fill="var(--diagram-muted, #c8c1d2)"><tspan x="178" dy="0">Maximalwert 9 aktive + 1 Spare = 10</tspan></text></g>
+</svg>
+  </div>
+  <figcaption>Der größere aktive Bedarf entscheidet; Spare und reale Reserven bleiben getrennt.</figcaption>
+</figure><section class="numeric-practice transfer-number" data-numeric-practice="raidcalc-budget" data-expected="9" data-tolerance="0.000001" data-correct-feedback="1 350 ÷ 160 = 8,4375; aufgerundet 9. Acht reichen im Modell nicht." data-wrong-feedback="Teile Backend-Bedarf durch das Einzelbudget und runde immer nach oben.">
+  <h3>Berechne das Ergebnis</h3>
+  <p>Bei 1 350 benötigten Backend-IOPS und vorgegebenen 160 IOPS je aktivem Laufwerk: mindestens wie viele aktive Laufwerke, nur nach diesem Budget?</p>
+  <label for="raidcalc-budget-answer">Aktive Laufwerke</label>
+  <div class="answer-row"><input id="raidcalc-budget-answer" data-numeric-input type="text" inputmode="decimal" autocomplete="off" placeholder="Zahl ohne Einheit eingeben"><button type="button" class="lbtn" data-numeric-check>Antwort prüfen</button></div>  <p class="practice-feedback" data-numeric-feedback aria-live="polite" hidden></p>
+</section><section class="quiz" data-quiz="raidcalc-grenzen" data-correct="0" data-required-objective="grenzen">
+  <h3>Neun aktive Laufwerke erfüllen beide Talwerk-Rechenbedingungen. Was folgt?</h3>
+  <button class="opt" type="button" data-answer="0" data-rationale="Rechnerisches Budget ist kein Mess- oder Betriebsnachweis."><span class="m">A</span> Das Modell erfüllt Kapazität und I/O; reale Reserve, Latenz und Rebuild separat prüfen.</button>
+  <button class="opt" type="button" data-answer="1" data-rationale="Der separate Spare ist kein aktives Nutzlaufwerk."><span class="m">B</span> Der Spare liefert im gesunden Verbund zusätzlich 160 reguläre IOPS.</button>
+  <button class="opt" type="button" data-answer="2" data-rationale="Das Modell schließt diese Betriebszustände ausdrücklich nicht ein."><span class="m">C</span> Die Formel garantiert 600 IOPS bei jeder Last und beim Rebuild.</button>
+  <div class="fb" data-feedback hidden><span data-selected-feedback></span> <button type="button" class="retry" data-quiz-reset>Erneut versuchen</button></div>
+</section><section class="recall-practice" data-recall="raidcalc-transfer" data-min-length="140" aria-labelledby="raidcalc-transfer-title">
+  <div class="recall-prompt"><h3 id="raidcalc-transfer-title">Abruf aus dem Kopf</h3><p>Schreibe Talwerk eine kurze Rechennotiz: Kapazitätsbedarf, I/O-Bedarf, gewählte aktive Zahl, separater Spare und Grenzen der Aussage. Warum genügt die erste Kapazitätsrechnung nicht?</p></div>
+  <label class="sr-only" for="raidcalc-transfer-answer">Deine freie Antwort</label>
+  <textarea id="raidcalc-transfer-answer" data-recall-input rows="4" placeholder="Deine Antwort …"></textarea>
+  <div class="recall-actions"><span data-recall-count>0 Zeichen notiert</span><button class="lbtn" type="button" data-recall-reveal>Muster vergleichen</button></div>
+  <div class="recall-model" data-recall-model hidden><strong>Muster:</strong>
+  <p>19 TB bei 4 TB je Platte brauchen im RAID 6 mindestens sieben aktive Laufwerke. 600 Host-IOPS mit 75 % Lesen und 25 % Schreiben erzeugen bei P=6 insgesamt 1350 Backend-IOPS. Bei 160 IOPS pro Laufwerk sind mindestens neun aktive nötig. Ich nehme den größeren Bedarf; plus separater Spare ergeben sich zehn physische Laufwerke und rechnerisch 28 TB. Die knappe I/O-Reserve ersetzt keine Messung, kein Latenzziel und keine Rebuild-/Betriebsreserve.</p></div>
+</section><h2 class="sec" id="s6" tabindex="-1"><span class="num" aria-hidden="true">6</span>Abruftraining</h2>
+<div class="flashcard-grid">
+  <button class="flashcard" type="button" data-flashcard="spare" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was zählt n?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Aktive RAID-Mitglieder, nicht den separaten Hot-Spare.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="aufrunden" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Wie wird eine Mindestanzahl gerundet?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Immer nach oben; danach Layout- und Mindestzahl prüfen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="writes" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Worauf wirkt Write Penalty?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Auf die Schreibaufträge im vereinbarten Modell, nicht auf alle IOPS.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="bedarf" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Welche aktive Anzahl entscheidet?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Die größere aus Kapazitäts- und I/O-Bedarf; weitere Anforderungen separat prüfen.</span></span></button>
+  <button class="flashcard" type="button" data-flashcard="messung" aria-pressed="false"><span class="face front"><span class="k">Frage</span><strong>Was fehlt einer Formel als Leistungsnachweis?</strong><small>Erst erinnern, dann umdrehen</small></span><span class="face back" aria-hidden="true"><span class="k">Antwort</span><span>Repräsentative Messung samt Latenzziel, Betriebszustand und Reserve.</span></span></button>
+</div>
+<div class="card-rating"><span>Karte „RAID-Rechnen“:</span><button type="button" data-card-id="spare" data-card-rate="known">gewusst</button><button type="button" data-card-id="spare" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="spare"></span></div>
+<div class="card-rating"><span>Karte „RAID-Rechnen“:</span><button type="button" data-card-id="aufrunden" data-card-rate="known">gewusst</button><button type="button" data-card-id="aufrunden" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="aufrunden"></span></div>
+<div class="card-rating"><span>Karte „RAID-Rechnen“:</span><button type="button" data-card-id="writes" data-card-rate="known">gewusst</button><button type="button" data-card-id="writes" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="writes"></span></div>
+<div class="card-rating"><span>Karte „RAID-Rechnen“:</span><button type="button" data-card-id="bedarf" data-card-rate="known">gewusst</button><button type="button" data-card-id="bedarf" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="bedarf"></span></div>
+<div class="card-rating"><span>Karte „RAID-Rechnen“:</span><button type="button" data-card-id="messung" data-card-rate="known">gewusst</button><button type="button" data-card-id="messung" data-card-rate="unsure">unsicher</button><span class="card-review-status" data-card-review-status="messung"></span></div>
+      <div class="pager">
+        <a href="/konzeption-administration/#ga1-11"><span class="d">zurück zu</span><span class="t">Rechnen und Prüfungstechnik</span></a>
+        <a href="/lernpfad/" class="next"><span class="d">alle Inhalte</span><span class="t">Lernen</span></a>
+      </div>
+    </article>
+  </main>
+
+  <aside class="rail" aria-label="Seitenübersicht">
+    <div class="done-box">
+      <div class="n">Rechnen und Prüfungstechnik</div>
+      <div class="s" data-rail-status>Dieses Kernthema ist offen</div>
+    </div>
+    <div class="mastery-box" data-mastery-box>
+      <div class="lbl">Lernziel-Check</div>
+      <div class="mastery-count" data-mastery-count>0 von 4 Pflichtchecks bestanden</div>
+      <div class="mastery-track" aria-hidden="true"><span data-mastery-bar></span></div>
+      <div class="mastery-note" data-mastery-note>Bearbeite die gekennzeichneten Pflichtchecks.</div>
+      <a class="next-check" data-next-check hidden>Nächsten offenen Pflichtcheck bearbeiten</a>
+    </div>
+    <div class="lbl">Auf dieser Seite</div>
+    <ul class="toc" id="toc"><li><a href="#s1" data-t="s1">Diagnose: Reserve ist kein Nutzlaufwerk</a></li>
+<li><a href="#s2" data-t="s2">Kapazitätsmodell festlegen</a></li>
+<li><a href="#s3" data-t="s3">Benötigte Laufwerke: nach oben, nicht kaufmännisch</a></li>
+<li><a href="#s4" data-t="s4">Write Penalty zählt Arbeit, nicht Sekunden</a></li>
+<li><a href="#s5" data-t="s5">Beide Grenzen zusammenführen</a></li>
+<li><a href="#s6" data-t="s6">Abruftraining</a></li></ul>
+  </aside>
+</div>
+
+<div class="actionbar" aria-label="Lernfortschritt">
+  <button class="lbtn primary" id="mark-done" type="button" aria-pressed="false" aria-describedby="learning-action-reason">Als gelernt markieren</button>
+  <button class="lbtn mark" id="mark-rep" type="button" aria-pressed="false">Zur Wiederholung</button>
+  <a class="lbtn" href="/konzeption-administration/#ga1-11">Zur Themengruppe</a>
+  <span class="action-reason" id="learning-action-reason" data-action-reason>Pflichtchecks bearbeiten und anmelden, um Fortschritt zu speichern.</span>
+  <span class="save-note" id="learning-save" role="status" aria-live="polite"></span>
+</div>
+</body>
+</html>

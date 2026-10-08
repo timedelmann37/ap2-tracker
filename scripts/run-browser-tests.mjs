@@ -30,7 +30,9 @@ const server = createServer(async (request, response) => {
       const needle = '<script src="/assets/ap2-learning.js';
       if (!html.includes(needle)) throw new Error('Lernseite ohne Runtime');
       response.writeHead(200, { 'content-type': contentTypes['.html'] });
-      response.end(html.replace(needle, signedInFixture + needle));
+      // A deferred remote SDK would execute after the inline fixture and overwrite it.
+      const fixtureHtml = html.replace(/<script src="https:\/\/cdn\.jsdelivr\.net\/npm\/@supabase\/supabase-js[^"]+"[^>]*><\/script>/, '');
+      response.end(fixtureHtml.replace(needle, signedInFixture + needle));
       return;
     }
     response.writeHead(200, { 'content-type': contentTypes[path.extname(target).toLowerCase()] || 'application/octet-stream' });
@@ -45,13 +47,15 @@ await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 const address = server.address();
 process.env.AP2_BASE_URL = `http://127.0.0.1:${address.port}`;
 
-try {
+async function runFullSuite() {
+  await import('./verify-learning-runtime-regressions.mjs');
   await import('./verify-navigation.mjs');
   await import('./verify-theme-persistence.mjs');
   await import('./verify-learning-browser.mjs');
   // Legacy lesson checks exercise progress as a signed-in learner. The dedicated
   // learning/account checks above cover anonymous and real auth transitions.
   useSignedInFixture = true;
+  await import('./verify-learning-tablet-browser.mjs');
   await import('./verify-n8-browser.mjs');
   await import('./verify-n9-browser.mjs');
   await import('./verify-source-cases-browser.mjs');
@@ -125,8 +129,748 @@ try {
   await import('./verify-gruppenrichtlinien-browser.mjs');
   await import('./verify-patch-browser.mjs');
   await import('./verify-client-deployment-browser.mjs');
+  await import('./verify-linux-admin-browser.mjs');
+  await import('./verify-access-principles-browser.mjs');
+  await import('./verify-access-models-browser.mjs');
+  await import('./verify-ntfs-share-browser.mjs');
+  await import('./verify-agdlp-browser.mjs');
+  await import('./verify-permission-matrix-browser.mjs');
+  await import('./verify-role-review-browser.mjs');
+  await import('./verify-personnel-lifecycle-browser.mjs');
+  await import('./verify-privileged-access-browser.mjs');
+  await import('./verify-access-logging-browser.mjs');
+  await import('./verify-security-goals-browser.mjs');
+  await import('./verify-protection-needs-browser.mjs');
+  await import('./verify-threat-patterns-browser.mjs');
+  await import('./verify-tom-browser.mjs');
+  await import('./verify-system-network-browser.mjs');
+  await import('./verify-zero-trust-browser.mjs');
+  await import('./verify-cryptography-browser.mjs');
+  await import('./verify-pki-browser.mjs');
+  await import('./verify-tls13-browser.mjs');
+  await import('./verify-storage-encryption-browser.mjs');
+  await import('./verify-authentication-browser.mjs');
+  await import('./verify-gdpr-browser.mjs');
+  await import('./verify-incident-response-browser.mjs');
+  await import('./verify-compromise-symptoms-browser.mjs');
+  await import('./verify-bcm-browser.mjs');
+  await import('./verify-ki-browser.mjs');
+  await import('./verify-monitoring-browser.mjs');
+  await import('./verify-capacity-trends-browser.mjs');
+  await import('./verify-central-logging-browser.mjs');
+  await import('./verify-itil-basics-browser.mjs');
+  await import('./verify-change-process-browser.mjs');
+  await import('./verify-ticket-priority-browser.mjs');
+  await import('./verify-operations-docs-browser.mjs');
+  await import('./verify-rollout-planning-browser.mjs');
+  await import('./verify-handover-training-browser.mjs');
+  await import('./verify-workplace-access-browser.mjs');
+  await import('./verify-storage-units-browser.mjs');
+  await import('./verify-transfer-duration-browser.mjs');
+  await import('./verify-raid-calculation-browser.mjs');
+  await import('./verify-backup-calculation-browser.mjs');
+  await import('./verify-availability-calculation-browser.mjs');
+  await import('./verify-mtbf-mttr-browser.mjs');
+  await import('./verify-ups-calculation-browser.mjs');
+  await import('./verify-heat-calculation-browser.mjs');
+  await import('./verify-economics-calculation-browser.mjs');
+  await import('./verify-licensing-calculation-browser.mjs');
+  await import('./verify-ip-calculation-browser.mjs');
+  await import('./verify-number-bases-browser.mjs');
+  await import('./verify-proportion-percent-browser.mjs');
+  await import('./verify-examination-operators-browser.mjs');
+  await import('./verify-answer-scope-browser.mjs');
+  await import('./verify-partial-answer-browser.mjs');
+  await import('./verify-answer-structure-browser.mjs');
+  await import('./verify-exam-rehearsal-browser.mjs');
+  await import('./verify-error-analysis-browser.mjs');
+  await import('./verify-error-notes-browser.mjs');
+  await import('./verify-retrieval-cards-browser.mjs');
+  await import('./verify-oral-practice-browser.mjs');
+  await import('./verify-final-week-browser.mjs');
+  await import('./verify-project-basics-browser.mjs');
+  await import('./verify-requirements-risk-browser.mjs');
+  await import('./verify-netzplan-browser.mjs');
+  await import('./verify-gantt-browser.mjs');
+  await import('./verify-models-browser.mjs');
+  await import('./verify-quality-management-browser.mjs');
+  await import('./verify-testing-browser.mjs');
+  await import('./verify-industry-ai-browser.mjs');
+  await import('./verify-training-contract-browser.mjs');
+  await import('./verify-invalid-clauses-browser.mjs');
+  await import('./verify-training-duties-browser.mjs');
+  await import('./verify-trainer-qualification-browser.mjs');
+  await import('./verify-interview-questions-browser.mjs');
+  await import('./verify-dual-system-browser.mjs');
+  await import('./verify-youth-protection-browser.mjs');
+  await import('./verify-adult-trainees-browser.mjs');
+  await import('./verify-training-plan-browser.mjs');
+  await import('./verify-exam-paths-browser.mjs');
+  await import('./verify-training-end-browser.mjs');
+  await import('./verify-continuing-education-browser.mjs');
+  await import('./verify-learning-mobility-browser.mjs');
+  await import('./verify-employment-certificate-browser.mjs');
+  await import('./verify-employment-contract-browser.mjs');
+  await import('./verify-labour-law-types-browser.mjs');
+  await import('./verify-leiharbeit-browser.mjs');
+  await import('./verify-working-time-browser.mjs');
+  await import('./verify-urlaub-browser.mjs');
+  await import('./verify-entgeltfortzahlung-browser.mjs');
+  await import('./verify-family-protection-browser.mjs');
+  await import('./verify-agg-browser.mjs');
+  await import('./verify-arbeitsschutz-browser.mjs');
+  await import('./verify-arbeitsschutzrolle-browser.mjs');
+  await import('./verify-ergonomie-browser.mjs');
+  await import('./verify-bgm-browser.mjs');
+  await import('./verify-kuendigungsarten-browser.mjs');
+  await import('./verify-kuendigungsgruende-browser.mjs');
+  await import('./verify-kuendigungsfristen-browser.mjs');
+  await import('./verify-kuendigungsschutz-browser.mjs');
+  await import('./verify-besonderer-kuendigungsschutz-browser.mjs');
+  await import('./verify-aufhebungsvertrag-browser.mjs');
+  await import('./verify-abmahnung-browser.mjs');
+  await import('./verify-betriebsuebergang-browser.mjs');
+  await import('./verify-betriebsrat-browser.mjs');
+  await import('./verify-beteiligungsrechte-browser.mjs');
+  await import('./verify-mitbestimmung-it-browser.mjs');
+  await import('./verify-betriebsvereinbarung-browser.mjs');
+  await import('./verify-jav-browser.mjs');
+  await import('./verify-tarifgrundlagen-browser.mjs');
+  await import('./verify-tarifinhalte-browser.mjs');
+  await import('./verify-arbeitskampf-browser.mjs');
+  await import('./verify-rechtsquellen-browser.mjs');
+  await import('./verify-sozialzweige-browser.mjs');
+  await import('./verify-sozialtraeger-browser.mjs');
+  await import('./verify-arbeitsunfall-browser.mjs');
+  await import('./verify-rechtsweg-browser.mjs');
+  await import('./verify-versicherungsgrenzen-browser.mjs');
+  await import('./verify-sozialprinzipien-browser.mjs');
+  await import('./verify-krankenvergleich-browser.mjs');
+  await import('./verify-kv-beitrag-browser.mjs');
+  await import('./verify-rentenarten-browser.mjs');
+  await import('./verify-entgelt-browser.mjs');
+  await import('./verify-einkommen-browser.mjs');
+  await import('./verify-steuer-browser.mjs');
+  await import('./verify-entgeltformen-browser.mjs');
+  await import('./verify-vermoegensbildung-browser.mjs');
+  await import('./verify-betrieb-browser.mjs');
+  await import('./verify-arbeitsteilung-browser.mjs');
+  await import('./verify-oekonomie-browser.mjs');
+  await import('./verify-rentabilitaet-browser.mjs');
+  await import('./verify-rechtsformen-browser.mjs');
+  await import('./verify-kg-browser.mjs');
+  await import('./verify-unternehmensverbindungen-browser.mjs');
+  await import('./verify-register-browser.mjs');
+  await import('./verify-organisation-browser.mjs');
+  await import('./verify-epk-browser.mjs');
+  await import('./verify-fuehrung-browser.mjs');
+  await import('./verify-kennzahlen-browser.mjs');
+  await import('./verify-kreislauf-browser.mjs');
+  await import('./verify-markt-browser.mjs');
+  await import('./verify-macro-browser.mjs');
+  await import('./verify-ordnung-browser.mjs');
+  await import('./verify-global-browser.mjs');
+  await import('./verify-rechtsgeschaefte-browser.mjs');
+  await import('./verify-vertragsarten-browser.mjs');
+  await import('./verify-kaufvertrag-browser.mjs');
+  await import('./verify-kaufstoerungen-browser.mjs');
+  await import('./verify-gewaehrleistung-browser.mjs');
+  await import('./verify-mahnverfahren-browser.mjs');
+  await import('./verify-zahlung-kredit-browser.mjs');
+  await import('./verify-widerruf-browser.mjs');
+  await import('./verify-wiso-dsgvo-browser.mjs');
+  await import('./verify-betroffenenrechte-browser.mjs');
+  await import('./verify-datenschutz-organisation-browser.mjs');
+  await import('./verify-beschaeftigtendatenschutz-browser.mjs');
+  await import('./verify-urheber-lizenz-browser.mjs');
+  await import('./verify-staatsprinzipien-browser.mjs');
+  await import('./verify-diversity-browser.mjs');
+  await import('./verify-umweltschutz-browser.mjs');
+  await import('./verify-verursacherprinzip-browser.mjs');
+  await import('./verify-emissionsschutz-browser.mjs');
+  await import('./verify-blauer-engel-browser.mjs');
+  await import('./verify-nachhaltigkeit-green-it-browser.mjs');
+  await import('./verify-qualitaetsmanagement-pdca-browser.mjs');
+  await import('./verify-betriebsschutz-browser.mjs');
+  await import('./verify-brandfall-browser.mjs');
+  await import('./verify-kennzeichen-browser.mjs');
+  await import('./verify-feuerloescher-browser.mjs');
+  await import('./verify-pruefung-erstdurchgang-browser.mjs');
+  await import('./verify-ausschlussverfahren-browser.mjs');
+  await import('./verify-signalwoerter-browser.mjs');
+  await import('./verify-unsichere-antworten-browser.mjs');
+  await import('./verify-antwortbogen-browser.mjs');
+  await import('./verify-zeitbudget-browser.mjs');
+  await import('./verify-simulationen-browser.mjs');
+  await import('./verify-learning-quality-browser.mjs');
+  await import('./verify-maternity-periods-browser.mjs');
+  await import('./verify-contract-types-browser.mjs');
+  await import('./verify-answer-pattern-browser.mjs');
+  await import('./verify-scenario-link-browser.mjs');
+  await import('./verify-working-units-browser.mjs');
+  await import('./verify-time-budget-browser.mjs');
+  await import('./verify-task-overview-browser.mjs');
   useSignedInFixture = false;
   await import('./verify-space-browser.mjs');
+}
+
+try {
+  if (process.env.AP2_BROWSER_ONLY === 'learning-tablet') {
+    useSignedInFixture = true;
+    await import('./verify-learning-tablet-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'learning-refinement') {
+    await import('./verify-learning-runtime-regressions.mjs');
+    useSignedInFixture = false;
+    await import('./verify-learning-browser.mjs');
+    useSignedInFixture = true;
+    await import('./verify-simulationen-browser.mjs');
+    await import('./verify-learning-quality-browser.mjs');
+    await import('./verify-rechtsformen-browser.mjs');
+    await import('./verify-zeitbudget-browser.mjs');
+    await import('./verify-linux-admin-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'simulationen') {
+    useSignedInFixture = true;
+    await import('./verify-simulationen-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'zeitbudget') {
+    useSignedInFixture = true;
+    await import('./verify-zeitbudget-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'antwortbogen') {
+    useSignedInFixture = true;
+    await import('./verify-antwortbogen-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'unsichere-antworten') {
+    useSignedInFixture = true;
+    await import('./verify-unsichere-antworten-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'signalwoerter') {
+    useSignedInFixture = true;
+    await import('./verify-signalwoerter-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'ausschlussverfahren') {
+    useSignedInFixture = true;
+    await import('./verify-ausschlussverfahren-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'pruefung-erstdurchgang') {
+    useSignedInFixture = true;
+    await import('./verify-pruefung-erstdurchgang-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'feuerloescher') {
+    useSignedInFixture = true;
+    await import('./verify-feuerloescher-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'kennzeichen') {
+    useSignedInFixture = true;
+    await import('./verify-kennzeichen-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'brandfall') {
+    useSignedInFixture = true;
+    await import('./verify-brandfall-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'betriebsschutz') {
+    useSignedInFixture = true;
+    await import('./verify-betriebsschutz-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'qualitaetsmanagement-pdca') {
+    useSignedInFixture = true;
+    await import('./verify-qualitaetsmanagement-pdca-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'nachhaltigkeit-green-it') {
+    useSignedInFixture = true;
+    await import('./verify-nachhaltigkeit-green-it-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'blauer-engel') {
+    useSignedInFixture = true;
+    await import('./verify-blauer-engel-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'emissionsschutz') {
+    useSignedInFixture = true;
+    await import('./verify-emissionsschutz-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'verursacherprinzip') {
+    useSignedInFixture = true;
+    await import('./verify-verursacherprinzip-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'umweltschutz') {
+    useSignedInFixture = true;
+    await import('./verify-umweltschutz-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'diversity') {
+    useSignedInFixture = true;
+    await import('./verify-diversity-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'staatsprinzipien') {
+    useSignedInFixture = true;
+    await import('./verify-staatsprinzipien-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'urheber-lizenz') {
+    useSignedInFixture = true;
+    await import('./verify-urheber-lizenz-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'beschaeftigtendatenschutz') {
+    useSignedInFixture = true;
+    await import('./verify-beschaeftigtendatenschutz-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'datenschutz-organisation') {
+    useSignedInFixture = true;
+    await import('./verify-datenschutz-organisation-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'betroffenenrechte') {
+    useSignedInFixture = true;
+    await import('./verify-betroffenenrechte-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'wiso-dsgvo') {
+    useSignedInFixture = true;
+    await import('./verify-wiso-dsgvo-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'widerruf') {
+    useSignedInFixture = true;
+    await import('./verify-widerruf-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'zahlung-kredit') {
+    useSignedInFixture = true;
+    await import('./verify-zahlung-kredit-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'mahnverfahren') {
+    useSignedInFixture = true;
+    await import('./verify-mahnverfahren-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'gewaehrleistung') {
+    useSignedInFixture = true;
+    await import('./verify-gewaehrleistung-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'kaufstoerungen') {
+    useSignedInFixture = true;
+    await import('./verify-kaufstoerungen-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'kaufvertrag') {
+    useSignedInFixture = true;
+    await import('./verify-kaufvertrag-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'vertragsarten') {
+    useSignedInFixture = true;
+    await import('./verify-vertragsarten-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'rechtsgeschaefte') {
+    useSignedInFixture = true;
+    await import('./verify-rechtsgeschaefte-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'global') {
+    useSignedInFixture = true;
+    await import('./verify-global-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'ordnung') {
+    useSignedInFixture = true;
+    await import('./verify-ordnung-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'macro') {
+    useSignedInFixture = true;
+    await import('./verify-macro-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'markt') {
+    useSignedInFixture = true;
+    await import('./verify-markt-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'kreislauf') {
+    useSignedInFixture = true;
+    await import('./verify-kreislauf-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'kennzahlen') {
+    useSignedInFixture = true;
+    await import('./verify-kennzahlen-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'fuehrung') {
+    useSignedInFixture = true;
+    await import('./verify-fuehrung-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'epk') {
+    useSignedInFixture = true;
+    await import('./verify-epk-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'organisation') {
+    useSignedInFixture = true;
+    await import('./verify-organisation-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'register') {
+    useSignedInFixture = true;
+    await import('./verify-register-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'unternehmensverbindungen') {
+    useSignedInFixture = true;
+    await import('./verify-unternehmensverbindungen-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'kg') {
+    useSignedInFixture = true;
+    await import('./verify-kg-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'rechtsformen') {
+    useSignedInFixture = true;
+    await import('./verify-rechtsformen-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'rentabilitaet') {
+    useSignedInFixture = true;
+    await import('./verify-rentabilitaet-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'oekonomie') {
+    useSignedInFixture = true;
+    await import('./verify-oekonomie-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'arbeitsteilung') {
+    useSignedInFixture = true;
+    await import('./verify-arbeitsteilung-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'betrieb') {
+    useSignedInFixture = true;
+    await import('./verify-betrieb-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'vermoegensbildung') {
+    useSignedInFixture = true;
+    await import('./verify-vermoegensbildung-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'entgeltformen') {
+    useSignedInFixture = true;
+    await import('./verify-entgeltformen-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'steuer') {
+    useSignedInFixture = true;
+    await import('./verify-steuer-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'einkommen') {
+    useSignedInFixture = true;
+    await import('./verify-einkommen-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'entgelt') {
+    useSignedInFixture = true;
+    await import('./verify-entgelt-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'rentenarten') {
+    useSignedInFixture = true;
+    await import('./verify-rentenarten-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'kv-beitrag') {
+    useSignedInFixture = true;
+    await import('./verify-kv-beitrag-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'krankenvergleich') {
+    useSignedInFixture = true;
+    await import('./verify-krankenvergleich-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'sozialprinzipien') {
+    useSignedInFixture = true;
+    await import('./verify-sozialprinzipien-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'versicherungsgrenzen') {
+    useSignedInFixture = true;
+    await import('./verify-versicherungsgrenzen-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'rechtsweg') {
+    useSignedInFixture = true;
+    await import('./verify-rechtsweg-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'arbeitsunfall') {
+    useSignedInFixture = true;
+    await import('./verify-arbeitsunfall-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'sozialtraeger') {
+    useSignedInFixture = true;
+    await import('./verify-sozialtraeger-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'sozialzweige') {
+    useSignedInFixture = true;
+    await import('./verify-sozialzweige-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'rechtsquellen') {
+    useSignedInFixture = true;
+    await import('./verify-rechtsquellen-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'arbeitskampf') {
+    useSignedInFixture = true;
+    await import('./verify-arbeitskampf-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'tarifinhalte') {
+    useSignedInFixture = true;
+    await import('./verify-tarifinhalte-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'tarifgrundlagen') {
+    useSignedInFixture = true;
+    await import('./verify-tarifgrundlagen-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'jav') {
+    useSignedInFixture = true;
+    await import('./verify-jav-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'betriebsvereinbarung') {
+    useSignedInFixture = true;
+    await import('./verify-betriebsvereinbarung-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'mitbestimmung-it') {
+    useSignedInFixture = true;
+    await import('./verify-mitbestimmung-it-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'beteiligungsrechte') {
+    useSignedInFixture = true;
+    await import('./verify-beteiligungsrechte-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'betriebsrat') {
+    useSignedInFixture = true;
+    await import('./verify-betriebsrat-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'linux-admin') {
+    useSignedInFixture = true;
+    await import('./verify-linux-admin-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'access-principles') {
+    useSignedInFixture = true;
+    await import('./verify-access-principles-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'access-models') {
+    useSignedInFixture = true;
+    await import('./verify-access-models-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'ntfs-share') {
+    useSignedInFixture = true;
+    await import('./verify-ntfs-share-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'agdlp') {
+    useSignedInFixture = true;
+    await import('./verify-agdlp-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'permission-matrix') {
+    useSignedInFixture = true;
+    await import('./verify-permission-matrix-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'role-review') {
+    useSignedInFixture = true;
+    await import('./verify-role-review-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'personnel-lifecycle') {
+    useSignedInFixture = true;
+    await import('./verify-personnel-lifecycle-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'privileged-access') {
+    useSignedInFixture = true;
+    await import('./verify-privileged-access-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'access-logging') {
+    useSignedInFixture = true;
+    await import('./verify-access-logging-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'security-goals') {
+    useSignedInFixture = true;
+    await import('./verify-security-goals-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'protection-needs') {
+    useSignedInFixture = true;
+    await import('./verify-protection-needs-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'threat-patterns') {
+    useSignedInFixture = true;
+    await import('./verify-threat-patterns-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'tom') {
+    useSignedInFixture = true;
+    await import('./verify-tom-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'system-network') {
+    useSignedInFixture = true;
+    await import('./verify-system-network-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'zero-trust') {
+    useSignedInFixture = true;
+    await import('./verify-zero-trust-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'storage-units') {
+    useSignedInFixture = true;
+    await import('./verify-storage-units-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'transfer-duration') {
+    useSignedInFixture = true;
+    await import('./verify-transfer-duration-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'raid-calculation') {
+    useSignedInFixture = true;
+    await import('./verify-raid-calculation-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'exam-paths') {
+    useSignedInFixture = true;
+    await import('./verify-exam-paths-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'training-end') {
+    useSignedInFixture = true;
+    await import('./verify-training-end-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'continuing-education') {
+    useSignedInFixture = true;
+    await import('./verify-continuing-education-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'learning-mobility') {
+    useSignedInFixture = true;
+    await import('./verify-learning-mobility-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'employment-certificate') {
+    useSignedInFixture = true;
+    await import('./verify-employment-certificate-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'employment-contract') {
+    useSignedInFixture = true;
+    await import('./verify-employment-contract-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'labour-law-types') {
+    useSignedInFixture = true;
+    await import('./verify-labour-law-types-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'leiharbeit') {
+    useSignedInFixture = true;
+    await import('./verify-leiharbeit-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'working-time') {
+    useSignedInFixture = true;
+    await import('./verify-working-time-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'urlaub') {
+    useSignedInFixture = true;
+    await import('./verify-urlaub-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'entgeltfortzahlung') {
+    useSignedInFixture = true;
+    await import('./verify-entgeltfortzahlung-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'family-protection') {
+    useSignedInFixture = true;
+    await import('./verify-family-protection-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'maternity-periods') {
+    useSignedInFixture = true;
+    await import('./verify-maternity-periods-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'betriebsuebergang') {
+    useSignedInFixture = true;
+    await import('./verify-betriebsuebergang-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'abmahnung') {
+    useSignedInFixture = true;
+    await import('./verify-abmahnung-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'aufhebungsvertrag') {
+    useSignedInFixture = true;
+    await import('./verify-aufhebungsvertrag-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'besonderer-kuendigungsschutz') {
+    useSignedInFixture = true;
+    await import('./verify-besonderer-kuendigungsschutz-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'kuendigungsschutz') {
+    useSignedInFixture = true;
+    await import('./verify-kuendigungsschutz-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'kuendigungsfristen') {
+    useSignedInFixture = true;
+    await import('./verify-kuendigungsfristen-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'kuendigungsgruende') {
+    useSignedInFixture = true;
+    await import('./verify-kuendigungsgruende-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'kuendigungsarten') {
+    useSignedInFixture = true;
+    await import('./verify-kuendigungsarten-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'bgm') {
+    useSignedInFixture = true;
+    await import('./verify-bgm-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'ergonomie') {
+    useSignedInFixture = true;
+    await import('./verify-ergonomie-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'arbeitsschutzrolle') {
+    useSignedInFixture = true;
+    await import('./verify-arbeitsschutzrolle-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'arbeitsschutz') {
+    useSignedInFixture = true;
+    await import('./verify-arbeitsschutz-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'agg') {
+    useSignedInFixture = true;
+    await import('./verify-agg-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'contract-types') {
+    useSignedInFixture = true;
+    await import('./verify-contract-types-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'training-plan') {
+    useSignedInFixture = true;
+    await import('./verify-training-plan-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'adult-trainees') {
+    useSignedInFixture = true;
+    await import('./verify-adult-trainees-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'youth-protection') {
+    useSignedInFixture = true;
+    await import('./verify-youth-protection-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'dual-system') {
+    useSignedInFixture = true;
+    await import('./verify-dual-system-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'interview-questions') {
+    useSignedInFixture = true;
+    await import('./verify-interview-questions-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'trainer-qualification') {
+    useSignedInFixture = true;
+    await import('./verify-trainer-qualification-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'training-duties') {
+    useSignedInFixture = true;
+    await import('./verify-training-duties-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'invalid-clauses') {
+    useSignedInFixture = true;
+    await import('./verify-invalid-clauses-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'training-contract') {
+    useSignedInFixture = true;
+    await import('./verify-training-contract-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'industry-ai') {
+    useSignedInFixture = true;
+    await import('./verify-industry-ai-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'testing') {
+    useSignedInFixture = true;
+    await import('./verify-testing-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'quality-management') {
+    useSignedInFixture = true;
+    await import('./verify-quality-management-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'models') {
+    useSignedInFixture = true;
+    await import('./verify-models-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'gantt') {
+    useSignedInFixture = true;
+    await import('./verify-gantt-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'netzplan') {
+    useSignedInFixture = true;
+    await import('./verify-netzplan-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'requirements-risk') {
+    useSignedInFixture = true;
+    await import('./verify-requirements-risk-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'project-basics') {
+    useSignedInFixture = true;
+    await import('./verify-project-basics-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'final-week') {
+    useSignedInFixture = true;
+    await import('./verify-final-week-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'oral-practice') {
+    useSignedInFixture = true;
+    await import('./verify-oral-practice-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'retrieval-cards') {
+    useSignedInFixture = true;
+    await import('./verify-retrieval-cards-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'error-notes') {
+    useSignedInFixture = true;
+    await import('./verify-error-notes-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'error-analysis') {
+    useSignedInFixture = true;
+    await import('./verify-error-analysis-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'exam-rehearsal') {
+    useSignedInFixture = true;
+    await import('./verify-exam-rehearsal-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'answer-structure') {
+    useSignedInFixture = true;
+    await import('./verify-answer-structure-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'partial-answer') {
+    useSignedInFixture = true;
+    await import('./verify-partial-answer-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'task-overview') {
+    useSignedInFixture = true;
+    await import('./verify-task-overview-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'time-budget') {
+    useSignedInFixture = true;
+    await import('./verify-time-budget-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'working-units') {
+    useSignedInFixture = true;
+    await import('./verify-working-units-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'scenario-link') {
+    useSignedInFixture = true;
+    await import('./verify-scenario-link-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'answer-pattern') {
+    useSignedInFixture = true;
+    await import('./verify-answer-pattern-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'answer-scope') {
+    useSignedInFixture = true;
+    await import('./verify-answer-scope-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'examination-operators') {
+    useSignedInFixture = true;
+    await import('./verify-examination-operators-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'proportion-percent') {
+    useSignedInFixture = true;
+    await import('./verify-proportion-percent-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'number-bases') {
+    useSignedInFixture = true;
+    await import('./verify-number-bases-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'ip-calculation') {
+    useSignedInFixture = true;
+    await import('./verify-ip-calculation-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'licensing-calculation') {
+    useSignedInFixture = true;
+    await import('./verify-licensing-calculation-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'economics-calculation') {
+    useSignedInFixture = true;
+    await import('./verify-economics-calculation-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'heat-calculation') {
+    useSignedInFixture = true;
+    await import('./verify-heat-calculation-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'ups-calculation') {
+    useSignedInFixture = true;
+    await import('./verify-ups-calculation-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'mtbf-mttr') {
+    useSignedInFixture = true;
+    await import('./verify-mtbf-mttr-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'availability-calculation') {
+    useSignedInFixture = true;
+    await import('./verify-availability-calculation-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'backup-calculation') {
+    useSignedInFixture = true;
+    await import('./verify-backup-calculation-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'workplace-access') {
+    useSignedInFixture = true;
+    await import('./verify-workplace-access-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'handover-training') {
+    useSignedInFixture = true;
+    await import('./verify-handover-training-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'rollout-planning') {
+    useSignedInFixture = true;
+    await import('./verify-rollout-planning-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'operations-docs') {
+    useSignedInFixture = true;
+    await import('./verify-operations-docs-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'ticket-priority') {
+    useSignedInFixture = true;
+    await import('./verify-ticket-priority-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'change-process') {
+    useSignedInFixture = true;
+    await import('./verify-change-process-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'itil-basics') {
+    useSignedInFixture = true;
+    await import('./verify-itil-basics-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'central-logging') {
+    useSignedInFixture = true;
+    await import('./verify-central-logging-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'capacity-trends') {
+    useSignedInFixture = true;
+    await import('./verify-capacity-trends-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'monitoring') {
+    useSignedInFixture = true;
+    await import('./verify-monitoring-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'ki') {
+    useSignedInFixture = true;
+    await import('./verify-ki-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'bcm') {
+    useSignedInFixture = true;
+    await import('./verify-bcm-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'compromise-symptoms') {
+    useSignedInFixture = true;
+    await import('./verify-compromise-symptoms-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'incident-response') {
+    useSignedInFixture = true;
+    await import('./verify-incident-response-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'gdpr') {
+    useSignedInFixture = true;
+    await import('./verify-gdpr-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'authentication') {
+    useSignedInFixture = true;
+    await import('./verify-authentication-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'storage-encryption') {
+    useSignedInFixture = true;
+    await import('./verify-storage-encryption-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'tls13') {
+    useSignedInFixture = true;
+    await import('./verify-tls13-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'pki') {
+    useSignedInFixture = true;
+    await import('./verify-pki-browser.mjs');
+  } else if (process.env.AP2_BROWSER_ONLY === 'cryptography') {
+    useSignedInFixture = true;
+    await import('./verify-cryptography-browser.mjs');
+  } else {
+    await runFullSuite();
+  }
 } finally {
   await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
 }

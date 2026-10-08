@@ -1,0 +1,351 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "zentrales-logging-syslog-aufbewahrung-datenschutz",
+    "slug": "zentrales-logging-syslog-aufbewahrung-datenschutz",
+    "title": "Zentrales Logging mit Syslog",
+    "description": "Syslog-Meldungen zentral erfassen, einen Ereignisverlauf begrenzt auswerten und Aufbewahrung sowie personenbezogene Einträge zweckbezogen schützen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-10",
+    "groupLabel": "Betrieb, Monitoring und Prozesse",
+    "itemId": "ga1-10__2",
+    "week": "KW 44",
+    "estimatedMinutes": 40,
+    "relevance": "hoch",
+    "sources": [
+      "zlog-rfc5424",
+      "zlog-rfc5425",
+      "zlog-eu-principles"
+    ],
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "transport",
+      "label": "Syslog-Erfassung und Transportnachweis unterscheiden"
+    },
+    {
+      "id": "auswertung",
+      "label": "Ereignisse mit Zeitbezug und Aussagegrenzen auswerten"
+    },
+    {
+      "id": "aufbewahrung",
+      "label": "Zweckbezogene Aufbewahrung und Löschprüfung planen"
+    },
+    {
+      "id": "datenschutz",
+      "label": "Personenbezogene Logeinträge und Zugriffe begrenzen"
+    }
+  ],
+  "intro": "Die fiktive Werkstatt Talbogen sammelt Meldungen eines VPN-Gateways und eines Auftragsservers zentral. Nach mehreren fehlgeschlagenen Anmeldungen soll ein Dienstfehler untersucht werden. Du entwirfst einen überprüfbaren Logweg und einen datensparsamen Auswertungsprozess. Namen, Ereignisse, Regeln und Fristen sind erfunden. Die Übungen senden keine Nachrichten und verändern kein produktives Logging.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "zlog-rfc5424",
+        "sourceLocator": "Sections 1, 3, 6: Nachricht, Originator, Relay, Collector und Header",
+        "use": "Syslog-Format und Rollen vom Speicherprodukt abgrenzen",
+        "reviewStatus": "Relevante Passagen direkt gelesen 03.10.2026"
+      },
+      {
+        "sourceId": "zlog-rfc5425",
+        "sourceLocator": "Sections 4.1, 4.2, 6.3: TLS-Transport, Default-Port, Reliability",
+        "use": "Transport mit Gegenstellenprüfung und Grenzen der Empfangsgewissheit",
+        "reviewStatus": "Relevante Passagen direkt gelesen 03.10.2026"
+      },
+      {
+        "sourceId": "zlog-eu-principles",
+        "sourceLocator": "Overview; Data minimisation; Storage limitation; Integrity and confidentiality",
+        "use": "Zweck, Minimierung, Aufbewahrung und beschränkten Zugriff begründen",
+        "reviewStatus": "Passagen direkt gelesen 03.10.2026"
+      }
+    ],
+    "notes": [
+      "CURATED_DRAFT bis zur menschlichen Freigabe.",
+      "Privater Themenanker europa-integratoren-2026:00038, Zeilen 443–468: Systemverhalten bewerten und Tests dokumentieren; keine Buchaufgaben übernommen.",
+      "Sieben und dreißig Tage sind eigene didaktische Regeln, keine Rechtsauskunft oder allgemeine zulässige Logfrist.",
+      "RFC 5425 wird für Transportmechanik verwendet, nicht als aktuelle Empfehlung alter TLS-Cipher-Suites."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "logweg",
+      "type": "flow",
+      "title": "Vom Ereignis zum Nachweis",
+      "description": "Eigener Testweg für Talbogen.",
+      "items": [
+        {
+          "label": "Quelle",
+          "detail": "Gateway oder Server erzeugt Testereignis"
+        },
+        {
+          "label": "Transport",
+          "detail": "Geschützte Verbindung zur erlaubten Gegenstelle"
+        },
+        {
+          "label": "Collector",
+          "detail": "Eingang, Parser und Speicherung prüfen"
+        },
+        {
+          "label": "Auswertung",
+          "detail": "Testereignis wiederfinden und Lücken überwachen"
+        }
+      ]
+    },
+    {
+      "id": "lebenszyklus",
+      "type": "flow",
+      "title": "Zweckgebundene Logdaten",
+      "description": "Eigener Lebenszyklus personenbezogener Meldungen.",
+      "items": [
+        {
+          "label": "Festlegung",
+          "detail": "Zweck, Datenfelder, Rechte und Frist freigeben"
+        },
+        {
+          "label": "Nutzung",
+          "detail": "Nur erforderliche Ereignisse gezielt auswerten"
+        },
+        {
+          "label": "Prüfung",
+          "detail": "Fristablauf oder begründete Ausnahme bewerten"
+        },
+        {
+          "label": "Abschluss",
+          "detail": "Löschung nachweisen, auch Kopien berücksichtigen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Diagnose: Eine Verbindung ist noch kein gespeichertes Log",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "zlog-diagnose",
+          "question": "Das Gateway zeigt eine aktive TLS-Verbindung zum Collector. Sind seine Meldungen damit nachweislich gespeichert?",
+          "options": [
+            {
+              "text": "Ja, eine offene Verbindung beweist jede gespeicherte Meldung.",
+              "rationale": "Die Verbindung zeigt nicht, ob Parser und Ablage das Testereignis verarbeitet haben.",
+              "correct": false
+            },
+            {
+              "text": "Nein, ein eigenes Testereignis muss am vorgesehenen Ziel wiedergefunden werden.",
+              "rationale": "Erfassung, Verarbeitung und Speicherung brauchen einen Ende-zu-Ende-Nachweis.",
+              "correct": true
+            },
+            {
+              "text": "Nein, die Verbindung beweist einen Angriff.",
+              "rationale": "Dieser Zustand liefert keinen solchen Sicherheitsbefund.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Syslog und ein überprüfbarer Erfassungsweg",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**Syslog** übermittelt Ereignismeldungen. RFC 5424 trennt Nachricht und Transport. Ein Originator erzeugt die Meldung, ein Relay leitet sie weiter, ein Collector sammelt sie. Die Speicherdauer ist nicht durch das Nachrichtenformat festgelegt. Der Header enthält unter anderem Zeitstempel, Host und Anwendung; strukturierte Angaben ergänzen den Meldungstext.\n\nRFC 5425 beschreibt Syslog über TLS mit TCP-Port **6514 als Standardport**. Gegenstellenprüfung gehört zum Schutz des Transportwegs. Der Transport besitzt jedoch keine Bestätigung auf Anwendungsebene, die jede Speicherung garantiert. Eine unterbrochene Verbindung kann die Kenntnis über erfolgreiche Zustellung begrenzen. TLS schützt nicht automatisch die spätere Ablage.\n\n**Talbogens eigener Entwurf:** Gateway und Auftragsserver senden an einen freigegebenen Collector im Managementnetz. Die Administration dokumentiert Quellen, erlaubte Verbindung, Zertifikatsprüfung, Parser, Speicherziel und zuständige Rolle. Es wird kein beliebiges Gerät aus dem Internet als Logquelle angenommen. Die verwendeten Geräte müssen Format und Transport tatsächlich unterstützen; eine Portfreigabe ersetzt diese Prüfung nicht.\n\nEin kontrolliertes Testereignis trägt im Fall eine eindeutige Testkennung. Das Team sucht diese Kennung im vorgesehenen Index und prüft Host, Zeit und Ereignisart. Auch Parserfehler, voller Speicher und ausbleibende Meldungen werden im Test betrachtet. Falls eine Quelle einen lokalen Puffer bietet, wird dessen Verhalten bei Ausfall und Wiederanlauf separat geprüft; die bloße Annahme eines Puffers genügt nicht. Diese Lernübung liefert keine direkt ausführbare produktive Konfiguration."
+        },
+        {
+          "type": "figure",
+          "diagramId": "logweg",
+          "alt": "Quelle führt über geschützten Transport zum Collector und zur geprüften Auswertung.",
+          "caption": "Eigener Ende-zu-Ende-Test: Verbindung, Eingang und Wiederfinden sind getrennte Nachweise."
+        },
+        {
+          "type": "quiz",
+          "id": "zlog-transport",
+          "question": "Welche Abnahme prüft Talbogens geplanten Logweg?",
+          "options": [
+            {
+              "text": "Eindeutiges Testereignis auslösen, korrekt am Speicherziel wiederfinden und Ausfallfälle testen.",
+              "rationale": "Damit werden mehr Stufen als nur eine erreichbare Schnittstelle geprüft.",
+              "correct": true
+            },
+            {
+              "text": "Nur die Firewall-Freigabe bestätigen und die Ablage als erledigt markieren.",
+              "rationale": "Erlaubter Verkehr beweist weder Parserfunktion noch vorhandene Meldungen.",
+              "correct": false
+            },
+            {
+              "text": "Nur einen TLS-Port sehen; das beweist unbegrenzte Aufbewahrung.",
+              "rationale": "Transport und Aufbewahrung sind unterschiedliche Aufgaben.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "transport"
+        }
+      ]
+    },
+    {
+      "title": "Auswertung: Zeitfolge ist nicht automatisch Ursache",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Talbogen untersucht folgende **eigene, vereinfachte Ereignisübersicht**. Zeitangaben sind UTC; Quellzeit und Empfangszeit wurden getrennt gespeichert. Die Kennung K17 ist nur innerhalb dieses erfundenen Falls zugeordnet.\n\n| Quellzeit | Empfangszeit | Quelle | Ereignis |\n|---|---|---|---|\n| 08:02:00 | 08:02:01 | VPN-Gateway | Anmeldung K17 fehlgeschlagen |\n| 08:02:30 | 08:02:31 | VPN-Gateway | Anmeldung K17 fehlgeschlagen |\n| 08:04:00 | 08:04:02 | Auftragsserver | Datenbankverbindung fehlgeschlagen |\n| 08:05:00 | 08:05:01 | VPN-Gateway | Anmeldung K17 erfolgreich |\n\nDie Übersicht zeigt fehlgeschlagene und später erfolgreiche Anmeldung sowie einen Serverfehler. Sie beweist **nicht**, dass K17 die Datenbankstörung verursacht hat. Denkbare Erklärungen für die Anmeldung sind ein Eingabefehler, eine Fehlkonfiguration oder Missbrauch; für die Datenbank sind weitere Befunde nötig.\n\n**Eigener Prüfschritt:** Das Team kontrolliert zuerst Uhrensynchronisation und bekannte Abweichungen, filtert dann ein begründetes Zeitfenster und die betroffenen Systeme. Es korreliert den Datenbankfehler mit Dienstprüfung und Datenbankmeldungen. Erst neue Belege stützen oder widerlegen die Hypothese. Eine verspätet empfangene Meldung muss nicht das zuletzt entstandene Ereignis sein.\n\nEin Filter, der nur „Fehler“ anzeigt, kann die spätere erfolgreiche Anmeldung ausblenden. Eine Häufung ist ein Anlass zur Untersuchung, keine automatische Schuldzuweisung. Fehlt eine Quelle vollständig, werden Erfassungsweg und Lücken geprüft. „Keine Treffer“ heißt nicht zwingend „kein Ereignis“. Für Berichte verwendet Talbogen notwendige, reduzierte Angaben statt unkontrollierter Rohlog-Exporte."
+        },
+        {
+          "type": "quiz",
+          "id": "zlog-auswertung",
+          "question": "Welche Schlussfolgerung trägt die Übersicht allein?",
+          "options": [
+            {
+              "text": "K17 hat nachweislich die Datenbank beschädigt.",
+              "rationale": "Die zeitliche Nähe liefert keinen Ursachen- oder Täterbeweis.",
+              "correct": false
+            },
+            {
+              "text": "Es gibt Anmeldeereignisse und einen Serverfehler; Zeitqualität und weitere Befunde müssen geprüft werden.",
+              "rationale": "Beobachtung und Hypothese bleiben bis zum passenden Nachweis getrennt.",
+              "correct": true
+            },
+            {
+              "text": "Der letzte Empfangszeitpunkt ist immer der letzte Ereigniszeitpunkt.",
+              "rationale": "Verzögerte Zustellung kann die Reihenfolge verändern.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "auswertung"
+        }
+      ]
+    },
+    {
+      "title": "Aufbewahrungsdauer begründen und Löschung prüfen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Personenbezogene Daten erfordern einen festgelegten Zweck und eine rechtmäßige Verarbeitung. Die EU-Kommission erläutert Zweckbindung, Datenminimierung, begrenzte Speicherung und Schutz vor unbefugtem Zugriff. Aufbewahrung wird anhand des Zwecks und einschlägiger Pflichten bewertet, nicht pauschal für alle Logs festgelegt.\n\n**Eigene Planungsregel für die Übung:** Talbogen schlägt für gewöhnliche technische Fehlerlogs sieben Tage, für erforderliche sicherheitsbezogene Anmeldeereignisse dreißig Tage vor. Diese Zahlen sind **keine gesetzliche Vorgabe und keine bestätigte Rechtsfreigabe**. Vor Betrieb müssen Verantwortliche Zweck, Rechtsgrundlage, tatsächlichen Untersuchungsbedarf, Datenfelder und andere Pflichten prüfen. Ein Debugmodus bekommt einen begrenzten Anlass und Abschalttermin statt dauerhaft alles zu protokollieren.\n\nTalbogen definiert im Fall die Frist ab Ereigniszeit. Eine verspätete Meldung erhält nicht ungeprüft eine neue volle Frist ab Empfang. Rotation erstellt beziehungsweise wechselt Logdateien, ist aber allein kein Löschkonzept: alte Archive, Suchindizes, Exporte und Sicherungskopien müssen im abgestimmten Lebenszyklus berücksichtigt werden.\n\n**Eigene Löschprüfung:** Ein Testdatensatz außerhalb der Fallfrist darf nach dem Lauf nicht mehr im aktiven Index oder im dazugehörigen Roharchiv abrufbar sein. Für Kopien und Backups wird der dokumentierte Lebenszyklus geprüft; ein Restore darf abgelaufene Daten nicht unkontrolliert wieder in die laufende Auswertung bringen. Bei einem konkreten Vorfall bewertet die zuständige Rolle eine notwendige Ausnahme, begrenzt den gesicherten Ausschnitt und dokumentiert Anlass, Zugriff und erneuten Prüftermin. Nicht das gesamte Archiv auf unbestimmte Zeit behalten."
+        },
+        {
+          "type": "figure",
+          "diagramId": "lebenszyklus",
+          "alt": "Festlegung des Zwecks führt zur begrenzten Nutzung, Fristprüfung und dokumentierten Löschung.",
+          "caption": "Fristen und Ausnahmen im Fall sind vorgeschlagene Regeln, keine pauschale Rechtsfreigabe."
+        },
+        {
+          "type": "quiz",
+          "id": "zlog-aufbewahrung",
+          "question": "Der Collector rotiert täglich, alte Archive bleiben unbegrenzt abrufbar. Ist Talbogens Sieben-Tage-Regel damit umgesetzt?",
+          "options": [
+            {
+              "text": "Ja, eine neue Datei löscht alle alten Daten automatisch.",
+              "rationale": "Rotation kann alte Dateien bestehen lassen; Löschung muss eigens geprüft werden.",
+              "correct": false
+            },
+            {
+              "text": "Ja, ausreichender Plattenplatz ersetzt jede Aufbewahrungsprüfung.",
+              "rationale": "Freier Speicher bestimmt keinen erforderlichen Verarbeitungszweck.",
+              "correct": false
+            },
+            {
+              "text": "Nein, Ablauf und Löschung müssen auch für Archive, Indizes und Kopien geregelt und geprüft werden.",
+              "rationale": "Eine Frist braucht einen vollständigen, nachgewiesenen Lebenszyklus.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "aufbewahrung"
+        }
+      ]
+    },
+    {
+      "title": "Personenbezug und Zugriff schon beim Entwurf begrenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**Eigene Risikoanalyse:** Talbogens ursprünglicher Entwurf würde Benutzernamen, zuordenbare Quelladressen, vollständige Suchtexte und Anmeldetoken in einem für alle Beschäftigten lesbaren Index sammeln. Schon die konkrete Zuordenbarkeit kann sensible Rückschlüsse auf einzelne Personen ermöglichen. Ein anderer Anzeigename macht den Datensatz nicht automatisch anonym.\n\nDas Team ändert seinen Entwurf: Für den geprüften Fehlerzweck werden Zeit, System, Ereignisart und notwendige technische Kontextfelder verwendet. Token, Passwörter und unnötige Suchinhalte werden nicht protokolliert. Wenn eine Kennung erforderlich bleibt, wird ihr Zugriff begrenzt; eine Zuordnungstabelle wird separat geschützt. Dieser technische Vorschlag ersetzt nicht die fachliche Prüfung des Personenbezugs und der zulässigen Verarbeitung.\n\n**Eigene Rollen:** Betriebsverantwortliche sehen erforderliche technische Fehler, eine benannte Sicherheitsrolle untersucht freigegebene Anmeldeereignisse. Ein allgemeines Teamkonto erhält keinen Rohzugriff. Talbogen prüft erlaubte und verweigerte Suchen sowie Exporte in einer Testumgebung. Auch Administrationszugriffe und Änderungen an Löschregeln benötigen kontrollierte Rechte und einen überprüfbaren Nachweis. Logs werden nicht nebenbei zur Bewertung der Arbeitsleistung zweckentfremdet.\n\n**Abnahme:** Ein Testtoken erscheint weder in Rohablage noch Suchindex oder Export. Die nicht berechtigte Rolle kann keine Anmeldekennungen abrufen. Die berechtigte Rolle findet das freigegebene Ereignis. Das Team protokolliert Prüfergebnis und offene Fragen für die menschliche Freigabe."
+        },
+        {
+          "type": "quiz",
+          "id": "zlog-datenschutz",
+          "question": "Welche Änderung passt zu Talbogens datensparsamem Entwurf?",
+          "options": [
+            {
+              "text": "Token entfernen, unnötige Inhalte vermeiden und erforderliche Kennungen nur zuständigen Rollen zugänglich machen.",
+              "rationale": "Der Entwurf begrenzt Datenfelder und Zugriff statt nur die Anzeige umzubenennen.",
+              "correct": true
+            },
+            {
+              "text": "Den Namen durch K17 ersetzen und alle Rohdaten für alle freigeben.",
+              "rationale": "Eine ersetzte Kennung beseitigt weder jede Zuordenbarkeit noch das Zugriffsrisiko.",
+              "correct": false
+            },
+            {
+              "text": "TLS einschalten und deshalb Passwörter im Index behalten.",
+              "rationale": "Transportschutz rechtfertigt keine unnötigen Geheimnisse in der Ablage.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "datenschutz"
+        },
+        {
+          "type": "recall",
+          "id": "zlog-transfer",
+          "prompt": "Entwirf Talbogens Logweg und Abnahme. Trenne Verbindung von Speicherung, werte die vier Ereignisse ohne Schuldzuweisung aus und beschreibe Zeitqualität, Datenfelder, Rollen, vorgeschlagene Fristen und Löschprüfung.",
+          "minLength": 180,
+          "model": "Ich plane erlaubte Quellen und geschützten Transport, prüfe aber ein eindeutiges Testereignis bis zur korrekt gespeicherten Meldung. Ich kontrolliere Quell- und Empfangszeit sowie Synchronisation. Fehlgeschlagene Anmeldungen und der Datenbankfehler sind Beobachtungen ohne belegte gemeinsame Ursache. Ich ergänze passende Dienst- und Datenbankbefunde. Ich entferne Token und unnötige Inhalte, begrenze Kennungen auf erforderliche Rollen und prüfe unberechtigte Abfragen. Sieben und dreißig Tage sind vorgeschlagene Fallfristen mit menschlicher Zweck- und Rechtsprüfung. Ich prüfe tatsächliche Löschung in Ablage, Index und Kopien sowie begründete, erneut zu prüfende Ausnahmen."
+        }
+      ]
+    },
+    {
+      "title": "Abruftraining",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "id": "zlog-cards",
+          "cards": [
+            {
+              "id": "syslog",
+              "label": "Zentrales Logging",
+              "front": "Ist Syslog schon ein Speicherprodukt?",
+              "back": "Nein. Nachrichtenformat, Transport und eigene Ablageplanung unterscheiden."
+            },
+            {
+              "id": "transport",
+              "label": "Zentrales Logging",
+              "front": "Beweist TLS jede gespeicherte Meldung?",
+              "back": "Nein. Ein Testereignis bis zur Ablage prüfen."
+            },
+            {
+              "id": "zeit",
+              "label": "Zentrales Logging",
+              "front": "Warum Quell- und Empfangszeit trennen?",
+              "back": "Verspätete Zustellung kann die Reihenfolge der Eingänge verändern."
+            },
+            {
+              "id": "ursache",
+              "label": "Zentrales Logging",
+              "front": "Beweist zeitliche Nähe eine Ursache?",
+              "back": "Nein. Hypothese durch zusätzliche passende Befunde prüfen."
+            },
+            {
+              "id": "frist",
+              "label": "Zentrales Logging",
+              "front": "Gelten sieben Tage für jedes Log?",
+              "back": "Nein. Das ist nur eine eigene Fallannahme, die geprüft werden muss."
+            },
+            {
+              "id": "rotation",
+              "label": "Zentrales Logging",
+              "front": "Ist Rotation gleich Löschung?",
+              "back": "Nein. Alte Dateien und weitere Kopien brauchen einen kontrollierten Lebenszyklus."
+            },
+            {
+              "id": "rechte",
+              "label": "Zentrales Logging",
+              "front": "Welche Daten nicht ins Falllog?",
+              "back": "Token, Passwörter und unnötige Inhaltsdaten; erforderliche Felder und Zugriffe begrenzen."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

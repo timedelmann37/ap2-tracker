@@ -1,0 +1,347 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "mtbf-mttr-betriebszeit-wiederherstellung",
+    "slug": "mtbf-mttr-betriebszeit-wiederherstellung",
+    "title": "MTBF und MTTR aus Betriebsdaten rechnen",
+    "description": "Betriebszeiten und Störungsdauern getrennt auswerten, Verfügbarkeit ableiten und Mittelwerte richtig einordnen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-11",
+    "groupLabel": "Rechnen und Prüfungstechnik",
+    "itemId": "ga1-11__6",
+    "week": "parallel",
+    "estimatedMinutes": 30,
+    "relevance": "hoch",
+    "sources": [
+      "mtcalc-aws",
+      "mtcalc-ibm"
+    ],
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "mtbf",
+      "label": "Betriebszeit pro Ausfall berechnen"
+    },
+    {
+      "id": "mttr",
+      "label": "Mittlere vollständige Wiederherstellungsdauer berechnen"
+    },
+    {
+      "id": "anteil",
+      "label": "Verfügbarkeit bei gleicher Zeitbasis ableiten"
+    },
+    {
+      "id": "grenze",
+      "label": "Mittelwert, Einzelfall und RTO unterscheiden"
+    }
+  ],
+  "intro": "Das fiktive Labor Nordsteg wertet vier vollständig beobachtete Betriebs-/Ausfallzyklen eines reparierbaren Messdienstes aus. Alle Zeiten sind Stunden. Betriebsphasen: 240, 180, 300 und 276. Die folgenden Ausfälle dauern bis zur fachlich bestätigten Wiederherstellung 0,5; 1; 1,5 und 1 Stunde. Es gibt keine weiteren Unterbrechungen und keine überlappenden Vorfälle. Eigene Modellzahlen, keine Produktdaten.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "mtcalc-aws",
+        "sourceLocator": "Understanding availability, equations 1–2 and Rule 1",
+        "use": "Betriebs-/Wiederherstellungsmodell und Verhältnis zur Verfügbarkeit",
+        "reviewStatus": "Direkt gelesen 03.10.2026"
+      },
+      {
+        "sourceId": "mtcalc-ibm",
+        "sourceLocator": "What is MTBF?; What is MTTR?; Differences",
+        "use": "Betriebszeit/Ausfälle und Ausfallzeit/Ausfälle; reparierbare Systeme",
+        "reviewStatus": "Direkt gelesen 03.10.2026; eigene Zahlen, keine Lebensdauergarantie übernommen"
+      }
+    ],
+    "notes": [
+      "CURATED_DRAFT bis menschliche Freigabe.",
+      "Privater Themenanker europa-integratoren-2026:00204, Zeilen 2026–2077 direkt gelesen: Verfügbarkeit verbessern. Kein direkter MTBF/MTTR-Formelbeleg in diesem Anker; keine Buchaufgabe übernommen.",
+      "MTTR hier ausdrücklich Wiederherstellung ab Ausfall bis fachlich nutzbarem Dienst einschließlich Erkennung/Warten/Prüfung; keine isolierte aktive Reparaturzeit.",
+      "AWS what-is/mttr zur Definition konsultiert, widersprüchliche Aussage größerer MTTR verbessere Verfügbarkeit nicht übernommen; Formel und IBM bestätigen Gegenteil.",
+      "Bestehende Deep-Space-Refero-Bindung; gemeinsame Widgets, native MathML und editierbare technische SVG."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "zeiten",
+      "type": "flow",
+      "title": "Zeitgrenzen eines eigenen Vorfalls",
+      "description": "Alle Teilzeiten liegen innerhalb derselben Ausfallzeit.",
+      "items": [
+        {
+          "label": "Ausfall beginnt",
+          "detail": "10:00: Dienst nicht fachlich nutzbar"
+        },
+        {
+          "label": "Erkannt",
+          "detail": "10:10: 10 Minuten seit Ausfall"
+        },
+        {
+          "label": "Reparatur fertig",
+          "detail": "10:50: 40 weitere Minuten"
+        },
+        {
+          "label": "Dienst bestätigt",
+          "detail": "11:00: 60 Minuten Gesamtausfall"
+        }
+      ]
+    },
+    {
+      "id": "rechnen",
+      "type": "flow",
+      "title": "Betrieb und Ausfall auswerten",
+      "description": "Gleiche Vorfälle und derselbe Messdienst.",
+      "items": [
+        {
+          "label": "Betriebszeit",
+          "detail": "240 + 180 + 300 + 276 = 996 h"
+        },
+        {
+          "label": "Ausfallzeit",
+          "detail": "0,5 + 1 + 1,5 + 1 = 4 h"
+        },
+        {
+          "label": "Durch vier teilen",
+          "detail": "MTBF = 249 h; MTTR = 1 h"
+        },
+        {
+          "label": "Zeitanteil",
+          "detail": "249 ÷ (249 + 1) = 99,6 %"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Diagnose: Welche Zeit ist gemeint?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "mtcalc-diagnose",
+          "question": "Ein Techniker arbeitet 40 Minuten; der Dienst ist insgesamt 60 Minuten unbrauchbar. Welche Dauer zählt für die hier definierte Wiederherstellung?",
+          "options": [
+            {
+              "text": "60 Minuten ab Ausfall bis fachlich nutzbarem Dienst.",
+              "rationale": "Erkennung und abschließende Prüfung zählen innerhalb der definierten Gesamtdauer.",
+              "correct": true
+            },
+            {
+              "text": "Nur die 40 Minuten aktiver Reparatur.",
+              "rationale": "Aktive Reparatur allein wäre eine anders definierte Kennzahl.",
+              "correct": false
+            },
+            {
+              "text": "100 Minuten, weil beide Angaben addiert werden.",
+              "rationale": "Die 40 Minuten liegen bereits innerhalb der 60 Minuten.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Definition und Zeitgrenzen festhalten",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**MTBF (Mean Time Between Failures)** bezeichnet hier die mittlere störungsfreie Betriebszeit eines reparierbaren Dienstes. **MTTR** ist hier **Mean Time to Recovery**: die mittlere Zeit ab Ausfall bis zur vollständigen fachlichen Wiederherstellung. Literatur nutzt das Kürzel auch für Repair, Respond oder Resolve. Deshalb steht die Messdefinition immer vor der Zahl.\n\nEigener Einzelvorfall: Ausfall 10:00, erkannt 10:10, Reparatur fertig 10:50, Fachprüfung bestanden 11:00. Die Erkennungsphase dauert zehn Minuten, aktive Reparatur hier 40 Minuten und Abschlussprüfung zehn Minuten. **Gesamtausfall: 60 Minuten**, nicht 40 und nicht 100. Eine Erkennungszeit wird nicht nochmals addiert, wenn sie schon enthalten ist. Warten auf Personal oder Ersatzteile zählt ebenfalls, solange der Dienst im definierten Fenster nicht nutzbar ist."
+        },
+        {
+          "type": "figure",
+          "diagramId": "zeiten",
+          "alt": "Von 10 Uhr Ausfall über 10:10 Erkennung und 10:50 Reparaturende bis 11 Uhr fachlicher Wiederherstellung: insgesamt 60 Minuten.",
+          "caption": "Die aktive Reparatur liegt innerhalb der Wiederherstellungszeit."
+        }
+      ]
+    },
+    {
+      "title": "MTBF: Nur Betriebszeiten im Zähler",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Nordstegs vier Betriebsphasen summieren sich zu **996 Stunden**. Die vier Ausfälle bilden den Nenner: **MTBF = 996 ÷ 4 = 249 h**. Nicht die gesamte Beobachtungszeit von 1 000 h einsetzen: Die vier Ausfallstunden gehören nicht zur Betriebszeit.\n\nBei mehreren Geräten würde eine ausdrücklich definierte Flottenkennzahl die Geräte-Betriebsstunden summieren; diese dürfen nicht stillschweigend als Dienst-Betriebszeit benutzt werden. Fehlerereignis, beobachtetes System und Messgrenze müssen zusammenpassen. Bei null beobachteten Ausfällen ist diese Division nicht definiert: Das beweist weder unendliche Lebensdauer noch eine gesicherte MTBF."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "MTBF ist gesamte Betriebszeit U geteilt durch Anzahl Ausfälle n",
+          "mathml": "<math display=\"block\"><mrow><mtext>MTBF</mtext><mo>=</mo><mfrac><mi>U</mi><mi>n</mi></mfrac></mrow></math>",
+          "legend": [
+            "U = Betriebszeit ohne Ausfälle",
+            "n = gezählte Ausfälle; n größer null"
+          ]
+        },
+        {
+          "type": "numeric",
+          "id": "mtcalc-mtbf",
+          "prompt": "996 Stunden Betriebszeit, vier Ausfälle: MTBF in Stunden?",
+          "expected": 249,
+          "tolerance": 0.000001,
+          "label": "Ergebnis ohne Einheit",
+          "placeholder": "Zahl ohne Einheit eingeben",
+          "correctFeedback": "996 ÷ 4 = 249 h. Die 4 h Ausfallzeit werden hier nicht mitgezählt.",
+          "wrongFeedback": "Nur Betriebszeit durch Anzahl Ausfälle teilen, nicht 1000 ÷ 4.",
+          "requiredObjective": "mtbf"
+        }
+      ]
+    },
+    {
+      "title": "MTTR: Vollständige Ausfallzeiten mitteln",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Die Wiederherstellungsdauern sind **0,5; 1; 1,5 und 1 Stunde**. Zusammen 4 h, bei vier abgeschlossenen Vorfällen: **MTTR = 1 h = 60 min**. Bei gemischten Einheiten erst umrechnen, dann summieren.\n\nDer Mittelwert begrenzt keinen Einzelvorfall: Hier dauert einer 90 Minuten. Wenn ein RTO von 75 Minuten für jeden Vorfall gefordert wird, überschreitet dieser Vorfall das Ziel, obwohl MTTR = 60 Minuten beträgt. Ein noch offener Vorfall darf nicht als kurze erfolgreiche Wiederherstellung gewertet werden; offene Fälle und Beobachtungsgrenzen separat ausweisen."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "MTTR ist gesamte Wiederherstellungszeit D geteilt durch Anzahl vollständig wiederhergestellter Vorfälle n",
+          "mathml": "<math display=\"block\"><mrow><mtext>MTTR</mtext><mo>=</mo><mfrac><mi>D</mi><mi>n</mi></mfrac></mrow></math>",
+          "legend": [
+            "D = definierte gesamte Ausfallzeit",
+            "Nur vollständig beobachtete Fälle im eigenen Modell"
+          ]
+        },
+        {
+          "type": "numeric",
+          "id": "mtcalc-mttr",
+          "prompt": "Ausfalldauern 0,5; 1; 1,5; 1 Stunde. MTTR in Minuten?",
+          "expected": 60,
+          "tolerance": 0.000001,
+          "label": "Ergebnis ohne Einheit",
+          "placeholder": "Zahl ohne Einheit eingeben",
+          "correctFeedback": "(0,5 + 1 + 1,5 + 1) ÷ 4 = 1 h = 60 min.",
+          "wrongFeedback": "Zuerst die vier Stundenwerte mitteln, danach mal 60.",
+          "requiredObjective": "mttr"
+        }
+      ]
+    },
+    {
+      "title": "Verfügbarkeit aus konsistenten Größen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Für dieselben vollständigen Zyklen lautet der Zeitanteil **A = MTBF ÷ (MTBF + MTTR)**. Im Fall: 249 ÷ 250 = **0,996 = 99,6 %**. Direkt aus den Summen: 996 ÷ (996 + 4), gleiches Ergebnis. Die Formel setzt zusammenpassende Definitionen und dieselbe Einheit voraus; hier umfasst MTTR die ganze Ausfallzeit. Reine aktive Reparaturzeit würde den Ausfall unterschätzen.\n\nFür ein langfristiges Modell sind die Mittelwerte als repräsentativ anzunehmen. Wenige Beobachtungen sind keine Garantie für die nächste Periode. Bei zusätzlichen nicht erfassten Wartungszeiten oder anderen Messgrenzen ist dies nicht automatisch die vertragliche Gesamtverfügbarkeit. Grundlagen: [Ausfallzeit und Verfügbarkeit](/lernen/verfuegbarkeit-ausfallzeit-reihe-parallel/)."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "Verfügbarkeit A ist MTBF geteilt durch MTBF plus MTTR",
+          "mathml": "<math display=\"block\"><mrow><mi>A</mi><mo>=</mo><mfrac><mtext>MTBF</mtext><mrow><mtext>MTBF</mtext><mo>+</mo><mtext>MTTR</mtext></mrow></mfrac></mrow></math>",
+          "legend": [
+            "Beide Zeitwerte in derselben Einheit",
+            "Anteil mal 100 ergibt Prozent"
+          ]
+        },
+        {
+          "type": "figure",
+          "diagramId": "rechnen",
+          "alt": "996 Stunden Betriebszeit und vier Stunden Ausfallzeit bei vier Zyklen ergeben MTBF 249 Stunden, MTTR eine Stunde und Verfügbarkeit 99,6 Prozent.",
+          "caption": "Der Quotient der Mittelwerte entspricht hier dem Quotienten der Zeitsummen."
+        },
+        {
+          "type": "numeric",
+          "id": "mtcalc-anteil",
+          "prompt": "MTBF 249 h, MTTR 1 h: Verfügbarkeit in Prozent?",
+          "expected": 99.6,
+          "tolerance": 0.000001,
+          "label": "Ergebnis ohne Einheit",
+          "placeholder": "Zahl ohne Einheit eingeben",
+          "correctFeedback": "249 ÷ (249 + 1) × 100 = 99,6 %. Nicht MTTR/MTBF verwenden.",
+          "wrongFeedback": "MTBF durch Summe beider Zeitwerte teilen, dann mal 100.",
+          "requiredObjective": "anteil"
+        },
+        {
+          "type": "numeric",
+          "id": "mtcalc-hebel",
+          "prompt": "Zusatzmodell: MTBF bleibt 249 h, MTTR sinkt auf 30 Minuten. Verfügbarkeit in Prozent, auf zwei Nachkommastellen?",
+          "expected": 99.8,
+          "tolerance": 0.000001,
+          "label": "Ergebnis ohne Einheit",
+          "placeholder": "Zahl ohne Einheit eingeben",
+          "correctFeedback": "30 min = 0,5 h; 249 ÷ 249,5 × 100 ≈ 99,80 %. Das ist eine Modellannahme.",
+          "wrongFeedback": "30 Minuten erst in 0,5 Stunden umrechnen."
+        }
+      ]
+    },
+    {
+      "title": "Mittelwert ist kein Versprechen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Weniger Ausfälle erhöhen die MTBF; schnellere vollständige Wiederherstellung senkt MTTR. Ursachenbehebung adressiert die Häufigkeit, getestete Ersatzverfahren und klare Bereitschaftsabläufe adressieren die Ausfalldauer. Eine konkrete Maßnahme muss zum beobachteten Engpass passen.\n\nMTBF ist keine feste Lebensdauer und kein Termin für den nächsten Fehler. Bei nicht reparierbaren Teilen wird häufig **MTTF** (Mean Time to Failure) betrachtet. **RTO** ist ein Wiederherstellungsziel, **MTTR** ein Mittelwert beobachteter oder modellierter Dauern. [IBM: MTTR und MTBF](https://www.ibm.com/think/topics/mttr-vs-mtbf) und [AWS: Understanding availability](https://docs.aws.amazon.com/whitepapers/latest/availability-and-beyond-improving-resilience/understanding-availability.html) erläutern die verwendeten Größen."
+        },
+        {
+          "type": "quiz",
+          "id": "mtcalc-grenze",
+          "question": "Nordsteg hat MTTR = 60 min und ein RTO von 75 min je Vorfall. Was folgt aus dem 90-Minuten-Vorfall?",
+          "options": [
+            {
+              "text": "Dieser Vorfall überschreitet das Ziel; der Mittelwert beweist keine Einhaltung je Vorfall.",
+              "rationale": "Einzelwerte können trotz kleinerem Durchschnitt über dem Ziel liegen.",
+              "correct": true
+            },
+            {
+              "text": "Alle Vorfälle erfüllen das RTO, weil 60 unter 75 liegt.",
+              "rationale": "Der Durchschnitt ist keine Obergrenze für einzelne Wiederherstellungen.",
+              "correct": false
+            },
+            {
+              "text": "Der nächste Ausfall tritt genau nach 249 Stunden auf.",
+              "rationale": "MTBF liefert keinen festen Ausfalltermin.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "grenze"
+        },
+        {
+          "type": "recall",
+          "id": "mtcalc-transfer",
+          "prompt": "Schreibe Nordstegs Auswertung mit Zeitgrenzen, MTBF, MTTR, Verfügbarkeit und RTO-Bewertung. Nenne einen Hebel für weniger Ausfälle und einen für kürzere Wiederherstellung.",
+          "minLength": 140,
+          "model": "996 h Betriebszeit geteilt durch vier Ausfälle ergeben MTBF 249 h. Vier Stunden vollständiger Wiederherstellung geteilt durch vier ergeben MTTR 1 h. 249/(249+1) = 99,6 %. MTTR umfasst hier Erkennung bis fachlich bestätigten Dienst, nicht nur Reparatur. Der 90-Minuten-Fall verletzt das RTO 75 min trotz Mittelwert 60 min. Ursachenbehebung kann Ausfälle reduzieren; getestete Wiederherstellungsabläufe können Ausfallzeiten verkürzen. Kein garantierter Ausfalltermin."
+        }
+      ]
+    },
+    {
+      "title": "Abruftraining",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "id": "mtcalc-cards",
+          "cards": [
+            {
+              "id": "mtbf",
+              "label": "MTBF / MTTR",
+              "front": "Was steht im MTBF-Zähler?",
+              "back": "Definierte Betriebszeit ohne Ausfallzeit."
+            },
+            {
+              "id": "mttr",
+              "label": "MTBF / MTTR",
+              "front": "Wo endet die hier definierte MTTR?",
+              "back": "Beim wieder fachlich nutzbaren Dienst."
+            },
+            {
+              "id": "anteil",
+              "label": "MTBF / MTTR",
+              "front": "Wie verbinde ich beide Zeitwerte?",
+              "back": "A = MTBF/(MTBF + MTTR), gleiche Einheit und passende Messgrenzen."
+            },
+            {
+              "id": "null",
+              "label": "MTBF / MTTR",
+              "front": "Was bedeutet kein beobachteter Ausfall?",
+              "back": "Die einfache Division ist nicht definiert; keine unendliche Lebensdauer ableiten."
+            },
+            {
+              "id": "grenze",
+              "label": "MTBF / MTTR",
+              "front": "Ist MTTR ein RTO-Nachweis?",
+              "back": "Nein. Der Mittelwert garantiert keine Obergrenze je Vorfall."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

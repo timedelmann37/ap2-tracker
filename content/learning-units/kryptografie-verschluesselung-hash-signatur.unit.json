@@ -1,0 +1,373 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "kryptografie-verschluesselung-hash-signatur",
+    "slug": "kryptografie-verschluesselung-hash-signatur",
+    "title": "Verschlüsselung, Hash und Signatur",
+    "description": "Symmetrische und asymmetrische Verfahren, hybride Verschlüsselung, Hashfunktionen und Signaturen nach Schutzziel und Schlüsselrolle unterscheiden.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-8",
+    "groupLabel": "IT-Sicherheit und Datenschutz",
+    "itemId": "ga1-8__6",
+    "week": "KW 42",
+    "estimatedMinutes": 40,
+    "relevance": "hoch",
+    "sources": [
+      "crypto-cf-basics",
+      "crypto-hpke",
+      "crypto-hash",
+      "crypto-public",
+      "crypto-dss"
+    ],
+    "contentRevision": "2026-10-03.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "schluessel",
+      "label": "Symmetrische und asymmetrische Schlüsselrollen unterscheiden"
+    },
+    {
+      "id": "hybrid",
+      "label": "Hybride Verfahren nach Schlüssel- und Datenverarbeitung erklären"
+    },
+    {
+      "id": "hash",
+      "label": "Hashwerte und ihre Grenzen beim Integritätsnachweis beurteilen"
+    },
+    {
+      "id": "signatur",
+      "label": "Signieren und Prüfen von Verschlüsseln und Entschlüsseln trennen"
+    }
+  ],
+  "intro": "Das fiktive Servicelabor Messpunkt sendet einen vertraulichen Wartungsbericht an eine Kundin. Zusätzlich veröffentlicht es ein Prüfprotokoll, dessen Herkunft und unveränderter Inhalt überprüfbar sein sollen. Ein Kollege möchte beides einfach „mit einem Hash verschlüsseln“. Du wählst passende Verfahren und prüfst ihre Grenzen.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "crypto-cf-basics",
+        "sourceLocator": "Abschnitte What is asymmetric encryption und What is symmetric encryption; nur Begriffsgrundlagen",
+        "use": "Begriffs- und Rollenprüfung für eigenständige Lernfälle",
+        "reviewStatus": "Genannte offizielle Passagen am 03.10.2026 direkt gelesen"
+      },
+      {
+        "sourceId": "crypto-hpke",
+        "sourceLocator": "Abstract, Introduction und Cryptographic Dependencies; Informations-RFC von 2022, keine TLS-Anleitung",
+        "use": "Begriffs- und Rollenprüfung für eigenständige Lernfälle",
+        "reviewStatus": "Genannte offizielle Passagen am 03.10.2026 direkt gelesen"
+      },
+      {
+        "sourceId": "crypto-hash",
+        "sourceLocator": "Approved Algorithms und Security Strengths: Digestlänge, Preimage-/Second-Preimage-/Kollisionsresistenz",
+        "use": "Begriffs- und Rollenprüfung für eigenständige Lernfälle",
+        "reviewStatus": "Genannte offizielle Passagen am 03.10.2026 direkt gelesen"
+      },
+      {
+        "sourceId": "crypto-public",
+        "sourceLocator": "Definition nach FIPS 186-5: öffentliche Signaturprüfung und zugehöriger privater Schlüssel",
+        "use": "Begriffs- und Rollenprüfung für eigenständige Lernfälle",
+        "reviewStatus": "Genannte offizielle Passagen am 03.10.2026 direkt gelesen"
+      },
+      {
+        "sourceId": "crypto-dss",
+        "sourceLocator": "Publikationsübersicht und Abstract; Errata-Hinweis 12.05.2025 berücksichtigt, keine Algorithmusimplementierung",
+        "use": "Begriffs- und Rollenprüfung für eigenständige Lernfälle",
+        "reviewStatus": "Genannte offizielle Passagen am 03.10.2026 direkt gelesen"
+      }
+    ],
+    "notes": [
+      "Private Quelle europa-integratoren-2026:00189, Markdown-Zeilen 1920–1937, als Hashfunktions-Themenanker direkt geprüft. Fehlerhafter OCR-/Tabellenkontext nicht übernommen; keine Buchaufgabe oder Grafik veröffentlicht.",
+      "Messpunkt-Fälle und Diagramme sind neu erstellt. Keine eigene Kryptografieimplementierung, keine vollständige Produkt- oder Algorithmusfreigabe. RFC 9180 wird nicht als TLS-Ablauf ausgegeben.",
+      "Native technische SVGs und semantisches MathML; gemeinsame Deep-Space-Komponenten unverändert."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "crypto-hybrid",
+      "type": "flow",
+      "title": "Hybrid schützt die Daten",
+      "description": "Abstraktes Hybridprinzip: authentischen Empfänger-Public-Key prüfen, asymmetrisch Schlüsselmaterial etablieren, daraus symmetrischen Datenschlüssel ableiten, Bericht authentifiziert verschlüsseln. Kein bestimmter TLS-Handshake.",
+      "items": [
+        {
+          "label": "Empfängerschlüssel zuordnen",
+          "detail": "Authentizität des Public Keys prüfen"
+        },
+        {
+          "label": "Asymmetrischer Schritt",
+          "detail": "Gemeinsames Schlüsselmaterial etablieren"
+        },
+        {
+          "label": "Schlüsselableitung",
+          "detail": "Symmetrischen Datenschlüssel ableiten"
+        },
+        {
+          "label": "Symmetrischer Schritt",
+          "detail": "Bericht authentifiziert verschlüsseln und prüfen"
+        }
+      ]
+    },
+    {
+      "id": "crypto-rollen",
+      "type": "comparison",
+      "title": "Signatur hat zwei Rollen",
+      "description": "Messpunkt erstellt eine Signatur mit dem privaten Signaturschlüssel. Die Kundin prüft Bericht und Signatur mit dem authentisch zugeordneten öffentlichen Signaturschlüssel. Die Signatur verschlüsselt den Bericht nicht.",
+      "items": [
+        {
+          "label": "Messpunkt signiert",
+          "detail": "Privater Signaturschlüssel bleibt geheim. Signatur bezieht sich auf das konkrete Prüfprotokoll."
+        },
+        {
+          "label": "Kundin prüft",
+          "detail": "Öffentlicher Signaturschlüssel, Protokoll und Signatur werden geprüft. Herkunft braucht sichere Schlüsselzuordnung."
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "Diagnose: ein Hash ist kein Geheimtext",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "crypto-diagnose",
+          "question": "Messpunkt ersetzt den vertraulichen Bericht durch seinen SHA-256-Hash. Kann die Kundin daraus den Bericht entschlüsseln?",
+          "options": [
+            {
+              "text": "Ja, mit dem öffentlichen Schlüssel.",
+              "rationale": "Der unverschlüsselte Hash besitzt keine solche Entschlüsselungsfunktion.",
+              "correct": false
+            },
+            {
+              "text": "Nein: ein Hash ist ein Digest, keine reversible Verschlüsselung.",
+              "rationale": "Der Bericht wurde nicht für die Kundin verschlüsselt, sondern auf einen Hashwert abgebildet.",
+              "correct": true
+            },
+            {
+              "text": "Ja, wenn der Hash lang genug ist.",
+              "rationale": "Mehr Ausgabebits schaffen keine Entschlüsselungsfunktion.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        }
+      ]
+    },
+    {
+      "title": "Welche Schlüssel sind beteiligt?",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Bei **symmetrischer Verschlüsselung** verwenden Sender und Empfänger denselben geheimen Schlüssel. Sie eignet sich für große Datenmengen; die sichere Bereitstellung und der Schutz des gemeinsamen Schlüssels bleiben Aufgaben.\n\n**Asymmetrische Kryptografie** arbeitet mit öffentlichem und privatem Schlüssel. Bei einem dafür geeigneten Verschlüsselungsverfahren verschlüsselt Messpunkt für die Kundin mit deren öffentlichem Schlüssel; die Kundin entschlüsselt mit ihrem privaten. Nicht jedes asymmetrische Verfahren kann verschlüsseln: Signatur- und Schlüsselaustauschverfahren haben eigene Aufgaben.\n\n### Messpunkts Entscheidung\nEin gemeinsam vorab sicher bereitgestellter Schlüssel wäre symmetrisch. Für wechselnde Kundinnen ist die Schlüsselverwaltung aufwendiger. Ein öffentlicher Empfängerschlüssel darf bekannt sein, muss aber **authentisch der Kundin zugeordnet** werden. Ein Angreifer darf ihn nicht durch seinen eigenen ersetzen. Private Schlüssel werden nicht mitgeschickt."
+        },
+        {
+          "type": "quiz",
+          "id": "crypto-schluessel",
+          "question": "Messpunkt verschlüsselt mit einem geeigneten Public-Key-Verfahren direkt für die Kundin. Wer braucht welchen Schlüssel?",
+          "options": [
+            {
+              "text": "Messpunkt ihren öffentlichen, die Kundin ihren privaten Schlüssel.",
+              "rationale": "Die Rollen passen zur Empfängerverschlüsselung. Messpunkt braucht ihren privaten Schlüssel nicht.",
+              "correct": true
+            },
+            {
+              "text": "Messpunkt den privaten Schlüssel der Kundin.",
+              "rationale": "Der private Entschlüsselungsschlüssel muss bei der Kundin geschützt bleiben.",
+              "correct": false
+            },
+            {
+              "text": "Beide nur den öffentlichen Schlüssel.",
+              "rationale": "Ein öffentlicher Schlüssel allein darf nicht die vertrauliche Entschlüsselung ermöglichen.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "schluessel"
+        }
+      ]
+    },
+    {
+      "title": "Hybrid: unterschiedliche Aufgaben kombinieren",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "**Hybride Verschlüsselung** kombiniert asymmetrische Schlüsselverwaltung mit effizienter symmetrischer Datenverschlüsselung. Schlüsselmaterial kann über Schlüsselaustausch oder Kapselung etabliert werden. Bei klassischen Varianten wird ein symmetrischer Schlüssel asymmetrisch geschützt übertragen. Diese Varianten nicht als einen universellen Ablauf verwechseln.\n\nMesspunkt verwendet ein geprüftes Hybridverfahren statt den gesamten großen Bericht asymmetrisch zu bearbeiten. Der folgende Ablauf ist ein abstraktes Prinzip, keine Anleitung zum Selbstbauen und kein vollständiger TLS-Handshake."
+        },
+        {
+          "type": "figure",
+          "diagramId": "crypto-hybrid",
+          "alt": "Authentischen Empfängerschlüssel prüfen, Schlüsselmaterial asymmetrisch etablieren, Datenschlüssel ableiten und Bericht symmetrisch authentifiziert verschlüsseln.",
+          "caption": "Prinzipdarstellung. Verfahren, Nonces, Kontextbindung und Schlüsselableitung übernimmt eine geprüfte Implementierung. „Hybrid“ bedeutet hier asymmetrisch plus symmetrisch, nicht automatisch klassische plus Post-Quantum-Verfahren."
+        },
+        {
+          "type": "quiz",
+          "id": "crypto-hybrid-check",
+          "question": "Warum verwendet Messpunkt ein Hybridverfahren für den großen Bericht?",
+          "options": [
+            {
+              "text": "Damit der private Kundenschlüssel öffentlich werden kann.",
+              "rationale": "Hybrid hebt die Geheimhaltung privater Schlüssel nicht auf.",
+              "correct": false
+            },
+            {
+              "text": "Damit Hashing den Bericht rückgängig entschlüsselt.",
+              "rationale": "Hashing ist nicht die Datenentschlüsselung.",
+              "correct": false
+            },
+            {
+              "text": "Asymmetrische Schlüsselverwaltung und symmetrische Datenverarbeitung erfüllen unterschiedliche Aufgaben.",
+              "rationale": "Die Kombination nutzt beide Rollen. Schlüsselmaterial bleibt geschützt; Daten werden effizient symmetrisch verarbeitet.",
+              "correct": true
+            }
+          ],
+          "requiredObjective": "hybrid"
+        }
+      ]
+    },
+    {
+      "title": "Hash: prüfen statt entschlüsseln",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Eine kryptografische **Hashfunktion** bildet Daten auf einen Digest ab. SHA-256 liefert 256 Ausgabebits. Derselbe genaue Eingabebytestrom liefert denselben Wert. Gesucht sind Widerstand gegen das Finden eines Urbilds, eines zweiten passenden Urbilds und zweier kollidierender Eingaben. Kollisionen sind mathematisch möglich; sichere Verfahren machen ihre gezielte Suche praktisch schwierig.\n\nEin Hash verrät nicht automatisch den gesamten Inhalt, ist aber **kein Geheimhaltungsschutz**: Vermutete Eingaben lassen sich durch Hashen vergleichen. Ein bloßer Hash authentisiert auch keinen Absender."
+        },
+        {
+          "type": "math",
+          "ariaLabel": "SHA-256-Ausgabelänge: 256 Bit geteilt durch 8 Bit je Byte ergibt 32 Byte.",
+          "mathml": "<math display=\"block\"><mrow><mfrac><mrow><mn>256</mn><mtext> Bit</mtext></mrow><mrow><mn>8</mn><mtext> Bit/Byte</mtext></mrow></mfrac><mo>=</mo><mn>32</mn><mtext> Byte</mtext></mrow></math>",
+          "legend": [
+            "Die Digestlänge ist unabhängig von der Berichtslänge. Sie ist nicht die Dateigröße und keine Verschlüsselungsschlüssellänge."
+          ]
+        },
+        {
+          "type": "markdown",
+          "markdown": "### Der Austauschfehler\nDie Kundin vergleicht den Bericht mit einem Referenzhash von derselben ungeschützten Downloadstelle. Ein Angreifer ersetzt **Datei und Hash**. Der Vergleich kann trotzdem passen. Ein vertrauenswürdiger Referenzweg oder eine überprüfte Signatur ist nötig, wenn auch gezielte Manipulation bewertet werden soll. Ein abweichender Hash belegt eine Abweichung, nicht deren Ursache."
+        },
+        {
+          "type": "quiz",
+          "id": "crypto-hash-check",
+          "question": "Der Hash passt, aber Datei und Referenzhash kamen aus derselben manipulierbaren Quelle. Welche Aussage ist gerechtfertigt?",
+          "options": [
+            {
+              "text": "Die Datei muss von Messpunkt stammen.",
+              "rationale": "Ein ungeschützter Hash authentisiert keine Herkunft.",
+              "correct": false
+            },
+            {
+              "text": "Die beiden Werte sind konsistent; Messpunkts Herkunft ist damit nicht bewiesen.",
+              "rationale": "Ein Angreifer könnte beide ersetzt haben. Die Referenz muss vertrauenswürdig sein.",
+              "correct": true
+            },
+            {
+              "text": "Gleicher Hash bedeutet, die Datei ist verschlüsselt.",
+              "rationale": "Ein Hashvergleich ist keine Verschlüsselung.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "hash"
+        }
+      ]
+    },
+    {
+      "title": "Signatur: Herkunft und Änderung prüfen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Messpunkt **signiert mit seinem privaten Signaturschlüssel**. Die Kundin **prüft mit dem zugehörigen öffentlichen Schlüssel**. Ein korrekt eingesetztes Signaturverfahren macht Inhaltsänderungen erkennbar und bindet die Signatur an den Schlüssel. Wer hinter diesem Schlüssel steht, muss vertrauenswürdig geklärt sein.\n\nDer Bericht wird dadurch nicht geheim. Verschlüsselung und Signatur können kombiniert werden. Signieren ist nicht pauschal „mit dem privaten Schlüssel verschlüsseln“; ein Signaturverfahren besitzt eigene Erzeugungs- und Prüfschritte. Hashverarbeitung ist verfahrensabhängig eingebunden."
+        },
+        {
+          "type": "figure",
+          "diagramId": "crypto-rollen",
+          "alt": "Messpunkt signiert mit privatem Schlüssel, Kundin prüft mit authentisch zugeordnetem öffentlichem Schlüssel.",
+          "caption": "Signaturprüfung benötigt Protokoll, Signatur und passenden öffentlichen Schlüssel. Die verschlüsselungsfreie Darstellung zeigt ausdrücklich keinen Geheimhaltungsschutz."
+        },
+        {
+          "type": "quiz",
+          "id": "crypto-signatur",
+          "question": "Das Prüfprotokoll ist gültig signiert und der öffentliche Schlüssel verlässlich Messpunkt zugeordnet. Ist das Protokoll dadurch nur für die Kundin lesbar?",
+          "options": [
+            {
+              "text": "Nein: Signatur schützt keine Vertraulichkeit; dazu braucht es Verschlüsselung.",
+              "rationale": "Herkunfts- und Integritätsprüfung sind andere Schutzziele als Geheimhaltung.",
+              "correct": true
+            },
+            {
+              "text": "Ja, weil ein privater Schlüssel benutzt wurde.",
+              "rationale": "Die private Signaturerzeugung macht das veröffentlichte Protokoll nicht zum Geheimtext.",
+              "correct": false
+            },
+            {
+              "text": "Ja, jeder öffentliche Prüfschlüssel ist ein Passwort.",
+              "rationale": "Ein öffentlicher Prüfschlüssel ist kein gemeinsames Geheimnis.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "signatur"
+        },
+        {
+          "type": "markdown",
+          "markdown": "### Eigene Prüfplanung\nIm autorisierten Test prüft die Kundin das Originalprotokoll und eine geänderte Testkopie mit derselben Signatur. Sie prüft außerdem mit einem falschen Test-Public-Key. Für den vertraulichen Bericht wird erfolgreiche Entschlüsselung durch die richtige Empfängerin und Ablehnung einer manipulierten authentifiziert verschlüsselten Testdatei geprüft. Eine gültige Signatur beweist weder wahrheitsgemäße Aussagen noch schadfreie Inhalte. Rechtliche Signaturqualifikation ist nicht Gegenstand dieser Einheit."
+        },
+        {
+          "type": "recall",
+          "id": "crypto-transfer",
+          "title": "Dein Schutzkonzept",
+          "prompt": "Begründe für Messpunkt, warum der Wartungsbericht hybrid verschlüsselt und das öffentliche Prüfprotokoll signiert werden kann. Nenne die Schlüsselrollen, erkläre den Fehler beim ungeschützten Referenzhash und plane zwei Prüffälle.",
+          "minLength": 180,
+          "model": "Für den Bericht kombiniere ich asymmetrische Schlüsselverwaltung mit symmetrischer Datenverschlüsselung in einem geprüften Verfahren. Der private Empfängerschlüssel bleibt bei der Kundin. Messpunkt signiert das öffentliche Protokoll mit seinem privaten Signaturschlüssel; die Kundin prüft mit dem verlässlich zugeordneten öffentlichen Schlüssel. Die Signatur macht das Protokoll nicht geheim. Datei und ungeschützter Referenzhash könnten gemeinsam ersetzt werden. Ich prüfe ein Original und eine geänderte Testkopie mit derselben Signatur; zusätzlich teste ich einen falschen Prüfschlüssel."
+        }
+      ]
+    },
+    {
+      "title": "Abruftraining",
+      "blocks": [
+        {
+          "type": "flashcards",
+          "id": "crypto-cards",
+          "cards": [
+            {
+              "id": "sym",
+              "label": "Schutzziel und Schlüssel",
+              "front": "Was ist das Schlüsselproblem bei symmetrischer Verschlüsselung?",
+              "back": "Beide Seiten brauchen den gemeinsamen geheimen Schlüssel sicher bereitgestellt und geschützt."
+            },
+            {
+              "id": "asym",
+              "label": "Schutzziel und Schlüssel",
+              "front": "Welcher Schlüssel entschlüsselt beim geeigneten Public-Key-Verfahren?",
+              "back": "Der private Schlüssel der Empfängerin; verschlüsselt wird mit ihrem authentischen öffentlichen Schlüssel."
+            },
+            {
+              "id": "hybrid",
+              "label": "Schutzziel und Schlüssel",
+              "front": "Welche Aufgaben kombiniert Hybridverschlüsselung?",
+              "back": "Asymmetrische Schlüsselverwaltung und symmetrische Datenverschlüsselung."
+            },
+            {
+              "id": "hash",
+              "label": "Schutzziel und Schlüssel",
+              "front": "Kann ein Hash entschlüsselt werden?",
+              "back": "Nein. Er ist keine reversible Verschlüsselung; vermutete Eingaben können jedoch verglichen werden."
+            },
+            {
+              "id": "referenz",
+              "label": "Schutzziel und Schlüssel",
+              "front": "Warum den Referenzhash absichern?",
+              "back": "Ein Angreifer könnte Datei und Hash gemeinsam ersetzen."
+            },
+            {
+              "id": "sign",
+              "label": "Schutzziel und Schlüssel",
+              "front": "Welche Schlüsselrollen besitzt eine Signatur?",
+              "back": "Privater Signaturschlüssel erzeugt, zugehöriger öffentlicher Schlüssel prüft."
+            },
+            {
+              "id": "grenze",
+              "label": "Schutzziel und Schlüssel",
+              "front": "Was beweist eine gültige Signatur nicht?",
+              "back": "Keine Vertraulichkeit, keine Wahrheit des Inhalts, keine Schadfreiheit; Identität braucht sichere Schlüsselzuordnung."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

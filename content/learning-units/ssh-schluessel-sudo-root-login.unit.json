@@ -1,0 +1,471 @@
+{
+  "$schema": "../schemas/learning-unit.schema.json",
+  "meta": {
+    "id": "ssh-schluessel-sudo-root-login",
+    "slug": "ssh-schluessel-sudo-root-login",
+    "title": "SSH-Zugang absichern: Schlüssel, sudo und Root-Login",
+    "description": "Einen individuellen SSH-Zugang ohne Aussperren einführen und Anmeldung von administrativen Rechten trennen.",
+    "domain": "GA1",
+    "domainLabel": "Konzeption & Administration",
+    "groupId": "ga1-6",
+    "groupLabel": "Betriebssysteme und Administration",
+    "itemId": "ga1-6__6",
+    "week": "KW 40",
+    "estimatedMinutes": 35,
+    "relevance": "hoch",
+    "sources": [
+      "itlf10-12-2023",
+      "openssh-ssh-keygen",
+      "openssh-sshd-config",
+      "openssh-sshd",
+      "ubuntu-openssh-server",
+      "debian-sudoers",
+      "debian-visudo"
+    ],
+    "contentRevision": "2026-10-02.1",
+    "contentStatus": "CURATED_DRAFT"
+  },
+  "objectives": [
+    {
+      "id": "schluessel-zuordnen",
+      "label": "Benutzer-Schlüsselpaar und Server-Hostschlüssel nach Zweck und Speicherort unterscheiden"
+    },
+    {
+      "id": "ssh-zugang-umstellen",
+      "label": "Schlüsselanmeldung testen und Passwort- sowie Root-Login ohne Aussperren abschalten"
+    },
+    {
+      "id": "sudo-begrenzen",
+      "label": "SSH-Anmeldung und sudo-Berechtigung trennen und minimale Rechte prüfen"
+    }
+  ],
+  "intro": "Bei Kranich melden sich mehrere Administratoren bisher mit einem gemeinsamen Root-Zugang auf einem Linux-Server an. Künftig soll jede Person ein eigenes Konto mit SSH-Schlüssel verwenden. Du planst die Umstellung so, dass der Fernzugriff erhalten bleibt und administrative Befehle nur nach einer gesonderten Berechtigungsprüfung möglich sind.",
+  "curation": {
+    "evidence": [
+      {
+        "sourceId": "itlf10-12-2023",
+        "sourceLocator": "PDF-Seite 128, OCR-Chunk itlf10-12-2023:page:0128, Abschnitt Vorbereitung der Zielsysteme",
+        "use": "Privater Themenanker für individuelles Zielkonto, SSH-Schlüsselerzeugung und Übertragung des öffentlichen Schlüssels",
+        "reviewStatus": "OCR-Stelle gelesen; veraltbare Befehlsdetails und pauschale sudo-Gruppenfreigabe nicht übernommen, Buchtext und Abbildung nicht veröffentlicht"
+      },
+      {
+        "sourceId": "openssh-ssh-keygen",
+        "sourceLocator": "ssh-keygen(1), DESCRIPTION und FILES",
+        "use": "Benutzer-Schlüsselpaar, öffentlicher Schlüssel in authorized_keys, Schutz des privaten Schlüssels",
+        "reviewStatus": "OpenSSH-Originalhandbuch am 02.10.2026 geprüft"
+      },
+      {
+        "sourceId": "openssh-sshd-config",
+        "sourceLocator": "sshd_config(5), AuthorizedKeysFile, PubkeyAuthentication, PasswordAuthentication, KbdInteractiveAuthentication, PermitRootLogin und Match",
+        "use": "Serverseitige Authentifizierungswege und Unterschied zwischen prohibit-password und no für Root",
+        "reviewStatus": "OpenSSH-Originalhandbuch am 02.10.2026 geprüft"
+      },
+      {
+        "sourceId": "openssh-sshd",
+        "sourceLocator": "sshd(8), Optionen -t, -T und -C",
+        "use": "Syntax und effektive Konfiguration vor dem Anwenden getrennt prüfen",
+        "reviewStatus": "OpenSSH-Originalhandbuch am 02.10.2026 geprüft"
+      },
+      {
+        "sourceId": "ubuntu-openssh-server",
+        "sourceLocator": "Ubuntu Server, OpenSSH server, Abschnitte Configure OpenSSH und SSH keys",
+        "use": "Konkretes Linux-Beispiel für Ed25519, ssh-copy-id und mögliche Konfigurations-Snippets",
+        "reviewStatus": "Offizielle Ubuntu-Dokumentation am 02.10.2026 geprüft; distributionsabhängige Pfade und Dienstnamen markiert"
+      },
+      {
+        "sourceId": "debian-sudoers",
+        "sourceLocator": "sudoers(5), User Specification und Privilege Specification",
+        "use": "sudo-Berechtigung als gesonderte Richtlinie für bestimmte Konten und Befehle",
+        "reviewStatus": "Vom sudo-Projekt stammende Debian-Manpage am 02.10.2026 geprüft"
+      },
+      {
+        "sourceId": "debian-visudo",
+        "sourceLocator": "visudo(8), DESCRIPTION und -c",
+        "use": "Syntaxgeprüfte Bearbeitung beziehungsweise Prüfung der sudoers-Richtlinie",
+        "reviewStatus": "Vom sudo-Projekt stammende Debian-Manpage am 02.10.2026 geprüft"
+      }
+    ],
+    "notes": [
+      "Die im Quellmapping genannte ITLF10–12-PDF-Seite 224 behandelt Vagrant/sudo und belegt nicht die hier erklärten SSH-Anmeldemethoden; stattdessen ist PDF-Seite 128 der geprüfte private Anker.",
+      "Kranich, Sicherheitsentscheidung, Fragen und technische Diagramme sind eigenständig. Die Diagramme sind keine nachgezeichneten Buchabbildungen. Menschliche Fach-, Didaktik- und Grafikfreigabe steht aus."
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "ssh-drei-schluesselrollen",
+      "type": "comparison",
+      "title": "Drei Rollen von SSH-Schlüsseln",
+      "description": "Technische Gegenüberstellung: Der private Benutzerschlüssel bleibt beim Client, der öffentliche Benutzerschlüssel wird dem Konto auf dem Server zugeordnet und ein separater Hostschlüssel weist die Serveridentität nach.",
+      "items": [
+        {
+          "label": "Benutzer: privat",
+          "detail": "Bleibt auf dem Client. Signiert die Anmeldung; Passphrase schützt Datei."
+        },
+        {
+          "label": "Benutzer: öffentlich",
+          "detail": "Liegt beim Zielkonto in authorized_keys. Server prüft damit die Signatur."
+        },
+        {
+          "label": "Server: Hostkey",
+          "detail": "Identifiziert die Gegenstelle. Fingerprint vor Vertrauen unabhängig prüfen."
+        }
+      ]
+    },
+    {
+      "id": "ssh-umstellung-ohne-aussperren",
+      "type": "flow",
+      "title": "Umstellung ohne Aussperren",
+      "description": "Sicherheitsfolge: Notzugang sichern, individuellen Schlüsselzugang testen, Konfiguration prüfen, alte Anmeldewege abschalten und neuen Zugang erneut nachweisen.",
+      "items": [
+        {
+          "label": "Rückweg sichern",
+          "detail": "Konsole oder freigegebene Notfalloption bereitstellen"
+        },
+        {
+          "label": "Neues Konto testen",
+          "detail": "Öffentlichen Schlüssel zuordnen; neue Sitzung per Key prüfen"
+        },
+        {
+          "label": "Konfiguration prüfen",
+          "detail": "sshd -t und effektive Werte vor Aktivierung kontrollieren"
+        },
+        {
+          "label": "Alte Wege schließen",
+          "detail": "Root-Login und nicht benötigte Passwortmethoden sperren"
+        },
+        {
+          "label": "Wirkung belegen",
+          "detail": "Neue Key-Anmeldung testen; erst danach Alt-Sitzung schließen"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "title": "1 · Wer meldet sich an, wer darf etwas ändern?",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "ssh-einstieg",
+          "question": "Ein Admin erzeugt auf seinem Notebook ein SSH-Schlüsselpaar. Welche Datei gehört zum Zielkonto auf dem Server?",
+          "options": [
+            {
+              "text": "Nur der öffentliche Benutzerschlüssel, beispielsweise der Inhalt von id_ed25519.pub, wird für das Zielkonto autorisiert.",
+              "rationale": "Richtig. Der private Benutzerschlüssel bleibt unter Kontrolle des Admins auf dem Client.",
+              "correct": true
+            },
+            {
+              "text": "Der private Benutzerschlüssel muss in authorized_keys auf dem Server liegen.",
+              "rationale": "authorized_keys enthält autorisierte öffentliche Schlüssel. Der private Schlüssel darf nicht als Anmeldegeheimnis auf den Server kopiert werden.",
+              "correct": false
+            },
+            {
+              "text": "Der Server-Hostschlüssel wird als Benutzerschlüssel in authorized_keys abgelegt.",
+              "rationale": "Der Hostschlüssel gehört zur Serveridentität. Er ersetzt nicht den öffentlichen Schlüssel eines Benutzerkontos.",
+              "correct": false
+            }
+          ],
+          "diagnostic": true
+        },
+        {
+          "type": "markdown",
+          "markdown": "**Drei Entscheidungen statt eines gemeinsamen Root-Passworts:** Erstens muss der Client prüfen, mit *welchem Server* er spricht. Zweitens muss der Server erkennen, *welches Benutzerkonto* sich anmeldet. Drittens bestimmt eine lokale Berechtigungsrichtlinie, *welche administrativen Befehle* dieses Konto ausführen darf. SSH-Verschlüsselung ersetzt keine dieser Prüfungen. Ein individuelles Konto macht Anmeldungen zuordenbar; es erhält nicht allein durch SSH automatisch Root-Rechte."
+        },
+        {
+          "type": "figure",
+          "diagramId": "ssh-drei-schluesselrollen",
+          "alt": "Der private Benutzerschlüssel bleibt beim Admin-Client und signiert den Anmeldenachweis. Der öffentliche Benutzerschlüssel liegt beim Zielkonto in authorized_keys. Ein anderer Hostschlüssel dient der Identität des Servers.",
+          "caption": "Eigene technische Gegenüberstellung: Benutzer- und Hostschlüssel lösen unterschiedliche Identitätsfragen."
+        }
+      ]
+    },
+    {
+      "title": "2 · Schlüsselanmeldung verstehen und prüfen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Der Admin erzeugt sein Benutzerschlüsselpaar **auf dem Client**, zum Beispiel mit `ssh-keygen -t ed25519`. Die private Datei bleibt dort und wird durch passende Dateirechte und möglichst eine Passphrase geschützt. Der öffentliche Teil wird für das **benannte Zielkonto** auf dem Server autorisiert, meist unter `~/.ssh/authorized_keys`. Beim Anmelden weist der Client den Besitz des privaten Schlüssels kryptografisch nach; der Server prüft mit dem passenden öffentlichen Schlüssel. Der private Schlüssel wird dabei nicht an den Server übertragen. `ssh-copy-id -i ~/.ssh/id_ed25519.pub admin@server` ist auf passenden Linux-Systemen ein möglicher Weg für den öffentlichen Teil, sofern der bisherige Zugang noch funktioniert. Vor dem Einsatz müssen tatsächlicher Pfad, Konto und Rechte geprüft werden.\n\nDavon unabhängig weist der **Hostschlüssel** die Serveridentität nach. Bei einer Erstverbindung sollte sein Fingerprint über einen zweiten vertrauenswürdigen Kanal mit dem Sollwert abgeglichen werden. Eine unerwartete Änderung wird untersucht, nicht blind bestätigt. Eine Key-Passphrase schützt die private Datei auf dem Client; sie ist weder das Passwort des Serverkontos noch automatisch ein zweiter Anmeldefaktor am Server. Ein gestohlener privater Schlüssel oder kompromittierter Client bleibt ein Risiko."
+        },
+        {
+          "type": "quiz",
+          "id": "ssh-hostkey-wechsel",
+          "question": "Beim ersten Test des neuen Admin-Kontos erscheint ein unbekannter SSH-Host-Fingerprint. Was ist die belastbare Reaktion?",
+          "options": [
+            {
+              "text": "Fingerprint über einen unabhängigen vertrauenswürdigen Kanal mit dem erwarteten Serverwert vergleichen und erst dann vertrauen.",
+              "rationale": "Richtig. Die Benutzer-Key-Anmeldung sollte nicht vor der Prüfung der Gegenstelle als sicher gelten.",
+              "correct": true
+            },
+            {
+              "text": "Sofort bestätigen: Weil der Benutzer einen Key hat, ist die Serveridentität schon bewiesen.",
+              "rationale": "Benutzer- und Hostschlüssel erfüllen verschiedene Aufgaben. Ein Benutzer-Key beweist nicht, welcher Server antwortet.",
+              "correct": false
+            },
+            {
+              "text": "Den privaten Benutzerschlüssel an den Server senden, damit er seinen Fingerprint bestätigt.",
+              "rationale": "Der private Schlüssel bleibt auf dem Client. Sein Versand würde das Geheimnis preisgeben und den Hostschlüssel nicht verifizieren.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "quiz",
+          "id": "ssh-passphrase-rolle",
+          "question": "Wofür dient eine Passphrase beim privaten SSH-Benutzerschlüssel?",
+          "options": [
+            {
+              "text": "Sie schützt die gespeicherte private Schlüsseldatei; Anmeldung und sudo-Berechtigung bleiben gesonderte Fragen.",
+              "rationale": "Richtig. Die Passphrase ist nicht das SSH-Serverkontopasswort und gewährt keine zusätzlichen Rechte.",
+              "correct": true
+            },
+            {
+              "text": "Sie wird als Ersatz für den öffentlichen Schlüssel in authorized_keys gespeichert.",
+              "rationale": "authorized_keys autorisiert öffentliche Schlüssel, keine Passphrasen.",
+              "correct": false
+            },
+            {
+              "text": "Sie macht den Server-Hostschlüssel überflüssig.",
+              "rationale": "Der Hostschlüssel authentifiziert die Gegenstelle und ist unabhängig vom Schutz der privaten Benutzerdatei.",
+              "correct": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "3 · Passwort und direkten Root-Zugang kontrolliert abschalten",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Für OpenSSH setzt `PermitRootLogin no` den **direkten SSH-Login als root** außer Kraft. `PermitRootLogin prohibit-password` sperrt dagegen Passwort- und Keyboard-Interactive-Authentifizierung nur für root; ein Root-Login per Key kann damit weiterhin möglich sein. `PasswordAuthentication no` schaltet die Passwortmethode ab, aber nicht automatisch **Keyboard-Interactive**. Soll auch dieser Weg aus sein, muss seine eigene Einstellung `KbdInteractiveAuthentication no` und das Zusammenspiel mit der übrigen Konfiguration geprüft werden. `PubkeyAuthentication yes` erlaubt die Public-Key-Methode, ersetzt aber weder ein korrektes authorized_keys noch ein funktionierendes Konto. Andere Verfahren oder `Match`-Blöcke können die effektive Konfiguration beeinflussen. Die Werte sind daher ein zu prüfendes Zielbild, keine blind zu kopierende Universaldatei.\n\nBei Kranich bleibt zuerst eine bestehende Admin-Sitzung offen und ein genehmigter Konsolen-/Notfallzugang verfügbar. Für jede berechtigte Person werden Zielkonto und öffentlicher Schlüssel eingerichtet. Ein **neuer**, unabhängiger SSH-Login mit diesem Key muss gelingen, bevor die alten Methoden abgeschaltet werden. Nach Bearbeitung von `sshd_config` beziehungsweise eingebundenen Dateien prüft `sshd -t` die Syntax; `sshd -T` zeigt effektive Werte, bei `Match`-Regeln mit passenden `-C`-Verbindungsparametern. Erst dann wird die Änderung kontrolliert aktiviert. Danach werden eine neue Key-Anmeldung und die beabsichtigte Sperre alter Anmeldewege getestet. Die bisherige Sitzung wird erst nach erfolgreichem Nachweis geschlossen. Der konkrete Dienstname und der sichere Reload-/Restart-Weg hängen von Distribution und Umgebung ab."
+        },
+        {
+          "type": "figure",
+          "diagramId": "ssh-umstellung-ohne-aussperren",
+          "alt": "Sichere Reihenfolge: Rückweg sichern, neues Konto mit Schlüssel in einer separaten Sitzung testen, SSH-Konfiguration prüfen, alte Methoden sperren, neue Anmeldung erneut testen und erst dann alte Sitzung schließen.",
+          "caption": "Eigene technische Ablaufgrafik: Die Umstellung ist erst abgeschlossen, wenn eine neue Sitzung den Zugang belegt."
+        },
+        {
+          "type": "quiz",
+          "id": "ssh-passwort-noch-moeglich",
+          "question": "Nach `PasswordAuthentication no` kann sich ein Konto weiterhin mit einem interaktiven Geheimnis anmelden. Welche Prüfung ist am naheliegendsten?",
+          "options": [
+            {
+              "text": "Die effektive SSH-Konfiguration und Keyboard-Interactive als eigenständige Anmeldemethode prüfen.",
+              "rationale": "Richtig. PasswordAuthentication und KbdInteractiveAuthentication sind getrennte Optionen; außerdem können Match-Regeln gelten.",
+              "correct": true
+            },
+            {
+              "text": "Das beweist, dass `PermitRootLogin no` jedes normale Benutzerkonto wieder freigibt.",
+              "rationale": "PermitRootLogin betrifft den SSH-Login als root, nicht die Passwortmethoden normaler Konten.",
+              "correct": false
+            },
+            {
+              "text": "Den privaten Key auf den Server kopieren; damit verschwindet die Passwortmethode.",
+              "rationale": "Der private Key gehört nicht auf den Server. Das Kopieren würde die Konfiguration nicht sicher korrigieren.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "sequence",
+          "id": "ssh-migration-reihenfolge",
+          "title": "Zugang ohne Aussperren migrieren",
+          "prompt": "Sortiere die Schritte der geplanten Umstellung. Die alte Sitzung bleibt während der Arbeit offen.",
+          "steps": [
+            {
+              "id": "abschalten",
+              "label": "Nach Prüfung die alten SSH-Anmeldewege kontrolliert sperren"
+            },
+            {
+              "id": "rueckweg",
+              "label": "Konsolen-/Notfallzugang sichern und alte Sitzung offen lassen"
+            },
+            {
+              "id": "abnahme",
+              "label": "Neue Key-Sitzung und beabsichtigte Sperren testen, dann alte Sitzung schließen"
+            },
+            {
+              "id": "key-test",
+              "label": "Benanntes Konto und öffentlichen Schlüssel einrichten; separate Key-Sitzung testen"
+            },
+            {
+              "id": "config-test",
+              "label": "Geplante sshd-Einstellungen mit Syntax- und Effektivprüfung kontrollieren"
+            }
+          ],
+          "expected": [
+            "rueckweg",
+            "key-test",
+            "config-test",
+            "abschalten",
+            "abnahme"
+          ],
+          "correctFeedback": "Richtig: Ein funktionierender neuer Zugang und ein Rückweg stehen vor der Sperre. Erst die neue Testsitzung nach Aktivierung beendet die Umstellung.",
+          "wrongFeedback": "Sichere zuerst Rückweg und bestehenden Zugang. Teste dann den neuen Key-Zugang und die geplante Konfiguration, bevor du alte Methoden sperrst; danach muss ein neuer Login erneut gelingen."
+        }
+      ]
+    },
+    {
+      "title": "4 · sudo ist eine zweite Entscheidung",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Ein erfolgreiches SSH-Login als `admin` gibt **nicht automatisch Root-Rechte**. `sudo` entscheidet anhand der lokalen Richtlinie, ob dieser Benutzer einen bestimmten Befehl als anderer Benutzer – oft root – ausführen darf. `sudo -l` listet für das angemeldete Konto dessen erlaubte Befehle, sofern die Richtlinie die Abfrage zulässt. Eine sudo-Abfrage kann je nach Policy nach dem **Kontopasswort** fragen, auch wenn die SSH-Anmeldung per Schlüssel erfolgte. Key-Passphrase, Serverkontopasswort und sudo-Berechtigung sind also verschieden.\n\nFür einen begrenzten Wartungsauftrag kann eine freigegebene sudoers-Regel gezielt den nötigen Befehl erlauben. In einem geprüften Übungssystem könnte `mara ALL=(root) /usr/bin/systemctl restart nginx.service` genau den Neustart dieses Dienstes für Mara freigeben – nicht beliebige `systemctl`-Aktionen. Der tatsächliche Programmpfad, die Unit-Datei und alle von Mara veränderbaren Eingaben müssen vor einer solchen Freigabe geprüft werden. Eine pauschale Mitgliedschaft in einer weitreichenden Admin-Gruppe gewährt mehr als diese einzelne Aufgabe. Auch ein scheinbar begrenzter Befehl kann unter Umständen Shell-Zugriff oder veränderbare Dateien öffnen. `visudo` bearbeitet sudoers mit Syntaxprüfung; `visudo -c` prüft die vorhandene Richtlinie. Eine Syntaxprüfung ersetzt nicht die fachliche Prüfung der gewährten Rechte. Keine ungeprüfte `NOPASSWD: ALL`-Regel als Abkürzung für Key-Login verwenden."
+        },
+        {
+          "type": "quiz",
+          "id": "ssh-sudo-trennung",
+          "question": "Mara meldet sich mit ihrem SSH-Key als `mara` an. `sudo -l` zeigt keine Freigabe für die Paketverwaltung. Was folgt daraus?",
+          "options": [
+            {
+              "text": "Die SSH-Anmeldung funktioniert, aber die Paketverwaltung ist über sudo für Mara nicht freigegeben; die benötigte Aufgabe muss separat autorisiert werden.",
+              "rationale": "Richtig. Der Schlüssel authentifiziert das Konto, nicht dessen administrative Befehle.",
+              "correct": true
+            },
+            {
+              "text": "Weil der Key akzeptiert wurde, darf Mara jeden Befehl als root ausführen.",
+              "rationale": "Authentifizierung und Autorisierung sind getrennt. `sudo -l` zeigt hier gerade keine solche Freigabe.",
+              "correct": false
+            },
+            {
+              "text": "Der private Key muss nach `/root` kopiert werden, um sudo zu aktivieren.",
+              "rationale": "Das würde das Schlüsselgeheimnis gefährden und keine sudoers-Berechtigung erzeugen.",
+              "correct": false
+            }
+          ]
+        },
+        {
+          "type": "flashcards",
+          "cards": [
+            {
+              "id": "ssh-karte-benutzerkey",
+              "label": "Benutzer-Key",
+              "front": "Welcher Teil des Benutzerschlüssels liegt in authorized_keys?",
+              "back": "Der öffentliche Schlüssel. Der private Teil bleibt geschützt auf dem Client."
+            },
+            {
+              "id": "ssh-karte-hostkey",
+              "label": "Host-Key",
+              "front": "Welche Frage beantwortet der SSH-Hostschlüssel?",
+              "back": "Ob die Verbindung zur erwarteten Server-Gegenstelle aufgebaut wird; den Fingerprint unabhängig prüfen."
+            },
+            {
+              "id": "ssh-karte-root",
+              "label": "Root-Login",
+              "front": "Was unterscheidet PermitRootLogin no von prohibit-password?",
+              "back": "no sperrt direkten Root-SSH-Login vollständig; prohibit-password lässt unter Voraussetzungen Root-Login mit Key zu."
+            },
+            {
+              "id": "ssh-karte-sudo",
+              "label": "sudo",
+              "front": "Beweist ein erfolgreiches SSH-Key-Login eine sudo-Berechtigung?",
+              "back": "Nein. Die sudoers-Richtlinie entscheidet separat, welche Befehle das angemeldete Konto ausführen darf."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "5 · Transfer: eine scheinbar sichere Umstellung prüfen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Neuer Fall: Auf Server Elster wurde für `ops` ein öffentlicher Key hinterlegt. Ein Admin setzt nur `PasswordAuthentication no` und `PermitRootLogin prohibit-password`, startet den SSH-Dienst neu und schließt sofort die alte Sitzung. Danach kann sich `ops` noch über eine interaktive Passwortabfrage anmelden, und root kommt mit einem Key hinein. Die Konfiguration ist syntaktisch gültig – trotzdem wurden beide beabsichtigten Schutzziele verfehlt.\n\nDie Diagnose trennt **Syntax**, **effektive Methode** und **echtes Verhalten**: Keyboard-Interactive ist eine eigene Option, und prohibit-password bedeutet nicht „Root vollständig gesperrt“. Vor einer Korrektur muss `ops` in einer separaten neuen Key-Sitzung funktionieren und der Rückweg bereitstehen. Dann werden `KbdInteractiveAuthentication no` und `PermitRootLogin no` im Kontext der tatsächlich geltenden Konfiguration geprüft, kontrolliert aktiviert und mit positiven sowie negativen Anmeldetests verifiziert. Die konkreten SSH-Methoden und Ausnahmen können distributions- und anlagenspezifisch sein."
+        },
+        {
+          "type": "recall",
+          "id": "ssh-transfer-erklaerung",
+          "title": "Elsters Sicherheitslücken erklären",
+          "prompt": "Erkläre in eigenen Worten, warum die zwei gesetzten Optionen das Ziel nicht erfüllen. Nenne außerdem einen Test vor und einen Test nach der Änderung sowie die Rolle von sudo.",
+          "label": "Deine Fallbegründung",
+          "minLength": 180,
+          "model": "PasswordAuthentication no schaltet nur die SSH-Passwortmethode ab; Keyboard-Interactive kann separat weiter erlaubt sein. PermitRootLogin prohibit-password lässt unter passenden Bedingungen Root-Login mit Schlüssel zu; für die vollständige Sperre des direkten Root-SSH-Logins ist PermitRootLogin no zu prüfen. Vor dem Aktivieren teste ich den individuellen ops-Key-Zugang in einer separaten neuen Sitzung und sichere den Konsolenzugang. Nach dem Aktivieren prüfe ich eine neue ops-Key-Sitzung sowie die beabsichtigte Ablehnung der alten Methoden und des Root-Logins. sudo-Rechte für ops werden unabhängig vom SSH-Login über die lokale Richtlinie geprüft."
+        }
+      ]
+    },
+    {
+      "title": "6 · Lernziel-Check",
+      "blocks": [
+        {
+          "type": "quiz",
+          "id": "ssh-schluessel-gate",
+          "question": "Welche Zuordnung ist für einen neuen SSH-Key-Zugang korrekt?",
+          "options": [
+            {
+              "text": "Privater Benutzerschlüssel beim Client; öffentlicher Benutzerschlüssel beim Zielkonto; Hostschlüssel des Servers gesondert prüfen.",
+              "rationale": "Richtig. Benutzeridentität, Schlüsselgeheimnis und Serveridentität bleiben getrennt.",
+              "correct": true
+            },
+            {
+              "text": "Privater Benutzerschlüssel in authorized_keys; Hostschlüssel ersetzt den öffentlichen Benutzerschlüssel.",
+              "rationale": "Der private Schlüssel gehört nicht auf den Server; der Hostschlüssel hat eine andere Rolle.",
+              "correct": false
+            },
+            {
+              "text": "Nur die Key-Passphrase auf dem Server speichern; alle drei Schlüsselrollen entfallen.",
+              "rationale": "Eine Passphrase schützt die private Datei und ist kein Ersatz für Schlüssel oder Hostidentität.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "schluessel-zuordnen"
+        },
+        {
+          "type": "quiz",
+          "id": "ssh-umstellung-gate",
+          "question": "Welche Reihenfolge minimiert das Risiko, sich bei der SSH-Härtung auszusperren?",
+          "options": [
+            {
+              "text": "Rückweg sichern, individuellen Key-Login in neuer Sitzung testen, Syntax und effektive Optionen prüfen, alte Wege sperren, neuen Zugang erneut testen.",
+              "rationale": "Richtig. Der funktionsfähige neue Zugang wird vor und nach der Aktivierung belegt.",
+              "correct": true
+            },
+            {
+              "text": "Erst alle alten Methoden sperren, die einzige Sitzung schließen und dann den öffentlichen Key verteilen.",
+              "rationale": "Ohne vorherigen Key-Test und Rückweg kann die Fernwartung vollständig ausfallen.",
+              "correct": false
+            },
+            {
+              "text": "Nur sshd -t ausführen; gültige Syntax beweist bereits, dass Key-Login und Root-Sperre wie gewünscht funktionieren.",
+              "rationale": "sshd -t prüft Syntax und Schlüsselplausibilität, nicht den Erfolg einer neuen Sitzung oder jede gewünschte Wirkungsregel.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "ssh-zugang-umstellen"
+        },
+        {
+          "type": "quiz",
+          "id": "ssh-sudo-gate",
+          "question": "Ein benannter Admin kommt per SSH-Key hinein. Für eine bestimmte Wartungsaktion fehlen sudo-Rechte. Welche Maßnahme passt?",
+          "options": [
+            {
+              "text": "Die benötigte Aktion und sudoers-Richtlinie gesondert prüfen, minimal freigeben und mit sudo -l sowie einem Test nachweisen.",
+              "rationale": "Richtig. Eine zweckgebundene Freigabe wird separat von der SSH-Anmeldung überprüft.",
+              "correct": true
+            },
+            {
+              "text": "Den direkten Root-SSH-Login wieder öffnen; dann braucht niemand mehr eine sudo-Richtlinie.",
+              "rationale": "Das kehrt das Ziel einer zuordenbaren, begrenzten Administration um.",
+              "correct": false
+            },
+            {
+              "text": "Den privaten SSH-Key in sudoers eintragen; damit ist jeder Befehl automatisch erlaubt.",
+              "rationale": "sudoers regelt Benutzer und Befehle, nicht die Speicherung privater SSH-Schlüssel.",
+              "correct": false
+            }
+          ],
+          "requiredObjective": "sudo-begrenzen"
+        }
+      ]
+    },
+    {
+      "title": "Quellen und Grenzen",
+      "blocks": [
+        {
+          "type": "markdown",
+          "markdown": "Technische Primärquellen, geprüft am 02.10.2026: [OpenSSH ssh-keygen(1)](https://man.openbsd.org/ssh-keygen), [OpenSSH sshd_config(5)](https://man.openbsd.org/sshd_config), [OpenSSH sshd(8)](https://man.openbsd.org/sshd), [Ubuntu Server: OpenSSH](https://ubuntu.com/server/docs/how-to/security/openssh-server/), [sudoers(5)](https://manpages.debian.org/trixie/sudo/sudoers.5.en.html) und [visudo(8)](https://manpages.debian.org/trixie/sudo/visudo.8.en.html). Der private Themenanker ist ITLF10–12, PDF-Seite 128; die Seitenabbildung und der Buchtext wurden nicht übernommen. Das Beispiel setzt einen OpenSSH-Server auf Linux voraus. Vor realen Änderungen müssen Distribution, eingebundene Konfigurationsdateien, Match-Regeln, verfügbare Anmeldeverfahren, sudo-Policy und Notfallzugang der konkreten Umgebung geprüft werden. Wiederhole die drei Lernziel-Fragen nach einem Tag ohne Blick auf die Lösungen."
+        }
+      ]
+    }
+  ]
+}
