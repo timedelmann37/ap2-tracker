@@ -1,15 +1,15 @@
 # AP2-Tracker
 
 Lern-Tools zur Vorbereitung auf die IHK-Abschlussprüfung AP2
-(Fachinformatiker Systemintegration). Deployment über Netlify. Details in
+(Fachinformatiker Systemintegration). Selbst gehostet (nginx). Details in
 [`README.md`](./README.md).
 
 Der Bestand nutzt statisches HTML/CSS/JS mit gemeinsamen Assets; Lernseiten
 werden aus Markdown gebaut. Build und Deployment stehen in `package.json`
-und `netlify.toml`. **Die Technik ist keine Vorgabe für neue Arbeit:** ein
+und `docker-compose.yml` / `nginx/default.conf`. **Die Technik ist keine Vorgabe für neue Arbeit:** ein
 Build-Schritt, ein Framework (React o. Ä.), TypeScript, Tailwind oder eine
 Komponentenbibliothek (shadcn/ui usw.) sind erlaubt, wo sie sich lohnen. Wer
-so etwas einführt, richtet den passenden Netlify-Build mit ein und hält die
+so etwas einführt, hängt es in `npm run build` ein und hält die
 bestehenden statischen Seiten lauffähig, bis sie migriert sind.
 
 ## Design und neue Inhalte

@@ -52,7 +52,7 @@ technischer Cache für die Darstellung und Synchronisierung.
 Der Bestand nutzt statisches HTML/CSS/JS mit gemeinsamen Assets und einem Build
 für die Markdown-Lernseiten sowie das Publish-Verzeichnis. Framework, TypeScript,
 Tailwind oder eine Komponentenbibliothek dürfen eingesetzt werden, wo sie sich
-lohnen; Build und Netlify-Konfiguration werden entsprechend gepflegt.
+lohnen; Build und Server-Konfiguration werden entsprechend gepflegt.
 
 ## Operating Context
 
@@ -77,13 +77,13 @@ lohnen; Build und Netlify-Konfiguration werden entsprechend gepflegt.
 - **Nebenbei**: vier kleine Lern-Minispiele hinter dem 🕹️-Button
   (Paket-Fang, Port-Sprint, Subnetting-Blitz, Fachbegriff-Rush).
 - **Mitarbeit** am Repo läuft zu zweit über Feature-Branches und Pull Requests
-  (`CONTRIBUTING.md`); Deploy-Previews auf Netlify ergänzen die lokalen
-  Build- und Browserprüfungen.
+  (`CONTRIBUTING.md`); geprüft wird lokal über Build- und Browsertests.
 
 ## Capabilities and Constraints
 
-- Deployment: statische Ausgabe über Netlify. Die aktuellen Build-Befehle und
-  das Publish-Verzeichnis stehen in `package.json` und `netlify.toml`.
+- Deployment: statische Ausgabe, selbst gehostet mit nginx in Docker. Die
+  Build-Befehle stehen in `package.json`, die Server-Konfiguration in
+  `docker-compose.yml` und `nginx/default.conf`.
   Bestehende Seiten bleiben bei technischen Umstellungen lauffähig, bis sie
   migriert sind.
 - Stoffdaten stecken in der `DATA`-Konstante am Anfang des jeweiligen

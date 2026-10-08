@@ -41,15 +41,15 @@ scripts/knowledge/             Import und Volltextsuche der privaten Buchdaten
 DESIGN.md                     Verbindliche Gestaltung und Regeln für Erweiterungen
 docs/DEEP_SPACE_REFERENCE_LOCK.md   Aktuelle Referenzen und Quellenrollen
 docs/REFERO_COMPONENT_NOTES.md     Übernommene Refero-Komponenten und Anpassungen
-netlify.toml                   Deployment-Konfiguration
+docker-compose.yml             Self-Hosting: nginx-Container
+nginx/default.conf             nginx-Konfiguration (Redirects, 404, private Pfade)
 CONTRIBUTING.md                Anforderungen für alle, die an /simulation/ arbeiten
 scripts/verify-theme-persistence.mjs  Browser-Test für sofortigen Theme-Wechsel und Persistenz
 scripts/verify-navigation.mjs  Browser-Test für Menü, Tastatur und Reduced Motion
 ```
 
-Jeder Ordner hat seine eigene `index.html` und wird von Netlify automatisch
-unter dem passenden Pfad ausgeliefert (`meineseite.netlify.app/netzwerke/`,
-`.../sowi/`, …) — keine Server-Konfiguration nötig.
+Jeder Ordner hat seine eigene `index.html` und wird von nginx unter dem
+passenden Pfad ausgeliefert (`<domain>/netzwerke/`, `.../sowi/`, …).
 
 ## Hub (`/`)
 
@@ -126,26 +126,28 @@ Server gegen `dist/` und prüft Navigation, Theme, Links, Karten, Quiz und
 Fortschritt; falls Chromium lokal noch fehlt, einmal `npx playwright install
 chromium` ausführen.
 
-## Deployment (Netlify)
+## Deployment (eigener Server)
 
-Das Repo ist so eingerichtet, dass jeder Push auf `main` automatisch eine
-erreichbare Seite ergibt:
+Die Seite wird selbst gehostet: ein `nginx:alpine`-Container aus
+`docker-compose.yml` (als Portainer-Stack aus diesem Repo) liefert die
+statischen Dateien aus und hängt im externen Proxy-Netz `nginx_proxy-net`.
 
-- `index.html` liegt im Repo-Root (Netlify liefert standardmäßig
-  `index.html` von der "Publish directory" aus), `uebersicht/`,
-  `konzeption-administration/`, `netzwerke/`, `sowi/` und `simulation/`
-  liegen als eigene Ordner daneben.
-- `netlify.toml` führt `npm run build` aus und pinnt `publish = "dist"`. Es gibt bewusst **keinen**
-  Catch-all-Rewrite mehr — mit mehreren echten Seiten würde der jede Anfrage
-  auf die Startseite umbiegen. Nur echte 404s fallen auf die Startseite
-  zurück (`status = 404`, damit der Statuscode korrekt bleibt).
-- `/tracker/` (die frühere Adresse des zusammengefassten Trackers) leitet
-  per 301 auf `/` weiter, für alte Lesezeichen/Links.
-
-Auf Netlify reicht es, das Repo als Site zu verbinden – Build-Command und
-Publish-Verzeichnis stecken in `netlify.toml`. Für Pull Requests baut
-Netlify automatisch Deploy-Previews, darüber lässt sich ein neuer Bereich
-vor dem Merge live testen.
+- `nginx/default.conf` wird in den Container gemountet und regelt die
+  Auslieferung: `/tracker/` (die frühere Adresse des
+  zusammengefassten Trackers) leitet per 301 auf `/` weiter; es gibt bewusst
+  **keinen** Catch-all-Rewrite — mit mehreren echten Seiten würde der jede
+  Anfrage auf die Startseite umbiegen. Nur echte 404s zeigen die Startseite,
+  mit korrektem Statuscode (`error_page 404`). Zusätzlich blockt sie
+  Build-Eingaben und private Pfade (`content/`, `scripts/`, `supabase/`,
+  `docs/`, `.git/`, Markdown-Dateien im Root …).
+- Das saubere Publish-Verzeichnis ist `dist/` (`npm run build`, geprüft von
+  `npm run test:site`). Der Stack mountet derzeit den Checkout selbst; die
+  Sperren in `nginx/default.conf` sorgen dafür, dass trotzdem nur
+  Laufzeitdateien erreichbar sind. Wer auf `dist/` umstellt, ändert nur den
+  ersten Volume-Pfad in `docker-compose.yml`.
+- Deployment = Stack in Portainer neu ziehen („Pull and redeploy"). Es gibt
+  keine automatische Vorschau pro Pull Request; geprüft wird lokal (siehe
+  „Lokal öffnen").
 
 ## Mitarbeit zu zweit
 
