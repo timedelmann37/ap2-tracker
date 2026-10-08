@@ -64,7 +64,10 @@ Simulation.
 Der Plan: bereichsübergreifende "Was ist dran?"-Ansicht, der bestehende
 Wochenrhythmus (welcher Bereich an welchem Wochentag) und ein chronologischer
 Gesamtplan aller Themenblöcke bis zur Prüfung. Ein Klick auf einen Eintrag
-springt in den passenden Themenbereich zum richtigen Block.
+springt in den passenden Themenbereich zum richtigen Block. Eingeloggt zeigt
+die Übersicht zusätzlich die **Lerngruppe**: eine Rangliste aller Konten
+(Diese Woche / Gesamt), Opt-out über den Konto-Dialog im Hub. Einrichtung
+und Datenmodell: [`CLOUD_SYNC.md`](./CLOUD_SYNC.md), Abschnitt 2b.
 
 ## Themenbereiche (`/konzeption-administration/`, `/netzwerke/`, `/sowi/`)
 

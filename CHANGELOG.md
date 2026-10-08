@@ -7,6 +7,28 @@ direkt auf der Seite sichtbar - ein Klick auf die Versionsnummer im Hub (in
 der Fußzeile) zeigt dieselbe Liste als Änderungsprotokoll. Gepflegt wird das
 Changelog ausschließlich im Hub, nicht mehr in den einzelnen Bereichen.
 
+## [3.11.0] - 2026-09-20
+
+### Hinzugefügt
+
+- Lerngruppe auf der Übersicht: eine Rangliste aller angemeldeten Konten,
+  umschaltbar zwischen „Diese Woche" (in den letzten 7 Tagen abgehakte
+  Kernthemen) und „Gesamt" (Prozent aller Kernthemen). Die eigene Zeile ist
+  hervorgehoben, je Person steht die letzte Aktivität dabei. Nur eingeloggt
+  sichtbar; ausgeloggt erscheint ein Hinweis mit Anmelden-Link.
+- Konto-Dialog im Hub: Anzeigename (vorbelegt aus dem E-Mail-Teil vor dem
+  `@`) und der Schalter „In der Lerngruppe anzeigen". Jedes Konto ist
+  standardmäßig dabei und kann sich austragen. Andere sehen nur Anzeigename
+  und Zählwerte, nie E-Mail oder einzelne Themen. Die Dialoge der übrigen
+  Seiten verlinken zum Hub.
+- Einrichtung in Supabase per `supabase/leaderboard.sql` (`profiles`-Tabelle,
+  Trigger, `leaderboard`-View nur für angemeldete Nutzer), beschrieben in
+  `CLOUD_SYNC.md`, Abschnitt 2b. Die Datei wird lokal gegen ein eingebettetes
+  Postgres geprüft (`npm run test:leaderboard-sql`). Ohne diesen Schritt
+  bleibt alles andere unverändert nutzbar.
+- Entscheidungen (Opt-out, nur eingeloggt, Woche vor Gesamt, nur Aggregate,
+  kein Manipulationsschutz) in `docs/adr/0002-lerngruppe-opt-out-nur-eingeloggt.md`.
+
 ## [3.10.2] - 2026-09-12
 
 ### Geändert
